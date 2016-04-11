@@ -21,7 +21,7 @@
 #import "STMFunctions.h"
 #import "STMUI.h"
 
-#import "SistemiumCore-Swift.h"
+#import "iSistemiumCore-Swift.h"
 
 
 @interface STMWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate>

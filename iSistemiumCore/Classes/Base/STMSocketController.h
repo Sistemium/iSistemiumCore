@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-#import "SistemiumCore-Swift.h"
+#import "iSistemiumCore-Swift.h"
 
 
 typedef NS_ENUM(NSInteger, STMSocketEvent) {

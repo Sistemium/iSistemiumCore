@@ -23,7 +23,7 @@
 
 #import "STMNS.h"
 
-#import "SistemiumCore-Swift.h"
+#import "iSistemiumCore-Swift.h"
 
 
 #define FLUSH_LIMIT 17
