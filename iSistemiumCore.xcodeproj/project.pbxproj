@@ -1267,6 +1267,11 @@
 					2C3F72BD1CBBD46400F8BFB8 = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = HZMMGDCLPA;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					2C3F72D61CBBD46400F8BFB8 = {
 						CreatedOnToolsVersion = 7.3;
