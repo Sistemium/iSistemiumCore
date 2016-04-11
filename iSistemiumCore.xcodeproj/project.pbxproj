@@ -77,7 +77,6 @@
 		2C3F73771CBBD5EB00F8BFB8 /* uncheckmark.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F734F1CBBD5EB00F8BFB8 /* uncheckmark.png */; };
 		2C3F73781CBBD5EB00F8BFB8 /* Up4-25.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73501CBBD5EB00F8BFB8 /* Up4-25.png */; };
 		2C3F73791CBBD5EB00F8BFB8 /* Upload To Cloud-100.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73511CBBD5EB00F8BFB8 /* Upload To Cloud-100.png */; };
-		2C3F737F1CBBD65D00F8BFB8 /* KeychainItemWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F737E1CBBD65D00F8BFB8 /* KeychainItemWrapper.m */; };
 		2C3F73911CBBD66B00F8BFB8 /* SocketAckEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73811CBBD66B00F8BFB8 /* SocketAckEmitter.swift */; };
 		2C3F73921CBBD66B00F8BFB8 /* SocketAckManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73821CBBD66B00F8BFB8 /* SocketAckManager.swift */; };
 		2C3F73931CBBD66B00F8BFB8 /* SocketAnyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73831CBBD66B00F8BFB8 /* SocketAnyEvent.swift */; };
@@ -312,8 +311,6 @@
 		2C3F734F1CBBD5EB00F8BFB8 /* uncheckmark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = uncheckmark.png; sourceTree = "<group>"; };
 		2C3F73501CBBD5EB00F8BFB8 /* Up4-25.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Up4-25.png"; sourceTree = "<group>"; };
 		2C3F73511CBBD5EB00F8BFB8 /* Upload To Cloud-100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Upload To Cloud-100.png"; sourceTree = "<group>"; };
-		2C3F737D1CBBD65D00F8BFB8 /* KeychainItemWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeychainItemWrapper.h; sourceTree = "<group>"; };
-		2C3F737E1CBBD65D00F8BFB8 /* KeychainItemWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeychainItemWrapper.m; sourceTree = "<group>"; };
 		2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "iSistemiumCore-Bridging-Header.h"; path = "Frameworks/SocketIOClientSwift/iSistemiumCore-Bridging-Header.h"; sourceTree = "<group>"; };
 		2C3F73811CBBD66B00F8BFB8 /* SocketAckEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAckEmitter.swift; sourceTree = "<group>"; };
 		2C3F73821CBBD66B00F8BFB8 /* SocketAckManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAckManager.swift; sourceTree = "<group>"; };
@@ -779,7 +776,6 @@
 		2C3F737A1CBBD62100F8BFB8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2C3F737C1CBBD64C00F8BFB8 /* KeychainItemWrapper */,
 				2C3F737B1CBBD63400F8BFB8 /* SocketIOClientSwift */,
 			);
 			path = Frameworks;
@@ -806,15 +802,6 @@
 				2C3F73901CBBD66B00F8BFB8 /* WebSocket.swift */,
 			);
 			path = SocketIOClientSwift;
-			sourceTree = "<group>";
-		};
-		2C3F737C1CBBD64C00F8BFB8 /* KeychainItemWrapper */ = {
-			isa = PBXGroup;
-			children = (
-				2C3F737D1CBBD65D00F8BFB8 /* KeychainItemWrapper.h */,
-				2C3F737E1CBBD65D00F8BFB8 /* KeychainItemWrapper.m */,
-			);
-			path = KeychainItemWrapper;
 			sourceTree = "<group>";
 		};
 		2C3F73A11CBBD6CC00F8BFB8 /* DataModel */ = {
@@ -1581,7 +1568,6 @@
 				2C3F74271CBBD78300F8BFB8 /* STMDocument.m in Sources */,
 				2C3F739F1CBBD66B00F8BFB8 /* SwiftRegex.swift in Sources */,
 				2C3F75431CBBD9FB00F8BFB8 /* STMWKWebViewVC.m in Sources */,
-				2C3F737F1CBBD65D00F8BFB8 /* KeychainItemWrapper.m in Sources */,
 				2C3F74351CBBD78300F8BFB8 /* STMStringExtension.swift in Sources */,
 				2C3F73F01CBBD6FE00F8BFB8 /* STMPicture+CoreDataProperties.m in Sources */,
 				2C3F749A1CBBD80600F8BFB8 /* STMInsetLabel.m in Sources */,

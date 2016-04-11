@@ -3,6 +3,7 @@ pod 'KiteJSONValidator', :git => 'https://github.com/grgcombs/KiteJSONValidator.
 pod 'Reachability', '~> 3.1.0'
 pod 'ScanAPI', :path => '../ScanApiSDK'
 pod 'Crashlytics', '~> 3.7.0'
+pod 'JNKeychain', '~> 0.1.4'
 
 post_install do |installer_representation|
     installer_representation.pods_project.targets.each do |target|
