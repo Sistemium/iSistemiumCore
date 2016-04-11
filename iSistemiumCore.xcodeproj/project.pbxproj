@@ -214,6 +214,7 @@
 		2C3F75431CBBD9FB00F8BFB8 /* STMWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75411CBBD9FB00F8BFB8 /* STMWKWebViewVC.m */; };
 		2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */; };
 		2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */; };
+		2C3F754B1CBBDC7A00F8BFB8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -576,6 +577,7 @@
 		2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMAppDelegate.m; sourceTree = "<group>"; };
 		2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMApplication.h; sourceTree = "<group>"; };
 		2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMApplication.m; sourceTree = "<group>"; };
+		2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -585,6 +587,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C3F754B1CBBDC7A00F8BFB8 /* WebKit.framework in Frameworks */,
 				01D1922D2A7C9146E10A5125 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1191,6 +1194,7 @@
 		FAADE6582BAD513A5DA3F23B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */,
 				230CB3E88CB302D8B47B23D5 /* libPods.a */,
 			);
 			name = Frameworks;
