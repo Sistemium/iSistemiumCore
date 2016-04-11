@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="8tu-lm-Isv">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--Scanner InfoVC-->
+        <scene sceneID="RgM-fO-h3B">
+            <objects>
+                <viewController id="Ml4-Su-8Ns" customClass="STMScannerInfoVC" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="b11-Dd-UOk"/>
+                        <viewControllerLayoutGuide type="bottom" id="Oe6-b4-ED4"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="CZQ-oR-9T0">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scanner status" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ali-RJ-5jV" customClass="STMLabel">
+                                <rect key="frame" x="20" y="72" width="560" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="qBK-BF-JEb"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yUL-Za-85W">
+                                <rect key="frame" x="531" y="145" width="51" height="31"/>
+                                <connections>
+                                    <action selector="beepStatusSwitchChanged:" destination="Ml4-Su-8Ns" eventType="valueChanged" id="5Gc-Om-DqP"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Beep status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hSM-9g-M3Q" customClass="STMLabel">
+                                <rect key="frame" x="20" y="150" width="503" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sJK-9g-iEN">
+                                <rect key="frame" x="531" y="184" width="51" height="31"/>
+                                <connections>
+                                    <action selector="rumbleStatusSwitchChanged:" destination="Ml4-Su-8Ns" eventType="valueChanged" id="2Ew-mY-Cud"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rumble status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cuq-dr-wNd" customClass="STMLabel">
+                                <rect key="frame" x="20" y="189" width="503" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Battery level" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ytj-Sh-1iu" customClass="STMLabel">
+                                <rect key="frame" x="20" y="228" width="503" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="???%" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3ps-z0-z13" customClass="STMLabel">
+                                <rect key="frame" x="531" y="223" width="51" height="31"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="51" id="CAW-J3-dmk"/>
+                                    <constraint firstAttribute="height" constant="31" id="sZu-ON-ZYJ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="N94-Ff-eSX">
+                                <rect key="frame" x="20" y="550" width="560" height="30"/>
+                                <state key="normal" title="Reload data"/>
+                                <connections>
+                                    <action selector="reloadDataButtonPressed:" destination="Ml4-Su-8Ns" eventType="touchUpInside" id="mFd-US-7YI"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last scanned barcode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QHN-46-l95" customClass="STMLabel">
+                                <rect key="frame" x="20" y="289" width="560" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="%last scanned barcode%" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skb-DS-Icj" customClass="STMLabel">
+                                <rect key="frame" x="20" y="317" width="560" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="8dv-UM-dUW"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="leadingMargin" secondItem="skb-DS-Icj" secondAttribute="leading" id="03a-M4-y5v"/>
+                            <constraint firstItem="3ps-z0-z13" firstAttribute="leading" secondItem="ytj-Sh-1iu" secondAttribute="trailing" constant="8" id="2Ql-8Z-q4s"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="hSM-9g-M3Q" secondAttribute="leading" id="4dx-ra-1yS"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="3ps-z0-z13" secondAttribute="trailing" constant="-2" id="5Vp-iW-IvB"/>
+                            <constraint firstItem="yUL-Za-85W" firstAttribute="top" secondItem="Ali-RJ-5jV" secondAttribute="bottom" constant="29" id="BmM-rO-ynN"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="N94-Ff-eSX" secondAttribute="trailing" id="GCW-oP-ZKZ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Ali-RJ-5jV" secondAttribute="trailing" id="HPf-KI-7pE"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="N94-Ff-eSX" secondAttribute="leading" id="Kmi-hc-0hx"/>
+                            <constraint firstItem="ytj-Sh-1iu" firstAttribute="centerY" secondItem="3ps-z0-z13" secondAttribute="centerY" id="LGM-wL-7zz"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="sJK-9g-iEN" secondAttribute="trailing" id="LjS-ms-hO1"/>
+                            <constraint firstItem="sJK-9g-iEN" firstAttribute="top" secondItem="yUL-Za-85W" secondAttribute="bottom" constant="8" id="N5E-BW-wfM"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="QHN-46-l95" secondAttribute="trailing" id="SYO-cC-Jm8"/>
+                            <constraint firstItem="cuq-dr-wNd" firstAttribute="centerY" secondItem="sJK-9g-iEN" secondAttribute="centerY" id="SzX-sV-ZJy"/>
+                            <constraint firstItem="3ps-z0-z13" firstAttribute="top" secondItem="sJK-9g-iEN" secondAttribute="bottom" constant="8" id="Tzn-RF-KUE"/>
+                            <constraint firstItem="Ali-RJ-5jV" firstAttribute="top" secondItem="b11-Dd-UOk" secondAttribute="bottom" constant="8" id="VeN-em-m6A"/>
+                            <constraint firstItem="Oe6-b4-ED4" firstAttribute="top" secondItem="N94-Ff-eSX" secondAttribute="bottom" constant="20" id="YKp-3j-uKt"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="QHN-46-l95" secondAttribute="leading" id="avB-hg-3e1"/>
+                            <constraint firstItem="hSM-9g-M3Q" firstAttribute="centerY" secondItem="yUL-Za-85W" secondAttribute="centerY" id="c0p-9m-PwS"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="cuq-dr-wNd" secondAttribute="leading" id="dK6-r3-8YY"/>
+                            <constraint firstItem="QHN-46-l95" firstAttribute="top" secondItem="3ps-z0-z13" secondAttribute="bottom" constant="35" id="jFE-01-09n"/>
+                            <constraint firstItem="yUL-Za-85W" firstAttribute="leading" secondItem="hSM-9g-M3Q" secondAttribute="trailing" constant="8" id="kfW-RW-Glk"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="ytj-Sh-1iu" secondAttribute="leading" id="o1X-lK-ahK"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="skb-DS-Icj" secondAttribute="trailing" id="rRy-DI-zXb"/>
+                            <constraint firstItem="skb-DS-Icj" firstAttribute="top" secondItem="QHN-46-l95" secondAttribute="bottom" constant="8" id="sT6-3c-Ub2"/>
+                            <constraint firstAttribute="leadingMargin" secondItem="Ali-RJ-5jV" secondAttribute="leading" id="u7d-qj-kDL"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="yUL-Za-85W" secondAttribute="trailing" id="ycX-jb-IWQ"/>
+                            <constraint firstItem="sJK-9g-iEN" firstAttribute="leading" secondItem="cuq-dr-wNd" secondAttribute="trailing" constant="8" id="z7w-m5-4C2"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="dRE-QC-8lS"/>
+                    <connections>
+                        <outlet property="batteryLevel" destination="3ps-z0-z13" id="jiO-kG-sTQ"/>
+                        <outlet property="batteryLevelLabel" destination="ytj-Sh-1iu" id="hhA-22-XaF"/>
+                        <outlet property="beepStatusLabel" destination="hSM-9g-M3Q" id="G2l-4B-knp"/>
+                        <outlet property="beepStatusSwitch" destination="yUL-Za-85W" id="yaG-Ge-Wir"/>
+                        <outlet property="lastScannedBarcode" destination="skb-DS-Icj" id="uUw-K5-3bg"/>
+                        <outlet property="lastScannedBarcodeLabel" destination="QHN-46-l95" id="8L4-jC-ZhG"/>
+                        <outlet property="reloadDataButton" destination="N94-Ff-eSX" id="1Kx-G7-CfV"/>
+                        <outlet property="rumbleStatusLabel" destination="cuq-dr-wNd" id="gbP-hq-Uwr"/>
+                        <outlet property="rumbleStatusSwitch" destination="sJK-9g-iEN" id="K0m-Yu-w9g"/>
+                        <outlet property="scannerStatusLabel" destination="Ali-RJ-5jV" id="6tm-UE-nAB"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="5S5-5k-Ibx" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="678" y="353"/>
+        </scene>
+        <!--Scanner InfoNC-->
+        <scene sceneID="biK-P9-57D">
+            <objects>
+                <navigationController id="8tu-lm-Isv" customClass="STMScannerInfoNC" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="PfO-pO-QQO">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="Ml4-Su-8Ns" kind="relationship" relationship="rootViewController" id="CPp-Ag-1fj"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pdp-DY-2t7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-136" y="353"/>
+        </scene>
+    </scenes>
+</document>
