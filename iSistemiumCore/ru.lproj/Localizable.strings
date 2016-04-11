@@ -1,0 +1,52 @@
+/* 
+  Localizable.strings
+  iSistemiumCore
+
+  Created by Maxim Grigoriev on 11/04/16.
+  Copyright © 2016 Sistemium UAB. All rights reserved.
+*/
+
+"SEND" = "Отправить";
+"ENTER TO SISTEMIUM" = "Вход в Sistemium";
+"ENTER PHONE NUMBER" = "Введите номер телефона:";
+"ENTER SMS CODE" = "Введите код из SMS:";
+"SISTEMIUM" = "Sistemium";
+"LOGOUT" = "Выйти";
+"WRONG PHONE NUMBER" = "Неверный номер телефона";
+"WRONG SMS CODE" = "Неверный код";
+"NO CONNECTION" = "Нет соединения";
+"ERROR" = "Ошибка";
+"CHANGE" = "Изменить";
+"NEW SMS CODE" = "Запросить новый SMS код";
+"NEW SMS CODE ALERT TITLE" = "Запросить новый SMS код?";
+"CANCEL" = "Отмена";
+"OK" = "Ok";
+"R U SURE TO LOGOUT" = "Выйти из аккаунта?";
+
+"U R NOT AUTH" = "Вы не авторизованы";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"AUTHORIZATION" = "Авторизация";

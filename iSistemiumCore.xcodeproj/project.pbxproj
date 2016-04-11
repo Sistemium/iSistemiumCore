@@ -215,6 +215,7 @@
 		2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */; };
 		2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */; };
 		2C3F754B1CBBDC7A00F8BFB8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */; };
+		2C3F754E1CBBDCCB00F8BFB8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -578,6 +579,8 @@
 		2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMApplication.h; sourceTree = "<group>"; };
 		2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMApplication.m; sourceTree = "<group>"; };
 		2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		2C3F754F1CBBDCCB00F8BFB8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		2C3F75511CBBDCEA00F8BFB8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -647,6 +650,7 @@
 				2C3F72D21CBBD46400F8BFB8 /* Info.plist */,
 				2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */,
 				2C3F72C11CBBD46400F8BFB8 /* Supporting Files */,
+				2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */,
 			);
 			path = iSistemiumCore;
 			sourceTree = "<group>";
@@ -1293,7 +1297,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
+				ru,
 			);
 			mainGroup = 2C3F72B51CBBD46400F8BFB8;
 			productRefGroup = 2C3F72BF1CBBD46400F8BFB8 /* Products */;
@@ -1367,6 +1371,7 @@
 				2C3F73281CBBD5C400F8BFB8 /* settings.json in Resources */,
 				2C3F72FF1CBBD55700F8BFB8 /* STMScannerInfo.storyboard in Resources */,
 				2C3F73671CBBD5EB00F8BFB8 /* location.png in Resources */,
+				2C3F754E1CBBDCCB00F8BFB8 /* Localizable.strings in Resources */,
 				2C3F72FD1CBBD55700F8BFB8 /* STMLogs.storyboard in Resources */,
 				2C3F73741CBBD5EB00F8BFB8 /* settings3-128.png in Resources */,
 				2C3F73551CBBD5EB00F8BFB8 /* back.png in Resources */,
@@ -1621,6 +1626,18 @@
 			targetProxy = 2C3F72E31CBBD46400F8BFB8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2C3F754F1CBBDCCB00F8BFB8 /* en */,
+				2C3F75511CBBDCEA00F8BFB8 /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		2C3F72E91CBBD46400F8BFB8 /* Debug */ = {
