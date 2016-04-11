@@ -457,7 +457,7 @@
     
     NSDictionary *startSettings = nil;
     
-    NSString *dataModelName = @"SistemiumCore";
+    NSString *dataModelName = @"iSistemiumCore";
     
 #ifdef DEBUG
     
