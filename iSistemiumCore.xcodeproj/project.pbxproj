@@ -212,6 +212,8 @@
 		2C3F753C1CBBD9E800F8BFB8 /* STMWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F753A1CBBD9E800F8BFB8 /* STMWebViewVC.m */; };
 		2C3F75421CBBD9FB00F8BFB8 /* STMWKWebViewNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F753F1CBBD9FB00F8BFB8 /* STMWKWebViewNC.m */; };
 		2C3F75431CBBD9FB00F8BFB8 /* STMWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75411CBBD9FB00F8BFB8 /* STMWKWebViewVC.m */; };
+		2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */; };
+		2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -570,6 +572,10 @@
 		2C3F753F1CBBD9FB00F8BFB8 /* STMWKWebViewNC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWKWebViewNC.m; sourceTree = "<group>"; };
 		2C3F75401CBBD9FB00F8BFB8 /* STMWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMWKWebViewVC.h; sourceTree = "<group>"; };
 		2C3F75411CBBD9FB00F8BFB8 /* STMWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWKWebViewVC.m; sourceTree = "<group>"; };
+		2C3F75441CBBDAAB00F8BFB8 /* STMAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMAppDelegate.h; sourceTree = "<group>"; };
+		2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMAppDelegate.m; sourceTree = "<group>"; };
+		2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMApplication.h; sourceTree = "<group>"; };
+		2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMApplication.m; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -631,6 +637,10 @@
 				2C3F73221CBBD5A000F8BFB8 /* Resources */,
 				2C3F72F41CBBD52800F8BFB8 /* Storyboards */,
 				2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */,
+				2C3F75441CBBDAAB00F8BFB8 /* STMAppDelegate.h */,
+				2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */,
+				2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */,
+				2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */,
 				2C3F72D21CBBD46400F8BFB8 /* Info.plist */,
 				2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */,
 				2C3F72C11CBBD46400F8BFB8 /* Supporting Files */,
@@ -1519,6 +1529,7 @@
 				2C3F75331CBBD9C100F8BFB8 /* STMSettingControlsTVC.m in Sources */,
 				2C3F749D1CBBD80600F8BFB8 /* STMSegmentedControl.m in Sources */,
 				2C3F73991CBBD66B00F8BFB8 /* SocketIOClientStatus.swift in Sources */,
+				2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */,
 				2C3F739B1CBBD66B00F8BFB8 /* SocketPacket.swift in Sources */,
 				2C3F73EA1CBBD6FE00F8BFB8 /* STMLocation+CoreDataProperties.m in Sources */,
 				2C3F74CE1CBBD82400F8BFB8 /* STMCustom6TVCell.m in Sources */,
@@ -1529,6 +1540,7 @@
 				2C3F75351CBBD9C100F8BFB8 /* STMSettingsTVC.m in Sources */,
 				2C3F74981CBBD80600F8BFB8 /* STMImagePickerController.m in Sources */,
 				2C3F73DC1CBBD6FE00F8BFB8 /* STMBarCodeScan+CoreDataProperties.m in Sources */,
+				2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */,
 				2C3F73921CBBD66B00F8BFB8 /* SocketAckManager.swift in Sources */,
 				2C3F75161CBBD99600F8BFB8 /* STMAuthSMSVC.m in Sources */,
 				2C3F751F1CBBD9A000F8BFB8 /* STMLogMessagesMasterTVC.m in Sources */,
