@@ -1,0 +1,9 @@
+{
+    "STMAuth"               : "STMAuth",
+    "STMLogs"               : null,
+    "STMProfile"            : "STMProfile",
+    "STMSettings"           : "STMSettings",
+    "STMWebView"            : "STMWebView",
+    "STMWKWebView"          : "STMWKWebView",
+    "STMScannerInfo"        : "STMScannerInfo"
+}

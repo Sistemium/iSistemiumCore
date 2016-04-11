@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "session settings",
+    "description": "session settings",
+    "type": "object",
+    "properties": {
+        "defaultSettings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "group": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {},
+                                "control": {
+                                    "type": "string"
+                                },
+                                "min": {
+                                    "type": "number"
+                                },
+                                "max": {
+                                    "type": "number"
+                                },
+                                "step": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": ["name", "value", "control"]
+                        }
+                    }
+                },
+                "required": ["group"]
+            }
+        }
+    },
+    "required": ["defaultSettings"]
+}

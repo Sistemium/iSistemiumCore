@@ -1,0 +1,265 @@
+{
+  "defaultSettings":
+  [
+    {
+      "group": "general",
+      "data":
+      [
+        {
+          "name": "localAccessToSettings",
+          "value": true,
+          "control": "switch"
+        }
+      ]
+    },
+       {
+           "group": "appSettings",
+           "data":
+           [
+                {
+                    "name": "socketUrl",
+                    "value": "",
+                    "control": "textField"
+                },
+                {
+                    "name": "objectsLifeTime",
+                    "value": 72,
+                    "control": "slider",
+                    "min": 1,
+                    "max": 240,
+                    "step": 1
+                },
+                {
+                    "name": "jpgQuality",
+                    "value": 0.0,
+                    "control": "slider",
+                    "min": 0,
+                    "max": 1,
+                    "step": 0.1
+                },
+                {
+                    "name": "enableDownloadViaWWAN",
+                    "value": false,
+                    "control": "switch",
+                },
+                {
+                    "name": "blockIfNoLocationPermission",
+                    "value": false,
+                    "control": "switch",
+                },
+                {
+                    "name": "requestLocationServiceAuthorization",
+                    "value": "noRequest",
+                    "control": "segmentedContol"
+                }
+            ]
+       },
+    {
+      "group": "location",
+      "data":
+      [
+        {
+           "name": "geotrackerControl",
+           "value": "",
+           "control": "textField"
+        },
+        {
+          "name": "desiredAccuracy",
+          "value": 0,
+          "control": "slider",
+          "min": 0,
+          "max": 5,
+          "step": 1
+       },
+       {
+           "name": "backgroundDesiredAccuracy",
+           "value": 0,
+           "control": "slider",
+           "min": 0,
+           "max": 5,
+           "step": 1
+       },
+       {
+           "name": "foregroundDesiredAccuracy",
+           "value": 0,
+           "control": "slider",
+           "min": 0,
+           "max": 5,
+           "step": 1
+       },
+       {
+           "name": "offtimeDesiredAccuracy",
+           "value": 0,
+           "control": "slider",
+           "min": 0,
+           "max": 5,
+           "step": 1
+       },
+        {
+          "name": "requiredAccuracy",
+          "value": 100,
+          "control": "slider",
+          "min": 0,
+          "max": 1000,
+          "step": 10
+        },
+        {
+          "name": "permanentLocationRequiredAccuracy",
+          "value": 10,
+          "control": "slider",
+          "min": 0,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "name": "distanceFilter",
+          "value": -1,
+          "control": "slider",
+          "min": -1,
+          "max": 200,
+          "step": 10
+        },
+        {
+          "name": "timeFilter",
+          "value": 60,
+          "control": "slider",
+          "min": 1,
+          "max": 60,
+          "step": 5
+        },
+        {
+          "name": "locationWaitingTimeInterval",
+          "value": 180,
+          "control": "slider",
+          "min": 1,
+          "max": 300,
+          "step": 30
+        },
+        {
+          "name": "locationTrackerAutoStart",
+          "value": false,
+          "control": "switch"
+        },
+        {
+          "name": "locationTrackerStartTime",
+          "value": 8,
+          "control": "slider",
+          "min": 0,
+          "max": 24,
+          "step": 0.5
+        },
+        {
+          "name": "locationTrackerFinishTime",
+          "value": 20,
+          "control": "slider",
+          "min": 0,
+          "max": 24,
+          "step": 0.5
+        },
+        {
+          "name": "getLocationsWithNegativeSpeed",
+          "value": true,
+          "control": "switch"
+        },
+        {
+          "name": "timeDistanceLogic",
+          "value": "AND",
+          "control": ""
+        },
+        {
+          "name": "maxSpeedThreshold",
+          "value": 60,
+          "control": "slider",
+          "min": 0,
+          "max": 120,
+          "step": 20
+        }
+      ]
+    },
+    {
+      "group": "battery",
+      "data":
+      [
+        {
+          "name": "batteryTrackerAutoStart",
+          "value": false,
+          "control": "switch"
+        },
+        {
+          "name": "batteryTrackerStartTime",
+          "value": 8,
+          "control": "slider",
+          "min": 0,
+          "max": 24,
+          "step": 0.5
+        },
+        {
+          "name": "batteryTrackerFinishTime",
+          "value": 20,
+          "control": "slider",
+          "min": 0,
+          "max": 24,
+          "step": 0.5
+        }
+      ]
+    },
+    {
+      "group": "syncer",
+      "data":
+      [
+        {
+          "name": "fetchLimit",
+          "value": 50,
+          "control": "slider",
+          "min": 10,
+          "max": 200,
+          "step": 10
+        },
+        {
+          "name": "syncInterval",
+          "value": 600,
+          "control": "slider",
+          "min": 10,
+          "max": 3600,
+          "step": 60
+        },
+        {
+          "name": "restServerURI",
+          "value": "",
+          "control": "textField"
+        },
+        {
+           "name": "API.url",
+           "value": "",
+           "control": "textField"
+        },
+        {
+            "name": "xmlNamespace",
+            "value": "https://github.com/sys-team/ASA.chest",
+            "control": "textField"
+        },
+        {
+            "name": "uploadLog.type",
+            "value": "",
+            "control": "textField"
+        },
+        {
+           "name": "http.timeout.foreground",
+           "value": 30,
+           "control": "slider",
+           "min": 1,
+           "max": 60,
+           "step": 5
+        },
+        {
+           "name": "http.timeout.background",
+           "value": 15,
+           "control": "slider",
+           "min": 1,
+           "max": 60,
+           "step": 5
+        },
+      ]
+    }
+  ]
+}
