@@ -6,7 +6,7 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import <ScanAPI/ScanApiHelper.h>
+#import <ScanApiHelper.h>
 
 #import "STMScanApiHelperDelegate.h"
 
