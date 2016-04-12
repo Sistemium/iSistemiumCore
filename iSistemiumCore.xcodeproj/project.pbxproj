@@ -311,7 +311,7 @@
 		2C3F734F1CBBD5EB00F8BFB8 /* uncheckmark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = uncheckmark.png; sourceTree = "<group>"; };
 		2C3F73501CBBD5EB00F8BFB8 /* Up4-25.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Up4-25.png"; sourceTree = "<group>"; };
 		2C3F73511CBBD5EB00F8BFB8 /* Upload To Cloud-100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Upload To Cloud-100.png"; sourceTree = "<group>"; };
-		2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "iSistemiumCore-Bridging-Header.h"; path = "Frameworks/SocketIOClientSwift/iSistemiumCore-Bridging-Header.h"; sourceTree = "<group>"; };
+		2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iSistemiumCore-Bridging-Header.h"; sourceTree = "<group>"; };
 		2C3F73811CBBD66B00F8BFB8 /* SocketAckEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAckEmitter.swift; sourceTree = "<group>"; };
 		2C3F73821CBBD66B00F8BFB8 /* SocketAckManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAckManager.swift; sourceTree = "<group>"; };
 		2C3F73831CBBD66B00F8BFB8 /* SocketAnyEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAnyEvent.swift; sourceTree = "<group>"; };
@@ -1722,7 +1722,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sistemium.iSistemiumCore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "iSistemiumCore/Frameworks/SocketIOClientSwift/iSistemiumCore-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "iSistemiumCore/iSistemiumCore-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -1739,7 +1739,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sistemium.iSistemiumCore;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "iSistemiumCore/Frameworks/SocketIOClientSwift/iSistemiumCore-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "iSistemiumCore/iSistemiumCore-Bridging-Header.h";
 			};
 			name = Release;
 		};
