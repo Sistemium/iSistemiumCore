@@ -62,7 +62,9 @@
 }
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
-    
+ 
+#warning should override
+
     if ([value isKindOfClass:[NSString class]]) {
         
         NSArray *positiveDoubleValues = @[@"trackDetectionTime",
