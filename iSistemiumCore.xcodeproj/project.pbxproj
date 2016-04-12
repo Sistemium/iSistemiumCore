@@ -215,6 +215,14 @@
 		2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */; };
 		2C3F754B1CBBDC7A00F8BFB8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */; };
 		2C3F754E1CBBDCCB00F8BFB8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */; };
+		2C3F75731CBCED8700F8BFB8 /* DeviceInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75691CBCED8700F8BFB8 /* DeviceInfo.m */; };
+		2C3F75741CBCED8700F8BFB8 /* include in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F756A1CBCED8700F8BFB8 /* include */; };
+		2C3F75751CBCED8700F8BFB8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F756B1CBCED8700F8BFB8 /* lib */; };
+		2C3F75761CBCED8700F8BFB8 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F756C1CBCED8700F8BFB8 /* LICENSE */; };
+		2C3F75771CBCED8700F8BFB8 /* Readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F756D1CBCED8700F8BFB8 /* Readme.txt */; };
+		2C3F75781CBCED8700F8BFB8 /* ScanAPI.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F756E1CBCED8700F8BFB8 /* ScanAPI.podspec */; };
+		2C3F75791CBCED8700F8BFB8 /* ScanApiHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75701CBCED8700F8BFB8 /* ScanApiHelper.mm */; };
+		2C3F757A1CBCED8700F8BFB8 /* softScanBeep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F75721CBCED8700F8BFB8 /* softScanBeep.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -578,6 +586,17 @@
 		2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		2C3F754F1CBBDCCB00F8BFB8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2C3F75511CBBDCEA00F8BFB8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		2C3F75681CBCED8700F8BFB8 /* DeviceInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfo.h; sourceTree = "<group>"; };
+		2C3F75691CBCED8700F8BFB8 /* DeviceInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeviceInfo.m; sourceTree = "<group>"; };
+		2C3F756A1CBCED8700F8BFB8 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; path = include; sourceTree = "<group>"; };
+		2C3F756B1CBCED8700F8BFB8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
+		2C3F756C1CBCED8700F8BFB8 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		2C3F756D1CBCED8700F8BFB8 /* Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
+		2C3F756E1CBCED8700F8BFB8 /* ScanAPI.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ScanAPI.podspec; sourceTree = "<group>"; };
+		2C3F756F1CBCED8700F8BFB8 /* ScanApiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScanApiHelper.h; sourceTree = "<group>"; };
+		2C3F75701CBCED8700F8BFB8 /* ScanApiHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ScanApiHelper.mm; sourceTree = "<group>"; };
+		2C3F75711CBCED8700F8BFB8 /* ScanApiIncludes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScanApiIncludes.h; sourceTree = "<group>"; };
+		2C3F75721CBCED8700F8BFB8 /* softScanBeep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = softScanBeep.wav; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -776,6 +795,7 @@
 		2C3F737A1CBBD62100F8BFB8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2C3F75541CBCEC9700F8BFB8 /* ScanAPI */,
 				2C3F737B1CBBD63400F8BFB8 /* SocketIOClientSwift */,
 			);
 			path = Frameworks;
@@ -1173,6 +1193,24 @@
 			name = STMWKWebView;
 			sourceTree = "<group>";
 		};
+		2C3F75541CBCEC9700F8BFB8 /* ScanAPI */ = {
+			isa = PBXGroup;
+			children = (
+				2C3F75681CBCED8700F8BFB8 /* DeviceInfo.h */,
+				2C3F75691CBCED8700F8BFB8 /* DeviceInfo.m */,
+				2C3F756A1CBCED8700F8BFB8 /* include */,
+				2C3F756B1CBCED8700F8BFB8 /* lib */,
+				2C3F756C1CBCED8700F8BFB8 /* LICENSE */,
+				2C3F756D1CBCED8700F8BFB8 /* Readme.txt */,
+				2C3F756E1CBCED8700F8BFB8 /* ScanAPI.podspec */,
+				2C3F756F1CBCED8700F8BFB8 /* ScanApiHelper.h */,
+				2C3F75701CBCED8700F8BFB8 /* ScanApiHelper.mm */,
+				2C3F75711CBCED8700F8BFB8 /* ScanApiIncludes.h */,
+				2C3F75721CBCED8700F8BFB8 /* softScanBeep.wav */,
+			);
+			path = ScanAPI;
+			sourceTree = "<group>";
+		};
 		7EF1977DB6872C616B454979 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1303,6 +1341,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C3F75751CBCED8700F8BFB8 /* lib in Resources */,
 				2C3F73141CBBD57B00F8BFB8 /* STMCustom1CVCell.xib in Resources */,
 				2C3F73701CBBD5EB00F8BFB8 /* reordering.png in Resources */,
 				2C3F73011CBBD55700F8BFB8 /* STMWebView.storyboard in Resources */,
@@ -1326,6 +1365,7 @@
 				2C3F73721CBBD5EB00F8BFB8 /* Settings-25.png in Resources */,
 				2C3F73611CBBD5EB00F8BFB8 /* Download From Cloud-100.png in Resources */,
 				2C3F72FE1CBBD55700F8BFB8 /* STMProfile.storyboard in Resources */,
+				2C3F75761CBCED8700F8BFB8 /* LICENSE in Resources */,
 				2C3F73601CBBD5EB00F8BFB8 /* Down4-25.png in Resources */,
 				2C3F73651CBBD5EB00F8BFB8 /* future.png in Resources */,
 				2C3F73531CBBD5EB00F8BFB8 /* alphabetical_sorting_2.png in Resources */,
@@ -1350,11 +1390,15 @@
 				2C3F73131CBBD57B00F8BFB8 /* STMThreeLinesAndCheckboxTVCell.xib in Resources */,
 				2C3F736A1CBBD5EB00F8BFB8 /* numerical_sorting_21.png in Resources */,
 				2C3F73201CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib in Resources */,
+				2C3F75771CBCED8700F8BFB8 /* Readme.txt in Resources */,
+				2C3F75781CBCED8700F8BFB8 /* ScanAPI.podspec in Resources */,
 				2C3F731B1CBBD57B00F8BFB8 /* STMCustom6TVCell.xib in Resources */,
 				2C3F736E1CBBD5EB00F8BFB8 /* plus.png in Resources */,
 				2C3F73581CBBD5EB00F8BFB8 /* camera_filled.png in Resources */,
 				2C3F73661CBBD5EB00F8BFB8 /* help.png in Resources */,
+				2C3F75741CBCED8700F8BFB8 /* include in Resources */,
 				2C3F73631CBBD5EB00F8BFB8 /* forward.png in Resources */,
+				2C3F757A1CBCED8700F8BFB8 /* softScanBeep.wav in Resources */,
 				2C3F73281CBBD5C400F8BFB8 /* settings.json in Resources */,
 				2C3F72FF1CBBD55700F8BFB8 /* STMScannerInfo.storyboard in Resources */,
 				2C3F73671CBBD5EB00F8BFB8 /* location.png in Resources */,
@@ -1499,6 +1543,7 @@
 				2C3F74261CBBD78300F8BFB8 /* STMBatteryTracker.m in Sources */,
 				2C3F742D1CBBD78300F8BFB8 /* STMScanApiHelper.m in Sources */,
 				2C3F73F61CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.m in Sources */,
+				2C3F75731CBCED8700F8BFB8 /* DeviceInfo.m in Sources */,
 				2C3F73F81CBBD71300F8BFB8 /* iSistemiumCore.xcdatamodel in Sources */,
 				2C3F744E1CBBD7AB00F8BFB8 /* STMBarCodeController.m in Sources */,
 				2C3F75421CBBD9FB00F8BFB8 /* STMWKWebViewNC.m in Sources */,
@@ -1507,6 +1552,7 @@
 				2C3F751E1CBBD9A000F8BFB8 /* STMLogMessagesDetailTVC.m in Sources */,
 				2C3F74D51CBBD82400F8BFB8 /* STMVolumeTVCell.m in Sources */,
 				2C3F74A31CBBD80600F8BFB8 /* STMVariableCellsHeightTVC.m in Sources */,
+				2C3F75791CBCED8700F8BFB8 /* ScanApiHelper.mm in Sources */,
 				2C3F73E91CBBD6FE00F8BFB8 /* STMLocation.m in Sources */,
 				2C3F75251CBBD9AB00F8BFB8 /* STMProfileNC.m in Sources */,
 				2C3F73941CBBD66B00F8BFB8 /* SocketEngine.swift in Sources */,

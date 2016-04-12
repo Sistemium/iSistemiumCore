@@ -3,4 +3,6 @@ Podfile.lock
 
 /Pods/*
 
+iSistemiumCore/Frameworks/ScanAPI/*
+
 *.xcbkptlist

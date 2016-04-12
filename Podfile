@@ -1,7 +1,6 @@
 platform :ios, '7.1'
-pod 'KiteJSONValidator', :git => 'https://github.com/grgcombs/KiteJSONValidator.git', :tag => 'v0.1.2-Pod'
+pod 'KiteJSONValidator', '~> 0.2.3'
 pod 'Reachability', '~> 3.1.0'
-pod 'ScanAPI', :path => '../ScanApiSDK'
 pod 'Crashlytics', '~> 3.7.0'
 pod 'JNKeychain', '~> 0.1.4'
 
