@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name         = 'iSistemuimCore'
+  s.name         = 'iSistemiumCore'
   s.version      = '1.0'
   s.summary      = 'iSistemiumCore for iSistemium apps'
   s.homepage     = 'https://github.com/Sistemium/iSistemiumCore'
