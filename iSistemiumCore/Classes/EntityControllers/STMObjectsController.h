@@ -45,6 +45,7 @@
 
 + (void)removeObject:(NSManagedObject *)object;
 + (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object;
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object withComment:(NSString *)commentText;
 
 + (void)dataLoadingFinished;
 

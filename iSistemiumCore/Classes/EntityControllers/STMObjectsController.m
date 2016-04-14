@@ -1074,14 +1074,19 @@
 }
 
 + (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object {
+    return [self createRecordStatusAndRemoveObject:object withComment:nil];
+}
+
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object withComment:(NSString *)commentText {
     
     STMRecordStatus *recordStatus = [STMRecordStatusController recordStatusForObject:object];
     recordStatus.isRemoved = @YES;
+    recordStatus.commentText = commentText;
     
     [self removeObject:object];
     
     return recordStatus;
-
+    
 }
 
 + (void)checkObjectsForFlushing {
