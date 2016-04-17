@@ -14,7 +14,6 @@
 
 @interface STMPhotosController()
 
-@property (nonatomic, strong) NSMutableArray *waitingLocationPhotos;
 @property (nonatomic) BOOL isPhotoLocationProcessing;
 
 

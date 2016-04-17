@@ -10,7 +10,11 @@
 
 @interface STMPhotosController : STMController
 
+@property (nonatomic, strong) NSMutableArray *waitingLocationPhotos;
+
 + (STMPhotosController *)sharedController;
+
+- (STMLocationTracker *)locationTracker;
 
 
 @end
