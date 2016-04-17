@@ -14,7 +14,7 @@
 #import "STMScanApiHelper.h"
 
 #import "STMNS.h"
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 #import "STMSessionManager.h"
 #import "STMLogger.h"
 #import "STMObjectsController.h"

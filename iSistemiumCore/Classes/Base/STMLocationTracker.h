@@ -7,7 +7,7 @@
 //
 
 #import "STMTracker.h"
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 @interface STMLocationTracker : STMTracker
 

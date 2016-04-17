@@ -18,7 +18,7 @@
 #import "STMClientDataController.h"
 #import "STMPicturesController.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 #import "STMSocketController.h"
 

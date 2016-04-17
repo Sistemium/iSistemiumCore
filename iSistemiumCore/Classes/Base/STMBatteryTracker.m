@@ -7,7 +7,7 @@
 //
 
 #import "STMBatteryTracker.h"
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 #import "STMEntityDescription.h"
 #import "STMObjectsController.h"
 

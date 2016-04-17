@@ -8,7 +8,7 @@
 
 #import "STMDatum.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 #import "STMFunctions.h"
 #import "STMObjectsController.h"
 

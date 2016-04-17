@@ -18,7 +18,7 @@
 
 #import "STMAuthController.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 
 @interface STMController : NSObject

@@ -74,14 +74,6 @@
     
 }
 
-#warning should override
-//- (void)addPhotoReportToWaitingLocation:(STMPhotoReport *)photoReport {
-//    
-//    [self.waitingLocationPhotos addObject:photoReport];
-//    [[self locationTracker] getLocation];
-//
-//}
-
 
 #pragma mark - update locations
 
@@ -120,12 +112,6 @@
     }
     
 }
-
-#warning should override
-//- (void)photoReportWasDeleted:(STMPhotoReport *)photoReport {
-//    [self.waitingLocationPhotos removeObject:photoReport];
-//}
-
 
 
 @end

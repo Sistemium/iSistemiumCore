@@ -12,8 +12,5 @@
 
 + (STMPhotosController *)sharedController;
 
-#warning should override
-//- (void)addPhotoReportToWaitingLocation:(STMPhotoReport *)photoReport;
-//- (void)photoReportWasDeleted:(STMPhotoReport *)photoReport;
 
 @end

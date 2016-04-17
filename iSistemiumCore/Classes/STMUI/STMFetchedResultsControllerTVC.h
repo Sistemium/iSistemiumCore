@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 #import "STMDocument.h"
 #import "STMSessionManager.h"

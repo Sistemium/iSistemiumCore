@@ -6,7 +6,7 @@
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 
 @implementation STMEntity

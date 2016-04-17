@@ -19,7 +19,7 @@
 
 #import "STMConstants.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 #import "STMNS.h"
 

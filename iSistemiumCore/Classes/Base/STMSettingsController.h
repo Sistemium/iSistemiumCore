@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import <CoreLocation/CoreLocation.h>
 #import "STMSessionManagement.h"
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 @interface STMSettingsController : NSObject <STMSettingsController>
 

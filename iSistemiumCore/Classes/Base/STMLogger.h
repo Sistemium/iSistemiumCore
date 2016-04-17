@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "STMSessionManagement.h"
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 
 @interface STMLogger : NSObject <STMLogger, UITableViewDelegate, UITableViewDataSource>
