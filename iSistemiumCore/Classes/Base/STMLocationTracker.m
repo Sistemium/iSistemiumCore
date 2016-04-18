@@ -12,7 +12,6 @@
 #import "STMClientDataController.h"
 #import "STMCoreObjectsController.h"
 #import "STMLocationController.h"
-//#import "STMShipmentRouteController.h"
 #import "STMSocketController.h"
 
 
@@ -39,8 +38,6 @@
 @property (nonatomic) NSTimeInterval trackDetectionTime;
 @property (nonatomic) CLLocationDistance trackSeparationDistance;
 @property (nonatomic) CLLocationSpeed maxSpeedThreshold;
-
-@property (nonatomic, strong) NSString *geotrackerControl;
 
 @property (nonatomic) BOOL singlePointMode;
 @property (nonatomic) BOOL getLocationsWithNegativeSpeed;
@@ -691,29 +688,7 @@
         [self requestAuthorization:^(BOOL success) {
             
             if (success) {
-
-                if ([self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE]) {
-                    
-#warning should override
-//                    NSUInteger startedRoutesCount = [STMShipmentRouteController routesWithProcessing:@"started"].count;
-//                    
-//                    if (startedRoutesCount > 0) {
-//                        
-//                        [self checkAccuracyToStartTracking];
-//                        
-//                    } else {
-//                        
-//                        if (self.tracking) [self stopTracking];
-//                        
-//                    }
-                    
-                } else {
-                
-                    [self initTimers];
-                    [self checkAccuracyToStartTracking];
-
-                }
-                
+                [self successAuthorization];
             }
             
         }];
@@ -721,6 +696,13 @@
     } else {
         if (self.tracking) [self stopTracking];
     }
+
+}
+
+- (void)successAuthorization {
+    
+    [self initTimers];
+    [self checkAccuracyToStartTracking];
 
 }
 
@@ -892,93 +874,5 @@
     
 }
 
-
-#pragma mark - unused track methods
-
-#warning should override?
-/*
-- (STMTrack *)currentTrack {
-    
-    //    if (!_currentTrack) {
-    //
-    //        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMTrack class])];
-    //        request.sortDescriptors = [NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"startTime" ascending:NO selector:@selector(compare:)]];
-    //        NSError *error;
-    //        NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:&error];
-    //
-    //        if (result.count > 0) {
-    //            _currentTrack = [result objectAtIndex:0];
-    //        }
-    //
-    //    }
-    //    return _currentTrack;
-    return nil;
-    
-}
-
-- (void)tracksManagementWithLocation:(CLLocation *)currentLocation {
-    
-//    if (!self.currentTrack) {
-//        [self startNewTrack];
-//    }
-//
-//    NSDate *timestamp = currentLocation.timestamp;
-//
-//    if ([currentLocation.timestamp timeIntervalSinceDate:self.lastLocation.timestamp] > self.trackDetectionTime && self.currentTrack.locations.count != 0) {
-//
-//        [self startNewTrack];
-//
-//    }
-//
-//    //    NSLog(@"addLocation %@", [NSDate date]);
-//
-//    if (self.currentTrack.locations.count == 0) {
-//        self.currentTrack.startTime = timestamp;
-//    }
-//
-//    [self.currentTrack addLocationsObject:[self locationObjectFromCLLocation:currentLocation]];
-//    self.currentTrack.finishTime = timestamp;
-
-}
-
-- (void)startNewTrack {
-    
-    STMTrack *track = (STMTrack *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMTrack class]) isFantom:NO];
-    track.startTime = [NSDate date];
-    self.currentTrack = track;
-    //    NSLog(@"track %@", track);
-    
-    [self.document saveDocument:^(BOOL success) {
-        //        NSLog(@"save newTrack");
-        if (success) {
-            NSLog(@"save newTrack success");
-        } else {
-            NSLog(@"save newTrack NOT success");
-        }
-    }];
-    
-}
-
-- (void)deleteTrack:(STMTrack *)track {
-    
-    [STMObjectsController removeObject:track];
-    [self.document saveDocument:^(BOOL success) {
-        if (success) {
-            NSLog(@"deleteTrack success");
-        }
-    }];
-    
-}
-
-- (void)splitTrack {
-    
-    self.currentTrack.finishTime = self.lastLocation.timestamp;
-    [self startNewTrack];
-    STMLocation *location = [STMLocationController locationObjectFromCLLocation:self.lastLocation];
-    [self.currentTrack addLocationsObject:location];
-    self.lastLocation = [STMLocationController locationFromLocationObject:location];
-    
-}
-*/
 
 @end

@@ -15,13 +15,16 @@
 @property (nonatomic) BOOL isAccuracySufficient;
 @property (nonatomic, strong) CLLocation *lastLocation;
 @property (nonatomic, strong) STMLocation *lastLocationObject;
-//@property (nonatomic, strong) STMTrack *currentTrack;
+@property (nonatomic, strong) NSString *geotrackerControl;
 
 - (void)getLocation;
 
 - (NSString *)locationServiceStatus;
 
 - (BOOL)currentTimeIsInsideOfScheduleLimits;
+
+- (void)checkAccuracyToStartTracking;
+- (void)initTimers;
 
 
 @end
