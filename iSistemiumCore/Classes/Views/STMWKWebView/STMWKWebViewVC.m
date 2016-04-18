@@ -13,7 +13,7 @@
 #import "STMAuthController.h"
 #import "STMBarCodeScanner.h"
 #import "STMSoundController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
@@ -379,7 +379,7 @@
         
         NSError *error = nil;
 
-        if ([STMObjectsController subscribeViewController:self toEntities:entities error:&error]) {
+        if ([STMCoreObjectsController subscribeViewController:self toEntities:entities error:&error]) {
         
             [self callbackWithData:@[@"subscribe to entities success"] parameters:parameters];
 
@@ -441,7 +441,7 @@
     NSDictionary *parameters = message.body;
 
     NSError *error = nil;
-    NSArray *result = [STMObjectsController destroyObjectFromScriptMessage:message error:&error];
+    NSArray *result = [STMCoreObjectsController destroyObjectFromScriptMessage:message error:&error];
     
     if (error) {
         [self callbackWithError:error.localizedDescription parameters:parameters];
@@ -456,7 +456,7 @@
     NSDictionary *parameters = message.body;
 
     NSError *error = nil;
-    NSArray *result = [STMObjectsController updateObjectsFromScriptMessage:message error:&error];
+    NSArray *result = [STMCoreObjectsController updateObjectsFromScriptMessage:message error:&error];
 
     if (result.count > 0) [self callbackWithData:result parameters:parameters];
     if (error) [self callbackWithError:error.localizedDescription parameters:parameters];
@@ -511,7 +511,7 @@
     
     NSError *error = nil;
 
-    NSArray *result = [STMObjectsController arrayOfObjectsRequestedByScriptMessage:message error:&error];
+    NSArray *result = [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message error:&error];
 
     if (!error) {
         

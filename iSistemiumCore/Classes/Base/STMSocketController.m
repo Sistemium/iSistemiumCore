@@ -9,7 +9,7 @@
 #import "STMSocketController.h"
 #import "STMAuthController.h"
 #import "STMClientDataController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 #import "STMRemoteController.h"
 #import "STMEntityController.h"
 
@@ -312,7 +312,7 @@
 //    NSDate *currentDate = [NSDate date];
 //    [object setValue:currentDate forKey:@"sts"];
     
-    NSDictionary *objectDictionary = [STMObjectsController dictionaryForObject:object];
+    NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
     
     [syncDataArray addObject:objectDictionary];
 
@@ -421,7 +421,7 @@
     [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:) withObject:socket afterDelay:CHECK_AUTHORIZATION_DELAY];
 
     STMClientData *clientData = [STMClientDataController clientData];
-    NSMutableDictionary *dataDic = [[STMObjectsController dictionaryForObject:clientData][@"properties"] mutableCopy];
+    NSMutableDictionary *dataDic = [[STMCoreObjectsController dictionaryForObject:clientData][@"properties"] mutableCopy];
     
     NSDictionary *authDic = @{@"userId"         : [STMAuthController authController].userID,
                               @"accessToken"    : [STMAuthController authController].accessToken};
@@ -682,7 +682,7 @@
         for (NSDictionary *datum in dataArray) {
             
             [[self document].managedObjectContext performBlockAndWait:^{
-                [STMObjectsController syncObject:datum];
+                [STMCoreObjectsController syncObject:datum];
             }];
             
         }
@@ -904,7 +904,7 @@
 
 - (nullable NSFetchedResultsController *)resultsControllerForEntityName:(NSString *)entityName {
     
-    if ([[STMObjectsController localDataModelEntityNames] containsObject:entityName]) {
+    if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
         
         STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:entityName];
         request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];

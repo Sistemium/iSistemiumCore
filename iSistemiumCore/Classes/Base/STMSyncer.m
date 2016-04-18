@@ -10,7 +10,7 @@
 
 #import "STMSyncer.h"
 #import "STMDocument.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 //#import "STMPhotoReport.h"
 #import "STMFunctions.h"
 #import "STMEntityController.h"
@@ -431,7 +431,7 @@
         self.settings = nil;
         self.running = YES;
         
-        [STMObjectsController initObjectsCacheWithCompletionHandler:^(BOOL success) {
+        [STMCoreObjectsController initObjectsCacheWithCompletionHandler:^(BOOL success) {
            
             if (success) {
                 
@@ -484,7 +484,7 @@
     
     if (!stcEntities[stcEntityName]) {
         
-        STMEntity *entity = (STMEntity *)[STMObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
+        STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
         
         if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
             stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
@@ -565,7 +565,7 @@
     
     if ([entitiesNames isKindOfClass:[NSArray class]]) {
 
-        NSArray *localDataModelEntityNames = [STMObjectsController localDataModelEntityNames];
+        NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
         NSMutableArray *existingNames = [@[] mutableCopy];
         
         for (NSString *entityName in entitiesNames) {
@@ -597,7 +597,7 @@
 - (void)sendObjects:(NSDictionary *)parameters {
     
     NSError *error;
-    NSArray *jsonArray = [STMObjectsController jsonForObjectsWithParameters:parameters error:&error];
+    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
     
     if (error) {
         
@@ -896,7 +896,7 @@
         NSDate *currentDate = [NSDate date];
         [object setPrimitiveValue:currentDate forKey:@"sts"];
         
-        NSDictionary *objectDictionary = [STMObjectsController dictionaryForObject:object];
+        NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
         
         [syncDataArray addObject:objectDictionary];
         
@@ -1302,7 +1302,7 @@
         
         if (success) {
             
-            [STMObjectsController dataLoadingFinished];
+            [STMCoreObjectsController dataLoadingFinished];
 
             self.syncing = NO;
             
@@ -1479,7 +1479,7 @@
         
         if (entity) {
             
-            [STMObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
+            [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
                 
                 if (success) {
                     
@@ -1516,7 +1516,7 @@
         } else {
             
             for (NSDictionary *datum in dataArray) {
-                [STMObjectsController syncObject:datum];
+                [STMCoreObjectsController syncObject:datum];
             }
             
             [self sendFinished:self];

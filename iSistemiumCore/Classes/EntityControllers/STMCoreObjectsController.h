@@ -1,5 +1,5 @@
 //
-//  STMObjectsController.h
+//  STMCoreObjectsController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 07/06/14.
@@ -14,12 +14,10 @@
 
 #import "STMEntitiesSubscribable.h"
 
-#warning have to update
 
+@interface STMCoreObjectsController : STMController
 
-@interface STMObjectsController : STMController
-
-+ (STMObjectsController *)sharedController;
++ (STMCoreObjectsController *)sharedController;
 
 + (void)initObjectsCacheWithCompletionHandler:(void (^)(BOOL success))completionHandler;
 

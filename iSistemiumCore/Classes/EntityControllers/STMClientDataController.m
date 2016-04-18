@@ -14,7 +14,7 @@
 #import "STMAuthController.h"
 #import "STMSetting.h"
 #import "STMFunctions.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 @implementation STMClientDataController
 
@@ -126,7 +126,7 @@
     
     if (clientData) {
         
-        NSSet *keys = [STMObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMClientData class])];
+        NSSet *keys = [STMCoreObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMClientData class])];
         
         for (NSString *key in keys) {
             
@@ -174,7 +174,7 @@
         STMClientData *clientData = [fetchResult lastObject];
         
         if (!clientData) {
-            clientData = (STMClientData *)[STMObjectsController newObjectForEntityName:entityName isFantom:NO];
+            clientData = (STMClientData *)[STMCoreObjectsController newObjectForEntityName:entityName isFantom:NO];
         }
         
         return clientData;

@@ -7,7 +7,7 @@
 //
 
 #import "STMDocument.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 #define SAVING_QUEUE_THRESHOLD 15
 
@@ -214,7 +214,7 @@
 
 - (void)applicationDidEnterBackground {
     
-    [STMObjectsController checkObjectsForFlushing];
+    [STMCoreObjectsController checkObjectsForFlushing];
     
 }
 

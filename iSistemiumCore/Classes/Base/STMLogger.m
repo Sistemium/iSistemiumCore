@@ -11,7 +11,7 @@
 #import "STMEntityDescription.h"
 #import "STMFunctions.h"
 
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 @interface STMLogger() <NSFetchedResultsControllerDelegate>
 
@@ -76,11 +76,11 @@
         
         NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
         
-        NSManagedObject *object = [STMObjectsController objectForXid:xidData];
+        NSManagedObject *object = [STMCoreObjectsController objectForXid:xidData];
         
         if (object) {
             
-            NSDictionary *objectDic = [STMObjectsController dictionaryForObject:object];
+            NSDictionary *objectDic = [STMCoreObjectsController dictionaryForObject:object];
             NSString *JSONString = [STMFunctions jsonStringFromDictionary:objectDic];
             [self saveLogMessageWithText:JSONString type:@"important"];
             
@@ -108,7 +108,7 @@
     
     NSError *error;
     
-    NSArray *jsonArray = [STMObjectsController jsonForObjectsWithParameters:parameters error:&error];
+    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
 
     if (!error) {
 
@@ -228,7 +228,7 @@
     
     if (sessionIsRunning && self.document) {
         
-        STMLogMessage *logMessage = (STMLogMessage *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
+        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
         logMessage.text = text;
         logMessage.type = type;
 //        logMessage.owner = owner;
@@ -270,7 +270,7 @@
 
     for (NSDictionary *logMessageDic in [loggerDefaults allValues]) {
         
-        STMLogMessage *logMessage = (STMLogMessage *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
+        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
         
         for (NSString *key in [logMessageDic allKeys]) {
             [logMessage setValue:logMessageDic[key] forKey:key];

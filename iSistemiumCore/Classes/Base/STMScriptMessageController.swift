@@ -28,7 +28,7 @@ class STMScriptMessageController: NSObject {
         
         entityName = "STM" + entityName
         
-        guard STMObjectsController.localDataModelEntityNames().contains(entityName) else {
+        guard STMCoreObjectsController.localDataModelEntityNames().contains(entityName) else {
             errorWithMessage(error, errorMessage: "local data model have no entity with name \(entityName)")
             return nil
         }
@@ -226,7 +226,7 @@ class STMScriptMessageController: NSObject {
             return nil
         }
         
-        value = STMObjectsController.objectForXid(STMFunctions.dataFromString(value as! String), entityName: className)
+        value = STMCoreObjectsController.objectForXid(STMFunctions.dataFromString(value as! String), entityName: className)
         
         return value
 

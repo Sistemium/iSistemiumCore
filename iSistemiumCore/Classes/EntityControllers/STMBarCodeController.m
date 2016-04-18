@@ -9,7 +9,7 @@
 #import "STMBarCodeController.h"
 
 #import "STMSoundController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 
 @implementation STMBarCodeController

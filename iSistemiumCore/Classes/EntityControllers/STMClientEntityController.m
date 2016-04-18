@@ -8,7 +8,7 @@
 
 #import "STMClientEntityController.h"
 #import "STMEntityController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 
 @implementation STMClientEntityController
@@ -32,7 +32,7 @@
     
     if (!clientEntity) {
         
-        clientEntity = (STMClientEntity *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMClientEntity class]) isFantom:NO];
+        clientEntity = (STMClientEntity *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMClientEntity class]) isFantom:NO];
         clientEntity.name = name;
         
         STMEntity *entity = [STMEntityController entityWithName:name];

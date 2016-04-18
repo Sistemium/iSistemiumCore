@@ -3,5 +3,5 @@
 //
 
 #import "STMSessionManager.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 #import "STMUI.h"

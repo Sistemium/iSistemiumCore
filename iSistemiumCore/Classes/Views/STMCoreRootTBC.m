@@ -16,7 +16,7 @@
 #import "STMFunctions.h"
 #import "STMConstants.h"
 
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 #import "STMTabBarItemControllable.h"
 #import "STMClientDataController.h"
 #import "STMAuthController.h"

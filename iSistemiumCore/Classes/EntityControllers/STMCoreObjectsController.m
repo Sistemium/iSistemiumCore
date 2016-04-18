@@ -1,12 +1,12 @@
 //
-//  STMObjectsController.m
+//  STMCoreObjectsController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 07/06/14.
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 #import "STMAuthController.h"
 #import "STMFunctions.h"
@@ -29,7 +29,7 @@
 #define FLUSH_LIMIT 17
 
 
-@interface STMObjectsController()
+@interface STMCoreObjectsController()
 
 @property (nonatomic, strong) NSMutableDictionary *timesDic;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
@@ -47,7 +47,7 @@
 @end
 
 
-@implementation STMObjectsController
+@implementation STMCoreObjectsController
 
 - (NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *)entitiesToSubscribe {
     
@@ -171,12 +171,12 @@
         
         NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
         
-        if ([context isEqual:[STMObjectsController document].managedObjectContext]) {
+        if ([context isEqual:[STMCoreObjectsController document].managedObjectContext]) {
 
             if (self.isInFlushingProcess) {
                 
                 if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                    [STMObjectsController checkObjectsForFlushing];
+                    [STMCoreObjectsController checkObjectsForFlushing];
                 } else {
                     self.isInFlushingProcess = NO;
                 }
@@ -196,7 +196,7 @@
 
 #pragma mark - singleton
 
-+ (STMObjectsController *)sharedController {
++ (STMCoreObjectsController *)sharedController {
     
     static dispatch_once_t pred = 0;
     __strong static id _sharedController = nil;
@@ -1016,7 +1016,7 @@
     if (!_coreEntityKeys) {
         
         STMEntityDescription *coreEntity = [STMEntityDescription entityForName:NSStringFromClass([STMDatum class])
-                                                        inManagedObjectContext:[STMObjectsController document].managedObjectContext];
+                                                        inManagedObjectContext:[STMCoreObjectsController document].managedObjectContext];
         
         _coreEntityKeys = coreEntity.attributesByName.allKeys;
         
@@ -1034,7 +1034,7 @@
     if (!_coreEntityRelationships) {
         
         STMEntityDescription *coreEntity = [STMEntityDescription entityForName:NSStringFromClass([STMDatum class])
-                                                        inManagedObjectContext:[STMObjectsController document].managedObjectContext];
+                                                        inManagedObjectContext:[STMCoreObjectsController document].managedObjectContext];
         
         _coreEntityRelationships = coreEntity.relationshipsByName.allKeys;
         
@@ -2120,7 +2120,7 @@
                 NSMutableArray *jsonObjectsArray = [NSMutableArray array];
                 
                 for (NSManagedObject *object in objects)
-                    [jsonObjectsArray addObject:[STMObjectsController dictionaryForObject:object]];
+                    [jsonObjectsArray addObject:[STMCoreObjectsController dictionaryForObject:object]];
                 
                 return jsonObjectsArray;
 

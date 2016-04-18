@@ -10,7 +10,7 @@
 #import "STMSession.h"
 #import "STMSettingsData.h"
 #import "STMEntityDescription.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 #import "STMSessionManager.h"
 
 
@@ -343,7 +343,7 @@
         result = [result filteredArrayUsingPredicate:predicate];
         
         for (STMSetting *settingObject in result) {
-            [STMObjectsController removeObject:settingObject];
+            [STMCoreObjectsController removeObject:settingObject];
         }
         
     }
@@ -385,7 +385,7 @@
 
             if (!settingToCheck) {
                 
-                STMSetting *newSetting = (STMSetting *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
+                STMSetting *newSetting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
                 newSetting.group = settingsGroupName;
                 newSetting.name = settingName;
                 
@@ -437,7 +437,7 @@
             
             if (!setting) {
                 
-                setting = (STMSetting *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
+                setting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
                 setting.group = group;
                 setting.name = settingName;
                 

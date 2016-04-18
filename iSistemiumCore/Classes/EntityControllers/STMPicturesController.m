@@ -10,7 +10,7 @@
 #import "STMFunctions.h"
 #import "STMConstants.h"
 #import "STMSessionManager.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 #import <objc/runtime.h>
 
@@ -274,7 +274,7 @@
 
 + (void)startCheckingPicturesPaths {
     
-    NSArray *result = [STMObjectsController objectsForEntityName:NSStringFromClass([STMPicture class])];
+    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMPicture class])];
     
     if (result.count > 0) {
 
@@ -779,7 +779,7 @@
     
     [self removeImageFilesForPicture:picture];
     
-    [STMObjectsController removeObject:picture];
+    [STMCoreObjectsController removeObject:picture];
 
     [[self document] saveDocument:^(BOOL success) {
         

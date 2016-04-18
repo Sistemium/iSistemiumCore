@@ -10,7 +10,7 @@
 #import "STMEntityDescription.h"
 
 #import "STMClientDataController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 #import "STMLocationController.h"
 //#import "STMShipmentRouteController.h"
 #import "STMSocketController.h"

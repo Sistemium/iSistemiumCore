@@ -10,7 +10,7 @@
 
 #import "STMCoreDataModel.h"
 #import "STMFunctions.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 
 @implementation STMDatum
@@ -227,7 +227,7 @@
     
     dispatch_once(&onceToken, ^{
         
-        NSArray *coreEntityKeys = [STMObjectsController coreEntityKeys];
+        NSArray *coreEntityKeys = [STMCoreObjectsController coreEntityKeys];
         
         excludeProperties = [coreEntityKeys arrayByAddingObjectsFromArray:@[@"imagePath",
                                                                             @"resizedImagePath",

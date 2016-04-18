@@ -7,7 +7,7 @@
 //
 
 #import "STMRecordStatusController.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
 
 
 @implementation STMRecordStatusController
@@ -35,7 +35,7 @@
     
     if (!recordStatus) {
         
-        recordStatus = (STMRecordStatus *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMRecordStatus class]) isFantom:NO];
+        recordStatus = (STMRecordStatus *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMRecordStatus class]) isFantom:NO];
         recordStatus.objectXid = objectXid;
         
     }
