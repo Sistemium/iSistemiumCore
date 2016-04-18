@@ -34,9 +34,5 @@
 @dynamic verticalAccuracy;
 @dynamic xid;
 @dynamic photos;
-#warning should override
-//@dynamic shipmentRoutePoint;
-//@dynamic shippings;
-//@dynamic track;
 
 @end

@@ -8,9 +8,6 @@
 
 #import "STMLocation.h"
 #import "STMPhoto.h"
-//#import "STMShipmentRoutePoint.h"
-//#import "STMShippingLocation.h"
-//#import "STMTrack.h"
 
 @implementation STMLocation
 

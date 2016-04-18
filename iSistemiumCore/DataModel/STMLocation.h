@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
 
-#warning should override
-@class STMPhoto/*, STMShipmentRoutePoint, STMShippingLocation, STMTrack*/;
+@class STMPhoto;
 
 NS_ASSUME_NONNULL_BEGIN
 

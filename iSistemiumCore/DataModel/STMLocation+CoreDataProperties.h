@@ -36,10 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSDecimalNumber *verticalAccuracy;
 @property (nullable, nonatomic, retain) NSData *xid;
 @property (nullable, nonatomic, retain) NSSet<STMPhoto *> *photos;
-#warning should override
-//@property (nullable, nonatomic, retain) STMShipmentRoutePoint *shipmentRoutePoint;
-//@property (nullable, nonatomic, retain) NSSet<STMShippingLocation *> *shippings;
-//@property (nullable, nonatomic, retain) STMTrack *track;
 
 @end
 
@@ -49,12 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removePhotosObject:(STMPhoto *)value;
 - (void)addPhotos:(NSSet<STMPhoto *> *)values;
 - (void)removePhotos:(NSSet<STMPhoto *> *)values;
-
-#warning should override
-//- (void)addShippingsObject:(STMShippingLocation *)value;
-//- (void)removeShippingsObject:(STMShippingLocation *)value;
-//- (void)addShippings:(NSSet<STMShippingLocation *> *)values;
-//- (void)removeShippings:(NSSet<STMShippingLocation *> *)values;
 
 @end
 
