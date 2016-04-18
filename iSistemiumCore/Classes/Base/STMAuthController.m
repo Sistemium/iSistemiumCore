@@ -397,7 +397,7 @@
     
     NSDictionary *startSettings = nil;
     
-    NSString *dataModelName = @"iSistemiumCore";
+    NSString *dataModelName = ([[NSBundle mainBundle].bundleIdentifier hasSuffix:@"iSistemiumCore"]) ? @"iSistemiumCore" : @"STMDataModel2";
     
 #ifdef DEBUG
     
