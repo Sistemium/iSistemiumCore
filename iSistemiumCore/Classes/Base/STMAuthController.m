@@ -14,8 +14,6 @@
 
 #import "STMDevDef.h"
 #import "STMFunctions.h"
-//#import <Security/Security.h>
-//#import "KeychainItemWrapper.h"
 #import "STMSessionManager.h"
 #import "STMLogger.h"
 
@@ -40,7 +38,7 @@
 @property (nonatomic, strong) NSString *requestID;
 @property (nonatomic, strong) NSString *serviceUri;
 @property (nonatomic, strong) NSString *apiURL;
-//@property (nonatomic, strong) KeychainItemWrapper *keychainItem;
+
 
 @end
 
@@ -79,9 +77,6 @@
 
         NSString *keychainPhoneNumber = [JNKeychain loadValueForKey:KC_PHONE_NUMBER];
         if ([self.phoneNumber isEqualToString:keychainPhoneNumber]) [self checkAccessToken];
-
-//        NSString *keychainPhoneNumber = [self.keychainItem objectForKey:(__bridge id)kSecAttrLabel];
-//        [self.phoneNumber isEqualToString:keychainPhoneNumber] ? [self checkAccessToken] : [self.keychainItem resetKeychainItem];
         
     }
     
@@ -119,7 +114,6 @@
         [defaults synchronize];
 
         [JNKeychain saveValue:phoneNumber forKey:KC_PHONE_NUMBER];
-//        [self.keychainItem setObject:phoneNumber forKey:(__bridge id)kSecAttrLabel];
         
         _phoneNumber = phoneNumber;
         
@@ -179,48 +173,11 @@
     
 }
 
-//- (KeychainItemWrapper *)keychainItem {
-//    
-//    if (!_keychainItem) {
-//        
-//        NSString *bundleIdentifier = [[NSBundle mainBundle] bundleIdentifier];
-//        _keychainItem = [[KeychainItemWrapper alloc] initWithIdentifier:bundleIdentifier accessGroup:nil];
-//        id accessible = [_keychainItem objectForKey:(__bridge id)kSecAttrAccessible];
-//        if (![accessible isEqual: (__bridge id)kSecAttrAccessibleAlways]){
-//            
-//            [[STMLogger sharedLogger] saveLogMessageWithText:@"STMAuthController.keychainItem not kSecAttrAccessibleAlways" type:@"error"];
-//            
-//            NSString *phoneNumber = [_keychainItem objectForKey:(__bridge id)kSecAttrLabel];
-//            NSString *serviceUri = [_keychainItem objectForKey:(__bridge id)kSecAttrService];
-//            NSString *userID = [_keychainItem objectForKey:(__bridge id)(kSecAttrAccount)];
-//            NSString *accessToken = [_keychainItem objectForKey:(__bridge id)(kSecValueData)];
-//            
-//            [_keychainItem resetKeychainItem];
-//            
-//            [_keychainItem setObject:(__bridge id)kSecAttrAccessibleAlways forKey:(__bridge id)kSecAttrAccessible];
-//            
-//            [_keychainItem setObject:phoneNumber forKey:(__bridge id)kSecAttrLabel];
-//            [_keychainItem setObject:serviceUri forKey:(__bridge id)kSecAttrService];
-//            [_keychainItem setObject:userID forKey:(__bridge id)kSecAttrAccount];
-//            [_keychainItem setObject:accessToken forKey:(__bridge id)kSecValueData];
-//
-//        }
-//
-//    }
-//    
-//    return _keychainItem;
-//    
-//}
-
 - (NSString *)serviceUri {
     
     if (!_serviceUri) {
-
         _serviceUri = [JNKeychain loadValueForKey:KC_SERVICE_URI];
-//        _serviceUri = [self.keychainItem objectForKey:(__bridge id)kSecAttrService];
-        
     }
-    
     return _serviceUri;
     
 }
@@ -230,7 +187,6 @@
     if (serviceUri != _serviceUri) {
         
         [JNKeychain saveValue:serviceUri forKey:KC_SERVICE_URI];
-//        [self.keychainItem setObject:serviceUri forKey:(__bridge id)kSecAttrService];
         NSLog(@"serviceUri %@", serviceUri);
         _serviceUri = serviceUri;
         
@@ -241,12 +197,8 @@
 - (NSString *)userID {
     
     if (!_userID) {
-        
         _userID = [JNKeychain loadValueForKey:KC_USER_ID];
-//        _userID = [self.keychainItem objectForKey:(__bridge id)(kSecAttrAccount)];
-        
     }
-    
     return _userID;
     
 }
@@ -256,7 +208,6 @@
     if (userID != _userID) {
         
         [JNKeychain saveValue:userID forKey:KC_USER_ID];
-//        [self.keychainItem setObject:userID forKey:(__bridge id)(kSecAttrAccount)];
         NSLog(@"userID %@", userID);
         _userID = userID;
         
@@ -267,12 +218,8 @@
 - (NSString *)accessToken {
     
     if (!_accessToken) {
-        
         _accessToken = [JNKeychain loadValueForKey:KC_ACCESS_TOKEN];
-//        _accessToken = [self.keychainItem objectForKey:(__bridge id)(kSecValueData)];
-        
     }
-    
     return _accessToken;
     
 }
@@ -282,7 +229,6 @@
     if (accessToken != _accessToken) {
         
         [JNKeychain saveValue:accessToken forKey:KC_ACCESS_TOKEN];
-//        [self.keychainItem setObject:accessToken forKey:(__bridge id)(kSecValueData)];
         NSLog(@"accessToken %@", accessToken);
         _accessToken = accessToken;
 
@@ -421,11 +367,6 @@
         NSLog(@"accessToken %@", self.accessToken);
     }
 
-//    BOOL checkValue = ![self.accessToken isEqualToString:@""] && ![self.userID isEqualToString:@""];
-    
-//    checkValue ? NSLog(@"OK for accessToken && userID") : NSLog(@"NOT OK for accessToken || userID");
-    
-//    self.controllerState = checkValue ? STMAuthSuccess : STMAuthEnterPhoneNumber;
     self.controllerState = checkValue ? STMAuthRequestRoles : STMAuthEnterPhoneNumber;
 
 }
@@ -444,7 +385,6 @@
     self.stcTabs = nil;
     self.iSisDB = nil;
     [JNKeychain deleteValueForKey:KC_PHONE_NUMBER];
-//    [self.keychainItem resetKeychainItem];
 
 }
 
