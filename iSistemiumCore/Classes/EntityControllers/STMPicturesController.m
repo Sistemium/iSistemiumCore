@@ -14,8 +14,6 @@
 
 #import <objc/runtime.h>
 
-//#import <Security/Security.h>
-//#import "KeychainItemWrapper.h"
 
 @interface STMPicturesController() <NSFetchedResultsControllerDelegate>
 
@@ -172,22 +170,11 @@
 }
 
 - (NSArray *)photoEntitiesNames {
-    
     return @[];
-    
-#warning should override
-//    return @[NSStringFromClass([STMPhotoReport class]),
-//             NSStringFromClass([STMUncashingPicture class])];
-
 }
 
 - (NSArray *)instantLoadPicturesEntityNames {
-
     return @[];
-    
-#warning should override
-//    return @[NSStringFromClass([STMMessagePicture class])];
-    
 }
 
 - (NSArray *)nonloadedPictures {
