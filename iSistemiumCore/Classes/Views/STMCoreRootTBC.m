@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 
 #import "STMUI.h"
 
@@ -21,19 +21,14 @@
 #import "STMClientDataController.h"
 #import "STMAuthController.h"
 
-#warning should override
-//#import "STMMessageController.h"
-//#import "STMCampaignController.h"
-
 #import <Crashlytics/Crashlytics.h>
 #import "STMAppDelegate.h"
 
 #import "STMSocketController.h"
 
 
-@interface STMRootTBC () <UITabBarControllerDelegate, /*UIViewControllerAnimatedTransitioning, */UIAlertViewDelegate>
+@interface STMCoreRootTBC () <UITabBarControllerDelegate, /*UIViewControllerAnimatedTransitioning, */UIAlertViewDelegate>
 
-@property (nonatomic, strong) NSMutableDictionary *tabs;
 @property (nonatomic, strong) UIAlertView *authAlert;
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
@@ -57,9 +52,9 @@
 @end
 
 
-@implementation STMRootTBC
+@implementation STMCoreRootTBC
 
-+ (STMRootTBC *)sharedRootVC {
++ (STMCoreRootTBC *)sharedRootVC {
     
     static dispatch_once_t pred = 0;
     __strong static id _sharedRootVC = nil;
@@ -593,10 +588,6 @@
 
     [self prepareTabs];
     
-#warning should override
-//    [self showUnreadMessageCount];
-//    [self showUnreadCampaignCount];
-    
     [self showTabs];
     
 }
@@ -963,38 +954,6 @@
 
 }
 
-#warning should override
-//- (void)showUnreadMessageCount {
-//    
-//    UIViewController *vc = (self.tabs)[@"STMMessages"];
-//    
-//    if (vc) {
-//        
-//        NSInteger unreadCount = [STMMessageController unreadMessagesCount];
-//        NSString *badgeValue = (unreadCount > 0) ? [NSString stringWithFormat:@"%lu", (unsigned long)unreadCount] : nil;
-//        vc.tabBarItem.badgeValue = badgeValue;
-//        [UIApplication sharedApplication].applicationIconBadgeNumber = [badgeValue integerValue];
-//        
-//    }
-//
-//}
-
-#warning should override
-//- (void)showUnreadCampaignCount {
-//    
-//    UIViewController *vc = (self.tabs)[@"STMCampaigns"];
-//    
-//    if (vc) {
-//        
-//        NSUInteger unreadCount = [STMCampaignController numberOfUnreadCampaign];
-//        NSString *badgeValue = unreadCount == 0 ? nil : [NSString stringWithFormat:@"%lu", (unsigned long)unreadCount];
-//        vc.tabBarItem.badgeValue = badgeValue;
-////        [UIApplication sharedApplication].applicationIconBadgeNumber = [badgeValue integerValue];
-//        
-//    }
-//    
-//}
-
 - (void)newAppVersionAvailable:(NSNotification *)notification {
 
     if (!self.updateAlertIsShowing) {
@@ -1029,11 +988,7 @@
 }
 
 - (void)setDocumentReady {
-    
     [STMClientDataController checkAppVersion];
-#warning should override
-//    [STMMessageController showMessageVCsIfNeeded];
-    
 }
 
 - (void)documentNotReady {
@@ -1091,42 +1046,7 @@
            selector:@selector(syncerInitSuccessfully)
                name:@"Syncer init successfully"
              object:self.session.syncer];
-    
-//    [nc addObserver:self
-//           selector:@selector(showUnreadMessageCount)
-//               name:@"gotNewMessage"
-//             object:nil];
-
-//    [nc addObserver:self
-//           selector:@selector(showUnreadMessageCount)
-//               name:@"messageIsRead"
-//             object:nil];
-
-//    [nc addObserver:self
-//           selector:@selector(showUnreadMessageCount)
-//               name:@"unreadMessageCountChange"
-//             object:nil];
-
-    [nc addObserver:self
-           selector:@selector(showUnreadCampaignCount)
-               name:@"readCampaignsCountIsChanged"
-             object:nil];
-    
-//    [nc addObserver:self
-//           selector:@selector(showUnreadCampaignCount)
-//               name:@"gotNewCampaignPicture"
-//             object:nil];
-
-//    [nc addObserver:self
-//           selector:@selector(showUnreadCampaignCount)
-//               name:@"gotNewCampaign"
-//             object:nil];
-    
-//    [nc addObserver:self
-//           selector:@selector(showUnreadCampaignCount)
-//               name:@"campaignPictureIsRead"
-//             object:nil];
-    
+        
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
                name:@"newAppVersionAvailable"

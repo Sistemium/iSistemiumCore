@@ -144,7 +144,7 @@
 
 - (void)showActionPopoverFromTabBarItem {
     
-    if ([STMRootTBC sharedRootVC].newAppVersionAvailable) {
+    if ([STMCoreRootTBC sharedRootVC].newAppVersionAvailable) {
         
 //        UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:NSLocalizedString(@"UPDATE", nil), nil];
 //        

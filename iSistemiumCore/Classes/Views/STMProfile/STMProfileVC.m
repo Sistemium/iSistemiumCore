@@ -18,7 +18,7 @@
 #import "STMSocketController.h"
 
 #import "STMAuthController.h"
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 
 #import "STMUI.h"
 #import "STMFunctions.h"
@@ -1135,8 +1135,8 @@
     
     [super viewWillAppear:animated];
     
-    if ([STMRootTBC sharedRootVC].newAppVersionAvailable) {
-        [[STMRootTBC sharedRootVC] newAppVersionAvailable:nil];
+    if ([STMCoreRootTBC sharedRootVC].newAppVersionAvailable) {
+        [[STMCoreRootTBC sharedRootVC] newAppVersionAvailable:nil];
     }
     
     if ([STMPicturesController sharedController].downloadingPictures) {

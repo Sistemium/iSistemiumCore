@@ -8,11 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
-@interface STMRootTBC : UITabBarController
+@interface STMCoreRootTBC : UITabBarController
 
-+ (STMRootTBC *)sharedRootVC;
++ (STMCoreRootTBC *)sharedRootVC;
 
 - (UIViewController *)topmostVC;
+
+- (void)initAllTabs;
+- (void)setDocumentReady;
+- (void)addObservers;
 
 - (NSArray *)siblingsForViewController:(UIViewController *)vc;
 - (void)replaceVC:(UIViewController *)currentVC withVC:(UIViewController *)vc;
@@ -24,6 +28,7 @@
 - (void)showTabAtIndex:(NSUInteger)index;
 - (void)newAppVersionAvailable:(NSNotification *)notification;
 
+@property (nonatomic, strong) NSMutableDictionary *tabs;
 @property (nonatomic, strong) NSMutableArray *storyboardTitles;
 @property (nonatomic) BOOL newAppVersionAvailable;
 

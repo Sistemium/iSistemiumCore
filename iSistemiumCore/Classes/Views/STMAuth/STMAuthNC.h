@@ -8,7 +8,7 @@
 
 #import "STMActionPopoverNC.h"
 #import "STMAuthController.h"
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 #import "STMTabBarItemControllable.h"
 
 @interface STMAuthNC : STMActionPopoverNC

@@ -191,7 +191,7 @@
 		2C3F74D31CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C21CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift */; };
 		2C3F74D41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m */; };
 		2C3F74D51CBBD82400F8BFB8 /* STMVolumeTVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C61CBBD82400F8BFB8 /* STMVolumeTVCell.m */; };
-		2C3F74DB1CBBD88100F8BFB8 /* STMRootTBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74D81CBBD88100F8BFB8 /* STMRootTBC.m */; };
+		2C3F74DB1CBBD88100F8BFB8 /* STMCoreRootTBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74D81CBBD88100F8BFB8 /* STMCoreRootTBC.m */; };
 		2C3F74DC1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74DA1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m */; };
 		2C3F75141CBBD99600F8BFB8 /* STMAuthNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F750D1CBBD99500F8BFB8 /* STMAuthNC.m */; };
 		2C3F75151CBBD99600F8BFB8 /* STMAuthPhoneVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F750F1CBBD99600F8BFB8 /* STMAuthPhoneVC.m */; };
@@ -530,8 +530,8 @@
 		2C3F74C41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMVolumeControlsTVCell.m; sourceTree = "<group>"; };
 		2C3F74C51CBBD82400F8BFB8 /* STMVolumeTVCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMVolumeTVCell.h; sourceTree = "<group>"; };
 		2C3F74C61CBBD82400F8BFB8 /* STMVolumeTVCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMVolumeTVCell.m; sourceTree = "<group>"; };
-		2C3F74D71CBBD88100F8BFB8 /* STMRootTBC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMRootTBC.h; sourceTree = "<group>"; };
-		2C3F74D81CBBD88100F8BFB8 /* STMRootTBC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMRootTBC.m; sourceTree = "<group>"; };
+		2C3F74D71CBBD88100F8BFB8 /* STMCoreRootTBC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreRootTBC.h; sourceTree = "<group>"; };
+		2C3F74D81CBBD88100F8BFB8 /* STMCoreRootTBC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreRootTBC.m; sourceTree = "<group>"; };
 		2C3F74D91CBBD88100F8BFB8 /* STMTabBarButtonTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMTabBarButtonTVC.h; sourceTree = "<group>"; };
 		2C3F74DA1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMTabBarButtonTVC.m; sourceTree = "<group>"; };
 		2C3F750C1CBBD99500F8BFB8 /* STMAuthNC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMAuthNC.h; sourceTree = "<group>"; };
@@ -1075,8 +1075,8 @@
 		2C3F74D61CBBD86F00F8BFB8 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2C3F74D71CBBD88100F8BFB8 /* STMRootTBC.h */,
-				2C3F74D81CBBD88100F8BFB8 /* STMRootTBC.m */,
+				2C3F74D71CBBD88100F8BFB8 /* STMCoreRootTBC.h */,
+				2C3F74D81CBBD88100F8BFB8 /* STMCoreRootTBC.m */,
 				2C3F74D91CBBD88100F8BFB8 /* STMTabBarButtonTVC.h */,
 				2C3F74DA1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m */,
 				2C3F74DD1CBBD88900F8BFB8 /* STMAuth */,
@@ -1554,7 +1554,7 @@
 				2C3F74991CBBD80600F8BFB8 /* STMInfoTableViewCell.m in Sources */,
 				2C3F73DB1CBBD6FE00F8BFB8 /* STMBarCodeScan.m in Sources */,
 				2C3F742B1CBBD78300F8BFB8 /* STMLogger.m in Sources */,
-				2C3F74DB1CBBD88100F8BFB8 /* STMRootTBC.m in Sources */,
+				2C3F74DB1CBBD88100F8BFB8 /* STMCoreRootTBC.m in Sources */,
 				2C3F74371CBBD78300F8BFB8 /* STMSyncer.m in Sources */,
 				2C3F73961CBBD66B00F8BFB8 /* SocketEventHandler.swift in Sources */,
 				2C3F74571CBBD7AB00F8BFB8 /* STMRecordStatusController.m in Sources */,

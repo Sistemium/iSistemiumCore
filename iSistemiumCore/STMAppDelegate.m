@@ -21,7 +21,7 @@
 #import "STMSessionManager.h"
 #import "STMLogger.h"
 
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 
 #import "STMAuthNC.h"
 
@@ -308,7 +308,7 @@
     if (!self.window) {
         
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        self.window.rootViewController = [STMRootTBC sharedRootVC];
+        self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
         [self.window makeKeyAndVisible];
         
     }

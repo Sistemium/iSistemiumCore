@@ -15,7 +15,7 @@
 #import "STMSoundController.h"
 #import "STMObjectsController.h"
 
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
 
 #import "STMFunctions.h"
@@ -407,7 +407,7 @@
     
     if ([action isEqualToString:@"show"]) {
 
-        [[STMRootTBC sharedRootVC] showTabBar];
+        [[STMCoreRootTBC sharedRootVC] showTabBar];
 
         CGFloat tabbarHeight = CGRectGetHeight(self.tabBarController.tabBar.frame);
         UIEdgeInsets insets = self.webView.scrollView.contentInset;
@@ -420,7 +420,7 @@
         
     } else if ([action isEqualToString:@"hide"]) {
         
-        [[STMRootTBC sharedRootVC] hideTabBar];
+        [[STMCoreRootTBC sharedRootVC] hideTabBar];
         
         UIEdgeInsets insets = self.webView.scrollView.contentInset;
         self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);

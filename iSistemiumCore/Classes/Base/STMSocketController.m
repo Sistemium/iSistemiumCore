@@ -15,7 +15,7 @@
 
 #import "STMSessionManager.h"
 
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 
 #import "STMFunctions.h"
 
@@ -618,9 +618,9 @@
             
             if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
                 
-                if ([[STMRootTBC sharedRootVC].selectedViewController class]) {
+                if ([[STMCoreRootTBC sharedRootVC].selectedViewController class]) {
                     
-                    Class _Nonnull rootVCClass = (Class _Nonnull)[[STMRootTBC sharedRootVC].selectedViewController class];
+                    Class _Nonnull rootVCClass = (Class _Nonnull)[[STMCoreRootTBC sharedRootVC].selectedViewController class];
                     
                     NSString *stringValue = [@"selectedViewController: " stringByAppendingString:NSStringFromClass(rootVCClass)];
                     [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];

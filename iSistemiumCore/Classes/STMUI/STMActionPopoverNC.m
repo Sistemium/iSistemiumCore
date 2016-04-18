@@ -7,7 +7,7 @@
 //
 
 #import "STMActionPopoverNC.h"
-#import "STMRootTBC.h"
+#import "STMCoreRootTBC.h"
 #import "STMTabBarButtonTVC.h"
 #import "STMFunctions.h"
 
@@ -26,7 +26,7 @@
 - (NSArray *)siblings {
     
     if (!_siblings) {
-        _siblings = [[STMRootTBC sharedRootVC] siblingsForViewController:self];
+        _siblings = [[STMCoreRootTBC sharedRootVC] siblingsForViewController:self];
     }
     return _siblings;
     
@@ -110,7 +110,7 @@
     UIViewController *vc = self.siblings[index];
     
     if (vc != self) {
-        [[STMRootTBC sharedRootVC] replaceVC:self withVC:vc];
+        [[STMCoreRootTBC sharedRootVC] replaceVC:self withVC:vc];
     }
 
 }
