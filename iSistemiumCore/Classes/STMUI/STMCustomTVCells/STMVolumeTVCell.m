@@ -8,9 +8,6 @@
 
 #import "STMVolumeTVCell.h"
 
-#warning should override
-//#import "STMPositionVolumesVC.h"
-
 
 @interface STMVolumeTVCell()
 
@@ -42,12 +39,11 @@
             
         }
         
-#warning should override
-//        if ([self.parentVC isKindOfClass:[STMPositionVolumesVC class]]) {
-//            [(STMPositionVolumesVC *)self.parentVC volumeChangedInCell:self];
-//        }
-        
     }
+    
+}
+
+- (void)volumeChangedForParentVC {
     
 }
 
