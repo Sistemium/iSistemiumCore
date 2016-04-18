@@ -10,7 +10,6 @@
 
 #import "STMSessionManager.h"
 #import "STMConstants.h"
-//#import "STMArticleController.h"
 
 
 @interface STMVolumePicker() <UIPickerViewDelegate, UIPickerViewDataSource>
@@ -67,13 +66,14 @@
 - (NSArray *)packageRels {
     
     if (!_packageRels) {
-
-#warning should override
-//        _packageRels = [STMArticleController packageRels];
-        
+        _packageRels = [self currentPackageRels];
     }
     return _packageRels;
     
+}
+
+- (NSArray *)currentPackageRels {
+    return @[];
 }
 
 - (void)setPackageRel:(NSInteger)packageRel {
