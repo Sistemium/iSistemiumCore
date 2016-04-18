@@ -527,30 +527,14 @@
 
 + (void)postprocessingForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName {
     
-#warning should override?
-    if /*([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
-        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewMessage" object:nil];
-        
-    } else if ([entityName isEqualToString:NSStringFromClass([STMCampaignPicture class])]) {
-        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewCampaignPicture" object:nil];
-        
-    } else if ([entityName isEqualToString:NSStringFromClass([STMCampaign class])]) {
-        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewCampaign" object:nil];
-        
-    } else if */([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
+    if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
         
         NSManagedObject *affectedObject = [self objectForXid:recordStatus.objectXid];
         
         if (affectedObject) {
-            
-//            if ([recordStatus.isRead boolValue]) [[NSNotificationCenter defaultCenter] postNotificationName:@"messageIsRead" object:nil];
-            if ([recordStatus.isRemoved boolValue]) [self removeObject:affectedObject];
-            
+            if (recordStatus.isRemoved.boolValue) [self removeObject:affectedObject];
         }
         
         if (recordStatus.isTemporary.boolValue) [self removeObject:recordStatus];
@@ -560,9 +544,7 @@
         STMSetting *setting = (STMSetting *)object;
         
         if ([setting.group isEqualToString:@"appSettings"]) {
-            
             [STMClientDataController checkAppVersion];
-            
         }
         
     }
@@ -1179,54 +1161,28 @@
 
 + (void)checkObject:(NSManagedObject *)object forAddingTo:(NSMutableSet *)objectsSet {
     
-#warning should override
-
-//    if ([object isKindOfClass:[STMTrack class]]) {
-//    
-//        STMTrack *track = (STMTrack *)object;
-//
-//        if (![track.objectID isEqual:[self session].locationTracker.currentTrack.objectID]) {
-//            [objectsSet addObject:object];
-//        } else {
-//            NSLog(@"track %@ is current track now, flush declined", track.xid);
-//        }
-//        
-//    } else {
-    
-        if (![self isWaitingToSyncForObject:object]) {
-            
-            if ([object isKindOfClass:[STMLocation class]]) {
+    if (![self isWaitingToSyncForObject:object]) {
         
-                STMLocation *location = (STMLocation *)object;
-                
-#warning should override
-                if (location.photos.count == 0 /*&& location.shippings.count == 0 && location.shipmentRoutePoint == nil*/) {
-                    [objectsSet addObject:object];
-                } else {
-                    NSLog(@"location %@ linked with (picture|shipping|routePoint), flush declined", location.xid);
-                }
-
-//            } else if ([object isKindOfClass:[STMTrack class]]) {
-//                
-//                STMTrack *track = (STMTrack *)object;
-//                
-//                if (![track.objectID isEqual:[self session].locationTracker.currentTrack.objectID]) {
-//                    [objectsSet addObject:object];
-//                } else {
-//                    NSLog(@"track %@ is in use now, flush declined", track.xid);
-//                }
-                
-            } else {
-
-                [objectsSet addObject:object];
-
-            }
-
+        if ([object isKindOfClass:[STMLocation class]]) {
+            [self checkLocation:(STMLocation *)object forAddingTo:objectsSet];
+        } else {
+            [objectsSet addObject:object];
         }
-//        
-//    }
+
+    }
 
 }
+
++ (void)checkLocation:(STMLocation *)location forAddingTo:(NSMutableSet *)objectsSet {
+    
+    if (location.photos.count == 0) {
+        [objectsSet addObject:location];
+    } else {
+        NSLog(@"location %@ linked with picture, flush declined", location.xid);
+    }
+
+}
+
 
 #pragma mark - finish of recieving objects
 
