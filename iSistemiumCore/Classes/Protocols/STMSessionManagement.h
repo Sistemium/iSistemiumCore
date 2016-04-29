@@ -17,6 +17,15 @@ typedef NS_ENUM(NSInteger, STMSyncerState) {
     STMSyncerReceiveData
 };
 
+typedef NS_ENUM(NSInteger, STMSessionStatus) {
+    STMSessionIdle,
+    STMSessionStarting,
+    STMSessionRunning,
+    STMSessionFinishing,
+    STMSessionStopped,
+    STMSessionRemoving
+};
+
 
 @protocol STMLogger <NSObject, UITableViewDataSource, UITableViewDelegate>
 
@@ -51,7 +60,7 @@ typedef NS_ENUM(NSInteger, STMSyncerState) {
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *status;
+@property (nonatomic) STMSessionStatus status;
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;

@@ -31,5 +31,7 @@
 
 + (void)removeImageFilesForPicture:(STMPicture *)picture;
 
++ (void)setThumbnailForPicture:(STMPicture *)picture fromImageData:(NSData *)data ;
+
 
 @end

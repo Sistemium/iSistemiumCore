@@ -140,7 +140,7 @@
         
         NSManagedObjectContext *context = self.session.document.managedObjectContext;
         
-        if (context && [self.session.status isEqualToString:@"running"]) {
+        if (context && self.session.status == STMSessionRunning) {
             
             STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMPicture class])];
             
