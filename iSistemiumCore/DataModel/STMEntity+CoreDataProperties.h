@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *url;
 @property (nullable, nonatomic, retain) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
+@property (nullable, nonatomic, retain) NSNumber *isResolveFantoms;
 @property (nullable, nonatomic, retain) STMWorkflow *wf;
 
 @end

@@ -81,7 +81,7 @@
     
     id <STMSession> session = [STMSessionManager sharedManager].currentSession;
     
-    if ([[session status] isEqualToString:@"running"]) {
+    if (session.status == STMSessionRunning) {
         
         [[session syncer] setSyncerState:STMSyncerSendData];
         

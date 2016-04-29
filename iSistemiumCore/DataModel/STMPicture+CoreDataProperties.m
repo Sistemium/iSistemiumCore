@@ -2,7 +2,7 @@
 //  STMPicture+CoreDataProperties.m
 //  iSistemium
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Edgar Jan Vuicik on 15/04/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -31,5 +31,6 @@
 @dynamic sqts;
 @dynamic sts;
 @dynamic xid;
+@dynamic thumbnailHref;
 
 @end

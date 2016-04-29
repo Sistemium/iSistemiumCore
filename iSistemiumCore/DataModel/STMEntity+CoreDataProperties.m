@@ -33,6 +33,7 @@
 @dynamic url;
 @dynamic workflow;
 @dynamic xid;
+@dynamic isResolveFantoms;
 @dynamic wf;
 
 @end

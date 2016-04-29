@@ -9,9 +9,10 @@
 #import <UIKit/UIKit.h>
 
 #import "STMEntitiesSubscribable.h"
+#import "STMSoundCallbackable.h"
 
 
-@interface STMWKWebViewVC : UIViewController <STMEntitiesSubscribable>
+@interface STMWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable>
 
 - (void)reloadWebView;
 

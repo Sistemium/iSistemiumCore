@@ -1077,7 +1077,7 @@
 - (void)sessionStatusChanged {
     
     
-    if ([[[STMSessionManager sharedManager].currentSession status] isEqualToString:@"running"]) {
+    if ([STMSessionManager sharedManager].currentSession.status == STMSessionRunning) {
     
         [self updateCloudImages];
         [self updateSyncDatesLabels];
