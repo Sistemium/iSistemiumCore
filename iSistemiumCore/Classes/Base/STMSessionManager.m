@@ -77,7 +77,7 @@
             self.currentSessionUID = uid;
 
             session.authDelegate = authDelegate;
-            session.status = @"running";
+            session.status = STMSessionRunning;
             session.logger.session = session;
             
         }
@@ -96,7 +96,7 @@
     
     STMSession *session = (self.sessions)[uid];
     
-    if ([session.status isEqualToString:@"running"] || [session.status isEqualToString:@"removing"]) {
+    if (session.status == STMSessionRunning || session.status == STMSessionRemoving) {
         
         if ([self.currentSessionUID isEqualToString:uid]) {
             self.currentSessionUID = nil;
@@ -110,9 +110,9 @@
 
 - (void)sessionStopped:(id <STMSession>)session {
     
-    if ([session.status isEqualToString:@"removing"]) {
+    if (session.status == STMSessionRemoving) {
         
-        session.status = @"stopped";
+        session.status = STMSessionStopped;
         [self removeSessionForUID:session.uid];
         
     } else {
@@ -136,13 +136,13 @@
 
     STMSession *session = (self.sessions)[uid];
     
-    if ([session.status isEqualToString:@"stopped"]) {
+    if (session.status == STMSessionStopped) {
         
         [self.sessions removeObjectForKey:uid];
         
     } else {
 
-        session.status = @"removing";
+        session.status = STMSessionRemoving;
         [self stopSessionForUID:uid];
         
     }

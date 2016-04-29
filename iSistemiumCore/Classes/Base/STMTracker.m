@@ -147,12 +147,12 @@
     
     if (notification.object == self.session) {
         
-        if ([self.session.status isEqualToString:@"finishing"]) {
+        if (self.session.status == STMSessionFinishing) {
             
             [self releaseTimers];
             [self stopTracking];
             
-        } else if ([self.session.status isEqualToString:@"running"]) {
+        } else if (self.session.status == STMSessionRunning) {
             
             [self checkTrackerAutoStart];
 
@@ -333,7 +333,7 @@
     
 //    NSLog(@"%@ startTracking %@", self.group, [NSDate date]);
     
-    if ([[(id <STMSession>)self.session status] isEqualToString:@"running"] && !self.tracking) {
+    if (self.session.status == STMSessionRunning && !self.tracking) {
         
         [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackingStart", self.group] object:self];
         self.tracking = YES;

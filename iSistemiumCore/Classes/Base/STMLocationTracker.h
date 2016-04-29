@@ -19,6 +19,8 @@
 
 - (void)getLocation;
 
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy;
+
 - (NSString *)locationServiceStatus;
 
 - (BOOL)currentTimeIsInsideOfScheduleLimits;

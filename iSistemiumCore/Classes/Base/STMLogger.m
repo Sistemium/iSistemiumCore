@@ -224,7 +224,7 @@
     
     NSLog(@"Log %@: %@", type, text);
     
-    BOOL sessionIsRunning = [[self.session status] isEqualToString:@"running"];
+    BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
     
     if (sessionIsRunning && self.document) {
         

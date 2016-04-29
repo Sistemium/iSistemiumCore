@@ -7,8 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMSoundCallbackable.h"
+
 
 @interface STMSoundController : NSObject
+
+@property (nonatomic, strong) id <STMSoundCallbackable> sender;
 
 + (STMSoundController *)sharedController;
 

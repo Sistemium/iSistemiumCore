@@ -14,7 +14,7 @@
 #import "STMConstants.h"
 
 
-@interface STMSoundController()
+@interface STMSoundController() <AVSpeechSynthesizerDelegate>
 
 @property (nonatomic, strong) AVSpeechSynthesizer *speechSynthesizer;
 
@@ -52,7 +52,10 @@
 - (AVSpeechSynthesizer *)speechSynthesizer {
     
     if (!_speechSynthesizer) {
+        
         _speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
+        _speechSynthesizer.delegate = self;
+        
     }
     return _speechSynthesizer;
     
@@ -178,6 +181,13 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
          withRate:rate
             pitch:pitch];
 
+}
+
+
+#pragma mark - AVSpeechSynthesizerDelegate
+
+- (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance {
+    [self.sender didFinishSpeaking];
 }
 
 

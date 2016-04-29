@@ -133,7 +133,7 @@ class STMScriptMessageController: NSObject {
 
                 var value: AnyObject? = arguments[compOp]
                 
-                if key.lowercaseString.hasSuffix("uuid") || key.lowercaseString.hasSuffix("xid") || isRelationship {
+                if localKey.lowercaseString.hasSuffix("uuid") || localKey.lowercaseString.hasSuffix("xid") || isRelationship {
 
                     guard value is String else {
                         print("value is not a String, but it should be to get xid or uuid value")
@@ -207,7 +207,7 @@ class STMScriptMessageController: NSObject {
             
             case NSStringFromClass(NSNumber)    :   return NSNumberFormatter().numberFromString(value as! String)!
                 
-            case NSStringFromClass(NSDate)      :   return STMDateFormatter().dateFromString(value as! String)!
+            case NSStringFromClass(NSDate)      :   return STMFunctions.dateFormatter().dateFromString(value as! String)!
                 
             case NSStringFromClass(NSData)      :   return STMFunctions.dataFromString(value as! String)
                 

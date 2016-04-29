@@ -773,7 +773,7 @@
     
     STMSession *currentSession = [STMSessionManager sharedManager].currentSession;
     
-    if ([currentSession.status isEqualToString:@"running"]) {
+    if (currentSession.status == STMSessionRunning) {
         
         NSString *key = @"socketUrl";
         
@@ -805,7 +805,7 @@
     
     if (notification.object == session) {
         
-        if ([session.status isEqualToString:@"running"]) {
+        if (session.status == STMSessionRunning) {
             
             [self performFetches];
             

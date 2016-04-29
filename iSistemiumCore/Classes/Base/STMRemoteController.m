@@ -17,8 +17,35 @@
     return [STMSessionManager sharedManager].currentSession;
 }
 
++ (void)error:(NSError **)error withMessage:(NSString *)errorMessage {
+    
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    
+    if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                                                        code:1
+                                                    userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    
+}
+
++ (void)loggingErrorMessage:(NSString *)logMessage {
+    [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+}
+
 + (void)receiveRemoteCommands:(NSDictionary *)remoteCommands {
 
+    NSError *error = nil;
+    [self receiveRemoteCommands:remoteCommands error:&error];
+    
+    if (error) [self loggingErrorMessage:error.localizedDescription];
+    
+}
+
++ (void)receiveRemoteCommands:(NSDictionary *)remoteCommands error:(NSError *__autoreleasing *)error {
+    
+    NSString *errorMessage = nil;
+    
+    if ([remoteCommands isKindOfClass:[NSDictionary class]]) {
+        
     for (NSString *className in remoteCommands.allKeys) {
         
         Class theClass = NSClassFromString(className);
@@ -29,41 +56,45 @@
             
             if ([payload isKindOfClass:[NSString class]]) {
                 
-                // payload is method name
-                [self performMethod:payload onClass:theClass];
+                    [self performMethod:payload onClass:theClass error:error];
                 
             } else if ([payload isKindOfClass:[NSDictionary class]]) {
                 
-                // payload is dic of method:object
                 NSDictionary *methodsDic = (NSDictionary *)payload;
                 
                 for (NSString *methodName in methodsDic.allKeys) {
-                    [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass];
+                        [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass error:error];
                 }
                 
             } else {
                 
-                NSString *logMessage = [NSString stringWithFormat:@"notification's payload for %@ is not a string or dictionary", className];
-                [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+                    errorMessage = [NSString stringWithFormat:@"notification's payload for %@ is not a string or dictionary", className];
                 
             }
             
         } else {
             
-            NSString *logMessage = [NSString stringWithFormat:@"%@ does not exist", className];
-            [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+                errorMessage = [NSString stringWithFormat:@"%@ does not exist", className];
+                
+            }
             
         }
         
+    } else {
+        
+        errorMessage = @"remoteCommands is not an NSDictionary class";
+        
     }
 
+    if (errorMessage) [self error:error withMessage:errorMessage];
+    
 }
 
-+ (void)performMethod:(NSString *)methodName onClass:(Class)theClass {
-    [self performMethod:methodName withObject:nil onClass:theClass];
++ (void)performMethod:(NSString *)methodName onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
+    [self performMethod:methodName withObject:nil onClass:theClass error:error];
 }
 
-+ (void)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass {
++ (void)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
 
     SEL selector = NSSelectorFromString(methodName);
     
@@ -73,20 +104,20 @@
         
     } else if ([theClass instancesRespondToSelector:selector]) {
         
-        id instance = [self instanceForClass:theClass];
+        id instance = [self instanceForClass:theClass error:error];
         
         if (instance) [self noWarningPerformSelector:selector withObject:object onReceiver:instance];
         
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"%@ have no method %@", NSStringFromClass([theClass class]), methodName];
-        [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+        [self error:error withMessage:logMessage];
         
     }
 
 }
 
-+ (id)instanceForClass:(Class)class {
++ (id)instanceForClass:(Class)class error:(NSError *__autoreleasing *)error {
 
     if ([class isSubclassOfClass:[STMSyncer class]]) {
         
@@ -103,7 +134,7 @@
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"no registered instance for class %@", NSStringFromClass([class class])];
-        [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+        [self error:error withMessage:logMessage];
 
         return nil;
         

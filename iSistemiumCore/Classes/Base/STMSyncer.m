@@ -11,7 +11,6 @@
 #import "STMSyncer.h"
 #import "STMDocument.h"
 #import "STMCoreObjectsController.h"
-//#import "STMPhotoReport.h"
 #import "STMFunctions.h"
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
@@ -699,9 +698,9 @@
     
         if (session == self.session) {
             
-            if ([session.status isEqualToString:@"finishing"]) {
+            if (session.status == STMSessionFinishing) {
                 [self stopSyncer];
-            } else if ([session.status isEqualToString:@"running"]) {
+            } else if (session.status == STMSessionRunning) {
                 [self startSyncer];
             }
 
@@ -1458,7 +1457,9 @@
 - (void)parseResponse:(NSData *)responseData fromConnection:(NSURLConnection *)connection {
     
     NSError *error;
-    NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
+    NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:responseData
+                                                                 options:NSJSONReadingMutableContainers
+                                                                   error:&error];
     
 //    NSLog(@"responseJSON %@", responseJSON);
 

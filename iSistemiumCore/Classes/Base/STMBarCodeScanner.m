@@ -677,7 +677,13 @@
 }
 
 - (void)onButtonsEvent:(ISktScanObject *)scanObj {
+    
     NSLogMethodName;
+    
+    if ([self.delegate respondsToSelector:@selector(powerButtonPressedOnBarCodeScanner:)]) {
+        [self.delegate powerButtonPressedOnBarCodeScanner:self];
+    }
+    
 }
 
 - (void)onSetBatteryLevelNotification:(ISktScanObject *)scanObj {

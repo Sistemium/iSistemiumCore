@@ -30,6 +30,8 @@
 @property (nonatomic) CLLocationAccuracy backgroundDesiredAccuracy;
 @property (nonatomic) CLLocationAccuracy offtimeDesiredAccuracy;
 
+@property (nonatomic) CLLocationAccuracy checkinAccuracy;
+
 @property (nonatomic) double requiredAccuracy;
 @property (nonatomic) CLLocationDistance distanceFilter;
 @property (nonatomic) NSTimeInterval timeFilter;
@@ -40,6 +42,7 @@
 @property (nonatomic) CLLocationSpeed maxSpeedThreshold;
 
 @property (nonatomic) BOOL singlePointMode;
+@property (nonatomic) BOOL checkinMode;
 @property (nonatomic) BOOL getLocationsWithNegativeSpeed;
 @property (nonatomic, strong) NSTimer *locationWaitingTimer;
 
@@ -473,9 +476,13 @@
     CLLocation *lastLocation = self.locationManager.location;
     NSTimeInterval locationAge = -[lastLocation.timestamp timeIntervalSinceNow];
 
-    if (lastLocation && self.tracking && locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL) {
+    if (lastLocation &&
+        self.tracking &&
+        locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL) {
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"currentLocationWasUpdated" object:self userInfo:@{@"currentLocation":lastLocation}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"currentLocationWasUpdated"
+                                                            object:self
+                                                          userInfo:@{@"currentLocation":lastLocation}];
         
     } else {
         
@@ -484,6 +491,37 @@
         
     }
     
+}
+
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy {
+    
+    self.checkinAccuracy = checkinAccuracy.doubleValue;
+
+    CLLocation *lastLocation = self.locationManager.location;
+    NSTimeInterval locationAge = -[lastLocation.timestamp timeIntervalSinceNow];
+    
+    if (lastLocation &&
+        self.tracking &&
+        locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
+        lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"checkinLocationWasReceived"
+                                                            object:self
+                                                          userInfo:@{@"checkingLocation":lastLocation}];
+        
+    } else {
+        
+        self.checkinMode = YES;
+        
+        NSLog(@"location tracker checkin mode, set distance filter to none, desired accuracy to best for navigation");
+        
+        self.locationManager.distanceFilter = kCLDistanceFilterNone;
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
+        
+        [self.locationManager startUpdatingLocation];
+        
+    }
+
 }
 
 - (void)startUpdatingLocation {
@@ -581,18 +619,55 @@
         
         
         if (self.singlePointMode) {
-            
-            if (!self.tracking) {
-                [self flushLocationManager];
-            }
-            
-            self.singlePointMode = NO;
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentLocationWasUpdated"
-                                                                object:self
-                                                              userInfo:@{@"currentLocation":newLocation}];
-            
+            [self handleSinglePointModeLocation:newLocation];
         }
         
+        if (self.checkinMode) {
+            [self handleCheckinModeLocation:newLocation];
+        }
+        
+    }
+    
+}
+
+- (void)handleSinglePointModeLocation:(CLLocation *)location {
+    
+    self.singlePointMode = NO;
+            
+	if (!self.tracking) {
+		[self flushLocationManager];
+	}
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"currentLocationWasUpdated"
+														object:self
+											  userInfo:@{@"currentLocation":location}];
+	
+}
+        
+- (void)handleCheckinModeLocation:(CLLocation *)location {
+    
+    if (location.horizontalAccuracy <= self.checkinAccuracy) {
+        
+        self.checkinMode = NO;
+
+        if (!self.tracking) {
+            
+            [self flushLocationManager];
+            
+        } else {
+            
+            NSLog(@"end of location tracker checkin mode");
+            NSLog(@"get checkin location: %@", location);
+            NSLog(@"set location manager desired accuracy and distance filter to previous values: %@, %@", @([self currentDesiredAccuracy]), @(self.distanceFilter));
+
+            self.locationManager.desiredAccuracy = [self currentDesiredAccuracy];
+            self.locationManager.distanceFilter = self.distanceFilter;
+            
+	    }
+    
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"checkinLocationWasReceived"
+														object:self
+													  userInfo:@{@"checkinLocation":location}];
     }
     
 }
