@@ -21,6 +21,9 @@
 #import "STMClientDataController.h"
 #import "STMAuthController.h"
 
+#warning - STMMessage?
+// #import "STMMessageController.h"
+
 #import <Crashlytics/Crashlytics.h>
 #import "STMAppDelegate.h"
 
@@ -116,7 +119,7 @@
 
 - (BOOL)newAppVersionAvailable {
     
-    if ([self.session.status isEqualToString:@"running"]) {
+    if (self.session.status == STMSessionRunning) {
 
         [STMClientDataController checkAppVersion];
     
@@ -922,7 +925,7 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    if ([self.session.status isEqualToString:@"running"]) {
+    if (self.session.status == STMSessionRunning) {
         [self initAllTabs];
     }
     

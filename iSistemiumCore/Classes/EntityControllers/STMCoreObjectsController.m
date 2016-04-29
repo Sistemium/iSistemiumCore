@@ -35,7 +35,7 @@
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesSingleRelationships;
-@property (nonatomic, strong) NSMutableDictionary *objectsCache;
+//@property (nonatomic, strong) NSMutableDictionary *objectsCache;
 @property (nonatomic, strong) NSArray *localDataModelEntityNames;
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
@@ -43,11 +43,32 @@
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
 
+@property (nonatomic, strong) NSMutableArray *fantomsArray;
+@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+
 
 @end
 
 
 @implementation STMCoreObjectsController
+
+- (NSMutableArray *)fantomsArray {
+    
+    if (!_fantomsArray) {
+        _fantomsArray = @[].mutableCopy;
+    }
+    return _fantomsArray;
+    
+}
+
+- (NSMutableArray *)notFoundFantomsArray {
+    
+    if (!_notFoundFantomsArray) {
+        _notFoundFantomsArray = @[].mutableCopy;
+    }
+    return _notFoundFantomsArray;
+    
+}
 
 - (NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *)entitiesToSubscribe {
     
@@ -107,14 +128,14 @@
     
 }
 
-- (NSMutableDictionary *)objectsCache {
-    
-    if (!_objectsCache) {
-        _objectsCache = [@{} mutableCopy];
-    }
-    return _objectsCache;
-    
-}
+//- (NSMutableDictionary *)objectsCache {
+//    
+//    if (!_objectsCache) {
+//        _objectsCache = [@{} mutableCopy];
+//    }
+//    return _objectsCache;
+//    
+//}
 
 - (instancetype)init {
     
@@ -157,8 +178,8 @@
         
         STMSession *session = notification.object;
         
-        if (![session.status isEqualToString:@"running"]) {
-            self.objectsCache = nil;
+        if (session.status != STMSessionRunning) {
+//            self.objectsCache = nil;
         }
         
     }
@@ -373,6 +394,22 @@
         
     }
     
+    if ([object isKindOfClass:[STMPicture class]]){
+    
+        STMPicture *picture = (STMPicture*)object;
+        
+        if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+        
+            NSString* thumbnailHref = picture.thumbnailHref;
+            NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+            NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+            
+            if (thumbnailData) [STMPicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+            
+        }
+        
+    }
+    
     [self processingOfRelationshipsForObject:object withEntityName:entityName andValues:properties];
     
     [object setValue:[NSDate date] forKey:@"lts"];
@@ -526,7 +563,10 @@
 }
 
 + (void)postprocessingForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName {
-    
+
+#warning - STMMessage?
+// 	if ([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
+
     if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
@@ -691,18 +731,18 @@
 
 + (NSManagedObject *)objectForXid:(NSData *)xidData {
     
-    id cachedObject = [self sharedController].objectsCache[xidData];
-    return (NSManagedObject *)cachedObject;
+//    id cachedObject = [self sharedController].objectsCache[xidData];
+//    return (NSManagedObject *)cachedObject;
     
-//    for (NSString *entityName in [self localDataModelEntityNames]) {
-//        
-//        NSManagedObject *object = [self objectForXid:xidData entityName:entityName];
-//        
-//        if (object) return object;
-//        
-//    }
-//
-//    return nil;
+    for (NSString *entityName in [self localDataModelEntityNames]) {
+        
+        NSManagedObject *object = [self objectForXid:xidData entityName:entityName];
+        
+        if (object) return object;
+        
+    }
+
+    return nil;
 
 }
 
@@ -784,7 +824,7 @@
             xidData = [object valueForKey:@"xid"];
         }
         
-        [self sharedController].objectsCache[xidData] = object;
+//        [self sharedController].objectsCache[xidData] = object;
         
         return object;
 
@@ -822,9 +862,9 @@
     TICK;
     NSLog(@"initObjectsCache tick");
     
-    [self sharedController].objectsCache = nil;
+//    [self sharedController].objectsCache = nil;
 
-    NSArray *allObjects = [self allObjectsFromContext:[self document].managedObjectContext];
+//    NSArray *allObjects = [self allObjectsFromContext:[self document].managedObjectContext];
 
 //    for (NSManagedObject *object in allObjects) {
 //        
@@ -839,10 +879,10 @@
     NSLog(@"fetch existing objects for initObjectsCache");
     TOCK;
     
-    NSArray *keys = [allObjects valueForKeyPath:@"xid"];
-    NSDictionary *objectsCache = [NSDictionary dictionaryWithObjects:allObjects forKeys:keys];
+//    NSArray *keys = [allObjects valueForKeyPath:@"xid"];
+//    NSDictionary *objectsCache = [NSDictionary dictionaryWithObjects:allObjects forKeys:keys];
     
-    [[self sharedController].objectsCache addEntriesFromDictionary:objectsCache];
+//    [[self sharedController].objectsCache addEntriesFromDictionary:objectsCache];
 
     NSLog(@"finish initObjectsCache");
     TOCK;
@@ -946,7 +986,7 @@
         
         NSSet *coreRelationshipNames = [NSSet setWithArray:[self coreEntityRelationships]];
         
-        NSMutableSet *objectRelationshipNames = [NSMutableSet setWithArray:[[objectEntity relationshipsByName] allKeys]];
+        NSMutableSet *objectRelationshipNames = [NSMutableSet setWithArray:objectEntity.relationshipsByName.allKeys];
         
         [objectRelationshipNames minusSet:coreRelationshipNames];
         
@@ -954,10 +994,10 @@
         
         for (NSString *relationshipName in objectRelationshipNames) {
             
-            NSRelationshipDescription *relationship = [objectEntity relationshipsByName][relationshipName];
+            NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
             
             if (![relationship isToMany]) {
-                objectRelationships[relationshipName] = [relationship destinationEntity].name;
+                objectRelationships[relationshipName] = relationship.destinationEntity.name;
             }
             
         }
@@ -1038,9 +1078,9 @@
         
         if (!context) context = [self document].managedObjectContext;
         
-        if ([object valueForKey:@"xid"]) {
-            [[self sharedController].objectsCache removeObjectForKey:(id _Nonnull)[object valueForKey:@"xid"]];
-        }
+//        if ([object valueForKey:@"xid"]) {
+//            [[self sharedController].objectsCache removeObjectForKey:(id _Nonnull)[object valueForKey:@"xid"]];
+//        }
         
         [context performBlock:^{
             
@@ -1236,6 +1276,8 @@
 
 #endif
     
+    [self resolveFantoms];
+
     [[self document] saveDocument:^(BOOL success) {
 
     }];
@@ -1259,6 +1301,312 @@
     NSLog(@"fantoms count %d", [self numberOfFantoms]);
     NSLog(@"total count %d", totalCount);
 
+}
+
+
+#pragma mark - resolving fantoms
+
++ (void)resolveFantoms {
+    
+    STMCoreObjectsController *objController = [self sharedController];
+    
+    NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
+    
+    for (NSString *entityName in entityNamesWithResolveFantoms) {
+        
+        NSFetchRequest *request = [self isFantomFetchRequestForEntityName:entityName];
+        
+        if (request) {
+
+            NSError *error;
+            NSArray *results = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+            
+            if (results.count > 0) {
+                
+                NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
+
+                STMEntity *entity = [STMEntityController stcEntities][entityName];
+
+                if (entity.url) {
+
+                    for (STMDatum *fantomObject in results) {
+                        
+                        if (fantomObject.xid) {
+                            
+                            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid, @"isFantomResolving": @(YES)};
+                            
+                            if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
+                                [objController.fantomsArray addObject:fantomDic];
+                            }
+
+                        }
+                        
+                    }
+                    
+                } else {
+                    NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
+                }
+
+            }
+            
+        }
+        
+    }
+
+    if (objController.fantomsArray.count > 0) {
+        [self requestObjectWithParameters:objController.fantomsArray.firstObject];
+    } else {
+        [objController.notFoundFantomsArray removeAllObjects];
+    }
+
+}
+
++ (void)requestObjectWithParameters:(NSDictionary *)parameters {
+    
+    if ([parameters isKindOfClass:[NSDictionary class]]) {
+        
+        BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
+        
+        NSString *entityName = parameters[@"entityName"];
+        
+        if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
+            entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+        }
+        
+        __block STMEntity *entity = [STMEntityController stcEntities][entityName];
+        
+        if (!entity.url) {
+            
+            NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
+            
+            [self requestObjectErrorMessage:errorMessage
+                          isFantomResolving:isFantomResolving
+                                 parameters:parameters];
+            return;
+            
+        }
+        
+        NSURL *url = [NSURL URLWithString:(NSString *)entity.url];
+        
+        NSString *xidString = nil;
+        BOOL isEmptyXid = NO;
+        id xidParameter = parameters[@"xid"];
+        
+        if (isFantomResolving) {
+        
+            NSData *xid = (NSData *)xidParameter;
+            
+            if (!xid || xid.length == 0) {
+                isEmptyXid = YES;
+            } else {
+                xidString = [STMFunctions UUIDStringFromUUIDData:xid];
+            }
+            
+        } else {
+            
+            xidString = (NSString *)xidParameter;
+            
+            if (!xidString || xidString.length == 0) isEmptyXid = YES;
+            
+        }
+        
+        if (isEmptyXid) {
+            
+            NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", parameters];
+            
+            [self requestObjectErrorMessage:errorMessage
+                          isFantomResolving:isFantomResolving
+                                 parameters:parameters];
+            return;
+
+        }
+        
+        NSURL *urlWithXid = [url URLByAppendingPathComponent:xidString];
+        
+        NSURLRequest *request = [NSURLRequest requestWithURL:urlWithXid];
+        
+        request = [[STMAuthController authController] authenticateRequest:request];
+        
+        if (request) {
+            
+            [NSURLConnection sendAsynchronousRequest:request
+                                               queue:[NSOperationQueue mainQueue]
+                                   completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+                                       
+                if (!connectionError) {
+                    
+                    [self receiveRequestObjectResponse:response
+                                              withData:data
+                                             forEntity:entity
+                                            parameters:parameters];
+
+                } else {
+
+                    NSString *errorMessage = [NSString stringWithFormat:@"connectionError: %@", connectionError.localizedDescription];
+
+                    [self requestObjectErrorMessage:errorMessage
+                                  isFantomResolving:isFantomResolving
+                                         parameters:parameters];
+
+                }
+
+            }];
+            
+        } else {
+            
+            NSString *errorMessage = [NSString stringWithFormat:@"Do I have access token for request parameters %@?", parameters];
+            
+            [self requestObjectErrorMessage:errorMessage
+                          isFantomResolving:isFantomResolving
+                                 parameters:parameters];
+            
+        }
+        
+    } else {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"parameters is not an NSDictionary class: %@", parameters];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        
+    }
+
+}
+
++ (void)requestObjectErrorMessage:(NSString *)errorMessage isFantomResolving:(BOOL)isFantomResolving parameters:(NSDictionary *)parameters {
+    
+    if (isFantomResolving) {
+        
+        [self didFinishResolveFantom:parameters successfully:NO];
+        NSLog(errorMessage);
+        
+    } else {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage type:@"error"];
+        
+    }
+
+}
+
++ (void)receiveRequestObjectResponse:(NSURLResponse *)response withData:(NSData *)data forEntity:(STMEntity *)entity parameters:(NSDictionary *)parameters {
+    
+    BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
+
+    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+        
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        
+        if (httpResponse.statusCode == 200 && data.length > 0) {
+            
+            NSError *error;
+            NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:(NSData *)data
+                                                                         options:NSJSONReadingMutableContainers
+                                                                           error:&error];
+            
+            NSString *errorString = nil;
+            
+            if ([responseJSON isKindOfClass:[NSDictionary class]]) {
+                errorString = responseJSON[@"error"];
+            } else {
+                errorString = @"response not a dictionary";
+            }
+            
+            if (!errorString) {
+                
+                NSArray *dataArray = responseJSON[@"data"];
+                
+                [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
+                    
+                    if (isFantomResolving) {
+                     
+                        [self didFinishResolveFantom:parameters successfully:success];
+                        
+                    } else {
+                    
+                        if (!success) {
+                            
+                            NSString *errorMessage = [NSString stringWithFormat:@"error processing dataArray %@ with request parameters %@", dataArray, parameters];
+                            
+                            [self requestObjectErrorMessage:errorMessage
+                                          isFantomResolving:isFantomResolving
+                                                 parameters:parameters];
+                            
+                        }
+
+                    }
+                    
+                }];
+                
+            } else {
+                
+                [self requestObjectErrorMessage:errorString
+                              isFantomResolving:isFantomResolving
+                                     parameters:parameters];
+                
+            }
+            
+        } else {
+
+            NSString *errorMessage = [NSString stringWithFormat:@"response status %@ with request parameters %@", @(httpResponse.statusCode), parameters];
+            
+            [self requestObjectErrorMessage:errorMessage
+                          isFantomResolving:isFantomResolving
+                                 parameters:parameters];
+            
+        }
+        
+    } else {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"response is not the NSHTTPURLResponse class with request parameters %@", parameters];
+        
+        [self requestObjectErrorMessage:errorMessage
+                      isFantomResolving:isFantomResolving
+                             parameters:parameters];
+
+    }
+
+}
+
++ (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully {
+    
+    STMCoreObjectsController *objController = [self sharedController];
+    
+    [objController.fantomsArray removeObject:fantomDic];
+    
+    NSString *entityName = fantomDic[@"entityName"];
+    NSData *fantomXid = fantomDic[@"xid"];
+
+    if (successfully) {
+        NSLog(@"success defantomize %@ %@", entityName, fantomXid);
+    } else {
+        [objController.notFoundFantomsArray addObject:fantomDic];
+        NSLog(@"bad luck defantomize %@ %@", entityName, fantomXid);
+    }
+    
+    if (objController.fantomsArray.count > 0) {
+        [self requestObjectWithParameters:objController.fantomsArray.firstObject];
+    } else {
+        [self resolveFantoms];
+    }
+    
+}
+
++ (NSFetchRequest *)isFantomFetchRequestForEntityName:(NSString *)entityName {
+    
+    if ([[self localDataModelEntityNames] containsObject:entityName]) {
+        
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                                  ascending:YES
+                                                                   selector:@selector(compare:)]];
+        request.predicate = [NSPredicate predicateWithFormat:@"isFantom == YES && xid != nil"];
+        
+        return request;
+
+    } else {
+        
+        return nil;
+        
+    }
+    
 }
 
 
@@ -1300,6 +1648,8 @@
     
     if (result) {
 
+        [self flushSubscribedViewController:vc];
+
         for (NSString *entityName in entitiesToSubscribe) {
             
             NSArray *vcArray = [self sharedController].entitiesToSubscribe[entityName];
@@ -1326,13 +1676,37 @@
     
 }
 
++ (void)flushSubscribedViewController:(UIViewController <STMEntitiesSubscribable> *)vc {
+    
+    for (NSString *entityName in [self sharedController].entitiesToSubscribe.allKeys) {
+        
+        NSMutableArray *vcArray = [self sharedController].entitiesToSubscribe[entityName].mutableCopy;
+        
+        [vcArray removeObject:vc];
+        
+        [self sharedController].entitiesToSubscribe[entityName] = vcArray;
+
+    }
+    
+}
+
 + (void)sendSubscribedEntityObject:(STMDatum *)object entityName:(NSString *)entityName {
     
     NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = [self sharedController].entitiesToSubscribe[entityName];
     
     for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
     
-        [vc subscribedEntitiesObjectWasReceived:[self dictionaryForJSWithObject:object]];
+        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
+    
+        if (object.xid) {
+            
+            NSDictionary *subscribeDic = @{@"entity"    : entityName,
+                                           @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
+                                           @"data"      : [self dictionaryForJSWithObject:object]};
+            
+            [vc subscribedEntitiesObjectWasReceived:subscribeDic];
+
+        }
 
     }
     
@@ -1374,57 +1748,20 @@
             
     NSData *xid = [STMFunctions xidDataFromXidString:xidString];
     
-    STMDatum *object = [self sharedController].objectsCache[xid];
+    STMDatum *object = (STMDatum *)[self objectForXid:xid entityName:entityName];
     
     if (object) {
         
-        if (![object.entity.name isEqualToString:entityName]) {
-            
-            errorMessage = [NSString stringWithFormat:@"object with xid %@ have entity name %@, not %@", xidString, object.entity.name, entityName];
-            [self error:error withMessage:errorMessage];
-            return nil;
-            
-        } else {
-            
             STMRecordStatus *recordStatus = [self createRecordStatusAndRemoveObject:object];
             return [self arrayForJSWithObjects:@[recordStatus]];
             
-        }
-        
-    }
-
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entity.name == %@ && xid == %@", entityName, xid];
-    
-    NSArray *objectsArray = [self objectsForEntityName:entityName
-                                               orderBy:@"id"
-                                             ascending:YES
-                                            fetchLimit:0
-                                           fetchOffset:0
-                                           withFantoms:NO
-                                             predicate:predicate
-                                inManagedObjectContext:[self document].managedObjectContext
-                                                 error:error];
-    
-    if (objectsArray.count == 0) {
+    } else {
         
         errorMessage = [NSString stringWithFormat:@"no object for destroy with xid %@ and entity name %@", xidString, entityName];
         [self error:error withMessage:errorMessage];
         return nil;
 
     }
-    
-    if (objectsArray.count > 1) {
-        
-        errorMessage = [NSString stringWithFormat:@"more than 1 object for destroy with xid %@ and entity name %@", xidString, entityName];
-        [self error:error withMessage:errorMessage];
-        return nil;
-        
-    }
-
-    object = objectsArray.firstObject;
-    
-    STMRecordStatus *recordStatus = [self createRecordStatusAndRemoveObject:object];
-    return [self arrayForJSWithObjects:@[recordStatus]];
     
 }
 
@@ -1625,13 +1962,13 @@
                 
                 resultDic[key] =  value;
                 
-            } else {
-                
-                NSString *message = [NSString stringWithFormat:@"%@ object %@ can't update value %@ for key %@\n", entityName, object.xid, value, key];
-                
-                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
-                
-                continue;
+//            } else {
+//                
+//                NSString *message = [NSString stringWithFormat:@"%@ object %@ can't update value %@ for key %@\n", entityName, object.xid, value, key];
+//                
+//                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
+//                
+//                continue;
                 
             }
             
@@ -1639,9 +1976,9 @@
         
     }
     
-    NSArray *ownRelationships = [self singleRelationshipsForEntityName:entityName].allKeys;
+    NSDictionary *ownRelationships = [self singleRelationshipsForEntityName:entityName];
     
-    for (NSString *key in ownRelationships) {
+    for (NSString *key in ownRelationships.allKeys) {
         
         id value = objectData[key];
         
@@ -1649,21 +1986,23 @@
             
             if ([value isKindOfClass:[NSString class]]) {
                 
-                NSString *xidString = (NSString *)value;
-                
-                NSManagedObject *destinationObject = [self objectForEntityName:entityName andXidString:xidString];
-                
-                if (![[object valueForKey:key] isEqual:destinationObject]) {
+//                NSString *xidString = (NSString *)value;
+//                
+//                NSString *destinationEntityName = ownRelationships[key];
+//                
+//                NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:xidString];
+//                
+//                if (![[object valueForKey:key] isEqual:destinationObject]) {
                     resultDic[key] = value;
-                }
+//                }
                 
-            } else {
-                
-                NSString *message = [NSString stringWithFormat:@"%@ object %@ relationship value %@ is not a String for key %@, can't get xid\n", entityName, object.xid, value, key];
-                
-                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
-                
-                continue;
+//            } else {
+//                
+//                NSString *message = [NSString stringWithFormat:@"%@ object %@ relationship value %@ is not a String for key %@, can't get xid\n", entityName, object.xid, value, key];
+//                
+//                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
+//                
+//                continue;
                 
             }
             
@@ -1840,24 +2179,18 @@
             
             NSData *xid = [STMFunctions xidDataFromXidString:xidString];
             
-            STMDatum *object = [self sharedController].objectsCache[xid];
+            STMDatum *object = (STMDatum *)[self objectForXid:xid entityName:entityName];
             
             if (object) {
                 
                 if (object.isFantom.boolValue) {
-                    
-                    errorMessage = [NSString stringWithFormat:@"object with xid %@ is fantom", xidString];
-                    
-                } else if (![object.entity.name isEqualToString:entityName]) {
-                    
-                    errorMessage = [NSString stringWithFormat:@"object with xid %@ have entity name %@, not %@", xidString, object.entity.name, entityName];
-                    
+                    errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
                 } else {
-                    
                     return [self arrayForJSWithObjects:@[object]];
-                    
                 }
                 
+            } else {
+                errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xidString, entityName];
             }
             
         } else {
@@ -1899,8 +2232,8 @@
     NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
     NSArray *ownRelationships = [self singleRelationshipsForEntityName:object.entity.name].allKeys;
     
-    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys]];
-    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships]];
+    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:YES]];
+    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:YES]];
     
     return propertiesDictionary;
     
@@ -2027,14 +2360,16 @@
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"isFantom == YES"];
+        NSFetchRequest *request = [self isFantomFetchRequestForEntityName:entityName];
+        
+        if (request) {
 
         NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request error:nil];
         
         resultCount += result;
 
+    }
+    
     }
     
     return resultCount;
@@ -2055,7 +2390,7 @@
         NSString *orderBy = parameters[@"orderBy"];
         BOOL ascending = [[parameters[@"order"] lowercaseString] isEqualToString:@"asc"];
         
-        BOOL sessionIsRunning = [[self.session status] isEqualToString:@"running"];
+        BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
         if (sessionIsRunning && self.document) {
             
             NSError *fetchError;
@@ -2133,8 +2468,9 @@
     
     [allKeys removeObjectsInArray:notSyncableProperties];
     
-    NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithDictionary:[object propertiesForKeys:allKeys]];
+    NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithDictionary:[object propertiesForKeys:allKeys withNulls:NO]];
     
+// STMDatum method relationshipXidsForKeys:withNulls: — should use it in new data protocol version
     for (NSString *key in object.entity.relationshipsByName.allKeys) {
         
         NSRelationshipDescription *relationshipDescription = [object.entity.relationshipsByName valueForKey:key];
@@ -2160,6 +2496,7 @@
         }
         
     }
+// STMDatum method relationshipXidsForKeys:withNulls:
     
     return propertiesDictionary;
     

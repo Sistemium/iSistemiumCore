@@ -728,33 +728,35 @@
         
         if (barcode) {
         
-        NSMutableArray *arguments = @[].mutableCopy;
-        
-        [arguments addObject:barcode];
-        
-        NSString *typeString = [STMBarCodeController barCodeTypeStringForType:type];
+            NSMutableArray *arguments = @[].mutableCopy;
+
+            [arguments addObject:barcode];
+
+            NSString *typeString = [STMBarCodeController barCodeTypeStringForType:type];
 
             if (typeString) {
-             
-        [arguments addObject:typeString];
-        
+
+                [arguments addObject:typeString];
+
                 if (type == STMBarCodeTypeStockBatch) {
-                    
-                    STMStockBatch *stockBatch = [STMBarCodeController stockBatchForBarcode:barcode].firstObject;
-        
-                    if (stockBatch) {
 
-                        NSDictionary *stockBatchDic = [STMObjectsController dictionaryForJSWithObject:stockBatch];
-                        [arguments addObject:stockBatchDic];
-                        
-                        NSLog(@"send received barcode %@ with type %@ and stockBatch %@ to WKWebView", barcode, typeString, stockBatchDic);
-
-                    } else {
-                        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
-                    }
+#warning should override
                     
+//                    STMStockBatch *stockBatch = [STMBarCodeController stockBatchForBarcode:barcode].firstObject;
+//
+//                    if (stockBatch) {
+//
+//                        NSDictionary *stockBatchDic = [STMObjectsController dictionaryForJSWithObject:stockBatch];
+//                        [arguments addObject:stockBatchDic];
+//
+//                        NSLog(@"send received barcode %@ with type %@ and stockBatch %@ to WKWebView", barcode, typeString, stockBatchDic);
+//
+//                    } else {
+//                        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+//                    }
+
                 } else {
-        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+                    NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
                 }
 
             } else {
