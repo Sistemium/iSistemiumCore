@@ -84,6 +84,10 @@
     
 }
 
+- (STMCoreSessionManager *)sessionManager {
+    return [STMCoreSessionManager sharedManager];
+}
+
 
 #pragma mark - variables setters & getters
 
@@ -377,8 +381,8 @@
 
     self.controllerState = STMAuthEnterPhoneNumber;
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"notAuthorized" object:[STMCoreSessionManager sharedManager].currentSession.syncer];
-    [[STMCoreSessionManager sharedManager] stopSessionForUID:self.userID];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"notAuthorized" object:[self sessionManager].currentSession.syncer];
+    [[self sessionManager] stopSessionForUID:self.userID];
 
     self.userID = nil;
     self.accessToken = nil;
@@ -456,18 +460,18 @@
         
     }
 
-    [[STMCoreSessionManager sharedManager] startSessionForUID:self.userID
-                                                   iSisDB:self.iSisDB
-                                             authDelegate:self
-                                                 trackers:trackers
-                                            startSettings:startSettings
-                                  defaultSettingsFileName:@"settings"
-                                           documentPrefix:[[NSBundle mainBundle] bundleIdentifier]];
+    [[self sessionManager] startSessionForUID:self.userID
+                                       iSisDB:self.iSisDB
+                                 authDelegate:self
+                                     trackers:trackers
+                                startSettings:startSettings
+                      defaultSettingsFileName:@"settings"
+                               documentPrefix:[[NSBundle mainBundle] bundleIdentifier]];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(sessionNotAuthorized)
                                                  name:@"notAuthorized"
-                                               object:[STMCoreSessionManager sharedManager].currentSession.syncer];
+                                               object:[self sessionManager].currentSession.syncer];
 
 }
 

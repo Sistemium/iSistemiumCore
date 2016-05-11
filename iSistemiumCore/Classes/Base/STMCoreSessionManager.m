@@ -57,12 +57,12 @@
             
             NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
             
-            session = [STMCoreSession initWithUID:uid
-                                       iSisDB:(NSString *)iSisDB
-                                 authDelegate:authDelegate
-                                     trackers:trackers
-                                startSettings:startSettings
-                               documentPrefix:prefix];
+            session = [[self sessionClass] initWithUID:uid
+                                                iSisDB:(NSString *)iSisDB
+                                          authDelegate:authDelegate
+                                              trackers:trackers
+                                         startSettings:startSettings
+                                        documentPrefix:prefix];
             
             session.defaultSettings = validSettings[@"values"];
             session.settingsControls = validSettings[@"controls"];
@@ -90,6 +90,10 @@
         
     }
 
+}
+
+- (Class)sessionClass {
+    return [STMCoreSession class];
 }
 
 - (void)stopSessionForUID:(NSString *)uid {
