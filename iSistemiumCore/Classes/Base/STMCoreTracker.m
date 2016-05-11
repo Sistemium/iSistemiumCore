@@ -7,7 +7,7 @@
 //
 
 #import "STMCoreTracker.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 
 @interface STMCoreTracker()
 

@@ -8,12 +8,12 @@
 
 #import "STMRemoteController.h"
 #import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 
 
 @implementation STMRemoteController
 
-+ (STMSession *)session {
++ (STMCoreSession *)session {
     return [STMSessionManager sharedManager].currentSession;
 }
 

@@ -60,7 +60,7 @@
 }
 
 - (STMCoreLocationTracker *)locationTracker {
-    return [(STMSession *)[STMSessionManager sharedManager].currentSession locationTracker];
+    return [(STMCoreSession *)[STMSessionManager sharedManager].currentSession locationTracker];
 }
 
 - (NSMutableArray *)waitingLocationPhotos {

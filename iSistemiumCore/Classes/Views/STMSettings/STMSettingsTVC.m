@@ -9,7 +9,7 @@
 #import "STMSettingsController.h"
 #import "STMSettingsTVC.h"
 #import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 #import "STMSetting.h"
 #import "STMSettingsData.h"
 

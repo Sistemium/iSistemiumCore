@@ -692,9 +692,9 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSession class]]) {
+    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
         
-        STMSession *session = (STMSession *)notification.object;
+        STMCoreSession *session = (STMCoreSession *)notification.object;
     
         if (session == self.session) {
             

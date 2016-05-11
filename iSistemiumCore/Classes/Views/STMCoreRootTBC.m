@@ -11,7 +11,7 @@
 #import "STMCoreUI.h"
 
 #import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 
 #import "STMFunctions.h"
 #import "STMConstants.h"
@@ -35,7 +35,7 @@
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
 @property (nonatomic, strong) UIAlertView *timeoutAlert;
-@property (nonatomic, strong) STMSession *session;
+@property (nonatomic, strong) STMCoreSession *session;
 
 @property (nonatomic, strong) NSString *appDownloadUrl;
 @property (nonatomic) BOOL updateAlertIsShowing;
@@ -112,7 +112,7 @@
     
 }
 
-- (STMSession *)session {
+- (STMCoreSession *)session {
     return [STMSessionManager sharedManager].currentSession;
 }
 

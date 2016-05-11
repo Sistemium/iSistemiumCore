@@ -771,7 +771,7 @@
 
 - (void)appSettingsChanged:(NSNotification *)notification {
     
-    STMSession *currentSession = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *currentSession = [STMSessionManager sharedManager].currentSession;
     
     if (currentSession.status == STMSessionRunning) {
         
@@ -801,7 +801,7 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    STMSession *session = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *session = [STMSessionManager sharedManager].currentSession;
     
     if (notification.object == session) {
         

@@ -7,7 +7,7 @@
 //
 
 #import "STMSettingsController.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 #import "STMSettingsData.h"
 #import "STMEntityDescription.h"
 #import "STMCoreObjectsController.h"
@@ -311,7 +311,7 @@
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
     
-    STMSession *currentSession = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *currentSession = [STMSessionManager sharedManager].currentSession;
     STMSettingsController *currentController = currentSession.settingsController;
     
     NSDictionary *settingsGroup = [currentController currentSettingsForGroup:group];
@@ -415,7 +415,7 @@
         
     }
     
-    [[(STMSession *)self.session document] saveDocument:^(BOOL success) {
+    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
         if (success) {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete" object:self];
         }
@@ -475,7 +475,7 @@
     
     self.groupNames = nil;
     
-    [[(STMSession *)self.session document] saveDocument:^(BOOL success) {
+    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
         if (success) {
             NSLog(@"save settings success");
         }

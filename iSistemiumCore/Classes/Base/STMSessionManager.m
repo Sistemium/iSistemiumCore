@@ -7,7 +7,7 @@
 //
 
 #import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 #import "STMSettingsData.h"
 
 #define SETTINGS_SCHEMA @"settings_schema"
@@ -30,7 +30,7 @@
     return _sessions;
 }
 
-- (STMSession *)currentSession {
+- (STMCoreSession *)currentSession {
     return (self.sessions)[self.currentSessionUID];
 }
 
@@ -51,13 +51,13 @@
     
     if (uid) {
         
-        STMSession *session = (self.sessions)[uid];
+        STMCoreSession *session = (self.sessions)[uid];
         
         if (!session) {
             
             NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
             
-            session = [STMSession initWithUID:uid
+            session = [STMCoreSession initWithUID:uid
                                        iSisDB:(NSString *)iSisDB
                                  authDelegate:authDelegate
                                      trackers:trackers
@@ -94,7 +94,7 @@
 
 - (void)stopSessionForUID:(NSString *)uid {
     
-    STMSession *session = (self.sessions)[uid];
+    STMCoreSession *session = (self.sessions)[uid];
     
     if (session.status == STMSessionRunning || session.status == STMSessionRemoving) {
         
@@ -126,7 +126,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.status == %@", @"stopped"];
     NSArray *completedSessions = [[self.sessions allValues] filteredArrayUsingPredicate:predicate];
     
-    for (STMSession *session in completedSessions) {
+    for (STMCoreSession *session in completedSessions) {
         [session dismissSession];
     }
 
@@ -134,7 +134,7 @@
 
 - (void)removeSessionForUID:(NSString *)uid {
 
-    STMSession *session = (self.sessions)[uid];
+    STMCoreSession *session = (self.sessions)[uid];
     
     if (session.status == STMSessionStopped) {
         

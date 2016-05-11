@@ -174,9 +174,9 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSession class]]) {
+    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
         
-        STMSession *session = notification.object;
+        STMCoreSession *session = notification.object;
         
         if (session.status != STMSessionRunning) {
 //            self.objectsCache = nil;

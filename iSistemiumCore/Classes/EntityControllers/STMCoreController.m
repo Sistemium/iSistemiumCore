@@ -11,7 +11,7 @@
 
 @implementation STMCoreController
 
-+ (STMSession *)session {
++ (STMCoreSession *)session {
     
     return [STMSessionManager sharedManager].currentSession;
     

@@ -1,52 +1,32 @@
 //
-//  STMSession.m
+//  STMCoreSession.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 06/05/14.
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMSession.h"
+#import "STMCoreSession.h"
 
-@interface STMSession()
+@interface STMCoreSession()
 
 @property (nonatomic, strong) NSDictionary *startSettings;
-@property (nonatomic, strong) NSArray *startTrackers;
 
 @end
 
-@implementation STMSession
+@implementation STMCoreSession
 
-+(STMSession *)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix {
++ (STMCoreSession *)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix {
     
     if (uid) {
         
-        STMSession *session = [[STMSession alloc] init];
+        STMCoreSession *session = [[STMCoreSession alloc] init];
         session.uid = uid;
         session.iSisDB = iSisDB;
         session.status = STMSessionStarting;
         session.startSettings = startSettings;
         session.authDelegate = authDelegate;
         session.startTrackers = trackers;
-        
-//#warning move settingController, trackers and syncer init to documentReady method
-//        session.settingsController = [STMSettingsController initWithSettings:startSettings];
-//        session.trackers = [NSMutableDictionary dictionary];
-//        session.syncer = [[STMSyncer alloc] init];
-//
-//        if ([trackers containsObject:@"location"]) {
-//            
-//            session.locationTracker = [[STMLocationTracker alloc] init];
-//            (session.trackers)[session.locationTracker.group] = session.locationTracker;
-//
-//        }
-//        
-//        if ([trackers containsObject:@"battery"]) {
-//            
-//            session.batteryTracker = [[STMBatteryTracker alloc] init];
-//            (session.trackers)[session.batteryTracker.group] = session.batteryTracker;
-//
-//        }
         
         [session addObservers];
 
@@ -166,20 +146,8 @@
         self.settingsController = [STMSettingsController initWithSettings:self.startSettings];
         self.trackers = [NSMutableDictionary dictionary];
         self.syncer = [[STMSyncer alloc] init];
-        
-        if ([self.startTrackers containsObject:@"location"]) {
-            
-            self.locationTracker = [[STMCoreLocationTracker alloc] init];
-            (self.trackers)[self.locationTracker.group] = self.locationTracker;
-            
-        }
-        
-        if ([self.startTrackers containsObject:@"battery"]) {
-            
-            self.batteryTracker = [[STMCoreBatteryTracker alloc] init];
-            (self.trackers)[self.batteryTracker.group] = self.batteryTracker;
-            
-        }
+
+        [self checkTrackersToStart];
         
         self.logger = [STMLogger sharedLogger];
         self.logger.session = self;
@@ -187,6 +155,24 @@
 
     }
     
+}
+
+- (void)checkTrackersToStart {
+    
+    if ([self.startTrackers containsObject:@"location"]) {
+        
+        self.locationTracker = [[STMCoreLocationTracker alloc] init];
+        self.trackers[self.locationTracker.group] = self.locationTracker;
+        
+    }
+    
+    if ([self.startTrackers containsObject:@"battery"]) {
+        
+        self.batteryTracker = [[STMCoreBatteryTracker alloc] init];
+        self.trackers[self.batteryTracker.group] = self.batteryTracker;
+        
+    }
+
 }
 
 - (void)documentNotReady:(NSNotification *)notification {

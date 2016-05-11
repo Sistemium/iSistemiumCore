@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMDocument.h"
 #import "STMSyncer.h"
-#import "STMSession.h"
+#import "STMCoreSession.h"
 
 #import "STMNS.h"
 
@@ -23,7 +23,7 @@
 
 @interface STMCoreController : NSObject
 
-+ (STMSession *)session;
++ (STMCoreSession *)session;
 + (STMDocument *)document;
 + (STMSyncer *)syncer;
 

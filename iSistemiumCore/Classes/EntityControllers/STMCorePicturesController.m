@@ -21,7 +21,7 @@
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
 @property (nonatomic) BOOL waitingForDownloadPicture;
 
-@property (nonatomic, strong) STMSession *session;
+@property (nonatomic, strong) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSFetchedResultsController *nonloadedPicturesResultsController;
@@ -95,7 +95,7 @@
     
 }
 
-- (STMSession *)session {
+- (STMCoreSession *)session {
     
     return [STMSessionManager sharedManager].currentSession;
     
@@ -759,7 +759,7 @@
                         
                         NSLog(picture.picturesInfo)
                         
-                        __block STMSession *session = [STMSessionManager sharedManager].currentSession;
+                        __block STMCoreSession *session = [STMSessionManager sharedManager].currentSession;
                         
                         [session.document saveDocument:^(BOOL success) {
                         }];

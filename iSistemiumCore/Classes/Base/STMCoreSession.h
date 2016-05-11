@@ -1,5 +1,5 @@
 //
-//  STMSession.h
+//  STMCoreSession.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 06/05/14.
@@ -17,7 +17,7 @@
 #import "STMSyncer.h"
 
 
-@interface STMSession : NSObject <STMSession>
+@interface STMCoreSession : NSObject <STMSession>
 
 @property (nonatomic, strong) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic, strong) NSString *uid;
@@ -29,13 +29,14 @@
 @property (nonatomic, strong) STMSettingsController *settingsController;
 @property (nonatomic, strong) STMCoreLocationTracker *locationTracker;
 @property (nonatomic, strong) STMCoreBatteryTracker *batteryTracker;
+@property (nonatomic, strong) NSArray *startTrackers;
 @property (nonatomic, strong) NSMutableDictionary *trackers;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;
 @property (nonatomic, strong) STMSyncer *syncer;
 
 
-+ (STMSession *)initWithUID:(NSString *)uid
++ (STMCoreSession *)initWithUID:(NSString *)uid
                      iSisDB:(NSString *)iSisDB
               authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                   trackers:(NSArray *)trackers
