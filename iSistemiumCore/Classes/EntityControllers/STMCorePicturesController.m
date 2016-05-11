@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 #import "STMFunctions.h"
 #import "STMConstants.h"
 #import "STMSessionManager.h"
@@ -15,7 +15,7 @@
 #import <objc/runtime.h>
 
 
-@interface STMPicturesController() <NSFetchedResultsControllerDelegate>
+@interface STMCorePicturesController() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) NSOperationQueue *uploadQueue;
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
@@ -29,10 +29,10 @@
 
 @end
 
-@implementation STMPicturesController
+@implementation STMCorePicturesController
 
 
-+ (STMPicturesController *)sharedController {
++ (STMCorePicturesController *)sharedController {
     
     static dispatch_once_t pred = 0;
     __strong static id _sharedController = nil;
@@ -170,13 +170,11 @@
 }
 
 - (NSArray *)photoEntitiesNames {
-#warning should override?
     return @[];
 }
 
 - (NSArray *)instantLoadPicturesEntityNames {
-#warning should override?
-    return @[];
+    return @[NSStringFromClass([STMMessagePicture class])];
 }
 
 - (NSArray *)nonloadedPictures {
@@ -462,7 +460,7 @@
         
         if ([object isKindOfClass:[STMPicture class]]) {
             
-            STMPicturesController *pc = [self sharedController];
+            STMCorePicturesController *pc = [self sharedController];
             
             if (![pc.hrefDictionary.allKeys containsObject:href]) {
                 
@@ -594,7 +592,7 @@
         } else {
             
             self.downloadingPictures = NO;
-            [STMPicturesController checkBrokenPhotos];
+            [STMCorePicturesController checkBrokenPhotos];
             self.downloadingPictures = (self.hrefDictionary.allValues.count > 0);
             
         }
@@ -619,7 +617,7 @@
         
         NSError *error;
         
-        NSManagedObject *object = [[STMPicturesController document].managedObjectContext existingObjectWithID:objectID error:&error];
+        NSManagedObject *object = [[STMCorePicturesController document].managedObjectContext existingObjectWithID:objectID error:&error];
         
         if (!error && object) {
             

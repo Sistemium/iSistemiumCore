@@ -8,7 +8,7 @@
 
 #import "STMPicture.h"
 
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 #import "STMPhotosController.h"
 
 
@@ -23,7 +23,7 @@
 //            [[STMPhotosController sharedController] photoReportWasDeleted:(STMPhotoReport *)self];
 //        }
         
-        [STMPicturesController removeImageFilesForPicture:self];
+        [STMCorePicturesController removeImageFilesForPicture:self];
         
     }
     

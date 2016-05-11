@@ -1,5 +1,5 @@
 //
-//  STMController.h
+//  STMCoreController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 15/01/15.
@@ -21,7 +21,7 @@
 #import "STMCoreDataModel.h"
 
 
-@interface STMController : NSObject
+@interface STMCoreController : NSObject
 
 + (STMSession *)session;
 + (STMDocument *)document;

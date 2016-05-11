@@ -14,7 +14,7 @@
 #import "STMCoreLocationTracker.h"
 #import "STMSyncer.h"
 #import "STMEntityController.h"
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 #import "STMSocketController.h"
 
 #import "STMAuthController.h"
@@ -452,7 +452,7 @@
 
     self.nonloadedPicturesButton.enabled = ([self syncer].syncerState == STMSyncerIdle);
     
-    NSUInteger unloadedPicturesCount = [[STMPicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
     NSString *title = @"";
     NSString *badgeValue = nil;
@@ -470,7 +470,7 @@
         self.downloadAlertWasShown = NO;
         self.nonloadedPicturesButton.enabled = NO;
         
-        [STMPicturesController sharedController].downloadingPictures = NO;
+        [STMCorePicturesController sharedController].downloadingPictures = NO;
         [UIApplication sharedApplication].idleTimerDisabled = NO;
 
     }
@@ -478,7 +478,7 @@
     [self.nonloadedPicturesButton setTitle:title forState:UIControlStateNormal];
     self.navigationController.tabBarItem.badgeValue = badgeValue;
     
-    UIColor *titleColor = [STMPicturesController sharedController].downloadingPictures ? ACTIVE_BLUE_COLOR : [UIColor redColor];
+    UIColor *titleColor = [STMCorePicturesController sharedController].downloadingPictures ? ACTIVE_BLUE_COLOR : [UIColor redColor];
     [self.nonloadedPicturesButton setTitleColor:titleColor forState:UIControlStateNormal];
     
 }
@@ -510,7 +510,7 @@
         actionSheet.title = NSLocalizedString(@"UNLOADED PICTURES", nil);
         actionSheet.delegate = self;
 
-        if ([STMPicturesController sharedController].downloadingPictures) {
+        if ([STMCorePicturesController sharedController].downloadingPictures) {
         
             actionSheet.tag = 2;
             [actionSheet addButtonWithTitle:NSLocalizedString(@"DOWNLOAD STOP", nil)];
@@ -571,8 +571,8 @@
 
 - (void)startPicturesDownloading {
     
-    [STMPicturesController checkPhotos];
-    [STMPicturesController sharedController].downloadingPictures = YES;
+    [STMCorePicturesController checkPhotos];
+    [STMCorePicturesController sharedController].downloadingPictures = YES;
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 
     [self updateNonloadedPicturesInfo];
@@ -581,7 +581,7 @@
 
 - (void)stopPicturesDownloading {
     
-    [STMPicturesController sharedController].downloadingPictures = NO;
+    [STMCorePicturesController sharedController].downloadingPictures = NO;
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     
     [self updateNonloadedPicturesInfo];
@@ -590,7 +590,7 @@
 
 - (void)showDownloadAlert {
     
-    NSUInteger unloadedPicturesCount = [[STMPicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
     if (unloadedPicturesCount > 0) {
         
@@ -1111,7 +1111,7 @@
     [nc addObserver:self
            selector:@selector(nonloadedPicturesCountDidChange)
                name:@"nonloadedPicturesCountDidChange"
-             object:[STMPicturesController sharedController]];
+             object:[STMCorePicturesController sharedController]];
     
     [nc addObserver:self
            selector:@selector(settingsChanged:)
@@ -1202,7 +1202,7 @@
         [[STMCoreRootTBC sharedRootVC] newAppVersionAvailable:nil];
     }
     
-    if ([STMPicturesController sharedController].downloadingPictures) {
+    if ([STMCorePicturesController sharedController].downloadingPictures) {
         [UIApplication sharedApplication].idleTimerDisabled = YES;
     }
     

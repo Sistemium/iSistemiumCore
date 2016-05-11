@@ -13,7 +13,7 @@
 #import "STMSyncer.h"
 #import "STMEntityController.h"
 #import "STMClientDataController.h"
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 #import "STMRecordStatusController.h"
 #import "STMSocketController.h"
 
@@ -404,7 +404,7 @@
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
             NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
-            if (thumbnailData) [STMPicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
             
         }
         
@@ -1268,7 +1268,7 @@
     
 //    [self avgTimesCalc];
     
-    [STMPicturesController checkPhotos];
+    [STMCorePicturesController checkPhotos];
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG

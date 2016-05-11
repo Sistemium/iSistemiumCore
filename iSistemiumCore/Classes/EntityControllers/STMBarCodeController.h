@@ -6,7 +6,7 @@
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
 typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
     STMBarCodeTypeUnknown,
@@ -16,7 +16,7 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
 };
 
 
-@interface STMBarCodeController : STMController
+@interface STMBarCodeController : STMCoreController
 
 + (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types
                                    forBarcode:(NSString *)barcode;

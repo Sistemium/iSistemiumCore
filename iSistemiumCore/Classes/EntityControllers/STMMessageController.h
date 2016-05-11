@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
-@interface STMMessageController : STMController
+@interface STMMessageController : STMCoreController
 
 + (NSArray *)sortedPicturesArrayForMessage:(STMMessage *)message;
 

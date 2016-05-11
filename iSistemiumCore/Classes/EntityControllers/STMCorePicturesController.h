@@ -1,19 +1,19 @@
 //
-//  STMPicturesController.h
+//  STMCorePicturesController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 29/11/14.
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
 
-@interface STMPicturesController : STMController
+@interface STMCorePicturesController : STMCoreController
 
 @property (nonatomic) BOOL downloadingPictures;
 
-+ (STMPicturesController *)sharedController;
++ (STMCorePicturesController *)sharedController;
 
 - (NSUInteger)nonloadedPicturesCount;
 

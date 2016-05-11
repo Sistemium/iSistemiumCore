@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
-@interface STMClientEntityController : STMController
+@interface STMClientEntityController : STMCoreController
 
 + (STMClientEntity *)clientEntityWithName:(NSString *)name;
 

@@ -6,9 +6,9 @@
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
-@interface STMPhotosController : STMController
+@interface STMPhotosController : STMCoreController
 
 @property (nonatomic, strong) NSMutableArray *waitingLocationPhotos;
 

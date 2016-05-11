@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
 
-@interface STMEntityController : STMController
+@interface STMEntityController : STMCoreController
 
 + (void)flushSelf;
 

@@ -12,7 +12,7 @@
 
 #import "STMMessageController.h"
 #import "STMRecordStatusController.h"
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 #import "STMWorkflowController.h"
 
 #import "STMWorkflowEditablesVC.h"
@@ -238,7 +238,7 @@
         
         if (!picture.imageThumbnail && picture.href) {
             
-            [STMPicturesController hrefProcessingForObject:picture];
+            [STMCorePicturesController hrefProcessingForObject:picture];
             [self addSpinnerToCell:cell];
             
         } else {

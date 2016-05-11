@@ -6,11 +6,11 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 #import "STMCoreUI.h"
 
 
-@interface STMWorkflowController : STMController
+@interface STMWorkflowController : STMCoreController
 
 + (NSString *)workflowForEntityName:(NSString *)entityName;
 

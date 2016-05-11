@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
 #import <CoreData/CoreData.h>
 #import <Crashlytics/Crashlytics.h>
@@ -15,7 +15,7 @@
 #import "STMEntitiesSubscribable.h"
 
 
-@interface STMCoreObjectsController : STMController
+@interface STMCoreObjectsController : STMCoreController
 
 + (STMCoreObjectsController *)sharedController;
 

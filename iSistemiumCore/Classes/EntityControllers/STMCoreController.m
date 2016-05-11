@@ -1,15 +1,15 @@
 //
-//  STMController.m
+//  STMCoreController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 15/01/15.
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 #import "STMSessionManager.h"
 
-@implementation STMController
+@implementation STMCoreController
 
 + (STMSession *)session {
     

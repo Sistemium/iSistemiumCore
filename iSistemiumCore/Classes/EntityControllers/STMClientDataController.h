@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
-@interface STMClientDataController : STMController
+@interface STMClientDataController : STMCoreController
 
 + (void)checkClientData;
 + (void)checkAppVersion;

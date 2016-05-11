@@ -6,10 +6,10 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
 
 
-@interface STMRecordStatusController : STMController
+@interface STMRecordStatusController : STMCoreController
 
 + (STMRecordStatus *)existingRecordStatusForXid:(NSData *)objectXid;
 + (STMRecordStatus *)recordStatusForObject:(NSManagedObject *)object;

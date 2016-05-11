@@ -11,7 +11,7 @@
 #import "STMFunctions.h"
 
 #import "STMMessageController.h"
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 
 
 @interface STMMessageVC ()
@@ -79,7 +79,7 @@
     } else {
         
         [self addObservers];
-        [STMPicturesController hrefProcessingForObject:self.picture];
+        [STMCorePicturesController hrefProcessingForObject:self.picture];
         
         [self.view addSubview:self.spinnerView];
         

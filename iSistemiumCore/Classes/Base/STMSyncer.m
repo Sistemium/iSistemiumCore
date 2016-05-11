@@ -15,7 +15,7 @@
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
-#import "STMPicturesController.h"
+#import "STMCorePicturesController.h"
 
 #import "STMCoreDataModel.h"
 
