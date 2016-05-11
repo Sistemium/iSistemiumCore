@@ -1,5 +1,5 @@
 //
-//  STMVolumePicker.h
+//  STMCoreVolumePicker.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 13/12/15.
@@ -11,7 +11,7 @@
 #import "STMVolumePickerOwner.h"
 
 
-@interface STMVolumePicker : UIPickerView
+@interface STMCoreVolumePicker : UIPickerView
 
 @property (nonatomic) NSInteger packageRel;
 @property (nonatomic) NSInteger maxVolume;

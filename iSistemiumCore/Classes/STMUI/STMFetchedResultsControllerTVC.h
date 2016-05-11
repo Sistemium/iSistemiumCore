@@ -16,7 +16,7 @@
 
 #import "STMAuthController.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 #import "STMNS.h"
 
 #import "STMConstants.h"

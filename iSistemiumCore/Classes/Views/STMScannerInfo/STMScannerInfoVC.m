@@ -8,7 +8,7 @@
 
 #import "STMScannerInfoVC.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 #import "STMBarCodeScanner.h"
 #import "STMSoundController.h"
 

@@ -1,13 +1,13 @@
 //
-//  STMUI.h
-//  iSistemium
+//  STMCoreUI.h
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 16/11/14.
-//  Copyright (c) 2014 Sistemium UAB. All rights reserved.
+//  Created by Maxim Grigoriev on 11/05/16.
+//  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#ifndef iSistemium_STMUI_h
-#define iSistemium_STMUI_h
+#ifndef STMCoreUI_h
+#define STMCoreUI_h
 
 #import "UIViewController+custom.h"
 
@@ -50,9 +50,9 @@
 
 #import "UIToolbar+custom.h"
 
-#import "STMVolumePicker.h"
+#import "STMCoreVolumePicker.h"
 
 #import "STMWorkflowAS.h"
 
 
-#endif
+#endif /* STMCoreUI_h */

@@ -20,7 +20,7 @@
 #import "STMStoryboard.h"
 
 #import "STMFunctions.h"
-#import "STMUI.h"
+#import "STMCoreUI.h"
 
 #import "iSistemiumCore-Swift.h"
 

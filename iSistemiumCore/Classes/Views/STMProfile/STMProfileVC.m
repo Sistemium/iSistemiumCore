@@ -20,7 +20,7 @@
 #import "STMAuthController.h"
 #import "STMCoreRootTBC.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 #import "STMFunctions.h"
 
 #import <Reachability/Reachability.h>

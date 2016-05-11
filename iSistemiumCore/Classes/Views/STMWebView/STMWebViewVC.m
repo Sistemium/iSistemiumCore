@@ -8,7 +8,7 @@
 
 #import "STMWebViewVC.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 
 #import "STMSessionManager.h"
 #import "STMAuthController.h"

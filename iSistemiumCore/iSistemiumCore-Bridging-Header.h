@@ -4,4 +4,4 @@
 
 #import "STMSessionManager.h"
 #import "STMCoreObjectsController.h"
-#import "STMUI.h"
+#import "STMCoreUI.h"

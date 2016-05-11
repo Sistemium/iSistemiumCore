@@ -1,18 +1,18 @@
 //
-//  STMVolumePicker.m
+//  STMCoreVolumePicker.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 13/12/15.
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMVolumePicker.h"
+#import "STMCoreVolumePicker.h"
 
 #import "STMSessionManager.h"
 #import "STMConstants.h"
 
 
-@interface STMVolumePicker() <UIPickerViewDelegate, UIPickerViewDataSource>
+@interface STMCoreVolumePicker() <UIPickerViewDelegate, UIPickerViewDataSource>
 
 @property (nonatomic) NSInteger selectedBoxCount;
 @property (nonatomic) NSArray *packageRels;
@@ -21,7 +21,7 @@
 @end
 
 
-@implementation STMVolumePicker
+@implementation STMCoreVolumePicker
 
 - (instancetype)init {
     

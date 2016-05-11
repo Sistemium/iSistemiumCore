@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "STMUI.h"
+#import "STMCoreUI.h"
 
 
 @interface STMSettingsNC : STMActionPopoverNC

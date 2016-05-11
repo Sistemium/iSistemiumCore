@@ -7,7 +7,7 @@
 //
 
 #import "STMController.h"
-#import "STMUI.h"
+#import "STMCoreUI.h"
 
 
 @interface STMWorkflowController : STMController

@@ -8,7 +8,7 @@
 
 #import "STMCoreRootTBC.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 
 #import "STMSessionManager.h"
 #import "STMSession.h"
