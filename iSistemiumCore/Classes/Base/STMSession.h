@@ -12,8 +12,8 @@
 #import "STMDocument.h"
 #import "STMLogger.h"
 #import "STMSettingsController.h"
-#import "STMLocationTracker.h"
-#import "STMBatteryTracker.h"
+#import "STMCoreLocationTracker.h"
+#import "STMCoreBatteryTracker.h"
 #import "STMSyncer.h"
 
 
@@ -27,8 +27,8 @@
 @property (nonatomic, strong) STMLogger *logger;
 @property (nonatomic, strong) id <STMSessionManager> manager;
 @property (nonatomic, strong) STMSettingsController *settingsController;
-@property (nonatomic, strong) STMLocationTracker *locationTracker;
-@property (nonatomic, strong) STMBatteryTracker *batteryTracker;
+@property (nonatomic, strong) STMCoreLocationTracker *locationTracker;
+@property (nonatomic, strong) STMCoreBatteryTracker *batteryTracker;
 @property (nonatomic, strong) NSMutableDictionary *trackers;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;

@@ -59,7 +59,7 @@
     
 }
 
-- (STMLocationTracker *)locationTracker {
+- (STMCoreLocationTracker *)locationTracker {
     return [(STMSession *)[STMSessionManager sharedManager].currentSession locationTracker];
 }
 

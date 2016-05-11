@@ -1,5 +1,5 @@
 //
-//  STMTracker.h
+//  STMCoreTracker.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 3/11/13.
@@ -12,7 +12,7 @@
 #import "STMDocument.h"
 #import "STMFunctions.h"
 
-@interface STMTracker : NSObject
+@interface STMCoreTracker : NSObject
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSession> session;

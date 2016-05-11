@@ -1,12 +1,12 @@
 //
-//  STMLocationTracker.m
+//  STMCoreLocationTracker.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 4/3/13.
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMLocationTracker.h"
+#import "STMCoreLocationTracker.h"
 #import "STMEntityDescription.h"
 
 #import "STMClientDataController.h"
@@ -20,7 +20,7 @@
 #warning - it seems this class use almost none of the parent class methods after implemetation of new "desiredAccuracy zero-rule"
 
 
-@interface STMLocationTracker() <CLLocationManagerDelegate>
+@interface STMCoreLocationTracker() <CLLocationManagerDelegate>
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) CLLocationManager *requestManager;
@@ -55,7 +55,7 @@
 @end
 
 
-@implementation STMLocationTracker
+@implementation STMCoreLocationTracker
 
 @synthesize lastLocation = _lastLocation;
 

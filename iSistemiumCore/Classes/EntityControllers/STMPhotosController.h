@@ -14,7 +14,7 @@
 
 + (STMPhotosController *)sharedController;
 
-- (STMLocationTracker *)locationTracker;
+- (STMCoreLocationTracker *)locationTracker;
 
 
 @end

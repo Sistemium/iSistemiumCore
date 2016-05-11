@@ -1,15 +1,15 @@
 //
-//  STMTracker.m
+//  STMCoreTracker.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 3/11/13.
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMTracker.h"
+#import "STMCoreTracker.h"
 #import "STMSession.h"
 
-@interface STMTracker()
+@interface STMCoreTracker()
 
 @property (nonatomic, strong) NSTimer *startTimer;
 @property (nonatomic, strong) NSTimer *finishTimer;
@@ -17,7 +17,7 @@
 
 @end
 
-@implementation STMTracker
+@implementation STMCoreTracker
 
 @synthesize trackerAutoStart = _trackerAutoStart;
 @synthesize trackerStartTime = _trackerStartTime;

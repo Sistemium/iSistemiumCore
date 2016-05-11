@@ -107,7 +107,7 @@
                 
                 if (success) {
                     
-                    for (STMTracker *tracker in self.trackers.allValues) {
+                    for (STMCoreTracker *tracker in self.trackers.allValues) {
                         [tracker prepareToDestroy];
                     }
                     [self.syncer prepareToDestroy];
@@ -169,14 +169,14 @@
         
         if ([self.startTrackers containsObject:@"location"]) {
             
-            self.locationTracker = [[STMLocationTracker alloc] init];
+            self.locationTracker = [[STMCoreLocationTracker alloc] init];
             (self.trackers)[self.locationTracker.group] = self.locationTracker;
             
         }
         
         if ([self.startTrackers containsObject:@"battery"]) {
             
-            self.batteryTracker = [[STMBatteryTracker alloc] init];
+            self.batteryTracker = [[STMCoreBatteryTracker alloc] init];
             (self.trackers)[self.batteryTracker.group] = self.batteryTracker;
             
         }

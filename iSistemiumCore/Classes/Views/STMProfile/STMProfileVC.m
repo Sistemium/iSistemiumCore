@@ -11,7 +11,7 @@
 #import "STMSessionManager.h"
 #import "STMSession.h"
 
-#import "STMLocationTracker.h"
+#import "STMCoreLocationTracker.h"
 #import "STMSyncer.h"
 #import "STMEntityController.h"
 #import "STMPicturesController.h"
@@ -74,7 +74,7 @@
 
 @implementation STMProfileVC
 
-- (STMLocationTracker *)locationTracker {
+- (STMCoreLocationTracker *)locationTracker {
     return [(STMSession *)[STMSessionManager sharedManager].currentSession locationTracker];
 }
 

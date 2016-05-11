@@ -123,11 +123,11 @@
         
         return self.session.syncer;
         
-    } else if ([class isSubclassOfClass:[STMBatteryTracker class]]) {
+    } else if ([class isSubclassOfClass:[STMCoreBatteryTracker class]]) {
         
         return self.session.batteryTracker;
         
-    } else if ([class isSubclassOfClass:[STMLocationTracker class]]) {
+    } else if ([class isSubclassOfClass:[STMCoreLocationTracker class]]) {
 
         return self.session.locationTracker;
 

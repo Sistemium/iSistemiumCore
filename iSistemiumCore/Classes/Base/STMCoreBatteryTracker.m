@@ -1,17 +1,17 @@
 //
-//  STMBatteryTracker.m
+//  STMCoreBatteryTracker.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 4/3/13.
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMBatteryTracker.h"
+#import "STMCoreBatteryTracker.h"
 #import "STMCoreDataModel.h"
 #import "STMEntityDescription.h"
 #import "STMCoreObjectsController.h"
 
-@implementation STMBatteryTracker
+@implementation STMCoreBatteryTracker
 
 - (void)customInit {
     

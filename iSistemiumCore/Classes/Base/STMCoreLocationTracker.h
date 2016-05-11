@@ -1,15 +1,15 @@
 //
-//  STMLocationTracker.h
+//  STMCoreLocationTracker.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 4/3/13.
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMTracker.h"
+#import "STMCoreTracker.h"
 #import "STMCoreDataModel.h"
 
-@interface STMLocationTracker : STMTracker
+@interface STMCoreLocationTracker : STMCoreTracker
 
 @property (nonatomic) CLLocationAccuracy currentAccuracy;
 @property (nonatomic) BOOL isAccuracySufficient;
