@@ -8,9 +8,7 @@
 
 #import "STMMessagesTVC.h"
 
-#import "STMMessage.h"
-#import "STMMessagePicture.h"
-#import "STMRecordStatus.h"
+#import "STMCoreDataModel.h"
 
 #import "STMMessageController.h"
 #import "STMRecordStatusController.h"
