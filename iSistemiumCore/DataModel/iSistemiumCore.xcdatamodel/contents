@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10171" systemVersion="15E65" minimumToolsVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10174" systemVersion="15E65" minimumToolsVersion="Automatic">
     <entity name="STMBarCodeScan" representedClassName="STMBarCodeScan" syncable="YES">
         <attribute name="code" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
@@ -106,6 +106,7 @@
         <attribute name="eTag" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="isResolveFantoms" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isUploadable" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lifeTime" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="lifeTimeDateField" optional="YES" attributeType="String" syncable="YES"/>
@@ -239,7 +240,7 @@
         <element name="STMClientData" positionX="-855" positionY="-957" width="128" height="418"/>
         <element name="STMClientEntity" positionX="-344" positionY="-955" width="128" height="238"/>
         <element name="STMDatum" positionX="-1154" positionY="-955" width="128" height="163"/>
-        <element name="STMEntity" positionX="-182" positionY="-952" width="128" height="358"/>
+        <element name="STMEntity" positionX="-182" positionY="-952" width="128" height="375"/>
         <element name="STMLocation" positionX="-695" positionY="-657" width="128" height="360"/>
         <element name="STMLogMessage" positionX="-1008" positionY="-684" width="128" height="238"/>
         <element name="STMPhoto" positionX="-522" positionY="-585" width="128" height="58"/>
