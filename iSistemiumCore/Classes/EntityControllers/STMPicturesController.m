@@ -170,10 +170,12 @@
 }
 
 - (NSArray *)photoEntitiesNames {
+#warning should override?
     return @[];
 }
 
 - (NSArray *)instantLoadPicturesEntityNames {
+#warning should override?
     return @[];
 }
 
@@ -411,6 +413,8 @@
 }
 
 + (void)checkUploadedPhotos {
+
+    int counter = 0;
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMPhoto class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
@@ -428,6 +432,7 @@
             if (photoData && photoData.length > 0) {
                 
                 [[self sharedController] addUploadOperationForPicture:picture data:photoData];
+                counter++;
                 
             } else {
                 
@@ -440,6 +445,9 @@
         }
         
     }
+    
+    NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
     
 }
 
@@ -704,8 +712,11 @@
 
 - (void)addUploadOperationForPicture:(STMPicture *)picture data:(NSData *)data {
 
-    NSString *url = @"https://api.sistemium.com/ims/dr50?folder=";
+    NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
+    NSString *url = [[appSettings valueForKey:@"IMS.url"] stringByAppendingString:@"?folder="];
+    
     NSString *entityName = picture.entity.name;
+    
     NSDate *currentDate = [NSDate date];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.dateFormat = @"yyyy";
@@ -714,7 +725,9 @@
     NSString *month = [dateFormatter stringFromDate:currentDate];
     dateFormatter.dateFormat = @"dd";
     NSString *day = [dateFormatter stringFromDate:currentDate];
+    
     NSURL *imsURL = [NSURL URLWithString:[url stringByAppendingString:[NSString stringWithFormat:@"%@/%@/%@/%@", entityName, year, month, day]]];
+    
     NSMutableURLRequest *request = [[[STMAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:imsURL]] mutableCopy];
     [request setHTTPMethod:@"POST"];
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
@@ -725,31 +738,42 @@
                            completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
         if (!error) {
+            
             NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+            
             if (statusCode == 200){
+                
                 NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                 NSData *picturesJson = [NSJSONSerialization dataWithJSONObject: (NSDictionary * _Nonnull) dictionary[@"pictures"] options:0 error: &error];
+                
                 if (!error) {
+                    
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        for (NSDictionary* dict in dictionary[@"pictures"]){
-                            if ([dict[@"name"]  isEqual: @"original"]){
+                        
+                        for (NSDictionary *dict in dictionary[@"pictures"]){
+                            if ([dict[@"name"] isEqual:@"original"]){
                                 picture.href = dict[@"src"];
                             }
                         }
+                        
                         NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
                         picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
-                        NSLog(@"%@", picture.picturesInfo);
+                        
+                        NSLog(picture.picturesInfo)
+                        
                         __block STMSession *session = [STMSessionManager sharedManager].currentSession;
+                        
                         [session.document saveDocument:^(BOOL success) {
                         }];
                         
                     });
+                    
                 }
+                
             } else {
                 NSLog(@"Request error, statusCode: %d", statusCode);
             }
         } else {
-            
             NSLog(@"connectionError %@", error.localizedDescription);
         }
 

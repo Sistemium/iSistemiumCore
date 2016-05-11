@@ -384,7 +384,7 @@
     NSError *error = nil;
     [STMRemoteController receiveRemoteCommands:parameters[@"remoteCommands"] error:&error];
     
-    if (error) {
+    if (!error) {
         [self callbackWithData:@[@"remoteCommands ok"] parameters:parameters jsCallbackFunction:self.remoteControlCallbackJSFunction];
     } else {
         [self callbackWithError:error.localizedDescription parameters:parameters];

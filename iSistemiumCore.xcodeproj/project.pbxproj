@@ -8,13 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		01D1922D2A7C9146E10A5125 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 230CB3E88CB302D8B47B23D5 /* libPods.a */; };
+		2C13F4EB1CE301B800A5F129 /* STMGarbageCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F4EA1CE301B800A5F129 /* STMGarbageCollector.swift */; };
+		2C13F4ED1CE304C000A5F129 /* Upload-100.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F4EC1CE304C000A5F129 /* Upload-100.png */; };
+		2C13F4EF1CE305E300A5F129 /* STMProfile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */; };
 		2C3F72C31CBBD46400F8BFB8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72C21CBBD46400F8BFB8 /* main.m */; };
 		2C3F72CE1CBBD46400F8BFB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */; };
 		2C3F72DC1CBBD46400F8BFB8 /* iSistemiumCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72DB1CBBD46400F8BFB8 /* iSistemiumCoreTests.m */; };
 		2C3F72E71CBBD46400F8BFB8 /* iSistemiumCoreUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72E61CBBD46400F8BFB8 /* iSistemiumCoreUITests.m */; };
 		2C3F72FC1CBBD55700F8BFB8 /* STMAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72F51CBBD55700F8BFB8 /* STMAuth.storyboard */; };
 		2C3F72FD1CBBD55700F8BFB8 /* STMLogs.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72F61CBBD55700F8BFB8 /* STMLogs.storyboard */; };
-		2C3F72FE1CBBD55700F8BFB8 /* STMProfile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72F71CBBD55700F8BFB8 /* STMProfile.storyboard */; };
 		2C3F72FF1CBBD55700F8BFB8 /* STMScannerInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72F81CBBD55700F8BFB8 /* STMScannerInfo.storyboard */; };
 		2C3F73001CBBD55700F8BFB8 /* STMSettings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72F91CBBD55700F8BFB8 /* STMSettings.storyboard */; };
 		2C3F73011CBBD55700F8BFB8 /* STMWebView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72FA1CBBD55700F8BFB8 /* STMWebView.storyboard */; };
@@ -236,6 +238,9 @@
 
 /* Begin PBXFileReference section */
 		230CB3E88CB302D8B47B23D5 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C13F4EA1CE301B800A5F129 /* STMGarbageCollector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STMGarbageCollector.swift; sourceTree = "<group>"; };
+		2C13F4EC1CE304C000A5F129 /* Upload-100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Upload-100.png"; sourceTree = "<group>"; };
+		2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMProfile.storyboard; sourceTree = "<group>"; };
 		2C3F72BE1CBBD46400F8BFB8 /* iSistemiumCore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSistemiumCore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3F72C21CBBD46400F8BFB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -248,7 +253,6 @@
 		2C3F72E81CBBD46400F8BFB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2C3F72F51CBBD55700F8BFB8 /* STMAuth.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMAuth.storyboard; sourceTree = "<group>"; };
 		2C3F72F61CBBD55700F8BFB8 /* STMLogs.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMLogs.storyboard; sourceTree = "<group>"; };
-		2C3F72F71CBBD55700F8BFB8 /* STMProfile.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMProfile.storyboard; sourceTree = "<group>"; };
 		2C3F72F81CBBD55700F8BFB8 /* STMScannerInfo.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMScannerInfo.storyboard; sourceTree = "<group>"; };
 		2C3F72F91CBBD55700F8BFB8 /* STMSettings.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMSettings.storyboard; sourceTree = "<group>"; };
 		2C3F72FA1CBBD55700F8BFB8 /* STMWebView.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMWebView.storyboard; sourceTree = "<group>"; };
@@ -687,7 +691,7 @@
 				2C3F73031CBBD56500F8BFB8 /* STMCustomCells */,
 				2C3F72F51CBBD55700F8BFB8 /* STMAuth.storyboard */,
 				2C3F72F61CBBD55700F8BFB8 /* STMLogs.storyboard */,
-				2C3F72F71CBBD55700F8BFB8 /* STMProfile.storyboard */,
+				2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */,
 				2C3F72F81CBBD55700F8BFB8 /* STMScannerInfo.storyboard */,
 				2C3F72F91CBBD55700F8BFB8 /* STMSettings.storyboard */,
 				2C3F72FA1CBBD55700F8BFB8 /* STMWebView.storyboard */,
@@ -772,6 +776,7 @@
 				2C3F734F1CBBD5EB00F8BFB8 /* uncheckmark.png */,
 				2C3F73501CBBD5EB00F8BFB8 /* Up4-25.png */,
 				2C3F73511CBBD5EB00F8BFB8 /* Upload To Cloud-100.png */,
+				2C13F4EC1CE304C000A5F129 /* Upload-100.png */,
 			);
 			path = Images;
 			sourceTree = "<group>";
@@ -902,6 +907,7 @@
 				2C3F74061CBBD78300F8BFB8 /* STMExtendNSLog.m */,
 				2C3F74071CBBD78300F8BFB8 /* STMFunctions.h */,
 				2C3F74081CBBD78300F8BFB8 /* STMFunctions.m */,
+				2C13F4EA1CE301B800A5F129 /* STMGarbageCollector.swift */,
 				2C3F74091CBBD78300F8BFB8 /* STMLocationTracker.h */,
 				2C3F740A1CBBD78300F8BFB8 /* STMLocationTracker.m */,
 				2C3F740B1CBBD78300F8BFB8 /* STMLogger.h */,
@@ -1329,7 +1335,6 @@
 				2C3F73791CBBD5EB00F8BFB8 /* Upload To Cloud-100.png in Resources */,
 				2C3F73721CBBD5EB00F8BFB8 /* Settings-25.png in Resources */,
 				2C3F73611CBBD5EB00F8BFB8 /* Download From Cloud-100.png in Resources */,
-				2C3F72FE1CBBD55700F8BFB8 /* STMProfile.storyboard in Resources */,
 				2C3F73601CBBD5EB00F8BFB8 /* Down4-25.png in Resources */,
 				2C3F73651CBBD5EB00F8BFB8 /* future.png in Resources */,
 				2C3F73531CBBD5EB00F8BFB8 /* alphabetical_sorting_2.png in Resources */,
@@ -1339,6 +1344,7 @@
 				2C3F73151CBBD57B00F8BFB8 /* STMCustom1CVHeader.xib in Resources */,
 				2C3F72FC1CBBD55700F8BFB8 /* STMAuth.storyboard in Resources */,
 				2C3F736C1CBBD5EB00F8BFB8 /* past.png in Resources */,
+				2C13F4ED1CE304C000A5F129 /* Upload-100.png in Resources */,
 				2C3F73621CBBD5EB00F8BFB8 /* exit-128.png in Resources */,
 				2C3F73561CBBD5EB00F8BFB8 /* barcode_scanner.png in Resources */,
 				2C3F735B1CBBD5EB00F8BFB8 /* checkmark_filled.png in Resources */,
@@ -1356,6 +1362,7 @@
 				2C3F73201CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib in Resources */,
 				2C3F731B1CBBD57B00F8BFB8 /* STMCustom6TVCell.xib in Resources */,
 				2C3F736E1CBBD5EB00F8BFB8 /* plus.png in Resources */,
+				2C13F4EF1CE305E300A5F129 /* STMProfile.storyboard in Resources */,
 				2C3F73581CBBD5EB00F8BFB8 /* camera_filled.png in Resources */,
 				2C3F73661CBBD5EB00F8BFB8 /* help.png in Resources */,
 				2C3F73631CBBD5EB00F8BFB8 /* forward.png in Resources */,
@@ -1526,6 +1533,7 @@
 				2C3F73DF1CBBD6FE00F8BFB8 /* STMBatteryStatus.m in Sources */,
 				2C3F74301CBBD78300F8BFB8 /* STMSettingsController.m in Sources */,
 				2C3F73931CBBD66B00F8BFB8 /* SocketAnyEvent.swift in Sources */,
+				2C13F4EB1CE301B800A5F129 /* STMGarbageCollector.swift in Sources */,
 				2C3F74291CBBD78300F8BFB8 /* STMFunctions.m in Sources */,
 				2C3F739D1CBBD66B00F8BFB8 /* SocketStringReader.swift in Sources */,
 				2C3F742E1CBBD78300F8BFB8 /* STMSession.m in Sources */,

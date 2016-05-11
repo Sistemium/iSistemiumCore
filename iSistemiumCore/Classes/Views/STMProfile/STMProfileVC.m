@@ -45,6 +45,8 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *nonloadedPicturesButton;
 
+@property (weak, nonatomic) IBOutlet UIButton *unusedPicturesButton;
+
 @property (weak, nonatomic) IBOutlet UIImageView *uploadImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *downloadImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *lastLocationImageView;
@@ -439,6 +441,13 @@
     
 }
 
+- (void)setupUnusedPicturesButton {
+    
+    [self.unusedPicturesButton setTitleColor:ACTIVE_BLUE_COLOR forState:UIControlStateNormal];
+    [self.unusedPicturesButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    
+}
+
 - (void)updateNonloadedPicturesInfo {
 
     self.nonloadedPicturesButton.enabled = ([self syncer].syncerState == STMSyncerIdle);
@@ -474,6 +483,21 @@
     
 }
 
+- (void)updateUnusedPicturesInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([STMGarbageCollector.unusedImages count] == 0) {
+            self.unusedPicturesButton.hidden = YES;
+        }else{
+            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImages count]];
+            NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
+            NSString *unusedCount = [NSString stringWithFormat:@"%@UNUSED", pluralString];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImages count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImages count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+        }
+    });
+    
+}
+
 - (void)nonloadedPicturesCountDidChange {
     [self updateNonloadedPicturesInfo];
 }
@@ -504,6 +528,19 @@
         
     }];
 
+}
+- (IBAction)unusedPicturesButtonPressed:(id)sender {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        UIActionSheet *actionSheet = [[UIActionSheet alloc] init];
+        actionSheet.tag = 4;
+        actionSheet.title = NSLocalizedString(@"UNUSED PICTURES", nil);
+        actionSheet.delegate = self;
+        actionSheet.destructiveButtonIndex = [actionSheet addButtonWithTitle:NSLocalizedString(@"DELETE", nil)];
+        [actionSheet addButtonWithTitle:NSLocalizedString(@"CLOSE", nil)];
+        [actionSheet showInView:self.view];
+        
+    }];
 }
 
 - (void)checkDownloadingConditions {
@@ -650,6 +687,16 @@
 
             }
             break;
+        case 4:
+            if (buttonIndex == 0) {
+                
+                [STMGarbageCollector removeUnusedImages];
+                self.unusedPicturesButton.enabled = NO;
+                [self updateUnusedPicturesInfo];
+                
+            }
+            
+            break;
 
         default:
             break;
@@ -679,6 +726,15 @@
             if (buttonIndex == 1) {
                 [self showEnableWWANActionSheet];
             }
+            break;
+
+        case 4:
+            if (buttonIndex == 0) {
+                [STMGarbageCollector removeUnusedImages];
+                self.unusedPicturesButton.enabled = NO;
+                [self updateUnusedPicturesInfo];
+            }
+            
             break;
 
         default:
@@ -1072,6 +1128,11 @@
                name:NOTIFICATION_SESSION_STATUS_CHANGED
              object:nil];
     
+    [nc addObserver:self
+           selector:@selector(updateUnusedPicturesInfo)
+               name:@"unusedImageRemoved"
+             object:nil];
+    
 }
 
 - (void)sessionStatusChanged {
@@ -1115,6 +1176,8 @@
     [self updateSyncDatesLabels];
     [self setupNonloadedPicturesButton];
     [self updateNonloadedPicturesInfo];
+    [self setupUnusedPicturesButton];
+    [self updateUnusedPicturesInfo];
     
     [self addObservers];
     [self startReachability];
