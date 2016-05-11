@@ -8,7 +8,7 @@
 
 #import "STMCoreVolumePicker.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMConstants.h"
 
 
@@ -254,7 +254,7 @@
 
 - (NSString *)bottlesUnit {
     
-    NSDictionary *appSettings = [[STMSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"appSettings"];
+    NSDictionary *appSettings = [[STMCoreSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"appSettings"];
     BOOL enableShowBottles = [appSettings[@"enableShowBottles"] boolValue];
     
     return (enableShowBottles) ? NSLocalizedString(@"VOLUME UNIT2", nil) : NSLocalizedString(@"VOLUME UNIT3", nil);

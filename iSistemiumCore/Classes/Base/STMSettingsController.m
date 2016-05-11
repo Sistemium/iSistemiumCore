@@ -11,7 +11,7 @@
 #import "STMSettingsData.h"
 #import "STMEntityDescription.h"
 #import "STMCoreObjectsController.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
 
 @interface STMSettingsController() <NSFetchedResultsControllerDelegate>
@@ -311,7 +311,7 @@
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
     
-    STMCoreSession *currentSession = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     STMSettingsController *currentController = currentSession.settingsController;
     
     NSDictionary *settingsGroup = [currentController currentSettingsForGroup:group];

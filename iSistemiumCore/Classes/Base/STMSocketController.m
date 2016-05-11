@@ -13,7 +13,7 @@
 #import "STMRemoteController.h"
 #import "STMEntityController.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
 #import "STMCoreRootTBC.h"
 
@@ -121,11 +121,11 @@
 }
 
 + (STMSyncer *)syncer {
-    return [[STMSessionManager sharedManager].currentSession syncer];
+    return [[STMCoreSessionManager sharedManager].currentSession syncer];
 }
 
 + (STMDocument *)document {
-    return [[STMSessionManager sharedManager].currentSession document];
+    return [[STMCoreSessionManager sharedManager].currentSession document];
 }
 
 + (SocketIOClientStatus)currentSocketStatus {
@@ -693,7 +693,7 @@
     
 //    NSTimeInterval delay = [response[@"data"] count] * 0.1;
     
-    [[[STMSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
+    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
         [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
     }];
 
@@ -771,7 +771,7 @@
 
 - (void)appSettingsChanged:(NSNotification *)notification {
     
-    STMCoreSession *currentSession = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     
     if (currentSession.status == STMSessionRunning) {
         
@@ -801,7 +801,7 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    STMCoreSession *session = [STMSessionManager sharedManager].currentSession;
+    STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
     
     if (notification.object == session) {
         
@@ -914,7 +914,7 @@
         
         if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
             
-            STMLogger *logger = [[STMSessionManager sharedManager].currentSession logger];
+            STMLogger *logger = [[STMCoreSessionManager sharedManager].currentSession logger];
             
             NSArray *logMessageSyncTypes = [logger syncingTypesForSettingType:[self uploadLogType]];
             

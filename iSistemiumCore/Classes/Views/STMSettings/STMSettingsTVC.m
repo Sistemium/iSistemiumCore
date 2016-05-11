@@ -8,7 +8,7 @@
 
 #import "STMSettingsController.h"
 #import "STMSettingsTVC.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 #import "STMSetting.h"
 #import "STMSettingsData.h"
@@ -60,7 +60,7 @@
 
 - (id <STMSession>)session {
     
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
     
 }
 

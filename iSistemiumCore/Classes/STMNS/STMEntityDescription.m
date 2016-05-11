@@ -7,7 +7,7 @@
 //
 
 #import "STMEntityDescription.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
 #import <Crashlytics/Crashlytics.h>
 
@@ -32,7 +32,7 @@
         
     } else {
         
-        STMDocument *document = [[[STMSessionManager sharedManager] currentSession] document];
+        STMDocument *document = [[[STMCoreSessionManager sharedManager] currentSession] document];
         
         CLS_LOG(@"entityForName method — context is nil");
         CLS_LOG(@"document %@", document);

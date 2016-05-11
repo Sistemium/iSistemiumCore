@@ -9,7 +9,7 @@
 #import "STMCorePicturesController.h"
 #import "STMFunctions.h"
 #import "STMConstants.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
 
 #import <objc/runtime.h>
@@ -97,7 +97,7 @@
 
 - (STMCoreSession *)session {
     
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
     
 }
 
@@ -237,7 +237,7 @@
 
 + (void)checkPicturesPaths {
     
-    NSString *sessionUID = [STMSessionManager sharedManager].currentSessionUID;
+    NSString *sessionUID = [STMCoreSessionManager sharedManager].currentSessionUID;
     
     if (sessionUID) {
         
@@ -759,7 +759,7 @@
                         
                         NSLog(picture.picturesInfo)
                         
-                        __block STMCoreSession *session = [STMSessionManager sharedManager].currentSession;
+                        __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
                         
                         [session.document saveDocument:^(BOOL success) {
                         }];

@@ -36,7 +36,7 @@ import Foundation
             unusedImages = Set<String>()
             var allImages = Set<String>()
             var usedImages = Set<String>()
-            let document = STMSessionManager.sharedManager().currentSession.document
+            let document = STMCoreSessionManager.sharedManager().currentSession.document
             let fileManager = NSFileManager.defaultManager()
             let enumerator = fileManager.enumeratorAtPath(STMFunctions.documentsDirectory())
             while let element = enumerator?.nextObject() as? String {

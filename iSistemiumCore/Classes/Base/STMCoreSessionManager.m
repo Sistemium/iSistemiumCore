@@ -1,20 +1,20 @@
 //
-//  STMSessionManager.m
+//  STMCoreSessionManager.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 06/05/14.
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 #import "STMSettingsData.h"
 
 #define SETTINGS_SCHEMA @"settings_schema"
 
-@implementation STMSessionManager
+@implementation STMCoreSessionManager
 
-+ (STMSessionManager *)sharedManager {
++ (STMCoreSessionManager *)sharedManager {
     static dispatch_once_t pred = 0;
     __strong static id _sharedManager = nil;
     dispatch_once(&pred, ^{

@@ -15,7 +15,7 @@
 
 #import "STMNS.h"
 #import "STMCoreDataModel.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 #import "STMCoreObjectsController.h"
 
@@ -151,7 +151,7 @@
     
     if (!_barCodeTypesRC) {
         
-        NSManagedObjectContext *context = [[STMSessionManager sharedManager].currentSession document].managedObjectContext;
+        NSManagedObjectContext *context = [[STMCoreSessionManager sharedManager].currentSession document].managedObjectContext;
         
         if (context) {
             

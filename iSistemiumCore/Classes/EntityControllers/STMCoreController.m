@@ -7,13 +7,13 @@
 //
 
 #import "STMCoreController.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
 @implementation STMCoreController
 
 + (STMCoreSession *)session {
     
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
     
 }
 

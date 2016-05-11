@@ -1,5 +1,5 @@
 //
-//  STMSessionManager.h
+//  STMCoreSessionManager.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 06/05/14.
@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "STMSessionManagement.h"
 
-@interface STMSessionManager : NSObject <STMSessionManager>
+@interface STMCoreSessionManager : NSObject <STMSessionManager>
 
 @property (nonatomic, strong) NSMutableDictionary *sessions;
 @property (nonatomic, strong) id <STMSession> currentSession;
 @property (nonatomic, strong) NSString *currentSessionUID;
 
-+ (STMSessionManager *)sharedManager;
++ (STMCoreSessionManager *)sharedManager;
 
 - (id <STMSession>)startSessionForUID:(NSString *)uid
                                iSisDB:(NSString *)iSisDB

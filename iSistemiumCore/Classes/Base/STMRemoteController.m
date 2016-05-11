@@ -7,14 +7,14 @@
 //
 
 #import "STMRemoteController.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 
 
 @implementation STMRemoteController
 
 + (STMCoreSession *)session {
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
 }
 
 + (void)error:(NSError **)error withMessage:(NSString *)errorMessage {

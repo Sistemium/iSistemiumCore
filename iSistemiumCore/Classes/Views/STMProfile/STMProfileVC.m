@@ -8,7 +8,7 @@
 
 #import "STMProfileVC.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 
 #import "STMCoreLocationTracker.h"
@@ -75,15 +75,15 @@
 @implementation STMProfileVC
 
 - (STMCoreLocationTracker *)locationTracker {
-    return [(STMCoreSession *)[STMSessionManager sharedManager].currentSession locationTracker];
+    return [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 }
 
 - (STMSyncer *)syncer {
-    return [[STMSessionManager sharedManager].currentSession syncer];
+    return [[STMCoreSessionManager sharedManager].currentSession syncer];
 }
 
 - (STMSettingsController *)settingsController {
-    return [[STMSessionManager sharedManager].currentSession settingsController];
+    return [[STMCoreSessionManager sharedManager].currentSession settingsController];
 }
 
 - (NSString *)requestLocationServiceAuthorization {
@@ -376,7 +376,7 @@
 
 - (void)hideNumberOfObjects {
     
-    if ([[[STMSessionManager sharedManager].currentSession syncer] syncerState] != STMSyncerReceiveData) {
+    if ([[[STMCoreSessionManager sharedManager].currentSession syncer] syncerState] != STMSyncerReceiveData) {
         
         self.previousNumberOfObjects = 0;
         self.numberOfObjectLabel.text = @"";
@@ -651,7 +651,7 @@
 
 - (void)enableWWANDownloading {
     
-    STMSettingsController *settingsController = [[STMSessionManager sharedManager].currentSession settingsController];
+    STMSettingsController *settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
 
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
@@ -767,7 +767,7 @@
     
     self.nameLabel.text = [STMAuthController authController].userName;
     self.phoneNumberLabel.text = [STMAuthController authController].phoneNumber;
-    self.progressBar.hidden = ([[STMSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
+    self.progressBar.hidden = ([[STMCoreSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
     
     self.locationWarningLabel.text = @"";
     
@@ -1138,7 +1138,7 @@
 - (void)sessionStatusChanged {
     
     
-    if ([STMSessionManager sharedManager].currentSession.status == STMSessionRunning) {
+    if ([STMCoreSessionManager sharedManager].currentSession.status == STMSessionRunning) {
     
         [self updateCloudImages];
         [self updateSyncDatesLabels];

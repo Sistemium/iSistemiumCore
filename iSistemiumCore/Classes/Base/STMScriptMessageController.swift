@@ -234,7 +234,7 @@ class STMScriptMessageController: NSObject {
 
     class func currentContext() -> NSManagedObjectContext {
         
-        return STMSessionManager.sharedManager().currentSession.document.managedObjectContext
+        return STMCoreSessionManager.sharedManager().currentSession.document.managedObjectContext
         
     }
     

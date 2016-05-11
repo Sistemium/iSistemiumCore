@@ -9,7 +9,7 @@
 #import "STMWKWebViewVC.h"
 #import <WebKit/WebKit.h>
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMAuthController.h"
 #import "STMBarCodeScanner.h"
 #import "STMSoundController.h"
@@ -72,7 +72,7 @@
 
 - (NSDictionary *)webViewSettings {
     
-    NSDictionary *settings = [[STMSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"webview"];
+    NSDictionary *settings = [[STMCoreSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"webview"];
     return settings;
     
 }

@@ -14,7 +14,7 @@
 
 #import "STMDevDef.h"
 #import "STMFunctions.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 
 #import "STMSocketController.h"
@@ -377,8 +377,8 @@
 
     self.controllerState = STMAuthEnterPhoneNumber;
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"notAuthorized" object:[STMSessionManager sharedManager].currentSession.syncer];
-    [[STMSessionManager sharedManager] stopSessionForUID:self.userID];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"notAuthorized" object:[STMCoreSessionManager sharedManager].currentSession.syncer];
+    [[STMCoreSessionManager sharedManager] stopSessionForUID:self.userID];
 
     self.userID = nil;
     self.accessToken = nil;
@@ -456,7 +456,7 @@
         
     }
 
-    [[STMSessionManager sharedManager] startSessionForUID:self.userID
+    [[STMCoreSessionManager sharedManager] startSessionForUID:self.userID
                                                    iSisDB:self.iSisDB
                                              authDelegate:self
                                                  trackers:trackers
@@ -467,7 +467,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(sessionNotAuthorized)
                                                  name:@"notAuthorized"
-                                               object:[STMSessionManager sharedManager].currentSession.syncer];
+                                               object:[STMCoreSessionManager sharedManager].currentSession.syncer];
 
 }
 

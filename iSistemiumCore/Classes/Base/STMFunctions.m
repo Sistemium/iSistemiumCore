@@ -8,7 +8,7 @@
 
 #import "STMFunctions.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 
 #import <CommonCrypto/CommonDigest.h>
@@ -854,7 +854,7 @@
     NSString *volumeUnitString = nil;
     NSString *infoText = nil;
     
-    NSDictionary *appSettings = [[STMSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"appSettings"];
+    NSDictionary *appSettings = [[STMCoreSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"appSettings"];
     BOOL enableShowBottles = [appSettings[@"enableShowBottles"] boolValue];
 
     if (packageRel != 0 && volume >= packageRel) {

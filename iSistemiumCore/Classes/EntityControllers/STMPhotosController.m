@@ -8,7 +8,7 @@
 
 #import "STMPhotosController.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMLocationController.h"
 
 
@@ -60,7 +60,7 @@
 }
 
 - (STMCoreLocationTracker *)locationTracker {
-    return [(STMCoreSession *)[STMSessionManager sharedManager].currentSession locationTracker];
+    return [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 }
 
 - (NSMutableArray *)waitingLocationPhotos {

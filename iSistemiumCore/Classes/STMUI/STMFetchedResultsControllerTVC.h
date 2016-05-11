@@ -12,7 +12,7 @@
 #import "STMCoreDataModel.h"
 
 #import "STMDocument.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
 #import "STMAuthController.h"
 

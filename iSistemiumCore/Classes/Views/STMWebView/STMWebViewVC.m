@@ -10,7 +10,7 @@
 
 #import "STMCoreUI.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMAuthController.h"
 
 #import "STMFunctions.h"
@@ -52,7 +52,7 @@
 
 - (NSDictionary *)webViewSettings {
     
-    NSDictionary *settings = [[STMSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"webview"];
+    NSDictionary *settings = [[STMCoreSessionManager sharedManager].currentSession.settingsController currentSettingsForGroup:@"webview"];
     return settings;
     
 }

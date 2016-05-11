@@ -147,7 +147,7 @@
 		2C3F742C1CBBD78300F8BFB8 /* STMRemoteController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F740E1CBBD78300F8BFB8 /* STMRemoteController.m */; };
 		2C3F742D1CBBD78300F8BFB8 /* STMScanApiHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74101CBBD78300F8BFB8 /* STMScanApiHelper.m */; };
 		2C3F742E1CBBD78300F8BFB8 /* STMCoreSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */; };
-		2C3F742F1CBBD78300F8BFB8 /* STMSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74141CBBD78300F8BFB8 /* STMSessionManager.m */; };
+		2C3F742F1CBBD78300F8BFB8 /* STMCoreSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */; };
 		2C3F74301CBBD78300F8BFB8 /* STMSettingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */; };
 		2C3F74311CBBD78300F8BFB8 /* STMSettingsData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74181CBBD78300F8BFB8 /* STMSettingsData.m */; };
 		2C3F74321CBBD78300F8BFB8 /* STMScriptMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74191CBBD78300F8BFB8 /* STMScriptMessageController.swift */; };
@@ -449,8 +449,8 @@
 		2C3F74101CBBD78300F8BFB8 /* STMScanApiHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMScanApiHelper.m; sourceTree = "<group>"; };
 		2C3F74111CBBD78300F8BFB8 /* STMCoreSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreSession.h; sourceTree = "<group>"; };
 		2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreSession.m; sourceTree = "<group>"; };
-		2C3F74131CBBD78300F8BFB8 /* STMSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMSessionManager.h; sourceTree = "<group>"; };
-		2C3F74141CBBD78300F8BFB8 /* STMSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMSessionManager.m; sourceTree = "<group>"; };
+		2C3F74131CBBD78300F8BFB8 /* STMCoreSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreSessionManager.h; sourceTree = "<group>"; };
+		2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreSessionManager.m; sourceTree = "<group>"; };
 		2C3F74151CBBD78300F8BFB8 /* STMSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMSettingsController.h; sourceTree = "<group>"; };
 		2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMSettingsController.m; sourceTree = "<group>"; };
 		2C3F74171CBBD78300F8BFB8 /* STMSettingsData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMSettingsData.h; sourceTree = "<group>"; };
@@ -979,8 +979,8 @@
 				2C3F74191CBBD78300F8BFB8 /* STMScriptMessageController.swift */,
 				2C3F74111CBBD78300F8BFB8 /* STMCoreSession.h */,
 				2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */,
-				2C3F74131CBBD78300F8BFB8 /* STMSessionManager.h */,
-				2C3F74141CBBD78300F8BFB8 /* STMSessionManager.m */,
+				2C3F74131CBBD78300F8BFB8 /* STMCoreSessionManager.h */,
+				2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */,
 				2C3F74151CBBD78300F8BFB8 /* STMSettingsController.h */,
 				2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */,
 				2C3F74171CBBD78300F8BFB8 /* STMSettingsData.h */,
@@ -1570,7 +1570,7 @@
 				2C7086511CC504430002F3FF /* STMWKWebViewVC.m in Sources */,
 				2C3F73DD1CBBD6FE00F8BFB8 /* STMBarCodeType.m in Sources */,
 				2C3F74A01CBBD80600F8BFB8 /* STMSplitViewController_Swift.swift in Sources */,
-				2C3F742F1CBBD78300F8BFB8 /* STMSessionManager.m in Sources */,
+				2C3F742F1CBBD78300F8BFB8 /* STMCoreSessionManager.m in Sources */,
 				2C13F4F21CE3090D00A5F129 /* STMWorkflowController.m in Sources */,
 				2C3F74541CBBD7AB00F8BFB8 /* STMCoreObjectsController.m in Sources */,
 				2C3F73E01CBBD6FE00F8BFB8 /* STMBatteryStatus+CoreDataProperties.m in Sources */,

@@ -10,7 +10,7 @@
 
 #import "STMCoreUI.h"
 
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 
 #import "STMFunctions.h"
@@ -113,7 +113,7 @@
 }
 
 - (STMCoreSession *)session {
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
 }
 
 - (BOOL)newAppVersionAvailable {
