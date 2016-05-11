@@ -7,7 +7,7 @@
 //
 
 #import "STMTableViewCell.h"
-#import "STMVolumeTVCell.h"
+#import "STMCoreVolumeTVCell.h"
 
 
 @interface STMVolumeControlsTVCell : STMTableViewCell
@@ -17,7 +17,7 @@
 @property (weak, nonatomic) IBOutlet UIStepper *boxCountStepper;
 @property (weak, nonatomic) IBOutlet UIStepper *bottleCountStepper;
 
-@property (nonatomic, weak) STMVolumeTVCell *volumeCell;
+@property (nonatomic, weak) STMCoreVolumeTVCell *volumeCell;
 
 @property (nonatomic) NSInteger packageRel;
 @property (nonatomic) NSInteger volume;

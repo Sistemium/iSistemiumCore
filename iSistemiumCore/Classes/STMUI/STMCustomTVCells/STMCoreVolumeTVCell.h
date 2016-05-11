@@ -18,7 +18,7 @@ typedef NS_ENUM(NSUInteger, STMVolumeType) {
 };
 
 
-@interface STMVolumeTVCell : STMTableViewCell
+@interface STMCoreVolumeTVCell : STMTableViewCell
 
 @property (weak, nonatomic) IBOutlet STMLabel *titleLabel;
 

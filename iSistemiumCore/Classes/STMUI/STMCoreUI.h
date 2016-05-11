@@ -37,7 +37,7 @@
 #import "STMCustom8TVCell.h"
 #import "STMCustom9TVCell.h"
 #import "STMCustom10TVCell.h"
-#import "STMVolumeTVCell.h"
+#import "STMCoreVolumeTVCell.h"
 #import "STMVolumeControlsTVCell.h"
 
 #import "STMCustom1CVCell.h"

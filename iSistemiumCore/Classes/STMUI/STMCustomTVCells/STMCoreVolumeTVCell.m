@@ -6,16 +6,16 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMVolumeTVCell.h"
+#import "STMCoreVolumeTVCell.h"
 
 
-@interface STMVolumeTVCell()
+@interface STMCoreVolumeTVCell()
 
 
 @end
 
 
-@implementation STMVolumeTVCell
+@implementation STMCoreVolumeTVCell
 
 
 - (void)setVolume:(NSInteger)volume {
@@ -38,6 +38,8 @@
             [self setCount:volume forLabel:self.bottleCountLabel];
             
         }
+        
+        [self volumeChangedForParentVC];
         
     }
     

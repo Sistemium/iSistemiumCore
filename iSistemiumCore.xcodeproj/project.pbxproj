@@ -47,7 +47,7 @@
 		2C3F731E1CBBD57B00F8BFB8 /* STMCustom9TVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F730F1CBBD57B00F8BFB8 /* STMCustom9TVCell.xib */; };
 		2C3F731F1CBBD57B00F8BFB8 /* STMCustom10TVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73101CBBD57B00F8BFB8 /* STMCustom10TVCell.xib */; };
 		2C3F73201CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73111CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib */; };
-		2C3F73211CBBD57B00F8BFB8 /* STMVolumeTVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73121CBBD57B00F8BFB8 /* STMVolumeTVCell.xib */; };
+		2C3F73211CBBD57B00F8BFB8 /* STMCoreVolumeTVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73121CBBD57B00F8BFB8 /* STMCoreVolumeTVCell.xib */; };
 		2C3F73261CBBD5C400F8BFB8 /* iphoneTabs.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73231CBBD5C400F8BFB8 /* iphoneTabs.json */; };
 		2C3F73271CBBD5C400F8BFB8 /* settings_schema.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73241CBBD5C400F8BFB8 /* settings_schema.json */; };
 		2C3F73281CBBD5C400F8BFB8 /* settings.json in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F73251CBBD5C400F8BFB8 /* settings.json */; };
@@ -204,7 +204,7 @@
 		2C3F74D21CBBD82400F8BFB8 /* STMCustom10TVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C11CBBD82400F8BFB8 /* STMCustom10TVCell.m */; };
 		2C3F74D31CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C21CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift */; };
 		2C3F74D41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m */; };
-		2C3F74D51CBBD82400F8BFB8 /* STMVolumeTVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C61CBBD82400F8BFB8 /* STMVolumeTVCell.m */; };
+		2C3F74D51CBBD82400F8BFB8 /* STMCoreVolumeTVCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74C61CBBD82400F8BFB8 /* STMCoreVolumeTVCell.m */; };
 		2C3F74DB1CBBD88100F8BFB8 /* STMCoreRootTBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74D81CBBD88100F8BFB8 /* STMCoreRootTBC.m */; };
 		2C3F74DC1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74DA1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m */; };
 		2C3F75141CBBD99600F8BFB8 /* STMAuthNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F750D1CBBD99500F8BFB8 /* STMAuthNC.m */; };
@@ -307,7 +307,7 @@
 		2C3F730F1CBBD57B00F8BFB8 /* STMCustom9TVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMCustom9TVCell.xib; sourceTree = "<group>"; };
 		2C3F73101CBBD57B00F8BFB8 /* STMCustom10TVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMCustom10TVCell.xib; sourceTree = "<group>"; };
 		2C3F73111CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMVolumeControlsTVCell.xib; sourceTree = "<group>"; };
-		2C3F73121CBBD57B00F8BFB8 /* STMVolumeTVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMVolumeTVCell.xib; sourceTree = "<group>"; };
+		2C3F73121CBBD57B00F8BFB8 /* STMCoreVolumeTVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMCoreVolumeTVCell.xib; sourceTree = "<group>"; };
 		2C3F73231CBBD5C400F8BFB8 /* iphoneTabs.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = iphoneTabs.json; sourceTree = "<group>"; };
 		2C3F73241CBBD5C400F8BFB8 /* settings_schema.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = settings_schema.json; sourceTree = "<group>"; };
 		2C3F73251CBBD5C400F8BFB8 /* settings.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = settings.json; sourceTree = "<group>"; };
@@ -567,8 +567,8 @@
 		2C3F74C21CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STMThreeLinesAndCheckboxTVCell.swift; sourceTree = "<group>"; };
 		2C3F74C31CBBD82400F8BFB8 /* STMVolumeControlsTVCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMVolumeControlsTVCell.h; sourceTree = "<group>"; };
 		2C3F74C41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMVolumeControlsTVCell.m; sourceTree = "<group>"; };
-		2C3F74C51CBBD82400F8BFB8 /* STMVolumeTVCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMVolumeTVCell.h; sourceTree = "<group>"; };
-		2C3F74C61CBBD82400F8BFB8 /* STMVolumeTVCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMVolumeTVCell.m; sourceTree = "<group>"; };
+		2C3F74C51CBBD82400F8BFB8 /* STMCoreVolumeTVCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreVolumeTVCell.h; sourceTree = "<group>"; };
+		2C3F74C61CBBD82400F8BFB8 /* STMCoreVolumeTVCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreVolumeTVCell.m; sourceTree = "<group>"; };
 		2C3F74D71CBBD88100F8BFB8 /* STMCoreRootTBC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreRootTBC.h; sourceTree = "<group>"; };
 		2C3F74D81CBBD88100F8BFB8 /* STMCoreRootTBC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreRootTBC.m; sourceTree = "<group>"; };
 		2C3F74D91CBBD88100F8BFB8 /* STMTabBarButtonTVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMTabBarButtonTVC.h; sourceTree = "<group>"; };
@@ -767,7 +767,7 @@
 				2C3F730F1CBBD57B00F8BFB8 /* STMCustom9TVCell.xib */,
 				2C3F73101CBBD57B00F8BFB8 /* STMCustom10TVCell.xib */,
 				2C3F73111CBBD57B00F8BFB8 /* STMVolumeControlsTVCell.xib */,
-				2C3F73121CBBD57B00F8BFB8 /* STMVolumeTVCell.xib */,
+				2C3F73121CBBD57B00F8BFB8 /* STMCoreVolumeTVCell.xib */,
 			);
 			path = STMCustomCells;
 			sourceTree = "<group>";
@@ -1137,8 +1137,8 @@
 				2C3F74C21CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift */,
 				2C3F74C31CBBD82400F8BFB8 /* STMVolumeControlsTVCell.h */,
 				2C3F74C41CBBD82400F8BFB8 /* STMVolumeControlsTVCell.m */,
-				2C3F74C51CBBD82400F8BFB8 /* STMVolumeTVCell.h */,
-				2C3F74C61CBBD82400F8BFB8 /* STMVolumeTVCell.m */,
+				2C3F74C51CBBD82400F8BFB8 /* STMCoreVolumeTVCell.h */,
+				2C3F74C61CBBD82400F8BFB8 /* STMCoreVolumeTVCell.m */,
 			);
 			path = STMCustomTVCells;
 			sourceTree = "<group>";
@@ -1391,7 +1391,7 @@
 				2C3F731A1CBBD57B00F8BFB8 /* STMCustom5TVCell.xib in Resources */,
 				2C3F73171CBBD57B00F8BFB8 /* STMCustom2TVCell.xib in Resources */,
 				2C3F72CE1CBBD46400F8BFB8 /* Assets.xcassets in Resources */,
-				2C3F73211CBBD57B00F8BFB8 /* STMVolumeTVCell.xib in Resources */,
+				2C3F73211CBBD57B00F8BFB8 /* STMCoreVolumeTVCell.xib in Resources */,
 				2C3F731E1CBBD57B00F8BFB8 /* STMCustom9TVCell.xib in Resources */,
 				2C3F73681CBBD5EB00F8BFB8 /* No connection Cloud-100.png in Resources */,
 				2C3F73771CBBD5EB00F8BFB8 /* uncheckmark.png in Resources */,
@@ -1588,7 +1588,7 @@
 				2C3F74D31CBBD82400F8BFB8 /* STMThreeLinesAndCheckboxTVCell.swift in Sources */,
 				2C3F73E61CBBD6FE00F8BFB8 /* STMDatum+CoreDataProperties.m in Sources */,
 				2C3F751E1CBBD9A000F8BFB8 /* STMLogMessagesDetailTVC.m in Sources */,
-				2C3F74D51CBBD82400F8BFB8 /* STMVolumeTVCell.m in Sources */,
+				2C3F74D51CBBD82400F8BFB8 /* STMCoreVolumeTVCell.m in Sources */,
 				2C3F74A31CBBD80600F8BFB8 /* STMVariableCellsHeightTVC.m in Sources */,
 				2C3F73E91CBBD6FE00F8BFB8 /* STMLocation.m in Sources */,
 				2C3F75251CBBD9AB00F8BFB8 /* STMProfileNC.m in Sources */,
