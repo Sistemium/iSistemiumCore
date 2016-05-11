@@ -21,8 +21,7 @@
 #import "STMClientDataController.h"
 #import "STMAuthController.h"
 
-#warning - STMMessage?
-// #import "STMMessageController.h"
+#import "STMMessageController.h"
 
 #import <Crashlytics/Crashlytics.h>
 #import "STMAppDelegate.h"
@@ -30,7 +29,7 @@
 #import "STMSocketController.h"
 
 
-@interface STMCoreRootTBC () <UITabBarControllerDelegate, /*UIViewControllerAnimatedTransitioning, */UIAlertViewDelegate>
+@interface STMCoreRootTBC () <UITabBarControllerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIAlertView *authAlert;
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
@@ -591,6 +590,8 @@
 
     [self prepareTabs];
     
+    [self showUnreadMessageCount];
+    
     [self showTabs];
     
 }
@@ -934,7 +935,7 @@
 
 - (void)syncStateChanged {
 
-//    NSInteger badgeNumber = ([self.session.status isEqualToString:@"running"]) ? [STMMessageController unreadMessagesCount] : 0;
+//    NSInteger badgeNumber = (self.session.status == STMSessionRunning) ? [STMMessageController unreadMessagesCount] : 0;
 //    [UIApplication sharedApplication].applicationIconBadgeNumber = badgeNumber;
 
     [self checkTimeoutAlert];
@@ -955,6 +956,21 @@
     
 #endif
 
+}
+
+- (void)showUnreadMessageCount {
+    
+    UIViewController *vc = (self.tabs)[@"STMMessages"];
+    
+    if (vc) {
+        
+        NSInteger unreadCount = [STMMessageController unreadMessagesCount];
+        NSString *badgeValue = (unreadCount > 0) ? [NSString stringWithFormat:@"%lu", (unsigned long)unreadCount] : nil;
+        vc.tabBarItem.badgeValue = badgeValue;
+        [UIApplication sharedApplication].applicationIconBadgeNumber = [badgeValue integerValue];
+        
+    }
+    
 }
 
 - (void)newAppVersionAvailable:(NSNotification *)notification {
@@ -991,7 +1007,10 @@
 }
 
 - (void)setDocumentReady {
+    
     [STMClientDataController checkAppVersion];
+    [STMMessageController showMessageVCsIfNeeded];
+
 }
 
 - (void)documentNotReady {
@@ -1049,7 +1068,22 @@
            selector:@selector(syncerInitSuccessfully)
                name:@"Syncer init successfully"
              object:self.session.syncer];
-        
+    
+    [nc addObserver:self
+           selector:@selector(showUnreadMessageCount)
+               name:@"gotNewMessage"
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(showUnreadMessageCount)
+               name:@"messageIsRead"
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(showUnreadMessageCount)
+               name:@"unreadMessageCountChange"
+             object:nil];
+
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
                name:@"newAppVersionAvailable"

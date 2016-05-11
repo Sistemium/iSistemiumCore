@@ -564,10 +564,11 @@
 
 + (void)postprocessingForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName {
 
-#warning - STMMessage?
-// 	if ([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
-
-    if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
+    if ([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
+        
+        //        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewMessage" object:nil];
+        
+    } else if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
         

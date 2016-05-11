@@ -40,9 +40,9 @@
 #import "STMLocation.h"
 #import "STMLogMessage.h"
 
-//#import "STMMessage.h"
-//#import "STMMessagePicture.h"
-//
+#import "STMMessage.h"
+#import "STMMessagePicture.h"
+
 //#import "STMOutlet.h"
 //
 //#import "STMPartner.h"

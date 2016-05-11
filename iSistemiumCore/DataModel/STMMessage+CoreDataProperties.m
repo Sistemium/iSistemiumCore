@@ -1,5 +1,5 @@
 //
-//  STMWorkflow+CoreDataProperties.m
+//  STMMessage+CoreDataProperties.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -9,24 +9,29 @@
 //  to delete and recreate this implementation file for your updated model.
 //
 
-#import "STMWorkflow+CoreDataProperties.h"
+#import "STMMessage+CoreDataProperties.h"
 
-@implementation STMWorkflow (CoreDataProperties)
+@implementation STMMessage (CoreDataProperties)
 
-@dynamic code;
+@dynamic body;
 @dynamic commentText;
+@dynamic cts;
 @dynamic deviceCts;
 @dynamic deviceTs;
 @dynamic id;
 @dynamic isFantom;
 @dynamic lts;
 @dynamic ownerXid;
+@dynamic processing;
+@dynamic processingMessage;
+@dynamic schedule;
+@dynamic showOnEnterForeground;
 @dynamic source;
 @dynamic sqts;
 @dynamic sts;
-@dynamic workflow;
+@dynamic subject;
 @dynamic xid;
-@dynamic entities;
-@dynamic messages;
+@dynamic pictures;
+@dynamic workflow;
 
 @end

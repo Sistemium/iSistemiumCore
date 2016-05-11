@@ -1,16 +1,16 @@
 //
-//  STMWorkflow.m
+//  STMMessage.m
 //  iSistemium
 //
-//  Created by Maxim Grigoriev on 07/02/16.
+//  Created by Maxim Grigoriev on 08/02/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMWorkflow.h"
-#import "STMEntity.h"
 #import "STMMessage.h"
+#import "STMMessagePicture.h"
+#import "STMWorkflow.h"
 
-@implementation STMWorkflow
+@implementation STMMessage
 
 // Insert code here to add functionality to your managed object subclass
 

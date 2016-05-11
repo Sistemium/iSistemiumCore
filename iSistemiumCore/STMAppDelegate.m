@@ -15,8 +15,7 @@
 #import "STMAuthController.h"
 #import "STMRemoteController.h"
 
-#warning should override
-//#import "STMMessageController.h"
+#import "STMMessageController.h"
 
 #import "STMSessionManager.h"
 #import "STMLogger.h"
@@ -209,10 +208,9 @@
 
     id <STMSession> session = [STMSessionManager sharedManager].currentSession;
     
-#warning should override
-//    if ([[session status] isEqualToString:@"running"]) {
-//        [STMMessageController showMessageVCsIfNeeded];
-//    }
+    if (session.status == STMSessionRunning) {
+        [STMMessageController showMessageVCsIfNeeded];
+    }
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 

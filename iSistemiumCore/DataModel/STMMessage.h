@@ -1,19 +1,19 @@
 //
-//  STMWorkflow.h
+//  STMMessage.h
 //  iSistemium
 //
-//  Created by Maxim Grigoriev on 07/02/16.
+//  Created by Maxim Grigoriev on 08/02/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
 
-@class STMEntity, STMMessage;
+@class STMMessagePicture, STMWorkflow;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMWorkflow : STMDatum
+@interface STMMessage : STMDatum
 
 // Insert code here to declare functionality of your managed object subclass
 
@@ -21,4 +21,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#import "STMWorkflow+CoreDataProperties.h"
+#import "STMMessage+CoreDataProperties.h"
