@@ -21,6 +21,8 @@
 		2C13F50A1CE30C8300A5F129 /* STMMessagesTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F5061CE30C8300A5F129 /* STMMessagesTVC.m */; };
 		2C13F50B1CE30C8300A5F129 /* STMMessageVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F5081CE30C8300A5F129 /* STMMessageVC.m */; };
 		2C13F50F1CE30D2000A5F129 /* STMWorkflowEditablesVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F50E1CE30D2000A5F129 /* STMWorkflowEditablesVC.m */; };
+		2C13F5351CE316B900A5F129 /* STMMessages.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F5331CE316B900A5F129 /* STMMessages.storyboard */; };
+		2C13F5361CE316B900A5F129 /* STMMessageVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F5341CE316B900A5F129 /* STMMessageVC.storyboard */; };
 		2C3F72C31CBBD46400F8BFB8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72C21CBBD46400F8BFB8 /* main.m */; };
 		2C3F72CE1CBBD46400F8BFB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */; };
 		2C3F72DC1CBBD46400F8BFB8 /* iSistemiumCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72DB1CBBD46400F8BFB8 /* iSistemiumCoreTests.m */; };
@@ -272,6 +274,8 @@
 		2C13F50C1CE30CF800A5F129 /* STMWorkflowable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMWorkflowable.h; sourceTree = "<group>"; };
 		2C13F50D1CE30D2000A5F129 /* STMWorkflowEditablesVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMWorkflowEditablesVC.h; sourceTree = "<group>"; };
 		2C13F50E1CE30D2000A5F129 /* STMWorkflowEditablesVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWorkflowEditablesVC.m; sourceTree = "<group>"; };
+		2C13F5331CE316B900A5F129 /* STMMessages.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMMessages.storyboard; sourceTree = "<group>"; };
+		2C13F5341CE316B900A5F129 /* STMMessageVC.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMMessageVC.storyboard; sourceTree = "<group>"; };
 		2C3F72BE1CBBD46400F8BFB8 /* iSistemiumCore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSistemiumCore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3F72C21CBBD46400F8BFB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -735,6 +739,8 @@
 				2C3F73031CBBD56500F8BFB8 /* STMCustomCells */,
 				2C3F72F51CBBD55700F8BFB8 /* STMAuth.storyboard */,
 				2C3F72F61CBBD55700F8BFB8 /* STMLogs.storyboard */,
+				2C13F5331CE316B900A5F129 /* STMMessages.storyboard */,
+				2C13F5341CE316B900A5F129 /* STMMessageVC.storyboard */,
 				2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */,
 				2C3F72F81CBBD55700F8BFB8 /* STMScannerInfo.storyboard */,
 				2C3F72F91CBBD55700F8BFB8 /* STMSettings.storyboard */,
@@ -1374,6 +1380,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2C3F73141CBBD57B00F8BFB8 /* STMCustom1CVCell.xib in Resources */,
+				2C13F5351CE316B900A5F129 /* STMMessages.storyboard in Resources */,
 				2C3F73701CBBD5EB00F8BFB8 /* reordering.png in Resources */,
 				2C3F73011CBBD55700F8BFB8 /* STMWebView.storyboard in Resources */,
 				2C3F73001CBBD55700F8BFB8 /* STMSettings.storyboard in Resources */,
@@ -1390,6 +1397,7 @@
 				2C3F73771CBBD5EB00F8BFB8 /* uncheckmark.png in Resources */,
 				2C3F731D1CBBD57B00F8BFB8 /* STMCustom8TVCell.xib in Resources */,
 				2C3F736D1CBBD5EB00F8BFB8 /* photo-icon.png in Resources */,
+				2C13F5361CE316B900A5F129 /* STMMessageVC.storyboard in Resources */,
 				2C3F735D1CBBD5EB00F8BFB8 /* Clear Filters-25.png in Resources */,
 				2C3F73181CBBD57B00F8BFB8 /* STMCustom3TVCell.xib in Resources */,
 				2C3F73791CBBD5EB00F8BFB8 /* Upload To Cloud-100.png in Resources */,
