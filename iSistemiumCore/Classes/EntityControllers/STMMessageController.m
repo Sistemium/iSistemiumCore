@@ -58,7 +58,7 @@
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
     
 }
 
@@ -70,7 +70,7 @@
 
 - (void)authStateChanged {
     
-    if ([STMAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
         [self flushSelf];
     }
     

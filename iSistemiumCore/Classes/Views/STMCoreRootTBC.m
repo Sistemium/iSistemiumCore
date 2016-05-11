@@ -19,7 +19,7 @@
 #import "STMCoreObjectsController.h"
 #import "STMTabBarItemControllable.h"
 #import "STMClientDataController.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
 #import "STMMessageController.h"
 
@@ -341,7 +341,7 @@
     
     NSLog(@"device is iPad type");
     
-    NSArray *stcTabs = [STMAuthController authController].stcTabs;
+    NSArray *stcTabs = [STMCoreAuthController authController].stcTabs;
 
     [self setupTabs:stcTabs];
     
@@ -351,7 +351,7 @@
     
     NSLog(@"device is iPhone type");
 
-    NSArray *iPhoneStcTabs = [self iPhoneStcTabsForStcTabs:[STMAuthController authController].stcTabs];
+    NSArray *iPhoneStcTabs = [self iPhoneStcTabsForStcTabs:[STMCoreAuthController authController].stcTabs];
     
     [self setupTabs:iPhoneStcTabs];
     
@@ -414,7 +414,7 @@
 
 - (void)setupTabs:(NSArray *)stcTabs {
     
-    if ([STMAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
         
         [self registerTabWithStoryboardParameters:@{@"name": @"STMAuth",
                                                     @"title": NSLocalizedString(@"AUTHORIZATION", nil),
@@ -797,7 +797,7 @@
 
 - (void)showAuthAlert {
     
-    if (!self.authAlert.visible && [STMAuthController authController].controllerState != STMAuthEnterPhoneNumber) {
+    if (!self.authAlert.visible && [STMCoreAuthController authController].controllerState != STMAuthEnterPhoneNumber) {
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [self.authAlert show];
@@ -912,11 +912,11 @@
 
 - (void)authStateChanged {
 
-    if ([STMAuthController authController].controllerState == STMAuthEnterPhoneNumber) {
+    if ([STMCoreAuthController authController].controllerState == STMAuthEnterPhoneNumber) {
         
         [self initAuthTab];
         
-    } else if ([STMAuthController authController].controllerState == STMAuthSuccess) {
+    } else if ([STMCoreAuthController authController].controllerState == STMAuthSuccess) {
 
         [self.view addSubview:self.spinnerView];
         
@@ -1057,7 +1057,7 @@
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
     
     [nc addObserver:self
            selector:@selector(syncStateChanged)

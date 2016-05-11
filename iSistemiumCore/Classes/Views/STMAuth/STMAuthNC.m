@@ -63,7 +63,7 @@
 
 - (void)authControllerStateChanged {
     
-    switch ([STMAuthController authController].controllerState) {
+    switch ([STMCoreAuthController authController].controllerState) {
             
         case STMAuthEnterPhoneNumber:
             [self setViewControllers:@[self.phoneVC] animated:YES];
@@ -182,12 +182,12 @@
     [nc addObserver:self
            selector:@selector(authControllerStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
     
     [nc addObserver:self
            selector:@selector(authControllerError:)
                name:@"authControllerError"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
 
 }
 

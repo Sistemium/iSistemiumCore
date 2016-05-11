@@ -17,7 +17,7 @@
 #import "STMCorePicturesController.h"
 #import "STMSocketController.h"
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMCoreRootTBC.h"
 
 #import "STMCoreUI.h"
@@ -411,10 +411,10 @@
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    NSString *key = [@"sendDate" stringByAppendingString:[STMAuthController authController].userID];
+    NSString *key = [@"sendDate" stringByAppendingString:[STMCoreAuthController authController].userID];
     NSString *sendDateString = [defaults objectForKey:key];
     
-    key = [@"receiveDate" stringByAppendingString:[STMAuthController authController].userID];
+    key = [@"receiveDate" stringByAppendingString:[STMCoreAuthController authController].userID];
     NSString *receiveDateString = [defaults objectForKey:key];
     
     self.sendDateLabel.text = (sendDateString) ? sendDateString : nil;
@@ -712,7 +712,7 @@
             
         case 1:
             if (buttonIndex == 1) {
-                [[STMAuthController authController] logout];
+                [[STMCoreAuthController authController] logout];
             }
             break;
 
@@ -765,8 +765,8 @@
 
 - (void)setupLabels {
     
-    self.nameLabel.text = [STMAuthController authController].userName;
-    self.phoneNumberLabel.text = [STMAuthController authController].phoneNumber;
+    self.nameLabel.text = [STMCoreAuthController authController].userName;
+    self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
     self.progressBar.hidden = ([[STMCoreSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
     
     self.locationWarningLabel.text = @"";

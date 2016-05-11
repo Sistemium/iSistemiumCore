@@ -1,12 +1,12 @@
 //
-//  STAuthController.m
+//  STMCoreAuthController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 01/06/14.
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
 #import <AdSupport/AdSupport.h>
 
@@ -32,7 +32,7 @@
 #define KC_ACCESS_TOKEN @"accessToken"
 
 
-@interface STMAuthController() <NSURLConnectionDataDelegate, UIAlertViewDelegate>
+@interface STMCoreAuthController() <NSURLConnectionDataDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) NSMutableData *responseData;
 @property (nonatomic, strong) NSString *requestID;
@@ -43,7 +43,7 @@
 @end
 
 
-@implementation STMAuthController
+@implementation STMCoreAuthController
 
 @synthesize phoneNumber = _phoneNumber;
 @synthesize userID = _userID;
@@ -56,7 +56,7 @@
 
 #pragma mark - singletone init
 
-+ (STMAuthController *)authController {
++ (STMCoreAuthController *)authController {
     
     static dispatch_once_t pred = 0;
     __strong static id _authController = nil;

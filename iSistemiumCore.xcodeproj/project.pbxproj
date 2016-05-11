@@ -136,7 +136,7 @@
 		2C3F73F51CBBD6FE00F8BFB8 /* STMWorkflow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73D81CBBD6FE00F8BFB8 /* STMWorkflow.m */; };
 		2C3F73F61CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73DA1CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.m */; };
 		2C3F73F81CBBD71300F8BFB8 /* iSistemiumCore.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73F71CBBD71300F8BFB8 /* iSistemiumCore.xcdatamodel */; };
-		2C3F74241CBBD78300F8BFB8 /* STMAuthController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73FC1CBBD78300F8BFB8 /* STMAuthController.m */; };
+		2C3F74241CBBD78300F8BFB8 /* STMCoreAuthController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73FC1CBBD78300F8BFB8 /* STMCoreAuthController.m */; };
 		2C3F74251CBBD78300F8BFB8 /* STMBarCodeScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F73FE1CBBD78300F8BFB8 /* STMBarCodeScanner.m */; };
 		2C3F74261CBBD78300F8BFB8 /* STMCoreBatteryTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74001CBBD78300F8BFB8 /* STMCoreBatteryTracker.m */; };
 		2C3F74271CBBD78300F8BFB8 /* STMDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74041CBBD78300F8BFB8 /* STMDocument.m */; };
@@ -425,8 +425,8 @@
 		2C3F73D91CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "STMWorkflow+CoreDataProperties.h"; sourceTree = "<group>"; };
 		2C3F73DA1CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "STMWorkflow+CoreDataProperties.m"; sourceTree = "<group>"; };
 		2C3F73F71CBBD71300F8BFB8 /* iSistemiumCore.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = iSistemiumCore.xcdatamodel; sourceTree = "<group>"; };
-		2C3F73FB1CBBD78300F8BFB8 /* STMAuthController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMAuthController.h; sourceTree = "<group>"; };
-		2C3F73FC1CBBD78300F8BFB8 /* STMAuthController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMAuthController.m; sourceTree = "<group>"; };
+		2C3F73FB1CBBD78300F8BFB8 /* STMCoreAuthController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreAuthController.h; sourceTree = "<group>"; };
+		2C3F73FC1CBBD78300F8BFB8 /* STMCoreAuthController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreAuthController.m; sourceTree = "<group>"; };
 		2C3F73FD1CBBD78300F8BFB8 /* STMBarCodeScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMBarCodeScanner.h; sourceTree = "<group>"; };
 		2C3F73FE1CBBD78300F8BFB8 /* STMBarCodeScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMBarCodeScanner.m; sourceTree = "<group>"; };
 		2C3F73FF1CBBD78300F8BFB8 /* STMCoreBatteryTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreBatteryTracker.h; sourceTree = "<group>"; };
@@ -951,8 +951,8 @@
 		2C3F73FA1CBBD76800F8BFB8 /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				2C3F73FB1CBBD78300F8BFB8 /* STMAuthController.h */,
-				2C3F73FC1CBBD78300F8BFB8 /* STMAuthController.m */,
+				2C3F73FB1CBBD78300F8BFB8 /* STMCoreAuthController.h */,
+				2C3F73FC1CBBD78300F8BFB8 /* STMCoreAuthController.m */,
 				2C3F73FD1CBBD78300F8BFB8 /* STMBarCodeScanner.h */,
 				2C3F73FE1CBBD78300F8BFB8 /* STMBarCodeScanner.m */,
 				2C3F74011CBBD78300F8BFB8 /* STMConstants.h */,
@@ -1546,7 +1546,7 @@
 				2C3F74961CBBD80600F8BFB8 /* STMDatePicker.swift in Sources */,
 				2C3F74A51CBBD80600F8BFB8 /* STMWorkflowAS.m in Sources */,
 				2C3F73E41CBBD6FE00F8BFB8 /* STMClientEntity+CoreDataProperties.m in Sources */,
-				2C3F74241CBBD78300F8BFB8 /* STMAuthController.m in Sources */,
+				2C3F74241CBBD78300F8BFB8 /* STMCoreAuthController.m in Sources */,
 				2C3F75141CBBD99600F8BFB8 /* STMAuthNC.m in Sources */,
 				2C3F73DE1CBBD6FE00F8BFB8 /* STMBarCodeType+CoreDataProperties.m in Sources */,
 				2C3F74DC1CBBD88100F8BFB8 /* STMTabBarButtonTVC.m in Sources */,

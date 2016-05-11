@@ -7,7 +7,7 @@
 //
 
 #import "STMSocketController.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMClientDataController.h"
 #import "STMCoreObjectsController.h"
 #import "STMRemoteController.h"
@@ -423,8 +423,8 @@
     STMClientData *clientData = [STMClientDataController clientData];
     NSMutableDictionary *dataDic = [[STMCoreObjectsController dictionaryForObject:clientData][@"properties"] mutableCopy];
     
-    NSDictionary *authDic = @{@"userId"         : [STMAuthController authController].userID,
-                              @"accessToken"    : [STMAuthController authController].accessToken};
+    NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
+                              @"accessToken"    : [STMCoreAuthController authController].accessToken};
     
     [dataDic addEntriesFromDictionary:authDic];
     
@@ -633,7 +633,7 @@
             
             NSLog(@"socket not authorized");
             [self sharedInstance].isAuthorized = NO;
-            [[STMAuthController authController] logout];
+            [[STMCoreAuthController authController] logout];
             
         }
         
@@ -641,7 +641,7 @@
         
         NSLog(@"socket not authorized");
         [self sharedInstance].isAuthorized = NO;
-        [[STMAuthController authController] logout];
+        [[STMCoreAuthController authController] logout];
         
     }
 
@@ -672,7 +672,7 @@
 //        [[STMLogger sharedLogger] saveLogMessageWithText:errorString type:@"error"];
         
         if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
-            [[STMAuthController authController] logout];
+            [[STMCoreAuthController authController] logout];
         }
 
     } else {

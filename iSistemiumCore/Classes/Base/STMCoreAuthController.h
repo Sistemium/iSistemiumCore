@@ -1,5 +1,5 @@
 //
-//  STAuthController.h
+//  STMCoreAuthController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 01/06/14.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMRequestAuthenticatable.h"
 
-@interface STMAuthController : NSObject <STMRequestAuthenticatable>
+@interface STMCoreAuthController : NSObject <STMRequestAuthenticatable>
 
 typedef NS_ENUM(NSUInteger, STMAuthState) {
     STMAuthEnterPhoneNumber,
@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, STMAuthState) {
 @property (nonatomic) STMAuthState controllerState;
 
 
-+ (STMAuthController *)authController;
++ (STMCoreAuthController *)authController;
 
 
 - (BOOL)sendPhoneNumber:(NSString *)phoneNumber;

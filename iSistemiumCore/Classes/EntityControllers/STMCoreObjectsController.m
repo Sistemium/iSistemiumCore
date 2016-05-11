@@ -8,7 +8,7 @@
 
 #import "STMCoreObjectsController.h"
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMFunctions.h"
 #import "STMSyncer.h"
 #import "STMEntityController.h"
@@ -1426,7 +1426,7 @@
         
         NSURLRequest *request = [NSURLRequest requestWithURL:urlWithXid];
         
-        request = [[STMAuthController authController] authenticateRequest:request];
+        request = [[STMCoreAuthController authController] authenticateRequest:request];
         
         if (request) {
             

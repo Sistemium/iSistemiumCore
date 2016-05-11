@@ -7,7 +7,7 @@
 //
 
 #import "STMActionPopoverNC.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMCoreRootTBC.h"
 #import "STMTabBarItemControllable.h"
 

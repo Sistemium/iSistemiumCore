@@ -998,7 +998,7 @@
         self.errorOccured = NO;
         
         NSURL *newsURL = [[NSURL URLWithString:self.apiUrlString] URLByAppendingPathComponent:@"stc.news"];
-        NSMutableURLRequest *request = [[[STMAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
+        NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
         
         request.timeoutInterval = [self timeout];
         request.HTTPShouldHandleCookies = NO;

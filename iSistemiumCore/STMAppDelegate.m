@@ -12,7 +12,7 @@
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMRemoteController.h"
 
 #import "STMMessageController.h"
@@ -40,7 +40,7 @@
     NSString *logMessage = [NSString stringWithFormat:@"application didFinishLaunchingWithOptions"];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
 
-    [STMAuthController authController];
+    [STMCoreAuthController authController];
     
     [self registerForNotification];
     

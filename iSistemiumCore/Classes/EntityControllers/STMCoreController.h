@@ -16,7 +16,7 @@
 #import "STMFunctions.h"
 #import "STMConstants.h"
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
 #import "STMCoreDataModel.h"
 

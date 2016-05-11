@@ -10,7 +10,7 @@
 #import <WebKit/WebKit.h>
 
 #import "STMCoreSessionManager.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMBarCodeScanner.h"
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
@@ -145,7 +145,7 @@
     
     self.isAuthorizing = YES;
     
-    NSString *accessToken = [STMAuthController authController].accessToken;
+    NSString *accessToken = [STMCoreAuthController authController].accessToken;
     
     //    NSLog(@"accessToken %@", accessToken);
     

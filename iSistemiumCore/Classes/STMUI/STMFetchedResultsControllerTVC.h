@@ -14,7 +14,7 @@
 #import "STMDocument.h"
 #import "STMCoreSessionManager.h"
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
 #import "STMCoreUI.h"
 #import "STMNS.h"

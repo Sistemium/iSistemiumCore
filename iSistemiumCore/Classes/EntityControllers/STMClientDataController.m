@@ -11,7 +11,7 @@
 #import "STMAppDelegate.h"
 #import "STMClientDataController.h"
 #import "STMClientData.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMSetting.h"
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
@@ -56,7 +56,7 @@
 }
 
 + (NSDate *)lastAuth {
-    return [STMAuthController authController].lastAuth;
+    return [STMCoreAuthController authController].lastAuth;
 }
 
 + (NSString *)locationServiceStatus {
@@ -64,7 +64,7 @@
 }
 
 + (NSString *)tokenHash {
-    return [STMAuthController authController].tokenHash;
+    return [STMCoreAuthController authController].tokenHash;
 }
 
 + (NSString *)notificationTypes {

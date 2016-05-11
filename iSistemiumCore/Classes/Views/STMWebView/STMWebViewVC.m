@@ -11,7 +11,7 @@
 #import "STMCoreUI.h"
 
 #import "STMCoreSessionManager.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
 #import "STMFunctions.h"
 
@@ -113,7 +113,7 @@
 
     self.isAuthorizing = YES;
 
-    NSString *accessToken = [STMAuthController authController].accessToken;
+    NSString *accessToken = [STMCoreAuthController authController].accessToken;
     
 //    NSLog(@"accessToken %@", accessToken);
 

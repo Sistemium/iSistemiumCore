@@ -72,13 +72,13 @@
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
 
 }
 
 - (void)authStateChanged {
     
-    if ([STMAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
         
         self.downloadingPictures = NO;
         
@@ -726,7 +726,7 @@
     
     NSURL *imsURL = [NSURL URLWithString:[url stringByAppendingString:[NSString stringWithFormat:@"%@/%@/%@/%@", entityName, year, month, day]]];
     
-    NSMutableURLRequest *request = [[[STMAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:imsURL]] mutableCopy];
+    NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:imsURL]] mutableCopy];
     [request setHTTPMethod:@"POST"];
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
     [request setHTTPBody:data];

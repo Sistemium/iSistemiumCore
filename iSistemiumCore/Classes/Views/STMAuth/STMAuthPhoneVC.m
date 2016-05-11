@@ -25,7 +25,7 @@
 }
 
 - (BOOL)sendTextFieldValue {
-    return [[STMAuthController authController] sendPhoneNumber:self.textField.text];
+    return [[STMCoreAuthController authController] sendPhoneNumber:self.textField.text];
 }
 
 
@@ -46,7 +46,7 @@
     
     self.navigationItem.title = NSLocalizedString(@"ENTER TO SISTEMIUM", nil);
     self.phoneNumberLabel.text = NSLocalizedString(@"ENTER PHONE NUMBER", nil);
-    self.phoneNumberTextField.text = [STMAuthController authController].phoneNumber;
+    self.phoneNumberTextField.text = [STMCoreAuthController authController].phoneNumber;
     [self.sendPhoneNumberButton setTitle:NSLocalizedString(@"SEND", nil) forState:UIControlStateNormal];
     
     self.phoneNumberTextField.delegate = self;
