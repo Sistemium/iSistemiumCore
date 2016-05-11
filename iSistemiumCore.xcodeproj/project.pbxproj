@@ -11,6 +11,7 @@
 		2C13F4EB1CE301B800A5F129 /* STMGarbageCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F4EA1CE301B800A5F129 /* STMGarbageCollector.swift */; };
 		2C13F4ED1CE304C000A5F129 /* Upload-100.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F4EC1CE304C000A5F129 /* Upload-100.png */; };
 		2C13F4EF1CE305E300A5F129 /* STMProfile.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */; };
+		2C13F4F21CE3090D00A5F129 /* STMWorkflowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F4F11CE3090D00A5F129 /* STMWorkflowController.m */; };
 		2C3F72C31CBBD46400F8BFB8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72C21CBBD46400F8BFB8 /* main.m */; };
 		2C3F72CE1CBBD46400F8BFB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */; };
 		2C3F72DC1CBBD46400F8BFB8 /* iSistemiumCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72DB1CBBD46400F8BFB8 /* iSistemiumCoreTests.m */; };
@@ -241,6 +242,8 @@
 		2C13F4EA1CE301B800A5F129 /* STMGarbageCollector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STMGarbageCollector.swift; sourceTree = "<group>"; };
 		2C13F4EC1CE304C000A5F129 /* Upload-100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Upload-100.png"; sourceTree = "<group>"; };
 		2C13F4EE1CE305E300A5F129 /* STMProfile.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = STMProfile.storyboard; sourceTree = "<group>"; };
+		2C13F4F01CE3090D00A5F129 /* STMWorkflowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMWorkflowController.h; sourceTree = "<group>"; };
+		2C13F4F11CE3090D00A5F129 /* STMWorkflowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWorkflowController.m; sourceTree = "<group>"; };
 		2C3F72BE1CBBD46400F8BFB8 /* iSistemiumCore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSistemiumCore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3F72C21CBBD46400F8BFB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -962,6 +965,8 @@
 				2C3F744B1CBBD7AB00F8BFB8 /* STMPicturesController.m */,
 				2C3F744C1CBBD7AB00F8BFB8 /* STMRecordStatusController.h */,
 				2C3F744D1CBBD7AB00F8BFB8 /* STMRecordStatusController.m */,
+				2C13F4F01CE3090D00A5F129 /* STMWorkflowController.h */,
+				2C13F4F11CE3090D00A5F129 /* STMWorkflowController.m */,
 			);
 			path = EntityControllers;
 			sourceTree = "<group>";
@@ -1501,6 +1506,7 @@
 				2C3F73DD1CBBD6FE00F8BFB8 /* STMBarCodeType.m in Sources */,
 				2C3F74A01CBBD80600F8BFB8 /* STMSplitViewController_Swift.swift in Sources */,
 				2C3F742F1CBBD78300F8BFB8 /* STMSessionManager.m in Sources */,
+				2C13F4F21CE3090D00A5F129 /* STMWorkflowController.m in Sources */,
 				2C3F74541CBBD7AB00F8BFB8 /* STMCoreObjectsController.m in Sources */,
 				2C3F73E01CBBD6FE00F8BFB8 /* STMBatteryStatus+CoreDataProperties.m in Sources */,
 				2C3F749C1CBBD80600F8BFB8 /* STMSearchableTVC.m in Sources */,
