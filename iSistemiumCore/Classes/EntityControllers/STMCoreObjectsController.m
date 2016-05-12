@@ -386,7 +386,7 @@
             
         } else {
             
-            if (![object isKindOfClass:[STMPicture class]]) {
+            if (![object isKindOfClass:[STMCorePicture class]]) {
                 [object setValue:nil forKey:key];
             }
             
@@ -394,9 +394,9 @@
         
     }
     
-    if ([object isKindOfClass:[STMPicture class]]){
+    if ([object isKindOfClass:[STMCorePicture class]]){
     
-        STMPicture *picture = (STMPicture*)object;
+        STMCorePicture *picture = (STMCorePicture *)object;
         
         if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
         

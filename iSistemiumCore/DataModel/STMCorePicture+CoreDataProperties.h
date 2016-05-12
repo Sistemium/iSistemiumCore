@@ -1,19 +1,19 @@
 //
-//  STMPicture+CoreDataProperties.h
-//  iSistemium
+//  STMCorePicture+CoreDataProperties.h
+//  iSistemiumCore
 //
-//  Created by Edgar Jan Vuicik on 15/04/16.
+//  Created by Maxim Grigoriev on 12/05/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
 //  to delete and recreate this implementation file for your updated model.
 //
 
-#import "STMPicture.h"
+#import "STMCorePicture.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMPicture (CoreDataProperties)
+@interface STMCorePicture (CoreDataProperties)
 
 @property (nullable, nonatomic, retain) NSString *commentText;
 @property (nullable, nonatomic, retain) NSDate *deviceCts;

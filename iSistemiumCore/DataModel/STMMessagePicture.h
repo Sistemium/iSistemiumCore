@@ -7,13 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "STMPicture.h"
+#import "STMCorePicture.h"
 
 @class STMMessage;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMMessagePicture : STMPicture
+@interface STMMessagePicture : STMCorePicture
 
 // Insert code here to declare functionality of your managed object subclass
 

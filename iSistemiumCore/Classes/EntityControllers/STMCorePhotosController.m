@@ -1,18 +1,18 @@
 //
-//  STMPhotosController.m
+//  STMCorePhotosController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 12/11/15.
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPhotosController.h"
+#import "STMCorePhotosController.h"
 
 #import "STMCoreSessionManager.h"
 #import "STMLocationController.h"
 
 
-@interface STMPhotosController()
+@interface STMCorePhotosController()
 
 @property (nonatomic) BOOL isPhotoLocationProcessing;
 
@@ -20,9 +20,9 @@
 @end
 
 
-@implementation STMPhotosController
+@implementation STMCorePhotosController
 
-+ (STMPhotosController *)sharedController {
++ (instancetype)sharedController {
     
     static dispatch_once_t pred = 0;
     __strong static id _sharedController = nil;

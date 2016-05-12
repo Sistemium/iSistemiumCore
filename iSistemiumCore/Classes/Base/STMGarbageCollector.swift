@@ -44,8 +44,8 @@ import Foundation
                     allImages.insert(element)
                 }
             }
-            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMPicture))
-            let photos = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMPicture]
+            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
+            let photos = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
             for image in photos{
                 if let path = image.imagePath{
                     usedImages.insert(path)

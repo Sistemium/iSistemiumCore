@@ -89,6 +89,27 @@
         <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
+    <entity name="STMCorePicture" representedClassName="STMCorePicture" isAbstract="YES" syncable="YES">
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="href" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="imageFormat" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="imagePath" optional="YES" attributeType="String" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="imageThumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" storedInTruthFile="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="picturesInfo" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="resizedImagePath" optional="YES" attributeType="String" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="thumbnailHref" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
     <entity name="STMDatum" representedClassName="STMDatum" syncable="YES">
         <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
@@ -183,32 +204,12 @@
         <relationship name="pictures" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="STMMessagePicture" inverseName="message" inverseEntity="STMMessagePicture" syncable="YES"/>
         <relationship name="workflow" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMWorkflow" inverseName="messages" inverseEntity="STMWorkflow" syncable="YES"/>
     </entity>
-    <entity name="STMMessagePicture" representedClassName="STMMessagePicture" parentEntity="STMPicture" syncable="YES">
+    <entity name="STMMessagePicture" representedClassName="STMMessagePicture" parentEntity="STMCorePicture" syncable="YES">
         <attribute name="ord" optional="YES" attributeType="Integer 64" defaultValueString="0.0" syncable="YES"/>
         <relationship name="message" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMMessage" inverseName="pictures" inverseEntity="STMMessage" syncable="YES"/>
     </entity>
-    <entity name="STMPhoto" representedClassName="STMPhoto" parentEntity="STMPicture" syncable="YES">
+    <entity name="STMPhoto" representedClassName="STMPhoto" parentEntity="STMCorePicture" syncable="YES">
         <relationship name="location" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMLocation" inverseName="photos" inverseEntity="STMLocation" syncable="YES"/>
-    </entity>
-    <entity name="STMPicture" representedClassName="STMPicture" isAbstract="YES" syncable="YES">
-        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
-        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="href" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="imageFormat" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="imagePath" optional="YES" attributeType="String" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="imageThumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" storedInTruthFile="YES" syncable="YES"/>
-        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
-        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="picturesInfo" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="resizedImagePath" optional="YES" attributeType="String" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="STMRecordStatus" representedClassName="STMRecordStatus" syncable="YES">
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
@@ -273,7 +274,7 @@
         <element name="STMMessage" positionX="-180" positionY="-552" width="128" height="345"/>
         <element name="STMMessagePicture" positionX="-353" positionY="-666" width="128" height="73"/>
         <element name="STMPhoto" positionX="-522" positionY="-585" width="128" height="58"/>
-        <element name="STMPicture" positionX="-522" positionY="-954" width="128" height="313"/>
+        <element name="STMCorePicture" positionX="-522" positionY="-954" width="128" height="328"/>
         <element name="STMRecordStatus" positionX="-693" positionY="-954" width="128" height="268"/>
         <element name="STMSetting" positionX="-1154" positionY="-694" width="128" height="253"/>
         <element name="STMWorkflow" positionX="7" positionY="-657" width="128" height="270"/>

@@ -1,8 +1,8 @@
 //
-//  STMPicture.h
-//  iSistemium
+//  STMCorePicture.h
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 17/01/16.
+//  Created by Maxim Grigoriev on 12/05/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMPicture : STMDatum
+@interface STMCorePicture : STMDatum
 
 // Insert code here to declare functionality of your managed object subclass
 
@@ -19,4 +19,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#import "STMPicture+CoreDataProperties.h"
+#import "STMCorePicture+CoreDataProperties.h"

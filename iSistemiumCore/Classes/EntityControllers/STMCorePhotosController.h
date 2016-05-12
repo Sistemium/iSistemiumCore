@@ -1,5 +1,5 @@
 //
-//  STMPhotosController.h
+//  STMCorePhotosController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 12/11/15.
@@ -8,11 +8,11 @@
 
 #import "STMCoreController.h"
 
-@interface STMPhotosController : STMCoreController
+@interface STMCorePhotosController : STMCoreController
 
 @property (nonatomic, strong) NSMutableArray *waitingLocationPhotos;
 
-+ (STMPhotosController *)sharedController;
++ (instancetype)sharedController;
 
 - (STMCoreLocationTracker *)locationTracker;
 

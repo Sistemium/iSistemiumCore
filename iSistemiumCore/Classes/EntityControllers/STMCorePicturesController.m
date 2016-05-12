@@ -142,7 +142,7 @@
         
         if (context && self.session.status == STMSessionRunning) {
             
-            STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMPicture class])];
+            STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMCorePicture class])];
             
             NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imageThumbnail == %@)", nil, nil];
@@ -261,13 +261,13 @@
 
 + (void)startCheckingPicturesPaths {
     
-    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMPicture class])];
+    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMCorePicture class])];
     
     if (result.count > 0) {
 
         NSLogMethodName;
 
-        for (STMPicture *picture in result) {
+        for (STMCorePicture *picture in result) {
             
             NSArray *pathComponents = [picture.imagePath pathComponents];
             
@@ -294,7 +294,7 @@
     
 }
 
-+ (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(STMPicture *)picture {
++ (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(STMCorePicture *)picture {
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
@@ -366,14 +366,14 @@
 
 + (void)checkBrokenPhotos {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMPicture class])];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePicture class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"imageThumbnail == %@", nil];
     
     NSError *error;
     NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
     
-    for (STMPicture *picture in result) {
+    for (STMCorePicture *picture in result) {
         
         if (picture.imagePath) {
             
@@ -421,7 +421,7 @@
     NSError *error;
     NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
     
-    for (STMPicture *picture in result) {
+    for (STMCorePicture *picture in result) {
         
         if (!picture.hasChanges) {
             
@@ -458,7 +458,7 @@
     
     if (href) {
         
-        if ([object isKindOfClass:[STMPicture class]]) {
+        if ([object isKindOfClass:[STMCorePicture class]]) {
             
             STMCorePicturesController *pc = [self sharedController];
             
@@ -486,10 +486,10 @@
     
 }
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(STMPicture *)picture andUpload:(BOOL)shouldUpload {
++ (void)setImagesFromData:(NSData *)data forPicture:(STMCorePicture *)picture andUpload:(BOOL)shouldUpload {
     
     NSData *weakData = data;
-    STMPicture *weakPicture = picture;
+    STMCorePicture *weakPicture = picture;
     
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
@@ -500,7 +500,7 @@
             [[self sharedController] addUploadOperationForPicture:picture data:weakData];
         }
 
-    } else if ([picture isKindOfClass:[STMPicture class]]) {
+    } else if ([picture isKindOfClass:[STMCorePicture class]]) {
         
     }
     
@@ -525,7 +525,7 @@
     
 }
 
-+ (void)saveImageFile:(NSString *)fileName forPicture:(STMPicture *)picture fromImageData:(NSData *)data {
++ (void)saveImageFile:(NSString *)fileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
     
     UIImage *image = [UIImage imageWithData:data];
     CGFloat maxDimension = MAX(image.size.height, image.size.width);
@@ -546,7 +546,7 @@
 
 }
 
-+ (void)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMPicture *)picture fromImageData:(NSData *)data {
++ (void)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
 
     NSString *resizedImagePath = [STMFunctions absolutePathForPath:resizedFileName];
     
@@ -561,7 +561,7 @@
 
 }
 
-+ (void)setThumbnailForPicture:(STMPicture *)picture fromImageData:(NSData *)data {
++ (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
     
     UIImage *imageThumbnail = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(imageThumbnail, [self jpgQuality]);
@@ -673,8 +673,8 @@
                    
                     [self didProcessHref:href];
 
-                    if ([object isKindOfClass:[STMPicture class]]) {
-                       [[self class] setImagesFromData:data forPicture:(STMPicture *)object andUpload:NO];
+                    if ([object isKindOfClass:[STMCorePicture class]]) {
+                       [[self class] setImagesFromData:data forPicture:(STMCorePicture *)object andUpload:NO];
                     }
                    
                 }
@@ -696,9 +696,9 @@
 
 - (void)repeatUploadOperationForObject:(NSManagedObject *)object {
     
-    if ([object isKindOfClass:[STMPicture class]]) {
+    if ([object isKindOfClass:[STMCorePicture class]]) {
         
-        STMPicture *picture = (STMPicture *)object;
+        STMCorePicture *picture = (STMCorePicture *)object;
         
         NSData *data = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath]];
 
@@ -708,7 +708,7 @@
     
 }
 
-- (void)addUploadOperationForPicture:(STMPicture *)picture data:(NSData *)data {
+- (void)addUploadOperationForPicture:(STMCorePicture *)picture data:(NSData *)data {
 
     NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
     NSString *url = [[appSettings valueForKey:@"IMS.url"] stringByAppendingString:@"?folder="];
@@ -782,7 +782,7 @@
 
 #pragma mark
 
-+ (void)deletePicture:(STMPicture *)picture {
++ (void)deletePicture:(STMCorePicture *)picture {
 
 //    NSLog(@"delete picture %@", picture);
     
@@ -796,7 +796,7 @@
     
 }
 
-+ (void)removeImageFilesForPicture:(STMPicture *)picture {
++ (void)removeImageFilesForPicture:(STMCorePicture *)picture {
     
     if (picture.imagePath) [self removeImageFile:picture.imagePath];
     if (picture.resizedImagePath) [self removeImageFile:picture.resizedImagePath];

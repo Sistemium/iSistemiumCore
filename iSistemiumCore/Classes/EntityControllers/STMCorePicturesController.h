@@ -26,12 +26,12 @@
 + (void)downloadConnectionForObject:(NSManagedObject *)object;
 + (void)downloadConnectionForObjectID:(NSManagedObjectID *)objectID;
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(STMPicture *)picture andUpload:(BOOL)shouldUpload;
-+ (void)saveImageFile:(NSString *)fileName forPicture:(STMPicture *)picture fromImageData:(NSData *)data;
++ (void)setImagesFromData:(NSData *)data forPicture:(STMCorePicture *)picture andUpload:(BOOL)shouldUpload;
++ (void)saveImageFile:(NSString *)fileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data;
 
-+ (void)removeImageFilesForPicture:(STMPicture *)picture;
++ (void)removeImageFilesForPicture:(STMCorePicture *)picture;
 
-+ (void)setThumbnailForPicture:(STMPicture *)picture fromImageData:(NSData *)data ;
++ (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data ;
 
 
 @end
