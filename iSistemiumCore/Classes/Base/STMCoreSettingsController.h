@@ -1,5 +1,5 @@
 //
-//  STMSettingsController.h
+//  STMCoreSettingsController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 1/24/13.
@@ -12,9 +12,9 @@
 #import "STMSessionManagement.h"
 #import "STMCoreDataModel.h"
 
-@interface STMSettingsController : NSObject <STMSettingsController>
+@interface STMCoreSettingsController : NSObject <STMSettingsController>
 
-+ (STMSettingsController *)initWithSettings:(NSDictionary *)startSettings;
++ (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 
@@ -32,9 +32,12 @@
 - (BOOL)isValidTime:(NSString *)value;
 - (BOOL)isValidURI:(NSString *)value;
 
+- (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;
+
 
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, strong) id <STMSession> session;
 @property (nonatomic, strong) NSMutableArray *groupNames;
+
 
 @end

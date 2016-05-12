@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMSettingsController.h"
+#import "STMCoreSettingsController.h"
 #import "STMSettingsTVC.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
@@ -85,7 +85,7 @@
     
 //    return [[self controlsSettings] valueForKey:@"groupNames"];
     
-    return [(STMSettingsController *)[self.session settingsController] groupNames];
+    return [(STMCoreSettingsController *)[self.session settingsController] groupNames];
     
 }
 

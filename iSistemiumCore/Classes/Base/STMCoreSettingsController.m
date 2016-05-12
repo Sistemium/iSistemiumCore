@@ -1,12 +1,12 @@
 //
-//  STMSettingsController.m
+//  STMCoreSettingsController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 1/24/13.
 //  Copyright (c) 2013 Maxim V. Grigoriev. All rights reserved.
 //
 
-#import "STMSettingsController.h"
+#import "STMCoreSettingsController.h"
 #import "STMCoreSession.h"
 #import "STMSettingsData.h"
 #import "STMEntityDescription.h"
@@ -14,7 +14,7 @@
 #import "STMCoreSessionManager.h"
 
 
-@interface STMSettingsController() <NSFetchedResultsControllerDelegate>
+@interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedSettingsResultController;
 
@@ -22,14 +22,14 @@
 @end
 
 
-@implementation STMSettingsController
+@implementation STMCoreSettingsController
 
 
 #pragma mark - class methods
 
-+ (STMSettingsController *)initWithSettings:(NSDictionary *)startSettings {
++ (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings {
     
-    STMSettingsController *settingsController = [[STMSettingsController alloc] init];
+    STMCoreSettingsController *settingsController = [[STMCoreSettingsController alloc] init];
     settingsController.startSettings = [startSettings mutableCopy];
     return settingsController;
     
@@ -62,8 +62,6 @@
 }
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
- 
-#warning should override?
 
     if ([value isKindOfClass:[NSString class]]) {
         
@@ -86,13 +84,9 @@
         
         NSArray *boolValues = @[@"localAccessToSettings",
                                 @"deviceMotionUpdate",
-                                @"enableDebtsEditing",
-                                @"enablePartnersEditing",
                                 @"enableDownloadViaWWAN",
                                 @"getLocationsWithNegativeSpeed",
-                                @"blockIfNoLocationPermission",
-                                @"enableAggregateShipment",
-                                @"enableShowBottles"];
+                                @"blockIfNoLocationPermission"];
         
         NSArray *boolValueSuffixes = @[@"TrackerAutoStart"];
         
@@ -108,7 +102,6 @@
                                        @"TrackerFinishTime"];
         
         NSArray *stringValue = @[@"uploadLog.type",
-                                 @"genericPriceType",
                                  @"geotrackerControl"];
         
         NSArray *logicValue = @[@"timeDistanceLogic"];
@@ -171,16 +164,6 @@
                 return [(NSString *)value uppercaseString];
             } else {
                 return andValue;
-            }
-            
-        } else if ([key isEqualToString:@"catalogue.cell.right"]) {
-            
-            NSArray *availableValues = @[@"price", @"pieceVolume", @"stock"];
-            
-            if ([availableValues containsObject:value]) {
-                return value;
-            } else {
-                return @"price";
             }
             
         } else if ([key isEqualToString:@"requestLocationServiceAuthorization"]) {
@@ -312,7 +295,7 @@
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
     
     STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
-    STMSettingsController *currentController = currentSession.settingsController;
+    STMCoreSettingsController *currentController = currentSession.settingsController;
     
     NSDictionary *settingsGroup = [currentController currentSettingsForGroup:group];
     

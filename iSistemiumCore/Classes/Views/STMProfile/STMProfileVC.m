@@ -82,7 +82,7 @@
     return [[STMCoreSessionManager sharedManager].currentSession syncer];
 }
 
-- (STMSettingsController *)settingsController {
+- (STMCoreSettingsController *)settingsController {
     return [[STMCoreSessionManager sharedManager].currentSession settingsController];
 }
 
@@ -651,7 +651,7 @@
 
 - (void)enableWWANDownloading {
     
-    STMSettingsController *settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
+    STMCoreSettingsController *settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
 
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
@@ -793,7 +793,7 @@
 
     if (![self.requestLocationServiceAuthorization isEqualToString:@"noRequest"]) {
 
-        BOOL isDriver = [[STMSettingsController stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
+        BOOL isDriver = [[STMCoreSettingsController stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
         
         self.lastLocationImageView.hidden = NO;
         [self setupLastLocationLabel];

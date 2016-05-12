@@ -137,13 +137,31 @@
 
 }
 
+
+#pragma mark - properties classes definition (may override in subclasses)
+
+- (Class)settingsControllerClass {
+    return [STMCoreSettingsController class];
+}
+
+- (Class)locationTrackerClass {
+    return [STMCoreLocationTracker class];
+}
+
+- (Class)batteryTrackerClass {
+    return [STMCoreBatteryTracker class];
+}
+
+
+#pragma mark - handle notifications
+
 - (void)documentReady:(NSNotification *)notification {
     
     if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.uid]) {
     
         [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
 
-        self.settingsController = [STMSettingsController initWithSettings:self.startSettings];
+        self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
         self.trackers = [NSMutableDictionary dictionary];
         self.syncer = [[STMSyncer alloc] init];
 
@@ -161,14 +179,14 @@
     
     if ([self.startTrackers containsObject:@"location"]) {
         
-        self.locationTracker = [[STMCoreLocationTracker alloc] init];
+        self.locationTracker = [[[self locationTrackerClass] alloc] init];
         self.trackers[self.locationTracker.group] = self.locationTracker;
         
     }
     
     if ([self.startTrackers containsObject:@"battery"]) {
         
-        self.batteryTracker = [[STMCoreBatteryTracker alloc] init];
+        self.batteryTracker = [[[self batteryTrackerClass] alloc] init];
         self.trackers[self.batteryTracker.group] = self.batteryTracker;
         
     }

@@ -148,7 +148,7 @@
 		2C3F742D1CBBD78300F8BFB8 /* STMScanApiHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74101CBBD78300F8BFB8 /* STMScanApiHelper.m */; };
 		2C3F742E1CBBD78300F8BFB8 /* STMCoreSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */; };
 		2C3F742F1CBBD78300F8BFB8 /* STMCoreSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */; };
-		2C3F74301CBBD78300F8BFB8 /* STMSettingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */; };
+		2C3F74301CBBD78300F8BFB8 /* STMCoreSettingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74161CBBD78300F8BFB8 /* STMCoreSettingsController.m */; };
 		2C3F74311CBBD78300F8BFB8 /* STMSettingsData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74181CBBD78300F8BFB8 /* STMSettingsData.m */; };
 		2C3F74321CBBD78300F8BFB8 /* STMScriptMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F74191CBBD78300F8BFB8 /* STMScriptMessageController.swift */; };
 		2C3F74331CBBD78300F8BFB8 /* STMSocketController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F741B1CBBD78300F8BFB8 /* STMSocketController.m */; };
@@ -451,8 +451,8 @@
 		2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreSession.m; sourceTree = "<group>"; };
 		2C3F74131CBBD78300F8BFB8 /* STMCoreSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreSessionManager.h; sourceTree = "<group>"; };
 		2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreSessionManager.m; sourceTree = "<group>"; };
-		2C3F74151CBBD78300F8BFB8 /* STMSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMSettingsController.h; sourceTree = "<group>"; };
-		2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMSettingsController.m; sourceTree = "<group>"; };
+		2C3F74151CBBD78300F8BFB8 /* STMCoreSettingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreSettingsController.h; sourceTree = "<group>"; };
+		2C3F74161CBBD78300F8BFB8 /* STMCoreSettingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreSettingsController.m; sourceTree = "<group>"; };
 		2C3F74171CBBD78300F8BFB8 /* STMSettingsData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMSettingsData.h; sourceTree = "<group>"; };
 		2C3F74181CBBD78300F8BFB8 /* STMSettingsData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMSettingsData.m; sourceTree = "<group>"; };
 		2C3F74191CBBD78300F8BFB8 /* STMScriptMessageController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STMScriptMessageController.swift; sourceTree = "<group>"; };
@@ -981,8 +981,8 @@
 				2C3F74121CBBD78300F8BFB8 /* STMCoreSession.m */,
 				2C3F74131CBBD78300F8BFB8 /* STMCoreSessionManager.h */,
 				2C3F74141CBBD78300F8BFB8 /* STMCoreSessionManager.m */,
-				2C3F74151CBBD78300F8BFB8 /* STMSettingsController.h */,
-				2C3F74161CBBD78300F8BFB8 /* STMSettingsController.m */,
+				2C3F74151CBBD78300F8BFB8 /* STMCoreSettingsController.h */,
+				2C3F74161CBBD78300F8BFB8 /* STMCoreSettingsController.m */,
 				2C3F74171CBBD78300F8BFB8 /* STMSettingsData.h */,
 				2C3F74181CBBD78300F8BFB8 /* STMSettingsData.m */,
 				2C3F741A1CBBD78300F8BFB8 /* STMSocketController.h */,
@@ -1605,7 +1605,7 @@
 				2C3F74C71CBBD82400F8BFB8 /* STMCustom1CVCell.m in Sources */,
 				2C3F73DF1CBBD6FE00F8BFB8 /* STMBatteryStatus.m in Sources */,
 				2C13F50A1CE30C8300A5F129 /* STMMessagesTVC.m in Sources */,
-				2C3F74301CBBD78300F8BFB8 /* STMSettingsController.m in Sources */,
+				2C3F74301CBBD78300F8BFB8 /* STMCoreSettingsController.m in Sources */,
 				2C3F73931CBBD66B00F8BFB8 /* SocketAnyEvent.swift in Sources */,
 				2C13F4EB1CE301B800A5F129 /* STMGarbageCollector.swift in Sources */,
 				2C3F74291CBBD78300F8BFB8 /* STMFunctions.m in Sources */,

@@ -965,7 +965,7 @@
 }
 
 - (NSString *)uploadLogType {
-        NSString *uploadLogType = [STMSettingsController stringValueForSettings:@"uploadLog.type" forGroup:@"syncer"];
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type" forGroup:@"syncer"];
     return uploadLogType;
 }
 
@@ -1024,7 +1024,7 @@
     
     if (!_socketUrl) {
         
-        _socketUrl = [STMSettingsController stringValueForSettings:@"socketUrl" forGroup:@"appSettings"];
+        _socketUrl = [STMCoreSettingsController stringValueForSettings:@"socketUrl" forGroup:@"appSettings"];
         
     }
     return _socketUrl;
