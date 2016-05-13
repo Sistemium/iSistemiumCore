@@ -294,35 +294,31 @@
 
 - (void)checkTimeForTracking {
     
-    double currentTime = [STMFunctions currentTimeInDouble];
-    
     if (!self.trackerAutoStart) return;
     
-    if (self.trackerStartTime < self.trackerFinishTime) {
+    if ([self currentTimeIsInsideOfScheduleLimits]) {
         
-        if (currentTime > self.trackerStartTime && currentTime < self.trackerFinishTime) {
-            if (!self.tracking) {
-                [self startTracking];
-            }
-        } else {
-            if (self.tracking) {
-                [self stopTracking];
-            }
-        }
+		if (!self.tracking) {
+			[self startTracking];
+		}
         
     } else {
         
-        if (currentTime < self.trackerStartTime && currentTime > self.trackerFinishTime) {
-            if (self.tracking) {
-                [self stopTracking];
-            }
-        } else {
-            if (!self.tracking) {
-                [self startTracking];
-            }
-        }
+		if (self.tracking) {
+			[self stopTracking];
+		}
+
+	}
         
-    }
+}
+    
+- (BOOL)currentTimeIsInsideOfScheduleLimits {
+    
+    double ct = [STMFunctions currentTimeInDouble];
+    double st = self.trackerStartTime;
+    double ft = self.trackerFinishTime;
+    
+    return (st < ft) ? (ct >= st && ct < ft) : !(ct < st && ct >= ft);
     
 }
 

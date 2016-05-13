@@ -28,5 +28,8 @@
 - (void)stopTracking;
 - (void)prepareToDestroy;
 - (void)didReceiveRemoteNotification:(NSNotification *)notification;
+- (BOOL)currentTimeIsInsideOfScheduleLimits;
+- (BOOL)isValidTimeValue:(double)timeValue;
+
 
 @end

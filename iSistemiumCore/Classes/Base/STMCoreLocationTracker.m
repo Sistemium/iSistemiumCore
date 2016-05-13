@@ -800,26 +800,6 @@
     // prevent from super class method execute - causes to undesirable stop of tracker
 }
 
-- (BOOL)isValidTimeValue:(double)timeValue {
-    return (timeValue >= 0 && timeValue <= 24);
-}
-
-- (BOOL)currentTimeIsInsideOfScheduleLimits {
-    
-    double currentTime = [STMFunctions currentTimeInDouble];
-    
-    if (self.trackerStartTime < self.trackerFinishTime) {
-        
-        return (currentTime >= self.trackerStartTime && currentTime < self.trackerFinishTime);
-        
-    } else {
-        
-        return !(currentTime < self.trackerStartTime && currentTime >= self.trackerFinishTime);
-        
-    }
-    
-}
-
 
 #pragma mark - timers
 
