@@ -1,5 +1,5 @@
 //
-//  STMBarCodeController.h
+//  STMCoreBarCodeController.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 05/12/15.
@@ -16,7 +16,7 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
 };
 
 
-@interface STMBarCodeController : STMCoreController
+@interface STMCoreBarCodeController : STMCoreController
 
 + (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types
                                    forBarcode:(NSString *)barcode;

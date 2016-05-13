@@ -732,7 +732,7 @@
 
             [arguments addObject:barcode];
 
-            NSString *typeString = [STMBarCodeController barCodeTypeStringForType:type];
+            NSString *typeString = [STMCoreBarCodeController barCodeTypeStringForType:type];
 
             if (typeString) {
 

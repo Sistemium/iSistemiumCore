@@ -1,18 +1,18 @@
 //
-//  STMBarCodeController.m
+//  STMCoreBarCodeController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 05/12/15.
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMBarCodeController.h"
+#import "STMCoreBarCodeController.h"
 
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
 
 
-@implementation STMBarCodeController
+@implementation STMCoreBarCodeController
 
 + (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types forBarcode:(NSString *)barcode {
     

@@ -176,7 +176,7 @@
 
 - (void)checkScannedBarcode:(NSString *)barcode {
     
-    STMBarCodeScannedType type = [STMBarCodeController barcodeTypeFromTypes:self.barCodeTypesRC.fetchedObjects forBarcode:barcode];
+    STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypes:self.barCodeTypesRC.fetchedObjects forBarcode:barcode];
     
     STMBarCodeScan *barCodeScan = (STMBarCodeScan *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMBarCodeScan class])
                                                                                         isFantom:NO];

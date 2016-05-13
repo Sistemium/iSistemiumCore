@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "STMBarCodeController.h"
+#import "STMCoreBarCodeController.h"
 
 @class STMBarCodeScanner;
 
