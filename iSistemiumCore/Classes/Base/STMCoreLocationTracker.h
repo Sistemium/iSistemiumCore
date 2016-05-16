@@ -23,8 +23,6 @@
 
 - (NSString *)locationServiceStatus;
 
-- (BOOL)currentTimeIsInsideOfScheduleLimits;
-
 - (void)checkAccuracyToStartTracking;
 - (void)initTimers;
 
