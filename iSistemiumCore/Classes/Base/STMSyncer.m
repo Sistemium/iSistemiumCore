@@ -1144,37 +1144,67 @@
     
     if (self.syncerState != STMSyncerIdle) {
 
-        if ([entityName isEqualToString:@"STMShipmentRoutePointShipment"]) {
-            
-        }
-        
+        NSString *errorMessage = nil;
         
         STMEntity *entity = (self.stcEntities)[entityName];
-        NSString *url = entity.url;
-        
-        if (url) {
-        
-            STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
-            
-//            NSLog(@"entity.name %@ entity.eTag %@", entity.name, entity.eTag);
-//            NSLog(@"clientEntity.name %@ clientEntity.eTag %@", clientEntity.name, clientEntity.eTag);
 
-            NSString *eTag = clientEntity.eTag;
-            eTag = eTag ? eTag : @"*";
+        if (entity.roleName) {
             
-//            if (!self.fullSyncWasDone && [entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-//                eTag = @"*";
-//            }
+            NSString *roleOwner = entity.roleOwner;
+            NSString *roleOwnerEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:roleOwner];
 
-            NSURL *requestURL = [NSURL URLWithString:url];
+            if (![[STMCoreObjectsController localDataModelEntityNames] containsObject:roleOwnerEntityName]) {
+                errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", roleOwnerEntityName, entityName];
+            } else {
             
-            [self startReceiveDataFromURL:requestURL withETag:eTag];
+                NSString *roleName = entity.roleName;
+                NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+                NSString *destinationEntityName = ownerRelationships[roleName];
+                
+                if (![[STMCoreObjectsController localDataModelEntityNames] containsObject:destinationEntityName]) {
+                    errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", destinationEntityName, entityName];
+                }
+
+            }
             
-        } else {
+        }
+
+        if (errorMessage) {
             
-            NSLog(@"have no url for %@", entityName);
+            NSLog(errorMessage);
             [self entityCountDecrease];
             
+        } else {
+
+            if (entity.roleName || [[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
+                
+                NSString *url = entity.url;
+                
+                if (url) {
+                    
+                    STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
+                    
+                    NSString *eTag = clientEntity.eTag;
+                    eTag = eTag ? eTag : @"*";
+                    
+                    NSURL *requestURL = [NSURL URLWithString:url];
+                    
+                    [self startReceiveDataFromURL:requestURL withETag:eTag];
+                    
+                } else {
+                    
+                    NSLog(@"have no url for %@", entityName);
+                    [self entityCountDecrease];
+                    
+                }
+                
+            } else {
+
+                NSLog(@"local data model have no %@ entity", entityName);
+                [self entityCountDecrease];
+                
+            }
+
         }
         
     }

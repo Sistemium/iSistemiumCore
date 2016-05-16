@@ -35,6 +35,7 @@
 + (NSArray *)coreEntityKeys;
 + (NSArray *)coreEntityRelationships;
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
++ (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 
 + (NSDictionary *)dictionaryForObject:(NSManagedObject *)object;
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
