@@ -223,8 +223,8 @@
 		2C3F75351CBBD9C100F8BFB8 /* STMSettingsTVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75321CBBD9C100F8BFB8 /* STMSettingsTVC.m */; };
 		2C3F753B1CBBD9E800F8BFB8 /* STMWebViewNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75381CBBD9E800F8BFB8 /* STMWebViewNC.m */; };
 		2C3F753C1CBBD9E800F8BFB8 /* STMWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F753A1CBBD9E800F8BFB8 /* STMWebViewVC.m */; };
-		2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */; };
-		2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */; };
+		2C3F75481CBBDAAB00F8BFB8 /* STMCoreAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75451CBBDAAB00F8BFB8 /* STMCoreAppDelegate.m */; };
+		2C3F75491CBBDAAB00F8BFB8 /* STMCoreApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F75471CBBDAAB00F8BFB8 /* STMCoreApplication.m */; };
 		2C3F754B1CBBDC7A00F8BFB8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */; };
 		2C3F754E1CBBDCCB00F8BFB8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */; };
 		2C7086501CC504430002F3FF /* STMWKWebViewNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C70864D1CC504430002F3FF /* STMWKWebViewNC.m */; };
@@ -605,10 +605,10 @@
 		2C3F75381CBBD9E800F8BFB8 /* STMWebViewNC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWebViewNC.m; sourceTree = "<group>"; };
 		2C3F75391CBBD9E800F8BFB8 /* STMWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMWebViewVC.h; sourceTree = "<group>"; };
 		2C3F753A1CBBD9E800F8BFB8 /* STMWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWebViewVC.m; sourceTree = "<group>"; };
-		2C3F75441CBBDAAB00F8BFB8 /* STMAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMAppDelegate.h; sourceTree = "<group>"; };
-		2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMAppDelegate.m; sourceTree = "<group>"; };
-		2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMApplication.h; sourceTree = "<group>"; };
-		2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMApplication.m; sourceTree = "<group>"; };
+		2C3F75441CBBDAAB00F8BFB8 /* STMCoreAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreAppDelegate.h; sourceTree = "<group>"; };
+		2C3F75451CBBDAAB00F8BFB8 /* STMCoreAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreAppDelegate.m; sourceTree = "<group>"; };
+		2C3F75461CBBDAAB00F8BFB8 /* STMCoreApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreApplication.h; sourceTree = "<group>"; };
+		2C3F75471CBBDAAB00F8BFB8 /* STMCoreApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreApplication.m; sourceTree = "<group>"; };
 		2C3F754A1CBBDC7A00F8BFB8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		2C3F754F1CBBDCCB00F8BFB8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2C3F75511CBBDCEA00F8BFB8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -694,10 +694,10 @@
 				2C3F73221CBBD5A000F8BFB8 /* Resources */,
 				2C3F72F41CBBD52800F8BFB8 /* Storyboards */,
 				2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */,
-				2C3F75441CBBDAAB00F8BFB8 /* STMAppDelegate.h */,
-				2C3F75451CBBDAAB00F8BFB8 /* STMAppDelegate.m */,
-				2C3F75461CBBDAAB00F8BFB8 /* STMApplication.h */,
-				2C3F75471CBBDAAB00F8BFB8 /* STMApplication.m */,
+				2C3F75441CBBDAAB00F8BFB8 /* STMCoreAppDelegate.h */,
+				2C3F75451CBBDAAB00F8BFB8 /* STMCoreAppDelegate.m */,
+				2C3F75461CBBDAAB00F8BFB8 /* STMCoreApplication.h */,
+				2C3F75471CBBDAAB00F8BFB8 /* STMCoreApplication.m */,
 				2C3F72D21CBBD46400F8BFB8 /* Info.plist */,
 				2C3F73801CBBD66B00F8BFB8 /* iSistemiumCore-Bridging-Header.h */,
 				2C3F72C11CBBD46400F8BFB8 /* Supporting Files */,
@@ -1617,7 +1617,7 @@
 				2C3F75331CBBD9C100F8BFB8 /* STMSettingControlsTVC.m in Sources */,
 				2C3F749D1CBBD80600F8BFB8 /* STMSegmentedControl.m in Sources */,
 				2C3F73991CBBD66B00F8BFB8 /* SocketIOClientStatus.swift in Sources */,
-				2C3F75491CBBDAAB00F8BFB8 /* STMApplication.m in Sources */,
+				2C3F75491CBBDAAB00F8BFB8 /* STMCoreApplication.m in Sources */,
 				2C3F739B1CBBD66B00F8BFB8 /* SocketPacket.swift in Sources */,
 				2C3F73EA1CBBD6FE00F8BFB8 /* STMLocation+CoreDataProperties.m in Sources */,
 				2C3F74CE1CBBD82400F8BFB8 /* STMCustom6TVCell.m in Sources */,
@@ -1629,7 +1629,7 @@
 				2C3F75351CBBD9C100F8BFB8 /* STMSettingsTVC.m in Sources */,
 				2C3F74981CBBD80600F8BFB8 /* STMImagePickerController.m in Sources */,
 				2C3F73DC1CBBD6FE00F8BFB8 /* STMBarCodeScan+CoreDataProperties.m in Sources */,
-				2C3F75481CBBDAAB00F8BFB8 /* STMAppDelegate.m in Sources */,
+				2C3F75481CBBDAAB00F8BFB8 /* STMCoreAppDelegate.m in Sources */,
 				2C3F73921CBBD66B00F8BFB8 /* SocketAckManager.swift in Sources */,
 				2C3F75161CBBD99600F8BFB8 /* STMAuthSMSVC.m in Sources */,
 				2C3F751F1CBBD9A000F8BFB8 /* STMLogMessagesMasterTVC.m in Sources */,

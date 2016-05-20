@@ -24,7 +24,7 @@
 #import "STMMessageController.h"
 
 #import <Crashlytics/Crashlytics.h>
-#import "STMAppDelegate.h"
+#import "STMCoreAppDelegate.h"
 
 #import "STMSocketController.h"
 

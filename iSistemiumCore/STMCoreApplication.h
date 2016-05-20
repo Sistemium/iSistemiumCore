@@ -1,5 +1,5 @@
 //
-//  STMApplication.h
+//  STMCoreApplication.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 09/12/15.
@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface STMApplication : UIApplication
+@interface STMCoreApplication : UIApplication
 
 @end

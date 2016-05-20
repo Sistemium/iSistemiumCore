@@ -1,5 +1,5 @@
 //
-//  STMAppDelegate.h
+//  STMCoreAppDelegate.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 01/06/14.
@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@interface STMAppDelegate : UIResponder <UIApplicationDelegate>
+#import <AdSupport/AdSupport.h>
+#import <Fabric/Fabric.h>
+#import <Crashlytics/Crashlytics.h>
+
+
+@interface STMCoreAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 

@@ -8,7 +8,7 @@
 
 #import <AdSupport/AdSupport.h>
 
-#import "STMAppDelegate.h"
+#import "STMCoreAppDelegate.h"
 #import "STMClientDataController.h"
 #import "STMClientData.h"
 #import "STMCoreAuthController.h"
@@ -19,8 +19,8 @@
 @implementation STMClientDataController
 
 
-+ (STMAppDelegate *)appDelegate {
-    return (STMAppDelegate *)[UIApplication sharedApplication].delegate;
++ (STMCoreAppDelegate *)appDelegate {
+    return (STMCoreAppDelegate *)[UIApplication sharedApplication].delegate;
 }
 
 #pragma mark - clientData properties

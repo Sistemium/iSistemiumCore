@@ -1,15 +1,15 @@
 //
-//  STMApplication.m
+//  STMCoreApplication.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 09/12/15.
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMApplication.h"
+#import "STMCoreApplication.h"
 
 
-@implementation STMApplication
+@implementation STMCoreApplication
 
 - (void)sendEvent:(UIEvent *)event {
     
