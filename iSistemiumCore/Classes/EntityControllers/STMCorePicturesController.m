@@ -444,8 +444,10 @@
         
     }
     
-    NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+    if (counter > 0) {
+		NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
+		[[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+    }
     
 }
 
