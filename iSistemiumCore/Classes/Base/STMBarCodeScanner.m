@@ -13,7 +13,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "STMScanApiHelper.h"
 
-#import "STMNS.h"
+#import "STMCoreNS.h"
 #import "STMCoreDataModel.h"
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"

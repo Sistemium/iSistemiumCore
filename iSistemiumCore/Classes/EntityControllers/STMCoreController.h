@@ -11,7 +11,7 @@
 #import "STMSyncer.h"
 #import "STMCoreSession.h"
 
-#import "STMNS.h"
+#import "STMCoreNS.h"
 
 #import "STMFunctions.h"
 #import "STMConstants.h"

@@ -21,7 +21,7 @@
 
 #import "STMCoreDataModel.h"
 
-#import "STMNS.h"
+#import "STMCoreNS.h"
 
 #import "iSistemiumCore-Swift.h"
 
