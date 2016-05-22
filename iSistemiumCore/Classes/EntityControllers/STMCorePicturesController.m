@@ -759,7 +759,7 @@
                         NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
                         picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
                         
-                        NSLog(picture.picturesInfo)
+                        NSLog(picture.picturesInfo);
                         
                         __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
                         
