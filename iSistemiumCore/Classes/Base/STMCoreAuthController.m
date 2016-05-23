@@ -392,6 +392,14 @@
 
 }
 
+- (NSString *)dataModelName {
+    
+    NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
+
+    return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
+    
+}
+
 - (void)startSession {
 
     NSLog(@"serviceUri %@", self.serviceUri);
@@ -401,7 +409,7 @@
     
     NSDictionary *startSettings = nil;
     
-    NSString *dataModelName = ([[NSBundle mainBundle].bundleIdentifier hasSuffix:@"iSistemiumCore"]) ? @"iSistemiumCore" : @"STMDataModel2";
+    NSString *dataModelName = [self dataModelName];
     
 #ifdef DEBUG
     
