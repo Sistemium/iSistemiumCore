@@ -1,5 +1,5 @@
 //
-//  STMWKWebViewVC.h
+//  STMCoreWKWebViewVC.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 01/03/16.
@@ -10,9 +10,10 @@
 
 #import "STMEntitiesSubscribable.h"
 #import "STMSoundCallbackable.h"
+#import "STMBarCodeScanner.h"
 
 
-@interface STMWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable>
+@interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable>
 
 - (void)reloadWebView;
 

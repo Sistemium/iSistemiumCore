@@ -1,17 +1,16 @@
 //
-//  STMWKWebViewVC.m
+//  STMCoreWKWebViewVC.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 01/03/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMWKWebViewVC.h"
+#import "STMCoreWKWebViewVC.h"
 #import <WebKit/WebKit.h>
 
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
-#import "STMBarCodeScanner.h"
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
 #import "STMRemoteController.h"
@@ -25,7 +24,7 @@
 #import "iSistemiumCore-Swift.h"
 
 
-@interface STMWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate>
+@interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
@@ -46,7 +45,7 @@
 @end
 
 
-@implementation STMWKWebViewVC
+@implementation STMCoreWKWebViewVC
 
 - (BOOL)isInActiveTab {
     return [self.tabBarController.selectedViewController isEqual:self.navigationController];
@@ -732,42 +731,17 @@
 
             [arguments addObject:barcode];
 
-            NSString *typeString = [STMCoreBarCodeController barCodeTypeStringForType:type];
-
-            if (typeString) {
-
-                [arguments addObject:typeString];
-
-                if (type == STMBarCodeTypeStockBatch) {
-
-#warning should override
-                    
-//                    STMStockBatch *stockBatch = [STMBarCodeController stockBatchForBarcode:barcode].firstObject;
-//
-//                    if (stockBatch) {
-//
-//                        NSDictionary *stockBatchDic = [STMObjectsController dictionaryForJSWithObject:stockBatch];
-//                        [arguments addObject:stockBatchDic];
-//
-//                        NSLog(@"send received barcode %@ with type %@ and stockBatch %@ to WKWebView", barcode, typeString, stockBatchDic);
-//
-//                    } else {
-//                        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
-//                    }
-
-                } else {
-                    NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
-                }
-
-            } else {
-                NSLog(@"send received barcode %@ to WKWebView", barcode);
-            }
+            [self checkBarCode:barcode withType:type arguments:arguments];
 
             [self evaluateReceiveBarCodeJSFunctionWithArguments:arguments];
 
         }
         
     }
+    
+}
+
+- (void)checkBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type arguments:(NSMutableArray *)arguments {
     
 }
 

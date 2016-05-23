@@ -8,7 +8,7 @@
 
 #import "STMWKWebViewNC.h"
 
-#import "STMWKWebViewVC.h"
+#import "STMCoreWKWebViewVC.h"
 
 
 @interface STMWKWebViewNC ()
@@ -31,8 +31,8 @@
     
     if ([action isEqualToString:NSLocalizedString(@"RELOAD", nil)]) {
         
-        if ([self.topViewController isKindOfClass:[STMWKWebViewVC class]]) {
-            [(STMWKWebViewVC *)self.topViewController reloadWebView];
+        if ([self.topViewController isKindOfClass:[STMCoreWKWebViewVC class]]) {
+            [(STMCoreWKWebViewVC *)self.topViewController reloadWebView];
         }
         
     }

@@ -85,23 +85,7 @@
         if (editableProperties) result[@"editableProperties"] = editableProperties;
         
         return result;
-        
-//        return nextProcessing;
-//        
-//        self.editableProperties = [STMSaleOrderController editablesPropertiesForProcessing:nextProcessing];
-//        
-//        if (self.editableProperties) {
-//            
-//            [self hideRoutesActionSheet];
-//            
-//            [self performSelector:@selector(showEditablesPopover) withObject:nil afterDelay:0];
-//            
-//        } else {
-//            
-//            [STMSaleOrderController setProcessing:nextProcessing forSaleOrder:self.processingOrder];
-//            
-//        }
-        
+
     } else {
         return nil;
     }
