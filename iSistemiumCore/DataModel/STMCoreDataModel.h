@@ -21,6 +21,8 @@
 
 #import "STMEntity.h"
 
+#import "STMJson.h"
+
 #import "STMLocation.h"
 #import "STMLogMessage.h"
 

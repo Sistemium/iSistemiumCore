@@ -83,6 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // - JSON representation
 
++ (id)jsonObjectFromString:(NSString *)string;
++ (NSString *)jsonStringFromObject:(id)object;
 + (NSString *)jsonStringFromArray:(NSArray *)objectArray;
 + (NSString *)jsonStringFromDictionary:(NSDictionary *)objectDic;
 + (NSDictionary *)validJSONDictionaryFromDictionary:(NSDictionary *)dictionary;

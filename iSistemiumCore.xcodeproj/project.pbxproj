@@ -229,6 +229,8 @@
 		2C3F754E1CBBDCCB00F8BFB8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F75501CBBDCCB00F8BFB8 /* Localizable.strings */; };
 		2C7086501CC504430002F3FF /* STMWKWebViewNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C70864D1CC504430002F3FF /* STMWKWebViewNC.m */; };
 		2C7086511CC504430002F3FF /* STMCoreWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C70864F1CC504430002F3FF /* STMCoreWKWebViewVC.m */; };
+		2C9AE99A1CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9AE9971CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m */; };
+		2C9AE99B1CF5A9B70018D9B3 /* STMJson.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9AE9991CF5A9B70018D9B3 /* STMJson.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -618,6 +620,10 @@
 		2C70864D1CC504430002F3FF /* STMWKWebViewNC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMWKWebViewNC.m; sourceTree = "<group>"; };
 		2C70864E1CC504430002F3FF /* STMCoreWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCoreWKWebViewVC.h; sourceTree = "<group>"; };
 		2C70864F1CC504430002F3FF /* STMCoreWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCoreWKWebViewVC.m; sourceTree = "<group>"; };
+		2C9AE9961CF5A9B70018D9B3 /* STMJson+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "STMJson+CoreDataProperties.h"; sourceTree = "<group>"; };
+		2C9AE9971CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "STMJson+CoreDataProperties.m"; sourceTree = "<group>"; };
+		2C9AE9981CF5A9B70018D9B3 /* STMJson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMJson.h; sourceTree = "<group>"; };
+		2C9AE9991CF5A9B70018D9B3 /* STMJson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMJson.m; sourceTree = "<group>"; };
 		2CE77BFD1CD3A2DC0034E469 /* STMSoundCallbackable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMSoundCallbackable.h; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
@@ -899,6 +905,10 @@
 				2C3F73BC1CBBD6FE00F8BFB8 /* STMEntity.m */,
 				2C3F73BD1CBBD6FE00F8BFB8 /* STMEntity+CoreDataProperties.h */,
 				2C3F73BE1CBBD6FE00F8BFB8 /* STMEntity+CoreDataProperties.m */,
+				2C9AE9981CF5A9B70018D9B3 /* STMJson.h */,
+				2C9AE9991CF5A9B70018D9B3 /* STMJson.m */,
+				2C9AE9961CF5A9B70018D9B3 /* STMJson+CoreDataProperties.h */,
+				2C9AE9971CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m */,
 				2C3F73BF1CBBD6FE00F8BFB8 /* STMLocation.h */,
 				2C3F73C01CBBD6FE00F8BFB8 /* STMLocation.m */,
 				2C3F73C11CBBD6FE00F8BFB8 /* STMLocation+CoreDataProperties.h */,
@@ -1525,6 +1535,7 @@
 				2C3F73F11CBBD6FE00F8BFB8 /* STMRecordStatus.m in Sources */,
 				2C3F74A71CBBD80600F8BFB8 /* UIViewController+custom.m in Sources */,
 				2C3F74C81CBBD82400F8BFB8 /* STMCustom1CVHeader.m in Sources */,
+				2C9AE99A1CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m in Sources */,
 				2C3F73971CBBD66B00F8BFB8 /* SocketFixUTF8.swift in Sources */,
 				2C3F74511CBBD7AB00F8BFB8 /* STMCoreController.m in Sources */,
 				2C3F73F51CBBD6FE00F8BFB8 /* STMWorkflow.m in Sources */,
@@ -1652,6 +1663,7 @@
 				2C3F752C1CBBD9B800F8BFB8 /* STMScannerInfoVC.m in Sources */,
 				2C3F746A1CBBD7E400F8BFB8 /* STMFetchRequest.m in Sources */,
 				2C3F73EE1CBBD6FE00F8BFB8 /* STMPhoto+CoreDataProperties.m in Sources */,
+				2C9AE99B1CF5A9B70018D9B3 /* STMJson.m in Sources */,
 				2C3F74551CBBD7AB00F8BFB8 /* STMCorePhotosController.m in Sources */,
 				2C3F74271CBBD78300F8BFB8 /* STMDocument.m in Sources */,
 				2C3F739F1CBBD66B00F8BFB8 /* SwiftRegex.swift in Sources */,

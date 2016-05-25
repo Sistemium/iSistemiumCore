@@ -757,33 +757,53 @@
 
 #pragma mark - JSON representation
 
-+ (NSString *)jsonStringFromArray:(NSArray *)objectArray {
++ (id)jsonObjectFromString:(NSString *)string {
     
-    if (![NSJSONSerialization isValidJSONObject:objectArray]) {
-
-        objectArray = [self validJSONArrayFromArray:objectArray];
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSError *error;
+    
+    id jsonObject = [NSJSONSerialization JSONObjectWithData:data
+                                                    options:NSJSONReadingMutableContainers
+                                                      error:&error];
+    
+    if (error) {
+        NSLog(@"jsonObjectFromString error: %@", error.localizedDescription);
     }
     
-    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:objectArray options:0 error:nil];
-    NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
+    return jsonObject;
 
-    return JSONString;
+}
+
++ (NSString *)jsonStringFromObject:(id)object {
     
+    if (![NSJSONSerialization isValidJSONObject:object]) {
+        
+        if ([object isKindOfClass:[NSDictionary class]]) {
+
+            object = [self validJSONDictionaryFromDictionary:object];
+
+        } else if ([object isKindOfClass:[NSArray class]]) {
+
+            object = [self validJSONArrayFromArray:object];
+
+        }
+
+    }
+    
+    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
+    NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
+    
+    return JSONString;
+
+}
+
++ (NSString *)jsonStringFromArray:(NSArray *)objectArray {
+    return [self jsonStringFromObject:objectArray];
 }
 
 + (NSString *)jsonStringFromDictionary:(NSDictionary *)objectDic {
-
-    if (![NSJSONSerialization isValidJSONObject:objectDic]) {
-        
-        objectDic = [self validJSONDictionaryFromDictionary:objectDic];
-        
-    }
-    
-    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:objectDic options:0 error:nil];
-    NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
-    
-    return JSONString;
-
+    return [self jsonStringFromObject:objectDic];
 }
 
 + (NSDictionary *)validJSONDictionaryFromDictionary:(NSDictionary *)dictionary {
