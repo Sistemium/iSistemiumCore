@@ -15,7 +15,7 @@
 @property (nonatomic, strong) id <STMSession> currentSession;
 @property (nonatomic, strong) NSString *currentSessionUID;
 
-+ (STMCoreSessionManager *)sharedManager;
++ (instancetype)sharedManager;
 
 - (id <STMSession>)startSessionForUID:(NSString *)uid
                                iSisDB:(NSString *)iSisDB

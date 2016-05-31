@@ -56,7 +56,7 @@
 
 #pragma mark - singletone init
 
-+ (STMCoreAuthController *)authController {
++ (instancetype)authController {
     
     static dispatch_once_t pred = 0;
     __strong static id _authController = nil;
@@ -380,9 +380,14 @@
     NSLog(@"logout");
 
     self.controllerState = STMAuthEnterPhoneNumber;
+    
+    STMCoreSessionManager *sessionManager = [self sessionManager];
 
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"notAuthorized" object:[self sessionManager].currentSession.syncer];
-    [[self sessionManager] stopSessionForUID:self.userID];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"notAuthorized"
+                                                  object:sessionManager.currentSession.syncer];
+    
+    [sessionManager stopSessionForUID:self.userID];
 
     self.userID = nil;
     self.accessToken = nil;
@@ -467,19 +472,21 @@
         startSettings = tempDictionary;
         
     }
+    
+    STMCoreSessionManager *sessionManager = [self sessionManager];
 
-    [[self sessionManager] startSessionForUID:self.userID
-                                       iSisDB:self.iSisDB
-                                 authDelegate:self
-                                     trackers:trackers
-                                startSettings:startSettings
-                      defaultSettingsFileName:@"settings"
-                               documentPrefix:[[NSBundle mainBundle] bundleIdentifier]];
+    [sessionManager startSessionForUID:self.userID
+                                iSisDB:self.iSisDB
+                          authDelegate:self
+                              trackers:trackers
+                         startSettings:startSettings
+               defaultSettingsFileName:@"settings"
+                        documentPrefix:[[NSBundle mainBundle] bundleIdentifier]];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(sessionNotAuthorized)
                                                  name:@"notAuthorized"
-                                               object:[self sessionManager].currentSession.syncer];
+                                               object:sessionManager.currentSession.syncer];
 
 }
 

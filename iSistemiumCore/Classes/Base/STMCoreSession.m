@@ -16,11 +16,11 @@
 
 @implementation STMCoreSession
 
-+ (STMCoreSession *)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix {
++ (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix {
     
     if (uid) {
         
-        STMCoreSession *session = [[STMCoreSession alloc] init];
+        STMCoreSession *session = [[self alloc] init];
         session.uid = uid;
         session.iSisDB = iSisDB;
         session.status = STMSessionStarting;

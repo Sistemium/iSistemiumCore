@@ -14,13 +14,16 @@
 
 @implementation STMCoreSessionManager
 
-+ (STMCoreSessionManager *)sharedManager {
++ (instancetype)sharedManager {
+    
     static dispatch_once_t pred = 0;
     __strong static id _sharedManager = nil;
+    
     dispatch_once(&pred, ^{
         _sharedManager = [[self alloc] init];
     });
     return _sharedManager;
+    
 }
 
 - (NSMutableDictionary *)sessions {

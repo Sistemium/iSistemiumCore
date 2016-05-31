@@ -29,16 +29,14 @@
 
 + (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings {
     
-    STMCoreSettingsController *settingsController = [[STMCoreSettingsController alloc] init];
+    STMCoreSettingsController *settingsController = [[self alloc] init];
     settingsController.startSettings = [startSettings mutableCopy];
     return settingsController;
     
 }
 
 - (NSDictionary *)defaultSettings {
-    
     return  self.session.defaultSettings;
-    
 }
 
 - (NSMutableArray *)groupNames {

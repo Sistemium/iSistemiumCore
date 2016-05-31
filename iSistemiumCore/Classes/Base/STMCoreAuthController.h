@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, STMAuthState) {
 @property (nonatomic) STMAuthState controllerState;
 
 
-+ (STMCoreAuthController *)authController;
++ (instancetype)authController;
 
 
 - (BOOL)sendPhoneNumber:(NSString *)phoneNumber;

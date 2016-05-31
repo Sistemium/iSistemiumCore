@@ -36,7 +36,7 @@
 @property (nonatomic, strong) STMSyncer *syncer;
 
 
-+ (STMCoreSession *)initWithUID:(NSString *)uid
++ (instancetype)initWithUID:(NSString *)uid
                      iSisDB:(NSString *)iSisDB
               authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                   trackers:(NSArray *)trackers

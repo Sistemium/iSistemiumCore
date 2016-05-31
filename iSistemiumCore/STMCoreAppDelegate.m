@@ -57,7 +57,7 @@
     [nc addObserver:self
            selector:@selector(statusChanged)
                name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:[STMCoreSessionManager sharedManager].currentSession];
+             object:[self sessionManager].currentSession];
     
     NSError *error = NULL;
     AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -79,9 +79,13 @@
     [STMCoreAuthController authController];
 }
 
+- (STMCoreSessionManager *)sessionManager {
+    return [STMCoreSessionManager sharedManager];
+}
+
 - (void)statusChanged {
     
-    if ([STMCoreSessionManager sharedManager].currentSession.status == STMSessionRunning) {
+    if ([self sessionManager].currentSession.status == STMSessionRunning) {
         [STMGarbageCollector searchUnusedImages];
     }
     
@@ -93,7 +97,7 @@
     NSString *logMessage = [NSString stringWithFormat:@"didReceiveRemoteNotification: %@", msg];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
     
-    id <STMSession> session = [STMCoreSessionManager sharedManager].currentSession;
+    id <STMSession> session = [self sessionManager].currentSession;
     
     if (session.status == STMSessionRunning) {
         
@@ -206,7 +210,7 @@
 
     [self setupWindow];
 
-    id <STMSession> session = [STMCoreSessionManager sharedManager].currentSession;
+    id <STMSession> session = [self sessionManager].currentSession;
     
     if (session.status == STMSessionRunning) {
         [STMMessageController showMessageVCsIfNeeded];
@@ -276,7 +280,7 @@
 //        [nc postNotificationName:@"syncerDidReceiveRemoteNotification" object:app userInfo:userInfo];
 
         if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
-            [[[STMCoreSessionManager sharedManager].currentSession syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:handler];
+            [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:handler];
         }
 
         meaningfulUserInfo = YES;
@@ -286,7 +290,7 @@
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[[STMCoreSessionManager sharedManager].currentSession syncer] setSyncerState:STMSyncerSendData fetchCompletionHandler:handler];
+        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:handler];
         
     }
 
@@ -312,7 +316,7 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler" object:application];
     
-    [[[STMCoreSessionManager sharedManager].currentSession syncer] setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
+    [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
 
 }
 
