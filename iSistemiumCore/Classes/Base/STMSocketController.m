@@ -524,15 +524,11 @@
 }
 
 + (void)dataCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
-    
     NSLog(@"dataCallback socket %@ data %@", socket, data);
-    
 }
 
 + (void)jsDataCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
-    
     NSLog(@"jsDataCallback socket %@ data %@", socket, data);
-    
 }
 
 
@@ -722,7 +718,11 @@
 }
 
 + (void)receiveJSDataEventAckWithData:(NSArray *)data {
-    NSLog(@"receiveJSDataEventAckWithData %@", data);
+    
+//    NSLog(@"receiveJSDataEventAckWithData %@", data);
+    
+    [[self syncer] socketReceiveJSDataAck:data];
+
 }
 
 + (void)receiveEventDataAckWithData:(NSArray *)data {

@@ -233,11 +233,7 @@
 
 #pragma mark - recieved objects management
 
-+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-
-//    NSDate *start = [NSDate date];
-//    NSString *startString = [[STMFunctions dateFormatter] stringFromDate:start];
-//    NSLog(@"--------------------s %@", startString);
++ (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
     if (roleName) {
         
@@ -247,7 +243,7 @@
         
     } else {
         
-        [self insertObjectsFromArray:array withCompletionHandler:^(BOOL success) {
+        [self insertObjectsFromArray:array withEntityName:entityName withCompletionHandler:^(BOOL success) {
             completionHandler(success);
         }];
         
@@ -256,45 +252,78 @@
     [[self document] saveDocument:^(BOOL success) {
         
     }];
+
+}
+
+//+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
+
+//    NSDate *start = [NSDate date];
+//    NSString *startString = [[STMFunctions dateFormatter] stringFromDate:start];
+//    NSLog(@"--------------------s %@", startString);
     
+//    if (roleName) {
+//        
+//        [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
+//            completionHandler(success);
+//        }];
+//        
+//    } else {
+//        
+//        [self insertObjectsFromArray:array withCompletionHandler:^(BOOL success) {
+//            completionHandler(success);
+//        }];
+//        
+//    }
+//    
+//    [[self document] saveDocument:^(BOOL success) {
+//        
+//    }];
+
 //    NSDate *finish = [NSDate date];
 //    NSString *finishString = [[STMFunctions dateFormatter] stringFromDate:finish];
 //    NSLog(@"--------------------f %@", finishString);
 
-}
+//}
 
-+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
++ (void)insertObjectsFromArray:(NSArray *)array withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
     __block BOOL result = YES;
     
     for (NSDictionary *datum in array) {
         
-        [self insertObjectFromDictionary:datum withCompletionHandler:^(BOOL success) {
+        [self insertObjectFromDictionary:datum withEntityName:entityName withCompletionHandler:^(BOOL success) {
             
             result &= success;
             
         }];
         
     }
-
+    
     completionHandler(result);
 
 }
 
-+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
+//+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
+//    
+//    __block BOOL result = YES;
+//    
+//    for (NSDictionary *datum in array) {
+//        
+//        [self insertObjectFromDictionary:datum withCompletionHandler:^(BOOL success) {
+//            
+//            result &= success;
+//            
+//        }];
+//        
+//    }
+//
+//    completionHandler(result);
+//
+//}
 
-// time checking
-//    NSDate *start = [NSDate date];
-// -------------
++ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    NSString *name = dictionary[@"name"];
     NSDictionary *properties = dictionary[@"properties"];
-
-    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
-    NSString *nameTail = (nameExplode.count > 1) ? nameExplode[1] : name;
-    NSString *capEntityName = [nameTail stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:[[nameTail substringToIndex:1] capitalizedString]];
-
-    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -319,18 +348,10 @@
                 object = [STMEntityController entityWithName:internalName];
                 
             }
-
-// time checking
-//            [[self sharedController].timesDic[@"1"] addObject:@([start timeIntervalSinceNow])];
-// -------------
             
             if (!object) {
                 object = (xid) ? [self objectForEntityName:entityName andXidString:xid] : [self newObjectForEntityName:entityName];
             }
-            
-// time checking
-//            [[self sharedController].timesDic[@"2"] addObject:@([start timeIntervalSinceNow])];
-// -------------
             
             if (![self isWaitingToSyncForObject:object]) {
                 
@@ -339,16 +360,12 @@
                 
             }
             
-// time checking
-//            [[self sharedController].timesDic[@"3"] addObject:@([start timeIntervalSinceNow])];
-// -------------
-            
         } else {
             
             NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xid);
             
         }
-            
+        
         completionHandler(YES);
         
     } else {
@@ -358,8 +375,88 @@
         completionHandler(NO);
         
     }
-    
+
 }
+
+//+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
+//
+//// time checking
+////    NSDate *start = [NSDate date];
+//// -------------
+//    
+//    NSString *name = dictionary[@"name"];
+//    NSDictionary *properties = dictionary[@"properties"];
+//
+//    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
+//    NSString *nameTail = (nameExplode.count > 1) ? nameExplode[1] : name;
+//    NSString *capEntityName = [nameTail stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:[[nameTail substringToIndex:1] capitalizedString]];
+//
+//    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
+//    
+//    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
+//    
+//    if ([dataModelEntityNames containsObject:entityName]) {
+//        
+//        NSString *xid = dictionary[@"xid"];
+//        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+//        
+//        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
+//        
+//        if (![recordStatus.isRemoved boolValue]) {
+//            
+//            NSManagedObject *object = nil;
+//            
+//            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+//                
+//                object = [[[self session] settingsController] settingForDictionary:dictionary];
+//                
+//            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+//                
+//                NSString *internalName = properties[@"name"];
+//                object = [STMEntityController entityWithName:internalName];
+//                
+//            }
+//
+//// time checking
+////            [[self sharedController].timesDic[@"1"] addObject:@([start timeIntervalSinceNow])];
+//// -------------
+//            
+//            if (!object) {
+//                object = (xid) ? [self objectForEntityName:entityName andXidString:xid] : [self newObjectForEntityName:entityName];
+//            }
+//            
+//// time checking
+////            [[self sharedController].timesDic[@"2"] addObject:@([start timeIntervalSinceNow])];
+//// -------------
+//            
+//            if (![self isWaitingToSyncForObject:object]) {
+//                
+//                [object setValue:@NO forKey:@"isFantom"];
+//                [self processingOfObject:object withEntityName:entityName fillWithValues:properties];
+//                
+//            }
+//            
+//// time checking
+////            [[self sharedController].timesDic[@"3"] addObject:@([start timeIntervalSinceNow])];
+//// -------------
+//            
+//        } else {
+//            
+//            NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xid);
+//            
+//        }
+//            
+//        completionHandler(YES);
+//        
+//    } else {
+//        
+//        NSLog(@"dataModel have no object's entity with name %@", entityName);
+//        
+//        completionHandler(NO);
+//        
+//    }
+//    
+//}
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
     
@@ -1513,28 +1610,30 @@
             if (!errorString) {
                 
                 NSArray *dataArray = responseJSON[@"data"];
-                
-                [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
-                    
-                    if (isFantomResolving) {
-                     
-                        [self didFinishResolveFantom:parameters successfully:success];
-                        
-                    } else {
-                    
-                        if (!success) {
-                            
-                            NSString *errorMessage = [NSString stringWithFormat:@"error processing dataArray %@ with request parameters %@", dataArray, parameters];
-                            
-                            [self requestObjectErrorMessage:errorMessage
-                                          isFantomResolving:isFantomResolving
-                                                 parameters:parameters];
-                            
-                        }
 
-                    }
-                    
-                }];
+#warning should rewrite bunch of code below
+                
+//                [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
+//                    
+//                    if (isFantomResolving) {
+//                     
+//                        [self didFinishResolveFantom:parameters successfully:success];
+//                        
+//                    } else {
+//                    
+//                        if (!success) {
+//                            
+//                            NSString *errorMessage = [NSString stringWithFormat:@"error processing dataArray %@ with request parameters %@", dataArray, parameters];
+//                            
+//                            [self requestObjectErrorMessage:errorMessage
+//                                          isFantomResolving:isFantomResolving
+//                                                 parameters:parameters];
+//                            
+//                        }
+//
+//                    }
+//                    
+//                }];
                 
             } else {
                 

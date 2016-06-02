@@ -36,6 +36,7 @@
 - (NSUInteger)numbersOfUnsyncedObjects;
 
 - (void)socketReceiveAuthorization;
+- (void)socketReceiveJSDataAck:(NSArray *)data;
 
 
 @end

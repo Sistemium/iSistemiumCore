@@ -23,10 +23,24 @@
 
 + (void)checkObjectsForFlushing;
 
-+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler;
++ (void)processingOfDataArray:(NSArray *)array
+               withEntityName:(NSString *)entityName
+                  andRoleName:(NSString *)roleName
+        withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
-+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;
+//+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
++ (void)insertObjectsFromArray:(NSArray *)array
+                withEntityName:(NSString *)entityName
+         withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
+//+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
++ (void)insertObjectFromDictionary:(NSDictionary *)dictionary
+                    withEntityName:(NSString *)entityName
+             withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
+//+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
 + (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;

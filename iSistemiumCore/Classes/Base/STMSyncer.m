@@ -1067,6 +1067,111 @@
 }
 
 
+#pragma mark - socket receive ack handler
+
+- (void)socketReceiveJSDataAck:(NSArray *)data {
+
+    NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+    
+    if (response) {
+
+        NSString *errorString = response[@"error"];
+        
+        if (!errorString) {
+            
+            NSArray *data = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+            
+            if (data) {
+                
+                NSString *offset = response[@"offset"];
+                NSString *resource = response[@"resource"];
+                
+                if (resource) {
+                    
+                    NSString *entityName = [self entityNameForURLString:resource];
+                    
+                    if (offset) {
+                        
+                        if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+                        
+                        [self parseSocketResponseData:data forEntityName:entityName];
+
+                    } else {
+                        
+                        [self receiveNoContentStatusForEntityWithName:entityName];
+                        
+                    }
+                    
+                } else {
+                    [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"];
+                }
+                
+            } else {
+                [self socketReceiveJSDataAckError:@"ERROR: response data is not an array"];
+            }
+            
+        } else {
+            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"ERROR: %@", errorString]];
+        }
+
+    } else {
+        [self socketReceiveJSDataAckError:@"ERROR: response contain no dictionary"];
+    }
+
+}
+
+- (void)socketReceiveJSDataAckError:(NSString *)errorString {
+    
+    NSLog(errorString);
+    [self entityCountDecrease];
+    
+}
+
+- (void)parseSocketResponseData:(NSArray *)data forEntityName:(NSString *)entityName {
+    
+    STMEntity *entity = (self.stcEntities)[entityName];
+    
+    if (entity) {
+        
+        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+            
+            if (success) {
+                
+                NSLog(@"    %@: get %d objects", entityName, data.count);
+                
+                NSUInteger pageRowCount = data.count;
+                NSUInteger pageSize = self.fetchLimit;
+                
+                if (pageRowCount < pageSize) {
+                    
+                    NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
+                    
+                    [self fillETagWithTemporaryValueForEntityName:entityName];
+                    [self receiveNoContentStatusForEntityWithName:entityName];
+                    
+                } else {
+                    
+                    [self nextReceiveEntityWithName:entityName];
+                    
+                }
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+                                                                    object:self
+                                                                  userInfo:@{@"count"         :@(data.count),
+                                                                             @"entityName"    :entityName}];
+                
+            } else {
+                self.errorOccured = YES;
+                [self entityCountDecrease];
+            }
+            
+        }];
+        
+    }
+
+}
+
+
 #pragma mark - NSURLConnectionDataDelegate
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
@@ -1229,51 +1334,51 @@
         
         STMEntity *entity = (self.stcEntities)[connectionEntityName];
         
-        if (entity) {
-            
-            [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
-                
-                if (success) {
-                    
-                    NSLog(@"    %@: get %d objects", connectionEntityName, dataArray.count);
-                    
-                    NSUInteger pageRowCount = [responseJSON[@"page-row-count"] integerValue];
-                    NSUInteger pageSize = [responseJSON[@"page-size"] integerValue];
-                    
-                    if (pageRowCount < pageSize) {
-                        
-                        NSLog(@"    %@: pageRowCount < pageSize / No more content", connectionEntityName);
-                        
-                        [self fillETagWithTemporaryValueForEntityName:connectionEntityName];
-                        [self receiveNoContentStatusForEntityWithName:connectionEntityName];
-                        
-                    } else {
-                    
-                        [self nextReceiveEntityWithName:connectionEntityName];
-
-                    }
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-                                                                        object:self
-                                                                      userInfo:@{@"count"         :@(dataArray.count),
-                                                                                 @"entityName"    :connectionEntityName}];
-                    
-                } else {
-                    self.errorOccured = YES;
-                    [self entityCountDecrease];
-                }
-                
-            }];
-            
-        } else {
-            
-            for (NSDictionary *datum in dataArray) {
-                [STMCoreObjectsController syncObject:datum];
-            }
-            
-            [self sendFinished:self];
-
-        }
+//        if (entity) {
+//            
+//            [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
+//                
+//                if (success) {
+//                    
+//                    NSLog(@"    %@: get %d objects", connectionEntityName, dataArray.count);
+//                    
+//                    NSUInteger pageRowCount = [responseJSON[@"page-row-count"] integerValue];
+//                    NSUInteger pageSize = [responseJSON[@"page-size"] integerValue];
+//                    
+//                    if (pageRowCount < pageSize) {
+//                        
+//                        NSLog(@"    %@: pageRowCount < pageSize / No more content", connectionEntityName);
+//                        
+//                        [self fillETagWithTemporaryValueForEntityName:connectionEntityName];
+//                        [self receiveNoContentStatusForEntityWithName:connectionEntityName];
+//                        
+//                    } else {
+//                    
+//                        [self nextReceiveEntityWithName:connectionEntityName];
+//
+//                    }
+//                    
+//                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+//                                                                        object:self
+//                                                                      userInfo:@{@"count"         :@(dataArray.count),
+//                                                                                 @"entityName"    :connectionEntityName}];
+//                    
+//                } else {
+//                    self.errorOccured = YES;
+//                    [self entityCountDecrease];
+//                }
+//                
+//            }];
+//            
+//        } else {
+//            
+//            for (NSDictionary *datum in dataArray) {
+//                [STMCoreObjectsController syncObject:datum];
+//            }
+//            
+//            [self sendFinished:self];
+//
+//        }
         
     } else {
         
@@ -1310,8 +1415,8 @@
 
 - (void)fillETagWithTemporaryValueForEntityName:(NSString *)entityName {
     
-    NSString *eTag = [self.temporaryETag valueForKey:entityName];
-    STMEntity *entity = (self.stcEntities)[entityName];
+    NSString *eTag = self.temporaryETag[entityName];
+    STMEntity *entity = self.stcEntities[entityName];
     STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
     
     clientEntity.eTag = eTag;
