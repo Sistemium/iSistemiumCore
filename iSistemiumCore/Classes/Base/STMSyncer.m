@@ -25,7 +25,7 @@
 #define SEND_DATA_CONNECTION @"SEND_DATA"
 
 
-@interface STMSyncer() //<NSFetchedResultsControllerDelegate>
+@interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
 
@@ -40,8 +40,6 @@
 
 @property (nonatomic, strong) NSTimer *syncTimer;
 @property (nonatomic) BOOL timerTicked;
-
-//@property (nonatomic, strong) NSFetchedResultsController *resultsController;
 
 @property (nonatomic) BOOL running;
 @property (nonatomic) BOOL syncing;
@@ -225,9 +223,7 @@
 - (void)setSyncerState:(STMSyncerState)syncerState {
     
     if (self.running && !self.syncing && syncerState != _syncerState) {
-        
-//        syncerState = (_syncerState == STMSyncerSendData && !self.fullSyncWasDone) ? STMSyncerReceiveData : syncerState;
-        
+
         STMSyncerState previousState = _syncerState;
         
         _syncerState = syncerState;
@@ -279,91 +275,7 @@
     }
     
     return;
-    
 
-//    self.sendOnce = (syncerState != STMSyncerIdle) && ((self.sendOnce) || (self.syncing && syncerState == STMSyncerSendDataOnce))? YES : NO;
-//    
-//    if (!self.syncing && syncerState != _syncerState) {
-//        
-//        syncerState = (_syncerState == STMSyncerSendData && !self.fullSyncWasDone) ? STMSyncerReceiveData : (self.sendOnce) ? STMSyncerSendDataOnce : syncerState;
-//
-//        STMSyncerState previousState = _syncerState;
-//        
-//        _syncerState = syncerState;
-//        
-//        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncStatusChanged" object:self userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
-//        
-//        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-//        NSLog(logMessage);
-//        
-//        self.isFirstSyncCycleIteration = (previousState == STMSyncerIdle);
-//        
-//        switch (syncerState) {
-//                
-//            case STMSyncerSendData:
-//                
-////                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-////                [STMClientDataController checkClientData];
-////                self.syncing = YES;
-////                [self sendData];
-////                
-////                break;
-//
-//                
-//            case STMSyncerSendDataOnce:
-//                
-//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-//                [STMClientDataController checkClientData];
-//                self.syncing = YES;
-//                [self sendingRoute];
-//                
-////                [self sendData];
-////                [self nothingToSend];
-//                
-//                break;
-//
-//                
-//            case STMSyncerReceiveData:
-//                
-//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-//                self.syncing = YES;
-//                [self checkNews];
-//                
-//                break;
-//                
-//                
-//            case STMSyncerIdle:
-//                
-//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-//                self.syncing = NO;
-//                self.sendOnce = NO;
-//                self.checkSending = NO;
-//
-////                [STMObjectsController dataLoadingFinished];
-////                [STMPicturesController checkUploadedPhotos];
-//                
-//                self.entitySyncNames = nil;
-//                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
-//                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
-//
-////                if (previousState == STMSyncerReceiveData) {
-////                    
-////                    [STMObjectsController dataLoadingFinished];
-////                    [STMSocketController sendUnsyncedObjects:self];
-////
-////                }
-//                
-//                break;
-//                
-//                
-//            default:
-//                break;
-//                
-//        }
-//        
-//    }
-    
 }
 
 - (void)sendingRoute {
@@ -371,10 +283,9 @@
     if ([STMSocketController socketIsAvailable]) {
         
         [STMSocketController sendUnsyncedObjects:self];
-//        [self nothingToSend];
         
     } else {
-        [self sendData];
+
     }
 
 }
@@ -439,19 +350,16 @@
                     if (success) {
                 
                         [STMEntityController checkEntitiesForDuplicates];
-                        //                [STMPicturesController checkPhotos];
                         [STMClientDataController checkClientData];
                         [self.session.logger saveLogMessageDictionaryToDocument];
                         [self.session.logger saveLogMessageWithText:@"Syncer start" type:@""];
                         
                         [self checkUploadableEntities];
                         
-//                        [self initTimer];
                         [self addObservers];
                         
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully" object:self];
-                        
-//                        [self performFetch];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
+                                                                            object:self];
                         
                         [STMSocketController startSocket];
 
@@ -522,19 +430,6 @@
 
 }
 
-//- (void)performFetch {
-//    
-//    NSError *error;
-//    if (![self.resultsController performFetch:&error]) {
-//        
-//        NSLog(@"fetch error %@", error);
-//        
-//    } else {
-//        
-//    }
-//
-//}
-
 - (void)stopSyncer {
     
     if (self.running) {
@@ -545,11 +440,11 @@
         self.syncing = NO;
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
-//        self.resultsController = nil;
         self.settings = nil;
         self.running = NO;
         
     }
+
 }
 
 - (void)upload {
@@ -657,30 +552,15 @@
                name:@"syncerSettingsChanged"
              object:self.session];
     
-//    [nc addObserver:self
-//           selector:@selector(didReceiveRemoteNotification)
-//               name:@"applicationDidReceiveRemoteNotification"
-//             object:nil];
-    
     [nc addObserver:self
            selector:@selector(appDidBecomeActive)
                name:UIApplicationDidBecomeActiveNotification
              object:nil];
     
-//    [nc addObserver:self
-//           selector:@selector(didReceiveRemoteNotification)
-//               name:@"applicationPerformFetchWithCompletionHandler"
-//             object:nil];
-    
     [nc addObserver:self
            selector:@selector(didEnterBackground)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-    
-//    [nc addObserver:self
-//           selector:@selector(syncerDidReceiveRemoteNotification:)
-//               name:@"syncerDidReceiveRemoteNotification"
-//             object:nil];
     
 }
 
@@ -746,11 +626,21 @@
         
         if (!self.syncInterval) {
             
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date] interval:0 target:self selector:@selector(onTimerTick:) userInfo:nil repeats:NO];
+            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
+                                                  interval:0
+                                                    target:self
+                                                  selector:@selector(onTimerTick:)
+                                                  userInfo:nil
+                                                   repeats:NO];
             
         } else {
             
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date] interval:self.syncInterval target:self selector:@selector(onTimerTick:) userInfo:nil repeats:YES];
+            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
+                                                  interval:self.syncInterval
+                                                    target:self
+                                                  selector:@selector(onTimerTick:)
+                                                  userInfo:nil
+                                                   repeats:YES];
             
         }
         
@@ -766,7 +656,8 @@
         [self releaseTimer];
     }
     
-    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer forMode: NSRunLoopCommonModes];
+    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
+                                 forMode: NSRunLoopCommonModes];
     
 }
 
@@ -794,14 +685,6 @@
 
 #pragma mark - syncing
 #pragma mark - send
-
-- (void)sendData {
-        
-    if (self.syncerState == STMSyncerSendData || self.syncerState == STMSyncerSendDataOnce) {
-        
-    }
-    
-}
 
 - (void)nothingToSend {
     
@@ -867,9 +750,7 @@
         return nil;
         
     } else {
-        
-//        [self numbersOfUnsyncedObjects];
-        
+
         NSString *logMessage = [NSString stringWithFormat:@"%lu objects to send", (unsigned long)syncDataArray.count];
         NSLog(logMessage);
 
@@ -906,28 +787,7 @@
 }
 
 - (NSArray *)unsyncedObjects {
-
     return [STMSocketController unsyncedObjects];
-    
-//    if (self.document.managedObjectContext) {
-//        
-//        NSArray *unsyncedObjects = self.resultsController.fetchedObjects;
-//        NSArray *entityNamesForSending = [STMEntityController uploadableEntitiesNames];
-//        
-//        NSPredicate *predicate = [STMPredicate predicateWithNoFantomsFromPredicate:[NSPredicate predicateWithFormat:@"entity.name IN %@", entityNamesForSending]];
-//        unsyncedObjects = [unsyncedObjects filteredArrayUsingPredicate:predicate];
-//        
-//        NSArray *logMessageSyncTypes = [(STMLogger *)self.session.logger syncingTypesForSettingType:self.uploadLogType];
-//        
-//        predicate = [NSPredicate predicateWithFormat:@"(entity.name != %@) OR (type IN %@)", NSStringFromClass([STMLogMessage class]), logMessageSyncTypes];
-//        unsyncedObjects = [unsyncedObjects filteredArrayUsingPredicate:predicate];
-//        
-//        return unsyncedObjects;
-//        
-//    } else {
-//        return nil;
-//    }
-
 }
 
 - (NSUInteger)numbersOfUnsyncedObjects {
@@ -949,9 +809,6 @@
             request.HTTPShouldHandleCookies = NO;
             [request setHTTPMethod:@"POST"];
             [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
-//            [request setValue:[[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString] forHTTPHeaderField:@"DeviceUUID"];
-            
-//            NSLog(@"request %@", request.allHTTPHeaderFields);
 
             request.HTTPBody = sendData;
             
@@ -985,7 +842,6 @@
         
     }
     
-    
 }
 
 
@@ -1005,9 +861,6 @@
         [request setHTTPMethod:@"GET"];
         
         [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
-//        [request setValue:[[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString] forHTTPHeaderField:@"DeviceUUID"];
-
-//        NSLog(@"request %@", request.allHTTPHeaderFields);
 
         [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
             
@@ -1054,7 +907,6 @@
     } else {
         
         [self receiveData];
-//        [STMSocketController startSocket];
         
     }
     
@@ -1129,10 +981,6 @@
             self.entityCount = self.entitySyncNames.count;
 
             [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-            
-//            for (NSString *name in self.receivingEntitiesNames) {
-//                [self checkConditionForReceivingEntityWithName:name];
-//            }
             
         }
 
@@ -1225,9 +1073,6 @@
         
         [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
         [request addValue:eTag forHTTPHeaderField:@"If-none-match"];
-//        [request setValue:[[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString] forHTTPHeaderField:@"DeviceUUID"];
-        
-//        NSLog(@"request %@", request.allHTTPHeaderFields);
 
         NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
         
@@ -1321,9 +1166,7 @@
 - (void)receivingDidFinish {
     
     [self saveReceiveDate];
-    
-//    if (!self.fullSyncWasDone) [STMSocketController startSocket];
-    
+
     self.fullSyncWasDone = YES;
     self.isFirstSyncCycleIteration = NO;
     
@@ -1455,9 +1298,7 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish" object:self];
         
-//        for (NSString *name in entityNames) {
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-//        }
+        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
         
     } else {
         [self entityCountDecrease];
@@ -1629,14 +1470,6 @@
         
         [self nothingToSend];
         
-//        if (![STMSocketController socketIsAvailable]) {
-        
-//            self.syncing = NO;
-//            self.syncerState = (self.isFirstSyncCycleIteration && self.syncerState == STMSyncerSendData) ? STMSyncerReceiveData : STMSyncerIdle;
-//            [self afterSendFurcation];
-
-//        }
-
     }];
 
 }
