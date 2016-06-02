@@ -43,4 +43,5 @@ typedef NS_ENUM(NSUInteger, STMAuthState) {
 
 - (NSURLRequest *)authenticateRequest:(NSURLRequest *)request;
 
+
 @end

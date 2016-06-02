@@ -224,14 +224,9 @@
           "step": 60
         },
         {
-          "name": "restServerURI",
+          "name": "entityResource",
           "value": "",
           "control": "textField"
-        },
-        {
-           "name": "API.url",
-           "value": "",
-           "control": "textField"
         },
         {
             "name": "xmlNamespace",

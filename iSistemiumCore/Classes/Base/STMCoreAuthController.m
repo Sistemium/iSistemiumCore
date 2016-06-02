@@ -27,7 +27,7 @@
 #define TIMEOUT 15.0
 
 #define KC_PHONE_NUMBER @"phoneNumber"
-#define KC_SERVICE_URI @"serviceUri"
+#define KC_ENTITY_RESOURCE @"entityResource"
 #define KC_USER_ID @"userID"
 #define KC_ACCESS_TOKEN @"accessToken"
 
@@ -36,8 +36,8 @@
 
 @property (nonatomic, strong) NSMutableData *responseData;
 @property (nonatomic, strong) NSString *requestID;
-@property (nonatomic, strong) NSString *serviceUri;
-@property (nonatomic, strong) NSString *apiURL;
+@property (nonatomic, strong) NSString *entityResource;
+@property (nonatomic, strong) NSString *socketURL;
 
 
 @end
@@ -49,7 +49,7 @@
 @synthesize userID = _userID;
 @synthesize userName = _userName;
 @synthesize accessToken = _accessToken;
-@synthesize serviceUri = _serviceUri;
+@synthesize entityResource = _entityResource;
 @synthesize stcTabs = _stcTabs;
 @synthesize iSisDB = _iSisDB;
 
@@ -177,22 +177,22 @@
     
 }
 
-- (NSString *)serviceUri {
+- (NSString *)entityResource {
     
-    if (!_serviceUri) {
-        _serviceUri = [JNKeychain loadValueForKey:KC_SERVICE_URI];
+    if (!_entityResource) {
+        _entityResource = [JNKeychain loadValueForKey:KC_ENTITY_RESOURCE];
     }
-    return _serviceUri;
+    return _entityResource;
     
 }
 
-- (void)setServiceUri:(NSString *)serviceUri {
+- (void)setEntityResource:(NSString *)entityResource {
     
-    if (serviceUri != _serviceUri) {
+    if (entityResource != _entityResource) {
         
-        [JNKeychain saveValue:serviceUri forKey:KC_SERVICE_URI];
-        NSLog(@"serviceUri %@", serviceUri);
-        _serviceUri = serviceUri;
+        [JNKeychain saveValue:entityResource forKey:KC_ENTITY_RESOURCE];
+        NSLog(@"entityResource %@", entityResource);
+        _entityResource = entityResource;
         
     }
     
@@ -407,9 +407,9 @@
 
 - (void)startSession {
 
-    NSLog(@"serviceUri %@", self.serviceUri);
-    NSLog(@"apiURL %@", self.apiURL);
-
+    NSLog(@"socketURL %@", self.socketURL);
+    NSLog(@"entity resource %@", self.entityResource);
+    
     NSArray *trackers = @[@"battery", @"location"];
     
     NSDictionary *startSettings = nil;
@@ -421,7 +421,7 @@
     if (GRIMAX) {
         
         startSettings = @{
-                          @"restServerURI"                  : self.serviceUri,
+                          @"entityResource"                  : self.entityResource,
                           @"dataModelName"                  : dataModelName,
                           //                      @"fetchLimit"               : @"50",
                           //                      @"syncInterval"             : @"600",
@@ -449,7 +449,7 @@
     } else {
     
         startSettings = @{
-                          @"restServerURI"            : self.serviceUri,
+                          @"entityResource"            : self.entityResource,
                           @"dataModelName"            : dataModelName,
                           };
 
@@ -458,16 +458,16 @@
 #else
 
     startSettings = @{
-                      @"restServerURI"            : self.serviceUri,
+                      @"entityResource"            : self.serviceUri,
                       @"dataModelName"            : dataModelName,
                       };
 
 #endif
     
-    if (self.apiURL) {
+    if (self.socketURL) {
         
         NSMutableDictionary *tempDictionary = [startSettings mutableCopy];
-        [tempDictionary addEntriesFromDictionary:@{@"API.url":self.apiURL}];
+        [tempDictionary addEntriesFromDictionary:@{@"socketUrl":self.socketURL}];
         
         startSettings = tempDictionary;
         
@@ -798,8 +798,8 @@
             
         case STMAuthEnterSMSCode: {
             
-            self.serviceUri = responseJSON[@"redirectUri"];
-            self.apiURL = responseJSON[@"apiUrl"];
+            self.entityResource = responseJSON[@"redirectUri"];
+            self.socketURL = responseJSON[@"apiUrl"];
             self.userID = responseJSON[@"ID"];
             self.userName = responseJSON[@"name"];
             self.accessToken = responseJSON[@"accessToken"];

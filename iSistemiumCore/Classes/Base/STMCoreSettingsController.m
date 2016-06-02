@@ -88,18 +88,15 @@
         
         NSArray *boolValueSuffixes = @[@"TrackerAutoStart"];
         
-        NSArray *URIValues = @[@"restServerURI",
-                               @"xmlNamespace",
-                               @"recieveDataServerURI",
-                               @"sendDataServerURI",
-                               @"API.url",
+        NSArray *URIValues = @[@"xmlNamespace",
                                @"socketUrl"];
         
         NSArray *timeValues = @[];
         NSArray *timeValueSuffixes = @[@"TrackerStartTime",
                                        @"TrackerFinishTime"];
         
-        NSArray *stringValue = @[@"uploadLog.type",
+        NSArray *stringValue = @[@"entityResource",
+                                 @"uploadLog.type",
                                  @"geotrackerControl"];
         
         NSArray *logicValue = @[@"timeDistanceLogic"];
