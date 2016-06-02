@@ -19,7 +19,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventInfo,
     STMSocketEventAuthorization,
     STMSocketEventRemoteCommands,
-    STMSocketEventData
+    STMSocketEventData,
+    STMSocketEventJSData
 };
 
 
@@ -46,6 +47,11 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 + (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid;
 + (void)successfullySyncObjectWithXid:(NSData *)xid;
+
++ (void)startReceiveDataFromResource:(NSString *)resourceString
+                            withETag:(NSString *)eTag
+                          fetchLimit:(NSInteger)fetchLimit
+                          andTimeout:(NSTimeInterval)timeout;
 
 
 @end

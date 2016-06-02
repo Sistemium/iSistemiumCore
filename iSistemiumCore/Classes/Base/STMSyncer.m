@@ -30,7 +30,7 @@
 @property (nonatomic, strong) STMDocument *document;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
-@property (nonatomic) int fetchLimit;
+@property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
 @property (nonatomic, strong) NSString *xmlNamespace;
@@ -120,9 +120,9 @@
     return _settings;
 }
 
-- (int)fetchLimit {
+- (NSInteger)fetchLimit {
     if (!_fetchLimit) {
-        _fetchLimit = [self.settings[@"fetchLimit"] intValue];
+        _fetchLimit = [self.settings[@"fetchLimit"] integerValue];
     }
     return _fetchLimit;
 }
@@ -512,7 +512,9 @@
             NSData *JSONData = [NSJSONSerialization dataWithJSONObject:@{@"data": jsonArray}
                                                                options:0
                                                                  error:nil];
-            [self startConnectionForSendData:JSONData];
+//            [self startConnectionForSendData:JSONData];
+            
+#warning should send it via socket
             
         }
         
@@ -713,143 +715,12 @@
     
 }
 
-- (NSData *)JSONFrom:(NSArray *)dataForSyncing {
-    
-    NSMutableArray *syncDataArray = [NSMutableArray array];
-    
-    NSArray *logMessageSyncTypes = [(STMLogger *)self.session.logger syncingTypesForSettingType:self.uploadLogType];
-    
-    for (NSManagedObject *object in dataForSyncing) {
-        
-        NSArray *entityNamesForSending = [STMEntityController uploadableEntitiesNames];
-        NSString *entityName = object.entity.name;
-        BOOL isInSyncList = [entityNamesForSending containsObject:entityName];
-        BOOL isFantom = [[object valueForKey:@"isFantom"] boolValue];
-        
-        if (isInSyncList && !isFantom) {
-            
-            if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
-
-                NSString *type = [object valueForKey:@"type"];
-                
-                if ([logMessageSyncTypes containsObject:type]) {                    
-                    [self addObject:object toSyncDataArray:syncDataArray];
-                }
-                
-            } else {
-                [self addObject:object toSyncDataArray:syncDataArray];
-            }
-            
-        }
-        
-        if (syncDataArray.count >= 100) {
-            
-            NSLog(@"Syncer JSONFrom break");
-            break;
-            
-        }
-        
-    }
-    
-    self.sendedEntities = [[[NSSet setWithArray:self.sendedEntities] allObjects] mutableCopy];
-    
-    if (syncDataArray.count == 0) {
-        
-        return nil;
-        
-    } else {
-
-        NSString *logMessage = [NSString stringWithFormat:@"%lu objects to send", (unsigned long)syncDataArray.count];
-        NSLog(logMessage);
-
-        NSDictionary *dataDictionary = @{@"data": syncDataArray};
-        
-        NSError *error;
-        NSData *JSONData = [NSJSONSerialization dataWithJSONObject:dataDictionary options:0 error:&error];
-        
-//        NSData *JSONData = [NSJSONSerialization dataWithJSONObject:dataDictionary options:NSJSONWritingPrettyPrinted error:&error];
-//        NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
-//        NSLog(@"send JSONString %@", JSONString);
-        
-        return JSONData;
-
-    }
-    
-}
-
-- (void)addObject:(NSManagedObject *)object toSyncDataArray:(NSMutableArray *)syncDataArray {
-    
-    if (object.entity.name) {
-        
-        NSDate *currentDate = [NSDate date];
-        [object setPrimitiveValue:currentDate forKey:@"sts"];
-        
-        NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
-        
-        [syncDataArray addObject:objectDictionary];
-        
-        [self.sendedEntities addObject:(NSString * _Nonnull)object.entity.name];
-
-    }
-    
-}
-
 - (NSArray *)unsyncedObjects {
     return [STMSocketController unsyncedObjects];
 }
 
 - (NSUInteger)numbersOfUnsyncedObjects {
     return [self unsyncedObjects].count;
-}
-
-- (void)startConnectionForSendData:(NSData *)sendData {
-    
-    if (self.socketUrlString) {
-        
-        NSURL *requestURL = [NSURL URLWithString:self.socketUrlString];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
-        
-        request = [[self.authDelegate authenticateRequest:request] mutableCopy];
-        
-        if ([request valueForHTTPHeaderField:@"Authorization"]) {
-            
-            request.timeoutInterval = [self timeout];
-            request.HTTPShouldHandleCookies = NO;
-            [request setHTTPMethod:@"POST"];
-            [request setValue:@"application/json" forHTTPHeaderField:@"Content-type"];
-
-            request.HTTPBody = sendData;
-            
-            NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
-            
-            if (!connection) {
-                
-                [self.session.logger saveLogMessageWithText:@"Syncer: no connection" type:@"error"];
-                self.syncing = NO;
-                self.fetchResult = UIBackgroundFetchResultFailed;
-
-                self.syncerState = STMSyncerIdle;
-                
-            } else {
-                
-            }
-            
-        } else {
-            
-            [self.session.logger saveLogMessageWithText:@"Syncer: no authorization header" type:@"error"];
-            [self notAuthorized];
-            
-        }
-
-    } else {
-        
-        [self.session.logger saveLogMessageWithText:@"Syncer: no API.url" type:@"error"];
-        
-        self.syncing = NO;
-        self.syncerState = STMSyncerReceiveData;
-        
-    }
-    
 }
 
 
@@ -1034,18 +905,19 @@
 
             if (entity.roleName || [[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
                 
-                NSString *url = entity.url;
+                NSString *resource = entity.url;
                 
-                if (url) {
+                if (resource) {
                     
                     STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
                     
                     NSString *eTag = clientEntity.eTag;
                     eTag = eTag ? eTag : @"*";
                     
-                    NSURL *requestURL = [NSURL URLWithString:url];
-                    
-                    [self startReceiveDataFromURL:requestURL withETag:eTag];
+                    [STMSocketController startReceiveDataFromResource:resource
+                                                             withETag:eTag
+                                                           fetchLimit:self.fetchLimit
+                                                           andTimeout:[self timeout]];
                     
                 } else {
                     
@@ -1067,43 +939,43 @@
     
 }
 
-- (void)startReceiveDataFromURL:(NSURL *)requestURL withETag:(NSString *)eTag {
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
-    
-    request = [[self.authDelegate authenticateRequest:request] mutableCopy];
-    
-    if ([request valueForHTTPHeaderField:@"Authorization"]) {
-        
-        request.timeoutInterval = [self timeout];
-        request.HTTPShouldHandleCookies = NO;
-        [request setHTTPMethod:@"GET"];
-        
-        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
-        [request addValue:eTag forHTTPHeaderField:@"If-none-match"];
-
-        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
-        
-        if (!connection) {
-            
-            [self.session.logger saveLogMessageWithText:@"Syncer: no connection" type:@"error"];
-            self.syncing = NO;
-            self.fetchResult = UIBackgroundFetchResultFailed;
-
-            self.syncerState = STMSyncerIdle;
-            
-        } else {
-            
-        }
-        
-    } else {
-        
-        [self.session.logger saveLogMessageWithText:@"Syncer: no authorization header" type:@"error"];
-        [self notAuthorized];
-        
-    }
-    
-}
+//- (void)startReceiveDataFromURL:(NSURL *)requestURL withETag:(NSString *)eTag {
+//    
+//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
+//    
+//    request = [[self.authDelegate authenticateRequest:request] mutableCopy];
+//    
+//    if ([request valueForHTTPHeaderField:@"Authorization"]) {
+//        
+//        request.timeoutInterval = [self timeout];
+//        request.HTTPShouldHandleCookies = NO;
+//        [request setHTTPMethod:@"GET"];
+//        
+//        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
+//        [request addValue:eTag forHTTPHeaderField:@"If-none-match"];
+//
+//        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+//        
+//        if (!connection) {
+//            
+//            [self.session.logger saveLogMessageWithText:@"Syncer: no connection" type:@"error"];
+//            self.syncing = NO;
+//            self.fetchResult = UIBackgroundFetchResultFailed;
+//
+//            self.syncerState = STMSyncerIdle;
+//            
+//        } else {
+//            
+//        }
+//        
+//    } else {
+//        
+//        [self.session.logger saveLogMessageWithText:@"Syncer: no authorization header" type:@"error"];
+//        [self notAuthorized];
+//        
+//    }
+//    
+//}
 
 - (void)notAuthorized {
     

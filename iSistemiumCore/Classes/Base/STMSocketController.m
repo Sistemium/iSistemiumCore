@@ -93,6 +93,10 @@
             return @"data:v1";
             break;
         }
+        case STMSocketEventJSData: {
+            return @"jsData";
+            break;
+        }
         default: {
             return nil;
             break;
@@ -117,6 +121,8 @@
         return STMSocketEventRemoteCommands;
     } else if ([stringValue isEqualToString:@"data:v1"]) {
         return STMSocketEventData;
+    } else if ([stringValue isEqualToString:@"jsData"]) {
+        return STMSocketEventJSData;
     } else {
         return STMSocketEventInfo;
     }
@@ -230,8 +236,12 @@
     [self socket:[self sharedInstance].socket sendEvent:event withValue:value];
 }
 
++ (void)reloadResultsControllers {
+    [[self sharedInstance] reloadResultsControllers];
+}
 
-#pragma mark - sync
+
+#pragma mark - send
 
 + (NSArray *)unsyncedObjects {
     return [[self sharedInstance] unsyncedObjectsArray];
@@ -367,8 +377,19 @@
 }
 
 
-+ (void)reloadResultsControllers {
-    [[self sharedInstance] reloadResultsControllers];
+#pragma mark - receive
+
++ (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
+	
+    NSDictionary *value = @{@"method"   : @"findAll",
+                            @"resource" : resourceString,
+                            @"options"  : @{@"offset"   : eTag,
+                                            @"pageSize" : @(fetchLimit)
+                                            }
+                            };
+    
+    [self sendEvent:STMSocketEventJSData withValue:value];
+    
 }
 
 
@@ -384,6 +405,7 @@
     [STMSocketController addEvent:STMSocketEventDisconnect toSocket:socket];
     [STMSocketController addEvent:STMSocketEventRemoteCommands toSocket:socket];
     [STMSocketController addEvent:STMSocketEventData toSocket:socket];
+    [STMSocketController addEvent:STMSocketEventJSData toSocket:socket];
     
 }
 
@@ -435,6 +457,9 @@
             }
             case STMSocketEventData: {
                 [self dataCallbackWithData:data ack:ack socket:socket];
+            }
+            case STMSocketEventJSData: {
+                [self jsDataCallbackWithData:data ack:ack socket:socket];
             }
             default: {
                 break;
@@ -504,6 +529,12 @@
     
 }
 
++ (void)jsDataCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
+    
+    NSLog(@"jsDataCallback socket %@ data %@", socket, data);
+    
+}
+
 
 #pragma mark - socket events sending
 
@@ -555,45 +586,59 @@
     
     if (socket.status == SocketIOClientStatusConnected) {
         
-        NSString *primaryKey = [self primaryKeyForEvent:event];
-        
-        if (value && primaryKey) {
-            
-            NSDictionary *dataDic = @{primaryKey : value};
-            
-            dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+        if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
             
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
+
+            NSDictionary *dataDic = (NSDictionary *)value;
             
-            if (dataDic) {
+            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+                [self receiveJSDataEventAckWithData:data];
+            });
+
+        } else {
+            
+            NSString *primaryKey = [self primaryKeyForEvent:event];
+            
+            if (value && primaryKey) {
                 
-                if (socket.status != SocketIOClientStatusConnected) {
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
+                
+                if (dataDic) {
                     
-                } else {
-                    
-                    //                NSLog(@"%@ ___ emit: %@, data: %@", socket, eventStringValue, dataDic);
-                    
-                    if (event == STMSocketEventData) {
-                        
-                        [self sharedInstance].isSendingData = YES;
-                        [self sharedInstance].sendingDate = [NSDate date];
-                        
-                        [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
-                            [self receiveEventDataAckWithData:data];
-                        });
+                    if (socket.status != SocketIOClientStatusConnected) {
                         
                     } else {
-                        [socket emit:eventStringValue withItems:@[dataDic]];
+                        
+                        //                NSLog(@"%@ ___ emit: %@, data: %@", socket, eventStringValue, dataDic);
+                        
+                        if (event == STMSocketEventData) {
+                            
+                            [self sharedInstance].isSendingData = YES;
+                            [self sharedInstance].sendingDate = [NSDate date];
+                            
+                            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+                                [self receiveEventDataAckWithData:data];
+                            });
+                            
+                        } else {
+                            [socket emit:eventStringValue withItems:@[dataDic]];
+                        }
+                        
                     }
                     
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", socket, eventStringValue);
                 }
                 
-            } else {
-                NSLog(@"%@ ___ no dataDic to send via socket for event: %@", socket, eventStringValue);
             }
-            
-        }
 
+        }
+        
     } else {
         
         NSLog(@"socket not connected");
@@ -674,6 +719,10 @@
         
     }
 
+}
+
++ (void)receiveJSDataEventAckWithData:(NSArray *)data {
+    NSLog(@"receiveJSDataEventAckWithData %@", data);
 }
 
 + (void)receiveEventDataAckWithData:(NSArray *)data {

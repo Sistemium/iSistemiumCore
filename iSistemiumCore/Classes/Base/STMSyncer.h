@@ -32,8 +32,6 @@
 - (void)bunchOfObjectsSended;
 - (void)sendFinishedWithError:(NSString *)errorString;
 
-//- (void)afterSendFurcation;
-
 - (NSArray *)unsyncedObjects;
 - (NSUInteger)numbersOfUnsyncedObjects;
 
