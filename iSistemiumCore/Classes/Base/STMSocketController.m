@@ -29,6 +29,7 @@
 
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
+@property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic, strong) NSMutableDictionary *syncDataDictionary;
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
@@ -140,6 +141,17 @@
 
 + (BOOL)isSendingData {
     return [self sharedInstance].isSendingData;
+}
+
++ (void)startSocketWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource {
+    
+    STMSocketController *sc = [self sharedInstance];
+
+    sc.socketUrl = socketUrlString;
+    sc.entityResource = entityResource;
+    
+    [self startSocket];
+    
 }
 
 + (void)startSocket {
@@ -1042,9 +1054,7 @@
 - (NSString *)socketUrl {
     
     if (!_socketUrl) {
-        
-        _socketUrl = [STMCoreSettingsController stringValueForSettings:@"socketUrl" forGroup:@"appSettings"];
-        
+        _socketUrl = [STMCoreSettingsController stringValueForSettings:@"socketUrl" forGroup:@"syncer"];
     }
     return _socketUrl;
     

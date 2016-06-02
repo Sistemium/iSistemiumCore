@@ -416,53 +416,57 @@
     
     NSString *dataModelName = [self dataModelName];
     
+    if (self.entityResource) {
+    
 #ifdef DEBUG
-    
-    if (GRIMAX) {
         
-        startSettings = @{
-                          @"entityResource"                  : self.entityResource,
-                          @"dataModelName"                  : dataModelName,
-                          //                      @"fetchLimit"               : @"50",
-                          //                      @"syncInterval"             : @"600",
-                          //                      @"uploadLog.type"           : @"",
-                          @"requiredAccuracy"               : @"100",
-                          @"desiredAccuracy"                : @"10",
-                          @"timeFilter"                     : @"60",
-                          @"distanceFilter"                 : @"60",
-                          @"backgroundDesiredAccuracy"      : @"3000",
-                          @"foregroundDesiredAccuracy"      : @"10",
-                          @"offtimeDesiredAccuracy"         : @"0",
-                          @"maxSpeedThreshold"              : @"60",
-                          @"locationTrackerAutoStart"       : @YES,
-                          @"locationTrackerStartTime"       : @"0",
-                          @"locationTrackerFinishTime"      : @"24",
-                          @"locationWaitingTimeInterval"    : @"10",
-                          @"batteryTrackerAutoStart"        : @YES,
-                          @"batteryTrackerStartTime"        : @"8.0",
-                          @"batteryTrackerFinishTime"       : @"22.0",
-                          @"http.timeout.foreground"        : @"60",
-                          @"jpgQuality"                     : @"0.0",
-                          @"blockIfNoLocationPermission"    : @YES
-                          };
+        if (GRIMAX) {
+            
+            startSettings = @{
+                              @"entityResource"                  : self.entityResource,
+                              @"dataModelName"                  : dataModelName,
+                              //                      @"fetchLimit"               : @"50",
+                              //                      @"syncInterval"             : @"600",
+                              //                      @"uploadLog.type"           : @"",
+                              @"requiredAccuracy"               : @"100",
+                              @"desiredAccuracy"                : @"10",
+                              @"timeFilter"                     : @"60",
+                              @"distanceFilter"                 : @"60",
+                              @"backgroundDesiredAccuracy"      : @"3000",
+                              @"foregroundDesiredAccuracy"      : @"10",
+                              @"offtimeDesiredAccuracy"         : @"0",
+                              @"maxSpeedThreshold"              : @"60",
+                              @"locationTrackerAutoStart"       : @YES,
+                              @"locationTrackerStartTime"       : @"0",
+                              @"locationTrackerFinishTime"      : @"24",
+                              @"locationWaitingTimeInterval"    : @"10",
+                              @"batteryTrackerAutoStart"        : @YES,
+                              @"batteryTrackerStartTime"        : @"8.0",
+                              @"batteryTrackerFinishTime"       : @"22.0",
+                              @"http.timeout.foreground"        : @"60",
+                              @"jpgQuality"                     : @"0.0",
+                              @"blockIfNoLocationPermission"    : @YES
+                              };
+            
+        } else {
+            
+            startSettings = @{
+                              @"entityResource"            : self.entityResource,
+                              @"dataModelName"            : dataModelName,
+                              };
+            
+        }
         
-    } else {
-    
+#else
+        
         startSettings = @{
                           @"entityResource"            : self.entityResource,
                           @"dataModelName"            : dataModelName,
                           };
+        
+#endif
 
     }
-    
-#else
-
-    startSettings = @{
-                      @"entityResource"            : self.serviceUri,
-                      @"dataModelName"            : dataModelName,
-                      };
-
-#endif
     
     if (self.socketURL) {
         

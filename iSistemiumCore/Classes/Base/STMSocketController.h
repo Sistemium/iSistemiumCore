@@ -25,6 +25,9 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 @interface STMSocketController : NSObject
 
++ (void)startSocketWithUrl:(NSString *)socketUrlString
+         andEntityResource:(NSString *)entityResource;
+
 + (void)startSocket;
 + (void)closeSocket;
 + (void)reconnectSocket;

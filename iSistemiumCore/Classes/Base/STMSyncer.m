@@ -31,8 +31,8 @@
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) int fetchLimit;
-@property (nonatomic, strong) NSString *restServerURI;
-@property (nonatomic, strong) NSString *apiUrlString;
+@property (nonatomic, strong) NSString *entityResource;
+@property (nonatomic, strong) NSString *socketUrlString;
 @property (nonatomic, strong) NSString *xmlNamespace;
 @property (nonatomic) NSTimeInterval httpTimeoutForeground;
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
@@ -142,18 +142,18 @@
     }
 }
 
-- (NSString *)restServerURI {
-    if (!_restServerURI) {
-        _restServerURI = self.settings[@"restServerURI"];
+- (NSString *)entityResource {
+    if (!_entityResource) {
+        _entityResource = self.settings[@"entityResource"];
     }
-    return _restServerURI;
+    return _entityResource;
 }
 
-- (NSString *)apiUrlString {
-    if (!_apiUrlString) {
-        _apiUrlString = self.settings[@"API.url"];
+- (NSString *)socketUrlString {
+    if (!_socketUrlString) {
+        _socketUrlString = self.settings[@"socketUrl"];
     }
-    return _apiUrlString;
+    return _socketUrlString;
 }
 
 - (NSString *)xmlNamespace {
@@ -361,8 +361,16 @@
                         [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
                                                                             object:self];
                         
-                        [STMSocketController startSocket];
+                        if (self.socketUrlString) {
+                            
+                            [STMSocketController startSocketWithUrl:self.socketUrlString andEntityResource:self.entityResource];
 
+                        } else {
+                            
+                            NSLog(@"have NO socketURL, fail to start socket controller");
+                            
+                        }
+                        
                     } else {
                         NSLog(@"checkStcEntities fail");
                     }
@@ -398,7 +406,7 @@
         }
         
         entity.name = stcEntityName;
-        entity.url = self.restServerURI;
+        entity.url = self.entityResource;
         
         [self.document saveDocument:^(BOOL success) {
             completionHandler(success);
@@ -601,8 +609,8 @@
     self.settings = nil;
 
     self.fetchLimit = 0;
-    self.restServerURI = nil;
-    self.apiUrlString = nil;
+    self.entityResource = nil;
+    self.socketUrlString = nil;
     self.xmlNamespace = nil;
     self.httpTimeoutForeground = 0;
     self.httpTimeoutBackground = 0;
@@ -796,9 +804,9 @@
 
 - (void)startConnectionForSendData:(NSData *)sendData {
     
-    if (self.apiUrlString) {
+    if (self.socketUrlString) {
         
-        NSURL *requestURL = [NSURL URLWithString:self.apiUrlString];
+        NSURL *requestURL = [NSURL URLWithString:self.socketUrlString];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
         
         request = [[self.authDelegate authenticateRequest:request] mutableCopy];
@@ -853,7 +861,7 @@
         
         self.errorOccured = NO;
         
-        NSURL *newsURL = [[NSURL URLWithString:self.apiUrlString] URLByAppendingPathComponent:@"stc.news"];
+        NSURL *newsURL = [[NSURL URLWithString:self.socketUrlString] URLByAppendingPathComponent:@"stc.news"];
         NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
         
         request.timeoutInterval = [self timeout];
@@ -1115,7 +1123,7 @@
 
 - (NSString *)entityNameForURLString:(NSString *)urlString {
     
-    if ([urlString isEqualToString:self.apiUrlString]) {
+    if ([urlString isEqualToString:self.socketUrlString]) {
         
         return SEND_DATA_CONNECTION;
         
