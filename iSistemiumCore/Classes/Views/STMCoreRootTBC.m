@@ -23,7 +23,6 @@
 
 #import "STMMessageController.h"
 
-#import <Crashlytics/Crashlytics.h>
 #import "STMCoreAppDelegate.h"
 
 #import "STMSocketController.h"
@@ -774,7 +773,9 @@
 
     NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([viewController class])];
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
-
+    
+//    [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate testCrash];
+    
 }
 
 

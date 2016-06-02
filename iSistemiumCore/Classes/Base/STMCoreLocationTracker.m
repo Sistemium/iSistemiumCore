@@ -410,46 +410,46 @@
 
     CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
     
-        if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
-            
-            [[self.session logger] saveLogMessageWithText:@"location tracking is not permitted" type:@"error"];
-            
-            completionHandler(NO);
-            
-        } else if (status == kCLAuthorizationStatusNotDetermined) {
-            
-            float systemVersion = SYSTEM_VERSION;
+    if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
+        
+        [[self.session logger] saveLogMessageWithText:@"location tracking is not permitted" type:@"error"];
+        
+        completionHandler(NO);
+        
+    } else if (status == kCLAuthorizationStatusNotDetermined) {
+        
+        float systemVersion = SYSTEM_VERSION;
 
-            if (systemVersion >= 8.0) {
+        if (systemVersion >= 8.0) {
 
-                if ([self.requestLocationServiceAuthorization isEqualToString:@"requestWhenInUseAuthorization"]) {
-                    
-                    [self.requestManager requestWhenInUseAuthorization];
-                    
-                } else if ([self.requestLocationServiceAuthorization isEqualToString:@"requestAlwaysAuthorization"]) {
-                    
-                    [self.requestManager requestAlwaysAuthorization];
-                    
-                } else {
-                    
-                    NSString *logMessage = [NSString stringWithFormat:@"requestLocationServiceAuthorization wrong value: %@", self.requestLocationServiceAuthorization];
-                    [[self.session logger] saveLogMessageWithText:logMessage type:@"error"];
-                    
-                }
+            if ([self.requestLocationServiceAuthorization isEqualToString:@"requestWhenInUseAuthorization"]) {
                 
-            } else if (systemVersion >= 2.0 && systemVersion < 8.0) {
+                [self.requestManager requestWhenInUseAuthorization];
                 
-                [self.requestManager startUpdatingLocation];
+            } else if ([self.requestLocationServiceAuthorization isEqualToString:@"requestAlwaysAuthorization"]) {
+                
+                [self.requestManager requestAlwaysAuthorization];
+                
+            } else {
+                
+                NSString *logMessage = [NSString stringWithFormat:@"requestLocationServiceAuthorization wrong value: %@", self.requestLocationServiceAuthorization];
+                [[self.session logger] saveLogMessageWithText:logMessage type:@"error"];
                 
             }
             
-            completionHandler(NO);
-
-        } else {
-
-            completionHandler(YES);
+        } else if (systemVersion >= 2.0 && systemVersion < 8.0) {
+            
+            [self.requestManager startUpdatingLocation];
             
         }
+        
+        completionHandler(NO);
+
+    } else {
+
+        completionHandler(YES);
+        
+    }
 
 }
 
