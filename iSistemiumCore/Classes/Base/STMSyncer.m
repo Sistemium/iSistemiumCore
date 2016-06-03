@@ -1072,50 +1072,36 @@
 - (void)socketReceiveJSDataAck:(NSArray *)data {
 
     NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+    if (!response) {
+        [self socketReceiveJSDataAckError:@"ERROR: response contain no dictionary"]; return;
+    }
     
-    if (response) {
-
-        NSString *errorString = response[@"error"];
+    NSString *errorString = response[@"error"];
+    if (errorString) {
+        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"ERROR: %@", errorString]]; return;
+    }
+    
+    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+    if (!responseData) {
+        [self socketReceiveJSDataAckError:@"ERROR: response data is not an array"]; return;
+    }
+    
+    NSString *resource = response[@"resource"];
+    if (!resource) {
+        [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"]; return;
+    }
+    
+    NSString *entityName = [self entityNameForURLString:resource];
+    NSString *offset = response[@"offset"];
+    
+    if (offset) {
         
-        if (!errorString) {
-            
-            NSArray *data = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-            
-            if (data) {
-                
-                NSString *offset = response[@"offset"];
-                NSString *resource = response[@"resource"];
-                
-                if (resource) {
-                    
-                    NSString *entityName = [self entityNameForURLString:resource];
-                    
-                    if (offset) {
-                        
-                        if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
-                        
-                        [self parseSocketResponseData:data forEntityName:entityName];
-
-                    } else {
-                        
-                        [self receiveNoContentStatusForEntityWithName:entityName];
-                        
-                    }
-                    
-                } else {
-                    [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"];
-                }
-                
-            } else {
-                [self socketReceiveJSDataAckError:@"ERROR: response data is not an array"];
-            }
-            
-        } else {
-            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"ERROR: %@", errorString]];
-        }
+        if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+        
+        [self parseSocketResponseData:data forEntityName:entityName];
 
     } else {
-        [self socketReceiveJSDataAckError:@"ERROR: response contain no dictionary"];
+        [self receiveNoContentStatusForEntityWithName:entityName];
     }
 
 }
