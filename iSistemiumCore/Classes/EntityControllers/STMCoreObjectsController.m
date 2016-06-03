@@ -323,13 +323,11 @@
 
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    NSDictionary *properties = dictionary[@"properties"];
-    
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
     if ([dataModelEntityNames containsObject:entityName]) {
         
-        NSString *xid = dictionary[@"xid"];
+        NSString *xid = dictionary[@"id"];
         NSData *xidData = [STMFunctions xidDataFromXidString:xid];
         
         STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
@@ -344,7 +342,7 @@
                 
             } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
                 
-                NSString *internalName = properties[@"name"];
+                NSString *internalName = dictionary[@"name"];
                 object = [STMEntityController entityWithName:internalName];
                 
             }
@@ -356,7 +354,7 @@
             if (![self isWaitingToSyncForObject:object]) {
                 
                 [object setValue:@NO forKey:@"isFantom"];
-                [self processingOfObject:object withEntityName:entityName fillWithValues:properties];
+                [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
                 
             }
             
@@ -460,10 +458,6 @@
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
     
-// time checking
-//    NSDate *start = [NSDate date];
-// -------------
-    
     NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
     
     STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
@@ -473,7 +467,7 @@
         
         id value = properties[key];
         
-        if (value) {
+        if (value && ![value isKindOfClass:[NSNull class]]) {
             
             value = [self typeConversionForValue:value key:key entityAttributes:entityAttributes];
             
@@ -512,10 +506,6 @@
     [object setValue:[NSDate date] forKey:@"lts"];
 
     [self postprocessingForObject:object withEntityName:entityName];
-
-// time checking
-//    [[self sharedController].timesDic[@"4"] addObject:@([start timeIntervalSinceNow])];
-// -------------
     
     if ([[self sharedController].entitiesToSubscribe.allKeys containsObject:entityName]) {
         if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
@@ -555,62 +545,50 @@
     
     for (NSString *relationship in [ownObjectRelationships allKeys]) {
         
-        if ([properties[relationship] isKindOfClass:[NSDictionary class]]) {
+        NSString *relationshipId = [relationship stringByAppendingString:@"Id"];
+        
+        NSString *destinationObjectXid = [properties[relationshipId] isKindOfClass:[NSNull class]] ? nil : properties[relationshipId];
+        
+        if (destinationObjectXid) {
             
-            NSDictionary *relationshipDictionary = properties[relationship];
-            NSString *destinationObjectXid = relationshipDictionary[@"xid"];
+            NSManagedObject *destinationObject = [self objectForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
             
-            if (destinationObjectXid) {
+            if (![[object valueForKey:relationship] isEqual:destinationObject]) {
                 
-                NSManagedObject *destinationObject = [self objectForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
+                BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
                 
-                if (![[object valueForKey:relationship] isEqual:destinationObject]) {
-                    
-                    BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
-                    
-                    [object setValue:destinationObject forKey:relationship];
-                    
-                    if (!waitingForSync) {
-                        
-                        [destinationObject addObserver:[self sharedController]
-                                            forKeyPath:@"deviceTs"
-                                               options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
-                                               context:nil];
-                        
-                    }
-                    
-                }
+                [object setValue:destinationObject forKey:relationship];
                 
-            } else {
-                
-                NSManagedObject *destinationObject = [object valueForKey:relationship];
-                
-                if (destinationObject) {
+                if (!waitingForSync) {
                     
-                    BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
-                    
-                    [object setValue:nil forKey:relationship];
-                    
-                    if (!waitingForSync) {
-                        
-                        [destinationObject addObserver:[self sharedController]
-                                            forKeyPath:@"deviceTs"
-                                               options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
-                                               context:nil];
-                        
-                    }
+                    [destinationObject addObserver:[self sharedController]
+                                        forKeyPath:@"deviceTs"
+                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
+                                           context:nil];
                     
                 }
                 
             }
-
+            
         } else {
             
-            if (properties[relationship]) {
+            NSManagedObject *destinationObject = [object valueForKey:relationship];
+            
+            if (destinationObject) {
                 
-                NSString *logMessage = [NSString stringWithFormat:@"not correct %@ relationship dictionary for %@ %@", relationship, entityName, [object valueForKey:@"xid"]];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
+                BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
+                
+                [object setValue:nil forKey:relationship];
+                
+                if (!waitingForSync) {
+                    
+                    [destinationObject addObserver:[self sharedController]
+                                        forKeyPath:@"deviceTs"
+                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
+                                           context:nil];
+                    
+                }
+                
             }
             
         }
