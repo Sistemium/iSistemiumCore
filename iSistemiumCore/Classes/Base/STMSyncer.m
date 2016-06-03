@@ -1098,7 +1098,7 @@
         
         if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
         
-        [self parseSocketResponseData:data forEntityName:entityName];
+        [self parseSocketResponseData:responseData forEntityName:entityName];
 
     } else {
         [self receiveNoContentStatusForEntityWithName:entityName];
