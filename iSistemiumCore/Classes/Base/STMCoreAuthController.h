@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, STMAuthState) {
 @property (nonatomic, strong) NSDate *lastAuth;
 @property (nonatomic, strong) NSArray *stcTabs;
 @property (nonatomic, strong) NSString *iSisDB;
+@property (nonatomic, strong) NSString *accountOrg;
 
 @property (nonatomic) STMAuthState controllerState;
 

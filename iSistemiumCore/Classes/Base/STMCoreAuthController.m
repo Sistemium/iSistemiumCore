@@ -825,21 +825,31 @@
             
         case STMAuthRequestRoles: {
             
-            self.iSisDB = responseJSON[@"roles"][@"iSisDB"];
+            NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
             
-            id stcTabs = responseJSON[@"roles"][@"stcTabs"];
-            
-            if ([stcTabs isKindOfClass:[NSArray class]]) {
+            if (roles) {
                 
-                self.stcTabs = stcTabs;
+                self.accountOrg = roles[@"org"];
+                self.iSisDB = roles[@"iSisDB"];
+                id stcTabs = roles[@"stcTabs"];
                 
-            } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
-                
-                self.stcTabs = @[stcTabs];
+                if ([stcTabs isKindOfClass:[NSArray class]]) {
+                    
+                    self.stcTabs = stcTabs;
+                    
+                } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
+                    
+                    self.stcTabs = @[stcTabs];
+                    
+                } else {
+                    
+                    [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary" type:@"error"];
+                    
+                }
                 
             } else {
                 
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary" type:@"error"];
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary" type:@"error"];
                 
             }
             
