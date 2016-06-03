@@ -927,14 +927,14 @@
                     
                 } else {
                     
-                    NSLog(@"have no url for %@", entityName);
+                    NSLog(@"    %@: have no url", entityName);
                     [self entityCountDecrease];
                     
                 }
                 
             } else {
 
-                NSLog(@"local data model have no %@ entity", entityName);
+                NSLog(@"    %@: do not exist in local data model", entityName);
                 [self entityCountDecrease];
                 
             }
@@ -1082,22 +1082,23 @@
         [self socketReceiveJSDataAckError:@"ERROR: response contain no dictionary"]; return;
     }
     
+    NSString *resource = response[@"resource"];
+    NSString *entityName = [self entityNameForURLString:resource];
+
     NSString *errorString = response[@"error"];
     if (errorString) {
-        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"ERROR: %@", errorString]]; return;
+        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString]]; return;
     }
     
-    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-    if (!responseData) {
-        [self socketReceiveJSDataAckError:@"ERROR: response data is not an array"]; return;
-    }
-    
-    NSString *resource = response[@"resource"];
     if (!resource) {
         [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"]; return;
     }
+
+    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+    if (!responseData) {
+        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: response data is not an array", entityName]]; return;
+    }
     
-    NSString *entityName = [self entityNameForURLString:resource];
     NSString *offset = response[@"offset"];
     
     if (responseData.count > 0) {
