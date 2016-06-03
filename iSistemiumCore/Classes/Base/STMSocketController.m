@@ -408,19 +408,26 @@
 
 + (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
 	
-    NSString *accountOrg = [STMCoreAuthController authController].accountOrg;
-    NSString *resourceString = [accountOrg stringByAppendingString:@"/news"];
+    NSDictionary *params = @{@"deviceUUID"  : [STMFunctions UUIDStringFromUUIDData:[STMClientDataController deviceUUID]]/*,
+                             @"agentBuild"  : BUILD_VERSION*/};
     
-    NSDictionary *params = @{@"deviceUUID"  : [STMFunctions UUIDStringFromUUIDData:[STMClientDataController deviceUUID]],
-                             @"agentBuild"  : BUILD_VERSION};
-    
-    [self startReceiveDataFromResource:resourceString
+    [self startReceiveDataFromResource:[self newsResourceString]
                               withETag:nil
                             fetchLimit:fetchLimit
                             andTimeout:timeout
                                 params:params];
 
 }
+
++ (NSString *)newsResourceString {
+	
+    NSString *accountOrg = [STMCoreAuthController authController].accountOrg;
+    NSString *resourceString = [accountOrg stringByAppendingString:@"/news"];
+
+    return resourceString;
+    
+}
+
 
 
 #pragma mark - socket events receiveing

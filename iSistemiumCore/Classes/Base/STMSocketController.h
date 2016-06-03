@@ -53,7 +53,10 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
                           fetchLimit:(NSInteger)fetchLimit
                           andTimeout:(NSTimeInterval)timeout;
 
-+ (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout;
++ (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit
+                     andTimeout:(NSTimeInterval)timeout;
+
++ (NSString *)newsResourceString;
 
 
 @end

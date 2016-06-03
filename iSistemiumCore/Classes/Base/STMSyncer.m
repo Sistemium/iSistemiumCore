@@ -736,17 +736,6 @@
         
 #warning do not forget to check self.fetchResult usage
         
-//        NSURL *newsURL = [[NSURL URLWithString:self.socketUrlString] URLByAppendingPathComponent:@"stc.news"];
-//        NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
-//        
-//        request.timeoutInterval = [self timeout];
-//        request.HTTPShouldHandleCookies = NO;
-//        [request setHTTPMethod:@"GET"];
-//        
-//        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
-//
-//        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-//            
 //            if (!connectionError) {
 //                
 //                NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
@@ -784,8 +773,6 @@
 //                [self receivingDidFinish];
 //                
 //            }
-//            
-//        }];
         
     } else {
         
@@ -793,58 +780,6 @@
         
     }
     
-    
-}
-
-- (void)parseNewsData:(NSData *)newsData {
-    
-    if (newsData) {
-        
-        NSError *error;
-        NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:newsData options:NSJSONReadingMutableContainers error:&error];
-        
-        if (!error) {
-            
-//            NSLog(@"responseJSON %@", responseJSON);
-
-            NSArray *entitiesNames = [responseJSON valueForKeyPath:@"data.@unionOfObjects.properties.name"];
-//            NSLog(@"entitiesNames %@", entitiesNames);
-            NSArray *objectsCount = [responseJSON valueForKeyPath:@"data.@unionOfObjects.properties.cnt"];
-            
-            NSDictionary *news = [NSDictionary dictionaryWithObjects:objectsCount forKeys:entitiesNames];
-
-            for (NSString *entityName in entitiesNames) {
-                NSLog(@"    news: STM%@ — %@ objects", entityName, news[entityName]);
-            }
-            
-            NSMutableArray *tempArray = [NSMutableArray array];
-            
-            for (NSString *entityName in entitiesNames) {
-                [tempArray addObject:[ISISTEMIUM_PREFIX stringByAppendingString:entityName]];
-            }
-            
-            self.entitySyncNames = tempArray;
-            self.entityCount = tempArray.count;
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
-                                                                object:self
-                                                              userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
-            
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-
-        } else {
-            
-            NSLog(@"parse news json error: %@", error.localizedDescription);
-            [self receivingDidFinish];
-            
-        }
-        
-    } else {
-        
-        NSLog(@"empty news data received");
-        [self receivingDidFinish];
-        
-    }
     
 }
 
@@ -944,44 +879,6 @@
     }
     
 }
-
-//- (void)startReceiveDataFromURL:(NSURL *)requestURL withETag:(NSString *)eTag {
-//    
-//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
-//    
-//    request = [[self.authDelegate authenticateRequest:request] mutableCopy];
-//    
-//    if ([request valueForHTTPHeaderField:@"Authorization"]) {
-//        
-//        request.timeoutInterval = [self timeout];
-//        request.HTTPShouldHandleCookies = NO;
-//        [request setHTTPMethod:@"GET"];
-//        
-//        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
-//        [request addValue:eTag forHTTPHeaderField:@"If-none-match"];
-//
-//        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
-//        
-//        if (!connection) {
-//            
-//            [self.session.logger saveLogMessageWithText:@"Syncer: no connection" type:@"error"];
-//            self.syncing = NO;
-//            self.fetchResult = UIBackgroundFetchResultFailed;
-//
-//            self.syncerState = STMSyncerIdle;
-//            
-//        } else {
-//            
-//        }
-//        
-//    } else {
-//        
-//        [self.session.logger saveLogMessageWithText:@"Syncer: no authorization header" type:@"error"];
-//        [self notAuthorized];
-//        
-//    }
-//    
-//}
 
 - (void)notAuthorized {
     
@@ -1099,28 +996,43 @@
         [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: response data is not an array", entityName]]; return;
     }
     
-    NSString *offset = response[@"offset"];
-    
-    if (responseData.count > 0) {
+    if (entityName) {
         
-        if (offset) {
-        
-            if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+        if (responseData.count > 0) {
             
-            [self parseSocketResponseData:responseData forEntityName:entityName];
-
+            if (entityName) {
+                
+                NSString *offset = response[@"offset"];
+                
+                if (offset) {
+                    
+                    if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+                    [self parseSocketResponseData:responseData forEntityName:entityName];
+                    
+                } else {
+                    
+                    NSLog(@"    %@: receive data w/o offset", entityName);
+                    [self receiveNoContentStatusForEntityWithName:entityName];
+                    
+                }
+                
+            }
+            
         } else {
             
-            NSLog(@"    %@: receive data w/o offset", entityName);
+            NSLog(@"    %@: have no new data", entityName);
             [self receiveNoContentStatusForEntityWithName:entityName];
             
         }
-        
+
     } else {
 
-        NSLog(@"    %@: have no new data", entityName);
-        [self receiveNoContentStatusForEntityWithName:entityName];
-        
+        if ([resource isEqualToString:[STMSocketController newsResourceString]]) {
+            [self parseNewsData:responseData];
+        } else {
+            NSLog(@"ERROR: unknown response: %@", data);
+        }
+
     }
 
 }
@@ -1174,6 +1086,43 @@
         
     }
 
+}
+
+- (void)parseNewsData:(NSArray *)newsData {
+    
+    if (newsData.count > 0) {
+        
+        NSArray *entitiesNames = [newsData valueForKeyPath:@"@unionOfObjects.name"];
+        NSArray *objectsCount = [newsData valueForKeyPath:@"@unionOfObjects.cnt"];
+        
+        NSDictionary *news = [NSDictionary dictionaryWithObjects:objectsCount forKeys:entitiesNames];
+        
+        for (NSString *entityName in entitiesNames) {
+            NSLog(@"    news: STM%@ — %@ objects", entityName, news[entityName]);
+        }
+        
+        NSMutableArray *tempArray = [NSMutableArray array];
+        
+        for (NSString *entityName in entitiesNames) {
+            [tempArray addObject:[ISISTEMIUM_PREFIX stringByAppendingString:entityName]];
+        }
+        
+        self.entitySyncNames = tempArray;
+        self.entityCount = tempArray.count;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
+                                                            object:self
+                                                          userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
+        
+        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+
+    } else {
+        
+        NSLog(@"empty news data received");
+        [self receivingDidFinish];
+        
+    }
+    
 }
 
 
