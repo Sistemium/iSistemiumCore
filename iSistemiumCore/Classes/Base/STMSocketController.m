@@ -381,15 +381,45 @@
 
 + (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
 	
-    NSDictionary *value = @{@"method"   : @"findAll",
-                            @"resource" : resourceString,
-                            @"options"  : @{@"offset"   : eTag,
-                                            @"pageSize" : @(fetchLimit)
-                                            }
-                            };
+    [self startReceiveDataFromResource:resourceString
+                              withETag:eTag
+                            fetchLimit:fetchLimit
+                            andTimeout:timeout
+                                params:nil];
+    
+}
+
++ (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout params:(NSDictionary *)params {
+    
+    NSMutableDictionary *value = @{@"method"   : @"findAll",
+                                   @"resource" : resourceString
+                                   }.mutableCopy;
+    
+    NSMutableDictionary *options = @{@"pageSize" : @(fetchLimit)}.mutableCopy;
+    if (eTag) options[@"offset"] = eTag;
+    
+    value[@"options"] = options;
+
+    if (params) value[@"params"] = params;
     
     [self sendEvent:STMSocketEventJSData withValue:value];
+
+}
+
++ (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
+	
+    NSString *accountOrg = [STMCoreAuthController authController].accountOrg;
+    NSString *resourceString = [accountOrg stringByAppendingString:@"/news"];
     
+    NSDictionary *params = @{@"deviceUUID"  : [STMFunctions UUIDStringFromUUIDData:[STMClientDataController deviceUUID]],
+                             @"agentBuild"  : BUILD_VERSION};
+    
+    [self startReceiveDataFromResource:resourceString
+                              withETag:nil
+                            fetchLimit:fetchLimit
+                            andTimeout:timeout
+                                params:params];
+
 }
 
 
@@ -854,26 +884,28 @@
     STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     
     if (currentSession.status == STMSessionRunning) {
+
+// recconnect socket if socketUrl setting did change
         
-        NSString *key = @"socketUrl";
-        
-        if ([notification.userInfo.allKeys containsObject:key]) {
-            
-            self.socketUrl = nil;
-            
-            if (self.isRunning) {
-                
-                if (![self.socket.socketURL isEqualToString:self.socketUrl]) {
-                    [self reconnectSocket];
-                }
-                
-            } else {
-                
-                [STMSocketController startSocket];
-                
-            }
-            
-        }
+//        NSString *key = @"socketUrl";
+//        
+//        if ([notification.userInfo.allKeys containsObject:key]) {
+//            
+//            self.socketUrl = nil;
+//            
+//            if (self.isRunning) {
+//                
+//                if (![self.socket.socketURL isEqualToString:self.socketUrl]) {
+//                    [self reconnectSocket];
+//                }
+//                
+//            } else {
+//                
+//                [STMSocketController startSocket];
+//                
+//            }
+//            
+//        }
 
     }
     

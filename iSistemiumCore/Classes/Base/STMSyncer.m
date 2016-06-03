@@ -732,56 +732,60 @@
         
         self.errorOccured = NO;
         
-        NSURL *newsURL = [[NSURL URLWithString:self.socketUrlString] URLByAppendingPathComponent:@"stc.news"];
-        NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
+        [STMSocketController checkNewsWithFetchLimit:self.fetchLimit andTimeout:[self timeout]];
         
-        request.timeoutInterval = [self timeout];
-        request.HTTPShouldHandleCookies = NO;
-        [request setHTTPMethod:@"GET"];
+#warning do not forget to check self.fetchResult usage
         
-        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
-
-        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-            
-            if (!connectionError) {
-                
-                NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                
-                NSInteger statusCode = httpResponse.statusCode;
-                NSString *stringForStatusCode = [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
-                
-                switch (statusCode) {
-                        
-                    case 200:
-                        self.fetchResult = UIBackgroundFetchResultNewData;
-                        [self parseNewsData:data];
-                        break;
-                        
-                    case 204:
-                        NSLog(@"    news: 204 %@", stringForStatusCode);
-                        self.fetchResult = UIBackgroundFetchResultNoData;
-                        [self receivingDidFinish];
-                        break;
-                        
-                    default:
-                        NSLog(@"    news statusCode: %d %@", statusCode, stringForStatusCode);
-                        self.fetchResult = UIBackgroundFetchResultFailed;
-                        [self receivingDidFinish];
-                        break;
-                        
-                }
-                
-            } else {
-                
-                NSLog(@"connectionError %@", connectionError.localizedDescription);
-                self.errorOccured = YES;
-                self.fetchResult = UIBackgroundFetchResultFailed;
-
-                [self receivingDidFinish];
-                
-            }
-            
-        }];
+//        NSURL *newsURL = [[NSURL URLWithString:self.socketUrlString] URLByAppendingPathComponent:@"stc.news"];
+//        NSMutableURLRequest *request = [[[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:newsURL]] mutableCopy];
+//        
+//        request.timeoutInterval = [self timeout];
+//        request.HTTPShouldHandleCookies = NO;
+//        [request setHTTPMethod:@"GET"];
+//        
+//        [request addValue:[NSString stringWithFormat:@"%d", self.fetchLimit] forHTTPHeaderField:@"page-size"];
+//
+//        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+//            
+//            if (!connectionError) {
+//                
+//                NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+//                
+//                NSInteger statusCode = httpResponse.statusCode;
+//                NSString *stringForStatusCode = [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
+//                
+//                switch (statusCode) {
+//                        
+//                    case 200:
+//                        self.fetchResult = UIBackgroundFetchResultNewData;
+//                        [self parseNewsData:data];
+//                        break;
+//                        
+//                    case 204:
+//                        NSLog(@"    news: 204 %@", stringForStatusCode);
+//                        self.fetchResult = UIBackgroundFetchResultNoData;
+//                        [self receivingDidFinish];
+//                        break;
+//                        
+//                    default:
+//                        NSLog(@"    news statusCode: %d %@", statusCode, stringForStatusCode);
+//                        self.fetchResult = UIBackgroundFetchResultFailed;
+//                        [self receivingDidFinish];
+//                        break;
+//                        
+//                }
+//                
+//            } else {
+//                
+//                NSLog(@"connectionError %@", connectionError.localizedDescription);
+//                self.errorOccured = YES;
+//                self.fetchResult = UIBackgroundFetchResultFailed;
+//
+//                [self receivingDidFinish];
+//                
+//            }
+//            
+//        }];
         
     } else {
         
@@ -822,7 +826,9 @@
             self.entitySyncNames = tempArray;
             self.entityCount = tempArray.count;
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects" object:self userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
+                                                                object:self
+                                                              userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
             
             [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
 
@@ -1094,14 +1100,26 @@
     NSString *entityName = [self entityNameForURLString:resource];
     NSString *offset = response[@"offset"];
     
-    if (offset) {
+    if (responseData.count > 0) {
         
-        if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+        if (offset) {
         
-        [self parseSocketResponseData:responseData forEntityName:entityName];
+            if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+            
+            [self parseSocketResponseData:responseData forEntityName:entityName];
 
+        } else {
+            
+            NSLog(@"    %@: receive data w/o offset", entityName);
+            [self receiveNoContentStatusForEntityWithName:entityName];
+            
+        }
+        
     } else {
+
+        NSLog(@"    %@: have no new data", entityName);
         [self receiveNoContentStatusForEntityWithName:entityName];
+        
     }
 
 }
