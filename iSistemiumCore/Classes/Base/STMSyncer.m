@@ -1234,5 +1234,12 @@
     
 }
 
+- (void)socketLostConnection {
+    
+    self.syncing = NO;
+    self.syncerState = STMSyncerIdle;
+
+}
+
 
 @end

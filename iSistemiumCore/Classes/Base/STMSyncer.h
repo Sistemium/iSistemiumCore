@@ -39,5 +39,7 @@
 - (void)socketReceiveAuthorization;
 - (void)socketReceiveJSDataAck:(NSArray *)data;
 
+- (void)socketLostConnection;
+
 
 @end

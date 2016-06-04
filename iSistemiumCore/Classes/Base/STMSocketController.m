@@ -552,6 +552,8 @@
     
     NSLog(@"disconnectCallback socket %@", socket);
     
+    [[self syncer] socketLostConnection];
+    
     if ([self sharedInstance].isReconnecting) {
         
         [self sharedInstance].isReconnecting = NO;
@@ -564,6 +566,8 @@
 + (void)reconnectCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
     
     NSLog(@"reconnectCallback socket %@", socket);
+    
+    [[self syncer] socketLostConnection];
 
 }
 
