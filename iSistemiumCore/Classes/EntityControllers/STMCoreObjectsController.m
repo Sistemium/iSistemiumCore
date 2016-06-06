@@ -2356,7 +2356,7 @@
     
 }
 
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls {
     
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
@@ -2366,11 +2366,15 @@
     NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
     NSArray *ownRelationships = [self singleRelationshipsForEntityName:object.entity.name].allKeys;
     
-    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:YES]];
-    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:YES]];
+    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls]];
+    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
     return propertiesDictionary;
-    
+
+}
+
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
+    return [self dictionaryForJSWithObject:object withNulls:YES];
 }
 
 
@@ -2568,6 +2572,9 @@
     return nil;
     
 }
+
+
+#pragma mark - old way to create object's properties dictionary
 
 + (NSDictionary *)dictionaryForObject:(NSManagedObject *)object {
     

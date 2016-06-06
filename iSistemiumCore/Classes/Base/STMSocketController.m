@@ -652,17 +652,26 @@
 
 + (void)sendObject:(STMDatum *)object {
     
-    [self sendObjectDic:@{}];
+    NSDictionary *stcEntities = [STMEntityController stcEntities];
+    STMEntity *entity = stcEntities[object.entity.name];
+    NSString *resource = entity.url;
+    NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
+    
+    [self sendObjectDic:objectDic resource:resource];
     
 }
 
-+ (void)sendObjectDic:(NSDictionary *)objectDic {
++ (void)sendObjectDic:(NSDictionary *)objectDic resource:(NSString *)resource {
     
-    NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
-                            @"resource" : @"",
-                            @"attrs"    : objectDic};
+    if (objectDic && resource) {
+        
+        NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
+                                @"resource" : resource,
+                                @"attrs"    : objectDic};
+        
+        [self sendEvent:STMSocketEventJSData withValue:value];
 
-    [self sendEvent:STMSocketEventJSData withValue:value];
+    }
     
 }
 

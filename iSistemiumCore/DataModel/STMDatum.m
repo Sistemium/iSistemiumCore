@@ -298,19 +298,21 @@
         if (![relationshipDescription isToMany]) {
             
             STMDatum *relationshipObject = [self valueForKey:key];
-            
+        
+            NSString *dictKey = [key stringByAppendingString:@"Id"];
+
             if (relationshipObject) {
                 
                 NSData *xidData = relationshipObject.xid;
                 
                 if (xidData.length != 0) {
-                    relationshipsDictionary[key] = [STMFunctions UUIDStringFromUUIDData:xidData];
+                    relationshipsDictionary[dictKey] = [STMFunctions UUIDStringFromUUIDData:xidData];
                 }
                 
             } else {
                 
                 if (withNulls) {
-                    relationshipsDictionary[key] = [NSNull null];
+                    relationshipsDictionary[dictKey] = [NSNull null];
                 }
 
             }
