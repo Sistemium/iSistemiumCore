@@ -397,7 +397,7 @@
 
 + (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout params:(NSDictionary *)params {
     
-    NSMutableDictionary *value = @{@"method"   : @"findAll",
+    NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
                                    @"resource" : resourceString
                                    }.mutableCopy;
     

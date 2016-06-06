@@ -996,6 +996,8 @@
         [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: response data is not an array", entityName]]; return;
     }
     
+#warning have to check method name to know is it receive or send ack
+    
     if (entityName) {
         
         if (responseData.count > 0) {

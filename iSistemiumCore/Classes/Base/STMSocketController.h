@@ -12,6 +12,12 @@
 #import "iSistemiumCore-Swift.h"
 
 
+static NSString *kSocketFindAllMethod = @"findAll";
+static NSString *kSocketFindMethod = @"find";
+static NSString *kSocketUpdateMethod = @"update";
+static NSString *kSocketDestroyMethod = @"destroy";
+
+
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventConnect,
     STMSocketEventDisconnect,
