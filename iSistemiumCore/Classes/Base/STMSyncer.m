@@ -995,28 +995,49 @@
     if (!responseData) {
         [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: response data is not an array", entityName]]; return;
     }
+
+    NSString *methodName = response[@"method"];
     
-#warning have to check method name to know is it receive or send ack
+    if ([methodName isEqualToString:kSocketFindAllMethod]) {
+        
+        [self parseFindAllAckData:data
+                     responseData:responseData
+                         resource:resource
+                       entityName:entityName
+                         response:response];
+
+    } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
+        
+        NSLog(@"update data %@", data);
+        
+    }
+    
+}
+
+- (void)socketReceiveJSDataAckError:(NSString *)errorString {
+    
+    NSLog(errorString);
+    [self entityCountDecrease];
+    
+}
+
+- (void)parseFindAllAckData:(NSArray *)data responseData:(NSArray *)responseData resource:(NSString *)resource entityName:(NSString *)entityName response:(NSDictionary *)response {
     
     if (entityName) {
         
         if (responseData.count > 0) {
             
-            if (entityName) {
+            NSString *offset = response[@"offset"];
+            
+            if (offset) {
                 
-                NSString *offset = response[@"offset"];
+                if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
+                [self parseSocketResponseData:responseData forEntityName:entityName];
                 
-                if (offset) {
-                    
-                    if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
-                    [self parseSocketResponseData:responseData forEntityName:entityName];
-                    
-                } else {
-                    
-                    NSLog(@"    %@: receive data w/o offset", entityName);
-                    [self receiveNoContentStatusForEntityWithName:entityName];
-                    
-                }
+            } else {
+                
+                NSLog(@"    %@: receive data w/o offset", entityName);
+                [self receiveNoContentStatusForEntityWithName:entityName];
                 
             }
             
@@ -1026,23 +1047,16 @@
             [self receiveNoContentStatusForEntityWithName:entityName];
             
         }
-
+        
     } else {
-
+        
         if ([resource isEqualToString:[STMSocketController newsResourceString]]) {
             [self parseNewsData:responseData];
         } else {
             NSLog(@"ERROR: unknown response: %@", data);
         }
-
+        
     }
-
-}
-
-- (void)socketReceiveJSDataAckError:(NSString *)errorString {
-    
-    NSLog(errorString);
-    [self entityCountDecrease];
     
 }
 
