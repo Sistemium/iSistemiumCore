@@ -8,8 +8,14 @@
 
 #import "STMCoreDataModel.h"
 
+#import "STMCoreAuthController.h"
+
 
 @implementation STMEntity
+
+- (NSString *)resource {
+    return (self.url) ? self.url : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, self.name];
+}
 
 - (void)willSave {
     

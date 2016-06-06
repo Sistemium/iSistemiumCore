@@ -388,6 +388,355 @@
     if (xid) [[self sharedInstance].syncDataDictionary removeObjectForKey:xid];
 }
 
++ (void)sendObjectsFromArray:(NSArray <STMDatum *> *)syncDataArray {
+    
+    NSMutableArray *syncArray = syncDataArray.mutableCopy;
+    
+    for (STMDatum *object in syncDataArray) {
+        [self checkObject:object forSendingWithSyncArray:syncArray];
+    }
+    
+    if (syncArray.count > 0) {
+        [self sendObjectsFromArray:syncArray];
+    }
+    
+}
+
++ (void)checkObject:(STMDatum *)object forSendingWithSyncArray:(NSMutableArray *)syncArray {
+    
+    NSEntityDescription *objectEntity = object.entity;
+    NSString *entityName = objectEntity.name;
+    NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
+    
+    BOOL safelyToSend = YES;
+    
+    for (NSString *relName in relationships.allKeys) {
+        
+        STMDatum *relObject = [object valueForKey:relName];
+        if (![syncArray containsObject:relObject]) continue;
+        
+        NSEntityDescription *relObjectEntity = relObject.entity;
+        NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
+        
+        for (NSRelationshipDescription *relDesc in checkingRelationships) {
+            
+            if (!relDesc.isToMany) continue;
+            if (![[relObject valueForKey:relDesc.name] containsObject:object]) continue;
+            
+            [self checkObject:relObject forSendingWithSyncArray:syncArray];
+            safelyToSend = NO;
+            break;
+            
+        }
+        
+    }
+    
+    if (safelyToSend) {
+        
+        [syncArray removeObject:object];
+        [self sendObject:object];
+        
+    }
+    
+}
+
++ (void)sendObject:(STMDatum *)object {
+    
+    NSDictionary *stcEntities = [STMEntityController stcEntities];
+    STMEntity *entity = stcEntities[object.entity.name];
+    NSString *resource = [entity resource];
+    NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
+    
+    [self sendObjectDic:objectDic resource:resource];
+    
+}
+
++ (void)sendObjectDic:(NSDictionary *)objectDic resource:(NSString *)resource {
+    
+    if (!objectDic) objectDic = @{};
+    if (!resource) resource = @"";
+    
+    NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
+                            @"resource" : resource,
+                            @"attrs"    : objectDic};
+    
+    [self sendEvent:STMSocketEventJSData withValue:value];
+    
+}
+
+#pragma mark - socket events sending
+
++ (NSString *)primaryKeyForEvent:(STMSocketEvent)event {
+    
+    NSString *primaryKey = @"url";
+    
+    switch (event) {
+        case STMSocketEventConnect:
+        case STMSocketEventStatusChange:
+        case STMSocketEventInfo:
+        case STMSocketEventAuthorization:
+        case STMSocketEventRemoteCommands:
+            break;
+        case STMSocketEventData: {
+            primaryKey = @"data";
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    return primaryKey;
+    
+}
+
++ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+    // Log
+    // ----------
+    
+#ifdef DEBUG
+    
+    if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
+        
+        NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
+        
+        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
+        
+    } else {
+        
+        NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
+        
+    }
+#endif
+    
+    // ----------
+    // End of log
+    
+    if (socket.status == SocketIOClientStatusConnected) {
+        
+        if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
+            
+            NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
+            
+            NSDictionary *dataDic = (NSDictionary *)value;
+            
+            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+                [self receiveJSDataEventAckWithData:data];
+            });
+            
+        } else {
+            
+            NSString *primaryKey = [self primaryKeyForEvent:event];
+            
+            if (value && primaryKey) {
+                
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
+                
+                if (dataDic) {
+                    
+                    if (socket.status != SocketIOClientStatusConnected) {
+                        
+                    } else {
+                        
+                        //                NSLog(@"%@ ___ emit: %@, data: %@", socket, eventStringValue, dataDic);
+                        
+                        if (event == STMSocketEventData) {
+                            
+                            [self sharedInstance].isSendingData = YES;
+                            [self sharedInstance].sendingDate = [NSDate date];
+                            
+                            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+                                [self receiveEventDataAckWithData:data];
+                            });
+                            
+                        } else {
+                            [socket emit:eventStringValue withItems:@[dataDic]];
+                        }
+                        
+                    }
+                    
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", socket, eventStringValue);
+                }
+                
+            }
+            
+        }
+        
+    } else {
+        
+        NSLog(@"socket not connected");
+        
+        if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
+            [self sendFinishedWithError:@"socket not connected"];
+        }
+        
+    }
+    
+}
+
++ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withStringValue:(NSString *)stringValue {
+    [self socket:socket sendEvent:event withValue:stringValue];
+}
+
++ (void)socket:(SocketIOClient *)socket receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
+    
+    NSLog(@"%@ ___ receive Ack, event: %@, data: %@", socket, event, data);
+    
+    STMSocketEvent socketEvent = [self eventForString:event];
+    
+    if (socketEvent == STMSocketEventAuthorization) {
+        [self socket:socket receiveAuthorizationAckWithData:data];
+    }
+    
+}
+
++ (void)socket:(SocketIOClient *)socket receiveAuthorizationAckWithData:(NSArray *)data {
+    
+    if (socket.status != SocketIOClientStatusConnected) {
+        return;
+    }
+    
+    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
+        
+        NSDictionary *dataDic = data.firstObject;
+        BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
+        
+        if (isAuthorized) {
+            
+            NSLog(@"socket authorized");
+            
+            [self sharedInstance].isAuthorized = YES;
+            [self sharedInstance].isSendingData = NO;
+            [[self syncer] socketReceiveAuthorization];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"socketAuthorizationSuccess" object:self];
+            
+            [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];
+            
+            if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
+                
+                if ([[STMCoreRootTBC sharedRootVC].selectedViewController class]) {
+                    
+                    Class _Nonnull rootVCClass = (Class _Nonnull)[[STMCoreRootTBC sharedRootVC].selectedViewController class];
+                    
+                    NSString *stringValue = [@"selectedViewController: " stringByAppendingString:NSStringFromClass(rootVCClass)];
+                    [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];
+                    
+                }
+                
+            }
+            
+        } else {
+            
+            NSLog(@"socket not authorized");
+            [self sharedInstance].isAuthorized = NO;
+            [[STMCoreAuthController authController] logout];
+            
+        }
+        
+    } else {
+        
+        NSLog(@"socket not authorized");
+        [self sharedInstance].isAuthorized = NO;
+        [[STMCoreAuthController authController] logout];
+        
+    }
+    
+}
+
++ (void)receiveJSDataEventAckWithData:(NSArray *)data {
+    
+    //    NSLog(@"receiveJSDataEventAckWithData %@", data);
+    
+    [[self syncer] socketReceiveJSDataAck:data];
+    
+}
+
++ (void)receiveEventDataAckWithData:(NSArray *)data {
+    
+    NSDictionary *response = data.firstObject;
+    
+    NSString *errorString = nil;
+    
+    if ([response isKindOfClass:[NSDictionary class]]) {
+        
+        errorString = response[@"error"];
+        
+    } else {
+        
+        errorString = @"response not a dictionary";
+        NSLog(@"error: %@", data);
+        
+    }
+    
+    if (errorString) {
+        
+        NSLog(@"error: %@", errorString);
+        
+        [self sendEvent:STMSocketEventInfo withStringValue:errorString];
+        
+        if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
+            [[STMCoreAuthController authController] logout];
+        }
+        
+    } else {
+        
+        NSArray *dataArray = response[@"data"];
+        
+        for (NSDictionary *datum in dataArray) {
+            
+            [[self document].managedObjectContext performBlockAndWait:^{
+                [STMCoreObjectsController syncObject:datum];
+            }];
+            
+        }
+        
+    }
+    
+    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
+        [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
+    }];
+    
+}
+
++ (void)sendFinishedWithError:(NSString *)errorString {
+    
+    if (errorString) {
+        
+        [self sendingCleanupWithError:errorString];
+        
+    } else {
+        
+        if ([self haveToSyncObjects]) {
+            
+            [[self syncer] bunchOfObjectsSended];
+            
+        } else {
+            
+            [self sendingCleanupWithError:nil];
+            
+        }
+        
+    }
+    
+}
+
++ (void)sendingCleanupWithError:(NSString *)errorString {
+    
+    STMSocketController *sc = [self sharedInstance];
+    
+    sc.isSendingData = NO;
+    [[self syncer] sendFinishedWithError:errorString];
+    sc.syncDataDictionary = nil;
+    sc.sendingDate = nil;
+    
+}
+
 
 #pragma mark - receive
 
@@ -593,359 +942,6 @@
 
 + (void)jsDataCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
     NSLog(@"jsDataCallback socket %@ data %@", socket, data);
-}
-
-
-#pragma mark - send
-
-+ (void)sendObjectsFromArray:(NSArray <STMDatum *> *)syncDataArray {
-    
-    NSMutableArray *syncArray = syncDataArray.mutableCopy;
-    
-    for (STMDatum *object in syncDataArray) {
-        [self checkObject:object forSendingWithSyncArray:syncArray];
-    }
-    
-    if (syncArray.count > 0) {
-        [self sendObjectsFromArray:syncArray];
-    }
-
-}
-
-+ (void)checkObject:(STMDatum *)object forSendingWithSyncArray:(NSMutableArray *)syncArray {
-    
-    NSEntityDescription *objectEntity = object.entity;
-    NSString *entityName = objectEntity.name;
-    NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
-    
-    BOOL safelyToSend = YES;
-    
-    for (NSString *relName in relationships.allKeys) {
-        
-        STMDatum *relObject = [object valueForKey:relName];
-        if (![syncArray containsObject:relObject]) continue;
-
-        NSEntityDescription *relObjectEntity = relObject.entity;
-        NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
-        
-        for (NSRelationshipDescription *relDesc in checkingRelationships) {
-            
-            if (!relDesc.isToMany) continue;
-            if (![[relObject valueForKey:relDesc.name] containsObject:object]) continue;
-
-            [self checkObject:relObject forSendingWithSyncArray:syncArray];
-            safelyToSend = NO;
-            break;
-            
-        }
-        
-    }
-    
-    if (safelyToSend) {
-     
-        [syncArray removeObject:object];
-        [self sendObject:object];
-        
-    }
-
-}
-
-+ (void)sendObject:(STMDatum *)object {
-    
-    NSDictionary *stcEntities = [STMEntityController stcEntities];
-    STMEntity *entity = stcEntities[object.entity.name];
-    NSString *resource = entity.url;
-    NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
-    
-    [self sendObjectDic:objectDic resource:resource];
-    
-}
-
-+ (void)sendObjectDic:(NSDictionary *)objectDic resource:(NSString *)resource {
-    
-    if (objectDic && resource) {
-        
-        NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
-                                @"resource" : resource,
-                                @"attrs"    : objectDic};
-        
-        [self sendEvent:STMSocketEventJSData withValue:value];
-
-    }
-    
-}
-
-#pragma mark - socket events sending
-
-+ (NSString *)primaryKeyForEvent:(STMSocketEvent)event {
-    
-    NSString *primaryKey = @"url";
-    
-    switch (event) {
-        case STMSocketEventConnect:
-        case STMSocketEventStatusChange:
-        case STMSocketEventInfo:
-        case STMSocketEventAuthorization:
-        case STMSocketEventRemoteCommands:
-            break;
-        case STMSocketEventData: {
-            primaryKey = @"data";
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-    return primaryKey;
-
-}
-
-+ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value {
-
-// Log
-// ----------
-    
-#ifdef DEBUG
-        
-        if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
-            
-            NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
-            
-            NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
-            
-        } else {
-            
-            NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
-            
-        }
-#endif
-    
-// ----------
-// End of log
-    
-    if (socket.status == SocketIOClientStatusConnected) {
-        
-        if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
-            
-            NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
-
-            NSDictionary *dataDic = (NSDictionary *)value;
-            
-            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
-                [self receiveJSDataEventAckWithData:data];
-            });
-
-        } else {
-            
-            NSString *primaryKey = [self primaryKeyForEvent:event];
-            
-            if (value && primaryKey) {
-                
-                NSDictionary *dataDic = @{primaryKey : value};
-                
-                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-                
-                NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
-                
-                if (dataDic) {
-                    
-                    if (socket.status != SocketIOClientStatusConnected) {
-                        
-                    } else {
-                        
-                        //                NSLog(@"%@ ___ emit: %@, data: %@", socket, eventStringValue, dataDic);
-                        
-                        if (event == STMSocketEventData) {
-                            
-                            [self sharedInstance].isSendingData = YES;
-                            [self sharedInstance].sendingDate = [NSDate date];
-                            
-                            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
-                                [self receiveEventDataAckWithData:data];
-                            });
-                            
-                        } else {
-                            [socket emit:eventStringValue withItems:@[dataDic]];
-                        }
-                        
-                    }
-                    
-                } else {
-                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", socket, eventStringValue);
-                }
-                
-            }
-
-        }
-        
-    } else {
-        
-        NSLog(@"socket not connected");
-        
-        if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
-            [self sendFinishedWithError:@"socket not connected"];
-        }
-        
-    }
-    
-}
-
-+ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withStringValue:(NSString *)stringValue {
-    [self socket:socket sendEvent:event withValue:stringValue];
-}
-
-+ (void)socket:(SocketIOClient *)socket receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
-    
-    NSLog(@"%@ ___ receive Ack, event: %@, data: %@", socket, event, data);
-
-    STMSocketEvent socketEvent = [self eventForString:event];
-    
-    if (socketEvent == STMSocketEventAuthorization) {
-        [self socket:socket receiveAuthorizationAckWithData:data];
-    }
-    
-}
-
-+ (void)socket:(SocketIOClient *)socket receiveAuthorizationAckWithData:(NSArray *)data {
-    
-    if (socket.status != SocketIOClientStatusConnected) {
-        return;
-    }
-    
-    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
-        
-        NSDictionary *dataDic = data.firstObject;
-        BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
-        
-        if (isAuthorized) {
-            
-            NSLog(@"socket authorized");
-            
-            [self sharedInstance].isAuthorized = YES;
-            [self sharedInstance].isSendingData = NO;
-            [[self syncer] socketReceiveAuthorization];
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"socketAuthorizationSuccess" object:self];
-            
-            [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];
-            
-            if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
-                
-                if ([[STMCoreRootTBC sharedRootVC].selectedViewController class]) {
-                    
-                    Class _Nonnull rootVCClass = (Class _Nonnull)[[STMCoreRootTBC sharedRootVC].selectedViewController class];
-                    
-                    NSString *stringValue = [@"selectedViewController: " stringByAppendingString:NSStringFromClass(rootVCClass)];
-                    [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];
-                    
-                }
-                
-            }
-            
-        } else {
-            
-            NSLog(@"socket not authorized");
-            [self sharedInstance].isAuthorized = NO;
-            [[STMCoreAuthController authController] logout];
-            
-        }
-        
-    } else {
-        
-        NSLog(@"socket not authorized");
-        [self sharedInstance].isAuthorized = NO;
-        [[STMCoreAuthController authController] logout];
-        
-    }
-
-}
-
-+ (void)receiveJSDataEventAckWithData:(NSArray *)data {
-    
-//    NSLog(@"receiveJSDataEventAckWithData %@", data);
-    
-    [[self syncer] socketReceiveJSDataAck:data];
-
-}
-
-+ (void)receiveEventDataAckWithData:(NSArray *)data {
-
-    NSDictionary *response = data.firstObject;
-    
-    NSString *errorString = nil;
-    
-    if ([response isKindOfClass:[NSDictionary class]]) {
-        
-        errorString = response[@"error"];
-        
-    } else {
-        
-        errorString = @"response not a dictionary";
-        NSLog(@"error: %@", data);
-        
-    }
-    
-    if (errorString) {
-    
-        NSLog(@"error: %@", errorString);
-        
-        [self sendEvent:STMSocketEventInfo withStringValue:errorString];
-        
-        if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
-            [[STMCoreAuthController authController] logout];
-        }
-
-    } else {
-        
-        NSArray *dataArray = response[@"data"];
-        
-        for (NSDictionary *datum in dataArray) {
-            
-            [[self document].managedObjectContext performBlockAndWait:^{
-                [STMCoreObjectsController syncObject:datum];
-            }];
-            
-        }
-
-    }
-    
-    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
-        [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
-    }];
-
-}
-
-+ (void)sendFinishedWithError:(NSString *)errorString {
-    
-    if (errorString) {
-        
-        [self sendingCleanupWithError:errorString];
-
-    } else {
-
-        if ([self haveToSyncObjects]) {
-            
-            [[self syncer] bunchOfObjectsSended];
-            
-        } else {
-            
-            [self sendingCleanupWithError:nil];
-
-        }
-
-    }
-
-}
-
-+ (void)sendingCleanupWithError:(NSString *)errorString {
-    
-    STMSocketController *sc = [self sharedInstance];
-    
-    sc.isSendingData = NO;
-    [[self syncer] sendFinishedWithError:errorString];
-    sc.syncDataDictionary = nil;
-    sc.sendingDate = nil;
-
 }
 
 
