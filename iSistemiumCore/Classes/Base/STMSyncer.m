@@ -888,37 +888,37 @@
     
 }
 
-- (NSString *)entityNameForConnection:(NSURLConnection *)connection {
-    return [self entityNameForRequest:connection.currentRequest];
-}
-
-- (NSString *)entityNameForRequest:(NSURLRequest *)request {
-    return [self entityNameForURLString:request.URL.absoluteString];
-}
-
-- (NSString *)entityNameForURLString:(NSString *)urlString {
-    
-    if ([urlString isEqualToString:self.socketUrlString]) {
-        
-        return SEND_DATA_CONNECTION;
-        
-    } else {
-        
-        for (STMEntity *entity in [self.stcEntities allValues]) {
-            
-            if ([entity.url isEqualToString:urlString]) {
-                
-                return [[self.stcEntities allKeysForObject:entity] lastObject];
-                
-            }
-            
-        }
-        
-    }
-    
-    return nil;
-
-}
+//- (NSString *)entityNameForConnection:(NSURLConnection *)connection {
+//    return [self entityNameForRequest:connection.currentRequest];
+//}
+//
+//- (NSString *)entityNameForRequest:(NSURLRequest *)request {
+//    return [self entityNameForURLString:request.URL.absoluteString];
+//}
+//
+//- (NSString *)entityNameForURLString:(NSString *)urlString {
+//    
+//    if ([urlString isEqualToString:self.socketUrlString]) {
+//        
+//        return SEND_DATA_CONNECTION;
+//        
+//    } else {
+//        
+//        for (STMEntity *entity in [self.stcEntities allValues]) {
+//            
+//            if ([entity.url isEqualToString:urlString]) {
+//                
+//                return [[self.stcEntities allKeysForObject:entity] lastObject];
+//                
+//            }
+//            
+//        }
+//        
+//    }
+//    
+//    return nil;
+//
+//}
 
 - (void)entityCountDecrease {
     
@@ -980,7 +980,7 @@
     }
     
     NSString *resource = response[@"resource"];
-    NSString *entityName = [self entityNameForURLString:resource];
+    NSString *entityName = [STMEntityController entityNameForURLString:resource];
 
     NSString *errorString = response[@"error"];
     if (errorString) {

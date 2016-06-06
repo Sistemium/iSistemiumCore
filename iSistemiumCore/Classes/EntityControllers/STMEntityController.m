@@ -203,6 +203,22 @@
     
 }
 
++ (NSString *)entityNameForURLString:(NSString *)urlString {
+    
+    for (STMEntity *entity in [self stcEntities].allValues) {
+        
+        if ([entity.url isEqualToString:urlString]) {
+            
+            return [[self stcEntities] allKeysForObject:entity].lastObject;
+            
+        }
+        
+    }
+
+    return nil;
+    
+}
+
 + (void)deleteEntityWithName:(NSString *)name {
     
     __weak STMEntity *entityToDelete = ([self stcEntities])[name];

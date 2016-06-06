@@ -308,12 +308,17 @@
     
     NSArray *unsyncedObjectsArray = [self unsyncedObjects];
 
-    NSArray *syncDataArray = [self syncDataArrayFromUnsyncedObjects:unsyncedObjectsArray];
+    NSArray <STMDatum *> *syncDataArray = [self syncDataArrayFromUnsyncedObjects:unsyncedObjectsArray];
 
     if (syncDataArray.count > 0) {
 
         NSLog(@"%d objects to send via Socket", syncDataArray.count);
-        [self sendEvent:STMSocketEventData withValue:syncDataArray];
+
+// old way sending
+//        [self sendEvent:STMSocketEventData withValue:syncDataArray];
+        
+// new way sending
+        [self sendObjectsFromArray:syncDataArray];
         
         return YES;
         
@@ -325,7 +330,7 @@
     
 }
 
-+ (NSMutableArray *)syncDataArrayFromUnsyncedObjects:(NSArray *)unsyncedObjectsArray {
++ (NSMutableArray <STMDatum *> *)syncDataArrayFromUnsyncedObjects:(NSArray *)unsyncedObjectsArray {
     
     NSMutableArray *syncDataArray = [NSMutableArray array];
     
@@ -337,7 +342,8 @@
             
             if (![[self sharedInstance].syncDataDictionary.allKeys containsObject:xid]) {
                 
-                [self addObject:unsyncedObject toSyncDataArray:syncDataArray];
+//                [self addObject:unsyncedObject toSyncDataArray:syncDataArray];
+                [syncDataArray addObject:unsyncedObject];
                 
                 if (unsyncedObject.deviceTs) {
                     [self sharedInstance].syncDataDictionary[xid] = unsyncedObject.deviceTs;
@@ -360,16 +366,16 @@
 
 }
 
-+ (void)addObject:(NSManagedObject *)object toSyncDataArray:(NSMutableArray *)syncDataArray {
-    
-//    NSDate *currentDate = [NSDate date];
-//    [object setValue:currentDate forKey:@"sts"];
-    
-    NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
-    
-    [syncDataArray addObject:objectDictionary];
-
-}
+//+ (void)addObject:(NSManagedObject *)object toSyncDataArray:(NSMutableArray <NSDictionary *> *)syncDataArray {
+//    
+////    NSDate *currentDate = [NSDate date];
+////    [object setValue:currentDate forKey:@"sts"];
+//    
+//    NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
+//    
+//    [syncDataArray addObject:objectDictionary];
+//
+//}
 
 + (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
 
@@ -589,6 +595,76 @@
     NSLog(@"jsDataCallback socket %@ data %@", socket, data);
 }
 
+
+#pragma mark - send
+
++ (void)sendObjectsFromArray:(NSArray <STMDatum *> *)syncDataArray {
+    
+    NSMutableArray *syncArray = syncDataArray.mutableCopy;
+    
+    for (STMDatum *object in syncDataArray) {
+        [self checkObject:object forSendingWithSyncArray:syncArray];
+    }
+    
+    if (syncArray.count > 0) {
+        [self sendObjectsFromArray:syncArray];
+    }
+
+}
+
++ (void)checkObject:(STMDatum *)object forSendingWithSyncArray:(NSMutableArray *)syncArray {
+    
+    NSEntityDescription *objectEntity = object.entity;
+    NSString *entityName = objectEntity.name;
+    NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
+    
+    BOOL safelyToSend = YES;
+    
+    for (NSString *relName in relationships.allKeys) {
+        
+        STMDatum *relObject = [object valueForKey:relName];
+        if (![syncArray containsObject:relObject]) continue;
+
+        NSEntityDescription *relObjectEntity = relObject.entity;
+        NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
+        
+        for (NSRelationshipDescription *relDesc in checkingRelationships) {
+            
+            if (!relDesc.isToMany) continue;
+            if (![[relObject valueForKey:relDesc.name] containsObject:object]) continue;
+
+            [self checkObject:relObject forSendingWithSyncArray:syncArray];
+            safelyToSend = NO;
+            break;
+            
+        }
+        
+    }
+    
+    if (safelyToSend) {
+     
+        [syncArray removeObject:object];
+        [self sendObject:object];
+        
+    }
+
+}
+
++ (void)sendObject:(STMDatum *)object {
+    
+    [self sendObjectDic:@{}];
+    
+}
+
++ (void)sendObjectDic:(NSDictionary *)objectDic {
+    
+    NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
+                            @"resource" : @"",
+                            @"attrs"    : objectDic};
+
+    [self sendEvent:STMSocketEventJSData withValue:value];
+    
+}
 
 #pragma mark - socket events sending
 

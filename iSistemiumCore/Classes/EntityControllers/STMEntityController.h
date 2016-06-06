@@ -28,4 +28,7 @@
 
 + (void)deleteEntityWithName:(NSString *)name;
 
++ (NSString *)entityNameForURLString:(NSString *)urlString;
+
+
 @end
