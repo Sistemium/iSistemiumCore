@@ -10,7 +10,7 @@
 
 #import <AdSupport/AdSupport.h>
 
-#import <JNKeychain/JNKeychain.h>
+#import "STMKeychain.h"
 
 #import "STMDevDef.h"
 #import "STMFunctions.h"
@@ -75,7 +75,7 @@
     
     if (self) {
 
-        NSString *keychainPhoneNumber = [JNKeychain loadValueForKey:KC_PHONE_NUMBER];
+        NSString *keychainPhoneNumber = [STMKeychain loadValueForKey:KC_PHONE_NUMBER];
         if ([self.phoneNumber isEqualToString:keychainPhoneNumber]) [self checkAccessToken];
         
     }
@@ -117,7 +117,7 @@
         [defaults setObject:phoneNumber forKey:@"phoneNumber"];
         [defaults synchronize];
 
-        [JNKeychain saveValue:phoneNumber forKey:KC_PHONE_NUMBER];
+        [STMKeychain saveValue:phoneNumber forKey:KC_PHONE_NUMBER];
         
         _phoneNumber = phoneNumber;
         
@@ -180,7 +180,7 @@
 - (NSString *)serviceUri {
     
     if (!_serviceUri) {
-        _serviceUri = [JNKeychain loadValueForKey:KC_SERVICE_URI];
+        _serviceUri = [STMKeychain loadValueForKey:KC_SERVICE_URI];
     }
     return _serviceUri;
     
@@ -190,7 +190,7 @@
     
     if (serviceUri != _serviceUri) {
         
-        [JNKeychain saveValue:serviceUri forKey:KC_SERVICE_URI];
+        [STMKeychain saveValue:serviceUri forKey:KC_SERVICE_URI];
         NSLog(@"serviceUri %@", serviceUri);
         _serviceUri = serviceUri;
         
@@ -201,7 +201,7 @@
 - (NSString *)userID {
     
     if (!_userID) {
-        _userID = [JNKeychain loadValueForKey:KC_USER_ID];
+        _userID = [STMKeychain loadValueForKey:KC_USER_ID];
     }
     return _userID;
     
@@ -211,7 +211,7 @@
     
     if (userID != _userID) {
         
-        [JNKeychain saveValue:userID forKey:KC_USER_ID];
+        [STMKeychain saveValue:userID forKey:KC_USER_ID];
         NSLog(@"userID %@", userID);
         _userID = userID;
         
@@ -222,7 +222,7 @@
 - (NSString *)accessToken {
     
     if (!_accessToken) {
-        _accessToken = [JNKeychain loadValueForKey:KC_ACCESS_TOKEN];
+        _accessToken = [STMKeychain loadValueForKey:KC_ACCESS_TOKEN];
     }
     return _accessToken;
     
@@ -232,7 +232,7 @@
     
     if (accessToken != _accessToken) {
         
-        [JNKeychain saveValue:accessToken forKey:KC_ACCESS_TOKEN];
+        [STMKeychain saveValue:accessToken forKey:KC_ACCESS_TOKEN];
         NSLog(@"accessToken %@", accessToken);
         _accessToken = accessToken;
 
@@ -393,7 +393,7 @@
     self.accessToken = nil;
     self.stcTabs = nil;
     self.iSisDB = nil;
-    [JNKeychain deleteValueForKey:KC_PHONE_NUMBER];
+    [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
 
 }
 
