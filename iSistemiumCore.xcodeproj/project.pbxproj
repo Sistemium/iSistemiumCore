@@ -231,6 +231,7 @@
 		2C7086511CC504430002F3FF /* STMCoreWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C70864F1CC504430002F3FF /* STMCoreWKWebViewVC.m */; };
 		2C9AE99A1CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9AE9971CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m */; };
 		2C9AE99B1CF5A9B70018D9B3 /* STMJson.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9AE9991CF5A9B70018D9B3 /* STMJson.m */; };
+		2CB314621D06EE0200E3E59D /* STMKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CB314611D06EE0200E3E59D /* STMKeychain.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -624,6 +625,8 @@
 		2C9AE9971CF5A9B70018D9B3 /* STMJson+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "STMJson+CoreDataProperties.m"; sourceTree = "<group>"; };
 		2C9AE9981CF5A9B70018D9B3 /* STMJson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMJson.h; sourceTree = "<group>"; };
 		2C9AE9991CF5A9B70018D9B3 /* STMJson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMJson.m; sourceTree = "<group>"; };
+		2CB314601D06EE0200E3E59D /* STMKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMKeychain.h; sourceTree = "<group>"; };
+		2CB314611D06EE0200E3E59D /* STMKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMKeychain.m; sourceTree = "<group>"; };
 		2CE77BFD1CD3A2DC0034E469 /* STMSoundCallbackable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMSoundCallbackable.h; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB0701E03625C967FCD1F9A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
@@ -991,6 +994,8 @@
 				2C3F74081CBBD78300F8BFB8 /* STMFunctions.m */,
 				2C3F740B1CBBD78300F8BFB8 /* STMLogger.h */,
 				2C3F740C1CBBD78300F8BFB8 /* STMLogger.m */,
+				2CB314601D06EE0200E3E59D /* STMKeychain.h */,
+				2CB314611D06EE0200E3E59D /* STMKeychain.m */,
 				2C3F740D1CBBD78300F8BFB8 /* STMRemoteController.h */,
 				2C3F740E1CBBD78300F8BFB8 /* STMRemoteController.m */,
 				2C3F740F1CBBD78300F8BFB8 /* STMScanApiHelper.h */,
@@ -1583,6 +1588,7 @@
 				2C3F74A01CBBD80600F8BFB8 /* STMSplitViewController_Swift.swift in Sources */,
 				2C3F742F1CBBD78300F8BFB8 /* STMCoreSessionManager.m in Sources */,
 				2C13F4F21CE3090D00A5F129 /* STMWorkflowController.m in Sources */,
+				2CB314621D06EE0200E3E59D /* STMKeychain.m in Sources */,
 				2C3F74541CBBD7AB00F8BFB8 /* STMCoreObjectsController.m in Sources */,
 				2C3F73E01CBBD6FE00F8BFB8 /* STMBatteryStatus+CoreDataProperties.m in Sources */,
 				2C3F749C1CBBD80600F8BFB8 /* STMSearchableTVC.m in Sources */,
