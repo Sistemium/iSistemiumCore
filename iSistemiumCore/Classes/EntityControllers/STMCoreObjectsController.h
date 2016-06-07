@@ -55,7 +55,7 @@
 + (NSDictionary *)dictionaryForObject:(NSManagedObject *)object;
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
 
-+ (void)syncObject:(NSDictionary *)objectDictionary;
+//+ (void)syncObject:(NSDictionary *)objectDictionary;
 
 + (void)removeObject:(NSManagedObject *)object;
 + (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object;

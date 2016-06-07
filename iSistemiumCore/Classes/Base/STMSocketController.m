@@ -385,7 +385,15 @@
 }
 
 + (void)successfullySyncObjectWithXid:(NSData *)xid {
-    if (xid) [[self sharedInstance].syncDataDictionary removeObjectForKey:xid];
+    
+    NSMutableDictionary *sdd = [self sharedInstance].syncDataDictionary;
+    
+    if (xid) [sdd removeObjectForKey:xid];
+    
+    if (sdd.allKeys.count == 0) {
+        [self sendFinishedWithError:nil];
+    }
+    
 }
 
 + (void)sendObjectsFromArray:(NSArray <STMDatum *> *)syncDataArray {
@@ -516,6 +524,9 @@
         
         if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
             
+            [self sharedInstance].isSendingData = YES;
+            [self sharedInstance].sendingDate = [NSDate date];
+
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
             
             NSDictionary *dataDic = (NSDictionary *)value;
@@ -546,12 +557,12 @@
                         
                         if (event == STMSocketEventData) {
                             
-                            [self sharedInstance].isSendingData = YES;
-                            [self sharedInstance].sendingDate = [NSDate date];
-                            
-                            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
-                                [self receiveEventDataAckWithData:data];
-                            });
+//                            [self sharedInstance].isSendingData = YES;
+//                            [self sharedInstance].sendingDate = [NSDate date];
+//                            
+//                            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+//                                [self receiveEventDataAckWithData:data];
+//                            });
                             
                         } else {
                             [socket emit:eventStringValue withItems:@[dataDic]];
@@ -657,52 +668,52 @@
     
 }
 
-+ (void)receiveEventDataAckWithData:(NSArray *)data {
-    
-    NSDictionary *response = data.firstObject;
-    
-    NSString *errorString = nil;
-    
-    if ([response isKindOfClass:[NSDictionary class]]) {
-        
-        errorString = response[@"error"];
-        
-    } else {
-        
-        errorString = @"response not a dictionary";
-        NSLog(@"error: %@", data);
-        
-    }
-    
-    if (errorString) {
-        
-        NSLog(@"error: %@", errorString);
-        
-        [self sendEvent:STMSocketEventInfo withStringValue:errorString];
-        
-        if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
-            [[STMCoreAuthController authController] logout];
-        }
-        
-    } else {
-        
-        NSArray *dataArray = response[@"data"];
-        
-        for (NSDictionary *datum in dataArray) {
-            
-            [[self document].managedObjectContext performBlockAndWait:^{
-                [STMCoreObjectsController syncObject:datum];
-            }];
-            
-        }
-        
-    }
-    
-    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
-        [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
-    }];
-    
-}
+//+ (void)receiveEventDataAckWithData:(NSArray *)data {
+//    
+//    NSDictionary *response = data.firstObject;
+//    
+//    NSString *errorString = nil;
+//    
+//    if ([response isKindOfClass:[NSDictionary class]]) {
+//        
+//        errorString = response[@"error"];
+//        
+//    } else {
+//        
+//        errorString = @"response not a dictionary";
+//        NSLog(@"error: %@", data);
+//        
+//    }
+//    
+//    if (errorString) {
+//        
+//        NSLog(@"error: %@", errorString);
+//        
+//        [self sendEvent:STMSocketEventInfo withStringValue:errorString];
+//        
+//        if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
+//            [[STMCoreAuthController authController] logout];
+//        }
+//        
+//    } else {
+//        
+//        NSArray *dataArray = response[@"data"];
+//        
+//        for (NSDictionary *datum in dataArray) {
+//            
+//            [[self document].managedObjectContext performBlockAndWait:^{
+////                [STMCoreObjectsController syncObject:datum];
+//            }];
+//            
+//        }
+//        
+//    }
+//    
+//    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
+//        [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
+//    }];
+//    
+//}
 
 + (void)sendFinishedWithError:(NSString *)errorString {
     

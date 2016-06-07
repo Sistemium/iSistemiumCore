@@ -2644,66 +2644,66 @@
 }
 
 
-#pragma mark - sync object
-
-+ (void)syncObject:(NSDictionary *)objectDictionary {
-    
-    NSString *result = [objectDictionary valueForKey:@"result"];
-    NSString *xid = [objectDictionary valueForKey:@"xid"];
-    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-    
-    if (!result || ![result isEqualToString:@"ok"]) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"Sync result not ok xid: %@", xid];
-        [[self session].logger saveLogMessageWithText:errorMessage type:@"error"];
-        
-    } else {
-
-        NSManagedObject *syncedObject = [self objectForXid:xidData];
-        
-        if ([syncedObject isKindOfClass:[STMDatum class]]) {
-            
-            STMDatum *object = (STMDatum *)syncedObject;
-            
-            if (object) {
-                
-                [object.managedObjectContext performBlockAndWait:^{
-                
-                    if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
-                        
-                        [self removeObject:object];
-                        
-                    } else {
-                        
-                        NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
-                        object.lts = deviceTs;
-                        [object willChangeValueForKey:@"lts"];
-                        [object setPrimitiveValue:deviceTs forKey:@"lts"];
-                        [object didChangeValueForKey:@"lts"];
-                        
-                    }
-                    
-                    //                [STMSocketController successfullySyncObjectWithXid:xidData];
-                    
-                    NSString *entityName = object.entity.name;
-                    
-                    NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
-                    NSLog(logMessage);
-
-                }];
-                
-            } else {
-                
-                NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
-                NSLog(logMessage);
-                
-            }
-
-        }
-        
-    }
-
-}
+//#pragma mark - sync object
+//
+//+ (void)syncObject:(NSDictionary *)objectDictionary {
+//    
+//    NSString *result = [objectDictionary valueForKey:@"result"];
+//    NSString *xid = [objectDictionary valueForKey:@"xid"];
+//    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+//    
+//    if (!result || ![result isEqualToString:@"ok"]) {
+//        
+//        NSString *errorMessage = [NSString stringWithFormat:@"Sync result not ok xid: %@", xid];
+//        [[self session].logger saveLogMessageWithText:errorMessage type:@"error"];
+//        
+//    } else {
+//
+//        NSManagedObject *syncedObject = [self objectForXid:xidData];
+//        
+//        if ([syncedObject isKindOfClass:[STMDatum class]]) {
+//            
+//            STMDatum *object = (STMDatum *)syncedObject;
+//            
+//            if (object) {
+//                
+//                [object.managedObjectContext performBlockAndWait:^{
+//                
+//                    if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
+//                        
+//                        [self removeObject:object];
+//                        
+//                    } else {
+//                        
+//                        NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
+//                        object.lts = deviceTs;
+//                        [object willChangeValueForKey:@"lts"];
+//                        [object setPrimitiveValue:deviceTs forKey:@"lts"];
+//                        [object didChangeValueForKey:@"lts"];
+//                        
+//                    }
+//                    
+//                    //                [STMSocketController successfullySyncObjectWithXid:xidData];
+//                    
+//                    NSString *entityName = object.entity.name;
+//                    
+//                    NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
+//                    NSLog(logMessage);
+//
+//                }];
+//                
+//            } else {
+//                
+//                NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
+//                NSLog(logMessage);
+//                
+//            }
+//
+//        }
+//        
+//    }
+//
+//}
 
 
 @end

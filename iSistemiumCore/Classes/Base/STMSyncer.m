@@ -991,15 +991,15 @@
         [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"]; return;
     }
 
-    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-    if (!responseData) {
-        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: response data is not an array", entityName]]; return;
-    }
-
     NSString *methodName = response[@"method"];
     
     if ([methodName isEqualToString:kSocketFindAllMethod]) {
-        
+
+        NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+        if (!responseData) {
+            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
+        }
+
         [self parseFindAllAckData:data
                      responseData:responseData
                          resource:resource
@@ -1008,7 +1008,14 @@
 
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
         
-        NSLog(@"update data %@", data);
+        NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+        if (!responseData) {
+            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", entityName]]; return;
+        }
+
+        [self parseUpdateAckResponseData:responseData
+                                resource:resource
+                              entityName:entityName];
         
     }
     
@@ -1017,6 +1024,7 @@
 - (void)socketReceiveJSDataAckError:(NSString *)errorString {
     
     NSLog(errorString);
+    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
     [self entityCountDecrease];
     
 }
@@ -1136,6 +1144,65 @@
         
         NSLog(@"empty news data received");
         [self receivingDidFinish];
+        
+    }
+    
+}
+
+- (void)parseUpdateAckResponseData:(NSDictionary *)responseData resource:(NSString *)resource entityName:(NSString *)entityName {
+
+//    NSLog(@"update responseData %@", responseData);
+    [self syncObject:responseData];
+    
+}
+
+#pragma mark - sync object
+
+- (void)syncObject:(NSDictionary *)objectDictionary {
+    
+    NSString *xid = [objectDictionary valueForKey:@"id"];
+    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+    
+    NSManagedObject *syncedObject = [STMCoreObjectsController objectForXid:xidData];
+    
+    if ([syncedObject isKindOfClass:[STMDatum class]]) {
+        
+        STMDatum *object = (STMDatum *)syncedObject;
+        
+        if (object) {
+            
+            [object.managedObjectContext performBlockAndWait:^{
+                
+                if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
+                    
+                    [STMCoreObjectsController removeObject:object];
+                    
+                } else {
+                    
+                    NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
+                    object.lts = deviceTs;
+                    [object willChangeValueForKey:@"lts"];
+                    [object setPrimitiveValue:deviceTs forKey:@"lts"];
+                    [object didChangeValueForKey:@"lts"];
+                    
+                }
+                
+//#warning why successfullySyncObjectWithXid: is commented?
+                [STMSocketController successfullySyncObjectWithXid:xidData];
+                
+                NSString *entityName = object.entity.name;
+                
+                NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
+                NSLog(logMessage);
+                
+            }];
+            
+        } else {
+            
+            NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
+            NSLog(logMessage);
+            
+        }
         
     }
     
