@@ -179,13 +179,8 @@
 
 - (NSString *)entityResource {
     
-<<<<<<< HEAD
     if (!_entityResource) {
-        _entityResource = [JNKeychain loadValueForKey:KC_ENTITY_RESOURCE];
-=======
-    if (!_serviceUri) {
-        _serviceUri = [STMKeychain loadValueForKey:KC_SERVICE_URI];
->>>>>>> dev
+        _entityResource = [STMKeychain loadValueForKey:KC_ENTITY_RESOURCE];
     }
     return _entityResource;
     
@@ -195,15 +190,9 @@
     
     if (entityResource != _entityResource) {
         
-<<<<<<< HEAD
-        [JNKeychain saveValue:entityResource forKey:KC_ENTITY_RESOURCE];
+        [STMKeychain saveValue:entityResource forKey:KC_ENTITY_RESOURCE];
         NSLog(@"entityResource %@", entityResource);
         _entityResource = entityResource;
-=======
-        [STMKeychain saveValue:serviceUri forKey:KC_SERVICE_URI];
-        NSLog(@"serviceUri %@", serviceUri);
-        _serviceUri = serviceUri;
->>>>>>> dev
         
     }
     
