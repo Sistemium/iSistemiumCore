@@ -225,6 +225,8 @@
         sc.isSendingData = NO;
         sc.isAuthorized = NO;
         sc.isRunning = NO;
+        sc.syncDataDictionary = nil;
+        sc.sendingDate = nil;
 
     }
 
@@ -249,7 +251,7 @@
 
 #pragma mark - send
 
-+ (NSArray *)unsyncedObjects {
++ (NSArray <STMDatum *> *)unsyncedObjects {
     return [[self sharedInstance] unsyncedObjectsArray];
 }
 
@@ -306,19 +308,13 @@
 
 + (BOOL)haveToSyncObjects {
     
-    NSArray *unsyncedObjectsArray = [self unsyncedObjects];
-
-    NSArray <STMDatum *> *syncDataArray = [self syncDataArrayFromUnsyncedObjects:unsyncedObjectsArray];
+    NSArray <STMDatum *> *syncDataArray = [self unsyncedObjects];
 
     if (syncDataArray.count > 0) {
 
-        NSLog(@"%d objects to send via Socket", syncDataArray.count);
+        NSLog(@"have %d objects to send via Socket", syncDataArray.count);
 
-// old way sending
-//        [self sendEvent:STMSocketEventData withValue:syncDataArray];
-        
-// new way sending
-        [self sendObjectsFromArray:syncDataArray];
+        [self sendObjectFromSyncArray:syncDataArray.mutableCopy];
         
         return YES;
         
@@ -330,97 +326,69 @@
     
 }
 
-+ (NSMutableArray <STMDatum *> *)syncDataArrayFromUnsyncedObjects:(NSArray *)unsyncedObjectsArray {
++ (void)sendObjectFromSyncArray:(NSMutableArray <STMDatum *> *)syncDataArray {
     
-    NSMutableArray *syncDataArray = [NSMutableArray array];
-    
-    for (STMDatum *unsyncedObject in unsyncedObjectsArray) {
+    if (syncDataArray.count > 0) {
+        
+        STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:syncDataArray.mutableCopy];
+        
+        if (syncObject) {
+            
+            if (syncObject.xid) {
 
-        if (unsyncedObject.xid) {
-            
-            NSData *xid = unsyncedObject.xid;
-            
-            if (![[self sharedInstance].syncDataDictionary.allKeys containsObject:xid]) {
-                
-//                [self addObject:unsyncedObject toSyncDataArray:syncDataArray];
-                [syncDataArray addObject:unsyncedObject];
-                
-                if (unsyncedObject.deviceTs) {
-                    [self sharedInstance].syncDataDictionary[xid] = unsyncedObject.deviceTs;
+                NSData *xid = syncObject.xid;
+
+                if (![[self sharedInstance].syncDataDictionary.allKeys containsObject:xid]) {
+
+                    [self sharedInstance].syncDataDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
+                    [self sendObject:syncObject];
+
+                } else {
+                    
+                    [syncDataArray removeObject:syncObject];
+                    [self sendObjectFromSyncArray:syncDataArray];
+                    
                 }
+
+            } else {
                 
+                NSLog(@"    ERROR: sync object have no xid: %@", syncObject);
+                [syncDataArray removeObject:syncObject];
+                [self sendObjectFromSyncArray:syncDataArray];
+
             }
-
+            
+        } else {
+            [self sendFinishedWithError:nil];
         }
         
-        if (syncDataArray.count >= 100) {
-            
-            NSLog(@"syncDataArray is full");
-            break;
-            
-        }
-        
-    }
-    
-    return syncDataArray;
-
-}
-
-//+ (void)addObject:(NSManagedObject *)object toSyncDataArray:(NSMutableArray <NSDictionary *> *)syncDataArray {
-//    
-////    NSDate *currentDate = [NSDate date];
-////    [object setValue:currentDate forKey:@"sts"];
-//    
-//    NSDictionary *objectDictionary = [STMCoreObjectsController dictionaryForObject:object];
-//    
-//    [syncDataArray addObject:objectDictionary];
-//
-//}
-
-+ (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
-
-    NSDate *deviceTs = [self sharedInstance].syncDataDictionary[xid];
-    return deviceTs;
-    
-}
-
-+ (void)successfullySyncObjectWithXid:(NSData *)xid {
-    
-    NSMutableDictionary *sdd = [self sharedInstance].syncDataDictionary;
-    
-    if (xid) [sdd removeObjectForKey:xid];
-    
-    if (sdd.allKeys.count == 0) {
+    } else {
         [self sendFinishedWithError:nil];
     }
-    
+
 }
 
-+ (void)sendObjectsFromArray:(NSArray <STMDatum *> *)syncDataArray {
++ (STMDatum *)findObjectToSendFirstFromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
     
-    NSMutableArray *syncArray = syncDataArray.mutableCopy;
-    
-    for (STMDatum *object in syncDataArray) {
-        [self checkObject:object forSendingWithSyncArray:syncArray];
-    }
-    
-    if (syncArray.count > 0) {
-        [self sendObjectsFromArray:syncArray];
+    if (syncArray.firstObject) {
+        return [self checkRelationshipsObjectsForObject:syncArray.firstObject fromSyncArray:syncArray];
+    } else {
+        return nil;
     }
     
 }
 
-+ (void)checkObject:(STMDatum *)object forSendingWithSyncArray:(NSMutableArray *)syncArray {
++ (STMDatum *)checkRelationshipsObjectsForObject:(STMDatum *)syncObject fromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
     
-    NSEntityDescription *objectEntity = object.entity;
+    [syncArray removeObject:syncObject];
+
+    NSEntityDescription *objectEntity = syncObject.entity;
     NSString *entityName = objectEntity.name;
     NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
     
-    BOOL safelyToSend = YES;
-    
     for (NSString *relName in relationships.allKeys) {
         
-        STMDatum *relObject = [object valueForKey:relName];
+        STMDatum *relObject = [syncObject valueForKey:relName];
         if (![syncArray containsObject:relObject]) continue;
         
         NSEntityDescription *relObjectEntity = relObject.entity;
@@ -429,22 +397,15 @@
         for (NSRelationshipDescription *relDesc in checkingRelationships) {
             
             if (!relDesc.isToMany) continue;
-            if (![[relObject valueForKey:relDesc.name] containsObject:object]) continue;
+            if (![[relObject valueForKey:relDesc.name] containsObject:syncObject]) continue;
             
-            [self checkObject:relObject forSendingWithSyncArray:syncArray];
-            safelyToSend = NO;
+            syncObject = [self checkRelationshipsObjectsForObject:relObject fromSyncArray:syncArray];
             break;
             
         }
         
     }
-    
-    if (safelyToSend) {
-        
-        [syncArray removeObject:object];
-        [self sendObject:object];
-        
-    }
+    return syncObject;
     
 }
 
@@ -471,6 +432,64 @@
     [self sendEvent:STMSocketEventJSData withValue:value];
     
 }
+
++ (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
+    
+    NSDate *deviceTs = [self sharedInstance].syncDataDictionary[xid];
+    return deviceTs;
+    
+}
+
++ (void)successfullySyncObjectWithXid:(NSData *)xid {
+    
+    [[self document] saveDocument:^(BOOL success) {
+    
+        STMSocketController *sc = [self sharedInstance];
+        
+        if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
+        [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
+
+    }];
+    
+}
+
+- (void)sendFinishedWithError:(NSString *)errorString {
+    [STMSocketController sendFinishedWithError:errorString];
+}
+
++ (void)sendFinishedWithError:(NSString *)errorString {
+    
+    if (errorString) {
+        
+        [self sendingCleanupWithError:errorString];
+        
+    } else {
+        
+        if ([self haveToSyncObjects]) {
+            
+            [[self syncer] bunchOfObjectsSended];
+            
+        } else {
+            
+            [self sendingCleanupWithError:nil];
+            
+        }
+        
+    }
+    
+}
+
++ (void)sendingCleanupWithError:(NSString *)errorString {
+    
+    STMSocketController *sc = [self sharedInstance];
+    
+    sc.isSendingData = NO;
+    [[self syncer] sendFinishedWithError:errorString];
+    sc.syncDataDictionary = nil;
+    sc.sendingDate = nil;
+    
+}
+
 
 #pragma mark - socket events sending
 
@@ -506,13 +525,13 @@
     
     if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
         
-        NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
+//        NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
         
-        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
+//        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
         
     } else {
         
-        NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
+//        NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
         
     }
 #endif
@@ -662,89 +681,9 @@
 
 + (void)receiveJSDataEventAckWithData:(NSArray *)data {
     
-    //    NSLog(@"receiveJSDataEventAckWithData %@", data);
+//    NSLog(@"receiveJSDataEventAckWithData %@", data);
     
     [[self syncer] socketReceiveJSDataAck:data];
-    
-}
-
-//+ (void)receiveEventDataAckWithData:(NSArray *)data {
-//    
-//    NSDictionary *response = data.firstObject;
-//    
-//    NSString *errorString = nil;
-//    
-//    if ([response isKindOfClass:[NSDictionary class]]) {
-//        
-//        errorString = response[@"error"];
-//        
-//    } else {
-//        
-//        errorString = @"response not a dictionary";
-//        NSLog(@"error: %@", data);
-//        
-//    }
-//    
-//    if (errorString) {
-//        
-//        NSLog(@"error: %@", errorString);
-//        
-//        [self sendEvent:STMSocketEventInfo withStringValue:errorString];
-//        
-//        if ([[errorString.lowercaseString stringByReplacingOccurrencesOfString:@" " withString:@""] isEqualToString:@"notauthorized"]) {
-//            [[STMCoreAuthController authController] logout];
-//        }
-//        
-//    } else {
-//        
-//        NSArray *dataArray = response[@"data"];
-//        
-//        for (NSDictionary *datum in dataArray) {
-//            
-//            [[self document].managedObjectContext performBlockAndWait:^{
-////                [STMCoreObjectsController syncObject:datum];
-//            }];
-//            
-//        }
-//        
-//    }
-//    
-//    [[[STMCoreSessionManager sharedManager].currentSession document] saveDocument:^(BOOL success) {
-//        [self performSelector:@selector(sendFinishedWithError:) withObject:errorString afterDelay:0];
-//    }];
-//    
-//}
-
-+ (void)sendFinishedWithError:(NSString *)errorString {
-    
-    if (errorString) {
-        
-        [self sendingCleanupWithError:errorString];
-        
-    } else {
-        
-        if ([self haveToSyncObjects]) {
-            
-            [[self syncer] bunchOfObjectsSended];
-            
-        } else {
-            
-            [self sendingCleanupWithError:nil];
-            
-        }
-        
-    }
-    
-}
-
-+ (void)sendingCleanupWithError:(NSString *)errorString {
-    
-    STMSocketController *sc = [self sharedInstance];
-    
-    sc.isSendingData = NO;
-    [[self syncer] sendFinishedWithError:errorString];
-    sc.syncDataDictionary = nil;
-    sc.sendingDate = nil;
     
 }
 
@@ -892,7 +831,10 @@
 //    NSLog(@"connectCallback ack %@", ack);
     NSLog(@"connectCallback socket %@", socket);
     
-    [self sharedInstance].isAuthorized = NO;
+    STMSocketController *sc = [self sharedInstance];
+    sc.isAuthorized = NO;
+    sc.syncDataDictionary = nil;
+    sc.sendingDate = nil;
 
     [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:) withObject:socket afterDelay:CHECK_AUTHORIZATION_DELAY];
 
@@ -918,7 +860,7 @@
     
     NSLog(@"disconnectCallback socket %@", socket);
     
-    [[self syncer] socketLostConnection];
+    [self socketLostConnection];
     
     if ([self sharedInstance].isReconnecting) {
         
@@ -933,7 +875,7 @@
     
     NSLog(@"reconnectCallback socket %@", socket);
     
-    [[self syncer] socketLostConnection];
+    [self socketLostConnection];
 
 }
 
@@ -955,6 +897,9 @@
     NSLog(@"jsDataCallback socket %@ data %@", socket, data);
 }
 
++ (void)socketLostConnection {
+    [[self syncer] socketLostConnection];
+}
 
 #pragma mark - instance methods
 
@@ -1201,11 +1146,11 @@
     return uploadLogType;
 }
 
-- (NSArray *)unsyncedObjectsArray {
+- (NSArray <STMDatum *> *)unsyncedObjectsArray {
     
     if (self.isAuthorized && [STMSocketController document].managedObjectContext) {
         
-        NSArray *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
+        NSArray <STMDatum *> *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
         
         return fetchedObjects;
         

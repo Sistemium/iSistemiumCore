@@ -976,28 +976,28 @@
 
     NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
     if (!response) {
-        [self socketReceiveJSDataAckError:@"ERROR: response contain no dictionary"]; return;
+        [self socketReceiveJSDataFindAckError:@"ERROR: response contain no dictionary"]; return;
     }
     
-    NSString *resource = response[@"resource"];
-    NSString *entityName = [STMEntityController entityNameForURLString:resource];
-
-    NSString *errorString = response[@"error"];
-    if (errorString) {
-        [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString]]; return;
-    }
-    
-    if (!resource) {
-        [self socketReceiveJSDataAckError:@"ERROR: have no resource string in response"]; return;
-    }
-
     NSString *methodName = response[@"method"];
     
     if ([methodName isEqualToString:kSocketFindAllMethod]) {
 
+        NSString *resource = response[@"resource"];
+        NSString *entityName = [STMEntityController entityNameForURLString:resource];
+        
+        NSString *errorString = response[@"error"];
+        if (errorString) {
+            [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString]]; return;
+        }
+        
+        if (!resource) {
+            [self socketReceiveJSDataFindAckError:@"ERROR: have no resource string in response"]; return;
+        }
+
         NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
         if (!responseData) {
-            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
+            [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
         }
 
         [self parseFindAllAckData:data
@@ -1008,24 +1008,44 @@
 
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
         
-        NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-        if (!responseData) {
-            [self socketReceiveJSDataAckError:[NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", entityName]]; return;
+        NSString *resource = response[@"resource"];
+        NSString *errorString = response[@"error"];
+        
+        if (errorString) {
+        
+            errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorString];
+            [self socketReceiveJSDataFindAckError:errorString]; return;
+            
         }
 
-        [self parseUpdateAckResponseData:responseData
-                                resource:resource
-                              entityName:entityName];
+        NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+        
+        if (!responseData) {
+
+            errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
+            [self socketReceiveJSDataUpdateAckError:errorString]; return;
+            
+        }
+
+        [self parseUpdateAckResponseData:responseData];
         
     }
     
 }
 
-- (void)socketReceiveJSDataAckError:(NSString *)errorString {
+- (void)socketReceiveJSDataFindAckError:(NSString *)errorString {
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
     [self entityCountDecrease];
+    
+}
+
+- (void)socketReceiveJSDataUpdateAckError:(NSString *)errorString {
+    
+    NSLog(errorString);
+    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    [self sendFinishedWithError:errorString];
     
 }
 
@@ -1149,7 +1169,7 @@
     
 }
 
-- (void)parseUpdateAckResponseData:(NSDictionary *)responseData resource:(NSString *)resource entityName:(NSString *)entityName {
+- (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
 
 //    NSLog(@"update responseData %@", responseData);
     [self syncObject:responseData];
@@ -1181,13 +1201,12 @@
                     
                     NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
                     object.lts = deviceTs;
-                    [object willChangeValueForKey:@"lts"];
-                    [object setPrimitiveValue:deviceTs forKey:@"lts"];
-                    [object didChangeValueForKey:@"lts"];
+//                    [object willChangeValueForKey:@"lts"];
+//                    [object setPrimitiveValue:deviceTs forKey:@"lts"];
+//                    [object didChangeValueForKey:@"lts"];
                     
                 }
                 
-//#warning why successfullySyncObjectWithXid: is commented?
                 [STMSocketController successfullySyncObjectWithXid:xidData];
                 
                 NSString *entityName = object.entity.name;
