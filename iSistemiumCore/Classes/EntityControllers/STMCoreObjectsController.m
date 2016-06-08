@@ -1465,7 +1465,7 @@
                         
                         if (fantomObject.xid) {
                             
-                            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid, @"isFantomResolving": @(YES)};
+                            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid/*, @"isFantomResolving": @(YES)*/};
                             
                             if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
                                 [objController.fantomsArray addObject:fantomDic];
@@ -1497,7 +1497,7 @@
     
     if ([parameters isKindOfClass:[NSDictionary class]]) {
         
-        BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
+//        BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
         
         NSString *entityName = parameters[@"entityName"];
         
@@ -1512,19 +1512,19 @@
             NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
             
             [self requestObjectErrorMessage:errorMessage
-                          isFantomResolving:isFantomResolving
+//                          isFantomResolving:isFantomResolving
                                  parameters:parameters];
             return;
             
         }
         
-        NSURL *url = [NSURL URLWithString:(NSString *)entity.url];
+        NSString *resource = entity.url;
         
         NSString *xidString = nil;
         BOOL isEmptyXid = NO;
         id xidParameter = parameters[@"xid"];
         
-        if (isFantomResolving) {
+//        if (isFantomResolving) {
         
             NSData *xid = (NSData *)xidParameter;
             
@@ -1534,65 +1534,71 @@
                 xidString = [STMFunctions UUIDStringFromUUIDData:xid];
             }
             
-        } else {
-            
-            xidString = (NSString *)xidParameter;
-            
-            if (!xidString || xidString.length == 0) isEmptyXid = YES;
-            
-        }
+//        } else {
+//            
+//            xidString = (NSString *)xidParameter;
+//            
+//            if (!xidString || xidString.length == 0) isEmptyXid = YES;
+//            
+//        }
         
         if (isEmptyXid) {
             
             NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", parameters];
             
             [self requestObjectErrorMessage:errorMessage
-                          isFantomResolving:isFantomResolving
+//                          isFantomResolving:isFantomResolving
                                  parameters:parameters];
             return;
 
         }
         
-        NSURL *urlWithXid = [url URLByAppendingPathComponent:xidString];
+        [STMSocketController sendFindEventToResource:resource
+                                             withXid:xidString
+                                          andTimeout:0];
         
-        NSURLRequest *request = [NSURLRequest requestWithURL:urlWithXid];
+// should send event via socketController
         
-        request = [[STMCoreAuthController authController] authenticateRequest:request];
-        
-        if (request) {
-            
-            [NSURLConnection sendAsynchronousRequest:request
-                                               queue:[NSOperationQueue mainQueue]
-                                   completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-                                       
-                if (!connectionError) {
-                    
-                    [self receiveRequestObjectResponse:response
-                                              withData:data
-                                             forEntity:entity
-                                            parameters:parameters];
-
-                } else {
-
-                    NSString *errorMessage = [NSString stringWithFormat:@"connectionError: %@", connectionError.localizedDescription];
-
-                    [self requestObjectErrorMessage:errorMessage
-                                  isFantomResolving:isFantomResolving
-                                         parameters:parameters];
-
-                }
-
-            }];
-            
-        } else {
-            
-            NSString *errorMessage = [NSString stringWithFormat:@"Do I have access token for request parameters %@?", parameters];
-            
-            [self requestObjectErrorMessage:errorMessage
-                          isFantomResolving:isFantomResolving
-                                 parameters:parameters];
-            
-        }
+//        NSURL *urlWithXid = [url URLByAppendingPathComponent:xidString];
+//        
+//        NSURLRequest *request = [NSURLRequest requestWithURL:urlWithXid];
+//        
+//        request = [[STMCoreAuthController authController] authenticateRequest:request];
+//        
+//        if (request) {
+//            
+//            [NSURLConnection sendAsynchronousRequest:request
+//                                               queue:[NSOperationQueue mainQueue]
+//                                   completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+//                                       
+//                if (!connectionError) {
+//                    
+//                    [self receiveRequestObjectResponse:response
+//                                              withData:data
+//                                             forEntity:entity
+//                                            parameters:parameters];
+//
+//                } else {
+//
+//                    NSString *errorMessage = [NSString stringWithFormat:@"connectionError: %@", connectionError.localizedDescription];
+//
+//                    [self requestObjectErrorMessage:errorMessage
+//                                  isFantomResolving:isFantomResolving
+//                                         parameters:parameters];
+//
+//                }
+//
+//            }];
+//            
+//        } else {
+//            
+//            NSString *errorMessage = [NSString stringWithFormat:@"Do I have access token for request parameters %@?", parameters];
+//            
+//            [self requestObjectErrorMessage:errorMessage
+//                          isFantomResolving:isFantomResolving
+//                                 parameters:parameters];
+//            
+//        }
         
     } else {
         
@@ -1603,101 +1609,101 @@
 
 }
 
-+ (void)requestObjectErrorMessage:(NSString *)errorMessage isFantomResolving:(BOOL)isFantomResolving parameters:(NSDictionary *)parameters {
++ (void)requestObjectErrorMessage:(NSString *)errorMessage /*isFantomResolving:(BOOL)isFantomResolving */parameters:(NSDictionary *)parameters {
     
-    if (isFantomResolving) {
-        
+//    if (isFantomResolving) {
+    
         [self didFinishResolveFantom:parameters successfully:NO];
         NSLog(errorMessage);
         
-    } else {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage type:@"error"];
-        
-    }
+//    } else {
+//        
+//        [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage type:@"error"];
+//        
+//    }
 
 }
 
-+ (void)receiveRequestObjectResponse:(NSURLResponse *)response withData:(NSData *)data forEntity:(STMEntity *)entity parameters:(NSDictionary *)parameters {
-    
-    BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
-
-    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-        
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        
-        if (httpResponse.statusCode == 200 && data.length > 0) {
-            
-            NSError *error;
-            NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:(NSData *)data
-                                                                         options:NSJSONReadingMutableContainers
-                                                                           error:&error];
-            
-            NSString *errorString = nil;
-            
-            if ([responseJSON isKindOfClass:[NSDictionary class]]) {
-                errorString = responseJSON[@"error"];
-            } else {
-                errorString = @"response not a dictionary";
-            }
-            
-            if (!errorString) {
-                
-                NSArray *dataArray = responseJSON[@"data"];
-
-#warning should rewrite bunch of code below
-                
-//                [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
-//                    
-//                    if (isFantomResolving) {
-//                     
-//                        [self didFinishResolveFantom:parameters successfully:success];
-//                        
-//                    } else {
-//                    
-//                        if (!success) {
-//                            
-//                            NSString *errorMessage = [NSString stringWithFormat:@"error processing dataArray %@ with request parameters %@", dataArray, parameters];
-//                            
-//                            [self requestObjectErrorMessage:errorMessage
-//                                          isFantomResolving:isFantomResolving
-//                                                 parameters:parameters];
-//                            
-//                        }
+//+ (void)receiveRequestObjectResponse:(NSURLResponse *)response withData:(NSData *)data forEntity:(STMEntity *)entity parameters:(NSDictionary *)parameters {
+//    
+////    BOOL isFantomResolving = [parameters[@"isFantomResolving"] boolValue];
 //
-//                    }
-//                    
-//                }];
-                
-            } else {
-                
-                [self requestObjectErrorMessage:errorString
-                              isFantomResolving:isFantomResolving
-                                     parameters:parameters];
-                
-            }
-            
-        } else {
-
-            NSString *errorMessage = [NSString stringWithFormat:@"response status %@ with request parameters %@", @(httpResponse.statusCode), parameters];
-            
-            [self requestObjectErrorMessage:errorMessage
-                          isFantomResolving:isFantomResolving
-                                 parameters:parameters];
-            
-        }
-        
-    } else {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"response is not the NSHTTPURLResponse class with request parameters %@", parameters];
-        
-        [self requestObjectErrorMessage:errorMessage
-                      isFantomResolving:isFantomResolving
-                             parameters:parameters];
-
-    }
-
-}
+//    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+//        
+//        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+//        
+//        if (httpResponse.statusCode == 200 && data.length > 0) {
+//            
+//            NSError *error;
+//            NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:(NSData *)data
+//                                                                         options:NSJSONReadingMutableContainers
+//                                                                           error:&error];
+//            
+//            NSString *errorString = nil;
+//            
+//            if ([responseJSON isKindOfClass:[NSDictionary class]]) {
+//                errorString = responseJSON[@"error"];
+//            } else {
+//                errorString = @"response not a dictionary";
+//            }
+//            
+//            if (!errorString) {
+//                
+//                NSArray *dataArray = responseJSON[@"data"];
+//
+//#warning should rewrite bunch of code below
+//                
+////                [STMCoreObjectsController processingOfDataArray:dataArray roleName:entity.roleName withCompletionHandler:^(BOOL success) {
+////                    
+////                    if (isFantomResolving) {
+////                     
+////                        [self didFinishResolveFantom:parameters successfully:success];
+////                        
+////                    } else {
+////                    
+////                        if (!success) {
+////                            
+////                            NSString *errorMessage = [NSString stringWithFormat:@"error processing dataArray %@ with request parameters %@", dataArray, parameters];
+////                            
+////                            [self requestObjectErrorMessage:errorMessage
+////                                          isFantomResolving:isFantomResolving
+////                                                 parameters:parameters];
+////                            
+////                        }
+////
+////                    }
+////                    
+////                }];
+//                
+//            } else {
+//                
+//                [self requestObjectErrorMessage:errorString
+////                              isFantomResolving:isFantomResolving
+//                                     parameters:parameters];
+//                
+//            }
+//            
+//        } else {
+//
+//            NSString *errorMessage = [NSString stringWithFormat:@"response status %@ with request parameters %@", @(httpResponse.statusCode), parameters];
+//            
+//            [self requestObjectErrorMessage:errorMessage
+////                          isFantomResolving:isFantomResolving
+//                                 parameters:parameters];
+//            
+//        }
+//        
+//    } else {
+//        
+//        NSString *errorMessage = [NSString stringWithFormat:@"response is not the NSHTTPURLResponse class with request parameters %@", parameters];
+//        
+//        [self requestObjectErrorMessage:errorMessage
+////                      isFantomResolving:isFantomResolving
+//                             parameters:parameters];
+//
+//    }
+//
+//}
 
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully {
     

@@ -87,7 +87,8 @@
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls;
 
-+ (void)requestObjectWithParameters:(NSDictionary *)parameters;
+//+ (void)requestObjectWithParameters:(NSDictionary *)parameters;
++ (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
 
 
 @end

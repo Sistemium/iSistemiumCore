@@ -682,7 +682,7 @@
 + (void)receiveJSDataEventAckWithData:(NSArray *)data {
     
 //    NSLog(@"receiveJSDataEventAckWithData %@", data);
-    
+
     [[self syncer] socketReceiveJSDataAck:data];
     
 }
@@ -738,6 +738,17 @@
     return resourceString;
     
 }
+
++ (void)sendFindEventToResource:(NSString *)resource withXid:(NSString *)xidString andTimeout:(NSTimeInterval)timeout {
+	
+    NSDictionary *value = @{@"method"   : kSocketFindMethod,
+                            @"resource" : resource,
+                            @"id"       : xidString};
+
+    [self sendEvent:STMSocketEventJSData withValue:value];
+    
+}
+
 
 
 
