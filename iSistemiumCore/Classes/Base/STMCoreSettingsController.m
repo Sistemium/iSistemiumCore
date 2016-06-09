@@ -302,9 +302,8 @@
 
 - (STMSetting *)settingForDictionary:(NSDictionary *)dictionary {
     
-    NSDictionary *properties = dictionary[@"properties"];
-    NSString *settingName = [properties valueForKey:@"name"];
-    NSString *settingGroup = [properties valueForKey:@"group"];
+    NSString *settingName = dictionary[@"name"];
+    NSString *settingGroup = dictionary[@"group"];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@ AND group == %@", settingName, settingGroup];
     
