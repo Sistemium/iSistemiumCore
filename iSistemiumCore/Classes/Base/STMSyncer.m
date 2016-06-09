@@ -1076,7 +1076,7 @@
     if (errorString) {
         
         errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorString];
-        [self socketReceiveJSDataFindAllAckError:errorString]; return;
+        [self socketReceiveJSDataUpdateAckError:errorString]; return;
         
     }
     
@@ -1117,7 +1117,7 @@
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    [self sendFinishedWithError:errorString];
+    [STMSocketController sendFinishedWithError:errorString];
     
 }
 
