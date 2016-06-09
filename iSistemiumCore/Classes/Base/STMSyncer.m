@@ -728,6 +728,8 @@
 
 - (void)checkNews {
     
+    [self receiveData]; return;
+
     if (self.fullSyncWasDone && !self.receivingEntitiesNames) {
         
         self.errorOccured = NO;
