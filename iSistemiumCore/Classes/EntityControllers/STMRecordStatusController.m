@@ -35,8 +35,11 @@
     
     if (!recordStatus) {
         
+        NSString *objectEntityName = [object.entity.name stringByReplacingOccurrencesOfString:ISISTEMIUM_PREFIX withString:@""];
+
         recordStatus = (STMRecordStatus *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMRecordStatus class]) isFantom:NO];
         recordStatus.objectXid = objectXid;
+        recordStatus.name = objectEntityName;
         
     }
     
@@ -59,5 +62,6 @@
     return recordStatuses;
     
 }
+
 
 @end
