@@ -1,8 +1,8 @@
 //
 //  STMRecordStatus+CoreDataProperties.m
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 09/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -28,5 +28,6 @@
 @dynamic sqts;
 @dynamic sts;
 @dynamic xid;
+@dynamic name;
 
 @end

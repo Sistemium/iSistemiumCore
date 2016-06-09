@@ -233,6 +233,7 @@
         <attribute name="isRemoved" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isTemporary" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectXid" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
@@ -288,7 +289,7 @@
         <element name="STMMessage" positionX="-180" positionY="-552" width="128" height="345"/>
         <element name="STMMessagePicture" positionX="-353" positionY="-666" width="128" height="73"/>
         <element name="STMPhoto" positionX="-522" positionY="-585" width="128" height="58"/>
-        <element name="STMRecordStatus" positionX="-693" positionY="-954" width="128" height="268"/>
+        <element name="STMRecordStatus" positionX="-693" positionY="-954" width="128" height="283"/>
         <element name="STMSetting" positionX="-1154" positionY="-694" width="128" height="253"/>
         <element name="STMWorkflow" positionX="7" positionY="-657" width="128" height="270"/>
     </elements>
