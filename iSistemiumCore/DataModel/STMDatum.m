@@ -73,34 +73,33 @@
     
     NSDictionary *changedValues = self.changedValues;
     
-    if (![changedValues.allKeys containsObject:@"lts"]) { //?????
-        
-        NSArray *excludeProperties = [self excludeProperties];
-        
-        NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
-        [changedKeysArray removeObjectsInArray:excludeProperties];
-        
-        NSMutableArray *relationshipsToMany = [NSMutableArray array];
-        
-        for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
-            if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
-        }
-        
-        [changedKeysArray removeObjectsInArray:relationshipsToMany];
-        
-        if (changedKeysArray.count > 0) {
-            
-            if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
-            
-            NSDate *currentDate = [NSDate date];
-            
-//            self.deviceTs = currentDate;
-            
-            [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
+    BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
 
-        }
+    if (ltsIsChanged) return;
+
+    NSArray *excludeProperties = [self excludeProperties];
+    
+    NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
+    [changedKeysArray removeObjectsInArray:excludeProperties];
+    
+    NSMutableArray *relationshipsToMany = [NSMutableArray array];
+    
+    for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
+        if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
+    }
+    
+    [changedKeysArray removeObjectsInArray:relationshipsToMany];
+    
+    if (changedKeysArray.count > 0) {
+        
+        if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
+        
+        NSDate *currentDate = [NSDate date];
+        self.deviceTs = currentDate;
+        [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
         
     }
+
     
 }
 
