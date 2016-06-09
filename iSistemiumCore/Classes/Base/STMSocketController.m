@@ -543,9 +543,15 @@
         
         if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
             
-            [self sharedInstance].isSendingData = YES;
-            [self sharedInstance].sendingDate = [NSDate date];
+            NSString *method = value[@"method"];
+            
+            if ([method isEqualToString:@"update"]) {
+                
+                [self sharedInstance].isSendingData = YES;
+                [self sharedInstance].sendingDate = [NSDate date];
 
+            }
+            
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
             
             NSDictionary *dataDic = (NSDictionary *)value;
