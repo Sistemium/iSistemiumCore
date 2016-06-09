@@ -975,8 +975,16 @@
 - (void)socketReceiveJSDataAck:(NSArray *)data {
 
     NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+    
     if (!response) {
-        [self socketReceiveJSDataFindAllAckError:@"ERROR: response contain no dictionary"]; return;
+        
+        // don't know which method cause an error, send error to all of them
+        NSString *errorMessage = @"ERROR: response contain no dictionary";
+        [self socketReceiveJSDataFindAllAckError:errorMessage];
+        [self socketReceiveJSDataFindAckError:errorMessage entityName:nil xid:nil];
+        [self socketReceiveJSDataUpdateAckError:errorMessage];
+        return;
+        
     }
     
     NSString *resource = response[@"resource"];
@@ -1038,12 +1046,14 @@
 
 - (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorString:(NSString *)errorString {
     
+    NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
+    
     if (errorString) {
-        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString]]; return;
+        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString] entityName:entityName xid:xid]; return;
     }
     
     if (!resource) {
-        [self socketReceiveJSDataFindAckError:@"ERROR: have no resource string in response"]; return;
+        [self socketReceiveJSDataFindAckError:@"ERROR: have no resource string in response" entityName:entityName xid:xid]; return;
     }
 
     NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
@@ -1051,11 +1061,11 @@
     if (!responseData) {
         
         errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckError:errorString]; return;
+        [self socketReceiveJSDataFindAckError:errorString entityName:entityName xid:xid]; return;
         
     }
     
-    [self parseFindAckResponseData:responseData withEntityName:entityName];
+    [self parseFindAckResponseData:responseData withEntityName:entityName xid:xid];
 
 }
 
@@ -1089,12 +1099,15 @@
     
 }
 
-- (void)socketReceiveJSDataFindAckError:(NSString *)errorString {
+- (void)socketReceiveJSDataFindAckError:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid {
     
     NSLog(errorString);
+    
+    if (!entityName) entityName = @"";
+    if (!xid) xid = [NSData data];
+    
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-#warning should not send nil!!!
-    [STMCoreObjectsController didFinishResolveFantom:nil successfully:NO];
+    [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:NO];
     
 }
 
@@ -1226,14 +1239,15 @@
     
 }
 
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName {
-    
+- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid {
+
     //    NSLog(@"find responseData %@", responseData);
+
+    if (!entityName) entityName = @"";
+    if (!xid) xid = [NSData data];
+
     [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-        
-        NSData *xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
         [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:success];
-        
     }];
     
 }

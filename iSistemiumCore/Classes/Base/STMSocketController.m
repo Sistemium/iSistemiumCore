@@ -739,7 +739,7 @@
     
 }
 
-+ (void)sendFindEventToResource:(NSString *)resource withXid:(NSString *)xidString andTimeout:(NSTimeInterval)timeout {
++ (void)sendFantomFindEventToResource:(NSString *)resource withXid:(NSString *)xidString andTimeout:(NSTimeInterval)timeout {
 	
     NSDictionary *value = @{@"method"   : kSocketFindMethod,
                             @"resource" : resource,

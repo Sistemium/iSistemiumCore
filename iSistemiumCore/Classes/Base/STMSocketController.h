@@ -65,9 +65,9 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 + (NSString *)newsResourceString;
 
-+ (void)sendFindEventToResource:(NSString *)resource
-                        withXid:(NSString *)xidString
-                     andTimeout:(NSTimeInterval)timeout;
++ (void)sendFantomFindEventToResource:(NSString *)resource
+                              withXid:(NSString *)xidString
+                           andTimeout:(NSTimeInterval)timeout;
 
 
 @end
