@@ -116,10 +116,6 @@
         [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
         [[UIApplication sharedApplication] registerForRemoteNotifications];
         
-    } else if (SYSTEM_VERSION >= 3.0 && SYSTEM_VERSION < 8.0) {
-        
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
-        
     }
 
 }
@@ -374,26 +370,6 @@
             [typesArray addObject:@"none"];
         }
 
-    } else if (SYSTEM_VERSION >= 3.0 && SYSTEM_VERSION < 8.0) {
-
-        UIRemoteNotificationType types = [UIApplication sharedApplication].enabledRemoteNotificationTypes;
-        
-        if (types & UIRemoteNotificationTypeAlert) {
-            [typesArray addObject:@"alert"];
-        }
-        if (types & UIRemoteNotificationTypeBadge) {
-            [typesArray addObject:@"badge"];
-        }
-        if (types & UIRemoteNotificationTypeSound) {
-            [typesArray addObject:@"sound"];
-        }
-        if (types & UIRemoteNotificationTypeNewsstandContentAvailability) {
-            [typesArray addObject:@"newsstandContentAvailability"];
-        }
-        if (types == UIRemoteNotificationTypeNone) {
-            [typesArray addObject:@"none"];
-        }
-        
     }
     
     return [typesArray componentsJoinedByString:@", "];
