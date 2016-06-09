@@ -33,8 +33,6 @@
 @dynamic notificationTypes;
 @dynamic ownerXid;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic systemVersion;
 @dynamic tokenHash;
 @dynamic xid;

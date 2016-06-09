@@ -20,8 +20,6 @@
 @dynamic isFantom;
 @dynamic lts;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic xid;
 @dynamic code;
 @dynamic destinationEntity;

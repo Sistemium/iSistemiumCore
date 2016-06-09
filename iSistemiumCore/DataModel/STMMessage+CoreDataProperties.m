@@ -27,8 +27,6 @@
 @dynamic schedule;
 @dynamic showOnEnterForeground;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic subject;
 @dynamic xid;
 @dynamic pictures;

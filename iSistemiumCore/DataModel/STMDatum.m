@@ -97,9 +97,7 @@
 //            self.deviceTs = currentDate;
             
             [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
-            
-            self.sqts = (self.lts) ? self.deviceTs : self.deviceCts;
-            
+
         }
         
     }

@@ -18,8 +18,6 @@
 @dynamic id;
 @dynamic isFantom;
 @dynamic lts;
-@dynamic sqts;
-@dynamic sts;
 @dynamic xid;
 
 @end

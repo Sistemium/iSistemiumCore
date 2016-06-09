@@ -28,8 +28,6 @@
 @dynamic ownerXid;
 @dynamic source;
 @dynamic speed;
-@dynamic sqts;
-@dynamic sts;
 @dynamic timestamp;
 @dynamic verticalAccuracy;
 @dynamic xid;

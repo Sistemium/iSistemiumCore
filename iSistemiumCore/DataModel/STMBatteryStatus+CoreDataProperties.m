@@ -23,8 +23,6 @@
 @dynamic lts;
 @dynamic ownerXid;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic xid;
 
 @end

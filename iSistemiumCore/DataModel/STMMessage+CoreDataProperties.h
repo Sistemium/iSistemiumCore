@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *schedule;
 @property (nullable, nonatomic, retain) NSNumber *showOnEnterForeground;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSString *subject;
 @property (nullable, nonatomic, retain) NSData *xid;
 @property (nullable, nonatomic, retain) NSSet<STMMessagePicture *> *pictures;

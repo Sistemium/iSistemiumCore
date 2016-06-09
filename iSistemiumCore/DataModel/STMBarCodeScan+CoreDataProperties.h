@@ -22,8 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSNumber *isFantom;
 @property (nullable, nonatomic, retain) NSDate *lts;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSData *xid;
 @property (nullable, nonatomic, retain) NSString *code;
 @property (nullable, nonatomic, retain) NSString *destinationEntity;

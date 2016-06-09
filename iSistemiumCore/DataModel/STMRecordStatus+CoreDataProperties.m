@@ -25,8 +25,6 @@
 @dynamic objectXid;
 @dynamic ownerXid;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic xid;
 @dynamic name;
 

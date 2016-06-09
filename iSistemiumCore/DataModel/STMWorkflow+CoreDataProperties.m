@@ -22,8 +22,6 @@
 @dynamic lts;
 @dynamic ownerXid;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic workflow;
 @dynamic xid;
 @dynamic entities;

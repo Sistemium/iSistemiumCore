@@ -28,8 +28,6 @@
 @dynamic roleName;
 @dynamic roleOwner;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic url;
 @dynamic workflow;
 @dynamic xid;

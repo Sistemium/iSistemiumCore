@@ -21,8 +21,6 @@
 @dynamic lts;
 @dynamic ownerXid;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic text;
 @dynamic type;
 @dynamic xid;

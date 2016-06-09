@@ -20,8 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSNumber *id;
 @property (nullable, nonatomic, retain) NSNumber *isFantom;
 @property (nullable, nonatomic, retain) NSDate *lts;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSData *xid;
 
 @end

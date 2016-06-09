@@ -28,8 +28,6 @@
 @dynamic picturesInfo;
 @dynamic resizedImagePath;
 @dynamic source;
-@dynamic sqts;
-@dynamic sts;
 @dynamic xid;
 @dynamic thumbnailHref;
 

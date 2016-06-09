@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *picturesInfo;
 @property (nullable, nonatomic, retain) NSString *resizedImagePath;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSData *xid;
 @property (nullable, nonatomic, retain) NSString *thumbnailHref;
 

@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *roleName;
 @property (nullable, nonatomic, retain) NSString *roleOwner;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSString *url;
 @property (nullable, nonatomic, retain) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
