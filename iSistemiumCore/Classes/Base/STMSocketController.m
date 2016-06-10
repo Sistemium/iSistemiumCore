@@ -32,6 +32,7 @@
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic, strong) NSMutableDictionary *syncDataDictionary;
+@property (nonatomic, strong) NSMutableArray *doNotSyncObjects;
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
 @property (nonatomic) BOOL controllersDidChangeContent;
 @property (nonatomic) BOOL isAuthorized;
@@ -226,6 +227,7 @@
         sc.isAuthorized = NO;
         sc.isRunning = NO;
         sc.syncDataDictionary = nil;
+        sc.doNotSyncObjects = nil;
         sc.sendingDate = nil;
 
     }
@@ -392,31 +394,50 @@
 + (STMDatum *)checkRelationshipsObjectsForObject:(STMDatum *)syncObject fromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
     
     [syncArray removeObject:syncObject];
-
-    NSEntityDescription *objectEntity = syncObject.entity;
-    NSString *entityName = objectEntity.name;
-    NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
     
-    for (NSString *relName in relationships.allKeys) {
+    STMSocketController *sc = [STMSocketController sharedInstance];
+    
+    if ([sc.doNotSyncObjects containsObject:syncObject.xid]) {
         
-        STMDatum *relObject = [syncObject valueForKey:relName];
-        if (![syncArray containsObject:relObject]) continue;
+        return [self findObjectToSendFirstFromSyncArray:syncArray];
         
-        NSEntityDescription *relObjectEntity = relObject.entity;
-        NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
+    } else {
+     
+        NSEntityDescription *objectEntity = syncObject.entity;
+        NSString *entityName = objectEntity.name;
+        NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
         
-        for (NSRelationshipDescription *relDesc in checkingRelationships) {
+        for (NSString *relName in relationships.allKeys) {
             
-            if (!relDesc.isToMany) continue;
-            if (![[relObject valueForKey:relDesc.name] containsObject:syncObject]) continue;
+            STMDatum *relObject = [syncObject valueForKey:relName];
             
-            syncObject = [self checkRelationshipsObjectsForObject:relObject fromSyncArray:syncArray];
-            break;
+            if ([sc.doNotSyncObjects containsObject:relObject.xid]) {
+                
+                [sc.doNotSyncObjects addObject:syncObject];
+                syncObject = nil;
+                break;
+                
+            }
+            
+            if (![syncArray containsObject:relObject]) continue;
+            
+            NSEntityDescription *relObjectEntity = relObject.entity;
+            NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
+            
+            for (NSRelationshipDescription *relDesc in checkingRelationships) {
+                
+                if (!relDesc.isToMany) continue;
+                if (![[relObject valueForKey:relDesc.name] containsObject:syncObject]) continue;
+                
+                syncObject = [self checkRelationshipsObjectsForObject:relObject fromSyncArray:syncArray];
+                break;
+                
+            }
             
         }
+        return (syncObject) ? syncObject : [self findObjectToSendFirstFromSyncArray:syncArray];
         
     }
-    return syncObject;
     
 }
 
@@ -451,6 +472,16 @@
     
 }
 
++ (void)syncObjectWithXid:(NSData *)xid successfully:(BOOL)successfully {
+    
+    if (successfully) {
+        [self successfullySyncObjectWithXid:xid];
+    } else {
+        [self unsuccessfullySyncObjectWithXid:xid];
+    }
+    
+}
+
 + (void)successfullySyncObjectWithXid:(NSData *)xid {
     
     [[self document] saveDocument:^(BOOL success) {
@@ -461,6 +492,20 @@
         [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
 
     }];
+    
+}
+
++ (void)unsuccessfullySyncObjectWithXid:(NSData *)xid {
+    
+    STMSocketController *sc = [self sharedInstance];
+    
+    if (xid) {
+        
+        [sc.syncDataDictionary removeObjectForKey:xid];
+        [sc.doNotSyncObjects addObject:xid];
+        
+    }
+    [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
     
 }
 
@@ -497,6 +542,7 @@
     sc.isSendingData = NO;
     [[self syncer] sendFinishedWithError:errorString];
     sc.syncDataDictionary = nil;
+    sc.doNotSyncObjects = nil;
     sc.sendingDate = nil;
     
 }
@@ -862,6 +908,7 @@
     STMSocketController *sc = [self sharedInstance];
     sc.isAuthorized = NO;
     sc.syncDataDictionary = nil;
+    sc.doNotSyncObjects = nil;
     sc.sendingDate = nil;
 
     [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:) withObject:socket afterDelay:CHECK_AUTHORIZATION_DELAY];
@@ -1101,6 +1148,15 @@
         _syncDataDictionary = @{}.mutableCopy;
     }
     return _syncDataDictionary;
+    
+}
+
+- (NSMutableArray *)doNotSyncObjects {
+    
+    if (!_doNotSyncObjects) {
+        _doNotSyncObjects = @[].mutableCopy;
+    }
+    return _doNotSyncObjects;
     
 }
 

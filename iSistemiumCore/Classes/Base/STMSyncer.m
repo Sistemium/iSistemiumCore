@@ -997,7 +997,7 @@
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
         [self socketReceiveJSDataFindAckError:errorMessage entityName:nil xid:nil];
-        [self socketReceiveJSDataUpdateAckError:errorMessage];
+        [self socketReceiveJSDataUpdateAckError:errorMessage withResponseData:nil];
         return;
         
     }
@@ -1086,19 +1086,19 @@
 
 - (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorString:(NSString *)errorString {
     
+    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+    
     if (errorString) {
         
         errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorString];
-        [self socketReceiveJSDataUpdateAckError:errorString]; return;
+        [self socketReceiveJSDataUpdateAckError:errorString withResponseData:responseData]; return;
         
     }
-    
-    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-    
+
     if (!responseData) {
         
         errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
-        [self socketReceiveJSDataUpdateAckError:errorString]; return;
+        [self socketReceiveJSDataUpdateAckError:errorString withResponseData:responseData]; return;
         
     }
     
@@ -1126,11 +1126,21 @@
     
 }
 
-- (void)socketReceiveJSDataUpdateAckError:(NSString *)errorString {
+- (void)socketReceiveJSDataUpdateAckError:(NSString *)errorString withResponseData:(NSDictionary *)responseData {
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    [STMSocketController sendFinishedWithError:errorString];
+    
+    if ([errorString hasPrefix:@"4"]) {
+    
+        NSString *xid = [responseData valueForKey:@"id"];
+        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+
+        [STMSocketController syncObjectWithXid:xidData successfully:NO];
+
+    } else {
+        [STMSocketController sendFinishedWithError:errorString];
+    }
     
 }
 
@@ -1307,7 +1317,7 @@
                     
                 }
                 
-                [STMSocketController successfullySyncObjectWithXid:xidData];
+                [STMSocketController syncObjectWithXid:xidData successfully:YES];
                 
                 NSString *entityName = object.entity.name;
                 

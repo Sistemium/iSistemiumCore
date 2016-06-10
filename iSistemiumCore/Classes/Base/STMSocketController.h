@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (BOOL)isSendingData;
 
 + (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid;
-+ (void)successfullySyncObjectWithXid:(NSData *)xid;
++ (void)syncObjectWithXid:(NSData *)xid successfully:(BOOL)successfully;
 
 + (void)startReceiveDataFromResource:(NSString *)resourceString
                             withETag:(NSString *)eTag
