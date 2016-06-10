@@ -957,6 +957,7 @@
     if (errorString) {
         
         self.syncing = NO;
+        [STMSocketController receiveFinishedWithError:errorString];
         self.syncerState = STMSyncerIdle;
 
     } else {
@@ -973,6 +974,8 @@
                 [STMCoreObjectsController dataLoadingFinished];
                 
                 self.syncing = NO;
+                
+                [STMSocketController receiveFinishedWithError:nil];
                 
                 self.syncerState = (self.errorOccured) ? STMSyncerIdle : STMSyncerSendDataOnce;
                 
@@ -997,14 +1000,14 @@
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
         [self socketReceiveJSDataFindAckError:errorMessage entityName:nil xid:nil];
-        [self socketReceiveJSDataUpdateAckError:errorMessage withResponseData:nil];
+        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorMessage withResponseData:nil];
         return;
         
     }
     
     NSString *resource = response[@"resource"];
     NSString *entityName = [STMEntityController entityNameForURLString:resource];
-    NSString *errorString = response[@"error"];
+    NSNumber *errorCode = response[@"error"];
     NSString *methodName = response[@"method"];
     
     if ([methodName isEqualToString:kSocketFindAllMethod]) {
@@ -1013,7 +1016,7 @@
                    withResponse:response
                        resource:resource
                      entityName:entityName
-                    errorString:errorString];
+                    errorCode:errorCode];
 
     } else if ([methodName isEqualToString:kSocketFindMethod]) {
     
@@ -1021,7 +1024,7 @@
                 withResponse:response
                     resource:resource
                   entityName:entityName
-                 errorString:errorString];
+                 errorCode:errorCode];
         
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
 
@@ -1029,16 +1032,16 @@
                   withResponse:response
                       resource:resource
                     entityName:entityName
-                   errorString:errorString];
+                   errorCode:errorCode];
         
     }
     
 }
 
-- (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorString:(NSString *)errorString {
+- (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
-    if (errorString) {
-        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString]]; return;
+    if (errorCode) {
+        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]]; return;
     }
     
     if (!resource) {
@@ -1059,12 +1062,12 @@
 
 }
 
-- (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorString:(NSString *)errorString {
+- (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
-    if (errorString) {
-        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorString] entityName:entityName xid:xid]; return;
+    if (errorCode) {
+        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode] entityName:entityName xid:xid]; return;
     }
     
     if (!resource) {
@@ -1075,7 +1078,7 @@
     
     if (!responseData) {
         
-        errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
+        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
         [self socketReceiveJSDataFindAckError:errorString entityName:entityName xid:xid]; return;
         
     }
@@ -1084,21 +1087,21 @@
 
 }
 
-- (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorString:(NSString *)errorString {
+- (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
     NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
     
-    if (errorString) {
+    if (errorCode) {
         
-        errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorString];
-        [self socketReceiveJSDataUpdateAckError:errorString withResponseData:responseData]; return;
+        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorCode];
+        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponseData:responseData]; return;
         
     }
 
     if (!responseData) {
         
-        errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
-        [self socketReceiveJSDataUpdateAckError:errorString withResponseData:responseData]; return;
+        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
+        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponseData:responseData]; return;
         
     }
     
@@ -1126,12 +1129,12 @@
     
 }
 
-- (void)socketReceiveJSDataUpdateAckError:(NSString *)errorString withResponseData:(NSDictionary *)responseData {
+- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponseData:(NSDictionary *)responseData {
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
     
-    if ([errorString hasPrefix:@"4"]) {
+    if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
     
         NSString *xid = [responseData valueForKey:@"id"];
         NSData *xidData = [STMFunctions xidDataFromXidString:xid];

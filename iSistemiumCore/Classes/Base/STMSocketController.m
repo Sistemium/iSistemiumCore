@@ -323,6 +323,12 @@
     
     NSArray <STMDatum *> *syncDataArray = [self unsyncedObjects];
 
+    STMSocketController *sc = [self sharedInstance];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", sc.doNotSyncObjects];
+    
+    syncDataArray = [syncDataArray filteredArrayUsingPredicate:predicate];
+    
     if (syncDataArray.count > 0) {
 
         NSLog(@"have %d objects to send via Socket", syncDataArray.count);
@@ -392,6 +398,8 @@
 }
 
 + (STMDatum *)checkRelationshipsObjectsForObject:(STMDatum *)syncObject fromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
+
+//    NSLog(@"syncObject.xid %@", syncObject.xid);
     
     [syncArray removeObject:syncObject];
     
@@ -407,14 +415,21 @@
         NSString *entityName = objectEntity.name;
         NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
         
+//        NSLog(@"%@: %@", entityName, relationships.allKeys);
+        
+        BOOL shouldFindNext = NO;
+        
         for (NSString *relName in relationships.allKeys) {
+            
+//            NSLog(@"check relName %@", relName);
             
             STMDatum *relObject = [syncObject valueForKey:relName];
             
             if ([sc.doNotSyncObjects containsObject:relObject.xid]) {
                 
-                [sc.doNotSyncObjects addObject:syncObject];
-                syncObject = nil;
+                [sc.doNotSyncObjects addObject:syncObject.xid];
+                
+                shouldFindNext = YES;
                 break;
                 
             }
@@ -424,18 +439,23 @@
             NSEntityDescription *relObjectEntity = relObject.entity;
             NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
             
+            BOOL doBreak = NO;
+            
             for (NSRelationshipDescription *relDesc in checkingRelationships) {
                 
                 if (!relDesc.isToMany) continue;
                 if (![[relObject valueForKey:relDesc.name] containsObject:syncObject]) continue;
                 
                 syncObject = [self checkRelationshipsObjectsForObject:relObject fromSyncArray:syncArray];
+                doBreak = YES;
                 break;
                 
             }
             
+            if (doBreak) break;
+            
         }
-        return (syncObject) ? syncObject : [self findObjectToSendFirstFromSyncArray:syncArray];
+        return (shouldFindNext) ? [self findObjectToSendFirstFromSyncArray:syncArray] : syncObject;
         
     }
     
@@ -499,12 +519,11 @@
     
     STMSocketController *sc = [self sharedInstance];
     
-    if (xid) {
-        
-        [sc.syncDataDictionary removeObjectForKey:xid];
-        [sc.doNotSyncObjects addObject:xid];
-        
-    }
+    if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
+    
+    [sc.syncDataDictionary removeObjectForKey:xid];
+    [sc.doNotSyncObjects addObject:xid];
+    
     [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
     
 }
@@ -542,7 +561,6 @@
     sc.isSendingData = NO;
     [[self syncer] sendFinishedWithError:errorString];
     sc.syncDataDictionary = nil;
-    sc.doNotSyncObjects = nil;
     sc.sendingDate = nil;
     
 }
@@ -812,7 +830,12 @@
     
 }
 
++ (void)receiveFinishedWithError:(NSString *)errorString {
 
+    STMSocketController *sc = [self sharedInstance];
+    sc.doNotSyncObjects = nil;
+
+}
 
 
 #pragma mark - socket events receiveing
