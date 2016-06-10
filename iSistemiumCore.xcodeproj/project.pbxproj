@@ -284,6 +284,7 @@
 		2C13F55D1CE469E300A5F129 /* STMCorePicture+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "STMCorePicture+CoreDataProperties.m"; sourceTree = "<group>"; };
 		2C13F55E1CE469E300A5F129 /* STMCorePicture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCorePicture.h; sourceTree = "<group>"; };
 		2C13F55F1CE469E300A5F129 /* STMCorePicture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCorePicture.m; sourceTree = "<group>"; };
+		2C1444231D0B214700B8E386 /* STMCheckinDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMCheckinDelegate.h; sourceTree = "<group>"; };
 		2C3F72BE1CBBD46400F8BFB8 /* iSistemiumCore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSistemiumCore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3F72C21CBBD46400F8BFB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -1047,6 +1048,7 @@
 			isa = PBXGroup;
 			children = (
 				2C3F74591CBBD7CA00F8BFB8 /* STMBarCodeScannerDelegate.h */,
+				2C1444231D0B214700B8E386 /* STMCheckinDelegate.h */,
 				2C3F745A1CBBD7CA00F8BFB8 /* STMEntitiesSubscribable.h */,
 				2C3F745B1CBBD7CA00F8BFB8 /* STMImagePickerOwnerProtocol.h */,
 				2C3F745C1CBBD7CA00F8BFB8 /* STMRequestAuthenticatable.h */,
