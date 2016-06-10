@@ -192,7 +192,8 @@
     configuration.userContentController = contentController;
     
     self.webView = [[WKWebView alloc] initWithFrame:self.localView.bounds configuration:configuration];
-    
+    self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
     [self.localView addSubview:self.webView];
     
     self.webView.navigationDelegate = self;
