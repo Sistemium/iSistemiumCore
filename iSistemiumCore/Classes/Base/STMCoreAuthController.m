@@ -38,6 +38,7 @@
 @property (nonatomic, strong) NSString *requestID;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketURL;
+@property (nonatomic, strong) NSDictionary *rolesResponse;
 
 
 @end
@@ -52,6 +53,7 @@
 @synthesize entityResource = _entityResource;
 @synthesize stcTabs = _stcTabs;
 @synthesize iSisDB = _iSisDB;
+@synthesize rolesResponse = _rolesResponse;
 
 
 #pragma mark - singletone init
@@ -347,6 +349,36 @@
         
         _iSisDB = iSisDB;
         
+    }
+    
+}
+
+- (NSDictionary *)rolesResponse {
+    
+    if (!_rolesResponse) {
+        
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        id rolesResponse = [defaults objectForKey:@"rolesResponse"];
+        
+        if ([rolesResponse isKindOfClass:[NSDictionary class]]) {
+            _rolesResponse = rolesResponse;
+        }
+
+    }
+    return _rolesResponse;
+    
+}
+
+- (void)setRolesResponse:(NSDictionary *)rolesResponse {
+    
+    if (rolesResponse != _rolesResponse) {
+        
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:rolesResponse forKey:@"rolesResponse"];
+        [defaults synchronize];
+        
+        _rolesResponse = rolesResponse;
+
     }
     
 }
@@ -824,6 +856,8 @@
         }
             
         case STMAuthRequestRoles: {
+            
+            self.rolesResponse = responseJSON;
             
             NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
             
