@@ -1880,7 +1880,8 @@
     
     for (NSString *key in ownRelationships.allKeys) {
         
-        NSString *xidString = objectData[key];
+        NSString *dicKey = [key stringByAppendingString:@"Id"];
+        NSString *xidString = objectData[dicKey];
 
         if (xidString) {
             
@@ -1971,8 +1972,10 @@
     NSDictionary *ownRelationships = [self singleRelationshipsForEntityName:entityName];
     
     for (NSString *key in ownRelationships.allKeys) {
+    
+        NSString *dicKey = [key stringByAppendingString:@"Id"];
         
-        id value = objectData[key];
+        id value = objectData[dicKey];
         
         if (value) {
             
@@ -1985,7 +1988,7 @@
 //                NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:xidString];
 //                
 //                if (![[object valueForKey:key] isEqual:destinationObject]) {
-                    resultDic[key] = value;
+                    resultDic[dicKey] = value;
 //                }
                 
 //            } else {

@@ -97,18 +97,30 @@ class STMScriptMessageController: NSObject {
         
         for key in filterDictionary.keys {
             
-            var localKey: String = key;
+            var localKey: String = key
             
             if key == "id" { localKey = "xid" }
             if key == "ts" { localKey = "deviceTs" }
+            
+            let relKey: String = "Id"
+            
+            if key.hasSuffix(relKey) {
+                
+                let substringIndex = key.endIndex.advancedBy(-relKey.characters.count);
+                
+                if relationships.keys.contains(key.substringToIndex(substringIndex)) {
+                    localKey = key.substringToIndex(substringIndex)
+                }
+                
+            }
             
             guard properties.keys.contains(localKey) else {
                 print("\(entityName) have not property \(localKey)")
                 continue
             }
             
-            let isAttribute: Bool = attributes.keys.contains(localKey);
-            let isRelationship: Bool = relationships.keys.contains(localKey);
+            let isAttribute: Bool = attributes.keys.contains(localKey)
+            let isRelationship: Bool = relationships.keys.contains(localKey)
             
             guard isAttribute == true || isRelationship == true else {
                 print("unknown kind of property '\(localKey)'")
