@@ -949,26 +949,39 @@
 }
 
 - (void)receivingDidFinish {
+    [self receivingDidFinishWithError:nil];
+}
+
+- (void)receivingDidFinishWithError:(NSString *)errorString {
     
-    [self saveReceiveDate];
+    if (errorString) {
+        
+        self.syncing = NO;
+        self.syncerState = STMSyncerIdle;
 
-    self.fullSyncWasDone = YES;
-    self.isFirstSyncCycleIteration = NO;
+    } else {
+        
+        [self saveReceiveDate];
+        
+        self.fullSyncWasDone = YES;
+        self.isFirstSyncCycleIteration = NO;
+        
+        [self.document saveDocument:^(BOOL success) {
+            
+            if (success) {
+                
+                [STMCoreObjectsController dataLoadingFinished];
+                
+                self.syncing = NO;
+                
+                self.syncerState = (self.errorOccured) ? STMSyncerIdle : STMSyncerSendDataOnce;
+                
+            }
+            
+        }];
+
+    }
     
-    [self.document saveDocument:^(BOOL success) {
-        
-        if (success) {
-            
-            [STMCoreObjectsController dataLoadingFinished];
-
-            self.syncing = NO;
-            
-            self.syncerState = (self.errorOccured) ? STMSyncerIdle : STMSyncerSendDataOnce;
-            
-        }
-        
-    }];
-
 }
 
 

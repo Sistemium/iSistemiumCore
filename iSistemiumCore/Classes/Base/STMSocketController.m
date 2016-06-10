@@ -260,27 +260,38 @@
 }
 
 + (void)sendUnsyncedObjects:(id)sender {
-
-    [self checkSendingTimeInterval];
     
-    if ([STMSocketController syncer].syncerState != STMSyncerReceiveData &&
-        [self socketIsAvailable] &&
-        ![self sharedInstance].isSendingData) {
-        
-        if (![self haveToSyncObjects]) {
+    if (![self socketIsAvailable]) {
 
-            if ([sender isEqual:[self syncer]]) {
-                [[self syncer] nothingToSend];
-            }
-            
+        if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
+            [self sendFinishedWithError:@"socket not connected"];
         }
+        return;
+        
+    }
+    
+    if ([STMSocketController syncer].syncerState == STMSyncerReceiveData) {
+        
+        NSLog(@"socket is receiving data, wait to finish it");
+        return;
+        
+    }
+    
+    if ([self sharedInstance].isSendingData) {
+        
+        NSLog(@"socket already in sending data process");
+        return;
 
-    } else {
+    }
+    
+    [self checkSendingTimeInterval];
+
+    if (![self haveToSyncObjects]) {
         
         if ([sender isEqual:[self syncer]]) {
             [[self syncer] nothingToSend];
         }
-
+        
     }
 
 }
