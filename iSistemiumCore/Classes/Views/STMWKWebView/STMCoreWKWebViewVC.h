@@ -11,9 +11,10 @@
 #import "STMEntitiesSubscribable.h"
 #import "STMSoundCallbackable.h"
 #import "STMBarCodeScanner.h"
+#import "STMCheckinDelegate.h"
 
 
-@interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable>
+@interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable, STMCheckinDelegate>
 
 - (void)reloadWebView;
 

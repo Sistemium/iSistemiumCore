@@ -8,6 +8,8 @@
 
 #import "STMCoreTracker.h"
 #import "STMCoreDataModel.h"
+#import "STMCheckinDelegate.h"
+
 
 @interface STMCoreLocationTracker : STMCoreTracker
 
@@ -19,7 +21,7 @@
 
 - (void)getLocation;
 
-- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy;
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy delegate:(id <STMCheckinDelegate>)delegate;
 
 - (NSString *)locationServiceStatus;
 

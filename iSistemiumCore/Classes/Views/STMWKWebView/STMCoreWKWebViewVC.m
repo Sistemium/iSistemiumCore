@@ -10,6 +10,7 @@
 #import <WebKit/WebKit.h>
 
 #import "STMCoreSessionManager.h"
+#import "STMCoreSession.h"
 #import "STMCoreAuthController.h"
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
@@ -40,6 +41,8 @@
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
+@property (nonatomic, strong) NSString *checkinCallbackJSFunction;
+@property (nonatomic) BOOL waitingCheckinLocation;
 
 
 @end
@@ -375,7 +378,23 @@
         
         [self handleRolesMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_CHECKIN]) {
+        
+        [self handleCheckinMessage:message];
+        
     }
+    
+}
+
+- (void)handleCheckinMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    self.checkinCallbackJSFunction = parameters[@"callback"];
+        
+    NSNumber *accuracy = parameters[@"accuracy"];
+    
+    [[(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker] checkinWithAccuracy:accuracy delegate:self];
     
 }
 
@@ -643,6 +662,13 @@
         
     }];
 
+}
+
+
+#pragma mark - STMCheckinDelegate
+
+- (void)getCheckinLocation:(NSDictionary *)checkinLocation {
+    [self callbackWithData:@[checkinLocation] parameters:nil jsCallbackFunction:self.checkinCallbackJSFunction];
 }
 
 

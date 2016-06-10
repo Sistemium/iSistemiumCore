@@ -274,7 +274,7 @@
     
     if ([STMSocketController syncer].syncerState == STMSyncerReceiveData) {
         
-        NSLog(@"socket is receiving data, wait to finish it");
+        NSLog(@"socket is receiving data, wait finish of it to send");
         return;
         
     }

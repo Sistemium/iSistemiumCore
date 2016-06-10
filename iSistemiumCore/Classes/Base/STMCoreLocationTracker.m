@@ -50,6 +50,7 @@
 @property (nonatomic, strong) NSTimer *finishTimer;
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
+@property (nonatomic, weak) id <STMCheckinDelegate> checkinDelegate;
 
 
 @end
@@ -493,7 +494,7 @@
     
 }
 
-- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy {
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy delegate:(id <STMCheckinDelegate>)delegate {
     
     self.checkinAccuracy = checkinAccuracy.doubleValue;
 
@@ -505,13 +506,14 @@
         locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"checkinLocationWasReceived"
-                                                            object:self
-                                                          userInfo:@{@"checkingLocation":lastLocation}];
+        STMLocation *checkinLocation = [STMLocationController locationObjectFromCLLocation:lastLocation];
+        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocation];
+        
+        [delegate getCheckinLocation:checkinLocationDic];
         
     } else {
         
-        self.checkinMode = YES;
+        self.checkinDelegate = delegate;
         
         NSLog(@"location tracker checkin mode, set distance filter to none, desired accuracy to best for navigation");
         
@@ -519,7 +521,9 @@
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
         
         [self.locationManager startUpdatingLocation];
-        
+
+        self.checkinMode = YES;
+
     }
 
 }
@@ -664,10 +668,13 @@
             self.locationManager.distanceFilter = self.distanceFilter;
             
 	    }
+        
+        STMLocation *checkinLocation = [STMLocationController locationObjectFromCLLocation:location];
+        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocation];
     
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"checkinLocationWasReceived"
-														object:self
-													  userInfo:@{@"checkinLocation":location}];
+        [self.checkinDelegate getCheckinLocation:checkinLocationDic];
+        self.checkinDelegate = nil;
+        
     }
     
 }
