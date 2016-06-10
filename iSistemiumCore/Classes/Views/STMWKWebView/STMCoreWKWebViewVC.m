@@ -368,13 +368,33 @@
         
     } else if ([message.name isEqualToString:WK_MESSAGE_REMOTE_CONTROL]) {
         
-        [self handleRemoteControllMessage:message];
+        [self handleRemoteControlMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_ROLES]) {
+        
+        [self handleRolesMessage:message];
         
     }
     
 }
 
-- (void)handleRemoteControllMessage:(WKScriptMessage *)message {
+- (void)handleRolesMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *rolesCallbackJSFunction = parameters[@"callback"];
+    
+    NSDictionary *roles = [STMCoreAuthController authController].rolesResponse;
+    
+    if (roles) {
+        [self callbackWithData:@[roles] parameters:parameters jsCallbackFunction:rolesCallbackJSFunction];
+    } else {
+        [self callbackWithError:@"have no roles" parameters:parameters];
+    }
+    
+}
+
+- (void)handleRemoteControlMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     

@@ -38,7 +38,6 @@
 @property (nonatomic, strong) NSString *requestID;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketURL;
-@property (nonatomic, strong) NSDictionary *rolesResponse;
 
 
 @end
