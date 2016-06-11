@@ -1,5 +1,5 @@
 //
-//  STMLocation.h
+//  STMCoreLocation.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMLocation : STMDatum
+@interface STMCoreLocation : STMDatum
 
 // Insert code here to declare functionality of your managed object subclass
 
@@ -21,4 +21,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#import "STMLocation+CoreDataProperties.h"
+#import "STMCoreLocation+CoreDataProperties.h"

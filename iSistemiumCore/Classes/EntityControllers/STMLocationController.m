@@ -12,9 +12,9 @@
 
 @implementation STMLocationController
 
-+ (STMLocation *)locationObjectFromCLLocation:(CLLocation *)location {
++ (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location {
     
-    STMLocation *locationObject = (STMLocation *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLocation class]) isFantom:NO];
+    STMCoreLocation *locationObject = (STMCoreLocation *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMCoreLocation class]) isFantom:NO];
     locationObject.latitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.latitude).decimalValue];
     locationObject.longitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.longitude).decimalValue];
     locationObject.horizontalAccuracy = [NSDecimalNumber decimalNumberWithDecimal:@(location.horizontalAccuracy).decimalValue];
@@ -27,7 +27,7 @@
     
 }
 
-+ (CLLocation *)locationFromLocationObject:(STMLocation *)locationObject {
++ (CLLocation *)locationFromLocationObject:(STMCoreLocation *)locationObject {
     
     CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([locationObject.latitude doubleValue], [locationObject.longitude doubleValue]);
     CLLocation *location = [[CLLocation alloc] initWithCoordinate:coordinate

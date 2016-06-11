@@ -1,5 +1,5 @@
 //
-//  STMLocation+CoreDataProperties.m
+//  STMCoreLocation+CoreDataProperties.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -9,9 +9,9 @@
 //  to delete and recreate this implementation file for your updated model.
 //
 
-#import "STMLocation+CoreDataProperties.h"
+#import "STMCoreLocation+CoreDataProperties.h"
 
-@implementation STMLocation (CoreDataProperties)
+@implementation STMCoreLocation (CoreDataProperties)
 
 @dynamic altitude;
 @dynamic commentText;

@@ -10,8 +10,8 @@
 
 @interface STMLocationController : STMCoreController
 
-+ (STMLocation *)locationObjectFromCLLocation:(CLLocation *)location;
-+ (CLLocation *)locationFromLocationObject:(STMLocation *)locationObject;
++ (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location;
++ (CLLocation *)locationFromLocationObject:(STMCoreLocation *)locationObject;
 
 
 @end

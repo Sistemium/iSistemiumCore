@@ -1331,8 +1331,8 @@
     
     if (![self isWaitingToSyncForObject:object]) {
         
-        if ([object isKindOfClass:[STMLocation class]]) {
-            [self checkLocation:(STMLocation *)object forAddingTo:objectsSet];
+        if ([object isKindOfClass:[STMCoreLocation class]]) {
+            [self checkLocation:(STMCoreLocation *)object forAddingTo:objectsSet];
         } else {
             [objectsSet addObject:object];
         }
@@ -1341,7 +1341,7 @@
 
 }
 
-+ (void)checkLocation:(STMLocation *)location forAddingTo:(NSMutableSet *)objectsSet {
++ (void)checkLocation:(STMCoreLocation *)location forAddingTo:(NSMutableSet *)objectsSet {
     
     if (location.photos.count == 0) {
         [objectsSet addObject:location];

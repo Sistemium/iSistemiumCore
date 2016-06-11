@@ -23,7 +23,7 @@
 
 #import "STMJson.h"
 
-#import "STMLocation.h"
+#import "STMCoreLocation.h"
 #import "STMLogMessage.h"
 
 #import "STMMessage.h"

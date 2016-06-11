@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMCorePicture.h"
 
-@class STMLocation;
+@class STMCoreLocation;
 
 NS_ASSUME_NONNULL_BEGIN
 

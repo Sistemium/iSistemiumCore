@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface STMPhoto (CoreDataProperties)
 
-@property (nullable, nonatomic, retain) STMLocation *location;
+@property (nullable, nonatomic, retain) STMCoreLocation *location;
 
 @end
 

@@ -83,7 +83,7 @@
         CLLocation *currentLocation = (notification.userInfo)[@"currentLocation"];
         NSLog(@"currentLocation %@", currentLocation);
         
-        STMLocation *location = [STMLocationController locationObjectFromCLLocation:currentLocation];
+        STMCoreLocation *location = [STMLocationController locationObjectFromCLLocation:currentLocation];
         
         [self setLocationForWaitingLocationPhotos:location];
         
@@ -91,7 +91,7 @@
     
 }
 
-- (void)setLocationForWaitingLocationPhotos:(STMLocation *)location {
+- (void)setLocationForWaitingLocationPhotos:(STMCoreLocation *)location {
     
     self.isPhotoLocationProcessing = YES;
     NSArray *photos = self.waitingLocationPhotos.copy;

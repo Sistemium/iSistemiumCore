@@ -1,5 +1,5 @@
 //
-//  STMLocation+CoreDataProperties.h
+//  STMCoreLocation+CoreDataProperties.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -9,11 +9,11 @@
 //  to delete and recreate this implementation file for your updated model.
 //
 
-#import "STMLocation.h"
+#import "STMCoreLocation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMLocation (CoreDataProperties)
+@interface STMCoreLocation (CoreDataProperties)
 
 @property (nullable, nonatomic, retain) NSDecimalNumber *altitude;
 @property (nullable, nonatomic, retain) NSString *commentText;
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface STMLocation (CoreDataGeneratedAccessors)
+@interface STMCoreLocation (CoreDataGeneratedAccessors)
 
 - (void)addPhotosObject:(STMPhoto *)value;
 - (void)removePhotosObject:(STMPhoto *)value;

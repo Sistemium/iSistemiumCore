@@ -424,11 +424,11 @@
         [self processTabsArray:stcTabs];
         
 // temporary tab for coding
-//        [self registerTabWithStoryboardParameters:
-//                                                    @{@"name": @"STMScannerTest",
-//                                                      @"title": @"STMScannerTest"}
-//         
-//                                          atIndex:stcTabs.count];
+        [self registerTabWithStoryboardParameters:
+                                                    @{@"name": @"STMWKWebView",
+                                                      @"title": @"VISITs"}
+         
+                                          atIndex:stcTabs.count];
 // end of temporary tab
 
     }

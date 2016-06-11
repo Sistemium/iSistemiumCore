@@ -261,11 +261,11 @@
     return self.settings[@"geotrackerControl"];
 }
 
-- (STMLocation *)lastLocationObject {
+- (STMCoreLocation *)lastLocationObject {
     
     if (!_lastLocationObject) {
 
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMLocation class])];
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCoreLocation class])];
         request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
         NSError *error;
         NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:&error];
@@ -695,7 +695,7 @@
 
 - (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
     
-    STMLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
+    STMCoreLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
     NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
     
     for (id <STMCheckinDelegate> checkinDelegate in self.checkinDelegates) {
@@ -951,7 +951,7 @@
     [self resetLocationWaitingTimer];
     [self startLocationWaitingTimer];
     
-    STMLocation *locationObject = [STMLocationController locationObjectFromCLLocation:location];
+    STMCoreLocation *locationObject = [STMLocationController locationObjectFromCLLocation:location];
     locationObject.lastSeenAt = locationObject.timestamp;
     
     self.lastLocation = location;

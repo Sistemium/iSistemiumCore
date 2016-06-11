@@ -16,7 +16,7 @@
 @property (nonatomic) CLLocationAccuracy currentAccuracy;
 @property (nonatomic) BOOL isAccuracySufficient;
 @property (nonatomic, strong) CLLocation *lastLocation;
-@property (nonatomic, strong) STMLocation *lastLocationObject;
+@property (nonatomic, strong) STMCoreLocation *lastLocationObject;
 @property (nonatomic, strong) NSString *geotrackerControl;
 
 - (void)getLocation;
