@@ -42,6 +42,7 @@
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
+@property (nonatomic, strong) NSDictionary *checkinMessageParameters;
 @property (nonatomic) BOOL waitingCheckinLocation;
 
 
@@ -391,6 +392,7 @@
     NSDictionary *parameters = message.body;
     
     self.checkinCallbackJSFunction = parameters[@"callback"];
+    self.checkinMessageParameters = parameters;
         
     NSNumber *accuracy = parameters[@"accuracy"];
     
@@ -668,7 +670,7 @@
 #pragma mark - STMCheckinDelegate
 
 - (void)getCheckinLocation:(NSDictionary *)checkinLocation {
-    [self callbackWithData:@[checkinLocation] parameters:nil jsCallbackFunction:self.checkinCallbackJSFunction];
+    [self callbackWithData:@[checkinLocation] parameters:self.checkinMessageParameters jsCallbackFunction:self.checkinCallbackJSFunction];
 }
 
 
