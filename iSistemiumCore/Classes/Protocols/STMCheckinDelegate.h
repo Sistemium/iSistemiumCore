@@ -11,6 +11,7 @@
 @protocol STMCheckinDelegate <NSObject>
 
 - (void)getCheckinLocation:(NSDictionary *)checkinLocation;
+- (void)checkinLocationError:(NSString *)errorString;
 
 
 @end

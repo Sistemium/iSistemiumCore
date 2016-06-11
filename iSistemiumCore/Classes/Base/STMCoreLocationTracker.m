@@ -50,7 +50,7 @@
 @property (nonatomic, strong) NSTimer *finishTimer;
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
-@property (nonatomic, weak) id <STMCheckinDelegate> checkinDelegate;
+@property (nonatomic, strong) NSMutableArray <id <STMCheckinDelegate>> * checkinDelegates;
 
 
 @end
@@ -358,6 +358,15 @@
     
 }
 
+- (NSArray <id <STMCheckinDelegate>> *)checkinDelegates {
+    
+    if (!_checkinDelegates) {
+        _checkinDelegates = @[].mutableCopy;
+    }
+    return _checkinDelegates;
+    
+}
+
 
 #pragma mark - tracking
 
@@ -366,42 +375,54 @@
     [super startTracking];
     
     if (self.tracking) {
+        [self checkStatus];
+    }
+
+}
+
+- (void)checkStatus {
+    
+    float systemVersion = SYSTEM_VERSION;
+    
+    if (systemVersion >= 8.0) {
         
-        float systemVersion = SYSTEM_VERSION;
-        
-        if (systemVersion >= 8.0) {
+        CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+
+        if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
             
-            if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied) {
+            NSString *errorString = @"location tracking is not permitted";
+            [[self.session logger] saveLogMessageWithText:errorString type:@"error"];
+            [self checkinLocationError:errorString];
+            self.locationManager = nil;
+            [super stopTracking];
+            
+        } else if (status == kCLAuthorizationStatusNotDetermined) {
+            
+            [super stopTracking];
+            [self requestAuthorization:^(BOOL success) {
+                if (success) [self startUpdatingLocation];
+            }];
+            
+        } else {
+            
+            if ([CLLocationManager locationServicesEnabled]) {
                 
-                [[self.session logger] saveLogMessageWithText:@"location tracking is not permitted" type:@"error"];
-                self.locationManager = nil;
-                [super stopTracking];
-                
-            } else if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined) {
-                
-                [super stopTracking];
-                [self.locationManager requestAlwaysAuthorization];
+                [self startUpdatingLocation];
                 
             } else {
                 
-                if ([CLLocationManager locationServicesEnabled]) {
-                    
-                    [self startUpdatingLocation];
-                    
-                } else {
-                    
-                    [[self.session logger] saveLogMessageWithText:@"location tracking disabled" type:@"error"];
-                    [super stopTracking];
-                    
-                }
+                NSString *errorString = @"location tracking disabled";
+                [[self.session logger] saveLogMessageWithText:errorString type:@"error"];
+                [self checkinLocationError:errorString];
+                [super stopTracking];
                 
             }
             
-        } else if (systemVersion >= 2.0 && systemVersion < 8.0) {
-            
-            [self startUpdatingLocation];
-            
         }
+        
+    } else if (systemVersion >= 2.0 && systemVersion < 8.0) {
+        
+        [self startUpdatingLocation];
         
     }
 
@@ -487,8 +508,8 @@
         
     } else {
         
+        [self checkStatus];
         self.singlePointMode = YES;
-        [self.locationManager startUpdatingLocation];
         
     }
     
@@ -497,6 +518,8 @@
 - (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy delegate:(id <STMCheckinDelegate>)delegate {
     
     self.checkinAccuracy = checkinAccuracy.doubleValue;
+    
+    if (![self.checkinDelegates containsObject:delegate]) [self.checkinDelegates addObject:delegate];
 
     CLLocation *lastLocation = self.locationManager.location;
     NSTimeInterval locationAge = -[lastLocation.timestamp timeIntervalSinceNow];
@@ -505,23 +528,18 @@
         self.tracking &&
         locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
-        
-        STMLocation *checkinLocation = [STMLocationController locationObjectFromCLLocation:lastLocation];
-        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocation];
-        
-        [delegate getCheckinLocation:checkinLocationDic];
+
+        [self receiveCheckinLocation:lastLocation];
         
     } else {
         
-        self.checkinDelegate = delegate;
-        
         NSLog(@"location tracker checkin mode, set distance filter to none, desired accuracy to best for navigation");
+        
+        [self checkStatus];
         
         self.locationManager.distanceFilter = kCLDistanceFilterNone;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
         
-        [self.locationManager startUpdatingLocation];
-
         self.checkinMode = YES;
 
     }
@@ -668,17 +686,33 @@
             self.locationManager.distanceFilter = self.distanceFilter;
             
 	    }
-        
-        STMLocation *checkinLocation = [STMLocationController locationObjectFromCLLocation:location];
-        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocation];
-    
-        [self.checkinDelegate getCheckinLocation:checkinLocationDic];
-        self.checkinDelegate = nil;
+
+        [self receiveCheckinLocation:location];
         
     }
     
 }
 
+- (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
+    
+    STMLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
+    NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
+    
+    for (id <STMCheckinDelegate> checkinDelegate in self.checkinDelegates) {
+        [checkinDelegate getCheckinLocation:checkinLocationDic];
+    }
+    
+    self.checkinDelegates = nil;
+
+}
+
+- (void)checkinLocationError:(NSString *)errorString {
+    
+    for (id <STMCheckinDelegate> checkinDelegate in self.checkinDelegates) {
+        [checkinDelegate checkinLocationError:errorString];
+    }
+
+}
 
 - (void)locationManagerDidResumeLocationUpdates:(CLLocationManager *)manager {
     [self.session.logger saveLogMessageWithText:@"locationManagerDidResumeLocationUpdates" type:@""];
@@ -711,6 +745,23 @@
             
         }
 
+    }
+    
+    switch (status) {
+        case kCLAuthorizationStatusNotDetermined: {
+            break;
+        }
+        case kCLAuthorizationStatusRestricted:
+        case kCLAuthorizationStatusDenied: {
+            [self checkinLocationError:@"location tracking is not permitted"];
+            break;
+        }
+        case kCLAuthorizationStatusAuthorizedAlways: {
+            break;
+        }
+        case kCLAuthorizationStatusAuthorizedWhenInUse: {
+            break;
+        }
     }
     
 }

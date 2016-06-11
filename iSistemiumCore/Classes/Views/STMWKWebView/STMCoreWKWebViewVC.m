@@ -673,6 +673,10 @@
     [self callbackWithData:@[checkinLocation] parameters:self.checkinMessageParameters jsCallbackFunction:self.checkinCallbackJSFunction];
 }
 
+- (void)checkinLocationError:(NSString *)errorString {
+    [self callbackWithError:errorString parameters:self.checkinMessageParameters];
+}
+
 
 #pragma mark - STMSoundCallbackable
 
