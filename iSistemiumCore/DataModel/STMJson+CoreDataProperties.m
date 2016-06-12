@@ -2,7 +2,7 @@
 //  STMJson+CoreDataProperties.m
 //  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 25/05/16.
+//  Created by Maxim Grigoriev on 12/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -13,13 +13,16 @@
 
 @implementation STMJson (CoreDataProperties)
 
+@dynamic data;
 @dynamic deviceCts;
 @dynamic deviceTs;
 @dynamic id;
 @dynamic isFantom;
 @dynamic lts;
-@dynamic xid;
-@dynamic data;
 @dynamic name;
+@dynamic xid;
+@dynamic code;
+@dynamic target;
+@dynamic source;
 
 @end
