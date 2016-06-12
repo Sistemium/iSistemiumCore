@@ -113,7 +113,7 @@
                 }
                 
                 self.saving = NO;
-                
+
             }];
             
         } else {
@@ -204,6 +204,11 @@
                name:@"downloadPicture"
              object: nil];
     
+    [nc addObserver:self
+           selector:@selector(documentStateChangedNotification:)
+               name:UIDocumentStateChangedNotification
+             object:self];
+    
 }
 
 - (void)removeObservers {
@@ -216,6 +221,10 @@
     
     [STMCoreObjectsController checkObjectsForFlushing];
     
+}
+
+- (void)documentStateChangedNotification:(NSNotification *)notification {
+    NSLog(@"notification %@", notification);
 }
 
 + (STMDocument *)initWithFileURL:(NSURL *)url andDataModelName:(NSString *)dataModelName {
