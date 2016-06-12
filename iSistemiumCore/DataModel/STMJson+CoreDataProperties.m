@@ -24,5 +24,6 @@
 @dynamic code;
 @dynamic target;
 @dynamic source;
+@dynamic commentText;
 
 @end

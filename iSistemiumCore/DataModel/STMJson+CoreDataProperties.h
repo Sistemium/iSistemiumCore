@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *code;
 @property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSString *source;
+@property (nullable, nonatomic, retain) NSString *commentText;
 
 @end
 
