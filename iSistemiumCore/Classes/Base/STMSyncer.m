@@ -1065,13 +1065,23 @@
 - (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
-    
+
     if (errorCode) {
-        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode] entityName:entityName xid:xid]; return;
+    
+        [self socketReceiveJSDataFindAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]
+                                   entityName:entityName
+                                          xid:xid];
+        return;
+        
     }
     
     if (!resource) {
-        [self socketReceiveJSDataFindAckError:@"ERROR: have no resource string in response" entityName:entityName xid:xid]; return;
+        
+        [self socketReceiveJSDataFindAckError:@"ERROR: have no resource string in response"
+                                   entityName:entityName
+                                          xid:xid];
+        return;
+        
     }
 
     NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
@@ -1079,11 +1089,18 @@
     if (!responseData) {
         
         NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckError:errorString entityName:entityName xid:xid]; return;
+        [self socketReceiveJSDataFindAckError:errorString
+                                   entityName:entityName
+                                          xid:xid];
+        return;
         
     }
     
-    [self parseFindAckResponseData:responseData withEntityName:entityName xid:xid];
+    xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
+    
+    [self parseFindAckResponseData:responseData
+                    withEntityName:entityName
+                               xid:xid];
 
 }
 
