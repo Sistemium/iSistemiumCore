@@ -42,7 +42,7 @@
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
-@property (nonatomic, strong) NSDictionary *checkinMessageParameters;
+@property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
 @property (nonatomic) BOOL waitingCheckinLocation;
 
 
@@ -70,6 +70,15 @@
         _spinnerView = [STMSpinnerView spinnerViewWithFrame:self.view.frame];
     }
     return _spinnerView;
+    
+}
+
+- (NSMutableDictionary *)checkinMessageParameters {
+    
+    if (!_checkinMessageParameters) {
+        _checkinMessageParameters = @{}.mutableCopy;
+    }
+    return _checkinMessageParameters;
     
 }
 
@@ -322,7 +331,7 @@
     
         if ([message.body isKindOfClass:[NSDictionary class]]) {
             
-            NSString *requestId = message.body[@"options"][@"requestId"];
+            NSNumber *requestId = message.body[@"options"][@"requestId"];
             NSLog(@"%@ requestId: %@", message.name, requestId);
             
         } else {
@@ -392,13 +401,27 @@
 - (void)handleCheckinMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
-    
-    self.checkinCallbackJSFunction = parameters[@"callback"];
-    self.checkinMessageParameters = parameters;
+
+    NSNumber *requestId = [parameters[@"options"][@"requestId"] isKindOfClass:[NSNumber class]] ? parameters[@"options"][@"requestId"] : nil;
+
+    if (requestId) {
         
-    NSNumber *accuracy = parameters[@"accuracy"];
+        self.checkinCallbackJSFunction = parameters[@"callback"];
+        
+        NSDictionary *checkinData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
     
-    [[(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker] checkinWithAccuracy:accuracy delegate:self];
+        self.checkinMessageParameters[requestId] = parameters;
+        
+        NSNumber *accuracy = parameters[@"accuracy"];
+        
+        STMCoreLocationTracker *locationTracker = [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
+        
+        [locationTracker checkinWithAccuracy:accuracy
+                                 checkinData:checkinData
+                                   requestId:requestId
+                                    delegate:self];
+
+    }
     
 }
 
@@ -615,7 +638,7 @@
     
 #ifdef DEBUG
     
-    NSString *requestId = parameters[@"options"][@"requestId"];
+    NSNumber *requestId = parameters[@"options"][@"requestId"];
 
     if (requestId) {
         NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @(data.count));
@@ -645,7 +668,7 @@
     
 #ifdef DEBUG
 
-    NSString *requestId = parameters[@"options"][@"requestId"];
+    NSNumber *requestId = parameters[@"options"][@"requestId"];
     
     if (requestId) {
         NSLog(@"requestId %@ callbackWithError: %@", requestId, errorDescription);
@@ -671,12 +694,35 @@
 
 #pragma mark - STMCheckinDelegate
 
-- (void)getCheckinLocation:(NSDictionary *)checkinLocation {
-    [self callbackWithData:@[checkinLocation] parameters:self.checkinMessageParameters jsCallbackFunction:self.checkinCallbackJSFunction];
+- (void)getCheckinLocation:(NSDictionary *)checkinLocation forRequestId:(NSNumber *)requestId {
+    
+    if (requestId) {
+        
+        NSDictionary *parameters = self.checkinMessageParameters[requestId];
+        
+        [self callbackWithData:@[checkinLocation]
+                    parameters:parameters
+            jsCallbackFunction:self.checkinCallbackJSFunction];
+
+        [self.checkinMessageParameters removeObjectForKey:requestId];
+        
+    }
+    
 }
 
-- (void)checkinLocationError:(NSString *)errorString {
-    [self callbackWithError:errorString parameters:self.checkinMessageParameters];
+- (void)checkinLocationError:(NSString *)errorString forRequestId:(NSNumber *)requestId {
+    
+    if (requestId) {
+        
+        NSDictionary *parameters = self.checkinMessageParameters[requestId];
+        
+        [self callbackWithError:errorString
+                     parameters:parameters];
+        
+        [self.checkinMessageParameters removeObjectForKey:requestId];
+        
+    }
+    
 }
 
 

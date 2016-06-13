@@ -21,7 +21,10 @@
 
 - (void)getLocation;
 
-- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy delegate:(id <STMCheckinDelegate>)delegate;
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy
+                checkinData:(NSDictionary *)checkinData
+                  requestId:(NSNumber *)requestId
+                   delegate:(id <STMCheckinDelegate>)delegate;
 
 - (NSString *)locationServiceStatus;
 

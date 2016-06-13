@@ -50,7 +50,7 @@
 @property (nonatomic, strong) NSTimer *finishTimer;
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
-@property (nonatomic, strong) NSMutableArray <id <STMCheckinDelegate>> * checkinDelegates;
+@property (nonatomic, strong) NSMutableArray *checkinRequests;
 
 
 @end
@@ -358,12 +358,12 @@
     
 }
 
-- (NSArray <id <STMCheckinDelegate>> *)checkinDelegates {
+- (NSMutableArray *)checkinRequests {
     
-    if (!_checkinDelegates) {
-        _checkinDelegates = @[].mutableCopy;
+    if (!_checkinRequests) {
+        _checkinRequests = @[].mutableCopy;
     }
-    return _checkinDelegates;
+    return _checkinRequests;
     
 }
 
@@ -515,11 +515,18 @@
     
 }
 
-- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy delegate:(id <STMCheckinDelegate>)delegate {
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy checkinData:(NSDictionary *)checkinData requestId:(NSNumber *)requestId delegate:(id <STMCheckinDelegate>)delegate {
+    
+    if (!delegate && !requestId) return;
+    if (!checkinData) checkinData = @{};
     
     self.checkinAccuracy = checkinAccuracy.doubleValue;
     
-    if (![self.checkinDelegates containsObject:delegate]) [self.checkinDelegates addObject:delegate];
+    NSDictionary *checkinRequest = @{@"delegate"    : delegate,
+                                     @"checkinData" : checkinData,
+                                     @"requestId"   : requestId};
+    
+    if (![self.checkinRequests containsObject:checkinRequest]) [self.checkinRequests addObject:checkinRequest];
 
     CLLocation *lastLocation = self.locationManager.location;
     NSTimeInterval locationAge = -[lastLocation.timestamp timeIntervalSinceNow];
@@ -695,22 +702,48 @@
 
 - (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
     
-    STMCoreLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
-    NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
+    NSSet *ownLocationKeys = [STMCoreObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMCoreLocation class])];
     
-    for (id <STMCheckinDelegate> checkinDelegate in self.checkinDelegates) {
-        [checkinDelegate getCheckinLocation:checkinLocationDic];
+    for (NSDictionary *checkinRequest in self.checkinRequests) {
+    
+        STMCoreLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
+
+        id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
+        NSNumber *requestId = checkinRequest[@"requestId"];
+        NSDictionary *checkinData = checkinRequest[@"checkinData"];
+        
+        for (NSString *key in checkinData.allKeys) {
+            
+            if ([ownLocationKeys containsObject:key] && [checkinData[key] isKindOfClass:[NSString class]]) {
+                
+                [checkinLocationObject setValue:checkinData[key] forKey:key];
+                
+            }
+            
+        }
+
+        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
+
+        [checkinDelegate getCheckinLocation:checkinLocationDic forRequestId:requestId];
+
     }
     
-    self.checkinDelegates = nil;
+    self.checkinRequests = nil;
 
 }
 
 - (void)checkinLocationError:(NSString *)errorString {
     
-    for (id <STMCheckinDelegate> checkinDelegate in self.checkinDelegates) {
-        [checkinDelegate checkinLocationError:errorString];
+    for (NSDictionary *checkinRequest in self.checkinRequests) {
+        
+        id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
+        NSNumber *requestId = checkinRequest[@"requestId"];
+        
+        [checkinDelegate checkinLocationError:errorString forRequestId:requestId];
+        
     }
+
+    self.checkinRequests = nil;
 
 }
 
