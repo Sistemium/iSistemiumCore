@@ -1,8 +1,8 @@
 //
 //  STMMessage+CoreDataProperties.m
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -28,6 +28,7 @@
 @dynamic showOnEnterForeground;
 @dynamic source;
 @dynamic subject;
+@dynamic target;
 @dynamic xid;
 @dynamic pictures;
 @dynamic workflow;

@@ -1,8 +1,8 @@
 //
 //  STMLogMessage+CoreDataProperties.m
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -21,6 +21,7 @@
 @dynamic lts;
 @dynamic ownerXid;
 @dynamic source;
+@dynamic target;
 @dynamic text;
 @dynamic type;
 @dynamic xid;

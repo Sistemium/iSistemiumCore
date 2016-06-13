@@ -1,8 +1,8 @@
 //
 //  STMEntity+CoreDataProperties.m
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -19,6 +19,7 @@
 @dynamic eTag;
 @dynamic id;
 @dynamic isFantom;
+@dynamic isResolveFantoms;
 @dynamic isUploadable;
 @dynamic lifeTime;
 @dynamic lifeTimeDateField;
@@ -28,10 +29,10 @@
 @dynamic roleName;
 @dynamic roleOwner;
 @dynamic source;
+@dynamic target;
 @dynamic url;
 @dynamic workflow;
 @dynamic xid;
-@dynamic isResolveFantoms;
 @dynamic wf;
 
 @end

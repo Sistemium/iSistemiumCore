@@ -1,8 +1,8 @@
 //
 //  STMWorkflow+CoreDataProperties.h
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -24,10 +24,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSDate *lts;
 @property (nullable, nonatomic, retain) NSData *ownerXid;
 @property (nullable, nonatomic, retain) NSString *source;
+@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
 @property (nullable, nonatomic, retain) NSSet<STMEntity *> *entities;
-@property (nullable, nonatomic, retain) NSSet<STMMessage *> *messages;
+@property (nullable, nonatomic, retain) STMMessage *messages;
 
 @end
 
@@ -37,11 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeEntitiesObject:(STMEntity *)value;
 - (void)addEntities:(NSSet<STMEntity *> *)values;
 - (void)removeEntities:(NSSet<STMEntity *> *)values;
-
-- (void)addMessagesObject:(STMMessage *)value;
-- (void)removeMessagesObject:(STMMessage *)value;
-- (void)addMessages:(NSSet<STMMessage *> *)values;
-- (void)removeMessages:(NSSet<STMMessage *> *)values;
 
 @end
 

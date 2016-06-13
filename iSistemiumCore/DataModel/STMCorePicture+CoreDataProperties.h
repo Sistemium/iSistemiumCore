@@ -2,7 +2,7 @@
 //  STMCorePicture+CoreDataProperties.h
 //  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 12/05/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -30,8 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *picturesInfo;
 @property (nullable, nonatomic, retain) NSString *resizedImagePath;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSData *xid;
+@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSString *thumbnailHref;
+@property (nullable, nonatomic, retain) NSData *xid;
 
 @end
 

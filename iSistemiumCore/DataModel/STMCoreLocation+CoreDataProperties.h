@@ -1,8 +1,8 @@
 //
 //  STMCoreLocation+CoreDataProperties.h
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *ownerXid;
 @property (nullable, nonatomic, retain) NSString *source;
 @property (nullable, nonatomic, retain) NSDecimalNumber *speed;
+@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSDate *timestamp;
 @property (nullable, nonatomic, retain) NSDecimalNumber *verticalAccuracy;
 @property (nullable, nonatomic, retain) NSData *xid;

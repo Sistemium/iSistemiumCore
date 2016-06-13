@@ -1,8 +1,8 @@
 //
 //  STMEntity+CoreDataProperties.h
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *eTag;
 @property (nullable, nonatomic, retain) NSNumber *id;
 @property (nullable, nonatomic, retain) NSNumber *isFantom;
+@property (nullable, nonatomic, retain) NSNumber *isResolveFantoms;
 @property (nullable, nonatomic, retain) NSNumber *isUploadable;
 @property (nullable, nonatomic, retain) NSNumber *lifeTime;
 @property (nullable, nonatomic, retain) NSString *lifeTimeDateField;
@@ -30,10 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *roleName;
 @property (nullable, nonatomic, retain) NSString *roleOwner;
 @property (nullable, nonatomic, retain) NSString *source;
+@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSString *url;
 @property (nullable, nonatomic, retain) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
-@property (nullable, nonatomic, retain) NSNumber *isResolveFantoms;
 @property (nullable, nonatomic, retain) STMWorkflow *wf;
 
 @end

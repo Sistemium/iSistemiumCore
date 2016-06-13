@@ -1,8 +1,8 @@
 //
 //  STMBarCodeScan+CoreDataProperties.m
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 21/02/16.
+//  Created by Maxim Grigoriev on 13/06/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -13,16 +13,18 @@
 
 @implementation STMBarCodeScan (CoreDataProperties)
 
+@dynamic code;
 @dynamic commentText;
+@dynamic destinationEntity;
+@dynamic destinationXid;
 @dynamic deviceCts;
 @dynamic deviceTs;
 @dynamic id;
 @dynamic isFantom;
 @dynamic lts;
+@dynamic ownerXid;
 @dynamic source;
+@dynamic target;
 @dynamic xid;
-@dynamic code;
-@dynamic destinationEntity;
-@dynamic destinationXid;
 
 @end
