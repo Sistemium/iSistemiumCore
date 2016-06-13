@@ -92,7 +92,7 @@ public class WebSocket : NSObject, NSStreamDelegate {
     public var onData: ((NSData) -> Void)?
     public var onPong: ((Void) -> Void)?
     public var headers = Dictionary<String,String>()
-    public var voipEnabled = false
+    public var voipEnabled = true//false
     public var selfSignedSSL = false
     private var security: SSLSecurity?
     public var enabledSSLCipherSuites: [SSLCipherSuite]?
