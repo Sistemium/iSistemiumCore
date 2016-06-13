@@ -161,7 +161,7 @@
     NSMutableDictionary *stcEntities = [[self stcEntities] mutableCopy];
 
     NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return ([[obj valueForKey:@"isResolveFantoms"] boolValue]);
+        return ([[obj valueForKey:@"isResolveFantoms"] boolValue] && [obj valueForKey:@"url"] != nil);
     }];
     
     return filteredKeys;
