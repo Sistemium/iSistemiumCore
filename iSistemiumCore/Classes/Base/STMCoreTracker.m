@@ -94,7 +94,7 @@
     
     _session = session;
     self.document = (STMDocument *)[(id <STMSession>)session document];
-    
+
 }
 
 - (void)setTracking:(BOOL)tracking {
@@ -329,15 +329,21 @@
     
 //    NSLog(@"%@ startTracking %@", self.group, [NSDate date]);
     
-    if (self.session.status == STMSessionRunning && !self.tracking) {
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackingStart", self.group] object:self];
-        self.tracking = YES;
-        NSString *logMessage = [NSString stringWithFormat:@"Session #%@: start tracking %@", self.session.uid, self.group];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
-        
+    if (self.session.status == STMSessionRunning) {
+    
+        if (!self.tracking) {
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackingStart", self.group] object:self];
+            self.tracking = YES;
+            NSString *logMessage = [NSString stringWithFormat:@"Session #%@: start tracking %@", self.session.uid, self.group];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+            
+        } else {
+            NSLog(@"Session #%@: %@ tracker already started", self.session.uid, self.group);
+        }
+
     } else {
-        NSLog(@"Session #%@: %@ tracker already started", self.session.uid, self.group);
+        NSLog(@"Session #%@ is not running", self.session.uid);
     }
     
 }
