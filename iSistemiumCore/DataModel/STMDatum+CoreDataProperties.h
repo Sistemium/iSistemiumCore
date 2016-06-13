@@ -15,15 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface STMDatum (CoreDataProperties)
 
-@property (nullable, nonatomic, retain) NSString *commentText;
 @property (nullable, nonatomic, retain) NSDate *deviceCts;
 @property (nullable, nonatomic, retain) NSDate *deviceTs;
 @property (nullable, nonatomic, retain) NSNumber *id;
 @property (nullable, nonatomic, retain) NSNumber *isFantom;
 @property (nullable, nonatomic, retain) NSDate *lts;
-@property (nullable, nonatomic, retain) NSData *ownerXid;
-@property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSData *xid;
 
 @end
