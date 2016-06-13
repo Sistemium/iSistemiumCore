@@ -89,6 +89,7 @@
 
 //+ (void)requestObjectWithParameters:(NSDictionary *)parameters;
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
++ (void)stopDefantomizing;
 
 
 @end

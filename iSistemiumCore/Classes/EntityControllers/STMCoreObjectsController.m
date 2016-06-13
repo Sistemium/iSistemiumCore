@@ -1482,9 +1482,16 @@
     }
 
     if (objController.fantomsArray.count > 0) {
+        
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
+        
     } else {
+        
         [objController.notFoundFantomsArray removeAllObjects];
+        [[self document] saveDocument:^(BOOL success) {
+            
+        }];
+        
     }
 
 }
@@ -1579,6 +1586,15 @@
         [self resolveFantoms];
     }
     
+}
+
++ (void)stopDefantomizing {
+    
+    STMCoreObjectsController *objController = [self sharedController];
+    
+    objController.fantomsArray = nil;
+    objController.notFoundFantomsArray = nil;
+
 }
 
 + (NSFetchRequest *)isFantomFetchRequestForEntityName:(NSString *)entityName {
