@@ -459,6 +459,7 @@
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
     
     NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
+    ownObjectKeys = [ownObjectKeys setByAddingObject:@"deviceCts"];
     
     STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
     NSDictionary *entityAttributes = [currentEntity attributesByName];
