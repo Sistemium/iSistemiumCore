@@ -714,9 +714,18 @@
         
         for (NSString *key in checkinData.allKeys) {
             
-            if ([ownLocationKeys containsObject:key] && [checkinData[key] isKindOfClass:[NSString class]]) {
+            if ([ownLocationKeys containsObject:key]) {
                 
-                [checkinLocationObject setValue:checkinData[key] forKey:key];
+                id value = checkinData[key];
+                NSDictionary *entityAttributes = checkinLocationObject.entity.attributesByName;
+
+                value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+                
+                if (value) {
+                    [checkinLocationObject setValue:value forKey:key];
+                } else {
+                    [checkinLocationObject setValue:nil forKey:key];
+                }
                 
             }
             
