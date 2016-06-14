@@ -47,5 +47,7 @@
 
 - (void)dismissSession;
 
+- (Class)locationClass;
+
 
 @end

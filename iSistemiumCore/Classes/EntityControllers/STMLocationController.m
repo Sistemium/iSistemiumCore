@@ -7,14 +7,20 @@
 //
 
 #import "STMLocationController.h"
+
 #import "STMCoreObjectsController.h"
+#import "STMCoreSessionManager.h"
 
 
 @implementation STMLocationController
 
 + (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location {
+
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     
-    STMCoreLocation *locationObject = (STMCoreLocation *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMCoreLocation class]) isFantom:NO];
+    Class locationClass = [currentSession locationClass];
+    
+    STMCoreLocation *locationObject = (STMCoreLocation *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass(locationClass) isFantom:NO];
     locationObject.latitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.latitude).decimalValue];
     locationObject.longitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.longitude).decimalValue];
     locationObject.horizontalAccuracy = [NSDecimalNumber decimalNumberWithDecimal:@(location.horizontalAccuracy).decimalValue];

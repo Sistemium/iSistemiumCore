@@ -8,6 +8,9 @@
 
 #import "STMCoreSession.h"
 
+#import "STMDataModel.h"
+
+
 @interface STMCoreSession()
 
 @property (nonatomic, strong) NSDictionary *startSettings;
@@ -269,6 +272,14 @@
 	}
     
 }
+
+
+#pragma mark - used classes
+
+- (Class)locationClass {
+    return [STMCoreLocation class];
+}
+
 
 
 @end
