@@ -17,5 +17,7 @@
 
 - (instancetype)initWithSourceType:(UIImagePickerControllerSourceType)sourceType;
 
+- (void)setFrameForCameraOverlayView:(UIView *)cameraOverlayView;
+
 
 @end
