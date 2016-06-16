@@ -224,11 +224,21 @@
 }
 
 - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+    
 //    NSLogMethodName;
+    
+    NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailNavigation withError: %@", webView.URL, error.localizedDescription];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+    
 //    NSLogMethodName;
+    
+    NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailProvisionalNavigation withError: %@", webView.URL, error.localizedDescription];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+
 }
 
 - (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
