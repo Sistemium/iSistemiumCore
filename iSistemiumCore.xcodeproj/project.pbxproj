@@ -25,6 +25,7 @@
 		2C13F5361CE316B900A5F129 /* STMMessageVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C13F5341CE316B900A5F129 /* STMMessageVC.storyboard */; };
 		2C13F5601CE469E300A5F129 /* STMCorePicture+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F55D1CE469E300A5F129 /* STMCorePicture+CoreDataProperties.m */; };
 		2C13F5611CE469E300A5F129 /* STMCorePicture.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C13F55F1CE469E300A5F129 /* STMCorePicture.m */; };
+		2C32C9DA1D14444600CE4981 /* STMCameraOverlayView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C32C9D91D14444600CE4981 /* STMCameraOverlayView.xib */; };
 		2C3F72C31CBBD46400F8BFB8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72C21CBBD46400F8BFB8 /* main.m */; };
 		2C3F72CE1CBBD46400F8BFB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */; };
 		2C3F72DC1CBBD46400F8BFB8 /* iSistemiumCoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3F72DB1CBBD46400F8BFB8 /* iSistemiumCoreTests.m */; };
@@ -285,6 +286,7 @@
 		2C13F55E1CE469E300A5F129 /* STMCorePicture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMCorePicture.h; sourceTree = "<group>"; };
 		2C13F55F1CE469E300A5F129 /* STMCorePicture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMCorePicture.m; sourceTree = "<group>"; };
 		2C1444231D0B214700B8E386 /* STMCheckinDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMCheckinDelegate.h; sourceTree = "<group>"; };
+		2C32C9D91D14444600CE4981 /* STMCameraOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = STMCameraOverlayView.xib; sourceTree = "<group>"; };
 		2C3F72BE1CBBD46400F8BFB8 /* iSistemiumCore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSistemiumCore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3F72C21CBBD46400F8BFB8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C3F72CD1CBBD46400F8BFB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -748,6 +750,7 @@
 			children = (
 				2C3F73031CBBD56500F8BFB8 /* STMCustomCells */,
 				2C3F72F51CBBD55700F8BFB8 /* STMAuth.storyboard */,
+				2C32C9D91D14444600CE4981 /* STMCameraOverlayView.xib */,
 				2C3F72F61CBBD55700F8BFB8 /* STMLogs.storyboard */,
 				2C13F5331CE316B900A5F129 /* STMMessages.storyboard */,
 				2C13F5341CE316B900A5F129 /* STMMessageVC.storyboard */,
@@ -1436,6 +1439,7 @@
 				2C3F735C1CBBD5EB00F8BFB8 /* checkmark.png in Resources */,
 				2C3F73691CBBD5EB00F8BFB8 /* numerical_sorting_12.png in Resources */,
 				2C3F73591CBBD5EB00F8BFB8 /* camera.png in Resources */,
+				2C32C9DA1D14444600CE4981 /* STMCameraOverlayView.xib in Resources */,
 				2C3F73731CBBD5EB00F8BFB8 /* settings.png in Resources */,
 				2C3F73021CBBD55700F8BFB8 /* STMWKWebView.storyboard in Resources */,
 				2C3F73751CBBD5EB00F8BFB8 /* Sync With Cloud.png in Resources */,
