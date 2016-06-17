@@ -937,7 +937,7 @@
     [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:) withObject:socket afterDelay:CHECK_AUTHORIZATION_DELAY];
 
     STMClientData *clientData = [STMClientDataController clientData];
-    NSMutableDictionary *dataDic = [[STMCoreObjectsController dictionaryForObject:clientData][@"properties"] mutableCopy];
+    NSMutableDictionary *dataDic = [STMCoreObjectsController dictionaryForJSWithObject:clientData].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
                               @"accessToken"    : [STMCoreAuthController authController].accessToken};

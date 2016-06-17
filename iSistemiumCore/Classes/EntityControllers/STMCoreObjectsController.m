@@ -521,7 +521,7 @@
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
         
-        NSManagedObject *affectedObject = [self objectForXid:recordStatus.objectXid];
+        STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
         
         if (affectedObject) {
             if (recordStatus.isRemoved.boolValue) [self removeObject:affectedObject];
@@ -663,11 +663,11 @@
 
 #pragma mark - getting specified objects
 
-+ (NSManagedObject *)objectForXid:(NSData *)xidData {
++ (STMDatum *)objectForXid:(NSData *)xidData {
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
         
-        NSManagedObject *object = [self objectForXid:xidData entityName:entityName];
+        STMDatum *object = [self objectForXid:xidData entityName:entityName];
         
         if (object) return object;
         
@@ -677,7 +677,7 @@
 
 }
 
-+ (NSManagedObject *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
++ (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
     
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
@@ -730,26 +730,30 @@
     
 }
 
-+ (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:YES];
 }
 
-+ (NSManagedObject *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom {
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:isFantom];
 }
 
-+ (NSManagedObject *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
     return [self newObjectForEntityName:entityName andXid:xidData isFantom:YES];
 }
 
-+ (NSManagedObject *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData isFantom:(BOOL)isFantom {
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData isFantom:(BOOL)isFantom {
     
-    if ([self document].managedObjectContext) {
+    NSManagedObjectContext *context = [self document].managedObjectContext;
     
-        NSManagedObject *object = [STMEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:[self document].managedObjectContext];
-        [object setValue:@(isFantom) forKey:@"isFantom"];
+    if (context) {
+    
+        STMDatum *object = [STMEntityDescription insertNewObjectForEntityForName:entityName
+                                                          inManagedObjectContext:context];
         
-        if (xidData) [object setValue:xidData forKey:@"xid"];
+        object.isFantom = @(isFantom);
+        
+        if (xidData) object.xid = xidData;
         
         return object;
 
@@ -965,7 +969,7 @@
 
 #pragma mark - flushing
 
-+ (void)removeObject:(NSManagedObject *)object {
++ (void)removeObject:(STMDatum *)object {
     [self removeObject:object inContext:nil];
 }
 
@@ -988,11 +992,11 @@
     
 }
 
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object {
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object {
     return [self createRecordStatusAndRemoveObject:object withComment:nil];
 }
 
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object withComment:(NSString *)commentText {
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object withComment:(NSString *)commentText {
     
     STMRecordStatus *recordStatus = [STMRecordStatusController recordStatusForObject:object];
     recordStatus.isRemoved = @YES;
@@ -2153,8 +2157,8 @@
                 
                 NSMutableArray *jsonObjectsArray = [NSMutableArray array];
                 
-                for (NSManagedObject *object in objects)
-                    [jsonObjectsArray addObject:[STMCoreObjectsController dictionaryForObject:object]];
+                for (STMDatum *object in objects)
+                    [jsonObjectsArray addObject:[STMCoreObjectsController dictionaryForJSWithObject:object]];
                 
                 return jsonObjectsArray;
 

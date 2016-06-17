@@ -76,11 +76,11 @@
         
         NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
         
-        NSManagedObject *object = [STMCoreObjectsController objectForXid:xidData];
+        STMDatum *object = [STMCoreObjectsController objectForXid:xidData];
         
         if (object) {
             
-            NSDictionary *objectDic = [STMCoreObjectsController dictionaryForObject:object];
+            NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
             NSString *JSONString = [STMFunctions jsonStringFromDictionary:objectDic];
             [self saveLogMessageWithText:JSONString type:@"important"];
             

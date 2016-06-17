@@ -48,19 +48,18 @@
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)singleRelationshipsForEntityName:(NSString *)entityName;
 
-+ (NSDictionary *)dictionaryForObject:(NSManagedObject *)object;
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
 
-+ (void)removeObject:(NSManagedObject *)object;
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object;
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object withComment:(NSString *)commentText;
++ (void)removeObject:(STMDatum *)object;
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object;
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object withComment:(NSString *)commentText;
 
 + (void)dataLoadingFinished;
 
-+ (NSManagedObject *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom;
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom;
 
-+ (NSManagedObject *)objectForXid:(NSData *)xidData;
-+ (NSManagedObject *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName;
++ (STMDatum *)objectForXid:(NSData *)xidData;
++ (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName;
 
 + (NSArray *)objectsForEntityName:(NSString *)entityName;
 
