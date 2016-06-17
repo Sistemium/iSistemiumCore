@@ -414,7 +414,7 @@
 
     int counter = 0;
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMPhoto class])];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePhoto class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
     
@@ -496,7 +496,7 @@
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
-    if ([picture isKindOfClass:[STMPhoto class]]) {
+    if ([picture isKindOfClass:[STMCorePhoto class]]) {
         
         if (shouldUpload) {
             [[self sharedController] addUploadOperationForPicture:picture data:weakData];

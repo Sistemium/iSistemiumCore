@@ -29,7 +29,7 @@
 #import "STMMessage.h"
 #import "STMMessagePicture.h"
 
-#import "STMPhoto.h"
+#import "STMCorePhoto.h"
 #import "STMCorePicture.h"
 
 #import "STMRecordStatus.h"

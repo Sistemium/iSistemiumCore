@@ -96,7 +96,7 @@
     self.isPhotoLocationProcessing = YES;
     NSArray *photos = self.waitingLocationPhotos.copy;
     
-    for (STMPhoto *photo in photos) {
+    for (STMCorePhoto *photo in photos) {
         
         photo.location = location;
         

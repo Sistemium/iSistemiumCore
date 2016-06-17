@@ -34,16 +34,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSDate *timestamp;
 @property (nullable, nonatomic, retain) NSDecimalNumber *verticalAccuracy;
 @property (nullable, nonatomic, retain) NSData *xid;
-@property (nullable, nonatomic, retain) NSSet<STMPhoto *> *photos;
+@property (nullable, nonatomic, retain) NSSet<STMCorePhoto *> *photos;
 
 @end
 
 @interface STMCoreLocation (CoreDataGeneratedAccessors)
 
-- (void)addPhotosObject:(STMPhoto *)value;
-- (void)removePhotosObject:(STMPhoto *)value;
-- (void)addPhotos:(NSSet<STMPhoto *> *)values;
-- (void)removePhotos:(NSSet<STMPhoto *> *)values;
+- (void)addPhotosObject:(STMCorePhoto *)value;
+- (void)removePhotosObject:(STMCorePhoto *)value;
+- (void)addPhotos:(NSSet<STMCorePhoto *> *)values;
+- (void)removePhotos:(NSSet<STMCorePhoto *> *)values;
 
 @end
 

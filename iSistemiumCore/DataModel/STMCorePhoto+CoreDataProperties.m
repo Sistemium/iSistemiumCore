@@ -1,5 +1,5 @@
 //
-//  STMPhoto+CoreDataProperties.h
+//  STMCorePhoto+CoreDataProperties.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -9,14 +9,10 @@
 //  to delete and recreate this implementation file for your updated model.
 //
 
-#import "STMPhoto.h"
+#import "STMCorePhoto+CoreDataProperties.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation STMCorePhoto (CoreDataProperties)
 
-@interface STMPhoto (CoreDataProperties)
-
-@property (nullable, nonatomic, retain) STMCoreLocation *location;
+@dynamic location;
 
 @end
-
-NS_ASSUME_NONNULL_END
