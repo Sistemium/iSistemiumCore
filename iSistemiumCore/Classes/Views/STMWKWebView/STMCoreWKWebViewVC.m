@@ -18,6 +18,8 @@
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
+#import "STMImagePickerController.h"
+#import "STMImagePickerOwnerProtocol.h"
 
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
@@ -25,7 +27,7 @@
 #import "iSistemiumCore-Swift.h"
 
 
-@interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate>
+@interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate, STMImagePickerOwnerProtocol>
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
@@ -42,8 +44,13 @@
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
+@property (nonatomic, strong) NSString *getPictureCallbackJSFunction;
+
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
+@property (nonatomic, strong) NSDictionary *getPictureMessageParameters;
+
 @property (nonatomic) BOOL waitingCheckinLocation;
+@property (nonatomic) BOOL waitingPicture;
 
 
 @end
@@ -404,8 +411,32 @@
         
         [self handleCheckinMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_GET_PICTURE]) {
+        
+        [self handleGetPictureMessage:message];
+        
     }
     
+}
+
+- (void)handleGetPictureMessage:(WKScriptMessage *)message {
+    
+    if (!self.waitingPicture) {
+        
+        self.getPictureMessageParameters = nil;
+        self.getPictureCallbackJSFunction = nil;
+        
+        self.waitingPicture = YES;
+
+        NSDictionary *parameters = message.body;
+        
+        self.getPictureMessageParameters = parameters;
+        self.getPictureCallbackJSFunction = parameters[@"callback"];
+
+        [self showImagePickerForSourceType:UIImagePickerControllerSourceTypeSavedPhotosAlbum];
+        
+    }
+
 }
 
 - (void)handleCheckinMessage:(WKScriptMessage *)message {
@@ -700,6 +731,83 @@
     }];
 
 }
+
+
+#pragma mark - STMImagePickerOwnerProtocol
+
+- (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType {
+    
+    if ([UIImagePickerController isSourceTypeAvailable:imageSourceType]) {
+        
+        STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
+        imagePickerController.ownerVC = self;
+        
+        [self.tabBarController presentViewController:imagePickerController animated:YES completion:^{
+            [self.view addSubview:self.spinnerView];
+        }];
+        
+    } else {
+        
+        NSString *imageSourceTypeString = nil;
+        
+        switch (imageSourceType) {
+            case UIImagePickerControllerSourceTypePhotoLibrary: {
+                imageSourceTypeString = @"PhotoLibrary";
+                break;
+            }
+            case UIImagePickerControllerSourceTypeCamera: {
+                imageSourceTypeString = @"Camera";
+                break;
+            }
+            case UIImagePickerControllerSourceTypeSavedPhotosAlbum: {
+                imageSourceTypeString = @"PhotosAlbum";
+                break;
+            }
+        }
+        
+        self.waitingPicture = NO;
+        
+        NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
+        [self callbackWithError:message parameters:self.getPictureMessageParameters];
+        
+        self.getPictureMessageParameters = nil;
+        self.getPictureCallbackJSFunction = nil;
+        
+    }
+    
+}
+
+- (BOOL)shouldWaitForLocation {
+    return NO;
+}
+
+- (void)saveImage:(UIImage *)image withLocation:(CLLocation *)location {
+	
+}
+
+- (void)saveImage:(UIImage *)image andWaitForLocation:(BOOL)waitForLocation {
+	
+}
+
+- (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
+	
+    [self.spinnerView removeFromSuperview];
+    self.spinnerView = nil;
+    
+    self.waitingPicture = NO;
+
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    
+    [self imagePickerWasDissmised:picker];
+
+    [self callbackWithData:@[@"imagePickerControllerDidCancel"]
+                parameters:self.getPictureMessageParameters
+        jsCallbackFunction:self.getPictureCallbackJSFunction];
+
+}
+
 
 
 #pragma mark - STMCheckinDelegate

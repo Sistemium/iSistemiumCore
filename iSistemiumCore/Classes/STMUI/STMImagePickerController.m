@@ -100,7 +100,7 @@
         
         if (picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
             
-            [self.ownerVC saveImage:image andWaitForLocation:YES];
+            [self.ownerVC saveImage:image andWaitForLocation:[self.ownerVC shouldWaitForLocation]];
             
         } else {
             
@@ -147,7 +147,7 @@
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [picker dismissViewControllerAnimated:NO completion:^{
-        [self.ownerVC imagePickerWasDissmised:picker];
+        [self.ownerVC imagePickerControllerDidCancel:picker];
     }];
 
 }
