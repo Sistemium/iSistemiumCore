@@ -542,10 +542,18 @@
     NSString *imagePath = [STMFunctions absolutePathForPath:fileName];
     [data writeToFile:imagePath atomically:YES];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.imagePath = fileName;
-    });
+        
+    } else {
+    
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.imagePath = fileName;
+        });
 
+    }
+    
 }
 
 + (void)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
@@ -557,9 +565,17 @@
     resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
     [resizedImageData writeToFile:resizedImagePath atomically:YES];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.resizedImagePath = resizedFileName;
-    });
+        
+    } else {
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.resizedImagePath = resizedFileName;
+        });
+        
+    }
 
 }
 
@@ -568,9 +584,17 @@
     UIImage *imageThumbnail = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(imageThumbnail, [self jpgQuality]);
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.imageThumbnail = thumbnail;
-    });
+        
+    } else {
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.imageThumbnail = thumbnail;
+        });
+        
+    }
     
 }
 
