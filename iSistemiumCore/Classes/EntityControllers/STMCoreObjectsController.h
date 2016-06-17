@@ -28,19 +28,13 @@
                   andRoleName:(NSString *)roleName
         withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-//+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
 + (void)insertObjectsFromArray:(NSArray *)array
                 withEntityName:(NSString *)entityName
          withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-//+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary
                     withEntityName:(NSString *)entityName
              withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
-//+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
 
@@ -56,8 +50,6 @@
 
 + (NSDictionary *)dictionaryForObject:(NSManagedObject *)object;
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
-
-//+ (void)syncObject:(NSDictionary *)objectDictionary;
 
 + (void)removeObject:(NSManagedObject *)object;
 + (STMRecordStatus *)createRecordStatusAndRemoveObject:(NSManagedObject *)object;
@@ -89,7 +81,6 @@
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls;
 
-//+ (void)requestObjectWithParameters:(NSDictionary *)parameters;
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
 + (void)stopDefantomizing;
 

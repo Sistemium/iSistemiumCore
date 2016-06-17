@@ -31,11 +31,9 @@
 
 @interface STMCoreObjectsController()
 
-@property (nonatomic, strong) NSMutableDictionary *timesDic;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesSingleRelationships;
-//@property (nonatomic, strong) NSMutableDictionary *objectsCache;
 @property (nonatomic, strong) NSArray *localDataModelEntityNames;
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
@@ -81,26 +79,6 @@
     
 }
 
-- (NSMutableDictionary *)timesDic {
-    
-    if (!_timesDic) {
-        
-        _timesDic = [@{} mutableCopy];
-        _timesDic[@"1"] = [@[] mutableCopy];
-        _timesDic[@"2"] = [@[] mutableCopy];
-        _timesDic[@"3"] = [@[] mutableCopy];
-        _timesDic[@"4"] = [@[] mutableCopy];
-        _timesDic[@"5"] = [@[] mutableCopy];
-        _timesDic[@"6"] = [@[] mutableCopy];
-        _timesDic[@"7"] = [@[] mutableCopy];
-        _timesDic[@"8"] = [@[] mutableCopy];
-        _timesDic[@"9"] = [@[] mutableCopy];
-        
-    }
-    return _timesDic;
-    
-}
-
 - (NSMutableDictionary *)entitiesOwnKeys {
     
     if (!_entitiesOwnKeys) {
@@ -127,15 +105,6 @@
     return _entitiesSingleRelationships;
     
 }
-
-//- (NSMutableDictionary *)objectsCache {
-//    
-//    if (!_objectsCache) {
-//        _objectsCache = [@{} mutableCopy];
-//    }
-//    return _objectsCache;
-//    
-//}
 
 - (instancetype)init {
     
@@ -179,7 +148,7 @@
         STMCoreSession *session = notification.object;
         
         if (session.status != STMSessionRunning) {
-//            self.objectsCache = nil;
+
         }
         
     }
@@ -255,36 +224,6 @@
 
 }
 
-//+ (void)processingOfDataArray:(NSArray *)array roleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-
-//    NSDate *start = [NSDate date];
-//    NSString *startString = [[STMFunctions dateFormatter] stringFromDate:start];
-//    NSLog(@"--------------------s %@", startString);
-    
-//    if (roleName) {
-//        
-//        [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
-//            completionHandler(success);
-//        }];
-//        
-//    } else {
-//        
-//        [self insertObjectsFromArray:array withCompletionHandler:^(BOOL success) {
-//            completionHandler(success);
-//        }];
-//        
-//    }
-//    
-//    [[self document] saveDocument:^(BOOL success) {
-//        
-//    }];
-
-//    NSDate *finish = [NSDate date];
-//    NSString *finishString = [[STMFunctions dateFormatter] stringFromDate:finish];
-//    NSLog(@"--------------------f %@", finishString);
-
-//}
-
 + (void)insertObjectsFromArray:(NSArray *)array withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
     __block BOOL result = YES;
@@ -302,24 +241,6 @@
     completionHandler(result);
 
 }
-
-//+ (void)insertObjectsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
-//    
-//    __block BOOL result = YES;
-//    
-//    for (NSDictionary *datum in array) {
-//        
-//        [self insertObjectFromDictionary:datum withCompletionHandler:^(BOOL success) {
-//            
-//            result &= success;
-//            
-//        }];
-//        
-//    }
-//
-//    completionHandler(result);
-//
-//}
 
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
@@ -375,86 +296,6 @@
     }
 
 }
-
-//+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
-//
-//// time checking
-////    NSDate *start = [NSDate date];
-//// -------------
-//    
-//    NSString *name = dictionary[@"name"];
-//    NSDictionary *properties = dictionary[@"properties"];
-//
-//    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
-//    NSString *nameTail = (nameExplode.count > 1) ? nameExplode[1] : name;
-//    NSString *capEntityName = [nameTail stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:[[nameTail substringToIndex:1] capitalizedString]];
-//
-//    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
-//    
-//    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-//    
-//    if ([dataModelEntityNames containsObject:entityName]) {
-//        
-//        NSString *xid = dictionary[@"xid"];
-//        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-//        
-//        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
-//        
-//        if (![recordStatus.isRemoved boolValue]) {
-//            
-//            NSManagedObject *object = nil;
-//            
-//            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-//                
-//                object = [[[self session] settingsController] settingForDictionary:dictionary];
-//                
-//            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-//                
-//                NSString *internalName = properties[@"name"];
-//                object = [STMEntityController entityWithName:internalName];
-//                
-//            }
-//
-//// time checking
-////            [[self sharedController].timesDic[@"1"] addObject:@([start timeIntervalSinceNow])];
-//// -------------
-//            
-//            if (!object) {
-//                object = (xid) ? [self objectForEntityName:entityName andXidString:xid] : [self newObjectForEntityName:entityName];
-//            }
-//            
-//// time checking
-////            [[self sharedController].timesDic[@"2"] addObject:@([start timeIntervalSinceNow])];
-//// -------------
-//            
-//            if (![self isWaitingToSyncForObject:object]) {
-//                
-//                [object setValue:@NO forKey:@"isFantom"];
-//                [self processingOfObject:object withEntityName:entityName fillWithValues:properties];
-//                
-//            }
-//            
-//// time checking
-////            [[self sharedController].timesDic[@"3"] addObject:@([start timeIntervalSinceNow])];
-//// -------------
-//            
-//        } else {
-//            
-//            NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xid);
-//            
-//        }
-//            
-//        completionHandler(YES);
-//        
-//    } else {
-//        
-//        NSLog(@"dataModel have no object's entity with name %@", entityName);
-//        
-//        completionHandler(NO);
-//        
-//    }
-//    
-//}
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
     
@@ -651,26 +492,6 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-
-//    if ([[change valueForKey:NSKeyValueChangeOldKey] isKindOfClass:[NSNull class]]) {
-//        
-//        if ([object isKindOfClass:[NSManagedObject class]]) {
-//            
-//            NSManagedObjectContext *context = [STMObjectsController document].managedObjectContext;
-//            NSManagedObjectContext *parentContext = context.parentContext;
-//            
-//            CLS_LOG(@"context %@", context);
-//            CLS_LOG(@"parentContext %@", parentContext);
-//            CLS_LOG(@"object.context %@", [(NSManagedObject *)object managedObjectContext]);
-//            CLS_LOG(@"object isDeleted %d", [(NSManagedObject *)object isDeleted]);
-//            
-//        }
-//
-//        CLS_LOG(@"applicationState %ld", (long)[UIApplication sharedApplication].applicationState);
-//        CLS_LOG(@"object %@", object);
-//        CLS_LOG(@"change %@", change);
-//        
-//    }
     
     [object removeObserver:self forKeyPath:keyPath];
     
@@ -743,10 +564,6 @@
 
 + (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-// time checking
-//    NSDate *start = [NSDate date];
-// -------------
-    
     NSString *name = dictionary[@"name"];
     NSArray *nameExplode = [name componentsSeparatedByString:@"."];
     NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
@@ -776,18 +593,10 @@
             
         }
 
-// time checking
-//        [[self sharedController].timesDic[@"5"] addObject:@([start timeIntervalSinceNow])];
-// -------------
-        
         if (ok) {
             
             NSManagedObject *ownerObject = [self objectForEntityName:roleOwnerEntityName andXidString:ownerXid];
             NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:destinationXid];
-            
-// time checking
-//            [[self sharedController].timesDic[@"6"] addObject:@([start timeIntervalSinceNow])];
-// -------------
             
             NSSet *destinationSet = [ownerObject valueForKey:roleName];
             
@@ -818,10 +627,6 @@
             
             
         }
-        
-// time checking
-//        [[self sharedController].timesDic[@"7"] addObject:@([start timeIntervalSinceNow])];
-// -------------
         
         completionHandler(YES);
         
@@ -859,9 +664,6 @@
 #pragma mark - getting specified objects
 
 + (NSManagedObject *)objectForXid:(NSData *)xidData {
-    
-//    id cachedObject = [self sharedController].objectsCache[xidData];
-//    return (NSManagedObject *)cachedObject;
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
         
@@ -947,13 +749,7 @@
         NSManagedObject *object = [STMEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:[self document].managedObjectContext];
         [object setValue:@(isFantom) forKey:@"isFantom"];
         
-        if (xidData) {
-            [object setValue:xidData forKey:@"xid"];
-        } else {
-            xidData = [object valueForKey:@"xid"];
-        }
-        
-//        [self sharedController].objectsCache[xidData] = object;
+        if (xidData) [object setValue:xidData forKey:@"xid"];
         
         return object;
 
@@ -987,34 +783,6 @@
 }
 
 + (void)initObjectsCacheWithCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    TICK;
-    NSLog(@"initObjectsCache tick");
-    
-//    [self sharedController].objectsCache = nil;
-
-//    NSArray *allObjects = [self allObjectsFromContext:[self document].managedObjectContext];
-
-//    for (NSManagedObject *object in allObjects) {
-//        
-//        if ([object isKindOfClass:[STMShippingLocation class]]) {
-//            [self removeObject:object];
-//        }
-//        
-//    }
-//    
-//    allObjects = [self allObjectsFromContext:[self document].managedObjectContext];
-    
-    NSLog(@"fetch existing objects for initObjectsCache");
-    TOCK;
-    
-//    NSArray *keys = [allObjects valueForKeyPath:@"xid"];
-//    NSDictionary *objectsCache = [NSDictionary dictionaryWithObjects:allObjects forKeys:keys];
-    
-//    [[self sharedController].objectsCache addEntriesFromDictionary:objectsCache];
-
-    NSLog(@"finish initObjectsCache");
-    TOCK;
     
     [[self document] saveDocument:^(BOOL success) {
         completionHandler(YES);
@@ -1207,10 +975,6 @@
         
         if (!context) context = [self document].managedObjectContext;
         
-//        if ([object valueForKey:@"xid"]) {
-//            [[self sharedController].objectsCache removeObjectForKey:(id _Nonnull)[object valueForKey:@"xid"]];
-//        }
-        
         [context performBlock:^{
             
             [context deleteObject:object];
@@ -1355,46 +1119,7 @@
 
 #pragma mark - finish of recieving objects
 
-+ (void)avgTimesCalc {
-    
-    NSArray *first = [self sharedController].timesDic[@"1"];
-    NSArray *second = [self sharedController].timesDic[@"2"];
-    NSArray *third = [self sharedController].timesDic[@"3"];
-    NSArray *fourth = [self sharedController].timesDic[@"4"];
-    NSArray *fifth = [self sharedController].timesDic[@"5"];
-    NSArray *sixth = [self sharedController].timesDic[@"6"];
-    NSArray *seventh = [self sharedController].timesDic[@"7"];
-    NSArray *eighth = [self sharedController].timesDic[@"8"];
-    NSArray *nineth = [self sharedController].timesDic[@"9"];
-    
-    NSNumber *avgFirst = [first valueForKeyPath:@"@avg.self"];
-    NSNumber *avgSecond = [second valueForKeyPath:@"@avg.self"];
-    NSNumber *avgThird = [third valueForKeyPath:@"@avg.self"];
-    NSNumber *avgFourth = [fourth valueForKeyPath:@"@avg.self"];
-    NSNumber *avgFifth = [fifth valueForKeyPath:@"@avg.self"];
-    NSNumber *avgSixth = [sixth valueForKeyPath:@"@avg.self"];
-    NSNumber *avgSeventh = [seventh valueForKeyPath:@"@avg.self"];
-    NSNumber *avgEighth = [eighth valueForKeyPath:@"@avg.self"];
-    NSNumber *avgNineth = [nineth valueForKeyPath:@"@avg.self"];
-    
-    NSLog(@"avgFirst %@", avgFirst);
-    NSLog(@"avgSecond %@", avgSecond);
-    NSLog(@"avgThird %@", avgThird);
-    NSLog(@"avgFourth %@", avgFourth);
-    NSLog(@"avgFifth %@", avgFifth);
-    NSLog(@"avgSixth %@", avgSixth);
-    NSLog(@"avgSeventh %@", avgSeventh);
-    NSLog(@"avgEighth %@", avgEighth);
-    NSLog(@"avgNineth %@", avgNineth);
-    
-    NSLog(@"eighth.count %d", eighth.count);
-    NSLog(@"nineth.count %d", nineth.count);
-    
-}
-
 + (void)dataLoadingFinished {
-    
-//    [self avgTimesCalc];
     
     [STMCorePicturesController checkPhotos];
 //    [self checkObjectsForFlushing];
@@ -2452,138 +2177,6 @@
     return nil;
     
 }
-
-
-#pragma mark - old way to create object's properties dictionary
-
-+ (NSDictionary *)dictionaryForObject:(NSManagedObject *)object {
-    
-    if ([object isKindOfClass:[STMDatum class]]) {
-        
-        NSString *entityName = object.entity.name;
-        NSString *name = [@"stc." stringByAppendingString:[entityName stringByReplacingOccurrencesOfString:ISISTEMIUM_PREFIX withString:@""]];
-        NSData *xidData = [object valueForKey:@"xid"];
-        NSString *xid = [STMFunctions UUIDStringFromUUIDData:xidData];
-        
-        NSDictionary *propertiesDictionary = [self propertiesDictionaryForObject:(STMDatum *)object];
-        
-        return @{@"name":name, @"xid":xid, @"properties":propertiesDictionary};
-
-    } else {
-        return nil;
-    }
-    
-}
-
-+ (NSDictionary *)propertiesDictionaryForObject:(STMDatum *)object {
-    
-    NSMutableArray *allKeys;
-    
-    if ([object.entity.name isEqualToString:NSStringFromClass([STMEntity class])]) {
-        allKeys = @[@"eTag", @"name", @"deviceCts", @"deviceTs"].mutableCopy;
-    } else {
-        allKeys = object.entity.attributesByName.allKeys.mutableCopy;
-    }
-    
-    NSArray *notSyncableProperties = @[@"xid", @"resizedImagePath", @"imageThumbnail"];
-    
-    [allKeys removeObjectsInArray:notSyncableProperties];
-    
-    NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithDictionary:[object propertiesForKeys:allKeys withNulls:NO]];
-    
-// STMDatum method relationshipXidsForKeys:withNulls: — should use it in new data protocol version
-    for (NSString *key in object.entity.relationshipsByName.allKeys) {
-        
-        NSRelationshipDescription *relationshipDescription = [object.entity.relationshipsByName valueForKey:key];
-        
-        if (![relationshipDescription isToMany]) {
-            
-            NSManagedObject *relationshipObject = [object valueForKey:key];
-            
-            if (relationshipObject) {
-                
-                NSData *xidData = [relationshipObject valueForKey:@"xid"];
-                
-                if (xidData.length != 0) {
-                    
-                    NSString *xid = [STMFunctions UUIDStringFromUUIDData:xidData];
-                    NSString *entityName = key;
-                    propertiesDictionary[key] = @{@"name": entityName, @"xid": xid};
-                    
-                }
-                
-            }
-            
-        }
-        
-    }
-// STMDatum method relationshipXidsForKeys:withNulls:
-    
-    return propertiesDictionary;
-    
-}
-
-
-//#pragma mark - sync object
-//
-//+ (void)syncObject:(NSDictionary *)objectDictionary {
-//    
-//    NSString *result = [objectDictionary valueForKey:@"result"];
-//    NSString *xid = [objectDictionary valueForKey:@"xid"];
-//    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-//    
-//    if (!result || ![result isEqualToString:@"ok"]) {
-//        
-//        NSString *errorMessage = [NSString stringWithFormat:@"Sync result not ok xid: %@", xid];
-//        [[self session].logger saveLogMessageWithText:errorMessage type:@"error"];
-//        
-//    } else {
-//
-//        NSManagedObject *syncedObject = [self objectForXid:xidData];
-//        
-//        if ([syncedObject isKindOfClass:[STMDatum class]]) {
-//            
-//            STMDatum *object = (STMDatum *)syncedObject;
-//            
-//            if (object) {
-//                
-//                [object.managedObjectContext performBlockAndWait:^{
-//                
-//                    if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
-//                        
-//                        [self removeObject:object];
-//                        
-//                    } else {
-//                        
-//                        NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
-//                        object.lts = deviceTs;
-//                        [object willChangeValueForKey:@"lts"];
-//                        [object setPrimitiveValue:deviceTs forKey:@"lts"];
-//                        [object didChangeValueForKey:@"lts"];
-//                        
-//                    }
-//                    
-//                    //                [STMSocketController successfullySyncObjectWithXid:xidData];
-//                    
-//                    NSString *entityName = object.entity.name;
-//                    
-//                    NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
-//                    NSLog(logMessage);
-//
-//                }];
-//                
-//            } else {
-//                
-//                NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
-//                NSLog(logMessage);
-//                
-//            }
-//
-//        }
-//        
-//    }
-//
-//}
 
 
 @end
