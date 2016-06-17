@@ -439,8 +439,10 @@
         
         self.getPictureMessageParameters = parameters;
         self.getPictureCallbackJSFunction = parameters[@"callback"];
-        self.photoEntityName = parameters[@"entityName"];
         self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
+
+        NSString *entityName = parameters[@"entityName"];
+        self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
 
         [self showImagePickerForSourceType:UIImagePickerControllerSourceTypeSavedPhotosAlbum];
         
