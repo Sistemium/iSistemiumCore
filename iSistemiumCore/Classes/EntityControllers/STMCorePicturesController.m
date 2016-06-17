@@ -217,8 +217,8 @@
 
 + (CGFloat)jpgQuality {
     
-    NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
-    CGFloat jpgQuality = [[appSettings valueForKey:@"jpgQuality"] floatValue];
+    NSDictionary *appSettings = [[self session].settingsController currentSettingsForGroup:@"appSettings"];
+    CGFloat jpgQuality = [appSettings[@"jpgQuality"] floatValue];
 
     return jpgQuality;
     
