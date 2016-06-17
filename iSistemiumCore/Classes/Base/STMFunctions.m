@@ -434,6 +434,9 @@
     
 }
 
++ (NSString *)base64HexStringFromData:(NSData *)data {
+    return [data base64EncodedStringWithOptions:0];
+}
 
 #pragma mark - images
 

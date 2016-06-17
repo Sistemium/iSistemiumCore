@@ -260,7 +260,8 @@
                         
                     } else {
                         
-                        value = [STMFunctions hexStringFromData:value];
+//                        value = [STMFunctions hexStringFromData:value];
+                        value = [STMFunctions base64HexStringFromData:value];
                         
                     }
                     
