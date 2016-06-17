@@ -353,6 +353,27 @@
     
 }
 
++ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+	
+    NSSet *ownLocationKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name];
+    
+    for (NSString *key in objectData.allKeys) {
+        
+        if ([ownLocationKeys containsObject:key]) {
+            
+            id value = objectData[key];
+            NSDictionary *entityAttributes = object.entity.attributesByName;
+            
+            value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+            
+            [object setValue:value forKey:key];
+            
+        }
+        
+    }
+
+}
+
 + (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes {
     
     if (!value) return nil;

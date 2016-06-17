@@ -36,7 +36,9 @@
                     withEntityName:(NSString *)entityName
              withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
++ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object;
+
+//+ (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
 
 + (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
 + (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;
