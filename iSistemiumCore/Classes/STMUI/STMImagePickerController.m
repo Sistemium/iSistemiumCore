@@ -179,8 +179,9 @@
 
 - (IBAction)photoLibraryButtonPressed:(id)sender {
     
-    [self cancelButtonPressed:sender];
-    [self.ownerVC showImagePickerForSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    [self dismissViewControllerAnimated:NO completion:^{
+        [self.ownerVC showImagePickerForSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    }];
     
 }
 
