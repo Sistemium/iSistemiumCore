@@ -15,6 +15,8 @@
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
 #import "STMRemoteController.h"
+#import "STMCorePicturesController.h"
+#import "STMCorePhotosController.h"
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
@@ -48,6 +50,9 @@
 
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
 @property (nonatomic, strong) NSDictionary *getPictureMessageParameters;
+
+@property (nonatomic, strong) NSString *photoEntityName;
+@property (nonatomic, strong) NSDictionary *photoData;
 
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic) BOOL waitingPicture;
@@ -425,6 +430,8 @@
         
         self.getPictureMessageParameters = nil;
         self.getPictureCallbackJSFunction = nil;
+        self.photoEntityName = nil;
+        self.photoData = nil;
         
         self.waitingPicture = YES;
 
@@ -432,6 +439,8 @@
         
         self.getPictureMessageParameters = parameters;
         self.getPictureCallbackJSFunction = parameters[@"callback"];
+        self.photoEntityName = parameters[@"entityName"];
+        self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
 
         [self showImagePickerForSourceType:UIImagePickerControllerSourceTypeSavedPhotosAlbum];
         
@@ -782,11 +791,11 @@
 }
 
 - (void)saveImage:(UIImage *)image withLocation:(CLLocation *)location {
-	
+    [self saveImage:image];
 }
 
 - (void)saveImage:(UIImage *)image andWaitForLocation:(BOOL)waitForLocation {
-	
+    [self saveImage:image];
 }
 
 - (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
@@ -808,6 +817,22 @@
 
 }
 
+- (void)saveImage:(UIImage *)image {
+    
+    CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
+    
+    STMCorePhoto *photoObject = [STMCorePhotosController newPhotoObjectWithEntityName:self.photoEntityName
+                                                                            photoData:UIImageJPEGRepresentation(image, jpgQuality)];
+    
+    [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
+    
+    NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject];
+    
+    [self callbackWithData:@[photoObjectDic]
+                parameters:self.getPictureMessageParameters
+        jsCallbackFunction:self.getPictureCallbackJSFunction];
+    
+}
 
 
 #pragma mark - STMCheckinDelegate
