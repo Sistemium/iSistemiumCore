@@ -354,19 +354,44 @@
 }
 
 + (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-	
-    NSSet *ownLocationKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name];
     
+    NSEntityDescription *entity = object.entity;
+    NSString *entityName = entity.name;
+	
+    NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
+    NSDictionary *ownObjectRelationships = [self singleRelationshipsForEntityName:entityName];
+
     for (NSString *key in objectData.allKeys) {
         
-        if ([ownLocationKeys containsObject:key]) {
+        if ([ownObjectKeys containsObject:key]) {
             
             id value = objectData[key];
-            NSDictionary *entityAttributes = object.entity.attributesByName;
+            NSDictionary *entityAttributes = entity.attributesByName;
             
             value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
             
             [object setValue:value forKey:key];
+            
+        } else {
+        
+            NSString *relationshipSuffix = @"Id";
+            
+            if ([key hasSuffix:relationshipSuffix]) {
+                
+                NSUInteger toIndex = key.length - relationshipSuffix.length;
+                NSString *localKey = [key substringToIndex:toIndex];
+            
+                if ([ownObjectRelationships.allKeys containsObject:localKey]) {
+                    
+                    NSString *destinationObjectXid = [objectData[key] isKindOfClass:[NSNull class]] ? nil : objectData[key];
+
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+
+                    [object setValue:destinationObject forKey:localKey];
+                    
+                }
+
+            }
             
         }
         
