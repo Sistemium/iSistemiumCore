@@ -46,10 +46,10 @@
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
-@property (nonatomic, strong) NSString *getPictureCallbackJSFunction;
+@property (nonatomic, strong) NSString *takePhotoCallbackJSFunction;
 
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
-@property (nonatomic, strong) NSDictionary *getPictureMessageParameters;
+@property (nonatomic, strong) NSDictionary *takePhotoMessageParameters;
 
 @property (nonatomic, strong) NSString *photoEntityName;
 @property (nonatomic, strong) NSDictionary *photoData;
@@ -416,6 +416,10 @@
         
         [self handleCheckinMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_TAKE_PHOTO]) {
+        
+        [self handleTakePhotoMessage:message];
+        
     } else if ([message.name isEqualToString:WK_MESSAGE_GET_PICTURE]) {
         
         [self handleGetPictureMessage:message];
@@ -426,24 +430,31 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
+    
+    
+}
+
+
+- (void)handleTakePhotoMessage:(WKScriptMessage *)message {
+    
     if (!self.waitingPicture) {
         
-        self.getPictureMessageParameters = nil;
-        self.getPictureCallbackJSFunction = nil;
+        self.takePhotoMessageParameters = nil;
+        self.takePhotoCallbackJSFunction = nil;
         self.photoEntityName = nil;
         self.photoData = nil;
         
         self.waitingPicture = YES;
-
+        
         NSDictionary *parameters = message.body;
         
-        self.getPictureMessageParameters = parameters;
-        self.getPictureCallbackJSFunction = parameters[@"callback"];
+        self.takePhotoMessageParameters = parameters;
+        self.takePhotoCallbackJSFunction = parameters[@"callback"];
         self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
-
+        
         NSString *entityName = parameters[@"entityName"];
         self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-
+        
         [self showImagePickerForSourceType:UIImagePickerControllerSourceTypeCamera];
         
     }
@@ -467,7 +478,7 @@
         NSNumber *accuracy = parameters[@"accuracy"];
         
         STMCoreLocationTracker *locationTracker = [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
-        
+
         [locationTracker checkinWithAccuracy:accuracy
                                  checkinData:checkinData
                                    requestId:requestId
@@ -779,11 +790,8 @@
         self.waitingPicture = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        [self callbackWithError:message parameters:self.getPictureMessageParameters];
-        
-        self.getPictureMessageParameters = nil;
-        self.getPictureCallbackJSFunction = nil;
-        
+        [self callbackWithError:message parameters:self.takePhotoMessageParameters];
+
     }
     
 }
@@ -814,8 +822,8 @@
     [self imagePickerWasDissmised:picker];
 
     [self callbackWithData:@[@"imagePickerControllerDidCancel"]
-                parameters:self.getPictureMessageParameters
-        jsCallbackFunction:self.getPictureCallbackJSFunction];
+                parameters:self.takePhotoMessageParameters
+        jsCallbackFunction:self.takePhotoCallbackJSFunction];
 
 }
 
@@ -831,8 +839,8 @@
     NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject];
     
     [self callbackWithData:@[photoObjectDic]
-                parameters:self.getPictureMessageParameters
-        jsCallbackFunction:self.getPictureCallbackJSFunction];
+                parameters:self.takePhotoMessageParameters
+        jsCallbackFunction:self.takePhotoCallbackJSFunction];
     
 }
 
