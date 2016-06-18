@@ -237,6 +237,10 @@
 }
 
 - (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {
+    return [self propertiesForKeys:keys withNulls:withNulls withBinaryData:YES];
+}
+
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionary];
     
@@ -260,8 +264,7 @@
                         
                     } else {
                         
-//                        value = [STMFunctions hexStringFromData:value];
-                        value = [STMFunctions base64HexStringFromData:value];
+                        value = (withBinaryData) ? [STMFunctions base64HexStringFromData:value] : @"";
                         
                     }
                     
@@ -282,7 +285,7 @@
     }
     
     return propertiesDictionary;
-    
+
 }
 
 - (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {

@@ -81,6 +81,7 @@
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls;
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData;
 
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
 + (void)stopDefantomizing;

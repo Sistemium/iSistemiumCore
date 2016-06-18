@@ -2009,8 +2009,16 @@
     
 }
 
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
+    return [self dictionaryForJSWithObject:object withNulls:YES];
+}
+
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls {
-    
+    return [self dictionaryForJSWithObject:object withNulls:withNulls withBinaryData:YES];
+}
+
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
+
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
     if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
@@ -2021,17 +2029,12 @@
     
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
     
-    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls]];
+    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
     [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
     return propertiesDictionary;
 
 }
-
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
-    return [self dictionaryForJSWithObject:object withNulls:YES];
-}
-
 
 #pragma mark - fetching objects
 

@@ -915,7 +915,9 @@
     
     [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
     
-    NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject];
+    NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
+                                                                             withNulls:YES
+                                                                        withBinaryData:NO];
     
     [self callbackWithData:@[photoObjectDic]
                 parameters:self.takePhotoMessageParameters
