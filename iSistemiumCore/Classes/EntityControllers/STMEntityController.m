@@ -127,7 +127,7 @@
         NSMutableDictionary *stcEntities = [self.stcEntities mutableCopy];
         
         NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
+            return ([[obj valueForKey:@"isUploadable"] boolValue] == YES  && [obj valueForKey:@"url"] != nil);
         }];
         
         _uploadableEntitiesNames = filteredKeys.allObjects;
