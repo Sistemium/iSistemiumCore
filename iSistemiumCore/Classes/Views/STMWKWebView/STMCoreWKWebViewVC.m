@@ -430,10 +430,89 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
+    NSDictionary *parameters = message.body;
+
+    NSString *getPictureCallbackJSFunction = parameters[@"callback"];
+    NSString *getPictureXid = parameters[@"id"];
+    NSString *getPictureSize = parameters[@"size"];
     
+    STMDatum *object = [STMCoreObjectsController objectForXid:[STMFunctions xidDataFromXidString:getPictureXid]];
+    
+    if (!object) {
+
+        [self callbackWithError:[NSString stringWithFormat:@"no object with xid %@", getPictureXid]
+                     parameters:parameters];
+        return;
+        
+    }
+    
+    if (![object isKindOfClass:[STMCorePicture class]]) {
+
+        [self callbackWithError:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]
+                     parameters:parameters];
+        return;
+
+    }
+    
+    STMCorePicture *picture = (STMCorePicture *)object;
+    
+    if ([getPictureSize isEqualToString:@"thumbnail"]) {
+        
+        [self getPictureSendData:picture.imageThumbnail
+                      parameters:parameters
+              jsCallbackFunction:getPictureCallbackJSFunction];
+        
+    } else if ([getPictureSize isEqualToString:@"resized"]) {
+        
+        [self getPictureWithImagePath:picture.resizedImagePath
+                           parameters:parameters
+                   jsCallbackFunction:getPictureCallbackJSFunction];
+
+        
+    } else if ([getPictureSize isEqualToString:@"full"]) {
+
+        [self getPictureWithImagePath:picture.imagePath
+                           parameters:parameters
+                   jsCallbackFunction:getPictureCallbackJSFunction];
+
+    } else {
+        
+        [self callbackWithError:@"size parameter is not correct" parameters:parameters];
+
+    }
     
 }
 
+- (void)getPictureWithImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+    
+    NSError *error = nil;
+    NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:imagePath]
+                                               options:0
+                                                 error:&error];
+    
+    if (error) {
+        
+        [self callbackWithError:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]
+                     parameters:parameters];
+        
+    } else {
+        
+        [self getPictureSendData:imageData
+                      parameters:parameters
+              jsCallbackFunction:jsCallbackFunction];
+        
+    }
+
+}
+
+- (void)getPictureSendData:(NSData *)imageData parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+
+    NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
+    [self callbackWithData:@[imageDataBase64String]
+                parameters:parameters
+        jsCallbackFunction:jsCallbackFunction];
+
+}
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
     
