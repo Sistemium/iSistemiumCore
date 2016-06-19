@@ -419,16 +419,16 @@
             
             STMDatum *relObject = [syncObject valueForKey:relName];
             
-            if (relObject.isFantom.boolValue || [sc.doNotSyncObjects containsObject:relObject.xid]) {
+            if (/*relObject.isFantom.boolValue || */[sc.doNotSyncObjects containsObject:relObject.xid]) {
                 
-                if (relObject.isFantom.boolValue) {
+                /*if (relObject.isFantom.boolValue) {
                     
                     [relObject addObserver:[self sharedInstance]
                                 forKeyPath:@"isFantom"
                                    options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
                                    context:nil];
 
-                }
+                }*/
                 
                 [sc.doNotSyncObjects addObject:syncObject.xid];
                 
