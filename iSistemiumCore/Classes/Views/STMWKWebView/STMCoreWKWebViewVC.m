@@ -534,7 +534,9 @@
         NSString *entityName = parameters[@"entityName"];
         self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
         
-        [self showImagePickerForSourceType:UIImagePickerControllerSourceTypeCamera];
+        [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                   withObject:@(UIImagePickerControllerSourceTypeCamera)
+                   afterDelay:0.3];
         
     }
 
@@ -836,43 +838,55 @@
 
 #pragma mark - STMImagePickerOwnerProtocol
 
-- (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType {
+- (void)checkImagePickerWithSourceTypeNumber:(NSNumber *)sourceTypeNumber {
+ 
+    NSUInteger imageSourceType = sourceTypeNumber.integerValue;
     
     if ([UIImagePickerController isSourceTypeAvailable:imageSourceType]) {
         
-        STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
-        imagePickerController.ownerVC = self;
-        
-        [self.tabBarController presentViewController:imagePickerController animated:YES completion:^{
-            [self.view addSubview:self.spinnerView];
-        }];
+        [self showImagePickerForSourceType:imageSourceType];
         
     } else {
         
-        NSString *imageSourceTypeString = nil;
-        
-        switch (imageSourceType) {
-            case UIImagePickerControllerSourceTypePhotoLibrary: {
-                imageSourceTypeString = @"PhotoLibrary";
-                break;
-            }
-            case UIImagePickerControllerSourceTypeCamera: {
-                imageSourceTypeString = @"Camera";
-                break;
-            }
-            case UIImagePickerControllerSourceTypeSavedPhotosAlbum: {
-                imageSourceTypeString = @"PhotosAlbum";
-                break;
-            }
-        }
+        NSString *imageSourceTypeString = [self stringValueForImageSourceType:imageSourceType];
         
         self.waitingPicture = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
         [self callbackWithError:message parameters:self.takePhotoMessageParameters];
-
+        
     }
+
+}
+
+- (NSString *)stringValueForImageSourceType:(UIImagePickerControllerSourceType)imageSourceType {
     
+    switch (imageSourceType) {
+        case UIImagePickerControllerSourceTypePhotoLibrary: {
+            return @"PhotoLibrary";
+            break;
+        }
+        case UIImagePickerControllerSourceTypeCamera: {
+            return @"Camera";
+            break;
+        }
+        case UIImagePickerControllerSourceTypeSavedPhotosAlbum: {
+            return @"PhotosAlbum";
+            break;
+        }
+    }
+
+}
+
+- (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType {
+    
+    STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
+    imagePickerController.ownerVC = self;
+    
+    [self.tabBarController presentViewController:imagePickerController animated:YES completion:^{
+        [self.view addSubview:self.spinnerView];
+    }];
+
 }
 
 - (BOOL)shouldWaitForLocation {
