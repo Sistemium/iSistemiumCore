@@ -1659,6 +1659,7 @@
     STMDatum *object = (STMDatum *)[self objectForXid:xidData entityName:entityName];
     
     if (!object) object = (STMDatum *)[self newObjectForEntityName:entityName andXid:xidData isFantom:NO];
+    object.isFantom = @(NO);
 
     [self processingKeysForUpdatingObject:object withObjectData:objectData error:error];
 
