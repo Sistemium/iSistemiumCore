@@ -48,7 +48,8 @@
 + (NSArray *)coreEntityRelationships;
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
-+ (NSDictionary *)singleRelationshipsForEntityName:(NSString *)entityName;
++ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
++ (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
 

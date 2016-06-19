@@ -398,8 +398,6 @@
 }
 
 + (STMDatum *)checkRelationshipsObjectsForObject:(STMDatum *)syncObject fromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
-
-//    NSLog(@"syncObject.xid %@", syncObject.xid);
     
     [syncArray removeObject:syncObject];
     
@@ -413,19 +411,24 @@
      
         NSEntityDescription *objectEntity = syncObject.entity;
         NSString *entityName = objectEntity.name;
-        NSDictionary *relationships = [STMCoreObjectsController singleRelationshipsForEntityName:entityName];
-        
-//        NSLog(@"%@: %@", entityName, relationships.allKeys);
+        NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
         
         BOOL shouldFindNext = NO;
         
         for (NSString *relName in relationships.allKeys) {
             
-//            NSLog(@"check relName %@", relName);
-            
             STMDatum *relObject = [syncObject valueForKey:relName];
             
-            if ([sc.doNotSyncObjects containsObject:relObject.xid]) {
+            if (relObject.isFantom.boolValue || [sc.doNotSyncObjects containsObject:relObject.xid]) {
+                
+                if (relObject.isFantom.boolValue) {
+                    
+                    [relObject addObserver:[self sharedInstance]
+                                forKeyPath:@"isFantom"
+                                   options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
+                                   context:nil];
+
+                }
                 
                 [sc.doNotSyncObjects addObject:syncObject.xid];
                 
@@ -1180,6 +1183,50 @@
         _doNotSyncObjects = @[].mutableCopy;
     }
     return _doNotSyncObjects;
+    
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    
+    if ([object isKindOfClass:[STMDatum class]]) {
+        
+        if ([keyPath isEqualToString:@"isFantom"]) {
+            
+            id newValue = [change valueForKey:NSKeyValueChangeNewKey];
+            
+            if ([newValue isKindOfClass:[NSNumber class]]) {
+                
+                BOOL isFantom = [newValue boolValue];
+                
+                if (!isFantom) {
+                    
+                    [object removeObserver:self forKeyPath:keyPath];
+                    [self releaseDoNotSyncObjectsWithObject:object];
+
+                }
+
+            }
+            
+        }
+        
+    }
+    
+}
+
+- (void)releaseDoNotSyncObjectsWithObject:(STMDatum *)object {
+    
+    if (self.doNotSyncObjects.count == 0) return;
+    
+    NSDictionary *toManyRelationships = [STMCoreObjectsController toManyRelationshipsForEntityName:object.entity.name];
+    
+    for (NSString *relName in toManyRelationships.allKeys) {
+        
+        NSSet *relObjects = [object valueForKey:relName];
+        NSArray *relObjectsXids = [relObjects valueForKeyPath:@"@distinctUnionOfObjects.xid"];
+        
+        for (NSData *xid in relObjectsXids) [self.doNotSyncObjects removeObject:xid];
+        
+    }
     
 }
 
