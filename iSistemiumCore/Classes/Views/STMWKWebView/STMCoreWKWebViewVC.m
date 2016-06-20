@@ -459,10 +459,10 @@
     
     NSString *getPictureXid = parameters[@"id"];
     NSData *getPictureXidData = [STMFunctions xidDataFromXidString:getPictureXid];
-    self.getPictureMessageParameters[getPictureXidData] = parameters;
+    if (getPictureXidData) self.getPictureMessageParameters[getPictureXidData] = parameters;
     
     NSString *callbackFunction = parameters[@"callback"];
-    self.getPictureCallbackJSFunctions[getPictureXidData] = callbackFunction;
+    if (getPictureXidData) self.getPictureCallbackJSFunctions[getPictureXidData] = callbackFunction;
     
     NSString *getPictureSize = parameters[@"size"];
     
@@ -523,11 +523,17 @@
 
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
-    [self callbackWithError:errorString
-                 parameters:self.getPictureMessageParameters[xid]];
+    NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
     
-    [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
-    [self.getPictureMessageParameters removeObjectForKey:xid];
+    [self callbackWithError:errorString
+                 parameters:parameters];
+    
+    if (xid) {
+        
+        [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
+        [self.getPictureMessageParameters removeObjectForKey:xid];
+
+    }
 
 }
 
@@ -579,7 +585,7 @@
     if (error) {
         
         [self callbackWithError:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]
-                     parameters:self.getPictureMessageParameters];
+                     parameters:parameters];
         
     } else {
         
@@ -616,7 +622,7 @@
         
         [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
                    withObject:@(UIImagePickerControllerSourceTypeCamera)
-                   afterDelay:0.3];
+                   afterDelay:0];
         
     }
 
