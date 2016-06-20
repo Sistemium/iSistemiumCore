@@ -273,6 +273,13 @@
 
 }
 
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    
+}
+
 - (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
     
 //    NSLogMethodName;
