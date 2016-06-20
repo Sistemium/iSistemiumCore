@@ -268,8 +268,8 @@
     
 //    NSLogMethodName;
     
-    NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailProvisionalNavigation withError: %@", webView.URL, error.localizedDescription];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    /*NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailProvisionalNavigation withError: %@", webView.URL, error.localizedDescription];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];*/
 
 }
 
