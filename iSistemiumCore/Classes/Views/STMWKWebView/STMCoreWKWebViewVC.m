@@ -540,6 +540,8 @@
                                                      name:@"downloadPicture"
                                                    object:picture];
         
+        picture.imageThumbnail = nil;
+        
         NSManagedObjectID *pictureID = picture.objectID;
         
         [STMCorePicturesController downloadConnectionForObjectID:pictureID];
