@@ -47,15 +47,17 @@
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
 @property (nonatomic, strong) NSString *takePhotoCallbackJSFunction;
+@property (nonatomic, strong) NSMutableDictionary *getPictureCallbackJSFunctions;
 
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
 @property (nonatomic, strong) NSDictionary *takePhotoMessageParameters;
+@property (nonatomic, strong) NSMutableDictionary *getPictureMessageParameters;
 
 @property (nonatomic, strong) NSString *photoEntityName;
 @property (nonatomic, strong) NSDictionary *photoData;
 
 @property (nonatomic) BOOL waitingCheckinLocation;
-@property (nonatomic) BOOL waitingPicture;
+@property (nonatomic) BOOL waitingPhoto;
 
 
 @end
@@ -91,6 +93,24 @@
         _checkinMessageParameters = @{}.mutableCopy;
     }
     return _checkinMessageParameters;
+    
+}
+
+- (NSMutableDictionary *)getPictureCallbackJSFunctions {
+    
+    if (!_getPictureCallbackJSFunctions) {
+        _getPictureCallbackJSFunctions = @{}.mutableCopy;
+    }
+    return _getPictureCallbackJSFunctions;
+    
+}
+
+- (NSMutableDictionary *)getPictureMessageParameters {
+    
+    if (!_getPictureMessageParameters) {
+        _getPictureMessageParameters = @{}.mutableCopy;
+    }
+    return _getPictureMessageParameters;
     
 }
 
@@ -431,27 +451,37 @@
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
+    [self handleGetPictureParameters:parameters];
+    
+}
 
-    NSString *getPictureCallbackJSFunction = parameters[@"callback"];
+- (void)handleGetPictureParameters:(NSDictionary *)parameters {
+    
     NSString *getPictureXid = parameters[@"id"];
+    NSData *getPictureXidData = [STMFunctions xidDataFromXidString:getPictureXid];
+    self.getPictureMessageParameters[getPictureXidData] = parameters;
+    
+    NSString *callbackFunction = parameters[@"callback"];
+    self.getPictureCallbackJSFunctions[getPictureXidData] = callbackFunction;
+    
     NSString *getPictureSize = parameters[@"size"];
     
-    STMDatum *object = [STMCoreObjectsController objectForXid:[STMFunctions xidDataFromXidString:getPictureXid]];
+    STMDatum *object = [STMCoreObjectsController objectForXid:getPictureXidData];
     
     if (!object) {
-
-        [self callbackWithError:[NSString stringWithFormat:@"no object with xid %@", getPictureXid]
-                     parameters:parameters];
+        
+        [self getPictureWithXid:getPictureXidData
+                          error:[NSString stringWithFormat:@"no object with xid %@", getPictureXid]];
         return;
         
     }
     
     if (![object isKindOfClass:[STMCorePicture class]]) {
-
-        [self callbackWithError:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]
-                     parameters:parameters];
+        
+        [self getPictureWithXid:getPictureXidData
+                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
         return;
-
+        
     }
     
     STMCorePicture *picture = (STMCorePicture *)object;
@@ -460,26 +490,80 @@
         
         [self getPictureSendData:picture.imageThumbnail
                       parameters:parameters
-              jsCallbackFunction:getPictureCallbackJSFunction];
+              jsCallbackFunction:callbackFunction];
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
-        [self getPictureWithImagePath:picture.resizedImagePath
-                           parameters:parameters
-                   jsCallbackFunction:getPictureCallbackJSFunction];
-
+        if (picture.resizedImagePath) {
+            [self getPictureWithImagePath:picture.resizedImagePath
+                               parameters:parameters
+                       jsCallbackFunction:callbackFunction];
+        } else {
+            [self downloadPicture:picture];
+        }
         
     } else if ([getPictureSize isEqualToString:@"full"]) {
-
-        [self getPictureWithImagePath:picture.imagePath
-                           parameters:parameters
-                   jsCallbackFunction:getPictureCallbackJSFunction];
-
+        
+        if (picture.imagePath) {
+            [self getPictureWithImagePath:picture.imagePath
+                               parameters:parameters
+                       jsCallbackFunction:callbackFunction];
+        } else {
+            [self downloadPicture:picture];
+        }
+        
     } else {
         
-        [self callbackWithError:@"size parameter is not correct" parameters:parameters];
-
+        [self getPictureWithXid:getPictureXidData
+                          error:@"size parameter is not correct"];
+        
     }
+
+}
+
+- (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
+    
+    [self callbackWithError:errorString
+                 parameters:self.getPictureMessageParameters[xid]];
+    
+    [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
+    [self.getPictureMessageParameters removeObjectForKey:xid];
+
+}
+
+- (void)downloadPicture:(STMCorePicture *)picture {
+    
+    if (picture.href) {
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(pictureWasDownloaded:)
+                                                     name:@"downloadPicture"
+                                                   object:picture];
+        
+        NSManagedObjectID *pictureID = picture.objectID;
+        
+        [STMCorePicturesController downloadConnectionForObjectID:pictureID];
+        
+    } else {
+        [self callbackWithError:@"picture have not imagePath and href" parameters:self.getPictureMessageParameters[picture.xid]];
+    }
+    
+}
+
+- (void)pictureWasDownloaded:(NSNotification *)notification {
+    
+    if ([notification.object isKindOfClass:[STMCorePicture class]]) {
+        
+        STMCorePicture *picture = notification.object;
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:@"downloadPicture"
+                                                      object:picture];
+        
+        [self handleGetPictureParameters:self.getPictureMessageParameters[picture.xid]];
+        
+    }
+    
     
 }
 
@@ -493,7 +577,7 @@
     if (error) {
         
         [self callbackWithError:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]
-                     parameters:parameters];
+                     parameters:self.getPictureMessageParameters];
         
     } else {
         
@@ -516,23 +600,17 @@
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
     
-    if (!self.waitingPicture) {
+    if (!self.waitingPhoto) {
         
-        self.takePhotoMessageParameters = nil;
-        self.takePhotoCallbackJSFunction = nil;
-        self.photoEntityName = nil;
-        self.photoData = nil;
-        
-        self.waitingPicture = YES;
+        self.waitingPhoto = YES;
         
         NSDictionary *parameters = message.body;
         
+        NSString *entityName = parameters[@"entityName"];
+        self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
         self.takePhotoMessageParameters = parameters;
         self.takePhotoCallbackJSFunction = parameters[@"callback"];
         self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
-        
-        NSString *entityName = parameters[@"entityName"];
-        self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
         
         [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
                    withObject:@(UIImagePickerControllerSourceTypeCamera)
@@ -850,7 +928,7 @@
         
         NSString *imageSourceTypeString = [self stringValueForImageSourceType:imageSourceType];
         
-        self.waitingPicture = NO;
+        self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
         [self callbackWithError:message parameters:self.takePhotoMessageParameters];
@@ -906,7 +984,7 @@
     [self.spinnerView removeFromSuperview];
     self.spinnerView = nil;
     
-    self.waitingPicture = NO;
+    self.waitingPhoto = NO;
 
 }
 
