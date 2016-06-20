@@ -511,6 +511,8 @@
     
         STMSocketController *sc = [self sharedInstance];
         
+        [sc releaseDoNotSyncObjectsWithObjectXid:xid];
+        
         if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
         [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
 
@@ -1186,29 +1188,41 @@
     
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+//- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+//    
+//    if ([object isKindOfClass:[STMDatum class]]) {
+//        
+//        if ([keyPath isEqualToString:@"isFantom"]) {
+//            
+//            id newValue = [change valueForKey:NSKeyValueChangeNewKey];
+//            
+//            if ([newValue isKindOfClass:[NSNumber class]]) {
+//                
+//                BOOL isFantom = [newValue boolValue];
+//                
+//                if (!isFantom) {
+//                    
+//                    [object removeObserver:self forKeyPath:keyPath];
+//                    [self releaseDoNotSyncObjectsWithObject:object];
+//
+//                }
+//
+//            }
+//            
+//        }
+//        
+//    }
+//    
+//}
+
+- (void)releaseDoNotSyncObjectsWithObjectXid:(NSData *)objectXid {
     
-    if ([object isKindOfClass:[STMDatum class]]) {
+    if (objectXid) {
         
-        if ([keyPath isEqualToString:@"isFantom"]) {
-            
-            id newValue = [change valueForKey:NSKeyValueChangeNewKey];
-            
-            if ([newValue isKindOfClass:[NSNumber class]]) {
-                
-                BOOL isFantom = [newValue boolValue];
-                
-                if (!isFantom) {
-                    
-                    [object removeObserver:self forKeyPath:keyPath];
-                    [self releaseDoNotSyncObjectsWithObject:object];
-
-                }
-
-            }
-            
-        }
+        STMDatum *object = [STMCoreObjectsController objectForXid:objectXid];
         
+        if (object) [self releaseDoNotSyncObjectsWithObject:object];
+
     }
     
 }
