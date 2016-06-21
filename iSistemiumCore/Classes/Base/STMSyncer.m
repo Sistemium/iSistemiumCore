@@ -890,38 +890,6 @@
     
 }
 
-//- (NSString *)entityNameForConnection:(NSURLConnection *)connection {
-//    return [self entityNameForRequest:connection.currentRequest];
-//}
-//
-//- (NSString *)entityNameForRequest:(NSURLRequest *)request {
-//    return [self entityNameForURLString:request.URL.absoluteString];
-//}
-//
-//- (NSString *)entityNameForURLString:(NSString *)urlString {
-//    
-//    if ([urlString isEqualToString:self.socketUrlString]) {
-//        
-//        return SEND_DATA_CONNECTION;
-//        
-//    } else {
-//        
-//        for (STMEntity *entity in [self.stcEntities allValues]) {
-//            
-//            if ([entity.url isEqualToString:urlString]) {
-//                
-//                return [[self.stcEntities allKeysForObject:entity] lastObject];
-//                
-//            }
-//            
-//        }
-//        
-//    }
-//    
-//    return nil;
-//
-//}
-
 - (void)entityCountDecrease {
     
     self.entityCount -= 1;
@@ -1359,9 +1327,6 @@
                     
                     NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
                     object.lts = deviceTs;
-//                    [object willChangeValueForKey:@"lts"];
-//                    [object setPrimitiveValue:deviceTs forKey:@"lts"];
-//                    [object didChangeValueForKey:@"lts"];
                     
                 }
                 
