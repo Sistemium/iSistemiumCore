@@ -691,6 +691,11 @@
                 if (connectionError) {
                    
                     NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"pictureDownloadError"
+                                                                        object:object
+                                                                      userInfo:@{@"error" : connectionError.description}];
+                    
                     [self didProcessHref:href];
 
                 } else {

@@ -502,9 +502,12 @@
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
         if (picture.resizedImagePath) {
-            [self getPictureWithImagePath:picture.resizedImagePath
-                               parameters:parameters
-                       jsCallbackFunction:callbackFunction];
+            
+            [self getPicture:picture
+               withImagePath:picture.resizedImagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
         } else {
             [self downloadPicture:picture];
         }
@@ -512,9 +515,12 @@
     } else if ([getPictureSize isEqualToString:@"full"]) {
         
         if (picture.imagePath) {
-            [self getPictureWithImagePath:picture.imagePath
-                               parameters:parameters
-                       jsCallbackFunction:callbackFunction];
+            
+            [self getPicture:picture
+               withImagePath:picture.imagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
         } else {
             [self downloadPicture:picture];
         }
@@ -555,6 +561,11 @@
                                                      name:@"downloadPicture"
                                                    object:picture];
         
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(pictureDownloadError:)
+                                                     name:@"pictureDownloadError"
+                                                   object:picture];
+
         picture.imageThumbnail = nil;
         
         NSManagedObjectID *pictureID = picture.objectID;
@@ -562,7 +573,10 @@
         [STMCorePicturesController downloadConnectionForObjectID:pictureID];
         
     } else {
-        [self callbackWithError:@"picture have not imagePath and href" parameters:self.getPictureMessageParameters[picture.xid]];
+
+        [self getPictureWithXid:picture.xid
+                          error:@"picture have not imagePath and href"];
+        
     }
     
 }
@@ -573,18 +587,40 @@
         
         STMCorePicture *picture = notification.object;
         
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:@"downloadPicture"
-                                                      object:picture];
+        [self removeObserversForPicture:picture];
         
         [self handleGetPictureParameters:self.getPictureMessageParameters[picture.xid]];
         
     }
     
-    
 }
 
-- (void)getPictureWithImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)pictureDownloadError:(NSNotification *)notification {
+    
+    STMCorePicture *picture = notification.object;
+    
+    [self removeObserversForPicture:picture];
+
+    NSString *errorString = notification.userInfo[@"error"];
+    
+    [self getPictureWithXid:picture.xid
+                      error:errorString];
+
+}
+
+- (void)removeObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"downloadPicture"
+                                                  object:picture];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"pictureDownloadError"
+                                                  object:picture];
+
+}
+
+- (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
     NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:imagePath]
@@ -593,9 +629,9 @@
     
     if (error) {
         
-        [self callbackWithError:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]
-                     parameters:parameters];
-        
+        [self getPictureWithXid:picture.xid
+                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
+
     } else {
         
         [self getPictureSendData:imageData
