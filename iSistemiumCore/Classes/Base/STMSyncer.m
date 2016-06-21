@@ -255,7 +255,7 @@
                 [STMClientDataController checkClientData];
                 self.syncing = YES;
 
-                [STMSocketController sendUnsyncedObjects:self];
+                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
                 
                 break;
             }
@@ -282,7 +282,7 @@
 
     if ([STMSocketController socketIsAvailable]) {
         
-        [STMSocketController sendUnsyncedObjects:self];
+        [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
         
     } else {
 
@@ -1162,16 +1162,22 @@
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    
+
+    NSString *xid = [responseData valueForKey:@"id"];
+    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+
     if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
     
-        NSString *xid = [responseData valueForKey:@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-
-        [STMSocketController syncObjectWithXid:xidData successfully:NO];
+        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                                 errorString:errorString
+                                                   abortSync:NO];
 
     } else {
-        [STMSocketController sendFinishedWithError:errorString];
+        
+        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                                 errorString:errorString
+                                                   abortSync:YES];
+
     }
     
 }
@@ -1349,8 +1355,8 @@
                     
                 }
                 
-                [STMSocketController syncObjectWithXid:xidData successfully:YES];
-                
+                [STMSocketController successfullySyncObjectWithXid:xidData];
+
                 NSString *entityName = object.entity.name;
                 
                 NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];

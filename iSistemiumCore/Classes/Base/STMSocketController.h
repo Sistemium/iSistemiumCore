@@ -46,14 +46,18 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (NSUInteger)numbersOfUnsyncedObjects;
 
 + (void)sendEvent:(STMSocketEvent)event withValue:(id)value;
-+ (void)sendUnsyncedObjects:(id)sender;
++ (void)sendUnsyncedObjects:(id)sender withTimeout:(NSTimeInterval)timeout;
 
 + (SocketIOClientStatus)currentSocketStatus;
 + (BOOL)socketIsAvailable;
 + (BOOL)isSendingData;
 
 + (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid;
-+ (void)syncObjectWithXid:(NSData *)xid successfully:(BOOL)successfully;
+
++ (void)successfullySyncObjectWithXid:(NSData *)xid;
++ (void)unsuccessfullySyncObjectWithXid:(NSData *)xid
+                            errorString:(NSString *)errorString
+                              abortSync:(BOOL)abortSync;
 
 + (void)startReceiveDataFromResource:(NSString *)resourceString
                             withETag:(NSString *)eTag
@@ -70,8 +74,6 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (void)sendFantomFindEventToResource:(NSString *)resource
                               withXid:(NSString *)xidString
                            andTimeout:(NSTimeInterval)timeout;
-
-+ (void)sendFinishedWithError:(NSString *)errorString;
 
 
 @end

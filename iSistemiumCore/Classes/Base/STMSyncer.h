@@ -21,6 +21,8 @@
 @property (nonatomic) STMSyncerState syncerState;
 @property (nonatomic) STMSyncerState timeoutErrorSyncerState;
 
+- (NSTimeInterval)timeout;
+
 - (void)prepareToDestroy;
 - (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
