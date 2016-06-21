@@ -533,7 +533,7 @@
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
     NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
     
-    [self callbackWithData:@[errorString]
+    [self callbackWithData:errorString
                 parameters:parameters
         jsCallbackFunction:callbackJSFunction];
 
@@ -873,16 +873,16 @@
         
 }
 
-- (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
 #ifdef DEBUG
     
     NSNumber *requestId = parameters[@"options"][@"requestId"];
 
-    if (requestId) {
-        NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @(data.count));
+    if (requestId && [data isKindOfClass:[NSArray class]]) {
+        NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @([(NSArray *)data count]));
     } else {
-        NSLog(@"callbackWithData: %@ objects for message parameters: %@", @(data.count), parameters);
+        NSLog(@"callbackWithData: %@ for message parameters: %@", data, parameters);
     }
     
 #endif
@@ -948,7 +948,7 @@
         self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        [self callbackWithData:@[message]
+        [self callbackWithData:message
                     parameters:self.takePhotoMessageParameters
             jsCallbackFunction:self.takePhotoCallbackJSFunction];
         
@@ -1061,7 +1061,7 @@
         
         NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
-        [self callbackWithData:@[errorString]
+        [self callbackWithData:errorString
                     parameters:parameters
             jsCallbackFunction:self.checkinCallbackJSFunction];
         
