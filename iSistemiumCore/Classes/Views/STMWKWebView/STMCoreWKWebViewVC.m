@@ -495,9 +495,15 @@
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-        [self getPictureSendData:picture.imageThumbnail
-                      parameters:parameters
-              jsCallbackFunction:callbackFunction];
+        if (picture.imageThumbnail) {
+            
+            [self getPictureSendData:picture.imageThumbnail
+                          parameters:parameters
+                  jsCallbackFunction:callbackFunction];
+
+        } else {
+            [self downloadPicture:picture];
+        }
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
@@ -555,16 +561,8 @@
 - (void)downloadPicture:(STMCorePicture *)picture {
     
     if (picture.href) {
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(pictureWasDownloaded:)
-                                                     name:@"downloadPicture"
-                                                   object:picture];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(pictureDownloadError:)
-                                                     name:@"pictureDownloadError"
-                                                   object:picture];
+
+        [self addObserversForPicture:picture];
 
         picture.imageThumbnail = nil;
         
@@ -608,6 +606,20 @@
 
 }
 
+- (void)addObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureWasDownloaded:)
+                                                 name:@"downloadPicture"
+                                               object:picture];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureDownloadError:)
+                                                 name:@"pictureDownloadError"
+                                               object:picture];
+
+}
+
 - (void)removeObserversForPicture:(STMCorePicture *)picture {
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -644,11 +656,21 @@
 
 - (void)getPictureSendData:(NSData *)imageData parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
 
-    NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
-    [self callbackWithData:@[imageDataBase64String]
-                parameters:parameters
-        jsCallbackFunction:jsCallbackFunction];
+    if (imageData) {
+    
+        NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
+        [self callbackWithData:@[imageDataBase64String]
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
 
+    } else {
+        
+        [self callbackWithData:@"no image data"
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
+
+    }
+    
 }
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
