@@ -258,7 +258,7 @@
                     
                 } else if ([value isKindOfClass:[NSData class]]) {
                     
-                    if ([key isEqualToString:@"deviceUUID"] || [key hasSuffix:@"Xid"]) {
+                    if ([@[@"deviceUUID", @"deviceToken"] containsObject:key] || [key hasSuffix:@"Xid"]) {
                         
                         value = [STMFunctions UUIDStringFromUUIDData:value];
                         
