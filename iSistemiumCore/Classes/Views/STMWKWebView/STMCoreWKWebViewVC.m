@@ -531,10 +531,12 @@
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
+    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
     
-    [self callbackWithError:errorString
-                 parameters:parameters];
-    
+    [self callbackWithData:@[errorString]
+                parameters:parameters
+        jsCallbackFunction:callbackJSFunction];
+
     if (xid) {
         
         [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
@@ -946,7 +948,9 @@
         self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        [self callbackWithError:message parameters:self.takePhotoMessageParameters];
+        [self callbackWithData:@[message]
+                    parameters:self.takePhotoMessageParameters
+            jsCallbackFunction:self.takePhotoCallbackJSFunction];
         
     }
 
@@ -1057,8 +1061,9 @@
         
         NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
-        [self callbackWithError:errorString
-                     parameters:parameters];
+        [self callbackWithData:@[errorString]
+                    parameters:parameters
+            jsCallbackFunction:self.checkinCallbackJSFunction];
         
         [self.checkinMessageParameters removeObjectForKey:requestId];
         
