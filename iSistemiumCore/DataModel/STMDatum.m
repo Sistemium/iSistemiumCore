@@ -258,9 +258,13 @@
                     
                 } else if ([value isKindOfClass:[NSData class]]) {
                     
-                    if ([@[@"deviceUUID", @"deviceToken"] containsObject:key] || [key hasSuffix:@"Xid"]) {
+                    if ([key isEqualToString:@"deviceUUID"] || [key hasSuffix:@"Xid"]) {
                         
                         value = [STMFunctions UUIDStringFromUUIDData:value];
+                        
+                    } else if ([key isEqualToString:@"deviceToken"]) {
+                      
+                        value = [STMFunctions hexStringFromData:value];
                         
                     } else {
                         
