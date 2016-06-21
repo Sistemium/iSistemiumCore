@@ -40,6 +40,8 @@
 @property (nonatomic) BOOL shouldSendData;
 @property (nonatomic) BOOL isReconnecting;
 @property (nonatomic) NSTimeInterval sendTimeout;
+@property (nonatomic) NSTimeInterval receiveTimeout;
+@property (nonatomic, strong) NSDate *receivingStartDate;
 
 
 @end
@@ -522,8 +524,12 @@
     
     if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
     
-    [sc.syncDataDictionary removeObjectForKey:xid];
-    [sc.doNotSyncObjects addObject:xid];
+    if (xid) {
+        
+        [sc.syncDataDictionary removeObjectForKey:xid];
+        [sc.doNotSyncObjects addObject:xid];
+
+    }
     
     [sc performSelector:@selector(sendFinishedWithError:abortSync:)
              withObject:errorString
@@ -800,7 +806,7 @@
 
     if (params) value[@"params"] = params;
     
-    [self sendEvent:STMSocketEventJSData withValue:value];
+    [self sendFindWithValue:value andTimeout:timeout];
 
 }
 
@@ -832,7 +838,37 @@
                             @"resource" : resource,
                             @"id"       : xidString};
 
+    [self sendFindWithValue:value andTimeout:timeout];
+    
+}
+
++ (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
+    
+    STMSocketController *sc = [self sharedInstance];
+    sc.receivingStartDate = [NSDate date];
+    
+    [self cancelPreviousPerformRequestsWithTarget:sc
+                                         selector:@selector(checkReceiveTimeout:)
+                                           object:@(sc.receiveTimeout)];
+    
+    sc.receiveTimeout = timeout;
+    
+    [sc performSelector:@selector(checkReceiveTimeout:)
+             withObject:@(sc.receiveTimeout)
+             afterDelay:timeout];
+    
     [self sendEvent:STMSocketEventJSData withValue:value];
+
+}
+
+- (void)checkReceiveTimeout:(NSNumber *)timeoutNumber {
+    
+    NSTimeInterval timeout = timeoutNumber.doubleValue;
+    NSTimeInterval elapsedTime = -[self.receivingStartDate timeIntervalSinceNow];
+    
+    if (elapsedTime >= timeout) {
+        [[STMSocketController syncer] socketReceiveTimeout];
+    }
     
 }
 

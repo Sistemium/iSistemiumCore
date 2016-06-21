@@ -1130,6 +1130,16 @@
 
 }
 
+- (void)socketReceiveTimeout {
+    
+    NSString *errorString = @"socket receive objects timeout";
+    NSLog(errorString);
+    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinish];
+    [STMCoreObjectsController stopDefantomizing];
+
+}
+
 - (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
     
     NSLog(errorString);

@@ -1340,7 +1340,7 @@
         
         [STMSocketController sendFantomFindEventToResource:resource
                                                    withXid:xidString
-                                                andTimeout:0];
+                                                andTimeout:[[self syncer] timeout]];
 
     } else {
         
