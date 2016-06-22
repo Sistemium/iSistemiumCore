@@ -310,7 +310,7 @@
 
     STMSocketController *sc = [self sharedInstance];
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", sc.doNotSyncObjects];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@) AND NOT (xid IN %@)", sc.doNotSyncObjects, sc.syncDataDictionary.allKeys];
     
     syncDataArray = [syncDataArray filteredArrayUsingPredicate:predicate];
     
