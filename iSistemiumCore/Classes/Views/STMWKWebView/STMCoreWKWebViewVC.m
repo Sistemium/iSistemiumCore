@@ -207,20 +207,26 @@
 //    urlString = @"http://maxbook.local:3000/#/orders";
     
     NSURL *url = [NSURL URLWithString:urlString];
+    [self loadURL:url];
+    
+}
+
+- (void)loadURL:(NSURL *)url {
+    
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
-//    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-//    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
+    //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+    //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
     request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
-
-//    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
-//    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
-//    
-//    NSLog(@"cachedResponseForRequest %@", [[NSURLCache sharedURLCache] cachedResponseForRequest:request]);
-//    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+    
+    //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
+    //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
+    //
+    //    NSLog(@"cachedResponseForRequest %@", [[NSURLCache sharedURLCache] cachedResponseForRequest:request]);
+    //    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
     
     [self.webView loadRequest:request];
-    
+
 }
 
 
@@ -277,6 +283,8 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    
+    [self loadURL:webView.URL];
     
 }
 
