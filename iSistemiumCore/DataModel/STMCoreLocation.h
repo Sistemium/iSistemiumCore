@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
 
-@class STMPhoto;
+@class STMCorePhoto;
 
 NS_ASSUME_NONNULL_BEGIN
 

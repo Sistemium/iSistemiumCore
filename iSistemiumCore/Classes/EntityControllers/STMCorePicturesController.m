@@ -217,8 +217,8 @@
 
 + (CGFloat)jpgQuality {
     
-    NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
-    CGFloat jpgQuality = [[appSettings valueForKey:@"jpgQuality"] floatValue];
+    NSDictionary *appSettings = [[self session].settingsController currentSettingsForGroup:@"appSettings"];
+    CGFloat jpgQuality = [appSettings[@"jpgQuality"] floatValue];
 
     return jpgQuality;
     
@@ -414,7 +414,7 @@
 
     int counter = 0;
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMPhoto class])];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePhoto class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
     
@@ -496,7 +496,7 @@
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
-    if ([picture isKindOfClass:[STMPhoto class]]) {
+    if ([picture isKindOfClass:[STMCorePhoto class]]) {
         
         if (shouldUpload) {
             [[self sharedController] addUploadOperationForPicture:picture data:weakData];
@@ -542,10 +542,18 @@
     NSString *imagePath = [STMFunctions absolutePathForPath:fileName];
     [data writeToFile:imagePath atomically:YES];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.imagePath = fileName;
-    });
+        
+    } else {
+    
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.imagePath = fileName;
+        });
 
+    }
+    
 }
 
 + (void)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
@@ -557,9 +565,17 @@
     resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
     [resizedImageData writeToFile:resizedImagePath atomically:YES];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.resizedImagePath = resizedFileName;
-    });
+        
+    } else {
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.resizedImagePath = resizedFileName;
+        });
+        
+    }
 
 }
 
@@ -568,9 +584,17 @@
     UIImage *imageThumbnail = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(imageThumbnail, [self jpgQuality]);
     
-    dispatch_async(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
+        
         picture.imageThumbnail = thumbnail;
-    });
+        
+    } else {
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            picture.imageThumbnail = thumbnail;
+        });
+        
+    }
     
 }
 
@@ -667,6 +691,11 @@
                 if (connectionError) {
                    
                     NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"pictureDownloadError"
+                                                                        object:object
+                                                                      userInfo:@{@"error" : connectionError.description}];
+                    
                     [self didProcessHref:href];
 
                 } else {

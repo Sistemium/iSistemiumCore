@@ -237,6 +237,10 @@
 }
 
 - (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {
+    return [self propertiesForKeys:keys withNulls:withNulls withBinaryData:YES];
+}
+
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionary];
     
@@ -258,9 +262,13 @@
                         
                         value = [STMFunctions UUIDStringFromUUIDData:value];
                         
+                    } else if ([key isEqualToString:@"deviceToken"]) {
+                      
+                        value = [STMFunctions hexStringFromData:value];
+                        
                     } else {
                         
-                        value = [STMFunctions hexStringFromData:value];
+                        value = (withBinaryData) ? [STMFunctions base64HexStringFromData:value] : @"";
                         
                     }
                     
@@ -281,7 +289,7 @@
     }
     
     return propertiesDictionary;
-    
+
 }
 
 - (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {

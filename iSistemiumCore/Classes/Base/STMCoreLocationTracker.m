@@ -702,8 +702,6 @@
 
 - (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
     
-    NSSet *ownLocationKeys = [STMCoreObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMCoreLocation class])];
-    
     for (NSDictionary *checkinRequest in self.checkinRequests) {
     
         STMCoreLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
@@ -711,26 +709,9 @@
         id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
         NSNumber *requestId = checkinRequest[@"requestId"];
         NSDictionary *checkinData = checkinRequest[@"checkinData"];
+    
+        [STMCoreObjectsController setObjectData:checkinData toObject:checkinLocationObject];
         
-        for (NSString *key in checkinData.allKeys) {
-            
-            if ([ownLocationKeys containsObject:key]) {
-                
-                id value = checkinData[key];
-                NSDictionary *entityAttributes = checkinLocationObject.entity.attributesByName;
-
-                value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
-                
-                if (value) {
-                    [checkinLocationObject setValue:value forKey:key];
-                } else {
-                    [checkinLocationObject setValue:nil forKey:key];
-                }
-                
-            }
-            
-        }
-
         NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
 
         [checkinDelegate getCheckinLocation:checkinLocationDic forRequestId:requestId];

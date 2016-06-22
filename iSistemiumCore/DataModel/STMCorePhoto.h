@@ -1,5 +1,5 @@
 //
-//  STMPhoto.h
+//  STMCorePhoto.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface STMPhoto : STMCorePicture
+@interface STMCorePhoto : STMCorePicture
 
 // Insert code here to declare functionality of your managed object subclass
 
@@ -21,4 +21,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#import "STMPhoto+CoreDataProperties.h"
+#import "STMCorePhoto+CoreDataProperties.h"

@@ -10,6 +10,8 @@
 
 #import "STMCoreSessionManager.h"
 #import "STMLocationController.h"
+#import "STMCoreObjectsController.h"
+#import "STMCorePicturesController.h"
 
 
 @interface STMCorePhotosController()
@@ -96,7 +98,7 @@
     self.isPhotoLocationProcessing = YES;
     NSArray *photos = self.waitingLocationPhotos.copy;
     
-    for (STMPhoto *photo in photos) {
+    for (STMCorePhoto *photo in photos) {
         
         photo.location = location;
         
@@ -111,6 +113,25 @@
     }
     
 }
+
+
+#pragma mark - class methods
+
++ (STMCorePhoto *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData {
+	
+    if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
+        
+        STMCorePhoto *photoObject = (STMCorePhoto *)[STMCoreObjectsController newObjectForEntityName:entityName isFantom:NO ];
+        [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject andUpload:YES];
+        
+        return photoObject;
+        
+    } else {
+        return nil;
+    }
+    
+}
+
 
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "STMCoreLocation.h"
-#import "STMPhoto.h"
+#import "STMCorePhoto.h"
 
 @implementation STMCoreLocation
 

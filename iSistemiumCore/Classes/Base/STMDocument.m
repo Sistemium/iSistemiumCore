@@ -15,6 +15,7 @@
 
 @property (nonatomic, strong) NSString *dataModelName;
 @property (nonatomic) BOOL saving;
+@property (nonatomic) BOOL savingHaveToRepeat;
 @property (nonatomic) int savingQueue;
 
 @end
@@ -23,8 +24,6 @@
 @implementation STMDocument
 
 @synthesize myManagedObjectModel = _myManagedObjectModel;
-//@synthesize mainContext = _mainContext;
-//@synthesize privateContext = _privateContext;
 
 - (NSManagedObjectModel *)myManagedObjectModel {
     
@@ -53,67 +52,51 @@
     return self.myManagedObjectModel;
 }
 
-//- (NSManagedObjectContext *)mainContext {
-//    
-//    if (!_mainContext) {
-//        _mainContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-//        _mainContext.persistentStoreCoordinator = self.managedObjectContext.persistentStoreCoordinator;
-//    }
-//    return _mainContext;
-//    
-//}
-
-//- (NSManagedObjectContext *)privateContext {
-//    
-//    if (!_privateContext) {
-//        _privateContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-//        _privateContext.persistentStoreCoordinator = self.managedObjectContext.persistentStoreCoordinator;
-//    }
-//    return _privateContext;
-//    
-//}
-
-//- (void)saveContexts {
-//    
-//    [self.mainContext performBlock:^{
-//        if (self.mainContext.hasChanges) [self.mainContext save:nil];
-//    }];
-//    
-//    [self.privateContext performBlock:^{
-//        if (self.privateContext.hasChanges) [self.privateContext save:nil];
-//    }];
-//    
-//}
-
 - (void)saveDocument:(void (^)(BOOL success))completionHandler {
-
-//    [self saveContexts];
     
     if (!self.saving) {
-
+        
         if (self.documentState == UIDocumentStateNormal) {
             
             self.saving = YES;
             
+//            NSLog(@"--- Document saving start ---");
+            
             [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
-                
-                if (success) {
-
-//                    NSLog(@"UIDocumentSaveForOverwriting success");
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentSavedSuccessfully" object:self];
-                    
-                    completionHandler(YES);
-
-                } else {
-                    
-                    NSLog(@"UIDocumentSaveForOverwriting not success");
-                    completionHandler(NO);
-                    
-                }
                 
                 self.saving = NO;
 
+                if (success) {
+                    
+                    if (self.savingHaveToRepeat) {
+                        
+//                        NSLog(@"--- repeat of Document saving ---");
+                        self.savingHaveToRepeat = NO;
+
+                        [self saveDocument:^(BOOL success) {
+                            completionHandler(success);
+                        }];
+                        
+                    } else {
+
+                        NSLog(@"--- Document saved successfully ---");
+                        
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"documentSavedSuccessfully"
+                                                                            object:self];
+
+                        completionHandler(YES);
+                        
+                    }
+                    
+                } else {
+                    
+                    NSLog(@"--- UIDocumentSaveForOverwriting not success ---");
+                    completionHandler(NO);
+                    
+                    self.savingHaveToRepeat = NO;
+                    
+                }
+                
             }];
             
         } else {
@@ -124,47 +107,18 @@
             completionHandler(NO);
             
         }
-
+        
     } else {
-
-//        NSLog(@"Document currently is saving");
+        
+        //        NSLog(@"Document currently is saving");
+        
+        self.savingHaveToRepeat = YES;
+        
         completionHandler(YES);
 
-//        double delayInSeconds = 3;
-//        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-//        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-//
-//            [self saveDocument:^(BOOL success) {
-//                
-//                completionHandler(success);
-//                
-//            }];
-//            
-//        });
-
     }
-
+    
 }
-
-//- (void)contextDidSaveMainContext:(NSNotification *)notification {
-//    
-//    @synchronized(self) {
-//        [self.privateContext performBlock:^{
-//            [self.privateContext mergeChangesFromContextDidSaveNotification:notification];
-//        }];
-//    }
-//    
-//}
-
-//- (void)contextDidSavePrivateContext:(NSNotification *)notification {
-//    
-//    @synchronized(self) {
-//        [self.mainContext performBlock:^{
-//            [self.mainContext mergeChangesFromContextDidSaveNotification:notification];
-//        }];
-//    }
-//    
-//}
 
 - (void)downloadPicture:(NSNotification *)notification {
     
@@ -185,20 +139,7 @@
            selector:@selector(applicationDidEnterBackground)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-    
-//#warning - have to comment out NSManagedObjectContextDidSaveNotification?
-//https://crashlytics.com/sistemium2/ios/apps/com.sistemium.isistemium/issues/55688ca9f505b5ccf0fa0b11/sessions/5568725f03df0001057a643230626339
-    
-//    [nc addObserver:self
-//           selector:@selector(contextDidSaveMainContext:)
-//               name:NSManagedObjectContextDidSaveNotification
-//             object:self.mainContext];
-    
-//    [nc addObserver:self
-//           selector:@selector(contextDidSavePrivateContext:)
-//               name:NSManagedObjectContextDidSaveNotification
-//             object:self.privateContext];
-    
+        
     [nc addObserver:self
            selector: @selector(downloadPicture:)
                name:@"downloadPicture"

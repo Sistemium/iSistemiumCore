@@ -1,15 +1,15 @@
 //
-//  STMPhoto.m
+//  STMCorePhoto.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 08/02/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPhoto.h"
+#import "STMCorePhoto.h"
 #import "STMCoreLocation.h"
 
-@implementation STMPhoto
+@implementation STMCorePhoto
 
 // Insert code here to add functionality to your managed object subclass
 
