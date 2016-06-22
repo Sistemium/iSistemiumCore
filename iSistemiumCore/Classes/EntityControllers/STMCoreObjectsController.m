@@ -1255,14 +1255,25 @@
 
                     for (STMDatum *fantomObject in results) {
                         
-                        if (fantomObject.xid) {
-                            
-                            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid/*, @"isFantomResolving": @(YES)*/};
-                            
-                            if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
-                                [objController.fantomsArray addObject:fantomDic];
+                        if ([self fantomObjectHaveRelationshipObjects:fantomObject]) {
+                        
+                            if (fantomObject.xid) {
+                                
+                                NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid/*, @"isFantomResolving": @(YES)*/};
+                                
+                                if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
+                                    [objController.fantomsArray addObject:fantomDic];
+                                }
+                                
                             }
 
+                        } else {
+                            
+                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects", fantomObject.entity.name, fantomObject.xid];
+                            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+                            
+                            [self removeObject:fantomObject];
+                            
                         }
                         
                     }
@@ -1290,6 +1301,46 @@
         
     }
 
+}
+
++ (BOOL)fantomObjectHaveRelationshipObjects:(STMDatum *)fantomObject {
+
+    BOOL result = NO;
+    
+    NSString *entityName = fantomObject.entity.name;
+    
+    NSDictionary *toOneRelationships = [self toOneRelationshipsForEntityName:entityName];
+    
+    for (NSString *toOneKey in toOneRelationships.allKeys) {
+        
+        if ([fantomObject valueForKey:toOneKey]) {
+            
+            result = YES;
+            break;
+            
+        }
+        
+    }
+    
+    if (result) return result;
+    
+    NSDictionary *toManyRelationships = [self toManyRelationshipsForEntityName:entityName];
+    
+    for (NSString *toManyKey in toManyRelationships.allKeys) {
+        
+        NSSet *relObjects = [fantomObject valueForKey:toManyKey];
+        
+        if (relObjects.count > 0) {
+
+            result = YES;
+            break;
+            
+        }
+        
+    }
+    
+    return result;
+    
 }
 
 + (void)requestFantomObjectWithParameters:(NSDictionary *)parameters {
