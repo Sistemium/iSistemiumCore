@@ -22,7 +22,6 @@
 
 #define SOCKET_URL @"https://socket.sistemium.com/socket.io-client"
 #define CHECK_AUTHORIZATION_DELAY 15
-#define CHECK_SENDING_TIME_INTERVAL 600
 
 
 @interface STMSocketController() <NSFetchedResultsControllerDelegate>
@@ -40,6 +39,9 @@
 @property (nonatomic, strong) NSDate *sendingDate;
 @property (nonatomic) BOOL shouldSendData;
 @property (nonatomic) BOOL isReconnecting;
+@property (nonatomic) NSTimeInterval sendTimeout;
+@property (nonatomic) NSTimeInterval receiveTimeout;
+@property (nonatomic, strong) NSDate *receivingStartDate;
 
 
 @end
@@ -261,12 +263,17 @@
     return [self unsyncedObjects].count;
 }
 
-+ (void)sendUnsyncedObjects:(id)sender {
++ (void)sendUnsyncedObjects:(id)sender withTimeout:(NSTimeInterval)timeout {
+    
+    [self sharedInstance].sendTimeout = timeout;
     
     if (![self socketIsAvailable]) {
 
         if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
-            [self sendFinishedWithError:@"socket not connected"];
+
+            [self sendFinishedWithError:@"socket not connected"
+                              abortSync:@(YES)];
+            
         }
         return;
         
@@ -285,8 +292,6 @@
         return;
 
     }
-    
-    [self checkSendingTimeInterval];
 
     if (![self haveToSyncObjects]) {
         
@@ -296,27 +301,6 @@
         
     }
 
-}
-
-+ (void)checkSendingTimeInterval {
-    
-    STMSocketController *sc = [self sharedInstance];
-    
-    if (sc.sendingDate && sc.isSendingData) {
-        
-        NSTimeInterval sendingInterval = [sc.sendingDate timeIntervalSinceNow];
-        
-        if (sendingInterval > CHECK_SENDING_TIME_INTERVAL) {
-
-            NSString *errorMessage = @"exceed sending time interval";
-            [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage type:@"error"];
-            
-            [self sendFinishedWithError:errorMessage];
-            
-        }
-        
-    }
-    
 }
 
 + (BOOL)haveToSyncObjects {
@@ -378,11 +362,11 @@
             }
             
         } else {
-            [self sendFinishedWithError:nil];
+            [self sendFinishedWithError:nil abortSync:@(NO)];
         }
         
     } else {
-        [self sendFinishedWithError:nil];
+        [self sendFinishedWithError:nil abortSync:@(NO)];
     }
 
 }
@@ -473,6 +457,12 @@
     
     [self sendObjectDic:objectDic resource:resource];
     
+    STMSocketController *sc = [self sharedInstance];
+    
+    [sc performSelector:@selector(checkSendTimeoutForObjectXid:)
+             withObject:object.xid
+             afterDelay:sc.sendTimeout];
+
 }
 
 + (void)sendObjectDic:(NSDictionary *)objectDic resource:(NSString *)resource {
@@ -488,20 +478,25 @@
     
 }
 
+- (void)checkSendTimeoutForObjectXid:(NSData *)xid {
+    
+    if ([self.syncDataDictionary.allKeys containsObject:xid]) {
+        
+        NSString *errorString = [NSString stringWithFormat:@"timeout for sending object with xid %@", xid];
+        [STMSocketController sendEvent:STMSocketEventInfo withStringValue:errorString];
+        
+        [STMSocketController unsuccessfullySyncObjectWithXid:xid
+                                                 errorString:errorString
+                                                   abortSync:NO];
+
+    }
+    
+}
+
 + (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
     
     NSDate *deviceTs = [self sharedInstance].syncDataDictionary[xid];
     return deviceTs;
-    
-}
-
-+ (void)syncObjectWithXid:(NSData *)xid successfully:(BOOL)successfully {
-    
-    if (successfully) {
-        [self successfullySyncObjectWithXid:xid];
-    } else {
-        [self unsuccessfullySyncObjectWithXid:xid];
-    }
     
 }
 
@@ -514,32 +509,41 @@
         [sc releaseDoNotSyncObjectsWithObjectXid:xid];
         
         if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
-        [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
+        
+        [sc performSelector:@selector(sendFinishedWithError:abortSync:)
+                 withObject:nil
+                 withObject:nil];
 
     }];
     
 }
 
-+ (void)unsuccessfullySyncObjectWithXid:(NSData *)xid {
++ (void)unsuccessfullySyncObjectWithXid:(NSData *)xid errorString:(NSString *)errorString abortSync:(BOOL)abortSync {
     
     STMSocketController *sc = [self sharedInstance];
     
     if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
     
-    [sc.syncDataDictionary removeObjectForKey:xid];
-    [sc.doNotSyncObjects addObject:xid];
+    if (xid) {
+        
+        [sc.syncDataDictionary removeObjectForKey:xid];
+        [sc.doNotSyncObjects addObject:xid];
+
+    }
     
-    [sc performSelector:@selector(sendFinishedWithError:) withObject:nil afterDelay:0];
+    [sc performSelector:@selector(sendFinishedWithError:abortSync:)
+             withObject:errorString
+             withObject:@(abortSync)];
     
 }
 
-- (void)sendFinishedWithError:(NSString *)errorString {
-    [STMSocketController sendFinishedWithError:errorString];
+- (void)sendFinishedWithError:(NSString *)errorString abortSync:(NSNumber *)abortSync {
+    [STMSocketController sendFinishedWithError:errorString abortSync:abortSync];
 }
 
-+ (void)sendFinishedWithError:(NSString *)errorString {
++ (void)sendFinishedWithError:(NSString *)errorString abortSync:(NSNumber *)abortSync {
     
-    if (errorString) {
+    if (errorString && abortSync.boolValue) {
         
         [self sendingCleanupWithError:errorString];
         
@@ -609,9 +613,9 @@
         
 //        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
         
-    } else {
+    } else if (event == STMSocketEventInfo) {
         
-//        NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
+        NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
         
     }
 #endif
@@ -688,7 +692,10 @@
         NSLog(@"socket not connected");
         
         if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
-            [self sendFinishedWithError:@"socket not connected"];
+            
+            [self sendFinishedWithError:@"socket not connected"
+                              abortSync:@(YES)];
+            
         }
         
     }
@@ -799,7 +806,7 @@
 
     if (params) value[@"params"] = params;
     
-    [self sendEvent:STMSocketEventJSData withValue:value];
+    [self sendFindWithValue:value andTimeout:timeout];
 
 }
 
@@ -831,7 +838,37 @@
                             @"resource" : resource,
                             @"id"       : xidString};
 
+    [self sendFindWithValue:value andTimeout:timeout];
+    
+}
+
++ (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
+    
+    STMSocketController *sc = [self sharedInstance];
+    sc.receivingStartDate = [NSDate date];
+    
+    [self cancelPreviousPerformRequestsWithTarget:sc
+                                         selector:@selector(checkReceiveTimeout:)
+                                           object:@(sc.receiveTimeout)];
+    
+    sc.receiveTimeout = timeout;
+    
+    [sc performSelector:@selector(checkReceiveTimeout:)
+             withObject:@(sc.receiveTimeout)
+             afterDelay:timeout];
+    
     [self sendEvent:STMSocketEventJSData withValue:value];
+
+}
+
+- (void)checkReceiveTimeout:(NSNumber *)timeoutNumber {
+    
+    NSTimeInterval timeout = timeoutNumber.doubleValue;
+    NSTimeInterval elapsedTime = -[self.receivingStartDate timeIntervalSinceNow];
+    
+    if (elapsedTime >= timeout) {
+        [[STMSocketController syncer] socketReceiveTimeout];
+    }
     
 }
 
@@ -1138,7 +1175,7 @@
 - (void)sendUnsyncedObjects {
 
     self.controllersDidChangeContent = NO;
-    [STMSocketController sendUnsyncedObjects:self];
+    [STMSocketController sendUnsyncedObjects:self withTimeout:self.sendTimeout];
     
 }
 
@@ -1185,6 +1222,15 @@
         _doNotSyncObjects = @[].mutableCopy;
     }
     return _doNotSyncObjects;
+    
+}
+
+- (NSTimeInterval)sendTimeout {
+    
+    if (!_sendTimeout) {
+        _sendTimeout = [[STMSocketController syncer] timeout];
+    }
+    return _sendTimeout;
     
 }
 

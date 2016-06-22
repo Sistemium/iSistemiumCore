@@ -495,16 +495,25 @@
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-        [self getPictureSendData:picture.imageThumbnail
-                      parameters:parameters
-              jsCallbackFunction:callbackFunction];
+        if (picture.imageThumbnail) {
+            
+            [self getPictureSendData:picture.imageThumbnail
+                          parameters:parameters
+                  jsCallbackFunction:callbackFunction];
+
+        } else {
+            [self downloadPicture:picture];
+        }
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
         if (picture.resizedImagePath) {
-            [self getPictureWithImagePath:picture.resizedImagePath
-                               parameters:parameters
-                       jsCallbackFunction:callbackFunction];
+            
+            [self getPicture:picture
+               withImagePath:picture.resizedImagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
         } else {
             [self downloadPicture:picture];
         }
@@ -512,9 +521,12 @@
     } else if ([getPictureSize isEqualToString:@"full"]) {
         
         if (picture.imagePath) {
-            [self getPictureWithImagePath:picture.imagePath
-                               parameters:parameters
-                       jsCallbackFunction:callbackFunction];
+            
+            [self getPicture:picture
+               withImagePath:picture.imagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
         } else {
             [self downloadPicture:picture];
         }
@@ -531,10 +543,12 @@
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
+    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
     
-    [self callbackWithError:errorString
-                 parameters:parameters];
-    
+    [self callbackWithData:errorString
+                parameters:parameters
+        jsCallbackFunction:callbackJSFunction];
+
     if (xid) {
         
         [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
@@ -547,12 +561,9 @@
 - (void)downloadPicture:(STMCorePicture *)picture {
     
     if (picture.href) {
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(pictureWasDownloaded:)
-                                                     name:@"downloadPicture"
-                                                   object:picture];
-        
+
+        [self addObserversForPicture:picture];
+
         picture.imageThumbnail = nil;
         
         NSManagedObjectID *pictureID = picture.objectID;
@@ -560,7 +571,10 @@
         [STMCorePicturesController downloadConnectionForObjectID:pictureID];
         
     } else {
-        [self callbackWithError:@"picture have not imagePath and href" parameters:self.getPictureMessageParameters[picture.xid]];
+
+        [self getPictureWithXid:picture.xid
+                          error:@"picture have not imagePath and href"];
+        
     }
     
 }
@@ -571,18 +585,54 @@
         
         STMCorePicture *picture = notification.object;
         
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:@"downloadPicture"
-                                                      object:picture];
+        [self removeObserversForPicture:picture];
         
         [self handleGetPictureParameters:self.getPictureMessageParameters[picture.xid]];
         
     }
     
-    
 }
 
-- (void)getPictureWithImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)pictureDownloadError:(NSNotification *)notification {
+    
+    STMCorePicture *picture = notification.object;
+    
+    [self removeObserversForPicture:picture];
+
+    NSString *errorString = notification.userInfo[@"error"];
+    
+    [self getPictureWithXid:picture.xid
+                      error:errorString];
+
+}
+
+- (void)addObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureWasDownloaded:)
+                                                 name:@"downloadPicture"
+                                               object:picture];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureDownloadError:)
+                                                 name:@"pictureDownloadError"
+                                               object:picture];
+
+}
+
+- (void)removeObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"downloadPicture"
+                                                  object:picture];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"pictureDownloadError"
+                                                  object:picture];
+
+}
+
+- (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
     NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:imagePath]
@@ -591,9 +641,9 @@
     
     if (error) {
         
-        [self callbackWithError:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]
-                     parameters:parameters];
-        
+        [self getPictureWithXid:picture.xid
+                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
+
     } else {
         
         [self getPictureSendData:imageData
@@ -606,11 +656,21 @@
 
 - (void)getPictureSendData:(NSData *)imageData parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
 
-    NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
-    [self callbackWithData:@[imageDataBase64String]
-                parameters:parameters
-        jsCallbackFunction:jsCallbackFunction];
+    if (imageData) {
+    
+        NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
+        [self callbackWithData:@[imageDataBase64String]
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
 
+    } else {
+        
+        [self callbackWithData:@"no image data"
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
+
+    }
+    
 }
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
@@ -871,16 +931,16 @@
         
 }
 
-- (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
 #ifdef DEBUG
     
     NSNumber *requestId = parameters[@"options"][@"requestId"];
 
-    if (requestId) {
-        NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @(data.count));
+    if (requestId && [data isKindOfClass:[NSArray class]]) {
+        NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @([(NSArray *)data count]));
     } else {
-        NSLog(@"callbackWithData: %@ objects for message parameters: %@", @(data.count), parameters);
+        NSLog(@"callbackWithData: %@ for message parameters: %@", data, parameters);
     }
     
 #endif
@@ -946,7 +1006,9 @@
         self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        [self callbackWithError:message parameters:self.takePhotoMessageParameters];
+        [self callbackWithData:message
+                    parameters:self.takePhotoMessageParameters
+            jsCallbackFunction:self.takePhotoCallbackJSFunction];
         
     }
 
@@ -1057,8 +1119,9 @@
         
         NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
-        [self callbackWithError:errorString
-                     parameters:parameters];
+        [self callbackWithData:errorString
+                    parameters:parameters
+            jsCallbackFunction:self.checkinCallbackJSFunction];
         
         [self.checkinMessageParameters removeObjectForKey:requestId];
         

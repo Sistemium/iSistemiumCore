@@ -255,7 +255,7 @@
                 [STMClientDataController checkClientData];
                 self.syncing = YES;
 
-                [STMSocketController sendUnsyncedObjects:self];
+                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
                 
                 break;
             }
@@ -282,7 +282,7 @@
 
     if ([STMSocketController socketIsAvailable]) {
         
-        [STMSocketController sendUnsyncedObjects:self];
+        [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
         
     } else {
 
@@ -890,38 +890,6 @@
     
 }
 
-//- (NSString *)entityNameForConnection:(NSURLConnection *)connection {
-//    return [self entityNameForRequest:connection.currentRequest];
-//}
-//
-//- (NSString *)entityNameForRequest:(NSURLRequest *)request {
-//    return [self entityNameForURLString:request.URL.absoluteString];
-//}
-//
-//- (NSString *)entityNameForURLString:(NSString *)urlString {
-//    
-//    if ([urlString isEqualToString:self.socketUrlString]) {
-//        
-//        return SEND_DATA_CONNECTION;
-//        
-//    } else {
-//        
-//        for (STMEntity *entity in [self.stcEntities allValues]) {
-//            
-//            if ([entity.url isEqualToString:urlString]) {
-//                
-//                return [[self.stcEntities allKeysForObject:entity] lastObject];
-//                
-//            }
-//            
-//        }
-//        
-//    }
-//    
-//    return nil;
-//
-//}
-
 - (void)entityCountDecrease {
     
     self.entityCount -= 1;
@@ -1130,6 +1098,16 @@
 
 }
 
+- (void)socketReceiveTimeout {
+    
+    NSString *errorString = @"socket receive objects timeout";
+    NSLog(errorString);
+    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinish];
+    [STMCoreObjectsController stopDefantomizing];
+
+}
+
 - (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
     
     NSLog(errorString);
@@ -1162,16 +1140,22 @@
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    
+
+    NSString *xid = [responseData valueForKey:@"id"];
+    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+
     if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
     
-        NSString *xid = [responseData valueForKey:@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-
-        [STMSocketController syncObjectWithXid:xidData successfully:NO];
+        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                                 errorString:errorString
+                                                   abortSync:NO];
 
     } else {
-        [STMSocketController sendFinishedWithError:errorString];
+        
+        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                                 errorString:errorString
+                                                   abortSync:YES];
+
     }
     
 }
@@ -1343,14 +1327,11 @@
                     
                     NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
                     object.lts = deviceTs;
-//                    [object willChangeValueForKey:@"lts"];
-//                    [object setPrimitiveValue:deviceTs forKey:@"lts"];
-//                    [object didChangeValueForKey:@"lts"];
                     
                 }
                 
-                [STMSocketController syncObjectWithXid:xidData successfully:YES];
-                
+                [STMSocketController successfullySyncObjectWithXid:xidData];
+
                 NSString *entityName = object.entity.name;
                 
                 NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];

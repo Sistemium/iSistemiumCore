@@ -262,6 +262,10 @@
                         
                         value = [STMFunctions UUIDStringFromUUIDData:value];
                         
+                    } else if ([key isEqualToString:@"deviceToken"]) {
+                      
+                        value = [STMFunctions hexStringFromData:value];
+                        
                     } else {
                         
                         value = (withBinaryData) ? [STMFunctions base64HexStringFromData:value] : @"";
