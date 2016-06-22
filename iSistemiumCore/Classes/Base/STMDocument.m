@@ -60,25 +60,31 @@
             
             self.saving = YES;
             
+//            NSLog(@"--- Document saving start ---");
+            
             [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
                 
                 self.saving = NO;
-                
+
                 if (success) {
-                    
-                    NSLog(@"--- documentSavedSuccessfully ---");
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentSavedSuccessfully" object:self];
-                    
-                    completionHandler(YES);
                     
                     if (self.savingHaveToRepeat) {
                         
-                        NSLog(@"--- repeat of document saving ---");
+//                        NSLog(@"--- repeat of Document saving ---");
                         self.savingHaveToRepeat = NO;
-                        
+
                         [self saveDocument:^(BOOL success) {
+                            completionHandler(success);
                         }];
+                        
+                    } else {
+
+                        NSLog(@"--- Document saved successfully ---");
+                        
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"documentSavedSuccessfully"
+                                                                            object:self];
+
+                        completionHandler(YES);
                         
                     }
                     

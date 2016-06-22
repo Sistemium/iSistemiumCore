@@ -42,6 +42,7 @@
 @property (nonatomic) NSTimeInterval sendTimeout;
 @property (nonatomic) NSTimeInterval receiveTimeout;
 @property (nonatomic, strong) NSDate *receivingStartDate;
+@property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
 
 
 @end
@@ -331,6 +332,16 @@
 
 + (void)sendObjectFromSyncArray:(NSMutableArray <STMDatum *> *)syncDataArray {
     
+    STMSocketController *sc = [self sharedInstance];
+    
+//    NSString *logMessage = [NSString stringWithFormat:@"sendObjectFromSyncArray %lu object", (unsigned long)syncDataArray.count];
+//    NSArray *syncArrayXids = [syncDataArray valueForKeyPath:@"@unionOfObjects.xid"];
+//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n xids: %@", syncArrayXids]];
+//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n syncDataDictionary.allKeys: %@", sc.syncDataDictionary.allKeys]];
+//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n doNotSyncObjects: %@", sc.doNotSyncObjects]];
+//    
+//    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
+    
     if (syncDataArray.count > 0) {
         
         STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:syncDataArray.mutableCopy];
@@ -341,9 +352,9 @@
 
                 NSData *xid = syncObject.xid;
 
-                if (![[self sharedInstance].syncDataDictionary.allKeys containsObject:xid]) {
+                if (![sc.syncDataDictionary.allKeys containsObject:xid]) {
 
-                    [self sharedInstance].syncDataDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
+                    sc.syncDataDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
                     [self sendObject:syncObject];
 
                 } else {
@@ -472,6 +483,7 @@
     
     NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
                             @"resource" : resource,
+                            @"id"       : objectDic[@"id"],
                             @"attrs"    : objectDic};
     
     [self sendEvent:STMSocketEventJSData withValue:value];
@@ -503,18 +515,15 @@
 + (void)successfullySyncObjectWithXid:(NSData *)xid {
     
     [[self document] saveDocument:^(BOOL success) {
-    
-        STMSocketController *sc = [self sharedInstance];
-        
-        [sc releaseDoNotSyncObjectsWithObjectXid:xid];
-        
-        if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
-        
-        [sc performSelector:@selector(sendFinishedWithError:abortSync:)
-                 withObject:nil
-                 withObject:nil];
-
     }];
+
+    STMSocketController *sc = [self sharedInstance];
+    
+    [sc releaseDoNotSyncObjectsWithObjectXid:xid];
+    
+    if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
+    
+    sc.waitDocumentSavingToSyncNextObject = YES;
     
 }
 
@@ -522,7 +531,7 @@
     
     STMSocketController *sc = [self sharedInstance];
     
-    if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
+//    if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
     
     if (xid) {
         
@@ -1156,18 +1165,32 @@
 
 - (void)documentSavedSuccessfully:(NSNotification *)notification {
     
-    NSLogMethodName;
-
-    if (self.controllersDidChangeContent && [notification.object isKindOfClass:[STMDocument class]]) {
+//    NSLogMethodName;
+    
+    if (self.waitDocumentSavingToSyncNextObject) {
         
-        NSManagedObjectContext *context = [(STMDocument *)notification.object managedObjectContext];
+        self.waitDocumentSavingToSyncNextObject = NO;
+        
+        [self performSelector:@selector(sendFinishedWithError:abortSync:)
+                   withObject:nil
+                   withObject:nil];
+        
+    } else {
 
-        if ([context isEqual:[STMSocketController document].managedObjectContext]) {
+        if (self.controllersDidChangeContent && [notification.object isKindOfClass:[STMDocument class]]) {
             
-            [[STMSocketController sharedInstance] performSelector:@selector(sendUnsyncedObjects) withObject:nil afterDelay:0];
+            NSManagedObjectContext *context = [(STMDocument *)notification.object managedObjectContext];
+            
+            if ([context isEqual:[STMSocketController document].managedObjectContext]) {
+                
+                [self performSelector:@selector(sendUnsyncedObjects)
+                           withObject:nil
+                           afterDelay:0];
+                
+            }
             
         }
-        
+
     }
 
 }

@@ -968,7 +968,7 @@
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
         [self socketReceiveJSDataFindAckErrorCode:nil andErrorString:errorMessage entityName:nil xid:nil];
-        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorMessage withResponseData:nil];
+        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorMessage withResponse:nil];
         return;
         
     }
@@ -1083,14 +1083,14 @@
     if (errorCode) {
         
         NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorCode];
-        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponseData:responseData]; return;
+        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponse:response]; return;
         
     }
 
     if (!responseData) {
         
         NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
-        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponseData:responseData]; return;
+        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponse:response]; return;
         
     }
     
@@ -1136,12 +1136,12 @@
     
 }
 
-- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponseData:(NSDictionary *)responseData {
+- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
     
     NSLog(errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
 
-    NSString *xid = [responseData valueForKey:@"id"];
+    NSString *xid = [response valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];
 
     if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
