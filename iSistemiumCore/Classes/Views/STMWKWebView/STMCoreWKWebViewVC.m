@@ -1249,9 +1249,9 @@
 
 - (void)didReceiveMemoryWarning {
     
-    if ([STMFunctions shouldHandleMemoryWarningFromVC:self]) {
+    /*if ([STMFunctions shouldHandleMemoryWarningFromVC:self]) {
         [STMFunctions nilifyViewForVC:self];
-    }
+    }*/
     
     [super didReceiveMemoryWarning];
     
