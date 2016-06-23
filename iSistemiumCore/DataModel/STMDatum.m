@@ -23,12 +23,7 @@
                                                  selector:@selector(objectContextWillSave:)
                                                      name:NSManagedObjectContextWillSaveNotification
                                                    object:nil];
-        
-        //        [[NSNotificationCenter defaultCenter] addObserver:(id)[self class]
-        //                                                 selector:@selector(objectContextObjectsDidChange:)
-        //                                                     name:NSManagedObjectContextObjectsDidChangeNotification
-        //                                                   object:nil];
-        
+
     }
     
 }
@@ -46,61 +41,34 @@
     
 }
 
-//+ (void)objectContextObjectsDidChange:(NSNotification *)notification {
-//
-//    NSManagedObjectContext *context = [notification object];
-//
-//    if (context.parentContext) {
-//
-//        NSSet *modifiedObjects = [context.insertedObjects setByAddingObjectsFromSet:context.updatedObjects];
-//        [modifiedObjects makeObjectsPerformSelector:@selector(setLastModifiedTimestamp)];
-//
-//    }
-//
-//}
-
 - (void)setLastModifiedTimestamp{
-    
-//    if ([self isKindOfClass:[STMShipmentRoutePoint class]] || [self isKindOfClass:[STMShippingLocation class]]) {
-//        
-//        NSLog(@"%@", NSStringFromClass([self class]));
-//        NSLog(@"%@", self.xid);
-//        NSLog(@"changedValues %@", self.changedValues);
-//        NSLog(@"changedValuesForCurrentEvent %@", self.changedValuesForCurrentEvent);
-//        NSLog(@"------------------------");
-//        
-//    }
     
     NSDictionary *changedValues = self.changedValues;
     
-    if (![changedValues.allKeys containsObject:@"lts"]) { //?????
+    BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
+
+    if (ltsIsChanged) return;
+    
+    NSArray *excludeProperties = [self excludeProperties];
+    
+    NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
+    [changedKeysArray removeObjectsInArray:excludeProperties];
+    
+    NSMutableArray *relationshipsToMany = [NSMutableArray array];
+    
+    for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
+        if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
+    }
+    
+    [changedKeysArray removeObjectsInArray:relationshipsToMany];
+    
+    if (changedKeysArray.count > 0) {
         
-        NSArray *excludeProperties = [self excludeProperties];
+        if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
         
-        NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
-        [changedKeysArray removeObjectsInArray:excludeProperties];
+        NSDate *currentDate = [NSDate date];
         
-        NSMutableArray *relationshipsToMany = [NSMutableArray array];
-        
-        for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
-            if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
-        }
-        
-        [changedKeysArray removeObjectsInArray:relationshipsToMany];
-        
-        if (changedKeysArray.count > 0) {
-            
-            if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
-            
-            NSDate *currentDate = [NSDate date];
-            
-//            self.deviceTs = currentDate;
-            
-            [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
-            
-            self.sqts = (self.lts) ? self.deviceTs : self.deviceCts;
-            
-        }
+        self.deviceTs = currentDate;
         
     }
     
