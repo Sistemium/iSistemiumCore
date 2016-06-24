@@ -228,12 +228,17 @@
     
     if (sessionIsRunning && self.document) {
         
-        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
-        logMessage.text = text;
-        logMessage.type = type;
-//        logMessage.owner = owner;
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        [self.document saveDocument:^(BOOL success) {
+            STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
+                                                                                                 isFantom:NO];
+            logMessage.text = text;
+            logMessage.type = type;
+            //        logMessage.owner = owner;
+            
+            [self.document saveDocument:^(BOOL success) {
+            }];
+
         }];
         
     } else {
