@@ -48,11 +48,7 @@
     BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
 
     if (ltsIsChanged) return;
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> dev
     NSArray *excludeProperties = [self excludeProperties];
     
     NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
@@ -71,16 +67,10 @@
         if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
         
         NSDate *currentDate = [NSDate date];
-<<<<<<< HEAD
-        self.deviceTs = currentDate;
-        [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
-=======
         
         self.deviceTs = currentDate;
->>>>>>> dev
-        
-    }
 
+    }
     
 }
 

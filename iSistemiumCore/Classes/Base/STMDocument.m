@@ -65,15 +65,8 @@
             [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
                 
                 self.saving = NO;
-<<<<<<< HEAD
 
                 if (success) {
-=======
-                
-                if (success) {
-                    
-                    NSLog(@"--- documentSavedSuccessfully ---");
->>>>>>> dev
                     
                     if (self.savingHaveToRepeat) {
                         
@@ -95,21 +88,6 @@
                         
                     }
                     
-<<<<<<< HEAD
-=======
-                    completionHandler(YES);
-                    
-                    if (self.savingHaveToRepeat) {
-                        
-                        NSLog(@"--- repeat of document saving ---");
-                        self.savingHaveToRepeat = NO;
-                        
-                        [self saveDocument:^(BOOL success) {
-                        }];
-                        
-                    }
-                    
->>>>>>> dev
                 } else {
                     
                     NSLog(@"--- UIDocumentSaveForOverwriting not success ---");
@@ -161,11 +139,7 @@
            selector:@selector(applicationDidEnterBackground)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-<<<<<<< HEAD
-        
-=======
-    
->>>>>>> dev
+
     [nc addObserver:self
            selector: @selector(downloadPicture:)
                name:@"downloadPicture"
