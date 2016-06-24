@@ -23,12 +23,7 @@
                                                  selector:@selector(objectContextWillSave:)
                                                      name:NSManagedObjectContextWillSaveNotification
                                                    object:nil];
-        
-        //        [[NSNotificationCenter defaultCenter] addObserver:(id)[self class]
-        //                                                 selector:@selector(objectContextObjectsDidChange:)
-        //                                                     name:NSManagedObjectContextObjectsDidChangeNotification
-        //                                                   object:nil];
-        
+
     }
     
 }
@@ -46,37 +41,18 @@
     
 }
 
-//+ (void)objectContextObjectsDidChange:(NSNotification *)notification {
-//
-//    NSManagedObjectContext *context = [notification object];
-//
-//    if (context.parentContext) {
-//
-//        NSSet *modifiedObjects = [context.insertedObjects setByAddingObjectsFromSet:context.updatedObjects];
-//        [modifiedObjects makeObjectsPerformSelector:@selector(setLastModifiedTimestamp)];
-//
-//    }
-//
-//}
-
 - (void)setLastModifiedTimestamp{
-    
-//    if ([self isKindOfClass:[STMShipmentRoutePoint class]] || [self isKindOfClass:[STMShippingLocation class]]) {
-//        
-//        NSLog(@"%@", NSStringFromClass([self class]));
-//        NSLog(@"%@", self.xid);
-//        NSLog(@"changedValues %@", self.changedValues);
-//        NSLog(@"changedValuesForCurrentEvent %@", self.changedValuesForCurrentEvent);
-//        NSLog(@"------------------------");
-//        
-//    }
     
     NSDictionary *changedValues = self.changedValues;
     
     BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
 
     if (ltsIsChanged) return;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> dev
     NSArray *excludeProperties = [self excludeProperties];
     
     NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
@@ -95,8 +71,13 @@
         if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
         
         NSDate *currentDate = [NSDate date];
+<<<<<<< HEAD
         self.deviceTs = currentDate;
         [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
+=======
+        
+        self.deviceTs = currentDate;
+>>>>>>> dev
         
     }
 
