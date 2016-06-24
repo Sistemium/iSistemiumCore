@@ -145,7 +145,7 @@
             STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMCorePicture class])];
             
             NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imageThumbnail == %@)", nil, nil];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imagePath == %@)", nil, nil];
             
             request.sortDescriptors = @[sortDescriptor];
             request.predicate = [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
@@ -368,7 +368,7 @@
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePicture class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"imageThumbnail == %@", nil];
+    request.predicate = [NSPredicate predicateWithFormat:@"imageThumbnail == %@ OR imagePath == %@", nil, nil];
     
     NSError *error;
     NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
@@ -402,7 +402,18 @@
             
         } else {
             
-            [self hrefProcessingForObject:picture];
+            if (picture.href) {
+                
+                [self hrefProcessingForObject:picture];
+                
+            } else {
+                
+                NSString *logMessage = [NSString stringWithFormat:@"picture %@ have no both imagePath and href", picture];
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+                
+                [self deletePicture:picture];
+                
+            }
             
         }
 
@@ -645,7 +656,7 @@
     
     if (href) {
         
-        if ([object valueForKey:@"imageThumbnail"]) {
+        if ([object valueForKey:@"imagePath"]) {
 
             [self didProcessHref:href];
             
