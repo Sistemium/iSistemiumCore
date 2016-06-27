@@ -653,12 +653,27 @@
     
 }
 
++ (NSURL *)documentsDirectoryURL {
+    return [NSURL fileURLWithPath:[self documentsDirectory]];
+}
+
 + (NSString *)documentsDirectory {
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = ([paths count] > 0) ? paths[0] : nil;
+    NSString *documentDirectory = (paths.count > 0) ? paths[0] : nil;
+    
+    if (paths.count > 1 || [documentDirectory isEqualToString:@""]) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"documentDirectoryPaths %@", paths];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
 
-    return documentsDirectory;
+        NSArray <NSURL *> *urls = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
+        NSURL *documentDirectoryUrl = urls.lastObject;
+        documentDirectory = documentDirectoryUrl.path;
+
+    }
+
+    return documentDirectory;
     
 }
 
