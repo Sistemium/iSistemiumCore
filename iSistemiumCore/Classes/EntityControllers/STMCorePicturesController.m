@@ -589,19 +589,6 @@
     
     NSString *imagePath = [STMFunctions absolutePathForPath:fileName];
     
-<<<<<<< HEAD
-    if ([NSThread isMainThread]) {
-        
-        picture.imagePath = fileName;
-        
-    } else {
-    
-        dispatch_async(dispatch_get_main_queue(), ^{
-            picture.imagePath = fileName;
-        });
-
-    }
-=======
     NSError *error = nil;
     BOOL result = [data writeToFile:imagePath
                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
@@ -614,14 +601,21 @@
 
     } else {
     
-		dispatch_async(dispatch_get_main_queue(), ^{
-			picture.imagePath = fileName;
-		});
+        if ([NSThread isMainThread]) {
+            
+            picture.imagePath = fileName;
+            
+        } else {
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                picture.imagePath = fileName;
+            });
+            
+        }
 
 	}
 
     return result;
->>>>>>> dev
     
 }
 
@@ -638,19 +632,6 @@
                                         options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                                           error:&error];
     
-<<<<<<< HEAD
-    if ([NSThread isMainThread]) {
-        
-        picture.resizedImagePath = resizedFileName;
-        
-    } else {
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            picture.resizedImagePath = resizedFileName;
-        });
-        
-    }
-=======
     if (error) {
         
         NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, resizedImagePath, error.localizedDescription];
@@ -658,14 +639,21 @@
         
     } else {
     
-		dispatch_async(dispatch_get_main_queue(), ^{
-			picture.resizedImagePath = resizedFileName;
-		});
+        if ([NSThread isMainThread]) {
+            
+            picture.resizedImagePath = resizedFileName;
+            
+        } else {
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                picture.resizedImagePath = resizedFileName;
+            });
+            
+        }
 
 	}
 
     return result;
->>>>>>> dev
 
 }
 
