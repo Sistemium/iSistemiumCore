@@ -86,7 +86,7 @@ class STMScriptMessageController: NSObject {
     }
 
     class func subpredicatesForFilterDictionaryWithEntityName(entityName: String, filterDictionary: [String: [String: AnyObject]]) -> [NSPredicate] {
-        var filterDictionary = filterDictionary
+        
         let entityDescription: STMEntityDescription = STMEntityDescription.entityForName(entityName, inManagedObjectContext: currentContext())
         
         let properties: [String : NSPropertyDescription] = entityDescription.propertiesByName
@@ -97,49 +97,13 @@ class STMScriptMessageController: NSObject {
         
         for key in filterDictionary.keys {
             
-            var localKey: String = key
-            
-            if key == "id" { localKey = "xid" }
-            if key == "ts" { localKey = "deviceTs" }
-            
-            let relKey: String = "Id"
-            
-            if key.hasSuffix(relKey) {
-                
-                let substringIndex = key.endIndex.advancedBy(-relKey.characters.count);
-                
-                if relationships.keys.contains(key.substringToIndex(substringIndex)) {
-                    localKey = key.substringToIndex(substringIndex)
-                }
-                
-            }
-            
-            guard properties.keys.contains(localKey) else {
-                print("\(entityName) have not property \(localKey)")
-                continue
-            }
-            
-            let isAttribute: Bool = attributes.keys.contains(localKey)
-            let isRelationship: Bool = relationships.keys.contains(localKey)
-            
-            guard isAttribute == true || isRelationship == true else {
-                print("unknown kind of property '\(localKey)'")
-                continue
-            }
-
-            let arguments: [String: AnyObject] = filterDictionary[key]!
-
-            let comparisonOperators: [String] = ["==", "!=", ">=", "<=", ">", "<"]
-
-            self.fillSupredicates(&subpredicates,
-                                  comparisonOperators: comparisonOperators,
-                                  arguments: arguments,
-                                  localKey: localKey,
-                                  isAttribute: isAttribute,
-                                  isRelationship: isRelationship,
-                                  entityName: entityName,
-                                  attributes: attributes,
-                                  relationships: relationships)
+            self.checkFilterKeyForSubpredicates(&subpredicates,
+                                                filterDictionary: filterDictionary,
+                                                key: key,
+                                                relationships: relationships,
+                                                attributes: attributes,
+                                                properties: properties,
+                                                entityName: entityName)
 
         }
         
@@ -147,7 +111,55 @@ class STMScriptMessageController: NSObject {
         
     }
     
-    class func fillSupredicates(inout subpredicates: [NSPredicate], comparisonOperators: [String], arguments: [String: AnyObject], localKey: String, isAttribute: Bool, isRelationship: Bool, entityName: String, attributes: [String : NSAttributeDescription], relationships: [String : NSRelationshipDescription]) {
+    class func checkFilterKeyForSubpredicates(inout subpredicates: [NSPredicate], filterDictionary: [String: [String: AnyObject]], key: String, relationships: [String : NSRelationshipDescription], attributes: [String : NSAttributeDescription], properties: [String : NSPropertyDescription], entityName: String) {
+        
+        var localKey: String = key
+        
+        if key == "id" { localKey = "xid" }
+        if key == "ts" { localKey = "deviceTs" }
+        
+        let relKey: String = "Id"
+        
+        if key.hasSuffix(relKey) {
+            
+            let substringIndex = key.endIndex.advancedBy(-relKey.characters.count);
+            
+            if relationships.keys.contains(key.substringToIndex(substringIndex)) {
+                localKey = key.substringToIndex(substringIndex)
+            }
+            
+        }
+        
+        guard properties.keys.contains(localKey) else {
+            print("\(entityName) have not property \(localKey)")
+            return
+        }
+        
+        let isAttribute: Bool = attributes.keys.contains(localKey)
+        let isRelationship: Bool = relationships.keys.contains(localKey)
+        
+        guard isAttribute == true || isRelationship == true else {
+            print("unknown kind of property '\(localKey)'")
+            return
+        }
+        
+        let arguments: [String: AnyObject] = filterDictionary[key]!
+        
+        let comparisonOperators: [String] = ["==", "!=", ">=", "<=", ">", "<"]
+        
+        self.fillSupredicatesForParams(&subpredicates,
+                                       comparisonOperators: comparisonOperators,
+                                       arguments: arguments,
+                                       localKey: localKey,
+                                       isAttribute: isAttribute,
+                                       isRelationship: isRelationship,
+                                       entityName: entityName,
+                                       attributes: attributes,
+                                       relationships: relationships)
+
+    }
+    
+    class func fillSupredicatesForParams(inout subpredicates: [NSPredicate], comparisonOperators: [String], arguments: [String: AnyObject], localKey: String, isAttribute: Bool, isRelationship: Bool, entityName: String, attributes: [String : NSAttributeDescription], relationships: [String : NSRelationshipDescription]) {
         
         for compOp in arguments.keys {
 
