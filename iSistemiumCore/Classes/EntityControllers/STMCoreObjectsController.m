@@ -16,6 +16,7 @@
 #import "STMCorePicturesController.h"
 #import "STMRecordStatusController.h"
 #import "STMSocketController.h"
+#import "STMScriptMessagesController.h"
 
 #import "STMConstants.h"
 
@@ -1987,7 +1988,7 @@
 
     }
     
-    NSPredicate *predicate = [STMScriptMessageController predicateForScriptMessage:scriptMessage error:error];
+    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
     
     if (*error) return nil;
 

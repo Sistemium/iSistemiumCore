@@ -113,6 +113,13 @@ class STMScriptMessageController: NSObject {
     
     class func checkFilterKeyForSubpredicates(inout subpredicates: [NSPredicate], filterDictionary: [String: [String: AnyObject]], key: String, relationships: [String : NSRelationshipDescription], attributes: [String : NSAttributeDescription], properties: [String : NSPropertyDescription], entityName: String) {
         
+        if key.hasPrefix("ANY") {
+            
+            self.handleAnyCondition()
+            return
+            
+        }
+        
         var localKey: String = key
         
         if key == "id" { localKey = "xid" }
@@ -253,6 +260,10 @@ class STMScriptMessageController: NSObject {
 
         return (subpredicateString, argumentArray)
 
+    }
+    
+    class func handleAnyCondition() {
+        
     }
     
     class func normalizeValue(value: AnyObject?, className: String) -> AnyObject? {
