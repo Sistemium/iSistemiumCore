@@ -151,74 +151,98 @@ class STMScriptMessageController: NSObject {
         
         for compOp in arguments.keys {
 
-            guard comparisonOperators.contains(compOp) else {
-                print("comparison operator should be '==', '!=', '>=', '<=', '>' or '<', not '\(compOp)'")
-                continue
-            }
-            
-            //                guard var value: AnyObject? = arguments[compOp] else {
-            //                    print("have no value for comparison operator '\(compOp)'")
-            //                    continue
-            //                }
-            
-            var value: AnyObject? = arguments[compOp]
-            
-            if localKey.lowercaseString.hasSuffix("uuid") || localKey.lowercaseString.hasSuffix("xid") || isRelationship {
-                
-                guard value is String else {
-                    print("value is not a String, but it should be to get xid or uuid value")
-                    continue
-                }
-                
-                value = value?.stringByReplacingOccurrencesOfString("-", withString: "")
-                
-            }
-            
-            if isAttribute {
-                
-                guard let className: String = attributes[localKey]!.attributeValueClassName else {
-                    print("\(entityName) have no class type for key \(localKey)")
-                    continue
-                }
-                
-                value = normalizeValue(value, className: className)
-                
-            } else if isRelationship {
-                
-                guard ((relationships[localKey]?.toMany) == false) else {
-                    print("relationship \(localKey) is toMany")
-                    continue
-                }
-                
-                guard let className: String = relationships[localKey]!.destinationEntity?.name else {
-                    print("\(entityName) have no class type for key \(localKey)")
-                    continue
-                }
-                
-                value = relationshipObjectForValue(value, className: className)
-                
-            }
-            
             var subpredicate: NSPredicate
             
-            if value != nil {
+            let (subpredicateString, argumentArray) = self.subpredicateStringForParams(compOp,
+                                                                                       comparisonOperators: comparisonOperators,
+                                                                                       arguments: arguments,
+                                                                                       localKey: localKey,
+                                                                                       isAttribute: isAttribute,
+                                                                                       isRelationship: isRelationship,
+                                                                                       entityName: entityName,
+                                                                                       attributes: attributes,
+                                                                                       relationships: relationships)
+
+            if subpredicateString != nil {
                 
-                let subpredicateString: String = "\(localKey) \(compOp) %@"
-                subpredicate = NSPredicate(format: subpredicateString, argumentArray: [value!])
-                
-            } else {
-                
-                let subpredicateString: String = "\(localKey) \(compOp) nil"
-                subpredicate = NSPredicate(format: subpredicateString, argumentArray: nil)
-                
+                subpredicate = NSPredicate(format: subpredicateString!, argumentArray: argumentArray)
+                subpredicates.append(subpredicate)
+
             }
-            
-            subpredicates.append(subpredicate)
 
         }
 
     }
 
+    class  func subpredicateStringForParams(compOp: String, comparisonOperators: [String], arguments: [String: AnyObject], localKey: String, isAttribute: Bool, isRelationship: Bool, entityName: String, attributes: [String : NSAttributeDescription], relationships: [String : NSRelationshipDescription]) -> (subpredicateString: String?, argumentArray: [AnyObject]?) {
+        
+        guard comparisonOperators.contains(compOp) else {
+            print("comparison operator should be '==', '!=', '>=', '<=', '>' or '<', not '\(compOp)'")
+            return (nil, nil)
+        }
+        
+        //                guard var value: AnyObject? = arguments[compOp] else {
+        //                    print("have no value for comparison operator '\(compOp)'")
+        //                    continue
+        //                }
+        
+        var value: AnyObject? = arguments[compOp]
+        
+        if localKey.lowercaseString.hasSuffix("uuid") || localKey.lowercaseString.hasSuffix("xid") || isRelationship {
+            
+            guard value is String else {
+                print("value is not a String, but it should be to get xid or uuid value")
+                return (nil, nil)
+            }
+            
+            value = value?.stringByReplacingOccurrencesOfString("-", withString: "")
+            
+        }
+        
+        if isAttribute {
+            
+            guard let className: String = attributes[localKey]!.attributeValueClassName else {
+                print("\(entityName) have no class type for key \(localKey)")
+                return (nil, nil)
+            }
+            
+            value = normalizeValue(value, className: className)
+            
+        } else if isRelationship {
+            
+            guard ((relationships[localKey]?.toMany) == false) else {
+                print("relationship \(localKey) is toMany")
+                return (nil, nil)
+            }
+            
+            guard let className: String = relationships[localKey]!.destinationEntity?.name else {
+                print("\(entityName) have no class type for key \(localKey)")
+                return (nil, nil)
+            }
+            
+            value = relationshipObjectForValue(value, className: className)
+            
+        }
+        
+        var subpredicateString: String
+        var argumentArray: [AnyObject]?
+        
+        if value != nil {
+            
+            subpredicateString = "\(localKey) \(compOp) %@"
+            argumentArray = [value!]
+            
+        } else {
+            
+            subpredicateString = "\(localKey) \(compOp) nil"
+            argumentArray = nil
+            
+        }
+
+        return (subpredicateString, argumentArray)
+
+    }
+    
     class func normalizeValue(value: AnyObject?, className: String) -> AnyObject? {
         
         var value = value
