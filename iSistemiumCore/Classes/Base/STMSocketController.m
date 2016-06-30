@@ -1398,8 +1398,12 @@
     if (!_socket && self.socketUrl) {
         
         NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
-        
-        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl options:@{@"voipEnabled" : @YES}];
+        NSString *path = [socketUrl.path stringByAppendingString:@"/"];
+
+        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl options:@{@"voipEnabled"       : @YES,
+                                                                                               @"log"               : @NO,
+                                                                                               @"forceWebsockets"   : @NO,
+                                                                                               @"path"              : path}];
 
         NSLog(@"init socket %@", socket);
 
