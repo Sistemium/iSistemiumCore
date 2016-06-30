@@ -1324,7 +1324,9 @@
         
         if (error) {
             
-            NSLog(@"checkWebViewIsAlive error : %@", error.localizedDescription);
+            NSString *errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error : %@\n", error.localizedDescription];
+            errorString = [errorString stringByAppendingString:@"reload webView"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:errorString type:@"error"];
             
             [self reloadWebView];
             
