@@ -155,21 +155,20 @@
     
 }
 
-+ (NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForFilterKey:(NSString *)key
-                                      filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
-                                         relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
-                                            attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
-                                            properties:(NSDictionary <NSString *, __kindof NSPropertyDescription *> *)properties
-                                            entityName:(NSString *)entityName {
++ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForFilterKey:(NSString *)key
+                                                                             filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
+                                                                                relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
+                                                                                   attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
+                                                                                   properties:(NSDictionary <NSString *, __kindof NSPropertyDescription *> *)properties
+                                                                                   entityName:(NSString *)entityName {
     
     if ([key hasPrefix:@"ANY"]) {
         
-        [self handleAnyConditionForFilterDictionary:filterDictionary
-                                                key:key
-                                      relationships:relationships
-                                         entityName:entityName];
-        return nil;
-        
+        return [self anyConditionForKey:key
+                       filterDictionary:filterDictionary
+                          relationships:relationships
+                             entityName:entityName];
+
     }
     
     NSString *localKey = key;
@@ -218,13 +217,13 @@
     
 }
 
-+ (NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForArguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
-                                                                                            localKey:(NSString *)localKey
-                                                                                         isAttribute:(BOOL)isAttribute
-                                                                                      isRelationship:(BOOL)isRelationship
-                                                                                          entityName:(NSString *)entityName
-                                                                                          attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
-                                                                                       relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
++ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForArguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
+                                                                                     localKey:(NSString *)localKey
+                                                                                  isAttribute:(BOOL)isAttribute
+                                                                               isRelationship:(BOOL)isRelationship
+                                                                                   entityName:(NSString *)entityName
+                                                                                   attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
+                                                                                relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
     
     NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = @[].mutableCopy;
     
@@ -376,43 +375,42 @@
     
 }
 
-+ (void)handleAnyConditionForFilterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
-                                          key:(NSString *)key
-                                relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
-                                   entityName:(NSString *)entityName {
++ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)anyConditionForKey:(NSString *)key
+                                                                  filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
+                                                                     relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
+                                                                        entityName:(NSString *)entityName {
     
     NSString *checkingProperty = [key componentsSeparatedByString:@" "].lastObject;
     
     if (![relationships.allKeys containsObject:checkingProperty]) {
         
         NSLog(@"%@ have no property %@ to make ANY predicate", entityName, checkingProperty);
-        return;
+        return nil;
         
     }
 
-    NSDictionary *destinationEntityFilter = filterDictionary[key];
+    NSDictionary <NSString *, __kindof NSObject *> *destinationEntityFilter = filterDictionary[key];
+    NSString *firstKey = destinationEntityFilter.allKeys.firstObject;
+    destinationEntityFilter = @{firstKey : destinationEntityFilter[firstKey]};     // only one filter is using at ANY condition
     
     if (![destinationEntityFilter isKindOfClass:[self whereFilterClass]]) {
         
         NSLog(@"ANY filter is malformed: %@", destinationEntityFilter);
-        return;
+        return nil;
         
     }
 
     NSString *destinationEntityName = relationships[checkingProperty].destinationEntity.name;
     
-    STMEntityDescription *destinationEntityDescription = [STMEntityDescription entityForName:destinationEntityName
-                                                                      inManagedObjectContext:[self document].managedObjectContext];
+    NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = [self subpredicatesDicsForEntityName:destinationEntityName
+                                                                                                      filterDictionary:destinationEntityFilter];
+
+    firstKey = subpredicatesDics.firstObject.allKeys.firstObject;
+    NSString *finalKey = [@[key, firstKey] componentsJoinedByString:@"."];
     
+    subpredicatesDics = @[@{finalKey : subpredicatesDics.firstObject[firstKey]}];
     
-    NSLog(@"!!!!!!!!! !!!!!!!!!!! !!!!!!!!!!!!");
-    
-//    NSDictionary <NSString *, __kindof NSPropertyDescription *> *properties = entityDescription.propertiesByName;
-//    NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;
-//    NSDictionary <NSString *, NSRelationshipDescription *> *relationships = entityDescription.relationshipsByName;
-    
-    
-//    NSDictionary <NSString *, NSArray <__kindof NSObject *> *> *subpredicateDic = [self subpredicateDicForParams:<#(NSString *)#> arguments:<#(NSDictionary<NSString *,__kindof NSObject *> *)#> localKey:<#(NSString *)#> isAttribute:<#(BOOL)#> isRelationship:<#(BOOL)#> entityName:<#(NSString *)#> attributes:<#(NSDictionary<NSString *,NSAttributeDescription *> *)#> relationships:<#(NSDictionary<NSString *,NSRelationshipDescription *> *)#>];
+    return subpredicatesDics;
     
 }
 
