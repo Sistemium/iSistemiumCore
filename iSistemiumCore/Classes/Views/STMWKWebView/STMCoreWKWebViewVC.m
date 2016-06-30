@@ -34,6 +34,7 @@
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
 @property (nonatomic) BOOL isAuthorizing;
+@property (nonatomic) BOOL wasLoadingOnce;
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
 
 @property (nonatomic, strong) STMBarCodeScanner *iOSModeBarCodeScanner;
@@ -326,6 +327,8 @@
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     
     NSLog(@"------ didFinishNavigation %@", webView.URL);
+    
+    self.wasLoadingOnce = YES;
     
     NSString *authCheck = [self webViewAuthCheckJS];
     
@@ -1305,6 +1308,30 @@
 }
 
 
+#pragma mark - white screen of death
+
+- (void)checkWebViewIsAlive {
+    
+    NSString *checkJS = @"window.document.body.childNodes.length";
+    
+    [self.webView evaluateJavaScript:checkJS completionHandler:^(id result, NSError *error) {
+        
+        if (error) {
+            
+            NSLog(@"checkWebViewIsAlive error : %@", error.localizedDescription);
+            
+            [self reloadWebView];
+            
+        } else {
+
+            NSLog(@"checkWebViewIsAlive OK");
+
+        }
+        
+    }];
+
+}
+
 #pragma mark - view lifecycle
 
 - (void)customInit {
@@ -1325,6 +1352,14 @@
     }*/
     
     [super didReceiveMemoryWarning];
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    
+    [super viewWillAppear:animated];
+    
+    if (self.wasLoadingOnce) [self checkWebViewIsAlive];
     
 }
 
