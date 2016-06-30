@@ -21,14 +21,14 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
+//
 
 import Foundation
 
 struct SocketPacket {
     private let placeholders: Int
-    private var currentPlace = 0
-
-	private static let logType = "SocketPacket"
+    
+    private static let logType = "SocketPacket"
 
     let nsp: String
     let id: Int
@@ -36,28 +36,13 @@ struct SocketPacket {
     
     enum PacketType: Int {
         case Connect, Disconnect, Event, Ack, Error, BinaryEvent, BinaryAck
-        
-        init?(str: String) {
-            if let int = Int(str), raw = PacketType(rawValue: int) {
-                self = raw
-            } else {
-                return nil
-            }
-        }
     }
     
-    var args: [AnyObject]? {
-        var arr = data
-        
-        if data.count == 0 {
-            return nil
+    var args: [AnyObject] {
+        if type == .Event || type == .BinaryEvent && data.count != 0 {
+            return Array(data.dropFirst())
         } else {
-            if type == PacketType.Event || type == PacketType.BinaryEvent {
-                arr.removeAtIndex(0)
-                return arr
-            } else {
-                return arr
-            }
+            return data
         }
     }
     
@@ -69,14 +54,14 @@ struct SocketPacket {
     }
     
     var event: String {
-        return data[0] as? String ?? String(data[0])
+        return String(data[0])
     }
     
     var packetString: String {
         return createPacketString()
     }
     
-    init(type: SocketPacket.PacketType, data: [AnyObject] = [AnyObject](), id: Int = -1,
+    init(type: PacketType, data: [AnyObject] = [AnyObject](), id: Int = -1,
         nsp: String, placeholders: Int = 0, binary: [NSData] = [NSData]()) {
         self.data = data
         self.id = id
@@ -87,161 +72,98 @@ struct SocketPacket {
     }
     
     mutating func addData(data: NSData) -> Bool {
-        if placeholders == currentPlace {
+        if placeholders == binary.count {
             return true
         }
         
         binary.append(data)
-        currentPlace += 1
         
-        if placeholders == currentPlace {
-            currentPlace = 0
+        if placeholders == binary.count {
+            fillInPlaceholders()
             return true
         } else {
             return false
         }
     }
     
-    private func completeMessage(message: String, ack: Bool) -> String {
-        var message = message
+    private func completeMessage(message: String) -> String {
+        let restOfMessage: String
+        
         if data.count == 0 {
-            return message + "]"
+            return message + "[]"
         }
         
-        for arg in data {
-            if arg is NSDictionary || arg is [AnyObject] {
-                do {
-                    let jsonSend = try NSJSONSerialization.dataWithJSONObject(arg,
-                        options: NSJSONWritingOptions(rawValue: 0))
-                    let jsonString = NSString(data: jsonSend, encoding: NSUTF8StringEncoding)
-                    
-                    message += jsonString! as String + ","
-                } catch {
-					Logger.error("Error creating JSON object in SocketPacket.completeMessage", type: SocketPacket.logType)
-                }
-            } else if var str = arg as? String {
-                str = str["\n"] ~= "\\\\n"
-                str = str["\r"] ~= "\\\\r"
-                
-                message += "\"\(str)\","
-            } else if arg is NSNull {
-                message += "null,"
-            } else {
-                message += "\(arg),"
+        do {
+            let jsonSend = try NSJSONSerialization.dataWithJSONObject(data,
+                options: NSJSONWritingOptions(rawValue: 0))
+            guard let jsonString = String(data: jsonSend, encoding: NSUTF8StringEncoding) else {
+                return message + "[]"
             }
+            
+            restOfMessage = jsonString
+        } catch {
+            DefaultSocketLogger.Logger.error("Error creating JSON object in SocketPacket.completeMessage",
+                type: SocketPacket.logType)
+            
+            restOfMessage = "[]"
         }
         
-        if message != "" {
-            message.removeAtIndex(message.endIndex.predecessor())
-        }
-        
-        return message + "]"
-    }
-    
-    private func createAck() -> String {
-        let msg: String
-        
-        if type == PacketType.Ack {
-            if nsp == "/" {
-                msg = "3\(id)["
-            } else {
-                msg = "3\(nsp),\(id)["
-            }
-        } else {
-            if nsp == "/" {
-                msg = "6\(binary.count)-\(id)["
-            } else {
-                msg = "6\(binary.count)-/\(nsp),\(id)["
-            }
-        }
-        
-        return completeMessage(msg, ack: true)
-    }
-
-    
-    private func createMessageForEvent() -> String {
-        let message: String
-        
-        if type == PacketType.Event {
-            if nsp == "/" {
-                if id == -1 {
-                    message = "2["
-                } else {
-                    message = "2\(id)["
-                }
-            } else {
-                if id == -1 {
-                    message = "2\(nsp),["
-                } else {
-                    message = "2\(nsp),\(id)["
-                }
-            }
-        } else {
-            if nsp == "/" {
-                if id == -1 {
-                    message = "5\(binary.count)-["
-                } else {
-                    message = "5\(binary.count)-\(id)["
-                }
-            } else {
-                if id == -1 {
-                    message = "5\(binary.count)-\(nsp),["
-                } else {
-                    message = "5\(binary.count)-\(nsp),\(id)["
-                }
-            }
-        }
-        
-        return completeMessage(message, ack: false)
+        return message + restOfMessage
     }
     
     private func createPacketString() -> String {
-        let str: String
+        let typeString = String(type.rawValue)
+        let binaryCountString: String
+        let nspString: String
+        let idString: String
         
-        if type == PacketType.Event || type == PacketType.BinaryEvent {
-            str = createMessageForEvent()
+        if type == .BinaryEvent || type == .BinaryAck {
+            binaryCountString = typeString + String(binary.count) + "-"
         } else {
-            str = createAck()
+            binaryCountString = typeString
         }
         
-        return str
-    }
-    
-    mutating func fillInPlaceholders() {
-        for i in 0..<data.count {
-            if let str = data[i] as? String, num = str["~~(\\d)"].groups() {
-                data[i] = binary[Int(num[1])!]
-            } else if data[i] is NSDictionary || data[i] is NSArray {
-                data[i] = _fillInPlaceholders(data[i])
-            }
+        if nsp != "/" {
+            nspString = binaryCountString + nsp + ","
+        } else {
+            nspString = binaryCountString
         }
+        
+        if id != -1 {
+            idString = nspString + String(id)
+        } else {
+            idString = nspString
+        }
+        
+        return completeMessage(idString)
     }
     
-    private mutating func _fillInPlaceholders(data: AnyObject) -> AnyObject {
-        if let str = data as? String {
-            if let num = str["~~(\\d)"].groups() {
-                return binary[Int(num[1])!]
+    // Called when we have all the binary data for a packet
+    // calls _fillInPlaceholders, which replaces placeholders with the
+    // corresponding binary
+    private mutating func fillInPlaceholders() {
+        data = data.map(_fillInPlaceholders)
+    }
+    
+    // Helper method that looks for placeholders
+    // If object is a collection it will recurse
+    // Returns the object if it is not a placeholder or the corresponding
+    // binary data
+    private func _fillInPlaceholders(object: AnyObject) -> AnyObject {
+        switch object {
+        case let dict as NSDictionary:
+            if dict["_placeholder"] as? Bool ?? false {
+                return binary[dict["num"] as! Int]
             } else {
-                return str
+                return dict.reduce(NSMutableDictionary(), combine: {cur, keyValue in
+                    cur[keyValue.0 as! NSCopying] = _fillInPlaceholders(keyValue.1)
+                    return cur
+                })
             }
-        } else if let dict = data as? NSDictionary {
-            let newDict = NSMutableDictionary(dictionary: dict)
-            
-            for (key, value) in dict {
-                newDict[key as! NSCopying] = _fillInPlaceholders(value)
-            }
-            
-            return newDict
-        } else if let arr = data as? NSArray {
-            let newArr = NSMutableArray(array: arr)
-            
-            for i in 0..<arr.count {
-                newArr[i] = _fillInPlaceholders(arr[i])
-            }
-            
-            return newArr
-        } else {
-            return data
+        case let arr as [AnyObject]:
+            return arr.map(_fillInPlaceholders)
+        default:
+            return object
         }
     }
 }
@@ -250,69 +172,53 @@ extension SocketPacket {
     private static func findType(binCount: Int, ack: Bool) -> PacketType {
         switch binCount {
         case 0 where !ack:
-            return PacketType.Event
+            return .Event
         case 0 where ack:
-            return PacketType.Ack
+            return .Ack
         case _ where !ack:
-            return PacketType.BinaryEvent
+            return .BinaryEvent
         case _ where ack:
-            return PacketType.BinaryAck
+            return .BinaryAck
         default:
-            return PacketType.Error
+            return .Error
         }
     }
     
     static func packetFromEmit(items: [AnyObject], id: Int, nsp: String, ack: Bool) -> SocketPacket {
         let (parsedData, binary) = deconstructData(items)
         let packet = SocketPacket(type: findType(binary.count, ack: ack), data: parsedData,
-            id: id, nsp: nsp, placeholders: -1, binary: binary)
+            id: id, nsp: nsp, binary: binary)
         
         return packet
     }
 }
 
 private extension SocketPacket {
+    // Recursive function that looks for NSData in collections
     static func shred(data: AnyObject, inout binary: [NSData]) -> AnyObject {
-        if let bin = data as? NSData {
-            let placeholder = ["_placeholder" :true, "num": binary.count]
-            
+        let placeholder = ["_placeholder": true, "num": binary.count]
+        
+        switch data {
+        case let bin as NSData:
             binary.append(bin)
-            
             return placeholder
-        } else if var arr = data as? [AnyObject] {
-            for i in 0..<arr.count {
-                arr[i] = shred(arr[i], binary: &binary)
-            }
-            
-            return arr
-        } else if let dict = data as? NSDictionary {
-            let mutDict = NSMutableDictionary(dictionary: dict)
-            
-            for (key, value) in dict {
-                mutDict[key as! NSCopying] = shred(value, binary: &binary)
-            }
-            
-            return mutDict
-        } else {
+        case let arr as [AnyObject]:
+            return arr.map({shred($0, binary: &binary)})
+        case let dict as NSDictionary:
+            return dict.reduce(NSMutableDictionary(), combine: {cur, keyValue in
+                cur[keyValue.0 as! NSCopying] = shred(keyValue.1, binary: &binary)
+                return cur
+            })
+        default:
             return data
         }
     }
     
+    // Removes binary data from emit data
+    // Returns a type containing the de-binaryed data and the binary
     static func deconstructData(data: [AnyObject]) -> ([AnyObject], [NSData]) {
-        
-        var data = data
-        
         var binary = [NSData]()
         
-        for i in 0..<data.count {
-            if data[i] is NSArray || data[i] is NSDictionary {
-                data[i] = shred(data[i], binary: &binary)
-            } else if let bin = data[i] as? NSData {
-                data[i] = ["_placeholder" :true, "num": binary.count]
-                binary.append(bin)
-            }
-        }
-        
-        return (data, binary)
+        return (data.map({shred($0, binary: &binary)}), binary)
     }
 }

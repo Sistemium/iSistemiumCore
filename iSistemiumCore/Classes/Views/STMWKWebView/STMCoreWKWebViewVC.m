@@ -26,7 +26,7 @@
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
 
-#import "iSistemiumCore-Swift.h"
+//#import "iSistemiumCore-Swift.h"
 
 
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate, STMImagePickerOwnerProtocol>

@@ -12,7 +12,7 @@
 #import "STMClientDataController.h"
 #import "STMCoreObjectsController.h"
 #import "STMLocationController.h"
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 
 
 #define ACTUAL_LOCATION_CHECK_TIME_INTERVAL 5.0

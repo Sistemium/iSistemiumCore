@@ -17,7 +17,7 @@
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 
 
 #define AUTH_URL @"https://api.sistemium.com/pha/auth"

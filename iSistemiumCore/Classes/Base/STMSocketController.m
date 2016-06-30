@@ -179,11 +179,11 @@
         NSLogMethodName;
 
         sc.isRunning = YES;
-
+        
         switch (sc.socket.status) {
                 
             case SocketIOClientStatusNotConnected:
-            case SocketIOClientStatusClosed: {
+            case SocketIOClientStatusDisconnected: {
                 [sc.socket connect];
 //                [sc performSelector:@selector(checkAuthorizationForSocket:) withObject:sc.socket afterDelay:CHECK_AUTHORIZATION_DELAY];
                 break;
@@ -194,13 +194,6 @@
             }
             case SocketIOClientStatusConnected: {
                 
-                break;
-            }
-            case SocketIOClientStatusReconnecting: {
-                
-                break;
-            }
-            default: {
                 break;
             }
                 
@@ -1404,7 +1397,9 @@
     
     if (!_socket && self.socketUrl) {
         
-        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:self.socketUrl opts:nil];
+        NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
+        
+        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl options:@{@"voipEnabled" : @YES}];
 
         NSLog(@"init socket %@", socket);
 
