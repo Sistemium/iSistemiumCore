@@ -1310,7 +1310,13 @@
 
 #pragma mark - white screen of death
 
+- (void)applicationWillEnterForegroundNotification:(NSNotification *)notification {
+    [self checkWebViewIsAlive];
+}
+
 - (void)checkWebViewIsAlive {
+    
+    if (!self.wasLoadingOnce) return;
     
     NSString *checkJS = @"window.document.body.childNodes.length";
     
@@ -1334,8 +1340,20 @@
 
 #pragma mark - view lifecycle
 
+- (void)addObservers {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillEnterForegroundNotification:)
+                                                 name:UIApplicationWillEnterForegroundNotification
+                                               object:nil];
+    
+}
+
 - (void)customInit {
+    
+    [self addObservers];
     [self webViewInit];
+    
 }
 
 - (void)viewDidLoad {
@@ -1359,7 +1377,7 @@
     
     [super viewWillAppear:animated];
     
-    if (self.wasLoadingOnce) [self checkWebViewIsAlive];
+    [self checkWebViewIsAlive];
     
 }
 
