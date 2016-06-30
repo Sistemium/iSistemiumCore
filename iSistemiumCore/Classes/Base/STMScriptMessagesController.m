@@ -89,7 +89,15 @@
     return [NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> class];
 }
 
-+ (NSPredicate *)predicateForEntityName:(NSString *)entityName filter:(NSDictionary <NSString *, __kindof NSObject *> *)filter whereFilter:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)whereFilter error:(NSError **)error {
++ (NSArray <NSString *> *)comparisonOperators {
+    return @[@"==", @"!=", @">=", @"<=", @">", @"<"];
+}
+
+
++ (NSPredicate *)predicateForEntityName:(NSString *)entityName
+                                 filter:(NSDictionary <NSString *, __kindof NSObject *> *)filter
+                            whereFilter:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)whereFilter
+                                  error:(NSError **)error {
     
     NSMutableDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *filterDictionary = whereFilter ? whereFilter.mutableCopy : @{}.mutableCopy;
     
@@ -99,14 +107,30 @@
     
     if (filterDictionary.count == 0) NSLog(@"filterDictionary.count == 0");
 
-    NSArray <NSPredicate *> *subpredicates = [self subpredicatesForEntityName:entityName
-                                                             filterDictionary:filterDictionary];
+    NSMutableArray <NSPredicate *> *subpredicates = @[].mutableCopy;
+
+    NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = [self subpredicatesDicsForEntityName:entityName
+                                                                                                        filterDictionary:filterDictionary];
+
+    for (NSDictionary <NSString *, __kindof NSObject *> *subpredicateDic in subpredicatesDics) {
+        
+        NSString *format = subpredicateDic.allKeys.firstObject;
+        __kindof NSObject *argument = subpredicateDic.allKeys.firstObject;
+        
+        argument = ([argument isKindOfClass:[NSNull class]]) ? nil : @[argument];
+    
+        NSPredicate *subpredicate = [NSPredicate predicateWithFormat:format
+                                                       argumentArray:argument];
+
+        [subpredicates addObject:subpredicate];
+        
+    }
     
     return [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
 }
 
-+ (NSArray <NSPredicate *> *)subpredicatesForEntityName:(NSString *)entityName filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary {
++ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForEntityName:(NSString *)entityName filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary {
     
     STMEntityDescription *entityDescription = [STMEntityDescription entityForName:entityName inManagedObjectContext: [self document].managedObjectContext];
     
@@ -114,30 +138,37 @@
     NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;
     NSDictionary <NSString *, NSRelationshipDescription *> *relationships = entityDescription.relationshipsByName;
     
-    NSMutableArray <NSPredicate *> *subpredicates = @[].mutableCopy;
+    NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = @[].mutableCopy;
     
     for (NSString *key in filterDictionary.allKeys) {
         
-        [self checkFilterKeyForSubpredicates:subpredicates
-                            filterDictionary:filterDictionary
-                                         key:key
-                               relationships:relationships
-                                  attributes:attributes
-                                  properties:properties
-                                  entityName:entityName];
-        
+        [subpredicatesDics addObjectsFromArray:[self subpredicatesDicsForFilterKey:key
+                                                                  filterDictionary:filterDictionary
+                                                                     relationships:relationships
+                                                                        attributes:attributes
+                                                                        properties:properties
+                                                                        entityName:entityName]];
+
     }
     
-    return subpredicates;
+    return subpredicatesDics;
     
 }
 
-+ (void)checkFilterKeyForSubpredicates:(NSMutableArray <NSPredicate *> *)subpredicates filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary key:(NSString *)key relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes properties:(NSDictionary <NSString *, __kindof NSPropertyDescription *> *)properties entityName:(NSString *)entityName {
++ (NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForFilterKey:(NSString *)key
+                                      filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
+                                         relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
+                                            attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
+                                            properties:(NSDictionary <NSString *, __kindof NSPropertyDescription *> *)properties
+                                            entityName:(NSString *)entityName {
     
     if ([key hasPrefix:@"ANY"]) {
         
-        [self handleAnyCondition];
-        return;
+        [self handleAnyConditionForFilterDictionary:filterDictionary
+                                                key:key
+                                      relationships:relationships
+                                         entityName:entityName];
+        return nil;
         
     }
     
@@ -161,7 +192,7 @@
     if (![properties.allKeys containsObject:localKey]) {
         
         NSLog(@"%@ have no property %@", entityName, localKey);
-        return;
+        return nil;
         
     }
     
@@ -171,54 +202,65 @@
     if (!isAttribute && !isRelationship) {
         
         NSLog(@"%@ unknown kind of property %@", entityName, localKey);
-        return;
+        return nil;
         
     }
     
     NSDictionary <NSString *, __kindof NSObject *> *arguments = filterDictionary[key];
     
-    NSArray <NSString *> *comparisonOperators = @[@"==", @"!=", @">=", @"<=", @">", @"<"];
-    
-    [self fillSupredicates:subpredicates
-       comparisonOperators:comparisonOperators
-                 arguments:arguments
-                  localKey:localKey
-               isAttribute:isAttribute
-            isRelationship:isRelationship
-                entityName:entityName
-                attributes:attributes
-             relationships:relationships];
+    return [self subpredicatesDicsForArguments:arguments
+                                      localKey:localKey
+                                   isAttribute:isAttribute
+                                isRelationship:isRelationship
+                                    entityName:entityName
+                                    attributes:attributes
+                                 relationships:relationships];
     
 }
 
-+ (void)fillSupredicates:(NSMutableArray <NSPredicate *> *)subpredicates comparisonOperators:(NSArray <NSString *> *)comparisonOperators arguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments localKey:(NSString *)localKey isAttribute:(BOOL)isAttribute isRelationship:(BOOL)isRelationship entityName:(NSString *)entityName attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
++ (NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForArguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
+                                                                                            localKey:(NSString *)localKey
+                                                                                         isAttribute:(BOOL)isAttribute
+                                                                                      isRelationship:(BOOL)isRelationship
+                                                                                          entityName:(NSString *)entityName
+                                                                                          attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
+                                                                                       relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
+    
+    NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = @[].mutableCopy;
     
     for (NSString *compOp in arguments.allKeys) {
         
-        NSDictionary <NSString *, NSArray <__kindof NSObject *> *> *subpredicateDic = [self subpredicateDicForParams:compOp
-                                                                                                       comparisonOperators:comparisonOperators
-                                                                                                                 arguments:arguments
-                                                                                                                  localKey:localKey
-                                                                                                               isAttribute:isAttribute
-                                                                                                            isRelationship:isRelationship
-                                                                                                                entityName:entityName
-                                                                                                                attributes:attributes
-                                                                                                             relationships:relationships];
+        NSDictionary <NSString *, __kindof NSObject *> *subpredicateDic = [self subpredicateDicForParams:compOp
+                                                                                               arguments:arguments
+                                                                                                localKey:localKey
+                                                                                             isAttribute:isAttribute
+                                                                                          isRelationship:isRelationship
+                                                                                              entityName:entityName
+                                                                                              attributes:attributes
+                                                                                           relationships:relationships];
         
         if (subpredicateDic) {
             
-            NSPredicate *subpredicate = [NSPredicate predicateWithFormat:subpredicateDic.allKeys.firstObject argumentArray:subpredicateDic.allValues.firstObject];
-            [subpredicates addObject:subpredicate];
+            [subpredicatesDics addObject:subpredicateDic];
             
         }
         
     }
     
+    return subpredicatesDics;
+    
 }
 
-+ (NSDictionary <NSString *, NSArray <__kindof NSObject *> *> *)subpredicateDicForParams:(NSString *)compOp comparisonOperators:(NSArray <NSString *> *)comparisonOperators arguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments localKey:(NSString *)localKey isAttribute:(BOOL)isAttribute isRelationship:(BOOL)isRelationship entityName:(NSString *)entityName attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
++ (NSDictionary <NSString *, __kindof NSObject *> *)subpredicateDicForParams:(NSString *)compOp
+                                                                               arguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
+                                                                                localKey:(NSString *)localKey
+                                                                             isAttribute:(BOOL)isAttribute
+                                                                          isRelationship:(BOOL)isRelationship
+                                                                              entityName:(NSString *)entityName
+                                                                              attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
+                                                                           relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
     
-    if (![comparisonOperators containsObject:compOp]) {
+    if (![[self comparisonOperators] containsObject:compOp]) {
         
         NSLog(@"comparison operator should be '==', '!=', '>=', '<=', '>' or '<', not %@", compOp);
         return nil;
@@ -276,12 +318,12 @@
     }
     
     NSString *subpredicateString = @"";
-    NSArray <__kindof NSObject *> *argumentArray = @[];
+    __kindof NSObject *argument = [NSNull null];
     
     if (value) {
         
         subpredicateString = [NSString stringWithFormat:@"%@ %@ %%@", localKey, compOp];
-        argumentArray = @[value];
+        argument = value;
         
     } else {
 
@@ -289,7 +331,7 @@
 
     }
     
-    return @{subpredicateString : argumentArray};
+    return @{subpredicateString : argument};
     
 }
 
@@ -334,7 +376,43 @@
     
 }
 
-+ (void)handleAnyCondition {
++ (void)handleAnyConditionForFilterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
+                                          key:(NSString *)key
+                                relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
+                                   entityName:(NSString *)entityName {
+    
+    NSString *checkingProperty = [key componentsSeparatedByString:@" "].lastObject;
+    
+    if (![relationships.allKeys containsObject:checkingProperty]) {
+        
+        NSLog(@"%@ have no property %@ to make ANY predicate", entityName, checkingProperty);
+        return;
+        
+    }
+
+    NSDictionary *destinationEntityFilter = filterDictionary[key];
+    
+    if (![destinationEntityFilter isKindOfClass:[self whereFilterClass]]) {
+        
+        NSLog(@"ANY filter is malformed: %@", destinationEntityFilter);
+        return;
+        
+    }
+
+    NSString *destinationEntityName = relationships[checkingProperty].destinationEntity.name;
+    
+    STMEntityDescription *destinationEntityDescription = [STMEntityDescription entityForName:destinationEntityName
+                                                                      inManagedObjectContext:[self document].managedObjectContext];
+    
+    
+    NSLog(@"!!!!!!!!! !!!!!!!!!!! !!!!!!!!!!!!");
+    
+//    NSDictionary <NSString *, __kindof NSPropertyDescription *> *properties = entityDescription.propertiesByName;
+//    NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;
+//    NSDictionary <NSString *, NSRelationshipDescription *> *relationships = entityDescription.relationshipsByName;
+    
+    
+//    NSDictionary <NSString *, NSArray <__kindof NSObject *> *> *subpredicateDic = [self subpredicateDicForParams:<#(NSString *)#> arguments:<#(NSDictionary<NSString *,__kindof NSObject *> *)#> localKey:<#(NSString *)#> isAttribute:<#(BOOL)#> isRelationship:<#(BOOL)#> entityName:<#(NSString *)#> attributes:<#(NSDictionary<NSString *,NSAttributeDescription *> *)#> relationships:<#(NSDictionary<NSString *,NSRelationshipDescription *> *)#>];
     
 }
 
