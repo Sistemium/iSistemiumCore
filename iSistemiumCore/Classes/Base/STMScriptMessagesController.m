@@ -105,7 +105,7 @@
         filterDictionary[key] = @{@"==" : filter[key]};
     }
     
-    if (filterDictionary.count == 0) NSLog(@"filterDictionary.count == 0");
+    if (filterDictionary.count == 0) return nil;
 
     NSMutableArray <NSPredicate *> *subpredicates = @[].mutableCopy;
 
@@ -115,7 +115,7 @@
     for (NSDictionary <NSString *, __kindof NSObject *> *subpredicateDic in subpredicatesDics) {
         
         NSString *format = subpredicateDic.allKeys.firstObject;
-        __kindof NSObject *argument = subpredicateDic.allKeys.firstObject;
+        __kindof NSObject *argument = subpredicateDic.allValues.firstObject;
         
         argument = ([argument isKindOfClass:[NSNull class]]) ? nil : @[argument];
     
