@@ -484,6 +484,28 @@
             
         }
         
+    } else if ([valueClassName isEqualToString:NSStringFromClass([NSString class])]) {
+        
+        if (![value isKindOfClass:[NSString class]]) {
+            
+            if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]) {
+            
+                value = [STMFunctions jsonStringFromObject:value];
+                value = [value stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+
+            } else if ([value isKindOfClass:[NSObject class]]) {
+
+                value = [value description];
+
+            } else {
+                
+                NSLog(@"value %@ is not convertable to string", value);
+                value = nil;
+                
+            }
+            
+        }
+        
     }
 
     return value;
