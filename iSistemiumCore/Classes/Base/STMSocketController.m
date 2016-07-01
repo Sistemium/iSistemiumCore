@@ -1402,7 +1402,7 @@
 
         SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl options:@{@"voipEnabled"       : @YES,
                                                                                                @"log"               : @NO,
-                                                                                               @"forceWebsockets"   : @NO,
+                                                                                               @"forceWebsockets"   : @YES,
                                                                                                @"path"              : path}];
 
         NSLog(@"init socket %@", socket);
