@@ -698,9 +698,34 @@
         self.takePhotoCallbackJSFunction = parameters[@"callback"];
         self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
         
-        [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                   withObject:@(UIImagePickerControllerSourceTypeCamera)
-                   afterDelay:0];
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        
+            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                       withObject:@(UIImagePickerControllerSourceTypeCamera)
+                       afterDelay:0];
+
+        } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+
+            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                       withObject:@(UIImagePickerControllerSourceTypePhotoLibrary)
+                       afterDelay:0];
+
+        } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+            
+            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                       withObject:@(UIImagePickerControllerSourceTypeSavedPhotosAlbum)
+                       afterDelay:0];
+            
+        } else {
+            
+            self.waitingPhoto = NO;
+            
+            NSString *message = [NSString stringWithFormat:@"have no one available source types"];
+            [self callbackWithData:message
+                        parameters:self.takePhotoMessageParameters
+                jsCallbackFunction:self.takePhotoCallbackJSFunction];
+
+        }
         
     }
 
