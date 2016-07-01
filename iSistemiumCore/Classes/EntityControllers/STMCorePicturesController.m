@@ -803,20 +803,6 @@
 
 }
 
-- (void)repeatUploadOperationForObject:(NSManagedObject *)object {
-    
-    if ([object isKindOfClass:[STMCorePicture class]]) {
-        
-        STMCorePicture *picture = (STMCorePicture *)object;
-        
-        NSData *data = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath]];
-
-        [self addUploadOperationForPicture:picture data:data];
-        
-    }
-    
-}
-
 - (void)addUploadOperationForPicture:(STMCorePicture *)picture data:(NSData *)data {
 
     NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
@@ -846,40 +832,53 @@
 
         if (!error) {
             
-            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-            
-            if (statusCode == 200){
+            if (picture.managedObjectContext) {
                 
-                NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                NSData *picturesJson = [NSJSONSerialization dataWithJSONObject: (NSDictionary * _Nonnull) dictionary[@"pictures"] options:0 error: &error];
+                NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
                 
-                if (!error) {
+                if (statusCode == 200) {
                     
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                               options:0
+                                                                                 error:&error];
+                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:(NSDictionary * _Nonnull)dictionary[@"pictures"]
+                                                                           options:0
+                                                                             error:&error];
+                    
+                    if (!error) {
                         
-                        for (NSDictionary *dict in dictionary[@"pictures"]){
-                            if ([dict[@"name"] isEqual:@"original"]){
-                                picture.href = dict[@"src"];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            
+                            for (NSDictionary *dict in dictionary[@"pictures"]){
+                                if ([dict[@"name"] isEqual:@"original"]){
+                                    picture.href = dict[@"src"];
+                                }
                             }
-                        }
+                            
+                            NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
+                            picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+                            
+                            NSLog(picture.picturesInfo);
+                            
+                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+                            
+                            [session.document saveDocument:^(BOOL success) {
+                            }];
+                            
+                        });
                         
-                        NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
-                        picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
-                        
-                        NSLog(picture.picturesInfo);
-                        
-                        __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                        
-                        [session.document saveDocument:^(BOOL success) {
-                        }];
-                        
-                    });
+                    } else {
+                        NSLog(@"error in json serialization", error.localizedDescription);
+                    }
                     
+                } else {
+                    NSLog(@"Request error, statusCode: %d", statusCode);
                 }
-                
+
             } else {
-                NSLog(@"Request error, statusCode: %d", statusCode);
+                NSLog(@"picture have no managedObjectContext, probably it was deleted");
             }
+            
         } else {
             NSLog(@"connectionError %@", error.localizedDescription);
         }

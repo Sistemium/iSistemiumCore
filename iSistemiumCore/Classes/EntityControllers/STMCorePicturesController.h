@@ -20,7 +20,6 @@
 + (CGFloat)jpgQuality;
 
 + (void)checkPhotos;
-+ (void)checkUploadedPhotos;
 
 + (void)hrefProcessingForObject:(NSManagedObject *)object;
 + (void)downloadConnectionForObject:(NSManagedObject *)object;
