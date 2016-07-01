@@ -2,7 +2,7 @@
 //  STMClientData+CoreDataProperties.m
 //  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 13/06/16.
+//  Created by Maxim Grigoriev on 01/07/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -37,5 +37,6 @@
 @dynamic target;
 @dynamic tokenHash;
 @dynamic xid;
+@dynamic bundleIdentifier;
 
 @end

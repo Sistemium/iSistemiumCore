@@ -640,8 +640,7 @@
 
 + (NSString *)currentAppVersion {
     
-    NSDictionary *infoDictionary = [NSBundle mainBundle].infoDictionary;
-    NSString *displayName = infoDictionary[@"CFBundleDisplayName"];
+    NSString *displayName = BUNDLE_DISPLAY_NAME;
     NSString *appVersionString = APP_VERSION;
     NSString *buildVersion = BUILD_VERSION;
     

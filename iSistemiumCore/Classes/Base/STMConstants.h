@@ -31,6 +31,7 @@
 
 #define NSLogMethodName NSLog(@"%@", NSStringFromSelector(_cmd))
 
+#define BUNDLE_DISPLAY_NAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
 #define BUILD_VERSION [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey]
 #define APP_VERSION [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
 #define SYSTEM_VERSION [[[UIDevice currentDevice] systemVersion] floatValue]

@@ -25,6 +25,10 @@
 
 #pragma mark - clientData properties
 
++ (NSString *)bundleIdentifier {
+    return BUNDLE_DISPLAY_NAME;
+}
+
 + (NSString *)appVersion {
     return BUILD_VERSION;
 }
