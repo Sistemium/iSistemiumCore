@@ -68,6 +68,7 @@
         
         NSDate *currentDate = [NSDate date];
         
+        [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
         self.deviceTs = currentDate;
 
     }
