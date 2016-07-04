@@ -728,7 +728,7 @@
 
 - (void)checkNews {
     
-    [self receiveData]; return;
+    [self receiveData]; return; // check news is temporary disabled
 
     if (self.fullSyncWasDone && !self.receivingEntitiesNames) {
         

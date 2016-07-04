@@ -327,14 +327,6 @@
     
     STMSocketController *sc = [self sharedInstance];
     
-//    NSString *logMessage = [NSString stringWithFormat:@"sendObjectFromSyncArray %lu object", (unsigned long)syncDataArray.count];
-//    NSArray *syncArrayXids = [syncDataArray valueForKeyPath:@"@unionOfObjects.xid"];
-//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n xids: %@", syncArrayXids]];
-//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n syncDataDictionary.allKeys: %@", sc.syncDataDictionary.allKeys]];
-//    logMessage = [logMessage stringByAppendingString:[NSString stringWithFormat:@"\n doNotSyncObjects: %@", sc.doNotSyncObjects]];
-//    
-//    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
-    
     if (syncDataArray.count > 0) {
         
         STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:syncDataArray.mutableCopy];
@@ -458,6 +450,8 @@
     STMEntity *entity = stcEntities[object.entity.name];
     NSString *resource = [entity resource];
     NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
+    
+    NSLog(@"sync %@ %@", object.entity.name, object.xid);
     
     [self sendObjectDic:objectDic resource:resource];
     
@@ -778,6 +772,8 @@
     
 //    NSLog(@"receiveJSDataEventAckWithData %@", data);
 
+    [self cancelCheckReceiveTimeout];
+
     [[self syncer] socketReceiveJSDataAck:data];
     
 }
@@ -849,9 +845,7 @@
     STMSocketController *sc = [self sharedInstance];
     sc.receivingStartDate = [NSDate date];
     
-    [self cancelPreviousPerformRequestsWithTarget:sc
-                                         selector:@selector(checkReceiveTimeout:)
-                                           object:@(sc.receiveTimeout)];
+    [self cancelCheckReceiveTimeout];
     
     sc.receiveTimeout = timeout;
     
@@ -872,6 +866,16 @@
         [[STMSocketController syncer] socketReceiveTimeout];
     }
     
+}
+
++ (void)cancelCheckReceiveTimeout {
+    
+    STMSocketController *sc = [self sharedInstance];
+
+    [self cancelPreviousPerformRequestsWithTarget:sc
+                                         selector:@selector(checkReceiveTimeout:)
+                                           object:@(sc.receiveTimeout)];
+
 }
 
 + (void)receiveFinishedWithError:(NSString *)errorString {
