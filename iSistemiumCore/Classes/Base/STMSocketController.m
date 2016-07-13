@@ -383,7 +383,7 @@
     
     STMSocketController *sc = [STMSocketController sharedInstance];
     
-    if ([sc.doNotSyncObjects containsObject:syncObject.xid]) {
+    if ([sc.doNotSyncObjects containsObject:(NSData *)syncObject.xid]) {
         
         return [self findObjectToSendFirstFromSyncArray:syncArray];
         
@@ -399,7 +399,7 @@
             
             STMDatum *relObject = [syncObject valueForKey:relName];
             
-            if (/*relObject.isFantom.boolValue || */[sc.doNotSyncObjects containsObject:relObject.xid]) {
+            if (/*relObject.isFantom.boolValue || */[sc.doNotSyncObjects containsObject:(NSData *)relObject.xid]) {
                 
                 /*if (relObject.isFantom.boolValue) {
                     
@@ -410,7 +410,7 @@
 
                 }*/
                 
-                [sc.doNotSyncObjects addObject:syncObject.xid];
+                [sc.doNotSyncObjects addObject:(NSData *)syncObject.xid];
                 
                 shouldFindNext = YES;
                 break;
@@ -447,7 +447,7 @@
 + (void)sendObject:(STMDatum *)object {
     
     NSDictionary *stcEntities = [STMEntityController stcEntities];
-    STMEntity *entity = stcEntities[object.entity.name];
+    STMEntity *entity = stcEntities[(NSString *)object.entity.name];
     NSString *resource = [entity resource];
     NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
     

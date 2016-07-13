@@ -598,7 +598,7 @@
         
         [self removeObserversForPicture:picture];
         
-        [self handleGetPictureParameters:self.getPictureMessageParameters[picture.xid]];
+        [self handleGetPictureParameters:self.getPictureMessageParameters[(NSData *)picture.xid]];
         
     }
     

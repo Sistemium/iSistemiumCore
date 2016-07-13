@@ -14,7 +14,7 @@
 @implementation STMEntity
 
 - (NSString *)resource {
-    return (self.url) ? self.url : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, self.name];
+    return (self.url) ? (NSString *)self.url : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, self.name];
 }
 
 - (void)willSave {

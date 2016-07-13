@@ -18,7 +18,7 @@
 }
 
 - (id)validJSONObject {
-    return [STMFunctions jsonObjectFromString:self.data];
+    return [STMFunctions jsonObjectFromString:(NSString *)self.data];
 }
 
 

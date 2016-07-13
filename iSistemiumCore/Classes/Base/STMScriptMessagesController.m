@@ -31,7 +31,7 @@
         
     }
     
-    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:body[@"entity"]];
+    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:(NSString *)body[@"entity"]];
 
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
         
