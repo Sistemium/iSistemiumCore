@@ -16,6 +16,7 @@
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
 #import "STMCorePicturesController.h"
+#import "STMCoreAuthController.h"
 
 #import "STMCoreDataModel.h"
 
@@ -368,6 +369,8 @@
                         } else {
                             
                             NSLog(@"have NO socketURL, fail to start socket controller");
+                            
+                            [[STMCoreAuthController authController] logout];
                             
                         }
                         
@@ -872,7 +875,7 @@
                     [STMSocketController startReceiveDataFromResource:resource
                                                              withETag:eTag
                                                            fetchLimit:self.fetchLimit
-                                                           andTimeout:[self timeout]];
+                                                           andTimeout:120/*[self timeout]*/];
                     
                 } else {
                     
