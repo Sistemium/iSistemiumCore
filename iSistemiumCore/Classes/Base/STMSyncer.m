@@ -413,7 +413,19 @@
         }];
         
     } else {
+        
+        STMEntity *entity = stcEntities[stcEntityName];
+        
+        if (![entity.url isEqualToString:self.entityResource]) {
+            
+            NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
+            
+            entity.url = self.entityResource;
+            
+        }
+        
         completionHandler(YES);
+        
     }
 
 }
