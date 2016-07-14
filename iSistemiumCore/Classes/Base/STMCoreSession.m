@@ -9,6 +9,7 @@
 #import "STMCoreSession.h"
 
 #import "STMCoreDataModel.h"
+#import "STMCoreAuthController.h"
 
 
 @interface STMCoreSession()
@@ -36,7 +37,7 @@
         NSString *dataModelName = [startSettings valueForKey:@"dataModelName"];
         
         if (!dataModelName) {
-            dataModelName = @"STMDataModel";
+            dataModelName = [[STMCoreAuthController authController] dataModelName];
         }
 
         session.document = [STMDocument documentWithUID:session.uid

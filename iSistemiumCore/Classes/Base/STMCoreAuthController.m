@@ -440,7 +440,6 @@
 - (NSString *)dataModelName {
     
     NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
-
     return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
     
 }

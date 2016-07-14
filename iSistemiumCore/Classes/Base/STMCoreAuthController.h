@@ -35,6 +35,7 @@ typedef NS_ENUM(NSUInteger, STMAuthState) {
 
 + (instancetype)authController;
 
+- (NSString *)dataModelName;
 
 - (BOOL)sendPhoneNumber:(NSString *)phoneNumber;
 - (BOOL)sendSMSCode:(NSString *)SMSCode;
