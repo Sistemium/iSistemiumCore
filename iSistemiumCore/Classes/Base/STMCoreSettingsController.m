@@ -342,7 +342,7 @@
         for (NSString *settingName in [settingsGroup allKeys]) {
             //                NSLog(@"setting %@ %@", settingName, [settingsGroup valueForKey:settingName]);
             
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@", settingName];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
             STMSetting *settingToCheck = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
 
             NSString *settingValue = [settingsGroup valueForKey:settingName];

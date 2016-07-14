@@ -82,6 +82,8 @@
             session.authDelegate = authDelegate;
             session.status = STMSessionRunning;
             session.logger.session = session;
+            session.settingsController.startSettings = startSettings.mutableCopy;
+            session.settingsController.session = session;
             
         }
         return session;
