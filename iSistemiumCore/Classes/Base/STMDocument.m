@@ -33,16 +33,22 @@
         
         NSString *path = [[NSBundle mainBundle] pathForResource:self.dataModelName ofType:@"momd"];
         
-        if (!path) {
-            path = [[NSBundle mainBundle] pathForResource:self.dataModelName ofType:@"mom"];
-        }
+        if (!path) path = [[NSBundle mainBundle] pathForResource:self.dataModelName ofType:@"mom"];
         
-        NSURL *url = [NSURL fileURLWithPath:path];
-
-        //        NSLog(@"path %@", path);
-        //        NSLog(@"url %@", url);
-
-        _myManagedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        if (path) {
+        
+            NSURL *url = [NSURL fileURLWithPath:path];
+            
+            //        NSLog(@"path %@", path);
+            //        NSLog(@"url %@", url);
+            
+            _myManagedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+            
+        } else {
+            
+            NSLog(@"there is no path for data model with name %@", self.dataModelName);
+            
+        }
         
     }
     
@@ -173,7 +179,7 @@
 + (STMDocument *)initWithFileURL:(NSURL *)url andDataModelName:(NSString *)dataModelName {
     
     STMDocument *document = [STMDocument alloc];
-    [document setDataModelName:dataModelName];
+    document.dataModelName = dataModelName;
     return [document initWithFileURL:url];
     
 }
