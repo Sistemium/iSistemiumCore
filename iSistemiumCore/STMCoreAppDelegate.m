@@ -256,7 +256,7 @@
     NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
     NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
 
-    [self routeNotificationUserInfo:userInfo completionHandler:handler];
+//    [self routeNotificationUserInfo:userInfo completionHandler:handler];
     
     [self routeNotificationUserInfo:userInfo completionHandler:^(UIBackgroundFetchResult result) {
         
