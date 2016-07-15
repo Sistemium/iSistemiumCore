@@ -603,7 +603,15 @@
         STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
         
         if (affectedObject) {
-            if (recordStatus.isRemoved.boolValue) [self removeObject:affectedObject];
+            
+            if (recordStatus.isRemoved.boolValue) {
+                
+                [self removeObject:affectedObject];
+                
+                if ([affectedObject isKindOfClass:[STMClientEntity class]]) [self syncer].syncerState = STMSyncerReceiveData;
+                
+            }
+            
         }
         
         if (recordStatus.isTemporary.boolValue) [self removeObject:recordStatus];
