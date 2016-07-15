@@ -608,7 +608,9 @@
                 
                 [self removeObject:affectedObject];
                 
-                if ([affectedObject isKindOfClass:[STMClientEntity class]]) [self syncer].syncerState = STMSyncerReceiveData;
+                if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
+                    [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
+                }
                 
             }
             

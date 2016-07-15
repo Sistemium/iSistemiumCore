@@ -720,12 +720,26 @@
     if (self.timerTicked) {
         
         self.timerTicked = NO;
+        self.receivingEntitiesNames = nil;
         self.syncerState = STMSyncerReceiveData;
         
     } else {
+        
+        if (self.syncerState == STMSyncerSendData) {
+            
+            self.receivingEntitiesNames = nil;
+            self.syncerState = STMSyncerReceiveData;
+            
+        } else {
+            
+            if (self.receivingEntitiesNames) {
+                self.syncerState = STMSyncerReceiveData;
+            } else {
+                self.syncerState = STMSyncerIdle;
+            }
+            
+        }
     
-        self.syncerState = (self.syncerState == STMSyncerSendData) ? STMSyncerReceiveData : STMSyncerIdle;
-
     }
     
 }
@@ -1418,7 +1432,7 @@
     if (errorString) {
         
         self.syncing = NO;
-        self.syncerState = STMSyncerIdle;
+        self.syncerState = (self.receivingEntitiesNames) ? STMSyncerReceiveData : STMSyncerIdle;
         
     } else {
         
