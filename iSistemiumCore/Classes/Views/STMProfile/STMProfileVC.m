@@ -132,6 +132,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     
                     self.progressBar.hidden = YES;
+                    [UIApplication sharedApplication].idleTimerDisabled = NO;
                     
                 });
                 
@@ -142,6 +143,7 @@
         } else {
             
             self.progressBar.hidden = NO;
+            [UIApplication sharedApplication].idleTimerDisabled = YES;
             self.totalEntityCount = 1;
             
         }
@@ -767,7 +769,10 @@
     
     self.nameLabel.text = [STMCoreAuthController authController].userName;
     self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
-    self.progressBar.hidden = ([[STMCoreSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
+
+    BOOL syncerIsIdle = ([[STMCoreSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
+    self.progressBar.hidden = syncerIsIdle;
+    [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     
     self.locationWarningLabel.text = @"";
     
