@@ -28,6 +28,9 @@
                           type:(NSString *)type;
 
 - (void)saveLogMessageWithText:(NSString *)text
+                       numType:(STMLogMessageType)numType;
+
+- (void)saveLogMessageWithText:(NSString *)text
                           type:(NSString *)type
                          owner:(STMDatum *)owner;
 

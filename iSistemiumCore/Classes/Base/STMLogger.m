@@ -170,7 +170,34 @@
 }
 
 - (NSArray *)availableTypes {
-    return @[@"error", @"warning", @"info", @"debug", @"important"];
+    return @[@"important", @"error", @"warning", @"info", @"debug"];
+}
+
+- (NSString *)stringTypeForNumType:(STMLogMessageType)numType {
+    
+    switch (numType) {
+        case STMLogMessageTypeImportant: {
+            return @"important";
+            break;
+        }
+        case STMLogMessageTypeError: {
+            return @"error";
+            break;
+        }
+        case STMLogMessageTypeWarning: {
+            return @"warning";
+            break;
+        }
+        case STMLogMessageTypeInfo: {
+            return @"info";
+            break;
+        }
+        case STMLogMessageTypeDebug: {
+            return @"debug";
+            break;
+        }
+    }
+    
 }
 
 - (NSArray *)syncingTypesForSettingType:(NSString *)settingType {
@@ -210,6 +237,16 @@
     
 }
 
+- (void)saveLogMessageWithText:(NSString *)text
+                       numType:(STMLogMessageType)numType{
+    
+    NSString *stringType = [self stringTypeForNumType:numType];
+    
+    [self saveLogMessageWithText:text
+                            type:stringType];
+    
+}
+
 - (void)saveLogMessageWithText:(NSString *)text {
     [self saveLogMessageWithText:text type:@"info"];
 }
@@ -242,7 +279,15 @@
         }];
         
     } else {
-        [self saveLogMessageDictionary:@{@"text": [NSString stringWithFormat:@"%@", text], @"type": [NSString stringWithFormat:@"%@", type]}];
+
+        NSDictionary *logMessageDic = @{@"text"        : [NSString stringWithFormat:@"%@", text],
+                                        @"type"        : [NSString stringWithFormat:@"%@", type],
+                                        @"deviceCts"   : [NSDate date]};
+        
+        [self performSelector:@selector(saveLogMessageDictionary:)
+                   withObject:logMessageDic
+                   afterDelay:0];
+        
     }
 
 }
@@ -251,14 +296,10 @@
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    NSDictionary *loggerDefaults = [defaults dictionaryForKey:[self loggerKey]];
-    NSMutableDictionary *loggerDefaultsMutable = [NSMutableDictionary dictionaryWithDictionary:loggerDefaults];
-    NSString *insertKey = [@(loggerDefaultsMutable.allValues.count) stringValue];
+    NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
+    NSMutableArray *loggerDefaultsMutable = (loggerDefaults) ? loggerDefaults.mutableCopy : @[].mutableCopy;
 
-    NSMutableDictionary *logMessageDicMutable = [NSMutableDictionary dictionaryWithDictionary:logMessageDic];
-    logMessageDicMutable[@"deviceCts"] = [NSDate date];
-    
-    loggerDefaultsMutable[insertKey] = logMessageDicMutable;
+    [loggerDefaultsMutable addObject:logMessageDic];
     
     [defaults setObject:loggerDefaultsMutable forKey:[self loggerKey]];
     [defaults synchronize];
@@ -271,13 +312,14 @@
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    NSDictionary *loggerDefaults = [defaults dictionaryForKey:[self loggerKey]];
+    NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
 
-    for (NSDictionary *logMessageDic in [loggerDefaults allValues]) {
+    for (NSDictionary *logMessageDic in loggerDefaults) {
         
-        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class]) isFantom:NO];
+        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
+                                                                                             isFantom:NO];
         
-        for (NSString *key in [logMessageDic allKeys]) {
+        for (NSString *key in logMessageDic.allKeys) {
             [logMessage setValue:logMessageDic[key] forKey:key];
         }
         

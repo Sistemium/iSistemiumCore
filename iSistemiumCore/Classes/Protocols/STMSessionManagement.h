@@ -26,6 +26,14 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionRemoving
 };
 
+typedef NS_ENUM(NSInteger, STMLogMessageType) {
+    STMLogMessageTypeImportant,
+    STMLogMessageTypeError,
+    STMLogMessageTypeWarning,
+    STMLogMessageTypeInfo,
+    STMLogMessageTypeDebug
+};
+
 
 @protocol STMLogger <NSObject, UITableViewDataSource, UITableViewDelegate>
 

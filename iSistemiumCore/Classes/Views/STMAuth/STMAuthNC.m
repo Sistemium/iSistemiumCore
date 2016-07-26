@@ -65,6 +65,10 @@
     
     switch ([STMCoreAuthController authController].controllerState) {
             
+        case STMAuthStarted:
+            
+            break;
+
         case STMAuthEnterPhoneNumber:
             [self setViewControllers:@[self.phoneVC] animated:YES];
             

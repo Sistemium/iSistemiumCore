@@ -76,8 +76,8 @@
     
     if (self) {
 
-        NSString *keychainPhoneNumber = [STMKeychain loadValueForKey:KC_PHONE_NUMBER];
-        if ([self.phoneNumber isEqualToString:keychainPhoneNumber]) [self checkAccessToken];
+        self.controllerState = STMAuthStarted;
+        [self checkPhoneNumber];
         
     }
     
@@ -165,7 +165,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"authController state %@", [self authControllerStateString]];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                type:@"important"];
+                                             numType:STMLogMessageTypeImportant];
     
     if (controllerState == STMAuthRequestRoles) {
         
@@ -174,18 +174,23 @@
     } else if (controllerState == STMAuthSuccess) {
         
         [[STMLogger sharedLogger] saveLogMessageWithText:@"login success"
-                                                    type:@"important"];
+                                                 numType:STMLogMessageTypeImportant];
         [self startSession];
         
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerStateChanged" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerStateChanged"
+                                                        object:self];
     
 }
 
 - (NSString *)authControllerStateString {
     
     switch (self.controllerState) {
+        case STMAuthStarted: {
+            return @"STMAuthStarted";
+            break;
+        }
         case STMAuthEnterPhoneNumber: {
             return @"STMAuthEnterPhoneNumber";
             break;
@@ -426,14 +431,44 @@
 
 #pragma mark - instance methods
 
+- (void)checkPhoneNumber {
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"checkPhoneNumber"
+                                             numType:STMLogMessageTypeImportant];
+
+    NSString *keychainPhoneNumber = [STMKeychain loadValueForKey:KC_PHONE_NUMBER];
+    
+    if ([self.phoneNumber isEqualToString:keychainPhoneNumber]) {
+        
+        [self checkAccessToken];
+        
+    } else {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"keychainPhoneNumber %@ != userDefaultsPhoneNumber %@", keychainPhoneNumber, self.phoneNumber];
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+        self.controllerState = STMAuthEnterPhoneNumber;
+        
+    }
+    
+}
+
+
+
+    
 - (void)checkAccessToken {
+
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"checkAccessToken"
+                                             numType:STMLogMessageTypeImportant];
 
     BOOL checkValue = YES;
     
     if (!self.userID || [self.userID isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] saveLogMessageWithText:@"No userID or userID is empty string"
-                                                    type:@"error"];
+                                                numType:STMLogMessageTypeError];
         checkValue = NO;
         
     } else {
@@ -442,7 +477,7 @@
     if (!self.accessToken || [self.accessToken isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] saveLogMessageWithText:@"No accessToken or accessToken is empty string"
-                                                    type:@"error"];
+                                                numType:STMLogMessageTypeError];
         checkValue = NO;
         
     } else {
@@ -455,7 +490,8 @@
 
 - (void)logout {
     
-    NSLog(@"logout");
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"logout"
+                                             numType:STMLogMessageTypeImportant];
 
     self.controllerState = STMAuthEnterPhoneNumber;
     
@@ -726,7 +762,9 @@
         
         self.controllerState = STMAuthEnterPhoneNumber;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError" object:self userInfo:@{@"error": error.localizedDescription}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
+                                                            object:self
+                                                          userInfo:@{@"error": error.localizedDescription}];
         
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 
@@ -922,13 +960,15 @@
                     
                 } else {
                     
-                    [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary" type:@"error"];
+                    [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
+                                                                type:@"error"];
                     
                 }
                 
             } else {
                 
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary" type:@"error"];
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
+                                                            type:@"error"];
                 
             }
             
@@ -977,7 +1017,9 @@
             
         }
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError" object:self userInfo:@{@"error": errorString}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
+                                                            object:self
+                                                          userInfo:@{@"error": errorString}];
 
     }
     

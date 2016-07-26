@@ -12,6 +12,7 @@
 @interface STMCoreAuthController : NSObject <STMRequestAuthenticatable>
 
 typedef NS_ENUM(NSUInteger, STMAuthState) {
+    STMAuthStarted,
     STMAuthEnterPhoneNumber,
     STMAuthEnterSMSCode,
     STMAuthNewSMSCode,
