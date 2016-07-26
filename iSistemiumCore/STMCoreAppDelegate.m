@@ -225,6 +225,8 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     
+    [[STMUserDefaults standardUserDefaults] synchronize];
+
     NSString *logMessage = [NSString stringWithFormat:@"applicationWillTerminate"];
     NSLog(logMessage);
     [[STMLogger sharedLogger] saveLogMessageDictionary:@{@"text": logMessage, @"type": @"error"}];
@@ -418,7 +420,7 @@
 
     if (!_deviceToken) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         _deviceToken = [defaults objectForKey:@"deviceToken"];
 
     }
@@ -433,7 +435,7 @@
         
         _deviceToken = deviceToken;
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:deviceToken forKey:@"deviceToken"];
         [defaults synchronize];
         
@@ -447,7 +449,7 @@
     
     if (!_deviceTokenError) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         _deviceTokenError = [defaults objectForKey:@"deviceTokenError"];
 
     }
@@ -462,7 +464,7 @@
 
         _deviceTokenError = deviceTokenError;
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:deviceTokenError forKey:@"deviceTokenError"];
         [defaults synchronize];
         

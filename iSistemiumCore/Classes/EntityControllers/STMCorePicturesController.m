@@ -243,7 +243,7 @@
         
         NSString *keyToCheck = [@"picturePathsDidCheckedAlready_" stringByAppendingString:sessionUID];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         BOOL picturePathsDidCheckedAlready = [[defaults objectForKey:keyToCheck] boolValue];
         
         if (!picturePathsDidCheckedAlready) {

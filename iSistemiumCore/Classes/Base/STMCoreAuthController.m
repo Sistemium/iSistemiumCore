@@ -96,7 +96,7 @@
     
     if (!_phoneNumber) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         id phoneNumber = [defaults objectForKey:@"phoneNumber"];
         
         if ([phoneNumber isKindOfClass:[NSString class]]) {
@@ -114,7 +114,7 @@
     
     if (phoneNumber != _phoneNumber) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:phoneNumber forKey:@"phoneNumber"];
         [defaults synchronize];
 
@@ -130,7 +130,7 @@
     
     if (!_userName) {
 
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         id userName = [defaults objectForKey:@"userName"];
         
         if ([userName isKindOfClass:[NSString class]]) {
@@ -148,7 +148,7 @@
     
     if (userName != _userName) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:userName forKey:@"userName"];
         [defaults synchronize];
         
@@ -277,7 +277,7 @@
         self.lastAuth = [NSDate date];
         self.tokenHash = [STMFunctions MD5FromString:accessToken];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:self.lastAuth forKey:@"lastAuth"];
         [defaults setObject:self.tokenHash forKey:@"tokenHash"];
         [defaults synchronize];
@@ -290,7 +290,7 @@
     
     if (!_tokenHash) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         NSString *tokenHash = [defaults objectForKey:@"tokenHash"];
         
         if (!tokenHash) {
@@ -322,7 +322,7 @@
     
     if (!_lastAuth) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         _lastAuth = [defaults objectForKey:@"lastAuth"];
         
     }
@@ -335,7 +335,7 @@
     
     if (!_stcTabs) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         _stcTabs = [defaults objectForKey:@"stcTabs"];
         
     }
@@ -349,7 +349,7 @@
         
         _stcTabs = stcTabs;
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:stcTabs forKey:@"stcTabs"];
         [defaults synchronize];
         
@@ -361,7 +361,7 @@
     
     if (!_iSisDB) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         id iSisDB = [defaults objectForKey:@"iSisDB"];
         
         if ([iSisDB isKindOfClass:[NSString class]]) {
@@ -379,7 +379,7 @@
     
     if (iSisDB != _iSisDB) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:iSisDB forKey:@"iSisDB"];
         [defaults synchronize];
         
@@ -393,7 +393,7 @@
     
     if (!_rolesResponse) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         id rolesResponse = [defaults objectForKey:@"rolesResponse"];
         
         if ([rolesResponse isKindOfClass:[NSDictionary class]]) {
@@ -409,7 +409,7 @@
     
     if (rolesResponse != _rolesResponse) {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:rolesResponse forKey:@"rolesResponse"];
         [defaults synchronize];
         

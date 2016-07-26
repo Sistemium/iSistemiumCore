@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "STMRequestAuthenticatable.h"
+#import "STMUserDefaults.h"
 
 @interface STMCoreAuthController : NSObject <STMRequestAuthenticatable>
 

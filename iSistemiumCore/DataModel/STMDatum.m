@@ -98,7 +98,7 @@
         [self setPrimitiveValue:ts forKey:@"deviceCts"];
         [self setPrimitiveValue:ts forKey:@"deviceTs"];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         NSNumber *largestId = [defaults objectForKey:@"largestId"];
         
         if (!largestId) {

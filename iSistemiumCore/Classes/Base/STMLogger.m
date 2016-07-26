@@ -132,7 +132,7 @@
 
 - (void)requestDefaults {
     
-    NSDictionary *defaultsDic = @{@"userDefault": [NSUserDefaults standardUserDefaults].dictionaryRepresentation};
+    NSDictionary *defaultsDic = @{@"userDefault": [STMUserDefaults standardUserDefaults].dictionaryRepresentation};
 
     if (defaultsDic) {
         
@@ -294,7 +294,7 @@
 
 - (void)saveLogMessageDictionary:(NSDictionary *)logMessageDic {
 
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     
     NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
     NSMutableArray *loggerDefaultsMutable = (loggerDefaults) ? loggerDefaults.mutableCopy : @[].mutableCopy;
@@ -310,7 +310,7 @@
     
     NSLog(@"saveLogMessageDictionaryToDocument");
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     
     NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
 

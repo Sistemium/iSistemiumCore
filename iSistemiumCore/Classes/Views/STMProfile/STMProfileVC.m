@@ -411,7 +411,7 @@
 
 - (void)updateSyncDatesLabels {
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     
     NSString *key = [@"sendDate" stringByAppendingString:[STMCoreAuthController authController].userID];
     NSString *sendDateString = [defaults objectForKey:key];
