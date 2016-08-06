@@ -124,6 +124,8 @@
 
 - (NSString *)webViewUrlString {
     
+    return @"http://maxbook.local:3000";
+    //    urlString = @"http://maxbook.local:3000/#/orders";
     //return @"https://isissales.sistemium.com/";
     
     if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
@@ -204,8 +206,6 @@
 }
 
 - (void)loadURLString:(NSString *)urlString {
-    
-//    urlString = @"http://maxbook.local:3000/#/orders";
     
     NSURL *url = [NSURL URLWithString:urlString];
     [self loadURL:url];
@@ -688,43 +688,54 @@
     
     if (!self.waitingPhoto) {
         
-        self.waitingPhoto = YES;
-        
         NSDictionary *parameters = message.body;
         
         NSString *entityName = parameters[@"entityName"];
         self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-        self.takePhotoMessageParameters = parameters;
-        self.takePhotoCallbackJSFunction = parameters[@"callback"];
-        self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
         
-        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:self.photoEntityName]) {
         
-            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                       withObject:@(UIImagePickerControllerSourceTypeCamera)
-                       afterDelay:0];
+            self.waitingPhoto = YES;
 
-        } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-
-            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                       withObject:@(UIImagePickerControllerSourceTypePhotoLibrary)
-                       afterDelay:0];
-
-        } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+            self.takePhotoMessageParameters = parameters;
+            self.takePhotoCallbackJSFunction = parameters[@"callback"];
+            self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
             
-            [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                       withObject:@(UIImagePickerControllerSourceTypeSavedPhotosAlbum)
-                       afterDelay:0];
-            
+            if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+                
+                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                           withObject:@(UIImagePickerControllerSourceTypeCamera)
+                           afterDelay:0];
+                
+            } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+                
+                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                           withObject:@(UIImagePickerControllerSourceTypePhotoLibrary)
+                           afterDelay:0];
+                
+            } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+                
+                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
+                           withObject:@(UIImagePickerControllerSourceTypeSavedPhotosAlbum)
+                           afterDelay:0];
+                
+            } else {
+                
+                self.waitingPhoto = NO;
+                
+                NSString *message = [NSString stringWithFormat:@"have no one available source types"];
+                [self callbackWithData:message
+                            parameters:self.takePhotoMessageParameters
+                    jsCallbackFunction:self.takePhotoCallbackJSFunction];
+                
+            }
+
         } else {
             
-            self.waitingPhoto = NO;
+            NSString *error = [NSString stringWithFormat:@"local data model have not entity with name %@", self.photoEntityName];
+            [self callbackWithError:error
+                         parameters:parameters];
             
-            NSString *message = [NSString stringWithFormat:@"have no one available source types"];
-            [self callbackWithData:message
-                        parameters:self.takePhotoMessageParameters
-                jsCallbackFunction:self.takePhotoCallbackJSFunction];
-
         }
         
     }
@@ -1118,15 +1129,23 @@
     STMCorePhoto *photoObject = [STMCorePhotosController newPhotoObjectWithEntityName:self.photoEntityName
                                                                             photoData:UIImageJPEGRepresentation(image, jpgQuality)];
     
-    [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
+    if (photoObject) {
     
-    NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
-                                                                             withNulls:YES
-                                                                        withBinaryData:NO];
-    
-    [self callbackWithData:@[photoObjectDic]
-                parameters:self.takePhotoMessageParameters
-        jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
+        
+        NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
+                                                                                 withNulls:YES
+                                                                            withBinaryData:NO];
+        
+        [self callbackWithData:@[photoObjectDic]
+                    parameters:self.takePhotoMessageParameters
+            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+
+    } else {
+        
+        
+        
+    }
     
 }
 

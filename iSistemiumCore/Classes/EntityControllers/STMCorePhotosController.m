@@ -127,7 +127,10 @@
         return photoObject;
         
     } else {
+        
+        NSLog(@"have no entity with name %@ or photoData is empty", entityName);
         return nil;
+        
     }
     
 }
