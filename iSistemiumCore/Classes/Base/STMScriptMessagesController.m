@@ -90,7 +90,7 @@
 }
 
 + (NSArray <NSString *> *)comparisonOperators {
-    return @[@"==", @"!=", @">=", @"<=", @">", @"<"];
+    return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like"];
 }
 
 
@@ -259,9 +259,9 @@
                                                                               attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
                                                                            relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships {
     
-    if (![[self comparisonOperators] containsObject:compOp]) {
+    if (![[self comparisonOperators] containsObject:compOp.lowercaseString]) {
         
-        NSLog(@"comparison operator should be '==', '!=', '>=', '<=', '>' or '<', not %@", compOp);
+        NSLog(@"comparison operator should be '==', '!=', '>=', '<=', '>', '<' or 'like', not %@", compOp);
         return nil;
         
     }
