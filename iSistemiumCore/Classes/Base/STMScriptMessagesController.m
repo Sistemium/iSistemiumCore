@@ -90,7 +90,7 @@
 }
 
 + (NSArray <NSString *> *)comparisonOperators {
-    return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like"];
+    return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like", @"likei"];
 }
 
 
@@ -261,7 +261,7 @@
     
     if (![[self comparisonOperators] containsObject:compOp.lowercaseString]) {
         
-        NSLog(@"comparison operator should be '==', '!=', '>=', '<=', '>', '<' or 'like', not %@", compOp);
+        NSLog(@"comparison operator should be '==', '!=', '>=', '<=', '>', '<', 'like' or 'likei', not %@", compOp);
         return nil;
         
     }
@@ -318,6 +318,19 @@
     
     NSString *subpredicateString = @"";
     __kindof NSObject *argument = [NSNull null];
+    
+    if ([value isKindOfClass:[NSString class]]) {
+        value = [(NSString *)value stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    }
+
+    compOp = compOp.lowercaseString;
+    
+    if ([compOp hasPrefix:@"like"]) {
+        
+        if ([compOp hasSuffix:@"i"]) compOp = @"like[cd]";
+        if (value) value = [NSString stringWithFormat:@"*%@*", value];
+        
+    }
     
     if (value) {
         
