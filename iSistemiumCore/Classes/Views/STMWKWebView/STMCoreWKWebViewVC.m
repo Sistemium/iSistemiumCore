@@ -554,11 +554,14 @@
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
-    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
+//    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
     
-    [self callbackWithData:errorString
-                parameters:parameters
-        jsCallbackFunction:callbackJSFunction];
+//    [self callbackWithData:errorString
+//                parameters:parameters
+//        jsCallbackFunction:callbackJSFunction];
+    
+    [self callbackWithError:errorString
+                 parameters:parameters];
 
     if (xid) {
         
@@ -723,10 +726,12 @@
                 
                 self.waitingPhoto = NO;
                 
-                NSString *message = [NSString stringWithFormat:@"have no one available source types"];
-                [self callbackWithData:message
-                            parameters:self.takePhotoMessageParameters
-                    jsCallbackFunction:self.takePhotoCallbackJSFunction];
+                NSString *message = @"have no one available source types";
+                [self callbackWithError:message
+                             parameters:self.takePhotoMessageParameters];
+//                [self callbackWithData:message
+//                            parameters:self.takePhotoMessageParameters
+//                    jsCallbackFunction:self.takePhotoCallbackJSFunction];
                 
             }
 
@@ -1053,9 +1058,11 @@
         self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        [self callbackWithData:message
-                    parameters:self.takePhotoMessageParameters
-            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+//        [self callbackWithData:message
+//                    parameters:self.takePhotoMessageParameters
+//            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        [self callbackWithError:message
+                     parameters:self.takePhotoMessageParameters];
         
     }
 
@@ -1116,10 +1123,13 @@
     
     [self imagePickerWasDissmised:picker];
 
-    [self callbackWithData:@[@"imagePickerControllerDidCancel"]
-                parameters:self.takePhotoMessageParameters
-        jsCallbackFunction:self.takePhotoCallbackJSFunction];
+//    [self callbackWithData:@[@"imagePickerControllerDidCancel"]
+//                parameters:self.takePhotoMessageParameters
+//        jsCallbackFunction:self.takePhotoCallbackJSFunction];
 
+    [self callbackWithError:@"imagePickerControllerDidCancel"
+                 parameters:self.takePhotoMessageParameters];
+    
 }
 
 - (void)saveImage:(UIImage *)image {
@@ -1174,9 +1184,11 @@
         
         NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
-        [self callbackWithData:errorString
-                    parameters:parameters
-            jsCallbackFunction:self.checkinCallbackJSFunction];
+//        [self callbackWithData:errorString
+//                    parameters:parameters
+//            jsCallbackFunction:self.checkinCallbackJSFunction];
+        [self callbackWithError:errorString
+                     parameters:parameters];
         
         [self.checkinMessageParameters removeObjectForKey:requestId];
         
@@ -1188,7 +1200,11 @@
 #pragma mark - STMSoundCallbackable
 
 - (void)didFinishSpeaking {
-    [self callbackWithData:@[@"didFinishSpeaking"] parameters:nil jsCallbackFunction:self.soundCallbackJSFunction];
+    
+    [self callbackWithData:@[@"didFinishSpeaking"]
+                parameters:nil
+        jsCallbackFunction:self.soundCallbackJSFunction];
+    
 }
 
 
@@ -1318,7 +1334,11 @@
 - (void)powerButtonPressedOnBarCodeScanner:(STMBarCodeScanner *)scanner {
     
     if (self.isInActiveTab) {
-        [self callbackWithData:@[@"powerButtonPressed"] parameters:nil jsCallbackFunction:self.scannerPowerButtonJSFunction];
+        
+        [self callbackWithData:@[@"powerButtonPressed"]
+                    parameters:nil
+            jsCallbackFunction:self.scannerPowerButtonJSFunction];
+        
     }
     
 }
