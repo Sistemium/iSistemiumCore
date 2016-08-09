@@ -2028,9 +2028,11 @@
     NSDictionary *options = parameters[@"options"];
     NSUInteger pageSize = [options[@"pageSize"] integerValue];
     NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
+    NSString *orderBy = options[@"sortBy"];
+    if (!orderBy) orderBy = @"id";
     
     NSArray *objectsArray = [self objectsForEntityName:entityName
-                                               orderBy:@"id"
+                                               orderBy:orderBy
                                              ascending:YES
                                             fetchLimit:pageSize
                                            fetchOffset:(pageSize * startPage)
@@ -2199,30 +2201,56 @@
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
         STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
+
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+
+        request.fetchLimit = fetchLimit;
+        request.fetchOffset = fetchOffset;
+        request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
         
+        NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
+        BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
+        
+        SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
+        
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
+                                                         ascending:ascending
+                                                          selector:sortSelector];
+        
+        BOOL afterRequestSort = NO;
+
         if ([entity.propertiesByName.allKeys containsObject:orderBy]) {
             
-            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:orderBy ascending:ascending selector:@selector(compare:)]];
-            request.fetchLimit = fetchLimit;
-            request.fetchOffset = fetchOffset;
+            request.sortDescriptors = @[sortDescriptor];
             
-            request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
+        } else if ([NSClassFromString(entity.managedObjectClassName) instancesRespondToSelector:NSSelectorFromString(orderBy)]) {
             
-            NSError *fetchError;
-            NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&fetchError];
-            
-            if (!fetchError) {
-                return result;
-            } else {
-                errorMessage = fetchError.localizedDescription;
-            }
+            afterRequestSort = YES;
             
         } else {
             
-            errorMessage = [NSString stringWithFormat:@"%@: property %@ not found", entityName, orderBy];
+            errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
             
+            sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                           ascending:ascending
+                                                            selector:@selector(compare:)];
+            request.sortDescriptors = @[sortDescriptor];
+
         }
+        
+        NSError *fetchError;
+        NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&fetchError];
+        
+        if (afterRequestSort) {
+            result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
+        }
+        
+        if (!fetchError) {
+            return result;
+        } else {
+            errorMessage = fetchError.localizedDescription;
+        }
+
         
     } else {
         
