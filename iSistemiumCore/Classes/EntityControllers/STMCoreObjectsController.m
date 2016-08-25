@@ -1143,7 +1143,7 @@
     
     NSManagedObjectContext *context = [self document].managedObjectContext;
     
-    NSMutableSet *objectsSet = [NSMutableSet set];
+    NSMutableSet *flushingSet = [NSMutableSet set];
     
     for (NSString *entityName in entityDic.allKeys) {
         
@@ -1165,19 +1165,19 @@
 
         NSArray *fetchResult = [context executeFetchRequest:request error:&error];
         
-        for (NSManagedObject *object in fetchResult) [self checkObject:object forAddingTo:objectsSet];
+        for (NSManagedObject *object in fetchResult) [self checkObject:object forAddingToFlushingSet:flushingSet];
 
     }
 
-    if (objectsSet.count > 0) {
+    if (flushingSet.count > 0) {
 
-        for (NSManagedObject *object in objectsSet) {
+        for (NSManagedObject *object in flushingSet) {
             [self removeObject:object inContext:context];
         }
         
         NSTimeInterval flushingTime = [[NSDate date] timeIntervalSinceDate:startFlushing];
         
-        NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)objectsSet.count, flushingTime];
+        NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingSet.count, flushingTime];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
         
         [self sharedController].isInFlushingProcess = YES;
@@ -1195,24 +1195,24 @@
     
 }
 
-+ (void)checkObject:(NSManagedObject *)object forAddingTo:(NSMutableSet *)objectsSet {
++ (void)checkObject:(NSManagedObject *)object forAddingToFlushingSet:(NSMutableSet *)flushingSet {
     
     if (![self isWaitingToSyncForObject:object]) {
         
         if ([object isKindOfClass:[STMCoreLocation class]]) {
-            [self checkLocation:(STMCoreLocation *)object forAddingTo:objectsSet];
+            [self checkLocation:(STMCoreLocation *)object forAddingToFlushingSet:flushingSet];
         } else {
-            [objectsSet addObject:object];
+            [flushingSet addObject:object];
         }
 
     }
 
 }
 
-+ (void)checkLocation:(STMCoreLocation *)location forAddingTo:(NSMutableSet *)objectsSet {
++ (void)checkLocation:(STMCoreLocation *)location forAddingToFlushingSet:(NSMutableSet *)flushingSet {
     
     if (location.photos.count == 0) {
-        [objectsSet addObject:location];
+        [flushingSet addObject:location];
     } else {
         NSLog(@"location %@ linked with picture, flush declined", location.xid);
     }
