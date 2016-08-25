@@ -1165,7 +1165,7 @@
 
         NSArray *fetchResult = [context executeFetchRequest:request error:&error];
         
-        for (NSManagedObject *object in fetchResult) [self checkObject:object forAddingToFlushingSet:flushingSet];
+        for (STMDatum *object in fetchResult) [self checkObject:object forAddingToFlushingSet:flushingSet];
 
     }
 
@@ -1195,7 +1195,7 @@
     
 }
 
-+ (void)checkObject:(NSManagedObject *)object forAddingToFlushingSet:(NSMutableSet *)flushingSet {
++ (void)checkObject:(STMDatum *)object forAddingToFlushingSet:(NSMutableSet *)flushingSet {
     
     if (![self isWaitingToSyncForObject:object]) {
         
