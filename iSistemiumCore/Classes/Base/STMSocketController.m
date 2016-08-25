@@ -1448,6 +1448,7 @@
     if (!_socketUrl) {
         _socketUrl = [STMCoreSettingsController stringValueForSettings:@"socketUrl" forGroup:@"syncer"];
     }
+//    _socketUrl = @"http://lamac3.local:8000/socket.io-client";
     return _socketUrl;
     
 }
