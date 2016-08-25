@@ -1199,22 +1199,43 @@
     
     if (![self isWaitingToSyncForObject:object]) {
         
-        if ([object isKindOfClass:[STMCoreLocation class]]) {
-            [self checkLocation:(STMCoreLocation *)object forAddingToFlushingSet:flushingSet];
-        } else {
-            [flushingSet addObject:object];
+        BOOL okToFlush = YES;
+        
+        NSDictionary *relsByName = object.entity.relationshipsByName;
+        
+        for (NSString *relKey in relsByName.allKeys) {
+            
+            NSRelationshipDescription *relationship = relsByName[relKey];
+            
+            if (relationship.inverseRelationship.isToMany) continue;
+
+            id objectPropertyValue = [object valueForKey:relKey];
+            
+            if (!objectPropertyValue) continue;
+
+            if ([objectPropertyValue respondsToSelector:@selector(count)]) {
+                
+                okToFlush = ([objectPropertyValue count] == 0);
+                
+                if (!okToFlush) {
+                    
+                    NSLog(@"%@ %@ have %@ %@, flush declined", object.entity.name, object.xid, @([objectPropertyValue count]), relKey);
+                    break;
+                    
+                }
+                
+            } else {
+                
+                okToFlush = NO;
+                NSLog(@"%@ %@ have %@, flush declined", object.entity.name, object.xid, relKey);
+                break;
+                
+            }
+            
         }
-
-    }
-
-}
-
-+ (void)checkLocation:(STMCoreLocation *)location forAddingToFlushingSet:(NSMutableSet *)flushingSet {
-    
-    if (location.photos.count == 0) {
-        [flushingSet addObject:location];
-    } else {
-        NSLog(@"location %@ linked with picture, flush declined", location.xid);
+        
+        if (okToFlush) [flushingSet addObject:object];
+        
     }
 
 }
