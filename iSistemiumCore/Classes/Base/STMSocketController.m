@@ -344,6 +344,9 @@
 
                 } else {
                     
+                    NSString *message = [NSString stringWithFormat:@"skip %@ %@, already trying to sync", syncObject.entity.name, syncObject.xid];
+                    NSLog(message);
+                    
                     [syncDataArray removeObject:syncObject];
                     [self sendObjectFromSyncArray:syncDataArray];
                     
@@ -411,6 +414,9 @@
                 }*/
                 
                 [sc.doNotSyncObjects addObject:(NSData *)syncObject.xid];
+                
+                NSString *log = [NSString stringWithFormat:@"%@ %@ have unsynced relation to %@", syncObject.entity.name, syncObject.xid, relObject.entity.name];
+                NSLog(log);
                 
                 shouldFindNext = YES;
                 break;
