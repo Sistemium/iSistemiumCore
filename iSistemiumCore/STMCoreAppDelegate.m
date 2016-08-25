@@ -174,8 +174,11 @@
     __block UIBackgroundTaskIdentifier bgTask;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
+        
         NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask: bgTask];
+        [application endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+        
     }];
     
     NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
@@ -247,8 +250,9 @@
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
         NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask: bgTask];
-        
+        [application endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+
         if (!handlerCompleted) {
             handler(UIBackgroundFetchResultFailed);
         }
@@ -336,7 +340,9 @@
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
         NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask: bgTask];
+        [application endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+
         completionHandler(UIBackgroundFetchResultFailed);
         
     }];
