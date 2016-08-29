@@ -1772,11 +1772,11 @@
     
 }
 
-+ (void)processingKeysForUpdatingObject:(STMDatum *)object withObjectData:(NSDictionary *)objectData error:(NSError **)error {
++ (BOOL)processingKeysForUpdatingObject:(STMDatum *)object withObjectData:(NSDictionary *)objectData error:(NSError **)error {
     
     objectData = [self normalizeObjectData:objectData forObject:object error:error];
     
-    if (*error) return;
+    if (*error) return NO;
     
     NSString *entityName = object.entity.name;
     
@@ -1848,6 +1848,8 @@
         }
         
     }
+    
+    return (error == nil);
     
 }
 
@@ -2070,13 +2072,15 @@
 
 }
 
-+ (void)error:(NSError **)error withMessage:(NSString *)errorMessage {
++ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
     if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
                                                         code:1
                                                     userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    
+    return (error == nil);
 
 }
 

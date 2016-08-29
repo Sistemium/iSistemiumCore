@@ -427,13 +427,15 @@
     
 }
 
-+ (void)error:(NSError **)error withMessage:(NSString *)errorMessage {
++ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
     if (bundleId && error) *error = [NSError errorWithDomain:bundleId
                                                         code:1
                                                     userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    
+    return (error == nil);
     
 }
 

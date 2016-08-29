@@ -17,13 +17,15 @@
     return [STMCoreSessionManager sharedManager].currentSession;
 }
 
-+ (void)error:(NSError **)error withMessage:(NSString *)errorMessage {
++ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
     if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
                                                         code:1
                                                     userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    
+    return (error == nil);
     
 }
 
@@ -40,7 +42,7 @@
     
 }
 
-+ (void)receiveRemoteCommands:(NSDictionary *)remoteCommands error:(NSError *__autoreleasing *)error {
++ (BOOL)receiveRemoteCommands:(NSDictionary *)remoteCommands error:(NSError *__autoreleasing *)error {
     
     NSString *errorMessage = nil;
     
@@ -88,13 +90,18 @@
 
     if (errorMessage) [self error:error withMessage:errorMessage];
     
+    return (error == nil);
+    
 }
 
-+ (void)performMethod:(NSString *)methodName onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
++ (BOOL)performMethod:(NSString *)methodName onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
+    
     [self performMethod:methodName withObject:nil onClass:theClass error:error];
+    return (error == nil);
+    
 }
 
-+ (void)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
++ (BOOL)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
 
     SEL selector = NSSelectorFromString(methodName);
     
@@ -114,6 +121,8 @@
         [self error:error withMessage:logMessage];
         
     }
+    
+    return (error == nil);
 
 }
 
