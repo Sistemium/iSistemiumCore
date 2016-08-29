@@ -517,7 +517,7 @@
 
 - (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy checkinData:(NSDictionary *)checkinData requestId:(NSNumber *)requestId delegate:(id <STMCheckinDelegate>)delegate {
     
-    if (!delegate && !requestId) return;
+    if (!delegate || !requestId) return;
     if (!checkinData) checkinData = @{};
     
     self.checkinAccuracy = checkinAccuracy.doubleValue;
