@@ -1159,7 +1159,7 @@
         if (!xid) xid = [NSData data];
         
         [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:NO];
+        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":[STMCoreObjectsController requestedFantomXid]} successfully:NO];
 
     }
     
@@ -1315,10 +1315,20 @@
 
     if (!entityName) entityName = @"";
     if (!xid) xid = [NSData data];
+    
+    if ([xid isEqual:[STMCoreObjectsController requestedFantomXid]]) {
+        
+        [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
+            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:success];
+        }];
 
-    [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:success];
-    }];
+    } else {
+        
+        NSLog(@"Wrong fantom xid in server response, get %@ instead of %@", xid, [STMCoreObjectsController requestedFantomXid]);
+        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":[STMCoreObjectsController requestedFantomXid]} successfully:NO];
+
+    }
+
     
 }
 
