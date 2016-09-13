@@ -12,7 +12,7 @@
 
 + (void)receiveRemoteCommands:(NSDictionary *)remoteCommands;
 
-+ (void)receiveRemoteCommands:(NSDictionary *)remoteCommands
++ (BOOL)receiveRemoteCommands:(NSDictionary *)remoteCommands
                         error:(NSError **)error;
 
 
