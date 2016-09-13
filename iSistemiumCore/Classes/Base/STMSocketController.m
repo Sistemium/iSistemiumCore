@@ -1410,10 +1410,10 @@
         NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
         NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl options:@{@"voipEnabled"       : @YES,
-                                                                                               @"log"               : @NO,
-                                                                                               @"forceWebsockets"   : @YES,
-                                                                                               @"path"              : path}];
+        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl config:@{@"voipEnabled"       : @YES,
+                                                                                              @"log"               : @NO,
+                                                                                              @"forceWebsockets"   : @YES,
+                                                                                              @"path"              : path}];
 
         NSLog(@"init socket %@", socket);
 
