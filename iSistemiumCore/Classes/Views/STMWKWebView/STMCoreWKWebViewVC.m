@@ -9,6 +9,8 @@
 #import "STMCoreWKWebViewVC.h"
 #import <WebKit/WebKit.h>
 
+#import <SSZipArchive/SSZipArchive.h>
+
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 #import "STMCoreAuthController.h"
@@ -123,9 +125,8 @@
 }
 
 - (NSString *)webViewUrlString {
-    
-//    return @"http://maxbook.local:3000";
-    //    urlString = @"http://maxbook.local:3000/#/orders";
+
+    return @"http://maxbook.local:3000";
     //return @"https://isissales.sistemium.com/";
     
     if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
@@ -235,6 +236,8 @@
 
 - (void)webViewInit {
     
+    [self loadLocalHTML];
+    
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     
     WKUserContentController *contentController = [[WKUserContentController alloc] init];
@@ -252,6 +255,36 @@
     
     self.webView.navigationDelegate = self;
     [self loadWebView];
+    
+}
+
+- (void)loadLocalHTML {
+    
+    NSURL *localHTMLZipUrl = [NSURL URLWithString:@"http://maxbook.local/~grimax/test/iSisSalesWeb.zip"];
+    NSData *localHTMLZipData = [NSData dataWithContentsOfURL:localHTMLZipUrl];
+    
+    NSString *zipPath = [STMFunctions absolutePathForPath:@"iSisSalesWeb.zip"];
+    
+    if ([localHTMLZipData writeToFile:zipPath
+                              options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                error:nil]) {
+    
+        NSString *destPath = [STMFunctions absolutePathForPath:@"/localHTML"];
+        
+        if (![[NSFileManager defaultManager] fileExistsAtPath:destPath]) {
+
+            [[NSFileManager defaultManager] createDirectoryAtPath:destPath
+                                      withIntermediateDirectories:NO
+                                                       attributes:nil
+                                                            error:nil];
+
+            [SSZipArchive unzipFileAtPath:zipPath toDestination:destPath];
+
+        }
+
+    } else {
+    
+    }
     
 }
 
