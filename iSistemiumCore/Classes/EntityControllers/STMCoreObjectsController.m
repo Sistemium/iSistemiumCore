@@ -1466,7 +1466,7 @@
 
 }
 
-+ (NSString *)requestedFantomXid {
++ (NSData *)requestedFantomXid {
     return [self sharedController].requestedFantomXid;
 }
 
