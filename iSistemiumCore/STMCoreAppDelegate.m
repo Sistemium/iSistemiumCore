@@ -254,7 +254,12 @@
         bgTask = UIBackgroundTaskInvalid;
 
         if (!handlerCompleted) {
-            handler(UIBackgroundFetchResultFailed);
+
+            NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
+            [self tryCatchFetchResultHandler:handler
+                                  withResult:UIBackgroundFetchResultFailed
+                                  methodName:methodName];
+
         }
         
     }];
@@ -267,8 +272,12 @@
     [self routeNotificationUserInfo:userInfo completionHandler:^(UIBackgroundFetchResult result) {
         
         handlerCompleted = YES;
-        handler(result);
-        
+
+        NSString *methodName = [NSString stringWithFormat:@"%@ in routeNotificationUserInfo:completionHandler:", NSStringFromSelector(_cmd)];
+        [self tryCatchFetchResultHandler:handler
+                              withResult:result
+                              methodName:methodName];
+
     }];
     
 //    [self showTestLocalNotification];
@@ -301,8 +310,12 @@
                 if (!handlerCompleted) {
 
                     handlerCompleted = YES;
-                    handler(result);
-                    
+
+                    NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:1", NSStringFromSelector(_cmd)];
+                    [self tryCatchFetchResultHandler:handler
+                                          withResult:result
+                                          methodName:methodName];
+
                 }
                 
             }];
@@ -320,8 +333,12 @@
             if (!handlerCompleted) {
                 
                 handlerCompleted = YES;
-                handler(result);
-                
+
+                NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:2", NSStringFromSelector(_cmd)];
+                [self tryCatchFetchResultHandler:handler
+                                      withResult:result
+                                      methodName:methodName];
+
             }
             
         }];
@@ -343,7 +360,10 @@
         [application endBackgroundTask:bgTask];
         bgTask = UIBackgroundTaskInvalid;
 
-        completionHandler(UIBackgroundFetchResultFailed);
+        NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
+        [self tryCatchFetchResultHandler:completionHandler
+                              withResult:UIBackgroundFetchResultFailed
+                              methodName:methodName];
         
     }];
     
@@ -354,6 +374,23 @@
     
     [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
 
+}
+
+- (void)tryCatchFetchResultHandler:(void (^)(UIBackgroundFetchResult result))handler withResult:(UIBackgroundFetchResult)result methodName:(NSString *)methodName {
+    
+    NSLogMethodName;
+    
+    @try {
+        
+        handler(result);
+        
+    } @catch (NSException *exception) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"tryCatchFetchResultHandler\n%@\nException: %@\nStack trace: %@", methodName, exception.description, exception.callStackSymbols];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+        
+    }
+    
 }
 
 - (void)setupWindow {
