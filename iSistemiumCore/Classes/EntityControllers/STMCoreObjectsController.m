@@ -260,41 +260,46 @@
     
     if ([dataModelEntityNames containsObject:entityName]) {
         
-        NSString *xid = dictionary[@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+        NSString *xidString = dictionary[@"id"];
+        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+        
+        STMDatum *object = nil;
+        
+        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+            
+            object = [[[self session] settingsController] settingForDictionary:dictionary];
+            
+        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+            
+            NSString *internalName = dictionary[@"name"];
+            object = [STMEntityController entityWithName:internalName];
+            
+        }
+        
+        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
         
         STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
         
-        if (![recordStatus.isRemoved boolValue]) {
-            
-            NSManagedObject *object = nil;
-            
-            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-                
-                object = [[[self session] settingsController] settingForDictionary:dictionary];
-                
-            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-                
-                NSString *internalName = dictionary[@"name"];
-                object = [STMEntityController entityWithName:internalName];
-                
-            }
-            
-            if (!object) {
-                object = (xid) ? [self objectForEntityName:entityName andXidString:xid] : [self newObjectForEntityName:entityName];
-            }
-            
+        if (!recordStatus.isRemoved.boolValue) {
+        
+            if (!object) object = [self newObjectForEntityName:entityName];
+
             if (![self isWaitingToSyncForObject:object]) {
-                
+
                 [object setValue:@NO forKey:@"isFantom"];
                 [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
-                
+
             }
             
         } else {
             
-            NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xid);
-            
+            if (object) {
+
+                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
+                [self removeIsRemovedRecordStatusAffectedObject:object];
+                
+            }
+
         }
         
         completionHandler(YES);
@@ -606,13 +611,7 @@
         if (affectedObject) {
             
             if (recordStatus.isRemoved.boolValue) {
-                
-                [self removeObject:affectedObject];
-                
-                if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
-                    [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
-                }
-                
+                [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
             }
             
         }
@@ -627,6 +626,18 @@
             [STMClientDataController checkAppVersion];
         }
         
+    }
+
+}
+
++ (void)removeIsRemovedRecordStatusAffectedObject:(STMDatum *)affectedObject {
+    
+    NSLog(@"object %@ with xid %@ will removed (have recordStatus.isRemoved)", affectedObject.entity.name, affectedObject.xid);
+    
+    [self removeObject:affectedObject];
+    
+    if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
+        [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
     }
 
 }
@@ -785,7 +796,7 @@
     
 }
 
-+ (NSManagedObject *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
++ (STMDatum *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -793,7 +804,7 @@
         
         NSData *xidData = [STMFunctions xidDataFromXidString:xid];
 
-        NSManagedObject *object = [self objectForXid:xidData entityName:entityName];
+        STMDatum *object = [self objectForXid:xidData entityName:entityName];
         
         if (object) {
             
