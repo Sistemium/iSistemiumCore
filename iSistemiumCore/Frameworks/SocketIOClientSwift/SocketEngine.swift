@@ -24,7 +24,7 @@
 
 import Foundation
 
-public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWebsocket {
+public final class SocketEngine : NSObject, NSURLSessionDelegate, SocketEnginePollable, SocketEngineWebsocket {
     public let emitQueue = dispatch_queue_create("com.socketio.engineEmitQueue", DISPATCH_QUEUE_SERIAL)
     public let handleQueue = dispatch_queue_create("com.socketio.engineHandleQueue", DISPATCH_QUEUE_SERIAL)
     public let parseQueue = dispatch_queue_create("com.socketio.engineParseQueue", DISPATCH_QUEUE_SERIAL)
@@ -80,11 +80,11 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
     private var selfSigned = false
     private var voipEnabled = false
 
-    public init(client: SocketEngineClient, url: NSURL, options: Set<SocketIOClientOption>) {
+    public init(client: SocketEngineClient, url: NSURL, config: SocketIOClientConfiguration) {
         self.client = client
         self.url = url
         
-        for option in options {
+        for option in config {
             switch option {
             case let .ConnectParams(params):
                 connectParams = params
@@ -102,6 +102,10 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
                 forceWebsockets = force
             case let .Path(path):
                 socketPath = path
+                
+                if !socketPath.hasSuffix("/") {
+                    socketPath += "/"
+                }
             case let .VoipEnabled(enable):
                 voipEnabled = enable
             case let .Secure(secure):
@@ -117,11 +121,13 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
         
         super.init()
         
+        sessionDelegate = sessionDelegate ?? self
+        
         (urlPolling, urlWebSocket) = createURLs()
     }
     
     public convenience init(client: SocketEngineClient, url: NSURL, options: NSDictionary?) {
-        self.init(client: client, url: url, options: options?.toSocketOptionsSet() ?? [])
+        self.init(client: client, url: url, config: options?.toSocketConfiguration() ?? [])
     }
     
     deinit {
@@ -131,38 +137,28 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
     }
     
     private func checkAndHandleEngineError(msg: String) {
-        guard let stringData = msg.dataUsingEncoding(NSUTF8StringEncoding,
-            allowLossyConversion: false) else { return }
-        
         do {
-            if let dict = try NSJSONSerialization.JSONObjectWithData(stringData, options: .MutableContainers) as? NSDictionary {
-                guard let error = dict["message"] as? String else { return }
-                
-                /*
-                 0: Unknown transport
-                 1: Unknown sid
-                 2: Bad handshake request
-                 3: Bad request
-                 */
-                didError(error)
-            }
+            let dict = try msg.toNSDictionary()
+            guard let error = dict["message"] as? String else { return }
+            
+            /*
+             0: Unknown transport
+             1: Unknown sid
+             2: Bad handshake request
+             3: Bad request
+             */
+            didError(error)
         } catch {
             client?.engineDidError("Got unknown error from server \(msg)")
         }
     }
 
-    private func checkIfMessageIsBase64Binary(message: String) -> Bool {
-        if message.hasPrefix("b4") {
-            // binary in base64 string
-            let noPrefix = message[message.startIndex.advancedBy(2)..<message.endIndex]
-
-            if let data = NSData(base64EncodedString: noPrefix, options: .IgnoreUnknownCharacters) {
-                client?.parseEngineBinaryData(data)
-            }
-            
-            return true
-        } else {
-            return false
+    private func handleBase64(message: String) {
+        // binary in base64 string
+        let noPrefix = message[message.startIndex.advancedBy(2)..<message.endIndex]
+        
+        if let data = NSData(base64EncodedString: noPrefix, options: .IgnoreUnknownCharacters) {
+            client?.parseEngineBinaryData(data)
         }
     }
     
@@ -209,9 +205,7 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
             }
         }
         
-        dispatch_async(emitQueue) {
-            self.doLongPoll(reqPolling)
-        }
+        doLongPoll(reqPolling)
     }
 
     private func createURLs() -> (NSURL, NSURL) {
@@ -219,8 +213,8 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
             return (NSURL(), NSURL())
         }
 
-        let urlPolling = NSURLComponents(string: url.absoluteString)!
-        let urlWebSocket = NSURLComponents(string: url.absoluteString)!
+        let urlPolling = NSURLComponents(URL: url, resolvingAgainstBaseURL: true)!
+        let urlWebSocket = NSURLComponents(URL: url, resolvingAgainstBaseURL: true)!
         var queryString = ""
         
         urlWebSocket.path = socketPath
@@ -265,7 +259,7 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
             }
         }
 
-        ws?.queue = handleQueue
+        ws?.callbackQueue = handleQueue
         ws?.voipEnabled = voipEnabled
         ws?.delegate = self
         ws?.selfSignedSSL = selfSigned
@@ -363,39 +357,40 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
     }
 
     private func handleOpen(openData: String) {
-        let mesData = openData.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!
         do {
-            let json = try NSJSONSerialization.JSONObjectWithData(mesData,
-                options: NSJSONReadingOptions.AllowFragments) as? NSDictionary
-            if let sid = json?["sid"] as? String {
-                let upgradeWs: Bool
-
-                self.sid = sid
-                connected = true
-
-                if let upgrades = json?["upgrades"] as? [String] {
-                    upgradeWs = upgrades.contains("websocket")
-                } else {
-                    upgradeWs = false
-                }
-
-                if let pingInterval = json?["pingInterval"] as? Double, pingTimeout = json?["pingTimeout"] as? Double {
-                    self.pingInterval = pingInterval / 1000.0
-                    self.pingTimeout = pingTimeout / 1000.0
-                }
-
-                if !forcePolling && !forceWebsockets && upgradeWs {
-                    createWebsocketAndConnect()
-                }
-                
-                sendPing()
-                
-                if !forceWebsockets {
-                    doPoll()
-                }
-                
-                client?.engineDidOpen("Connect")
+            let json = try openData.toNSDictionary()
+            guard let sid = json["sid"] as? String else {
+                client?.engineDidError("Open packet contained no sid")
+                return
             }
+            
+            let upgradeWs: Bool
+            
+            self.sid = sid
+            connected = true
+            
+            if let upgrades = json["upgrades"] as? [String] {
+                upgradeWs = upgrades.contains("websocket")
+            } else {
+                upgradeWs = false
+            }
+            
+            if let pingInterval = json["pingInterval"] as? Double, let pingTimeout = json["pingTimeout"] as? Double {
+                self.pingInterval = pingInterval / 1000.0
+                self.pingTimeout = pingTimeout / 1000.0
+            }
+            
+            if !forcePolling && !forceWebsockets && upgradeWs {
+                createWebsocketAndConnect()
+            }
+            
+            sendPing()
+            
+            if !forceWebsockets {
+                doPoll()
+            }
+            
+            client?.engineDidOpen("Connect")
         } catch {
             didError("Error parsing open packet")
         }
@@ -420,11 +415,13 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
         
         let reader = SocketStringReader(message: message)
         let fixedString: String
+        
+        if message.hasPrefix("b4") {
+            return handleBase64(message)
+        }
 
         guard let type = SocketEnginePacketType(rawValue: Int(reader.currentCharacter) ?? -1) else {
-            if !checkIfMessageIsBase64Binary(message) {
-                checkAndHandleEngineError(message)
-            }
+            checkAndHandleEngineError(message)
             
             return
         }
@@ -461,7 +458,7 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
         invalidated = false
         session = NSURLSession(configuration: .defaultSessionConfiguration(),
             delegate: sessionDelegate,
-            delegateQueue: NSOperationQueue())
+            delegateQueue: NSOperationQueue.mainQueue())
         sid = ""
         waitingForPoll = false
         waitingForPost = false
@@ -552,5 +549,13 @@ public final class SocketEngine : NSObject, SocketEnginePollable, SocketEngineWe
         } else {
             flushProbeWait()
         }
+    }
+}
+
+extension SocketEngine {
+    public func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
+        DefaultSocketLogger.Logger.error("Engine URLSession became invalid", type: "SocketEngine")
+        
+        didError("Engine URLSession became invalid")
     }
 }
