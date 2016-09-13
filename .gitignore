@@ -6,3 +6,5 @@ Podfile.lock
 iSistemiumCore/Frameworks/ScanAPI/*
 
 *.xcbkptlist
+
+.DS_Store
