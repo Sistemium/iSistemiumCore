@@ -283,19 +283,6 @@
             
             NSString *internalName = dictionary[@"name"];
             object = [STMEntityController entityWithName:internalName];
-<<<<<<< HEAD
-=======
-            
-        }
-        
-        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
-        
-        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
-        
-        if (!recordStatus.isRemoved.boolValue) {
-            
-            if (!object) object = [self newObjectForEntityName:entityName];
->>>>>>> socketIOnew
             
         }
         
@@ -317,20 +304,12 @@
         } else {
             
             if (object) {
-<<<<<<< HEAD
 
-=======
-                
->>>>>>> socketIOnew
                 NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
                 [self removeIsRemovedRecordStatusAffectedObject:object];
                 
             }
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> socketIOnew
         }
         
         completionHandler(YES);
@@ -670,11 +649,7 @@
     if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
         [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
     }
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> socketIOnew
 }
 
 
