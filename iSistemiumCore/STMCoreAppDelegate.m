@@ -22,8 +22,9 @@
 
 #import "STMSocketController.h"
 #import "STMSoundController.h"
-#import "STMClientDataController.h"
+
 #import <AVFoundation/AVFoundation.h>
+
 
 @implementation STMCoreAppDelegate
 
