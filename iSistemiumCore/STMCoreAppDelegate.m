@@ -32,7 +32,7 @@
     
     [self startCrashlytics];
 
-    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUID]);
+    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
     
     NSString *logMessage = [NSString stringWithFormat:@"application didFinishLaunchingWithOptions"];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];

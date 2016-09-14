@@ -816,7 +816,7 @@
 
 + (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
 	
-    NSDictionary *params = @{@"deviceUUID"  : [STMFunctions UUIDStringFromUUIDData:[STMClientDataController deviceUUID]].uppercaseString/*,
+    NSDictionary *params = @{@"deviceUUID"  : [STMClientDataController deviceUUIDString]/*,
                              @"agentBuild"  : BUILD_VERSION*/};
     
     [self startReceiveDataFromResource:[self newsResourceString]

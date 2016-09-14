@@ -115,6 +115,10 @@
 
 }
 
++ (NSString *)deviceUUIDString {
+    return [STMFunctions UUIDStringFromUUIDData:[self deviceUUID]].uppercaseString;
+}
+
 + (NSNumber *)freeDiskSpace {
     
     uint64_t freeSpace = [STMFunctions freeDiskspace];
