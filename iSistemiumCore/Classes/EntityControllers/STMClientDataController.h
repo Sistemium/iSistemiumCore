@@ -15,7 +15,7 @@
 
 + (STMClientData *)clientData;
 
-+ (NSData *)deviceUUID;
++ (NSString *)deviceUUIDString;
 
 
 @end
