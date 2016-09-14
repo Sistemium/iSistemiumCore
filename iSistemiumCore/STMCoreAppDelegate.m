@@ -22,8 +22,9 @@
 
 #import "STMSocketController.h"
 #import "STMSoundController.h"
-#import "STMClientDataController.h"
+
 #import <AVFoundation/AVFoundation.h>
+
 
 @implementation STMCoreAppDelegate
 
@@ -31,7 +32,7 @@
     
     [self startCrashlytics];
 
-    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUID]);
+    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
     
     NSString *logMessage = [NSString stringWithFormat:@"application didFinishLaunchingWithOptions"];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];

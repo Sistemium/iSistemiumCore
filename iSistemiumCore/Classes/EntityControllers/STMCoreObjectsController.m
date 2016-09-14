@@ -46,6 +46,7 @@
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
 @property (nonatomic, strong) NSData *requestedFantomXid;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+@property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 
 
 @end
@@ -68,6 +69,15 @@
         _notFoundFantomsArray = @[].mutableCopy;
     }
     return _notFoundFantomsArray;
+    
+}
+
+- (NSMutableArray *)flushDeclinedObjectsArray {
+    
+    if (!_flushDeclinedObjectsArray) {
+        _flushDeclinedObjectsArray = @[].mutableCopy;
+    }
+    return _flushDeclinedObjectsArray;
     
 }
 
@@ -260,29 +270,29 @@
     
     if ([dataModelEntityNames containsObject:entityName]) {
         
-        NSString *xid = dictionary[@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+        NSString *xidString = dictionary[@"id"];
+        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+        
+        STMDatum *object = nil;
+        
+        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+            
+            object = [[[self session] settingsController] settingForDictionary:dictionary];
+            
+        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+            
+            NSString *internalName = dictionary[@"name"];
+            object = [STMEntityController entityWithName:internalName];
+            
+        }
+        
+        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
         
         STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
         
-        if (![recordStatus.isRemoved boolValue]) {
+        if (!recordStatus.isRemoved.boolValue) {
             
-            NSManagedObject *object = nil;
-            
-            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-                
-                object = [[[self session] settingsController] settingForDictionary:dictionary];
-                
-            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-                
-                NSString *internalName = dictionary[@"name"];
-                object = [STMEntityController entityWithName:internalName];
-                
-            }
-            
-            if (!object) {
-                object = (xid) ? [self objectForEntityName:entityName andXidString:xid] : [self newObjectForEntityName:entityName];
-            }
+            if (!object) object = [self newObjectForEntityName:entityName];
             
             if (![self isWaitingToSyncForObject:object]) {
                 
@@ -293,7 +303,12 @@
             
         } else {
             
-            NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xid);
+            if (object) {
+                
+                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
+                [self removeIsRemovedRecordStatusAffectedObject:object];
+                
+            }
             
         }
         
@@ -606,13 +621,7 @@
         if (affectedObject) {
             
             if (recordStatus.isRemoved.boolValue) {
-                
-                [self removeObject:affectedObject];
-                
-                if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
-                    [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
-                }
-                
+                [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
             }
             
         }
@@ -629,6 +638,18 @@
         
     }
 
+}
+
++ (void)removeIsRemovedRecordStatusAffectedObject:(STMDatum *)affectedObject {
+    
+    NSLog(@"object %@ with xid %@ will removed (have recordStatus.isRemoved)", affectedObject.entity.name, affectedObject.xid);
+    
+    [self removeObject:affectedObject];
+    
+    if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
+        [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
+    }
+    
 }
 
 
@@ -785,7 +806,7 @@
     
 }
 
-+ (NSManagedObject *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
++ (STMDatum *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -793,7 +814,7 @@
         
         NSData *xidData = [STMFunctions xidDataFromXidString:xid];
 
-        NSManagedObject *object = [self objectForXid:xidData entityName:entityName];
+        STMDatum *object = [self objectForXid:xidData entityName:entityName];
         
         if (object) {
             
@@ -1112,7 +1133,9 @@
     
     NSLogMethodName;
 
-    [self sharedController].isInFlushingProcess = NO;
+    STMCoreObjectsController *sc = [self sharedController];
+    
+    sc.isInFlushingProcess = NO;
     
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         
@@ -1162,7 +1185,11 @@
         request.fetchLimit = FLUSH_LIMIT;
         
         NSString *predicateString = [dateField stringByAppendingString:@" < %@"];
-        request.predicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
+        NSPredicate *datePredicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
+        
+        NSPredicate *declinedPredicate = [NSPredicate predicateWithFormat:@"NOT (self IN %@)", sc.flushDeclinedObjectsArray];
+        
+        request.predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[declinedPredicate, datePredicate]];
 
         NSArray *fetchResult = [context executeFetchRequest:request error:&error];
         
@@ -1181,7 +1208,7 @@
         NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingSet.count, flushingTime];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
         
-        [self sharedController].isInFlushingProcess = YES;
+        sc.isInFlushingProcess = YES;
 
         [[self document] saveDocument:^(BOOL success) {
 
@@ -1191,6 +1218,7 @@
     } else {
         
         NSLog(@"No objects for flushing");
+        sc.flushDeclinedObjectsArray = nil;
         
     }
     
@@ -1200,6 +1228,8 @@
     
     if (![self isWaitingToSyncForObject:object]) {
         
+        STMCoreObjectsController *sc = [self sharedController];
+
         BOOL okToFlush = YES;
         
         NSDictionary *relsByName = object.entity.relationshipsByName;
@@ -1221,6 +1251,8 @@
                 if (!okToFlush) {
                     
                     NSLog(@"%@ %@ have %@ %@, flush declined", object.entity.name, object.xid, @([objectPropertyValue count]), relKey);
+                    [sc.flushDeclinedObjectsArray addObject:object];
+                    
                     break;
                     
                 }
@@ -1229,6 +1261,8 @@
                 
                 okToFlush = NO;
                 NSLog(@"%@ %@ have %@, flush declined", object.entity.name, object.xid, relKey);
+                [sc.flushDeclinedObjectsArray addObject:object];
+                
                 break;
                 
             }

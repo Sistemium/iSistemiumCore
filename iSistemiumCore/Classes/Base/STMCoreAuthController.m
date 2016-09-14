@@ -17,6 +17,8 @@
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 
+#import "STMClientDataController.h"
+
 //#import "STMSocketController.h"
 
 
@@ -623,8 +625,9 @@
         
         resultingRequest = [request mutableCopy];
         [resultingRequest addValue:self.accessToken forHTTPHeaderField:@"Authorization"];
-        [resultingRequest setValue:[[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString] forHTTPHeaderField:@"DeviceUUID"];
-
+        
+        NSString *deviceUUIDString = [STMClientDataController deviceUUIDString];
+        [resultingRequest setValue:deviceUUIDString forHTTPHeaderField:@"DeviceUUID"];
 
     }
     
@@ -736,8 +739,11 @@
     
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    [request setHTTPMethod:@"GET"];
-    [request setValue:[[UIDevice currentDevice].identifierForVendor UUIDString] forHTTPHeaderField:@"DeviceUUID"];
+
+    NSString *deviceUUIDString = [STMClientDataController deviceUUIDString];
+    [request setValue:deviceUUIDString forHTTPHeaderField:@"DeviceUUID"];
+
+    request.HTTPMethod = @"GET";
     request.timeoutInterval = TIMEOUT;
 
     return request;

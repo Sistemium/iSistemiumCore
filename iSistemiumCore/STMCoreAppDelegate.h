@@ -12,6 +12,8 @@
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
 
+#import "STMClientDataController.h"
+
 
 @interface STMCoreAppDelegate : UIResponder <UIApplicationDelegate>
 
@@ -23,5 +25,6 @@
 - (NSString *)currentNotificationTypes;
 
 - (void)testCrash;
+
 
 @end
