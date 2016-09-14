@@ -405,6 +405,14 @@
     
 }
 
++ (NSData *)UUIDDataFromNSUUID:(NSUUID *)nsuuid {
+    
+    uuid_t uuid;
+    [nsuuid getUUIDBytes:uuid];
+    return [NSData dataWithBytes:uuid length:16];
+    
+}
+
 + (NSString *)UUIDStringFromUUIDData:(NSData *)UUIDData {
     
     CFUUIDBytes UUIDBytes;

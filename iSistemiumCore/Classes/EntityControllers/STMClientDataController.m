@@ -8,6 +8,8 @@
 
 #import <AdSupport/AdSupport.h>
 
+#import "STMKeychain.h"
+
 #import "STMCoreAppDelegate.h"
 #import "STMClientDataController.h"
 #import "STMClientData.h"
@@ -15,6 +17,9 @@
 #import "STMSetting.h"
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
+
+#define DEVICE_UUID_KEY @"deviceUUID"
+
 
 @implementation STMClientDataController
 
@@ -85,22 +90,30 @@
 
 + (NSData *)deviceUUID {
     
-//    NSUUID *identifierForVendor = [UIDevice currentDevice].identifierForVendor;
-//    uuid_t uuid;
-//    [identifierForVendor getUUIDBytes:uuid];
-//    
-//    NSLog(@"identifierForVendor %@", identifierForVendor);
+    NSData *deviceUUID = [STMKeychain loadValueForKey:DEVICE_UUID_KEY];
     
-    NSUUID *advertisingIdentifier = [ASIdentifierManager sharedManager].advertisingIdentifier;
-    uuid_t uuid;
-    [advertisingIdentifier getUUIDBytes:uuid];
-    
-//    NSLog(@"advertisingIdentifier %@", advertisingIdentifier);
+    if (!deviceUUID || deviceUUID.length == 0) {
+        
+        NSUUID *advertisingIdentifier = [ASIdentifierManager sharedManager].advertisingIdentifier;
+        deviceUUID = [STMFunctions UUIDDataFromNSUUID:advertisingIdentifier];
+//        NSLog(@"advertisingIdentifier %@", advertisingIdentifier);
+        
+        NSString *deviceUUIDString = [STMFunctions UUIDStringFromUUIDData:deviceUUID];
+        
+        if ([deviceUUIDString isEqualToString:@"00000000-0000-0000-0000-000000000000"]) {
+            
+            NSUUID *identifierForVendor = [UIDevice currentDevice].identifierForVendor;
+            deviceUUID = [STMFunctions UUIDDataFromNSUUID:identifierForVendor];
+//            NSLog(@"identifierForVendor %@", identifierForVendor);
 
-    NSData *deviceUUID = [NSData dataWithBytes:uuid length:16];
+        }
+        
+        [STMKeychain saveValue:deviceUUID forKey:DEVICE_UUID_KEY];
+        
+    }
     
     return deviceUUID;
-    
+
 }
 
 + (NSNumber *)freeDiskSpace {
