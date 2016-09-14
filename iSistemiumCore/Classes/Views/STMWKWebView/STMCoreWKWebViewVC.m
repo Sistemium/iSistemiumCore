@@ -126,7 +126,7 @@
 
 - (NSString *)webViewUrlString {
 
-    return @"http://maxbook.local:3000";
+//    return @"http://maxbook.local:3000";
     //return @"https://isissales.sistemium.com/";
     
     if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
@@ -161,6 +161,8 @@
     
 //    [self.webView reloadFromOrigin];
     
+    [self loadWebView]; return;
+
     NSString *wvUrl = [self webViewUrlString];
     
     __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
@@ -214,6 +216,34 @@
 }
 
 - (void)loadURL:(NSURL *)url {
+    
+    [self loadLocalHTML];
+    
+    NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/local/index.html"];
+    
+//    NSError *error = nil;
+    
+//    NSString *indexHTMLString = [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:indexHTMLPath]
+//                                                               encoding:NSUTF8StringEncoding
+//                                                                  error:&error];
+    
+//    NSData *indexHTMLData = [NSData dataWithContentsOfURL:[NSURL URLWithString:indexHTMLPath]
+//                                                  options:NSDataReadingMappedIfSafe
+//                                                    error:&error];
+    
+//    NSData *indexHTMLData = [[NSFileManager defaultManager] contentsAtPath:indexHTMLPath];
+
+//    NSString *indexHTMLString = [NSString stringWithUTF8String:indexHTMLData.bytes];
+    
+    NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
+                                                          encoding:NSUTF8StringEncoding
+                                                             error:nil];
+    
+    NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML/local"];
+
+    [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
+    
+    return;
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
