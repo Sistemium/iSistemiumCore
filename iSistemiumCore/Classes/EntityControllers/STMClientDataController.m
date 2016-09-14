@@ -95,16 +95,15 @@
     if (!deviceUUID || deviceUUID.length == 0) {
         
         NSUUID *advertisingIdentifier = [ASIdentifierManager sharedManager].advertisingIdentifier;
-        deviceUUID = [STMFunctions UUIDDataFromNSUUID:advertisingIdentifier];
-//        NSLog(@"advertisingIdentifier %@", advertisingIdentifier);
         
-        NSString *deviceUUIDString = [STMFunctions UUIDStringFromUUIDData:deviceUUID];
-        
-        if ([deviceUUIDString isEqualToString:@"00000000-0000-0000-0000-000000000000"]) {
+        if ([advertisingIdentifier.UUIDString isEqualToString:@"00000000-0000-0000-0000-000000000000"]) {
             
             NSUUID *identifierForVendor = [UIDevice currentDevice].identifierForVendor;
             deviceUUID = [STMFunctions UUIDDataFromNSUUID:identifierForVendor];
-//            NSLog(@"identifierForVendor %@", identifierForVendor);
+
+        } else {
+            
+            deviceUUID = [STMFunctions UUIDDataFromNSUUID:advertisingIdentifier];
 
         }
         
