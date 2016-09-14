@@ -46,6 +46,7 @@
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
 @property (nonatomic, strong) NSData *requestedFantomXid;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+@property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 
 
 @end
@@ -68,6 +69,15 @@
         _notFoundFantomsArray = @[].mutableCopy;
     }
     return _notFoundFantomsArray;
+    
+}
+
+- (NSMutableArray *)flushDeclinedObjectsArray {
+    
+    if (!_flushDeclinedObjectsArray) {
+        _flushDeclinedObjectsArray = @[].mutableCopy;
+    }
+    return _flushDeclinedObjectsArray;
     
 }
 
@@ -1112,7 +1122,9 @@
     
     NSLogMethodName;
 
-    [self sharedController].isInFlushingProcess = NO;
+    STMCoreObjectsController *sc = [self sharedController];
+    
+    sc.isInFlushingProcess = NO;
     
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         
@@ -1162,7 +1174,11 @@
         request.fetchLimit = FLUSH_LIMIT;
         
         NSString *predicateString = [dateField stringByAppendingString:@" < %@"];
-        request.predicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
+        NSPredicate *datePredicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
+        
+        NSPredicate *declinedPredicate = [NSPredicate predicateWithFormat:@"NOT (self IN %@)", sc.flushDeclinedObjectsArray];
+        
+        request.predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[declinedPredicate, datePredicate]];
 
         NSArray *fetchResult = [context executeFetchRequest:request error:&error];
         
@@ -1181,7 +1197,7 @@
         NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingSet.count, flushingTime];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
         
-        [self sharedController].isInFlushingProcess = YES;
+        sc.isInFlushingProcess = YES;
 
         [[self document] saveDocument:^(BOOL success) {
 
@@ -1191,6 +1207,7 @@
     } else {
         
         NSLog(@"No objects for flushing");
+        sc.flushDeclinedObjectsArray = nil;
         
     }
     
@@ -1200,6 +1217,8 @@
     
     if (![self isWaitingToSyncForObject:object]) {
         
+        STMCoreObjectsController *sc = [self sharedController];
+
         BOOL okToFlush = YES;
         
         NSDictionary *relsByName = object.entity.relationshipsByName;
@@ -1221,6 +1240,8 @@
                 if (!okToFlush) {
                     
                     NSLog(@"%@ %@ have %@ %@, flush declined", object.entity.name, object.xid, @([objectPropertyValue count]), relKey);
+                    [sc.flushDeclinedObjectsArray addObject:object];
+                    
                     break;
                     
                 }
@@ -1229,6 +1250,8 @@
                 
                 okToFlush = NO;
                 NSLog(@"%@ %@ have %@, flush declined", object.entity.name, object.xid, relKey);
+                [sc.flushDeclinedObjectsArray addObject:object];
+                
                 break;
                 
             }
