@@ -219,7 +219,7 @@
     
     [self loadLocalHTML];
     
-    NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/local/index.html"];
+    NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
     
 //    NSError *error = nil;
     
@@ -239,7 +239,7 @@
                                                           encoding:NSUTF8StringEncoding
                                                              error:nil];
     
-    NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML/local"];
+    NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
 
     [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
     
@@ -378,8 +378,8 @@
     
 //    NSLog(@"---- webView decidePolicyForNavigationAction");
 //    
-//    NSLog(@"scheme %@", navigationAction.request.URL.scheme);
-//    NSLog(@"request %@", navigationAction.request)
+    NSLog(@"scheme %@", navigationAction.request.URL.scheme);
+    NSLog(@"request %@", navigationAction.request)
 //    NSLog(@"HTTPMethod %@", navigationAction.request.HTTPMethod)
 //    NSLog(@"HTTPBody %@", navigationAction.request.HTTPBody)
     
