@@ -9,8 +9,6 @@
 #import "STMCoreWKWebViewVC.h"
 #import <WebKit/WebKit.h>
 
-#import <SSZipArchive/SSZipArchive.h>
-
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 #import "STMCoreAuthController.h"
