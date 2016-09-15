@@ -13,7 +13,9 @@
 
 @interface STMCoreAppManifestHandler : NSObject
 
-+ (void)loadLocalHTMLWithOwner:(STMCoreWKWebViewVC *)owner;
+@property (nonatomic, weak) STMCoreWKWebViewVC *owner;
+
+- (void)loadLocalHTML;
 
 
 @end

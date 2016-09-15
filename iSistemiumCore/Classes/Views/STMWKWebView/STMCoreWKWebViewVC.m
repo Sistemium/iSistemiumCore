@@ -59,6 +59,8 @@
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic) BOOL waitingPhoto;
 
+@property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
+
 
 @end
 
@@ -69,6 +71,17 @@
     return [self.tabBarController.selectedViewController isEqual:self.navigationController];
 }
 
+- (STMCoreAppManifestHandler *)appManifestHandler {
+    
+    if (!_appManifestHandler) {
+        
+        _appManifestHandler = [[STMCoreAppManifestHandler alloc] init];
+        _appManifestHandler.owner = self;
+        
+    }
+    return _appManifestHandler;
+    
+}
 
 - (NSString *)iSistemiumIOSCallbackJSFunction {
     return @"iSistemiumIOSCallback";
@@ -229,7 +242,7 @@
 }
 
 - (void)loadLocalHTML {
-    [STMCoreAppManifestHandler loadLocalHTMLWithOwner:self];
+    [self.appManifestHandler loadLocalHTML];
 }
 
 - (void)appManifestLoadFailWithErrorText:(NSString *)errorText {
