@@ -237,33 +237,6 @@
     
     NSLog(@"");
     
-}
-
-- (BOOL)loadAppManifestFile:(NSString *)filePath {
-    
-    NSURL *baseURL = [NSURL URLWithString:[self.owner webViewAppManifestURI]].URLByDeletingLastPathComponent;
-    NSURL *fileURL = [baseURL URLByAppendingPathComponent:filePath];
-    
-    NSData *fileData = [NSData dataWithContentsOfURL:fileURL];
-    
-    if (self.updateDirPath) {
-    
-        NSString *localFilePath = [self.updateDirPath stringByAppendingPathComponent:filePath];
-        
-        NSError *error = nil;
-        
-        [fileData writeToFile:localFilePath
-                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                        error:&error];
-        
-        NSLog(@"%@", error.localizedDescription);
-        
-        return YES;
-
-    } else {
-        return NO;
-    }
-    
     //        NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
     //
     //        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
@@ -273,6 +246,45 @@
     //        NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
     //
     //        [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
+    
+}
+
+- (BOOL)loadAppManifestFile:(NSString *)filePath {
+
+    if (filePath.pathComponents.count > 1) {
+        
+        NSMutableArray *filePathComponents = filePath.pathComponents.mutableCopy;
+        
+        [filePathComponents removeLastObject];
+        
+        NSString *dirPath = [self.updateDirPath stringByAppendingPathComponent:[NSString pathWithComponents:filePathComponents]];
+        
+        [self createDirAtPath:dirPath];
+        
+    }
+    
+    return [self loadAndWriteFile:filePath];
+    
+}
+
+- (BOOL)loadAndWriteFile:(NSString *)filePath {
+    
+    NSURL *baseURL = [NSURL URLWithString:[self.owner webViewAppManifestURI]].URLByDeletingLastPathComponent;
+    NSURL *fileURL = [baseURL URLByAppendingPathComponent:filePath];
+    
+    NSData *fileData = [NSData dataWithContentsOfURL:fileURL];
+    
+    NSString *localFilePath = [self.updateDirPath stringByAppendingPathComponent:filePath];
+    
+    NSError *error = nil;
+    
+    [fileData writeToFile:localFilePath
+                  options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                    error:&error];
+    
+    NSLog(@"%@", error.localizedDescription);
+    
+    return YES;
 
 }
 
