@@ -17,6 +17,7 @@
 #import "STMRemoteController.h"
 #import "STMCorePicturesController.h"
 #import "STMCorePhotosController.h"
+#import "STMCoreAppManifestHandler.h"
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
@@ -31,7 +32,6 @@
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
-@property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
 @property (nonatomic) BOOL isAuthorizing;
 @property (nonatomic) BOOL wasLoadingOnce;
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
@@ -225,28 +225,41 @@
 }
 
 - (void)loadURL:(NSURL *)url {
+    [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadRemoteURL:url];
+}
 
-    if ([self webViewAppManifestURI]) {
+- (void)loadLocalHTML {
+    [STMCoreAppManifestHandler loadLocalHTMLWithOwner:self];
+}
+
+- (void)appManifestLoadFailWithError:(NSError *)error {
     
-        [self loadLocalHTML];
+    [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
+                                             numType:STMLogMessageTypeError];
+    
+    [self.spinnerView removeFromSuperview];
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
+                                                            message:error.localizedDescription
+                                                           delegate:nil
+                                                  cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                  otherButtonTitles:nil];
+        [alertView show];
+        
+    }];
 
-        NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
-        
-        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
-                                                              encoding:NSUTF8StringEncoding
-                                                                 error:nil];
-        
-        NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
-        
-        [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
+}
 
-    }
+- (void)loadRemoteURL:(NSURL *)url {
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
-    
+
+    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
+
     //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
     //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
-    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
     
     //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
     //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
@@ -262,8 +275,6 @@
 #pragma mark - webViewInit
 
 - (void)webViewInit {
-    
-    [self loadLocalHTML];
     
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     
@@ -282,36 +293,6 @@
     
     self.webView.navigationDelegate = self;
     [self loadWebView];
-    
-}
-
-- (void)loadLocalHTML {
-    
-    NSURL *localHTMLZipUrl = [NSURL URLWithString:@"http://maxbook.local/~grimax/test/iSisSalesWeb.zip"];
-    NSData *localHTMLZipData = [NSData dataWithContentsOfURL:localHTMLZipUrl];
-    
-    NSString *zipPath = [STMFunctions absolutePathForPath:@"iSisSalesWeb.zip"];
-    
-    if ([localHTMLZipData writeToFile:zipPath
-                              options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                error:nil]) {
-    
-        NSString *destPath = [STMFunctions absolutePathForPath:@"/localHTML"];
-        
-        if (![[NSFileManager defaultManager] fileExistsAtPath:destPath]) {
-
-            [[NSFileManager defaultManager] createDirectoryAtPath:destPath
-                                      withIntermediateDirectories:NO
-                                                       attributes:nil
-                                                            error:nil];
-
-//            [SSZipArchive unzipFileAtPath:zipPath toDestination:destPath];
-
-        }
-
-    } else {
-    
-    }
     
 }
 

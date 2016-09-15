@@ -16,7 +16,12 @@
 
 @interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable, STMCheckinDelegate>
 
+@property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
+
+- (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;
+
+- (void)appManifestLoadFailWithError:(NSError *)error;
 
 
 @end
