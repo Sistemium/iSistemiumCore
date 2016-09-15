@@ -76,16 +76,62 @@
     
     if (connectionError) {
         
-        [owner appManifestLoadFailWithError:connectionError];
+        [owner appManifestLoadFailWithErrorText:connectionError.localizedDescription];
         return;
         
     }
 
-    NSLog(response.description);
-    NSString *appManifest = [NSString stringWithUTF8String:data.bytes];
-    
-    NSLog(appManifest);
+    if (![response isKindOfClass:[NSHTTPURLResponse class]]) {
 
+        [owner appManifestLoadFailWithErrorText:@"response is not a NSHTTPURLResponse class, can not get eTag"];
+        return;
+
+    }
+    
+    if (data.length == 0) {
+
+        [owner appManifestLoadFailWithErrorText:@"response data length is 0"];
+        return;
+
+    }
+
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+    
+    NSString *eTag = httpResponse.allHeaderFields[@"eTag"];
+    NSString *appManifest = [NSString stringWithUTF8String:data.bytes];
+
+    if (!appManifest) {
+        
+        [owner appManifestLoadFailWithErrorText:@"can not convert response data to appManifest string"];
+        return;
+        
+    }
+    
+    NSMutableArray *appComponents = [appManifest componentsSeparatedByString:@"\n"].mutableCopy;
+    
+    [appComponents enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if ([obj isKindOfClass:[NSString class]]) {
+            obj = [(NSString *)obj stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        } else {
+            obj = @"";
+        }
+        
+        [appComponents replaceObjectAtIndex:idx withObject:obj];
+        
+    }];
+    
+    [appComponents removeObject:@""];
+    [appComponents removeObject:@"favicon.ico"];
+    [appComponents removeObject:@"robots.txt"];
+    
+    NSUInteger startIndex = [appComponents indexOfObject:@"CACHE:"] + 1;
+    NSUInteger length = [appComponents indexOfObject:@"NETWORK:"] - startIndex;
+    
+    NSArray *filesPaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
+    
+    NSLog(filesPaths.description);
+    
 }
 
 

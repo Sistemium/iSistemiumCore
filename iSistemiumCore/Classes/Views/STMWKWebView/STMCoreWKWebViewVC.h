@@ -21,7 +21,7 @@
 - (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;
 
-- (void)appManifestLoadFailWithError:(NSError *)error;
+- (void)appManifestLoadFailWithErrorText:(NSString *)errorText;
 
 
 @end

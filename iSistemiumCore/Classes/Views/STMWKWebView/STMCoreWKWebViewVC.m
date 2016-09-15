@@ -232,9 +232,9 @@
     [STMCoreAppManifestHandler loadLocalHTMLWithOwner:self];
 }
 
-- (void)appManifestLoadFailWithError:(NSError *)error {
+- (void)appManifestLoadFailWithErrorText:(NSString *)errorText {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
+    [[STMLogger sharedLogger] saveLogMessageWithText:errorText
                                              numType:STMLogMessageTypeError];
     
     [self.spinnerView removeFromSuperview];
@@ -242,7 +242,7 @@
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                            message:error.localizedDescription
+                                                            message:errorText
                                                            delegate:nil
                                                   cancelButtonTitle:NSLocalizedString(@"OK", nil)
                                                   otherButtonTitles:nil];
