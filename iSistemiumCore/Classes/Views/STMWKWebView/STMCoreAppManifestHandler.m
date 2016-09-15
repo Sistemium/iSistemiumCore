@@ -98,7 +98,7 @@
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
     
     NSString *eTag = httpResponse.allHeaderFields[@"eTag"];
-    NSString *appManifest = [NSString stringWithUTF8String:data.bytes];
+    NSString *appManifest = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 
     if (!appManifest) {
         
@@ -128,9 +128,97 @@
     NSUInteger startIndex = [appComponents indexOfObject:@"CACHE:"] + 1;
     NSUInteger length = [appComponents indexOfObject:@"NETWORK:"] - startIndex;
     
-    NSArray *filesPaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
+    NSArray *filePaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
+
+    for (NSString *filePath in filePaths) {
+        
+        if (![self loadAppManifestFile:filePath owner:owner]) {
+            
+            [owner appManifestLoadFailWithErrorText:@"something wrong with load file"];
+            break;
+            
+        }
+        
+    }
     
-    NSLog(filesPaths.description);
+    NSLog(@"");
+    
+}
+
++ (BOOL)loadAppManifestFile:(NSString *)filePath owner:(STMCoreWKWebViewVC *)owner {
+    
+    NSURL *baseURL = [NSURL URLWithString:[owner webViewAppManifestURI]].URLByDeletingLastPathComponent;
+    NSURL *fileURL = [baseURL URLByAppendingPathComponent:filePath];
+    
+    NSData *fileData = [NSData dataWithContentsOfURL:fileURL];
+    
+    NSString *updateDirPath = [self updateDirPathForOwner:owner];
+    
+    if (updateDirPath) {
+    
+        NSString *localFilePath = [STMFunctions absolutePathForPath:filePath];
+        
+        NSError *error = nil;
+        
+        [fileData writeToFile:localFilePath
+                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                        error:&error];
+        
+        NSLog(@"%@", error.localizedDescription);
+        
+        return YES;
+
+    } else {
+        return NO;
+    }
+    
+}
+
++ (NSString *)updateDirPathForOwner:(STMCoreWKWebViewVC *)owner {
+    
+    NSString *ownerName = [owner webViewStoryboardParameters][@"name"];
+    NSString *ownerTitle = [owner webViewStoryboardParameters][@"title"];
+    NSString *updatePath = @"update";
+    
+    NSString *completePath = [@[ownerName, ownerTitle, updatePath] componentsJoinedByString:@"/"];
+    
+    completePath = [STMFunctions absolutePathForPath:completePath];
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    BOOL isDir;
+    
+    if ([fm fileExistsAtPath:completePath isDirectory:&isDir]) {
+        
+        if (isDir) {
+            
+            return completePath;
+            
+        } else {
+            
+            [owner appManifestLoadFailWithErrorText:@"update dir path is not dir"];
+            return nil;
+
+        }
+        
+    } else {
+        
+        NSError *error = nil;
+        
+        [fm createDirectoryAtPath:completePath withIntermediateDirectories:YES attributes:nil error:&error];
+        
+        if (error) {
+            
+            [owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            return nil;
+            
+        }
+        
+        return completePath;
+        
+    }
+    
+    
     
 }
 
