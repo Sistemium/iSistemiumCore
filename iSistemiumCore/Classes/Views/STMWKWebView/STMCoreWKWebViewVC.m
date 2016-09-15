@@ -28,13 +28,12 @@
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
 
-//#import "iSistemiumCore-Swift.h"
-
 
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate, STMImagePickerOwnerProtocol>
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
+@property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
 @property (nonatomic) BOOL isAuthorizing;
 @property (nonatomic) BOOL wasLoadingOnce;
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
@@ -124,36 +123,50 @@
     
 }
 
+- (NSDictionary *)webViewStoryboardParameters {
+    
+    if (!_webViewStoryboardParameters) {
+        
+        if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
+            
+            STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
+            _webViewStoryboardParameters = storyboard.parameters;
+            
+        } else {
+        
+            _webViewStoryboardParameters = @{};
+
+        }
+        
+    }
+    return _webViewStoryboardParameters;
+    
+}
+
 - (NSString *)webViewUrlString {
 
 //    return @"http://maxbook.local:3000";
     //return @"https://isissales.sistemium.com/";
     
-    if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
-        
-        STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
-        NSString *url = storyboard.parameters[@"url"];
-        return url;
-        
-    } else {
-        
-        return @"https://sistemium.com";
-        
-    }
+    NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
+    
+    return webViewUrlString ? webViewUrlString : @"https://sistemium.com";
+    
+}
+
+- (NSString *)webViewAppManifestURI {
+    
+    return @"https://r50.sistemium.com/app.manifest";
+    
+//    return self.webViewParameters[@"appManifestURI"];
     
 }
 
 - (NSString *)webViewAuthCheckJS {
     
-    if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
-        
-        STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
-        NSString *authCheck = storyboard.parameters[@"authCheck"];
-        return authCheck;
-        
-    } else {
-        return [[self webViewSettings] valueForKey:@"wv.session.check"];
-    }
+    NSString *webViewAuthCheckJS = self.webViewStoryboardParameters[@"authCheck"];
+    
+    return webViewAuthCheckJS ? webViewAuthCheckJS : [[self webViewSettings] valueForKey:@"wv.session.check"];
     
 }
 
@@ -161,8 +174,6 @@
     
 //    [self.webView reloadFromOrigin];
     
-    [self loadWebView]; return;
-
     NSString *wvUrl = [self webViewUrlString];
     
     __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
@@ -216,34 +227,22 @@
 }
 
 - (void)loadURL:(NSURL *)url {
-    
-    [self loadLocalHTML];
-    
-    NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
-    
-//    NSError *error = nil;
-    
-//    NSString *indexHTMLString = [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:indexHTMLPath]
-//                                                               encoding:NSUTF8StringEncoding
-//                                                                  error:&error];
-    
-//    NSData *indexHTMLData = [NSData dataWithContentsOfURL:[NSURL URLWithString:indexHTMLPath]
-//                                                  options:NSDataReadingMappedIfSafe
-//                                                    error:&error];
-    
-//    NSData *indexHTMLData = [[NSFileManager defaultManager] contentsAtPath:indexHTMLPath];
 
-//    NSString *indexHTMLString = [NSString stringWithUTF8String:indexHTMLData.bytes];
+    if ([self webViewAppManifestURI]) {
     
-    NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
-                                                          encoding:NSUTF8StringEncoding
-                                                             error:nil];
-    
-    NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
+        [self loadLocalHTML];
 
-    [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
-    
-    return;
+        NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
+        
+        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
+                                                              encoding:NSUTF8StringEncoding
+                                                                 error:nil];
+        
+        NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
+        
+        [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
+
+    }
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
@@ -308,7 +307,7 @@
                                                        attributes:nil
                                                             error:nil];
 
-            [SSZipArchive unzipFileAtPath:zipPath toDestination:destPath];
+//            [SSZipArchive unzipFileAtPath:zipPath toDestination:destPath];
 
         }
 
