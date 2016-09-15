@@ -15,7 +15,7 @@
 
 @property (nonatomic, strong) NSString *localHTMLDirPath;
 @property (nonatomic, strong) NSString *updateDirPath;
-@property (nonatomic, strong) NSString *responseETag;
+@property (nonatomic, strong) NSString *eTagFileName;
 
 
 @end
@@ -106,7 +106,7 @@
 
 #pragma mark - localHTML
 
-- (void)loadLocalHTML {
+- (void)startLoadLocalHTML {
     
     NSURL *appManifestURI = [NSURL URLWithString:[self.owner webViewAppManifestURI]];
     
@@ -147,11 +147,12 @@
 
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
     
-    self.responseETag = httpResponse.allHeaderFields[@"eTag"];
-    
-    if ([self shouldUpdateLocalHTMLWithETag:self.responseETag]) {
-    
-        self.updateDirPath = [self webViewLocalDirForPath:@"update"
+    NSString *responseETag = httpResponse.allHeaderFields[@"eTag"];
+    self.eTagFileName = [responseETag stringByAppendingString:@".eTag"];
+
+    if ([self shouldUpdateLocalHTML]) {
+        
+        self.updateDirPath = [self webViewLocalDirForPath:UPDATE_DIR
                                          createIfNotExist:YES
                                       shoudCleanBeforeUse:YES];
         
@@ -170,13 +171,18 @@
             
         }
 
+    } else {
+        
+        [self.owner appManifestLoadFailWithErrorText:@"have no update"];
+        [self loadLocalHTML];
+
     }
     
 }
 
-- (BOOL)shouldUpdateLocalHTMLWithETag:(NSString *)eTag {
+- (BOOL)shouldUpdateLocalHTML {
     
-    self.localHTMLDirPath = [self webViewLocalDirForPath:@"localHTML"
+    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
                                         createIfNotExist:NO
                                      shoudCleanBeforeUse:NO];
 
@@ -187,7 +193,7 @@
     
     if (!error) {
         
-        NSArray *currentETagFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH '%@.eTag'", eTag]];
+        NSArray *currentETagFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", self.eTagFileName]];
         return (currentETagFiles.count == 0);
 
     } else {
@@ -224,29 +230,101 @@
     
     NSArray *filePaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
     
+    BOOL loadSuccess = YES;
+    
     for (NSString *filePath in filePaths) {
         
         if (![self loadAppManifestFile:filePath]) {
             
             [self.owner appManifestLoadFailWithErrorText:@"something wrong with load file"];
+            loadSuccess = NO;
             break;
             
         }
         
     }
     
-    NSLog(@"");
+    if (loadSuccess) {
+
+        NSFileManager *fm = [NSFileManager defaultManager];
+        NSError *error = nil;
+        NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.updateDirPath error:&error];
+        
+        if (error) {
+            
+            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+
+        } else {
+
+            self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                                createIfNotExist:YES
+                                             shoudCleanBeforeUse:YES];
+            
+            for (NSString *dirObject in dirObjects) {
+                
+                [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
+                            toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                             error:&error];
+                
+                if (error) {
+                    
+                    [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+                    break;
+
+                }
+                
+            }
+            
+            if (error) {
+                
+                [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+                
+            } else {
+
+                [self saveETagFile];
+
+            }
+
+        }
+        
+    }
+
+}
+
+- (void)saveETagFile {
     
-    //        NSString *indexHTMLPath = [STMFunctions absolutePathForPath:@"localHTML/index.html"];
-    //
-    //        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
-    //                                                              encoding:NSUTF8StringEncoding
-    //                                                                 error:nil];
-    //
-    //        NSString *indexHTMLBasePath = [STMFunctions absolutePathForPath:@"localHTML"];
-    //
-    //        [self.webView loadHTMLString:indexHTMLString baseURL:[NSURL fileURLWithPath:indexHTMLBasePath]];
+    NSError *error = nil;
     
+    NSData *eTagFileData = [NSData data];
+    
+    NSString *eTagFilePath = [self.localHTMLDirPath stringByAppendingPathComponent:self.eTagFileName];
+    
+    [eTagFileData writeToFile:eTagFilePath
+                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                        error:&error];
+    
+    if (error) {
+        
+        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        
+    } else {
+        
+        [self loadLocalHTML];
+        
+    }
+
+}
+
+- (void)loadLocalHTML {
+    
+    NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:@"index.html"];
+
+    NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
+                                                          encoding:NSUTF8StringEncoding
+                                                             error:nil];
+    
+    [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
+
 }
 
 - (BOOL)loadAppManifestFile:(NSString *)filePath {
@@ -282,9 +360,16 @@
                   options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                     error:&error];
     
-    NSLog(@"%@", error.localizedDescription);
-    
-    return YES;
+    if (error) {
+        
+        NSLog(@"%@", error.localizedDescription);
+        return NO;
+        
+    } else {
+        
+        return YES;
+        
+    }
 
 }
 

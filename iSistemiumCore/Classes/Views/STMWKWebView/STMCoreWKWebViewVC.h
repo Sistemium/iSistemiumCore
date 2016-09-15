@@ -22,6 +22,7 @@
 - (void)reloadWebView;
 
 - (void)appManifestLoadFailWithErrorText:(NSString *)errorText;
+- (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
 
 
 @end

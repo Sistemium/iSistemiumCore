@@ -242,7 +242,11 @@
 }
 
 - (void)loadLocalHTML {
-    [self.appManifestHandler loadLocalHTML];
+    [self.appManifestHandler startLoadLocalHTML];
+}
+
+- (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
+    [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
 }
 
 - (void)appManifestLoadFailWithErrorText:(NSString *)errorText {

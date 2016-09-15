@@ -15,7 +15,7 @@
 
 @property (nonatomic, weak) STMCoreWKWebViewVC *owner;
 
-- (void)loadLocalHTML;
+- (void)startLoadLocalHTML;
 
 
 @end
