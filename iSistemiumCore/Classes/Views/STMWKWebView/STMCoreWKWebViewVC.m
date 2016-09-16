@@ -183,37 +183,56 @@
 
 - (void)reloadWebView {
     
-//    [self.webView reloadFromOrigin];
-    
-    NSString *wvUrl = [self webViewUrlString];
-    
-    __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
-    
-    [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+    if ([self webViewAppManifestURI]) {
         
-        if (error) {
-            
-            NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
-            NSLog(@"trying to reload webView with loadRequest method");
-            
-            [self loadWebView];
-            
-        }
+        [self loadLocalHTML];
         
-    }];
+    } else {
+
+        //    [self.webView reloadFromOrigin];
+        
+        NSString *wvUrl = [self webViewUrlString];
+        
+        __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
+        
+        [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            
+            if (error) {
+                
+                NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
+                NSLog(@"trying to reload webView with loadRequest method");
+                
+                [self loadWebView];
+                
+            }
+            
+        }];
+
+    }
 
 }
 
 - (void)loadWebView {
     
-    [self.view addSubview:self.spinnerView];
-    
-    self.isAuthorizing = NO;
-    
-    NSString *urlString = [self webViewUrlString];
-    [self loadURLString:urlString];
+    if ([self webViewAppManifestURI]) {
+        
+        [self loadLocalHTML];
+        
+    } else {
+
+        [self.view addSubview:self.spinnerView];
+        
+        self.isAuthorizing = NO;
+        
+        NSString *urlString = [self webViewUrlString];
+        [self loadURLString:urlString];
+
+    }
     
 }
+
+
+#pragma mark - load from remote URL
 
 - (void)authLoadWebView {
     
@@ -238,8 +257,26 @@
 }
 
 - (void)loadURL:(NSURL *)url {
-    [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadRemoteURL:url];
+    
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+    
+    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
+    
+    //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+    //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
+    
+    //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
+    //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
+    //
+    //    NSLog(@"cachedResponseForRequest %@", [[NSURLCache sharedURLCache] cachedResponseForRequest:request]);
+    //    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+    
+    [self.webView loadRequest:request];
+    
 }
+
+
+#pragma mark - load localHTML
 
 - (void)loadLocalHTML {
     
@@ -308,25 +345,6 @@
 
 }
 
-- (void)loadRemoteURL:(NSURL *)url {
-    
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
-
-    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
-
-    //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-    //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
-    
-    //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
-    //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
-    //
-    //    NSLog(@"cachedResponseForRequest %@", [[NSURLCache sharedURLCache] cachedResponseForRequest:request]);
-    //    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
-    
-    [self.webView loadRequest:request];
-
-}
-
 
 #pragma mark - webViewInit
 
@@ -348,6 +366,7 @@
     [self.localView addSubview:self.webView];
     
     self.webView.navigationDelegate = self;
+    
     [self loadWebView];
     
 }
