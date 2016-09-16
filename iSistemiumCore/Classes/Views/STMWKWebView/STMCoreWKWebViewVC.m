@@ -183,6 +183,8 @@
 
 - (void)reloadWebView {
     
+    [self hideNavBar];
+    
     if ([self webViewAppManifestURI]) {
         
         [self loadLocalHTML];
@@ -296,16 +298,9 @@
 
 - (void)localHTMLUpdateIsAvailable {
     
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"UPDATE", nil)
-                                                            message:@"UPDATE AVAILABLE!"
-                                                           delegate:nil
-                                                  cancelButtonTitle:NSLocalizedString(@"OK", nil)
-                                                  otherButtonTitles:nil];
-        [alertView show];
-        
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self showUpdateAvailableNavBar];
+    });
 
 }
 
@@ -369,6 +364,39 @@
     
     [self loadWebView];
     
+}
+
+
+#pragma mark - navigation bar
+
+- (void)showUpdateAvailableNavBar {
+    
+//    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}];
+    
+    self.navigationItem.title = NSLocalizedString(@"UPDATE AVAILABLE", nil);
+    
+    UIBarButtonItem *updateButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"UPDATE", nil)
+                                                                     style:UIBarButtonItemStylePlain
+                                                                    target:self
+                                                                    action:@selector(reloadWebView)];
+    updateButton.tintColor = [UIColor redColor];
+    
+    self.navigationItem.rightBarButtonItem = updateButton;
+    
+    [self.navigationController setNavigationBarHidden:NO
+                                             animated:YES];
+
+}
+
+- (void)hideNavBar {
+    
+    if (!self.navigationController.navigationBarHidden) {
+        
+        [self.navigationController setNavigationBarHidden:YES
+                                                 animated:YES];
+        
+    }
+
 }
 
 

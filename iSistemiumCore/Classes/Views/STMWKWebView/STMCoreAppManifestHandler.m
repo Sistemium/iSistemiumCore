@@ -164,6 +164,8 @@
 
     if ([self shouldUpdateLocalHTML]) {
         
+        [self.owner appManifestLoadInfoText:@"update available"];
+
         self.updateDirPath = [self webViewLocalDirForPath:UPDATE_DIR
                                          createIfNotExist:YES
                                       shoudCleanBeforeUse:YES];
