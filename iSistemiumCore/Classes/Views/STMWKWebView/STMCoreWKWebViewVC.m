@@ -157,7 +157,7 @@
 - (NSString *)webViewUrlString {
 
 //    return @"http://maxbook.local:3000";
-    //return @"https://isissales.sistemium.com/";
+//    return @"https://isissales.sistemium.com/";
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
     
@@ -167,9 +167,9 @@
 
 - (NSString *)webViewAppManifestURI {
     
-    return @"https://r50.sistemium.com/app.manifest";
+//    return @"https://r50.sistemium.com/app.manifest";
     
-//    return self.webViewParameters[@"appManifestURI"];
+    return self.webViewParameters[@"appManifestURI"];
     
 }
 
