@@ -242,11 +242,19 @@
 }
 
 - (void)loadLocalHTML {
-    [self.appManifestHandler startLoadLocalHTML];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        [self.appManifestHandler startLoadLocalHTML];
+    });
+    
 }
 
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
-    [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
+    });
+
 }
 
 - (void)localHTMLUpdateIsAvailable {
@@ -274,25 +282,29 @@
 
 - (void)appManifestLoadLogMessage:(NSString *)logMessage numType:(STMLogMessageType)numType {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:numType];
-    
-    if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:numType];
         
-        [self.spinnerView removeFromSuperview];
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                                message:logMessage
-                                                               delegate:nil
-                                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
-                                                      otherButtonTitles:nil];
-            [alertView show];
+            [self.spinnerView removeFromSuperview];
             
-        }];
-        
-    }
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
+                                                                    message:logMessage
+                                                                   delegate:nil
+                                                          cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                          otherButtonTitles:nil];
+                [alertView show];
+                
+            }];
+            
+        }
+
+    });
 
 }
 
