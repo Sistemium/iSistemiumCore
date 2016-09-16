@@ -21,6 +21,7 @@
 @property (nonatomic, strong) NSString *updateDirPath;
 @property (nonatomic, strong) NSString *tempHTMLDirPath;
 @property (nonatomic, strong) NSString *eTagFileName;
+@property (nonatomic) BOOL checkingForUpdate;
 
 
 @end
@@ -112,6 +113,8 @@
 #pragma mark - localHTML
 
 - (void)startLoadLocalHTML {
+    
+    self.checkingForUpdate = YES;
     
     [self loadLocalHTML];
     
@@ -403,6 +406,8 @@
         
     } else {
         
+        self.checkingForUpdate = NO;
+
         if (self.owner.haveLocalHTML) {
             [self.owner localHTMLUpdateIsAvailable];
         } else {
@@ -442,7 +447,7 @@
         [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
 
     } else {
-        [self.owner appManifestLoadFailWithErrorText:@"have no index.html"];
+        if (!self.checkingForUpdate) [self.owner appManifestLoadFailWithErrorText:@"have no index.html"];
     }
     
 }
