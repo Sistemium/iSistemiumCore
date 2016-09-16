@@ -405,8 +405,15 @@
     if (error) {
         
         [self.owner appManifestLoadErrorText:error.localizedDescription];
+        [self restoreLocalHTMLDir];
         
     } else {
+        
+        self.tempHTMLDirPath = [self webViewLocalDirForPath:TEMP_DIR
+                                           createIfNotExist:NO
+                                        shoudCleanBeforeUse:NO];
+
+        if (self.tempHTMLDirPath) [self cleanDirAtPath:self.tempHTMLDirPath];
         
         self.checkingForUpdate = NO;
 
