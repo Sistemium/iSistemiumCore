@@ -238,7 +238,7 @@
 }
 
 - (void)saveLogMessageWithText:(NSString *)text
-                       numType:(STMLogMessageType)numType{
+                       numType:(STMLogMessageType)numType {
     
     NSString *stringType = [self stringTypeForNumType:numType];
     
