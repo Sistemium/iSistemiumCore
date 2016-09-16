@@ -8,8 +8,11 @@
 
 #import "STMCoreAppManifestHandler.h"
 
+
 #define LOCAL_HTML_DIR @"localHTML"
 #define UPDATE_DIR @"update"
+#define INDEX_HTML @"index.html"
+
 
 @interface STMCoreAppManifestHandler()
 
@@ -22,6 +25,32 @@
 
 
 @implementation STMCoreAppManifestHandler
+
+- (NSString *)localHTMLDirPath {
+    
+    if (!_localHTMLDirPath) {
+    
+        _localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                        createIfNotExist:NO
+                                     shoudCleanBeforeUse:NO];
+        
+    }
+    return _localHTMLDirPath;
+    
+}
+
+- (NSString *)updateDirPath {
+    
+    if (!_updateDirPath) {
+        
+        _updateDirPath = [self webViewLocalDirForPath:UPDATE_DIR
+                                        createIfNotExist:NO
+                                     shoudCleanBeforeUse:NO];
+        
+    }
+    return _updateDirPath;
+    
+}
 
 
 #pragma mark - directories
@@ -108,6 +137,8 @@
 
 - (void)startLoadLocalHTML {
     
+    [self loadLocalHTML];
+    
     NSURL *appManifestURI = [NSURL URLWithString:[self.owner webViewAppManifestURI]];
     
     NSURLRequest *request = [[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:appManifestURI]];
@@ -172,10 +203,7 @@
         }
 
     } else {
-        
         [self.owner appManifestLoadFailWithErrorText:@"have no update"];
-        [self loadLocalHTML];
-
     }
     
 }
@@ -309,7 +337,7 @@
         
     } else {
         
-        [self loadLocalHTML];
+        // should notificate owner about available update
         
     }
 
@@ -317,14 +345,30 @@
 
 - (void)loadLocalHTML {
     
-    NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:@"index.html"];
-
-    NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
-                                                          encoding:NSUTF8StringEncoding
-                                                             error:nil];
+    NSFileManager *fm = [NSFileManager defaultManager];
     
-    [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
+    NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:INDEX_HTML];
 
+    if ([fm fileExistsAtPath:indexHTMLPath]) {
+    
+        NSError *error = nil;
+        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
+                                                              encoding:NSUTF8StringEncoding
+                                                                 error:&error];
+        
+        if (error) {
+
+            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            return;
+            
+        }
+        
+        [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
+
+    } else {
+        [self.owner appManifestLoadFailWithErrorText:@"have no index.html"];
+    }
+    
 }
 
 - (BOOL)loadAppManifestFile:(NSString *)filePath {
