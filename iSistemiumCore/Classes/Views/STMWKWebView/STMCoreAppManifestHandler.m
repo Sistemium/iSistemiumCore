@@ -11,6 +11,7 @@
 
 #define LOCAL_HTML_DIR @"localHTML"
 #define UPDATE_DIR @"update"
+#define TEMP_DIR @"tempHTML"
 #define INDEX_HTML @"index.html"
 
 
@@ -18,6 +19,7 @@
 
 @property (nonatomic, strong) NSString *localHTMLDirPath;
 @property (nonatomic, strong) NSString *updateDirPath;
+@property (nonatomic, strong) NSString *tempHTMLDirPath;
 @property (nonatomic, strong) NSString *eTagFileName;
 
 
@@ -25,32 +27,6 @@
 
 
 @implementation STMCoreAppManifestHandler
-
-- (NSString *)localHTMLDirPath {
-    
-    if (!_localHTMLDirPath) {
-    
-        _localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
-                                        createIfNotExist:NO
-                                     shoudCleanBeforeUse:NO];
-        
-    }
-    return _localHTMLDirPath;
-    
-}
-
-- (NSString *)updateDirPath {
-    
-    if (!_updateDirPath) {
-        
-        _updateDirPath = [self webViewLocalDirForPath:UPDATE_DIR
-                                        createIfNotExist:NO
-                                     shoudCleanBeforeUse:NO];
-        
-    }
-    return _updateDirPath;
-    
-}
 
 
 #pragma mark - directories
@@ -193,7 +169,7 @@
             
             if (!appManifest) {
                 
-                [self.owner appManifestLoadFailWithErrorText:@"can not convert response data to appManifest string"];
+                [self.owner appManifestLoadFailWithErrorText:@"can not convert appManifest response data to string"];
                 return;
                 
             }
@@ -213,7 +189,7 @@
     self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
                                         createIfNotExist:NO
                                      shoudCleanBeforeUse:NO];
-
+    
     NSFileManager *fm = [NSFileManager defaultManager];
     
     NSError *error;
@@ -264,7 +240,7 @@
         
         if (![self loadAppManifestFile:filePath]) {
             
-            [self.owner appManifestLoadFailWithErrorText:@"something wrong with load file"];
+            [self.owner appManifestLoadFailWithErrorText:@"something wrong with appManifest's files loading"];
             loadSuccess = NO;
             break;
             
@@ -284,35 +260,125 @@
 
         } else {
 
-            self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
-                                                createIfNotExist:YES
-                                             shoudCleanBeforeUse:YES];
+            if ([self backupLocalHTMLDir]) {
             
-            for (NSString *dirObject in dirObjects) {
+                self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                                    createIfNotExist:YES
+                                                 shoudCleanBeforeUse:YES];
                 
-                [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
-                            toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                             error:&error];
-                
-                if (error) {
+                if (self.localHTMLDirPath) {
                     
-                    [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
-                    break;
-
+                    for (NSString *dirObject in dirObjects) {
+                        
+                        [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
+                                    toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                     error:&error];
+                        
+                        if (error) {
+                            
+                            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+                            break;
+                            
+                        }
+                        
+                    }
+                    
+                    (error) ? [self restoreLocalHTMLDir] : [self saveETagFile];
+                    
+                } else {
+                    [self restoreLocalHTMLDir];
                 }
-                
+
             }
             
-            if (error) {
-                
-                [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
-                
-            } else {
+        }
+        
+    }
 
-                [self saveETagFile];
+}
 
-            }
+- (BOOL)backupLocalHTMLDir {
+    
+    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                        createIfNotExist:YES
+                                     shoudCleanBeforeUse:NO];
+    
+    if (!self.localHTMLDirPath) return NO;
 
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error = nil;
+    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+
+    if (error) {
+        
+        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        return NO;
+        
+    }
+    
+    self.tempHTMLDirPath = [self webViewLocalDirForPath:TEMP_DIR
+                                       createIfNotExist:YES
+                                    shoudCleanBeforeUse:YES];
+    
+    if (!self.tempHTMLDirPath) return NO;
+
+    for (NSString *dirObject in dirObjects) {
+        
+        [fm moveItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                    toPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
+                     error:&error];
+        
+        if (error) {
+            
+            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            break;
+            
+        }
+        
+    }
+
+    if (error) return NO;
+    
+    return YES;
+    
+}
+
+- (void)restoreLocalHTMLDir {
+    
+    self.tempHTMLDirPath = [self webViewLocalDirForPath:TEMP_DIR
+                                       createIfNotExist:NO
+                                    shoudCleanBeforeUse:NO];
+    
+    if (!self.tempHTMLDirPath) return;
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error = nil;
+    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.tempHTMLDirPath error:&error];
+    
+    if (error) {
+        
+        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        return;
+        
+    }
+
+    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                        createIfNotExist:YES
+                                     shoudCleanBeforeUse:YES];
+    
+    if (!self.localHTMLDirPath) return;
+
+    for (NSString *dirObject in dirObjects) {
+        
+        [fm moveItemAtPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
+                    toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                     error:&error];
+        
+        if (error) {
+            
+            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            break;
+            
         }
         
     }
@@ -337,7 +403,11 @@
         
     } else {
         
-        // should notificate owner about available update
+        if (self.owner.haveLocalHTML) {
+            [self.owner localHTMLUpdateIsAvailable];
+        } else {
+            [self loadLocalHTML];
+        }
         
     }
 
@@ -345,12 +415,18 @@
 
 - (void)loadLocalHTML {
     
+    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                        createIfNotExist:NO
+                                     shoudCleanBeforeUse:NO];
+
     NSFileManager *fm = [NSFileManager defaultManager];
     
     NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:INDEX_HTML];
 
-    if ([fm fileExistsAtPath:indexHTMLPath]) {
+    self.owner.haveLocalHTML = [fm fileExistsAtPath:indexHTMLPath];
     
+    if (self.owner.haveLocalHTML) {
+        
         NSError *error = nil;
         NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
                                                               encoding:NSUTF8StringEncoding

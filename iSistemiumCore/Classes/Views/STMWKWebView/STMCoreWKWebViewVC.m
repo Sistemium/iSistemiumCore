@@ -249,23 +249,42 @@
     [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
 }
 
-- (void)appManifestLoadFailWithErrorText:(NSString *)errorText {
-    
-    [[STMLogger sharedLogger] saveLogMessageWithText:errorText
-                                             numType:STMLogMessageTypeError];
-    
-    [self.spinnerView removeFromSuperview];
+- (void)localHTMLUpdateIsAvailable {
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                            message:errorText
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"UPDATE", nil)
+                                                            message:@"UPDATE AVAILABLE!"
                                                            delegate:nil
                                                   cancelButtonTitle:NSLocalizedString(@"OK", nil)
                                                   otherButtonTitles:nil];
         [alertView show];
         
     }];
+
+}
+
+- (void)appManifestLoadFailWithErrorText:(NSString *)errorText {
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:errorText
+                                             numType:STMLogMessageTypeError];
+    
+    if (!self.haveLocalHTML) {
+     
+        [self.spinnerView removeFromSuperview];
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
+                                                                message:errorText
+                                                               delegate:nil
+                                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                      otherButtonTitles:nil];
+            [alertView show];
+            
+        }];
+
+    }
 
 }
 
@@ -373,8 +392,8 @@
     
 //    NSLog(@"---- webView decidePolicyForNavigationAction");
 //    
-    NSLog(@"scheme %@", navigationAction.request.URL.scheme);
-    NSLog(@"request %@", navigationAction.request)
+//    NSLog(@"scheme %@", navigationAction.request.URL.scheme);
+//    NSLog(@"request %@", navigationAction.request)
 //    NSLog(@"HTTPMethod %@", navigationAction.request.HTTPMethod)
 //    NSLog(@"HTTPBody %@", navigationAction.request.HTTPBody)
     

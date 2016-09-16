@@ -17,11 +17,13 @@
 @interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable, STMCheckinDelegate>
 
 @property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
+@property (nonatomic) BOOL haveLocalHTML;
 
 - (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;
 
 - (void)appManifestLoadFailWithErrorText:(NSString *)errorText;
+- (void)localHTMLUpdateIsAvailable;
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
 
 
