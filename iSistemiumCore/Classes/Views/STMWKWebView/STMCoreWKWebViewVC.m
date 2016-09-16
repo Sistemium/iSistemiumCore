@@ -169,7 +169,7 @@
     
 //    return @"https://r50.sistemium.com/app.manifest";
     
-    return self.webViewParameters[@"appManifestURI"];
+    return self.webViewStoryboardParameters[@"appManifestURI"];
     
 }
 
