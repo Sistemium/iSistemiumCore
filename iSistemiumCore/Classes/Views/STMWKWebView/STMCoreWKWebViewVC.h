@@ -22,7 +22,8 @@
 - (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;
 
-- (void)appManifestLoadFailWithErrorText:(NSString *)errorText;
+- (void)appManifestLoadErrorText:(NSString *)errorText;
+- (void)appManifestLoadInfoText:(NSString *)infoText;
 - (void)localHTMLUpdateIsAvailable;
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
 

@@ -54,7 +54,7 @@
         } else {
             
             NSString *errorMessage = [NSString stringWithFormat:@"%@ dir path is not a dir", dirPath];
-            [self.owner appManifestLoadFailWithErrorText:errorMessage];
+            [self.owner appManifestLoadErrorText:errorMessage];
             return nil;
             
         }
@@ -80,7 +80,7 @@
         
         if (!success && error) {
             
-            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
             break;
             
         }
@@ -100,7 +100,7 @@
     
     if (error) {
         
-        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
         return nil;
         
     }
@@ -136,21 +136,21 @@
     
     if (connectionError) {
         
-        [self.owner appManifestLoadFailWithErrorText:connectionError.localizedDescription];
+        [self.owner appManifestLoadErrorText:connectionError.localizedDescription];
         return;
         
     }
 
     if (![response isKindOfClass:[NSHTTPURLResponse class]]) {
 
-        [self.owner appManifestLoadFailWithErrorText:@"response is not a NSHTTPURLResponse class, can not get eTag"];
+        [self.owner appManifestLoadErrorText:@"response is not a NSHTTPURLResponse class, can not get eTag"];
         return;
 
     }
     
     if (data.length == 0) {
 
-        [self.owner appManifestLoadFailWithErrorText:@"response data length is 0"];
+        [self.owner appManifestLoadErrorText:@"response data length is 0"];
         return;
 
     }
@@ -172,7 +172,7 @@
             
             if (!appManifest) {
                 
-                [self.owner appManifestLoadFailWithErrorText:@"can not convert appManifest response data to string"];
+                [self.owner appManifestLoadErrorText:@"can not convert appManifest response data to string"];
                 return;
                 
             }
@@ -182,7 +182,7 @@
         }
 
     } else {
-        [self.owner appManifestLoadFailWithErrorText:@"have no update"];
+        [self.owner appManifestLoadInfoText:@"have no update"];
     }
     
 }
@@ -205,7 +205,7 @@
 
     } else {
 
-        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
         return NO;
         
     }
@@ -243,7 +243,7 @@
         
         if (![self loadAppManifestFile:filePath]) {
             
-            [self.owner appManifestLoadFailWithErrorText:@"something wrong with appManifest's files loading"];
+            [self.owner appManifestLoadErrorText:@"something wrong with appManifest's files loading"];
             loadSuccess = NO;
             break;
             
@@ -259,7 +259,7 @@
         
         if (error) {
             
-            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
 
         } else {
 
@@ -279,7 +279,7 @@
                         
                         if (error) {
                             
-                            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+                            [self.owner appManifestLoadErrorText:error.localizedDescription];
                             break;
                             
                         }
@@ -314,7 +314,7 @@
 
     if (error) {
         
-        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
         return NO;
         
     }
@@ -333,7 +333,7 @@
         
         if (error) {
             
-            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
             break;
             
         }
@@ -360,7 +360,7 @@
     
     if (error) {
         
-        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
         return;
         
     }
@@ -379,7 +379,7 @@
         
         if (error) {
             
-            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
             break;
             
         }
@@ -402,7 +402,7 @@
     
     if (error) {
         
-        [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
         
     } else {
         
@@ -439,7 +439,7 @@
         
         if (error) {
 
-            [self.owner appManifestLoadFailWithErrorText:error.localizedDescription];
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
             return;
             
         }
@@ -447,7 +447,7 @@
         [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
 
     } else {
-        if (!self.checkingForUpdate) [self.owner appManifestLoadFailWithErrorText:@"have no index.html"];
+        if (!self.checkingForUpdate) [self.owner appManifestLoadErrorText:@"have no index.html"];
     }
     
 }

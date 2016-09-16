@@ -264,26 +264,34 @@
 
 }
 
-- (void)appManifestLoadFailWithErrorText:(NSString *)errorText {
+- (void)appManifestLoadErrorText:(NSString *)errorText {
+    [self appManifestLoadLogMessage:errorText numType:STMLogMessageTypeError];
+}
+
+- (void)appManifestLoadInfoText:(NSString *)infoText {
+    [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
+}
+
+- (void)appManifestLoadLogMessage:(NSString *)logMessage numType:(STMLogMessageType)numType {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:errorText
-                                             numType:STMLogMessageTypeError];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:numType];
     
-    if (!self.haveLocalHTML) {
-     
+    if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
+        
         [self.spinnerView removeFromSuperview];
-
+        
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
+            
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                                message:errorText
+                                                                message:logMessage
                                                                delegate:nil
                                                       cancelButtonTitle:NSLocalizedString(@"OK", nil)
                                                       otherButtonTitles:nil];
             [alertView show];
             
         }];
-
+        
     }
 
 }
