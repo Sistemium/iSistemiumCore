@@ -29,17 +29,26 @@
 
 @implementation STMCoreAppManifestHandler
 
+- (NSString *)completeRelativePathForPath:(NSString *)path {
+    
+    if (!path) path = @"";
+    
+    NSString *ownerName = [self.owner webViewStoryboardParameters][@"name"];
+    NSString *ownerTitle = [self.owner webViewStoryboardParameters][@"title"];
+    
+    NSString *completePath = [NSString pathWithComponents:@[ownerName, ownerTitle, path]];
+
+    return completePath;
+    
+}
 
 #pragma mark - directories
 
 - (NSString *)webViewLocalDirForPath:(NSString *)dirPath createIfNotExist:(BOOL)createIfNotExist shoudCleanBeforeUse:(BOOL)cleanBeforeUse {
     
-    NSString *ownerName = [self.owner webViewStoryboardParameters][@"name"];
-    NSString *ownerTitle = [self.owner webViewStoryboardParameters][@"title"];
+    NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    NSString *completePath = [@[ownerName, ownerTitle, dirPath] componentsJoinedByString:@"/"];
-    
-    completePath = [STMFunctions absolutePathForPath:completePath];
+    completePath = [STMFunctions absoluteDocumentsPathForPath:completePath];
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
@@ -429,40 +438,6 @@
 
 }
 
-- (void)loadLocalHTML {
-    
-    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
-                                        createIfNotExist:NO
-                                     shoudCleanBeforeUse:NO];
-
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:INDEX_HTML];
-
-    self.owner.haveLocalHTML = [fm fileExistsAtPath:indexHTMLPath];
-    
-    if (self.owner.haveLocalHTML) {
-        
-        NSError *error = nil;
-        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
-                                                              encoding:NSUTF8StringEncoding
-                                                                 error:&error];
-        
-        if (error) {
-
-            [self.owner appManifestLoadErrorText:error.localizedDescription];
-            return;
-            
-        }
-        
-        [self.owner loadHTML:indexHTMLString atBaseDir:self.localHTMLDirPath];
-
-    } else {
-        if (!self.checkingForUpdate) [self.owner appManifestLoadErrorText:@"have no index.html"];
-    }
-    
-}
-
 - (BOOL)loadAppManifestFile:(NSString *)filePath {
 
     if (filePath.pathComponents.count > 1) {
@@ -507,6 +482,78 @@
         
     }
 
+}
+
+- (void)loadLocalHTML {
+    
+    self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                        createIfNotExist:NO
+                                     shoudCleanBeforeUse:NO];
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *indexHTMLPath = [self.localHTMLDirPath stringByAppendingPathComponent:INDEX_HTML];
+    
+    self.owner.haveLocalHTML = [fm fileExistsAtPath:indexHTMLPath];
+    
+    if (self.owner.haveLocalHTML) {
+        
+        NSError *error = nil;
+        NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
+                                                              encoding:NSUTF8StringEncoding
+                                                                 error:&error];
+        
+        NSString *relativePath = [self completeRelativePathForPath:LOCAL_HTML_DIR];
+        NSString *completeTempPath = [STMFunctions absoluteTemporaryPathForPath:relativePath];
+        
+        if (!error && [fm fileExistsAtPath:completeTempPath]) {
+            
+            [fm removeItemAtPath:completeTempPath
+                           error:&error];
+            
+        }
+
+        if (!error) {
+            
+            [fm createDirectoryAtPath:completeTempPath
+          withIntermediateDirectories:YES
+                           attributes:nil
+                                error:&error];
+            
+        }
+        
+        NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+        
+        if (!error) {
+
+            for (NSString *dirObject in dirObjects) {
+                
+                [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                            toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
+                             error:&error];
+                
+                if (error) break;
+                
+            }
+            
+        }
+
+        if (!error) {
+            
+            [self.owner loadHTML:indexHTMLString
+                       atBaseDir:completeTempPath];
+            
+        } else {
+
+            [self.owner appManifestLoadErrorText:error.localizedDescription];
+            return;
+
+        }
+
+    } else {
+        if (!self.checkingForUpdate) [self.owner appManifestLoadErrorText:@"have no index.html"];
+    }
+    
 }
 
 
