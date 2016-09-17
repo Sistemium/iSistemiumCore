@@ -129,11 +129,13 @@
     
     NSURL *appManifestURI = [NSURL URLWithString:[self.owner webViewAppManifestURI]];
     
-    NSURLRequest *request = [[STMCoreAuthController authController] authenticateRequest:[NSURLRequest requestWithURL:appManifestURI]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:appManifestURI
+                                             cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                         timeoutInterval:15];
+    
+    request = [[STMCoreAuthController authController] authenticateRequest:request];
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    
-    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
     
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
         
