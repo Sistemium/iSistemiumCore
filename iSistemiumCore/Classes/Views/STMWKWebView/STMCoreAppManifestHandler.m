@@ -133,6 +133,8 @@
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     
+    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+    
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
         
         [self handleAppManifestResponse:response
