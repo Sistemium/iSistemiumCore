@@ -307,11 +307,17 @@
 }
 
 - (void)appManifestLoadErrorText:(NSString *)errorText {
+    
+    errorText = [@"cache manifest load: " stringByAppendingString:errorText];
     [self appManifestLoadLogMessage:errorText numType:STMLogMessageTypeError];
+    
 }
 
 - (void)appManifestLoadInfoText:(NSString *)infoText {
+    
+    infoText = [@"cache manifest load: " stringByAppendingString:infoText];
     [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
+    
 }
 
 - (void)appManifestLoadLogMessage:(NSString *)logMessage numType:(STMLogMessageType)numType {
