@@ -1193,6 +1193,34 @@
 }
 
 
+#pragma mark - evaluateJavaScriptAndWait
+
+int counter = 0;
+
+- (void)evaluateJavaScriptAndWait:(NSString *)javascript {
+    
+    counter++;
+    
+    [self.webView evaluateJavaScript:javascript completionHandler:^(NSString *result, NSError *error){
+        
+        if (error || SYSTEM_VERSION < 10.0 || [UIApplication sharedApplication].applicationState == UIApplicationStateActive) {
+            return;
+        }
+        
+        int counterWas = counter;
+        int count = 0;
+        
+        while(count++ < 50 && counter == counterWas) {
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        }
+        
+        //NSLog(@"evaluateJavaScriptAndWait finish %d", counter);
+        
+    }];
+    
+}
+
+
 #pragma mark - STMImagePickerOwnerProtocol
 
 - (void)checkImagePickerWithSourceTypeNumber:(NSNumber *)sourceTypeNumber {
@@ -1477,11 +1505,9 @@
         
     NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.scannerScanJSFunction, [STMFunctions jsonStringFromArray:arguments]];
         
-        [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-            
-        }];
+    [self evaluateJavaScriptAndWait:jsFunction];
 
-    }
+}
     
 - (void)powerButtonPressedOnBarCodeScanner:(STMBarCodeScanner *)scanner {
     
