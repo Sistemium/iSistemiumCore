@@ -185,6 +185,14 @@
     }
     
     NSString *responseETag = httpResponse.allHeaderFields[@"eTag"];
+    
+    if (!responseETag) {
+        
+        [self.owner appManifestLoadErrorText:@"response have no eTag"];
+        return;
+
+    }
+    
     self.eTagFileName = [responseETag stringByAppendingString:@".eTag"];
 
     if ([self shouldUpdateLocalHTML]) {
