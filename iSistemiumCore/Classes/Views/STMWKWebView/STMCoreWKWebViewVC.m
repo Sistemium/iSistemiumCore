@@ -216,13 +216,13 @@
 
 - (void)loadWebView {
     
+    [self.view addSubview:self.spinnerView];
+
     if ([self webViewAppManifestURI]) {
         
         [self loadLocalHTML];
         
     } else {
-
-        [self.view addSubview:self.spinnerView];
         
         self.isAuthorizing = NO;
         
