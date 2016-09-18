@@ -176,8 +176,23 @@
     }
 
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+
+    if (httpResponse.statusCode != 200) {
+
+        [self.owner appManifestLoadErrorText:[NSString stringWithFormat:@"response status code %@", @(httpResponse.statusCode)]];
+        return;
+
+    }
     
     NSString *responseETag = httpResponse.allHeaderFields[@"eTag"];
+    
+    if (!responseETag) {
+        
+        [self.owner appManifestLoadErrorText:@"response have no eTag"];
+        return;
+
+    }
+    
     self.eTagFileName = [responseETag stringByAppendingString:@".eTag"];
 
     if ([self shouldUpdateLocalHTML]) {
