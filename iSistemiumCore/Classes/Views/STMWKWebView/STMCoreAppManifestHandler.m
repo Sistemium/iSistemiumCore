@@ -14,6 +14,11 @@
 #define TEMP_DIR @"tempHTML"
 #define INDEX_HTML @"index.html"
 
+#define MANIFEST_CACHE_MANIFEST_LINE @"CACHE MANIFEST"
+#define MANIFEST_CACHE_LINE @"CACHE:"
+#define MANIFEST_NETWORK_LINE @"NETWORK:"
+#define MANIFEST_FALLBACK_LINE @"FALLBACK:"
+
 
 @interface STMCoreAppManifestHandler()
 
@@ -231,52 +236,110 @@
 
 - (void)handleAppManifest:(NSString *)appManifest {
     
-    NSArray *filePaths = [self filePathsFromAppManifest:appManifest];
+    NSArray *filePaths = [self filePathsToLoadFromAppManifest:appManifest];
     
-    BOOL loadSuccess = YES;
-    
-    for (NSString *filePath in filePaths) {
+    if (filePaths) {
         
-        if (![self loadAppManifestFile:filePath]) {
+        BOOL loadSuccess = YES;
+        
+        for (NSString *filePath in filePaths) {
             
-            [self.owner appManifestLoadErrorText:@"something wrong with appManifest's files loading"];
-            loadSuccess = NO;
-            break;
+            if (![self loadAppManifestFile:filePath]) {
+                
+                [self.owner appManifestLoadErrorText:@"something wrong with appManifest's files loading"];
+                loadSuccess = NO;
+                break;
+                
+            }
             
         }
         
+        if (loadSuccess) {
+            [self moveUpdateDirContentToLocalHTMLDir];
+        }
+
     }
     
-    if (loadSuccess) {
-        [self moveUpdateDirContentToLocalHTMLDir];
-    }
-
 }
 
-- (NSArray *)filePathsFromAppManifest:(NSString *)appManifest {
+- (NSArray *)filePathsToLoadFromAppManifest:(NSString *)appManifest {
     
-    NSMutableArray *appComponents = [appManifest componentsSeparatedByString:@"\n"].mutableCopy;
+    NSMutableArray *manifestLines = [appManifest componentsSeparatedByString:@"\n"].mutableCopy;
     
-    [appComponents enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [manifestLines enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
         if ([obj isKindOfClass:[NSString class]]) {
+            
             obj = [(NSString *)obj stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            if ([obj hasPrefix:@"#"]) obj = @"";
+            
         } else {
+            
             obj = @"";
+            
         }
         
-        [appComponents replaceObjectAtIndex:idx withObject:obj];
+        [manifestLines replaceObjectAtIndex:idx withObject:obj];
         
     }];
     
-    [appComponents removeObject:@""];
-    [appComponents removeObject:@"favicon.ico"];
-    [appComponents removeObject:@"robots.txt"];
+    [manifestLines removeObject:@""];
+    [manifestLines removeObject:@"favicon.ico"];
+    [manifestLines removeObject:@"robots.txt"];
     
-    NSUInteger startIndex = [appComponents indexOfObject:@"CACHE:"] + 1;
-    NSUInteger length = [appComponents indexOfObject:@"NETWORK:"] - startIndex;
+    NSUInteger cacheManifestLineIndex = [manifestLines indexOfObject:MANIFEST_CACHE_MANIFEST_LINE];
     
-    NSArray *filePaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
+    if (cacheManifestLineIndex == NSNotFound) {
+        
+        [self.owner appManifestLoadErrorText:[NSString stringWithFormat:@"'%@' line is required but not found", MANIFEST_CACHE_MANIFEST_LINE]];
+        return nil;
+        
+    }
+
+    if (cacheManifestLineIndex != 0) {
+        
+        [self.owner appManifestLoadErrorText:[NSString stringWithFormat:@"'%@' line must be the first line in cache manifest file", MANIFEST_CACHE_MANIFEST_LINE]];
+        return nil;
+        
+    }
+
+    NSMutableArray *cutLines = @[MANIFEST_CACHE_LINE, MANIFEST_NETWORK_LINE, MANIFEST_FALLBACK_LINE].mutableCopy;
+
+    NSArray *filePaths = [self filePathsFromManifestLines:manifestLines
+                                                 cutLines:cutLines
+                                               startIndex:cacheManifestLineIndex + 1];
+
+    NSUInteger cacheLineIndex = [manifestLines indexOfObject:MANIFEST_CACHE_LINE];
+    
+    if (cacheLineIndex != NSNotFound) {
+        
+        [cutLines removeObject:MANIFEST_CACHE_LINE];
+
+        filePaths = [filePaths arrayByAddingObjectsFromArray:[self filePathsFromManifestLines:manifestLines
+                                                                                     cutLines:cutLines
+                                                                                   startIndex:cacheLineIndex + 1]];
+
+    }
+    
+    return filePaths;
+    
+}
+
+- (NSArray *)filePathsFromManifestLines:(NSArray *)manifestLines cutLines:(NSArray *)cutLines startIndex:(NSUInteger)startIndex {
+    
+    NSUInteger finishIndex = manifestLines.count - 1;
+    
+    for (NSString *cutLine in cutLines) {
+        
+        NSUInteger cutIndex = [manifestLines indexOfObject:cutLine];
+        
+        finishIndex = (cutIndex != NSNotFound && cutIndex >= startIndex && cutIndex <= finishIndex) ? cutIndex : finishIndex;
+        
+    }
+    
+    NSUInteger length = finishIndex - startIndex;
+    
+    NSArray *filePaths = [manifestLines subarrayWithRange:NSMakeRange(startIndex, length)];
 
     return filePaths;
     

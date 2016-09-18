@@ -168,6 +168,8 @@
 - (NSString *)webViewAppManifestURI {
     
 //    return @"https://r50.sistemium.com/app.manifest";
+//    return @"https://isd.sistemium.com/app.manifest";
+//    return @"https://sistemium.com/r50/tp/cache.manifest.php";
     
     return self.webViewStoryboardParameters[@"appManifestURI"];
     
