@@ -231,6 +231,30 @@
 
 - (void)handleAppManifest:(NSString *)appManifest {
     
+    NSArray *filePaths = [self filePathsFromAppManifest:appManifest];
+    
+    BOOL loadSuccess = YES;
+    
+    for (NSString *filePath in filePaths) {
+        
+        if (![self loadAppManifestFile:filePath]) {
+            
+            [self.owner appManifestLoadErrorText:@"something wrong with appManifest's files loading"];
+            loadSuccess = NO;
+            break;
+            
+        }
+        
+    }
+    
+    if (loadSuccess) {
+        [self moveUpdateDirContentToLocalHTMLDir];
+    }
+
+}
+
+- (NSArray *)filePathsFromAppManifest:(NSString *)appManifest {
+    
     NSMutableArray *appComponents = [appManifest componentsSeparatedByString:@"\n"].mutableCopy;
     
     [appComponents enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -253,62 +277,98 @@
     NSUInteger length = [appComponents indexOfObject:@"NETWORK:"] - startIndex;
     
     NSArray *filePaths = [appComponents subarrayWithRange:NSMakeRange(startIndex, length)];
+
+    return filePaths;
     
-    BOOL loadSuccess = YES;
+}
+
+- (BOOL)loadAppManifestFile:(NSString *)filePath {
     
-    for (NSString *filePath in filePaths) {
+    if (filePath.pathComponents.count > 1) {
         
-        if (![self loadAppManifestFile:filePath]) {
-            
-            [self.owner appManifestLoadErrorText:@"something wrong with appManifest's files loading"];
-            loadSuccess = NO;
-            break;
-            
-        }
+        NSMutableArray *filePathComponents = filePath.pathComponents.mutableCopy;
+        
+        [filePathComponents removeLastObject];
+        
+        NSString *dirPath = [self.updateDirPath stringByAppendingPathComponent:[NSString pathWithComponents:filePathComponents]];
+        
+        [self createDirAtPath:dirPath];
         
     }
     
-    if (loadSuccess) {
+    return [self loadAndWriteFile:filePath];
+    
+}
 
-        NSFileManager *fm = [NSFileManager defaultManager];
-        NSError *error = nil;
-        NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.updateDirPath error:&error];
+- (BOOL)loadAndWriteFile:(NSString *)filePath {
+    
+    NSLog(@"load %@", filePath);
+    
+    NSURL *baseURL = [NSURL URLWithString:[self.owner webViewAppManifestURI]].URLByDeletingLastPathComponent;
+    NSURL *fileURL = [baseURL URLByAppendingPathComponent:filePath];
+    
+    NSData *fileData = [NSData dataWithContentsOfURL:fileURL];
+    
+    NSString *localFilePath = [self.updateDirPath stringByAppendingPathComponent:filePath];
+    
+    NSError *error = nil;
+    
+    [fileData writeToFile:localFilePath
+                  options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                    error:&error];
+    
+    if (error) {
         
-        if (error) {
-            
-            [self.owner appManifestLoadErrorText:error.localizedDescription];
+        NSLog(@"%@", error.localizedDescription);
+        return NO;
+        
+    } else {
+        
+        return YES;
+        
+    }
+    
+}
 
-        } else {
-
-            if ([self backupLocalHTMLDir]) {
+- (void)moveUpdateDirContentToLocalHTMLDir {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error = nil;
+    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.updateDirPath error:&error];
+    
+    if (error) {
+        
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
+        
+    } else {
+        
+        if ([self backupLocalHTMLDir]) {
             
-                self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
-                                                    createIfNotExist:YES
-                                                 shoudCleanBeforeUse:YES];
+            self.localHTMLDirPath = [self webViewLocalDirForPath:LOCAL_HTML_DIR
+                                                createIfNotExist:YES
+                                             shoudCleanBeforeUse:YES];
+            
+            if (self.localHTMLDirPath) {
                 
-                if (self.localHTMLDirPath) {
+                for (NSString *dirObject in dirObjects) {
                     
-                    for (NSString *dirObject in dirObjects) {
+                    [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
+                                toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                 error:&error];
+                    
+                    if (error) {
                         
-                        [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
-                                    toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                                     error:&error];
-                        
-                        if (error) {
-                            
-                            [self.owner appManifestLoadErrorText:error.localizedDescription];
-                            break;
-                            
-                        }
+                        [self.owner appManifestLoadErrorText:error.localizedDescription];
+                        break;
                         
                     }
                     
-                    (error) ? [self restoreLocalHTMLDir] : [self saveETagFile];
-                    
-                } else {
-                    [self restoreLocalHTMLDir];
                 }
-
+                
+                (error) ? [self restoreLocalHTMLDir] : [self saveETagFile];
+                
+            } else {
+                [self restoreLocalHTMLDir];
             }
             
         }
@@ -437,52 +497,6 @@
         } else {
             [self loadLocalHTML];
         }
-        
-    }
-
-}
-
-- (BOOL)loadAppManifestFile:(NSString *)filePath {
-
-    if (filePath.pathComponents.count > 1) {
-        
-        NSMutableArray *filePathComponents = filePath.pathComponents.mutableCopy;
-        
-        [filePathComponents removeLastObject];
-        
-        NSString *dirPath = [self.updateDirPath stringByAppendingPathComponent:[NSString pathWithComponents:filePathComponents]];
-        
-        [self createDirAtPath:dirPath];
-        
-    }
-    
-    return [self loadAndWriteFile:filePath];
-    
-}
-
-- (BOOL)loadAndWriteFile:(NSString *)filePath {
-    
-    NSURL *baseURL = [NSURL URLWithString:[self.owner webViewAppManifestURI]].URLByDeletingLastPathComponent;
-    NSURL *fileURL = [baseURL URLByAppendingPathComponent:filePath];
-    
-    NSData *fileData = [NSData dataWithContentsOfURL:fileURL];
-    
-    NSString *localFilePath = [self.updateDirPath stringByAppendingPathComponent:filePath];
-    
-    NSError *error = nil;
-    
-    [fileData writeToFile:localFilePath
-                  options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                    error:&error];
-    
-    if (error) {
-        
-        NSLog(@"%@", error.localizedDescription);
-        return NO;
-        
-    } else {
-        
-        return YES;
         
     }
 
