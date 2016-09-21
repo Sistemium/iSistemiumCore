@@ -1510,7 +1510,15 @@
     
     objController.requestedFantomXid = nil;
     
-    if (!fantomDic) fantomDic = objController.fantomsArray.firstObject;
+    if (!fantomDic) {
+        
+        NSString *logMessage = @"fantomDic is nil in didFinishResolveFantom:";
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+        fantomDic = objController.fantomsArray.firstObject;
+        
+    }
     
     [objController.fantomsArray removeObject:fantomDic];
     

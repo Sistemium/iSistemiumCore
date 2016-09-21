@@ -1156,10 +1156,33 @@
         NSLog(errorString);
         
         if (!entityName) entityName = @"";
-        if (!xid) xid = [NSData data];
+        
+        NSData *requestedFantomXid = [STMCoreObjectsController requestedFantomXid];
+        
+        if (![requestedFantomXid isEqualToData:xid]) {
+            
+            NSString *formatString = @"requestedFantomXid %@ is not equal response xid: %@";
+            NSString *logMessage = [NSString stringWithFormat:formatString, requestedFantomXid, xid];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeWarning];
+            
+            xid = requestedFantomXid;
+        }
         
         [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":[STMCoreObjectsController requestedFantomXid]} successfully:NO];
+
+        if (xid) {
+            
+            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName,
+                                                               @"xid"       :xid}
+                                                successfully:NO];
+            
+        } else {
+            
+            NSString *logMessage = @"xid is nil in socketReceiveJSDataFindAckErrorCode:";
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
+
+        }
 
     }
     
