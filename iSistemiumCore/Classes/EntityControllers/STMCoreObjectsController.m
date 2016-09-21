@@ -1358,7 +1358,7 @@
 
                         } else {
                             
-                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects", fantomObject.entity.name, fantomObject.xid];
+                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects, remove it", fantomObject.entity.name, fantomObject.xid];
                             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
                             
                             [self removeObject:fantomObject];
