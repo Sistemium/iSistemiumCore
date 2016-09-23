@@ -8,12 +8,14 @@
 
 #import "STMImagePickerController.h"
 
+#import <AVFoundation/AVFoundation.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
 #import "STMConstants.h"
+#import "STMLogger.h"
 
 
-@interface STMImagePickerController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+@interface STMImagePickerController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIAlertViewDelegate>
 
 @end
 
@@ -25,7 +27,7 @@
     self = [super init];
     
     if (self) {
-
+        
         self.delegate = self;
         
         self.sourceType = sourceType;
@@ -34,7 +36,9 @@
             
             self.showsCameraControls = NO;
             
-            UIView *cameraOverlayView = [[NSBundle mainBundle] loadNibNamed:@"STMCameraOverlayView" owner:self options:nil].firstObject;
+            UIView *cameraOverlayView = [[NSBundle mainBundle] loadNibNamed:@"STMCameraOverlayView"
+                                                                      owner:self
+                                                                    options:nil].firstObject;
             
             [self setFrameForCameraOverlayView:cameraOverlayView];
             
@@ -84,7 +88,7 @@
 - (BOOL)shouldAutorotate {
     
     return (IPHONE && SYSTEM_VERSION >= 8.0) ? NO : [super shouldAutorotate];
-        
+    
 }
 
 
@@ -115,11 +119,11 @@
                     if ([[asset valueForProperty:ALAssetPropertyLocation] isKindOfClass:[CLLocation class]]) {
                         
                         [self.ownerVC saveImage:image withLocation:[asset valueForProperty:ALAssetPropertyLocation]];
-
+                        
                     } else {
-
+                        
                         [self.ownerVC saveImage:image andWaitForLocation:NO];
-
+                        
                     }
                     
                 } failureBlock:^(NSError *error) {
@@ -147,15 +151,21 @@
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [picker dismissViewControllerAnimated:NO completion:^{
-        [self.ownerVC imagePickerControllerDidCancel:picker];
+        [self.ownerVC imagePickerWasDissmised:picker];
     }];
-
+    
 }
 
 
 #pragma mark - image picker view buttons
 
 - (IBAction)cameraButtonPressed:(id)sender {
+    
+    AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    
+    if (status != AVAuthorizationStatusAuthorized) {
+        return [self checkAuthorizationStatus];
+    }
     
     UIView *view = [[UIView alloc] initWithFrame:self.cameraOverlayView.frame];
     view.backgroundColor = [UIColor grayColor];
@@ -172,16 +182,13 @@
 }
 
 - (IBAction)cancelButtonPressed:(id)sender {
-    
-    [self imagePickerControllerDidCancel:self];
-    
+    [self.delegate imagePickerControllerDidCancel:self];
 }
 
 - (IBAction)photoLibraryButtonPressed:(id)sender {
     
-    [self dismissViewControllerAnimated:NO completion:^{
-        [self.ownerVC showImagePickerForSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-    }];
+    [self cancelButtonPressed:sender];
+    [self.ownerVC showImagePickerForSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
     
 }
 
@@ -190,11 +197,100 @@
 #pragma mark - orientation fix
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations{
-
+    
     if (IPHONE) {
         return UIInterfaceOrientationMaskPortrait;
     } else {
-        return UIInterfaceOrientationMaskAll;    
+        return UIInterfaceOrientationMaskAll;
+    }
+    
+}
+
+
+#pragma mark - authorizationStatus
+
+- (void)checkAuthorizationStatus {
+    
+    NSString *statusString = @"";
+    AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    
+    switch (status) {
+        case AVAuthorizationStatusNotDetermined:
+            statusString = @"not determined";
+            break;
+            
+        case AVAuthorizationStatusRestricted:
+            statusString = @"restricted";
+            [self showCameraPermissionAlert:statusString];
+            break;
+            
+        case AVAuthorizationStatusDenied:
+            statusString = @"denied";
+            [self showCameraPermissionAlert:statusString];
+            break;
+            
+        case AVAuthorizationStatusAuthorized:
+            statusString = @"authorized";
+            break;
+            
+        default:
+            break;
+    }
+    
+    NSString *logMessage = [@"Camera permission: " stringByAppendingString:statusString];
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
+    
+}
+
+- (void)showCameraPermissionAlert:(NSString *)alertReason {
+    
+    NSString *alertMessage = nil;
+    NSString *settingButtonTitle = nil;
+    
+    if ([alertReason isEqualToString:@"restricted"]) {
+        
+        alertMessage = NSLocalizedString(@"CAMERA PERMISSION RESTRICTED", nil);
+        
+    } else if ([alertReason isEqualToString:@"denied"]) {
+        
+        alertMessage = NSLocalizedString(@"CAMERA PERMISSION DENIED", nil);
+        settingButtonTitle = NSLocalizedString(@"SETTINGS", nil);
+        
+    }
+    
+    if (alertMessage) {
+        
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
+                                                            message:alertMessage
+                                                           delegate:self
+                                                  cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                  otherButtonTitles:nil];
+            
+            if (settingButtonTitle) [alert addButtonWithTitle:settingButtonTitle];
+            [alert show];
+            
+        }];
+        
+    }
+    
+}
+
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
+    
+    if (buttonIndex == 1) {
+        
+        NSURL *appSettings = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+        [[UIApplication sharedApplication] openURL:appSettings];
+        
+        [self cancelButtonPressed:self];
+        
     }
     
 }
@@ -203,8 +299,13 @@
 #pragma mark - view lifecycle
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    
+    if (self.sourceType == UIImagePickerControllerSourceTypeCamera) {
+        [self checkAuthorizationStatus];
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -212,14 +313,5 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end
