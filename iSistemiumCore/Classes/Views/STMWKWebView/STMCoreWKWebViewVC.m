@@ -17,6 +17,7 @@
 #import "STMRemoteController.h"
 #import "STMCorePicturesController.h"
 #import "STMCorePhotosController.h"
+#import "STMCoreAppManifestHandler.h"
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
@@ -25,8 +26,6 @@
 
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
-
-//#import "iSistemiumCore-Swift.h"
 
 
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate, STMImagePickerOwnerProtocol>
@@ -60,6 +59,8 @@
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic) BOOL waitingPhoto;
 
+@property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
+
 
 @end
 
@@ -70,6 +71,17 @@
     return [self.tabBarController.selectedViewController isEqual:self.navigationController];
 }
 
+- (STMCoreAppManifestHandler *)appManifestHandler {
+    
+    if (!_appManifestHandler) {
+        
+        _appManifestHandler = [[STMCoreAppManifestHandler alloc] init];
+        _appManifestHandler.owner = self;
+        
+    }
+    return _appManifestHandler;
+    
+}
 
 - (NSString *)iSistemiumIOSCallbackJSFunction {
     return @"iSistemiumIOSCallback";
@@ -122,73 +134,109 @@
     
 }
 
-- (NSString *)webViewUrlString {
+- (NSDictionary *)webViewStoryboardParameters {
     
-//    return @"http://maxbook.local:3000";
-    //    urlString = @"http://maxbook.local:3000/#/orders";
-    //return @"https://isissales.sistemium.com/";
-    
-    if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
+    if (!_webViewStoryboardParameters) {
         
-        STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
-        NSString *url = storyboard.parameters[@"url"];
-        return url;
+        if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
+            
+            STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
+            _webViewStoryboardParameters = storyboard.parameters;
+            
+        } else {
         
-    } else {
-        
-        return @"https://sistemium.com";
+            _webViewStoryboardParameters = @{};
+
+        }
         
     }
+    return _webViewStoryboardParameters;
+    
+}
+
+- (NSString *)webViewUrlString {
+
+//    return @"http://maxbook.local:3000";
+//    return @"https://isissales.sistemium.com/";
+    
+    NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
+    
+    return webViewUrlString ? webViewUrlString : @"https://sistemium.com";
+    
+}
+
+- (NSString *)webViewAppManifestURI {
+    
+//    return @"https://r50.sistemium.com/app.manifest";
+//    return @"https://isd.sistemium.com/app.manifest";
+//    return @"https://sistemium.com/r50/tp/cache.manifest.php";
+    
+    return self.webViewStoryboardParameters[@"appManifestURI"];
     
 }
 
 - (NSString *)webViewAuthCheckJS {
     
-    if ([self.storyboard isKindOfClass:[STMStoryboard class]]) {
-        
-        STMStoryboard *storyboard = (STMStoryboard *)self.storyboard;
-        NSString *authCheck = storyboard.parameters[@"authCheck"];
-        return authCheck;
-        
-    } else {
-        return [[self webViewSettings] valueForKey:@"wv.session.check"];
-    }
+    NSString *webViewAuthCheckJS = self.webViewStoryboardParameters[@"authCheck"];
+    
+    return webViewAuthCheckJS ? webViewAuthCheckJS : [[self webViewSettings] valueForKey:@"wv.session.check"];
     
 }
 
 - (void)reloadWebView {
     
-//    [self.webView reloadFromOrigin];
+    [self hideNavBar];
     
-    NSString *wvUrl = [self webViewUrlString];
-    
-    __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
-    
-    [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+    if ([self webViewAppManifestURI]) {
         
-        if (error) {
-            
-            NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
-            NSLog(@"trying to reload webView with loadRequest method");
-            
-            [self loadWebView];
-            
-        }
+        [self loadLocalHTML];
         
-    }];
+    } else {
+
+        //    [self.webView reloadFromOrigin];
+        
+        NSString *wvUrl = [self webViewUrlString];
+        
+        __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
+        
+        [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            
+            if (error) {
+                
+                NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
+                NSLog(@"trying to reload webView with loadRequest method");
+                
+                [self loadWebView];
+                
+            }
+            
+        }];
+
+    }
 
 }
 
 - (void)loadWebView {
     
     [self.view addSubview:self.spinnerView];
-    
-    self.isAuthorizing = NO;
-    
-    NSString *urlString = [self webViewUrlString];
-    [self loadURLString:urlString];
+
+    if ([self webViewAppManifestURI]) {
+        
+        [self loadLocalHTML];
+        
+    } else {
+        
+        self.isAuthorizing = NO;
+        
+        NSString *urlString = [self webViewUrlString];
+        [self loadURLString:urlString];
+
+    }
     
 }
+
+
+#pragma mark - load from remote URL
 
 - (void)authLoadWebView {
     
@@ -216,9 +264,10 @@
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
+    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
+    
     //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
     //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
-    request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
     
     //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
     //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
@@ -227,6 +276,75 @@
     //    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
     
     [self.webView loadRequest:request];
+    
+}
+
+
+#pragma mark - load localHTML
+
+- (void)loadLocalHTML {
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        [self.appManifestHandler startLoadLocalHTML];
+    });
+    
+}
+
+- (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
+    });
+
+}
+
+- (void)localHTMLUpdateIsAvailable {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self showUpdateAvailableNavBar];
+    });
+
+}
+
+- (void)appManifestLoadErrorText:(NSString *)errorText {
+    
+    errorText = [@"cache manifest load: " stringByAppendingString:errorText];
+    [self appManifestLoadLogMessage:errorText numType:STMLogMessageTypeError];
+    
+}
+
+- (void)appManifestLoadInfoText:(NSString *)infoText {
+    
+    infoText = [@"cache manifest load: " stringByAppendingString:infoText];
+    [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
+    
+}
+
+- (void)appManifestLoadLogMessage:(NSString *)logMessage numType:(STMLogMessageType)numType {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:numType];
+        
+        if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
+            
+            [self.spinnerView removeFromSuperview];
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
+                                                                    message:logMessage
+                                                                   delegate:nil
+                                                          cancelButtonTitle:NSLocalizedString(@"OK", nil)
+                                                          otherButtonTitles:nil];
+                [alertView show];
+                
+            }];
+            
+        }
+
+    });
 
 }
 
@@ -251,8 +369,42 @@
     [self.localView addSubview:self.webView];
     
     self.webView.navigationDelegate = self;
+    
     [self loadWebView];
     
+}
+
+
+#pragma mark - navigation bar
+
+- (void)showUpdateAvailableNavBar {
+    
+//    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}];
+    
+    self.navigationItem.title = NSLocalizedString(@"UPDATE AVAILABLE", nil);
+    
+    UIBarButtonItem *updateButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"UPDATE", nil)
+                                                                     style:UIBarButtonItemStylePlain
+                                                                    target:self
+                                                                    action:@selector(reloadWebView)];
+    updateButton.tintColor = [UIColor redColor];
+    
+    self.navigationItem.rightBarButtonItem = updateButton;
+    
+    [self.navigationController setNavigationBarHidden:NO
+                                             animated:YES];
+
+}
+
+- (void)hideNavBar {
+    
+    if (!self.navigationController.navigationBarHidden) {
+        
+        [self.navigationController setNavigationBarHidden:YES
+                                                 animated:YES];
+        
+    }
+
 }
 
 
@@ -285,7 +437,7 @@
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
     
-    [self loadURL:webView.URL];
+    [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
     
 }
 

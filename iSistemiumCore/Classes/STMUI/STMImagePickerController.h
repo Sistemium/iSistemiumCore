@@ -19,5 +19,9 @@
 
 - (void)setFrameForCameraOverlayView:(UIView *)cameraOverlayView;
 
+- (IBAction)cameraButtonPressed:(id)sender;
+- (IBAction)cancelButtonPressed:(id)sender;
+- (IBAction)photoLibraryButtonPressed:(id)sender;
+
 
 @end

@@ -685,7 +685,15 @@
 }
 
 + (NSString *)absolutePathForPath:(nullable NSString *)path {
+    return [self absoluteDocumentsPathForPath:path];
+}
+
++ (NSString *)absoluteDocumentsPathForPath:(nullable NSString *)path {
     return (path) ? [[self documentsDirectory] stringByAppendingPathComponent:(NSString *)path] : [self documentsDirectory];
+}
+
++ (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path {
+    return (path) ? [NSTemporaryDirectory() stringByAppendingPathComponent:(NSString *)path] : NSTemporaryDirectory();
 }
 
 + (UIColor *)colorForColorString:(NSString *)colorSting {

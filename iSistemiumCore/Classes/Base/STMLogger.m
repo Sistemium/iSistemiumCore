@@ -238,7 +238,7 @@
 }
 
 - (void)saveLogMessageWithText:(NSString *)text
-                       numType:(STMLogMessageType)numType{
+                       numType:(STMLogMessageType)numType {
     
     NSString *stringType = [self stringTypeForNumType:numType];
     
@@ -248,7 +248,7 @@
 }
 
 - (void)saveLogMessageWithText:(NSString *)text {
-    [self saveLogMessageWithText:text type:@"info"];
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeInfo];
 }
 
 - (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type {
@@ -257,32 +257,27 @@
 
 - (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type owner:(STMDatum *)owner {
     
+    // owner is unused property
+    owner = nil; // have to check owner.managedObjectsContext before use it
+
     if (![[self availableTypes] containsObject:type]) type = @"info";
     
     NSLog(@"Log %@: %@", type, text);
     
     BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
     
+    NSMutableDictionary *logMessageDic = @{}.mutableCopy;
+    
+    logMessageDic[@"text"] = text;
+    logMessageDic[@"type"] = type;
+    
     if (sessionIsRunning && self.document) {
         
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        
-            STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
-                                                                                                 isFantom:NO];
-            logMessage.text = text;
-            logMessage.type = type;
-            //        logMessage.owner = owner;
-            
-            [self.document saveDocument:^(BOOL success) {
-            }];
-
-        }];
+        [self createAndSaveLogMessageFromDictionary:logMessageDic];
         
     } else {
-
-        NSDictionary *logMessageDic = @{@"text"        : [NSString stringWithFormat:@"%@", text],
-                                        @"type"        : [NSString stringWithFormat:@"%@", type],
-                                        @"deviceCts"   : [NSDate date]};
+        
+        logMessageDic[@"deviceCts"] = [NSDate date];
         
         [self performSelector:@selector(saveLogMessageDictionary:)
                    withObject:logMessageDic
@@ -315,22 +310,32 @@
     NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
 
     for (NSDictionary *logMessageDic in loggerDefaults) {
-        
-        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
-                                                                                             isFantom:NO];
-        
-        for (NSString *key in logMessageDic.allKeys) {
-            [logMessage setValue:logMessageDic[key] forKey:key];
-        }
-        
-//        if ([logMessage.type isEqualToString:@"error"]) NSLog(@"logMessage %@", logMessage);
-        
+        [self createAndSaveLogMessageFromDictionary:logMessageDic];
     }
     
     [defaults removeObjectForKey:[self loggerKey]];
     [defaults synchronize];
+
+}
+
+- (void)createAndSaveLogMessageFromDictionary:(NSDictionary *)logMessageDic {
     
-    [self.document saveDocument:^(BOOL success) {
+    [self.document.managedObjectContext performBlock:^{
+        
+        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
+                                                                                         isFantom:NO];
+        
+        for (NSString *key in logMessageDic.allKeys) {
+            
+            if ([logMessage.entity.propertiesByName.allKeys containsObject:key]) {
+                [logMessage setValue:logMessageDic[key] forKey:key];
+            }
+            
+        }
+        
+        [self.document saveDocument:^(BOOL success) {
+        }];
+        
     }];
     
 }

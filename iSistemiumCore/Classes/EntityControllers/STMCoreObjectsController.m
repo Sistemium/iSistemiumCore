@@ -1358,7 +1358,7 @@
 
                         } else {
                             
-                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects", fantomObject.entity.name, fantomObject.xid];
+                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects, remove it", fantomObject.entity.name, fantomObject.xid];
                             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
                             
                             [self removeObject:fantomObject];
@@ -1510,7 +1510,15 @@
     
     objController.requestedFantomXid = nil;
     
-    if (!fantomDic) fantomDic = objController.fantomsArray.firstObject;
+    if (!fantomDic) {
+        
+        NSString *logMessage = @"fantomDic is nil in didFinishResolveFantom:";
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+        fantomDic = objController.fantomsArray.firstObject;
+        
+    }
     
     [objController.fantomsArray removeObject:fantomDic];
     
