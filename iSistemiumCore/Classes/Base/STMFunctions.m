@@ -946,7 +946,7 @@
 
 + (BOOL)shouldHandleMemoryWarningFromVC:(UIViewController *)vc {
     
-    if ([vc isViewLoaded] && [vc.view window] == nil) {
+    if (vc.isViewLoaded && vc.view.window == nil) {
         
         NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass(vc.class)];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
