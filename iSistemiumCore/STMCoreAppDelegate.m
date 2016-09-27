@@ -164,7 +164,8 @@
 - (void)applicationWillResignActive:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationWillResignActive"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
     
@@ -186,7 +187,8 @@
     NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationDidEnterBackground"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
@@ -197,7 +199,8 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationWillEnterForeground"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
@@ -206,7 +209,8 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationDidBecomeActive"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
 
     [self setupWindow];
 
