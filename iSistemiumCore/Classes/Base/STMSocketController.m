@@ -1547,7 +1547,7 @@
 
     } else {
         
-        logMessage = [NSString stringWithFormat:@"cheked socket is not a current socket %@, do nothing", self.socket.sid];
+        logMessage = [NSString stringWithFormat:@"checked socket is not a current socket %@, do nothing", self.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
