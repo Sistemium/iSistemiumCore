@@ -1496,7 +1496,7 @@
 
     if (self.isRunning) {
 
-        logMessage = [NSString stringWithFormat:@"socker isRunning, close socket first", self.socket.sid];
+        logMessage = [NSString stringWithFormat:@"socket %@ isRunning, close socket first", self.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
