@@ -99,6 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)shouldHandleMemoryWarningFromVC:(UIViewController *)vc;
 + (void)nilifyViewForVC:(UIViewController *)vc;
 + (void)logMemoryStat;
++ (NSString *)memoryStatistic;
 
 + (nullable NSString *)shortCompanyName:(nullable NSString *)companyName;
 
