@@ -948,8 +948,9 @@
     
     if (vc.isViewLoaded && vc.view.window == nil) {
         
-        NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass(vc.class)];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+        NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass([vc class])];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeImportant];
         
         return YES;
         
@@ -965,13 +966,14 @@
     
     vc.view = nil;
 
-    NSString *logMessage = [NSString stringWithFormat:@"%@ set it's view to nil. %@", NSStringFromClass(vc.class), [self memoryStatistic]];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+    NSString *logMessage = [NSString stringWithFormat:@"%@ set it's view to nil. %@", NSStringFromClass([vc class]), [self memoryStatistic]];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
 
 }
 
 + (void)logMemoryStat {
-    [[STMLogger sharedLogger] saveLogMessageWithText:[self memoryStatistic] type:@"important"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:[self memoryStatistic] numType:STMLogMessageTypeImportant];
 }
 
 + (NSString *)memoryStatistic {
