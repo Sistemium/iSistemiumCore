@@ -785,18 +785,20 @@
             }
             
         } else {
-            [self notAuthorizedSocket:socket];
+            [self notAuthorizedSocket:socket
+                            withError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
         }
         
     } else {
-        [self notAuthorizedSocket:socket];
+        [self notAuthorizedSocket:socket
+                        withError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
     }
     
 }
 
-+ (void)notAuthorizedSocket:(SocketIOClient *)socket {
++ (void)notAuthorizedSocket:(SocketIOClient *)socket withError:(NSString *)errorString {
     
-    NSString *logMessage = [NSString stringWithFormat:@"socket %@ not authorized", socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ not authorized\n%@", socket.sid, errorString];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeImportant];
     
