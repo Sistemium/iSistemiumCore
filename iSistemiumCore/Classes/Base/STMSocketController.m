@@ -635,7 +635,7 @@
         
 //        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
         
-    } else if (event == STMSocketEventInfo) {
+    } else if (event == STMSocketEventInfo || event == STMSocketEventStatusChange) {
         
         NSLog(@"socket:%@ sendEvent:%@ withValue:%@", socket, [self stringValueForEvent:event], value);
         
