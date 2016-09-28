@@ -352,6 +352,8 @@
 #pragma mark - webViewInit
 
 - (void)webViewInit {
+
+    [self flushWebView];
     
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     
@@ -371,6 +373,17 @@
     self.webView.navigationDelegate = self;
     
     [self loadWebView];
+    
+}
+
+- (void)flushWebView {
+
+    if (self.webView) {
+        
+        [self.webView removeFromSuperview];
+        self.webView = nil;
+
+    }
     
 }
 
@@ -1553,34 +1566,60 @@ int counter = 0;
 #pragma mark - white screen of death
 
 - (void)applicationWillEnterForegroundNotification:(NSNotification *)notification {
-    [self checkWebViewIsAlive];
+    
+    if (self.isViewLoaded && self.view.window != nil) {
+        [self checkWebViewIsAlive];
+    }
+    
 }
 
 - (void)checkWebViewIsAlive {
     
     if (!self.wasLoadingOnce) return;
     
+    if (!self.webView) {
+        
+        [self webviewIsDeadWithError:@"webview is nil"];
+        return;
+        
+    }
+    
     NSString *checkJS = @"window.document.body.childNodes.length";
     
     [self.webView evaluateJavaScript:checkJS completionHandler:^(id result, NSError *error) {
         
         if (error) {
-            
-            NSString *errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error : %@\n", error.localizedDescription];
-            errorString = [errorString stringByAppendingString:@"reload webView"];
-            [[STMLogger sharedLogger] saveLogMessageWithText:errorString type:@"error"];
-            
-            [self reloadWebView];
+
+            [self webviewIsDeadWithError:error.localizedDescription];
             
         } else {
+            
+            if ([result isKindOfClass:[NSNumber class]] && [result isEqualToNumber:@(0)]) {
+                
+                [self webviewIsDeadWithError:@"result is 0"];
+                
+            } else {
 
-            NSLog(@"checkWebViewIsAlive OK");
+                NSLog(@"checkWebViewIsAlive OK");
+
+            }
 
         }
         
     }];
 
 }
+
+- (void)webviewIsDeadWithError:(NSString *)errorString {
+    
+    errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error: %@\nreload webView", errorString];
+    [[STMLogger sharedLogger] saveLogMessageWithText:errorString
+                                             numType:STMLogMessageTypeError];
+
+    [self webViewInit];
+
+}
+
 
 #pragma mark - view lifecycle
 
@@ -1609,12 +1648,36 @@ int counter = 0;
 
 - (void)didReceiveMemoryWarning {
     
-    if ([STMFunctions shouldHandleMemoryWarningFromVC:self]) {
-        [STMFunctions nilifyViewForVC:self];
+    if (self.isViewLoaded) {
+        
+        if (self.view.window == nil) {
+            
+            [self handleMemoryWarning];
+            
+        } else if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+            
+            [self handleMemoryWarning];
+            
+        }
+
     }
     
     [super didReceiveMemoryWarning];
     
+}
+
+- (void)handleMemoryWarning {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass([self class])];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
+    
+    logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeImportant];
+
+    [self flushWebView];
+
 }
 
 - (void)viewWillAppear:(BOOL)animated {
