@@ -351,6 +351,17 @@
 
 #pragma mark - webViewInit
 
+- (void)flushWebView {
+    
+    if (self.webView) {
+        
+        [self.webView removeFromSuperview];
+        self.webView = nil;
+        
+    }
+    
+}
+
 - (void)webViewInit {
 
     [self flushWebView];
@@ -361,6 +372,18 @@
     
     for (NSString *messageName in WK_SCRIPT_MESSAGE_NAMES) {
         [contentController addScriptMessageHandler:self name:messageName];
+    }
+    
+    NSString *js = [self errorCatcherScriptToAddToDocument];
+    
+    if (js) {
+    
+        WKUserScript *userScript = [[WKUserScript alloc] initWithSource:js
+                                                          injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+                                                       forMainFrameOnly:NO];
+        
+        [contentController addUserScript:userScript];
+
     }
     
     configuration.userContentController = contentController;
@@ -376,15 +399,24 @@
     
 }
 
-- (void)flushWebView {
+- (NSString *)errorCatcherScriptToAddToDocument {
 
-    if (self.webView) {
+    NSString *scriptPath = [[NSBundle mainBundle] pathForResource:@"errorCatcherScript" ofType:@"js"];
+    
+    if (scriptPath) {
         
-        [self.webView removeFromSuperview];
-        self.webView = nil;
+        NSError *error = nil;
+        
+        NSString *script = [NSString stringWithContentsOfFile:scriptPath
+                                                     encoding:NSUTF8StringEncoding
+                                                        error:nil];
+        
+        if (!error) return script;
 
     }
     
+    return nil;
+
 }
 
 
@@ -549,7 +581,7 @@
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     
     if ([message.name isEqualToString:WK_MESSAGE_SCANNER_ON]) {
-        
+
         NSLog(@"%@ %@", message.name, message.body);
         
     } else {
@@ -571,7 +603,11 @@
 
     }
     
-    if ([message.name isEqualToString:WK_MESSAGE_POST]) {
+    if ([message.name isEqualToString:WK_MESSAGE_ERROR_CATCHER]) {
+        
+        [self handleErrorCatcherMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_POST]) {
         
         NSLog(@"POST");
         
@@ -628,6 +664,17 @@
         [self handleGetPictureMessage:message];
         
     }
+    
+}
+
+- (void)handleErrorCatcherMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+
+    NSString *logMessage = [NSString stringWithFormat:@"JSErrorCatcher: %@", parameters.description];
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeError];
     
 }
 
