@@ -482,7 +482,11 @@
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
     
-    [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        [self flushWebView];
+    } else {
+        [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
+    }
     
 }
 
