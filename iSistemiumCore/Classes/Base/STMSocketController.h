@@ -21,7 +21,9 @@ static NSString *kSocketDestroyMethod = @"destroy";
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventConnect,
     STMSocketEventDisconnect,
+    STMSocketEventError,
     STMSocketEventReconnect,
+    STMSocketEventReconnectAttempt,
     STMSocketEventStatusChange,
     STMSocketEventInfo,
     STMSocketEventAuthorization,

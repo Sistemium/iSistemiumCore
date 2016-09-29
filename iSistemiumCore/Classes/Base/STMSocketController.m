@@ -77,8 +77,16 @@
             return @"disconnect";
             break;
         }
+        case STMSocketEventError: {
+            return @"error";
+            break;
+        }
         case STMSocketEventReconnect: {
             return @"reconnect";
+            break;
+        }
+        case STMSocketEventReconnectAttempt: {
+            return @"reconnectAttempt";
             break;
         }
         case STMSocketEventStatusChange: {
@@ -119,8 +127,12 @@
         return STMSocketEventConnect;
     } else if ([stringValue isEqualToString:@"disconnect"]) {
         return STMSocketEventDisconnect;
+    } else if ([stringValue isEqualToString:@"error"]) {
+        return STMSocketEventError;
     } else if ([stringValue isEqualToString:@"reconnect"]) {
         return STMSocketEventReconnect;
+    } else if ([stringValue isEqualToString:@"reconnectAttempt"]) {
+        return STMSocketEventReconnectAttempt;
     } else if ([stringValue isEqualToString:@"status:change"]) {
         return STMSocketEventStatusChange;
     } else if ([stringValue isEqualToString:@"info"]) {
@@ -938,7 +950,9 @@
 
     [STMSocketController addEvent:STMSocketEventConnect toSocket:socket];
     [STMSocketController addEvent:STMSocketEventDisconnect toSocket:socket];
+    [STMSocketController addEvent:STMSocketEventError toSocket:socket];
     [STMSocketController addEvent:STMSocketEventReconnect toSocket:socket];
+    [STMSocketController addEvent:STMSocketEventReconnectAttempt toSocket:socket];
     [STMSocketController addEvent:STMSocketEventRemoteCommands toSocket:socket];
     [STMSocketController addEvent:STMSocketEventData toSocket:socket];
     [STMSocketController addEvent:STMSocketEventJSData toSocket:socket];
@@ -975,8 +989,16 @@
                 [self disconnectCallbackWithData:data ack:ack socket:socket];
                 break;
             }
+            case STMSocketEventError: {
+                [self errorCallbackWithData:data ack:ack socket:socket];
+                break;
+            }
             case STMSocketEventReconnect: {
                 [self reconnectCallbackWithData:data ack:ack socket:socket];
+                break;
+            }
+            case STMSocketEventReconnectAttempt: {
+                [self reconnectAttemptCallbackWithData:data ack:ack socket:socket];
                 break;
             }
             case STMSocketEventStatusChange: {
@@ -1078,6 +1100,26 @@
 
     }
 
+}
+
++ (void)errorCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"errorCallback socket %@ with data: %@", socket.sid, data.description];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeImportant];
+    
+}
+
++ (void)reconnectAttemptCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"reconnectAttemptCallback socket %@", socket.sid];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeImportant];
+    
 }
 
 + (void)reconnectCallbackWithData:(NSArray *)data ack:(SocketAckEmitter *)ack socket:(SocketIOClient *)socket {
