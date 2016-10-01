@@ -1099,9 +1099,7 @@
         sc.doNotSyncObjects = nil;
         sc.sendingDate = nil;
         
-        [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:)
-                                    withObject:socket
-                                    afterDelay:CHECK_AUTHORIZATION_DELAY];
+        [sc startDelayedAuthorizationCheckForSocket:socket];
         
         STMClientData *clientData = [STMClientDataController clientData];
         NSMutableDictionary *dataDic = [STMCoreObjectsController dictionaryForJSWithObject:clientData].mutableCopy;
@@ -1660,9 +1658,7 @@
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeImportant];
             
-            [self performSelector:@selector(checkAuthorizationForSocket:)
-                       withObject:socket
-                       afterDelay:CHECK_AUTHORIZATION_DELAY];
+            [self startDelayedAuthorizationCheckForSocket:socket];
             
         }
 
@@ -1670,6 +1666,19 @@
     
 }
 
+- (void)startDelayedAuthorizationCheckForSocket:(SocketIOClient *)socket {
+    
+    SEL checkAuthSel = @selector(checkAuthorizationForSocket:);
+    
+    [STMSocketController cancelPreviousPerformRequestsWithTarget:self
+                                                        selector:checkAuthSel
+                                                          object:socket];
+    
+    [self performSelector:checkAuthSel
+               withObject:socket
+               afterDelay:CHECK_AUTHORIZATION_DELAY];
+
+}
 
 
 @end
