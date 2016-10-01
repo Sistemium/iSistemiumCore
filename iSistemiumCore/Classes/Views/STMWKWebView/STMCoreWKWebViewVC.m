@@ -1663,7 +1663,7 @@ int counter = 0;
 
 - (void)webviewIsDeadWithError:(NSString *)errorString {
     
-    errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error: %@\nreload webView", errorString];
+    errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error: %@, reload webView", errorString];
     [[STMLogger sharedLogger] saveLogMessageWithText:errorString
                                              numType:STMLogMessageTypeError];
 
