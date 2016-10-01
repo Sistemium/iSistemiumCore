@@ -271,16 +271,21 @@
     
     request.cachePolicy = NSURLRequestUseProtocolCachePolicy;
     
-    //    request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-    //    request.cachePolicy = NSURLRequestReturnCacheDataElseLoad;
-    
-    //    NSLog(@"currentDiskUsage %d", [NSURLCache sharedURLCache].currentDiskUsage);
-    //    NSLog(@"currentMemoryUsage %d", [NSURLCache sharedURLCache].currentMemoryUsage);
-    //
-    //    NSLog(@"cachedResponseForRequest %@", [[NSURLCache sharedURLCache] cachedResponseForRequest:request]);
-    //    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+    [self performSelector:@selector(timeoutReached)
+               withObject:nil
+               afterDelay:60];
     
     [self.webView loadRequest:request];
+    
+}
+
+- (void)timeoutReached {
+
+    [self.webView stopLoading];
+    
+    [self webView:self.webView
+             fail:@"loadURL"
+        withError:@"timeout"];
     
 }
 
@@ -529,6 +534,7 @@
     NSLog(@"------ didFinishNavigation %@", webView.URL);
     
     self.wasLoadingOnce = YES;
+    [self cancelWatingTimeout];
     
     NSString *authCheck = [self webViewAuthCheckJS];
     
@@ -579,6 +585,8 @@
 }
 
 - (void)webView:(WKWebView *)webView fail:(NSString *)failString withError:(NSString *)errorString {
+
+    [self cancelWatingTimeout];
     
     if (webView && failString && errorString) {
     
@@ -602,6 +610,14 @@
         
     }];
     
+}
+
+- (void)cancelWatingTimeout {
+    
+    [STMCoreWKWebViewVC cancelPreviousPerformRequestsWithTarget:self
+                                                       selector:@selector(timeoutReached)
+                                                         object:nil];
+
 }
 
 
