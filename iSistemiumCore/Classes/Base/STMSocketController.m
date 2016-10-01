@@ -192,7 +192,7 @@
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
     
-    logMessage = [NSString stringWithFormat:@"sc.socketUrl %@, sc.isRunning %@, sc.isReconnecting %@, sc.socket.sid %@", sc.socketUrl, @(sc.isRunning), @(sc.isReconnecting), sc.socket.sid];
+    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isReconnecting), sc.socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -202,7 +202,7 @@
 
         sc.isRunning = YES;
         
-        logMessage = [NSString stringWithFormat:@"sc.socket %@ status %@", sc.socket.sid, @(sc.socket.status)];
+        logMessage = [NSString stringWithFormat:@"sc.socket %@ sc.socket.sid %@ status %@", sc.socket, sc.socket.sid, @(sc.socket.status)];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
@@ -243,7 +243,7 @@
         
         STMLogger *logger = [STMLogger sharedLogger];
         
-        NSString *logMessage = [NSString stringWithFormat:@"close socket %@", sc.socket.sid];
+        NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", sc.socket, sc.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
@@ -757,7 +757,7 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"socket %@ receiveAuthorizationAckWithData %@", socket.sid, data];
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", socket, socket.sid, data];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -772,7 +772,7 @@
         
         if (isAuthorized) {
             
-            logMessage = [NSString stringWithFormat:@"socket %@ authorized", socket.sid];
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeImportant];
             
@@ -811,7 +811,7 @@
 
 + (void)notAuthorizedSocket:(SocketIOClient *)socket withError:(NSString *)errorString {
     
-    NSString *logMessage = [NSString stringWithFormat:@"socket %@ not authorized\n%@", socket.sid, errorString];
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ not authorized\n%@", socket, socket.sid, errorString];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeImportant];
     
@@ -944,7 +944,12 @@
     
     [socket removeAllHandlers];
     
-    NSLog(@"addEventObserversToSocket %@", socket);
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"addEventObserversToSocket %@", socket];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeImportant];
+
     
     [STMSocketController addOnAnyEventToSocket:socket];
 
@@ -1061,7 +1066,7 @@
     
     [dataDic addEntriesFromDictionary:authDic];
     
-    logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@", dataDic, socket.sid];
+    logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -1077,7 +1082,7 @@
 
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"disconnectCallback socket %@", socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"disconnectCallback socket %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -1085,7 +1090,7 @@
     
     if ([self sharedInstance].isReconnecting) {
 
-        logMessage = [NSString stringWithFormat:@"socket %@ isReconnecting, start socket now", socket.sid];
+        logMessage = [NSString stringWithFormat:@"socket %@ %@ isReconnecting, start socket now", socket, socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
@@ -1094,7 +1099,7 @@
         
     } else {
         
-        logMessage = [NSString stringWithFormat:@"socket %@ is not reconnecting, do nothing", socket.sid];
+        logMessage = [NSString stringWithFormat:@"socket %@ %@ is not reconnecting, do nothing", socket, socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
@@ -1106,7 +1111,7 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"errorCallback socket %@ with data: %@", socket.sid, data.description];
+    NSString *logMessage = [NSString stringWithFormat:@"errorCallback socket %@ %@ with data: %@", socket, socket.sid, data.description];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
     
@@ -1116,7 +1121,7 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"reconnectAttemptCallback socket %@", socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"reconnectAttemptCallback socket %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
     
@@ -1126,7 +1131,7 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"reconnectCallback socket %@", socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"reconnectCallback socket %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -1539,13 +1544,13 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@", self.socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
     if (self.isRunning) {
 
-        logMessage = [NSString stringWithFormat:@"socket %@ isRunning, close socket first", self.socket.sid];
+        logMessage = [NSString stringWithFormat:@"socket %@ %@ isRunning, close socket first", self.socket, self.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
@@ -1574,7 +1579,7 @@
     
     STMLogger *logger = [STMLogger sharedLogger];
 
-    NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@", socket.sid];
+    NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
@@ -1582,13 +1587,13 @@
         
         if (self.isAuthorized) {
             
-            logMessage = [NSString stringWithFormat:@"socket %@ is authorized", socket.sid];
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeImportant];
 
         } else {
 
-            logMessage = [NSString stringWithFormat:@"socket %@ is connected but don't receive authorization ack, reconnecting", socket.sid];
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ is connected but don't receive authorization ack, reconnecting", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeError];
 
@@ -1598,7 +1603,7 @@
 
     } else {
         
-        logMessage = [NSString stringWithFormat:@"checked socket is not a current socket %@, do nothing", self.socket.sid];
+        logMessage = [NSString stringWithFormat:@"checked socket %@ %@ is not a current socket %@ %@, do nothing", socket, socket.sid, self.socket, self.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
