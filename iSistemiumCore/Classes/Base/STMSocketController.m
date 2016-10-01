@@ -213,6 +213,10 @@
             
             [socket disconnect];
             
+        } else {
+            
+            socket = nil;
+            
         }
         
         return NO;
