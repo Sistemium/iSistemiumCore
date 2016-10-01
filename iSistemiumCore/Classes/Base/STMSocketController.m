@@ -211,7 +211,6 @@
             case SocketIOClientStatusNotConnected:
             case SocketIOClientStatusDisconnected: {
                 [sc.socket connect];
-//                [sc performSelector:@selector(checkAuthorizationForSocket:) withObject:sc.socket afterDelay:CHECK_AUTHORIZATION_DELAY];
                 break;
             }
             case SocketIOClientStatusConnecting: {
@@ -1056,7 +1055,9 @@
     sc.doNotSyncObjects = nil;
     sc.sendingDate = nil;
 
-    [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:) withObject:socket afterDelay:CHECK_AUTHORIZATION_DELAY];
+    [[self sharedInstance] performSelector:@selector(checkAuthorizationForSocket:)
+                                withObject:socket
+                                afterDelay:CHECK_AUTHORIZATION_DELAY];
 
     STMClientData *clientData = [STMClientDataController clientData];
     NSMutableDictionary *dataDic = [STMCoreObjectsController dictionaryForJSWithObject:clientData].mutableCopy;
@@ -1585,22 +1586,36 @@
 
     if ([socket isEqual:self.socket]) {
         
-        if (self.isAuthorized) {
+        if (socket.status == SocketIOClientStatusConnected) {
             
-            logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
+            if (self.isAuthorized) {
+                
+                logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
+                [logger saveLogMessageWithText:logMessage
+                                       numType:STMLogMessageTypeImportant];
+                
+            } else {
+                
+                logMessage = [NSString stringWithFormat:@"socket %@ %@ is connected but don't receive authorization ack, reconnecting", socket, socket.sid];
+                [logger saveLogMessageWithText:logMessage
+                                       numType:STMLogMessageTypeError];
+                
+                [self reconnectSocket];
+                
+            }
+            
+        } else {
+        
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected, wait for it", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeImportant];
 
-        } else {
+            [self performSelector:@selector(checkAuthorizationForSocket:)
+                       withObject:socket
+                       afterDelay:CHECK_AUTHORIZATION_DELAY];
 
-            logMessage = [NSString stringWithFormat:@"socket %@ %@ is connected but don't receive authorization ack, reconnecting", socket, socket.sid];
-            [logger saveLogMessageWithText:logMessage
-                                   numType:STMLogMessageTypeError];
-
-            [self reconnectSocket];
-            
         }
-
+        
     } else {
         
         logMessage = [NSString stringWithFormat:@"checked socket %@ %@ is not a current socket %@ %@, do nothing", socket, socket.sid, self.socket, self.socket.sid];
