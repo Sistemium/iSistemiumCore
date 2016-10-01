@@ -29,20 +29,23 @@
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
 @property (nonatomic, strong) NSString *entityResource;
+
 @property (nonatomic) BOOL isRunning;
+@property (nonatomic) BOOL isAuthorized;
+@property (nonatomic) BOOL isSendingData;
+@property (nonatomic) BOOL isReconnecting;
+@property (nonatomic) BOOL shouldSendData;
+@property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
+@property (nonatomic) BOOL controllersDidChangeContent;
+
 @property (nonatomic, strong) NSMutableDictionary *syncDataDictionary;
 @property (nonatomic, strong) NSMutableArray *doNotSyncObjects;
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
-@property (nonatomic) BOOL controllersDidChangeContent;
-@property (nonatomic) BOOL isAuthorized;
-@property (nonatomic) BOOL isSendingData;
+
 @property (nonatomic, strong) NSDate *sendingDate;
-@property (nonatomic) BOOL shouldSendData;
-@property (nonatomic) BOOL isReconnecting;
 @property (nonatomic) NSTimeInterval sendTimeout;
 @property (nonatomic) NSTimeInterval receiveTimeout;
 @property (nonatomic, strong) NSDate *receivingStartDate;
-@property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
 
 
 @end
