@@ -28,15 +28,21 @@
 #import "STMCoreUI.h"
 
 
-@interface STMCoreWKWebViewVC () <WKNavigationDelegate, WKScriptMessageHandler, STMBarCodeScannerDelegate, STMImagePickerOwnerProtocol>
+@interface STMCoreWKWebViewVC () <WKNavigationDelegate,
+                                  WKScriptMessageHandler,
+                                  UIAlertViewDelegate,
+                                  STMBarCodeScannerDelegate,
+                                  STMImagePickerOwnerProtocol>
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
+
 @property (nonatomic) BOOL isAuthorizing;
 @property (nonatomic) BOOL wasLoadingOnce;
-@property (nonatomic, strong) STMSpinnerView *spinnerView;
 
+@property (nonatomic, strong) STMSpinnerView *spinnerView;
 @property (nonatomic, strong) STMBarCodeScanner *iOSModeBarCodeScanner;
+@property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
@@ -58,8 +64,6 @@
 
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic) BOOL waitingPhoto;
-
-@property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
 
 
 @end
@@ -167,6 +171,7 @@
 
 - (NSString *)webViewAppManifestURI {
     
+//    return nil;
 //    return @"https://r50.sistemium.com/app.manifest";
 //    return @"https://isd.sistemium.com/app.manifest";
 //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
@@ -308,15 +313,17 @@
 
 - (void)appManifestLoadErrorText:(NSString *)errorText {
     
-    errorText = [@"cache manifest load: " stringByAppendingString:errorText];
-    [self appManifestLoadLogMessage:errorText numType:STMLogMessageTypeError];
+    errorText = [@"cache manifest load error: " stringByAppendingString:errorText];
+    [self appManifestLoadLogMessage:errorText
+                            numType:STMLogMessageTypeError];
     
 }
 
 - (void)appManifestLoadInfoText:(NSString *)infoText {
     
     infoText = [@"cache manifest load: " stringByAppendingString:infoText];
-    [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
+    [self appManifestLoadLogMessage:infoText
+                            numType:STMLogMessageTypeInfo];
     
 }
 
@@ -329,18 +336,9 @@
         
         if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
             
-            [self.spinnerView removeFromSuperview];
-            
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                                    message:logMessage
-                                                                   delegate:nil
-                                                          cancelButtonTitle:NSLocalizedString(@"OK", nil)
-                                                          otherButtonTitles:nil];
-                [alertView show];
-                
-            }];
+            [self webView:nil
+                     fail:nil
+                withError:nil];
             
         }
 
@@ -462,9 +460,9 @@
 - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
     
 //    NSLogMethodName;
-    
-    NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailNavigation withError: %@", webView.URL, error.localizedDescription];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    [self webView:webView
+             fail:@"didFailNavigation"
+        withError:error.localizedDescription];
     
 }
 
@@ -472,8 +470,9 @@
     
 //    NSLogMethodName;
     
-    /*NSString *logMessage = [NSString stringWithFormat:@"webView %@ didFailProvisionalNavigation withError: %@", webView.URL, error.localizedDescription];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];*/
+    [self webView:webView
+             fail:@"didFailProvisionalNavigation"
+        withError:error.localizedDescription];
 
 }
 
@@ -577,6 +576,45 @@
         
     }];
 
+}
+
+- (void)webView:(WKWebView *)webView fail:(NSString *)failString withError:(NSString *)errorString {
+    
+    if (webView && failString && errorString) {
+    
+        NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@", webView.URL, failString, errorString];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+
+    }
+    
+    [self.spinnerView removeFromSuperview];
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
+                                                        message:NSLocalizedString(@"WEBVIEW FAIL TO LOAD", nil)
+                                                       delegate:self
+                                              cancelButtonTitle:NSLocalizedString(@"CANCEL", nil)
+                                              otherButtonTitles:NSLocalizedString(@"OK", nil), nil];
+        alert.tag = 666;
+        [alert show];
+        
+    }];
+    
+}
+
+
+#pragma mark - UIAlertViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
+
+    if (alertView.tag == 666) {
+        
+        if (buttonIndex == 1) [self reloadWebView];
+        
+    }
+    
 }
 
 
