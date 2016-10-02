@@ -267,8 +267,11 @@
             }
         }
         
-		[[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SESSION_STATUS_CHANGED object:self];
-        [[STMLogger sharedLogger] saveLogMessageWithText:[NSString stringWithFormat:@"Session #%@ status changed to %@", self.uid, statusString] type:nil];
+		[[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SESSION_STATUS_CHANGED
+                                                            object:self];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Session #%@ status changed to %@", self.uid, statusString];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
 
 	}
     

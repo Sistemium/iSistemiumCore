@@ -26,6 +26,22 @@
     
 }
 
+- (instancetype)init {
+    
+    self = [super init];
+    
+    if (self) {
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillTerminate)
+                                                     name:UIApplicationWillTerminateNotification
+                                                   object:nil];
+        
+    }
+    return self;
+    
+}
+
 - (NSMutableDictionary *)sessions {
     if (!_sessions) {
         _sessions = [NSMutableDictionary dictionary];
@@ -85,6 +101,18 @@
             session.settingsController.startSettings = startSettings.mutableCopy;
             session.settingsController.session = session;
             
+            if (session.document && session.document.documentState == UIDocumentStateClosed) {
+                
+                [STMDocument openDocument:session.document];
+                
+            } else {
+                
+                NSString *logMessage = [NSString stringWithFormat:@"session %@ have no document", session.uid];
+                
+                [session.logger saveLogMessageWithText:logMessage
+                                               numType:STMLogMessageTypeError];
+            }
+
         }
         return session;
         
@@ -156,6 +184,13 @@
         
     }
 
+}
+
+- (void)applicationWillTerminate {
+    
+    [self cleanStoppedSessions];
+    [self removeSessionForUID:self.currentSessionUID];
+    
 }
 
 

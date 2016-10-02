@@ -230,7 +230,9 @@
         _syncerState = syncerState;
         
         NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncStatusChanged" object:self userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncStatusChanged"
+                                                            object:self
+                                                          userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
         
         NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
         NSLog(logMessage);
@@ -354,7 +356,7 @@
                         [STMEntityController checkEntitiesForDuplicates];
                         [STMClientDataController checkClientData];
                         [self.session.logger saveLogMessageDictionaryToDocument];
-                        [self.session.logger saveLogMessageWithText:@"Syncer start" type:@""];
+                        [self.session.logger saveLogMessageWithText:@"Syncer start"];
                         
                         [self checkUploadableEntities];
                         
@@ -365,7 +367,8 @@
                         
                         if (self.socketUrlString) {
                             
-                            [STMSocketController startSocketWithUrl:self.socketUrlString andEntityResource:self.entityResource];
+                            [STMSocketController startSocketWithUrl:self.socketUrlString
+                                                  andEntityResource:self.entityResource];
 
                         } else {
                             
@@ -460,7 +463,7 @@
         
         [STMSocketController closeSocket];
         
-        [self.session.logger saveLogMessageWithText:@"Syncer stop" type:@""];
+        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
         self.syncing = NO;
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
@@ -604,7 +607,7 @@
     
         if (session == self.session) {
             
-            if (session.status == STMSessionFinishing) {
+            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
                 [self stopSyncer];
             } else if (session.status == STMSessionRunning) {
                 [self startSyncer];
@@ -683,7 +686,7 @@
     }
     
     [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
-                                 forMode: NSRunLoopCommonModes];
+                                 forMode:NSRunLoopCommonModes];
     
 }
 

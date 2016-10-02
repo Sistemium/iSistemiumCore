@@ -209,45 +209,21 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
 
     STMDocument *document = [STMDocument initWithFileURL:url andDataModelName:dataModelName];
+    document.uid = uid;
     
     document.persistentStoreOptions = @{NSMigratePersistentStoresAutomaticallyOption: @YES, NSInferMappingModelAutomaticallyOption: @YES};
     
     if (document.fileURL.path && ![[NSFileManager defaultManager] fileExistsAtPath:(NSString * _Nonnull)document.fileURL.path]) {
 
-        [document saveToURL:document.fileURL forSaveOperation:UIDocumentSaveForCreating completionHandler:^(BOOL success) {
-            
-            if (success) {
-                
-                NSString *logMessage = @"document UIDocumentSaveForCreating success";
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
-                
-                [self document:document readyWithUID:uid];
-                
-            } else {
-                [self document:document notReadyWithUID:uid];
-            }
-            
-        }];
+        [self createDocument:document];
         
     } else if (document.documentState == UIDocumentStateClosed) {
         
-        [document openWithCompletionHandler:^(BOOL success) {
-            
-            if (success) {
-
-                NSString *logMessage = @"document openWithCompletionHandler success";
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
-
-                [self document:document readyWithUID:uid];
-            } else {
-                [self document:document notReadyWithUID:uid];
-            }
-            
-        }];
+        [self openDocument:document];
         
     } else if (document.documentState == UIDocumentStateNormal) {
         
-        [self document:document readyWithUID:uid];
+        [self documentReady:document];
         
     }
     
@@ -259,15 +235,58 @@
     
 }
 
-+ (void)document:(STMDocument *)document readyWithUID:(NSString *)uid {
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentReady" object:document userInfo:@{@"uid": uid}];
-
++ (void)createDocument:(STMDocument *)document {
+    
+    [document saveToURL:document.fileURL forSaveOperation:UIDocumentSaveForCreating completionHandler:^(BOOL success) {
+        
+        [self handleHandlerForDocument:document
+                               message:@"UIDocumentSaveForCreating"
+                               success:success];
+        
+    }];
+    
 }
 
-+ (void)document:(STMDocument *)document notReadyWithUID:(NSString *)uid {
++ (void)openDocument:(STMDocument *)document {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentNotReady" object:document userInfo:@{@"uid": uid}];
+    [document openWithCompletionHandler:^(BOOL success) {
+        
+        [self handleHandlerForDocument:document
+                               message:@"openWithCompletionHandler"
+                               success:success];
+        
+    }];
+    
+}
+
++ (void)handleHandlerForDocument:(STMDocument *)document message:(NSString *)message success:(BOOL)success {
+    
+    if (success) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"document %@ success", message];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
+        
+        [self documentReady:document];
+        
+    } else {
+        [self documentNotReady:document];
+    }
+    
+}
+
++ (void)documentReady:(STMDocument *)document {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentReady"
+                                                        object:document
+                                                      userInfo:@{@"uid": document.uid}];
+    
+}
+
++ (void)documentNotReady:(STMDocument *)document {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentNotReady"
+                                                        object:document
+                                                      userInfo:@{@"uid": document.uid}];
     
 }
 

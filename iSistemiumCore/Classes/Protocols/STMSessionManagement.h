@@ -37,6 +37,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMLogger <NSObject, UITableViewDataSource, UITableViewDelegate>
 
+- (void)saveLogMessageWithText:(NSString *)text;
 - (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type;
 - (void)saveLogMessageDictionaryToDocument;
 
