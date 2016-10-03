@@ -652,7 +652,7 @@
 - (NSTimer *)syncTimer {
     
     if (!_syncTimer) {
-        
+
         if (!self.syncInterval) {
             
             _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
@@ -700,7 +700,7 @@
 - (void)onTimerTick:(NSTimer *)timer {
     
 #ifdef DEBUG
-    NSTimeInterval bgTR = [[UIApplication sharedApplication] backgroundTimeRemaining];
+    NSTimeInterval bgTR = [UIApplication sharedApplication].backgroundTimeRemaining;
     NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
 #endif
     
