@@ -1678,6 +1678,14 @@ int counter = 0;
     
 }
 
+- (void)applicationDidBecomeActiveNotification:(NSNotification *)notification {
+    
+    if (self.isViewLoaded && self.view.window != nil) {
+        [self checkWebViewIsAlive];
+    }
+
+}
+
 - (void)checkWebViewIsAlive {
     
     if (!self.wasLoadingOnce) return;
@@ -1730,11 +1738,18 @@ int counter = 0;
 
 - (void)addObservers {
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(applicationWillEnterForegroundNotification:)
-                                                 name:UIApplicationWillEnterForegroundNotification
-                                               object:nil];
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
+//    [nc addObserver:self
+//           selector:@selector(applicationWillEnterForegroundNotification:)
+//               name:UIApplicationWillEnterForegroundNotification
+//             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(applicationDidBecomeActiveNotification:)
+               name:UIApplicationDidBecomeActiveNotification
+             object:nil];
+
 }
 
 - (void)customInit {
