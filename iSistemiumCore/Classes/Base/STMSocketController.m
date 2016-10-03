@@ -276,33 +276,7 @@
 }
 
 + (void)closeSocket {
-    
-    NSLogMethodName;
-
-    STMSocketController *sc = [self sharedInstance];
-    
-    if (sc.isRunning) {
-        
-        STMLogger *logger = [STMLogger sharedLogger];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", sc.socket, sc.socket.sid];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeImportant];
-
-        [sc.socket disconnect];
-        [sc.socket removeAllHandlers];
-        
-        sc.socketUrl = nil;
-        sc.socket = nil;
-        sc.isSendingData = NO;
-        sc.isAuthorized = NO;
-        sc.isRunning = NO;
-        sc.syncDataDictionary = nil;
-        sc.doNotSyncObjects = nil;
-        sc.sendingDate = nil;
-
-    }
-
+    [[self sharedInstance] closeSocket];
 }
 
 + (void)reconnectSocket {
@@ -1215,8 +1189,12 @@
 - (instancetype)init {
     
     self = [super init];
+    
     if (self) {
+        
         [self addObservers];
+        [self checkSocketStatus];
+        
     }
     return self;
     
@@ -1251,6 +1229,22 @@
 
 - (void)removeObservers {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)checkSocketStatus {
+
+#ifdef DEBUG
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ status %@", self.socket, @(self.socket.status)];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeDebug];
+    
+    [self performSelector:@selector(checkSocketStatus)
+               withObject:nil
+               afterDelay:10];
+#endif
+
 }
 
 - (void)appSettingsChanged:(NSNotification *)notification {
@@ -1585,6 +1579,45 @@
     }
     return _socket;
     
+}
+
+- (void)closeSocketInBackground {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"close socket in background"
+                           numType:STMLogMessageTypeImportant];
+
+    [self closeSocket];
+    
+}
+
+- (void)closeSocket {
+    
+    NSLogMethodName;
+    
+    if (self.isRunning) {
+        
+        STMLogger *logger = [STMLogger sharedLogger];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", self.socket, self.socket.sid];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeImportant];
+        
+        [self.socket disconnect];
+        [self.socket removeAllHandlers];
+        
+        self.socketUrl = nil;
+        self.socket = nil;
+        self.isSendingData = NO;
+        self.isAuthorized = NO;
+        self.isRunning = NO;
+        self.syncDataDictionary = nil;
+        self.doNotSyncObjects = nil;
+        self.sendingDate = nil;
+        
+    }
+
 }
 
 - (void)reconnectSocket {
