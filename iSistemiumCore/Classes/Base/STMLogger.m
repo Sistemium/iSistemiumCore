@@ -332,10 +332,30 @@
             }
             
         }
-        
+
+#ifdef DEBUG
+        [self sendLogMessageToLocalServerForDebug:logMessage];
+#endif
+
         [self.document saveDocument:^(BOOL success) {
         }];
         
+    }];
+    
+}
+
+- (void)sendLogMessageToLocalServerForDebug:(STMLogMessage *)logMessage {
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://maxbook.local:8888"]];
+    request.HTTPMethod = @"POST";
+    
+    NSString *bodyString = [NSString stringWithFormat:@"%@ %@: %@", logMessage.deviceCts, logMessage.type, logMessage.text];
+    request.HTTPBody = [bodyString dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        //            NSLog(@"%@", response);
     }];
     
 }
