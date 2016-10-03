@@ -176,22 +176,30 @@
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = @"applicationDidEnterBackground";
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeImportant];
+
     __block UIBackgroundTaskIdentifier bgTask;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
+        NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+        [logger saveLogMessageWithText:logMessage];
+
         [application endBackgroundTask:bgTask];
         bgTask = UIBackgroundTaskInvalid;
         
     }];
     
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
-    
-    NSString *logMessage = [NSString stringWithFormat:@"applicationDidEnterBackground"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+
+    logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+    [logger saveLogMessageWithText:logMessage];
+
+    logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %d", (unsigned int)application.backgroundTimeRemaining];
+    [logger saveLogMessageWithText:logMessage];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
@@ -248,15 +256,20 @@
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
     
-    NSLog(@"application didReceiveRemoteNotification userInfo: %@", userInfo);
+    STMLogger *logger = [STMLogger sharedLogger];
     
+    NSString *logMessage = [NSString stringWithFormat:@"application didReceiveRemoteNotification userInfo: %@", userInfo];
+    [logger saveLogMessageWithText:logMessage];
+
     __block UIBackgroundTaskIdentifier bgTask;
     
     __block BOOL handlerCompleted = NO;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
+        NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+        [logger saveLogMessageWithText:logMessage];
+
         [application endBackgroundTask:bgTask];
         bgTask = UIBackgroundTaskInvalid;
 
@@ -271,8 +284,11 @@
         
     }];
     
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
+    logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+    [logger saveLogMessageWithText:logMessage];
+
+    logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %d", (unsigned int)application.backgroundTimeRemaining];
+    [logger saveLogMessageWithText:logMessage];
 
 //    [self routeNotificationUserInfo:userInfo completionHandler:handler];
     
@@ -356,14 +372,18 @@
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     
-    NSString *logMessage = [NSString stringWithFormat:@"applicationPerformFetchWithCompletionHandler"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = @"applicationPerformFetchWithCompletionHandler";
+    [logger saveLogMessageWithText:logMessage];
     
     __block UIBackgroundTaskIdentifier bgTask;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
+        NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+        [logger saveLogMessageWithText:logMessage];
+
         [application endBackgroundTask:bgTask];
         bgTask = UIBackgroundTaskInvalid;
 
@@ -374,8 +394,11 @@
         
     }];
     
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
+    logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+    [logger saveLogMessageWithText:logMessage];
+
+    logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %d", (unsigned int)application.backgroundTimeRemaining];
+    [logger saveLogMessageWithText:logMessage];
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler" object:application];
     
