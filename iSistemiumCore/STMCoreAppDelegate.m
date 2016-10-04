@@ -185,21 +185,10 @@
     __block UIBackgroundTaskIdentifier bgTask;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
-        
-        NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
-        [logger saveLogMessageWithText:logMessage];
-
-        [application endBackgroundTask:bgTask];
-        bgTask = UIBackgroundTaskInvalid;
-        
+        [self backgroundTask:bgTask endedInApplication:application];
     }];
     
-
-    logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
-    [logger saveLogMessageWithText:logMessage];
-
-    logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %d", (unsigned int)application.backgroundTimeRemaining];
-    [logger saveLogMessageWithText:logMessage];
+    [self backgroundTask:bgTask startedInApplication:application];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
