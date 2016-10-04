@@ -33,7 +33,7 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isAuthorized;
 @property (nonatomic) BOOL isSendingData;
-@property (nonatomic) BOOL isReconnecting;
+@property (nonatomic) BOOL isManualReconnecting;
 @property (nonatomic) BOOL shouldSendData;
 @property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
 @property (nonatomic) BOOL controllersDidChangeContent;
@@ -235,11 +235,11 @@
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
     
-    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isReconnecting), sc.socket.sid];
+    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isManualReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isManualReconnecting), sc.socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeImportant];
 
-    if (sc.socketUrl && !sc.isRunning && !sc.isReconnecting) {
+    if (sc.socketUrl && !sc.isRunning && !sc.isManualReconnecting) {
 
         NSLogMethodName;
 
@@ -276,7 +276,39 @@
 }
 
 + (void)closeSocket {
+<<<<<<< HEAD
     [[self sharedInstance] closeSocket];
+=======
+    
+    NSLogMethodName;
+
+    STMSocketController *sc = [self sharedInstance];
+    
+    if (sc.isRunning) {
+        
+        STMLogger *logger = [STMLogger sharedLogger];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", sc.socket, sc.socket.sid];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeImportant];
+
+        if (!sc.isManualReconnecting) {
+            sc.socket = nil;
+        }
+        
+        sc.socketUrl = nil;
+        sc.isSendingData = NO;
+        sc.isAuthorized = NO;
+        sc.isRunning = NO;
+        sc.syncDataDictionary = nil;
+        sc.doNotSyncObjects = nil;
+        sc.sendingDate = nil;
+
+        [sc.socket disconnect];
+
+    }
+
+>>>>>>> xcode8
 }
 
 + (void)reconnectSocket {
@@ -1101,6 +1133,7 @@
 
     if ([self isItCurrentSocket:socket failString:@"disconnectCallback"]) {
 
+        STMSocketController *sc = [STMSocketController sharedInstance];
         STMLogger *logger = [STMLogger sharedLogger];
         
         NSString *logMessage = [NSString stringWithFormat:@"disconnectCallback socket %@ %@", socket, socket.sid];
@@ -1109,13 +1142,13 @@
         
         [self socketLostConnection];
         
-        if ([self sharedInstance].isReconnecting) {
+        if (sc.isManualReconnecting) {
             
-            logMessage = [NSString stringWithFormat:@"socket %@ %@ isReconnecting, start socket now", socket, socket.sid];
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ isManualReconnecting, start socket now", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeImportant];
             
-            [self sharedInstance].isReconnecting = NO;
+            sc.isManualReconnecting = NO;
             [self startSocket];
             
         } else {
@@ -1556,7 +1589,7 @@
 
 - (SocketIOClient *)socket {
     
-    if (!_socket && self.socketUrl) {
+    if (!_socket && self.socketUrl && self.isRunning) {
         
         NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
         NSString *path = [socketUrl.path stringByAppendingString:@"/"];
@@ -1636,7 +1669,7 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
 
-        self.isReconnecting = YES;
+        self.isManualReconnecting = YES;
         [STMSocketController closeSocket];
         
     } else {
@@ -1668,7 +1701,7 @@
                                numType:STMLogMessageTypeImportant];
 
         if (socket.status == SocketIOClientStatusConnected) {
-            
+        
             if (self.isAuthorized) {
                 
                 logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
