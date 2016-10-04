@@ -211,6 +211,7 @@
     [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
                                                         selector:@selector(closeSocketInBackground)
                                                           object:nil];
+    [STMSocketController checkSocket];
     
 }
 

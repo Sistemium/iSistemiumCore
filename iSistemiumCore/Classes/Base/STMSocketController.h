@@ -40,6 +40,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (void)startSocketWithUrl:(NSString *)socketUrlString
          andEntityResource:(NSString *)entityResource;
 
++ (void)checkSocket;
 + (void)startSocket;
 + (void)closeSocket;
 + (void)reconnectSocket;

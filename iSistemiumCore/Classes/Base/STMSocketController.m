@@ -34,6 +34,7 @@
 @property (nonatomic) BOOL isAuthorized;
 @property (nonatomic) BOOL isSendingData;
 @property (nonatomic) BOOL isManualReconnecting;
+@property (nonatomic) BOOL wasClosedInBackground;
 @property (nonatomic) BOOL shouldSendData;
 @property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
 @property (nonatomic) BOOL controllersDidChangeContent;
@@ -220,6 +221,19 @@
         }
         
         return NO;
+        
+    }
+    
+}
+
++ (void)checkSocket {
+    
+    STMSocketController *sc = [self sharedInstance];
+
+    if (sc.wasClosedInBackground) {
+        
+        sc.wasClosedInBackground = NO;
+        [self startSocket];
         
     }
     
@@ -1589,6 +1603,7 @@
     [logger saveLogMessageWithText:@"close socket in background"
                            numType:STMLogMessageTypeImportant];
 
+    self.wasClosedInBackground = YES;
     [self closeSocket];
     
 }
