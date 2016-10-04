@@ -276,39 +276,7 @@
 }
 
 + (void)closeSocket {
-<<<<<<< HEAD
     [[self sharedInstance] closeSocket];
-=======
-    
-    NSLogMethodName;
-
-    STMSocketController *sc = [self sharedInstance];
-    
-    if (sc.isRunning) {
-        
-        STMLogger *logger = [STMLogger sharedLogger];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", sc.socket, sc.socket.sid];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeImportant];
-
-        if (!sc.isManualReconnecting) {
-            sc.socket = nil;
-        }
-        
-        sc.socketUrl = nil;
-        sc.isSendingData = NO;
-        sc.isAuthorized = NO;
-        sc.isRunning = NO;
-        sc.syncDataDictionary = nil;
-        sc.doNotSyncObjects = nil;
-        sc.sendingDate = nil;
-
-        [sc.socket disconnect];
-
-    }
-
->>>>>>> xcode8
 }
 
 + (void)reconnectSocket {
@@ -1630,24 +1598,26 @@
     NSLogMethodName;
     
     if (self.isRunning) {
-        
+
         STMLogger *logger = [STMLogger sharedLogger];
         
         NSString *logMessage = [NSString stringWithFormat:@"close socket %@ %@", self.socket, self.socket.sid];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeImportant];
         
-        [self.socket disconnect];
-        [self.socket removeAllHandlers];
+        if (!self.isManualReconnecting) {
+            self.socket = nil;
+        }
         
         self.socketUrl = nil;
-        self.socket = nil;
         self.isSendingData = NO;
         self.isAuthorized = NO;
         self.isRunning = NO;
         self.syncDataDictionary = nil;
         self.doNotSyncObjects = nil;
         self.sendingDate = nil;
+        
+        [self.socket disconnect];
         
     }
 
