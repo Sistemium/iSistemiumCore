@@ -329,12 +329,12 @@
     NSString *logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
     [logger saveLogMessageWithText:logMessage];
     
-    NSInteger timeRemaining = application.backgroundTimeRemaining;
+    NSTimeInterval timeRemaining = application.backgroundTimeRemaining;
     
     logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %@", @(timeRemaining)];
     [logger saveLogMessageWithText:logMessage];
 
-    if (timeRemaining >= 0) {
+    if (timeRemaining != DBL_MAX) {
         
         timeRemaining -= 10; // is 10 sec enough for closing socket?
         
@@ -353,7 +353,7 @@
 }
 
 - (void)backgroundTask:(UIBackgroundTaskIdentifier)bgTask endedInApplication:(UIApplication *)application {
-    
+
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
