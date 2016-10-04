@@ -1638,7 +1638,7 @@
                                numType:STMLogMessageTypeImportant];
 
         if (socket.status == SocketIOClientStatusConnected) {
-            self.isAuthorized = NO;
+        
             if (self.isAuthorized) {
                 
                 logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
