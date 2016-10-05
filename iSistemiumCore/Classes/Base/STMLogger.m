@@ -334,7 +334,7 @@
         }
 
 #ifdef DEBUG
-        [self sendLogMessageToLocalServerForDebug:logMessage];
+//        [self sendLogMessageToLocalServerForDebug:logMessage];
 #endif
 
         [self.document saveDocument:^(BOOL success) {

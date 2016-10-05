@@ -1208,7 +1208,7 @@
     if (self) {
         
         [self addObservers];
-        [self checkSocketStatus];
+//        [self checkSocketStatus];
         
     }
     return self;
