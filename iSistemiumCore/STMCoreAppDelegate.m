@@ -204,7 +204,7 @@
 
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
-    logMessage = @"cancel scheduled socket close";
+    logMessage = @"cancel scheduled socket close if have one";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeImportant];
 
