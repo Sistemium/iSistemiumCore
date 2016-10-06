@@ -62,8 +62,11 @@
              object:[self sessionManager].currentSession];
     
     NSError *error = nil;
+    
     AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayback error:&error];
+    [session setCategory:AVAudioSessionCategoryPlayback
+             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                   error:&error];
     
     if (error) {
         // Do some error handling
