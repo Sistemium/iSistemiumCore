@@ -12,11 +12,13 @@
 #import <AVFoundation/AVFoundation.h>
 
 #import "STMConstants.h"
+#import "STMLogger.h"
 
 
 @interface STMSoundController() <AVSpeechSynthesizerDelegate>
 
 @property (nonatomic, strong) AVSpeechSynthesizer *speechSynthesizer;
+@property (nonatomic, strong) AVAudioPlayer *player;
 
 
 @end
@@ -35,17 +37,6 @@
     });
     
     return _sharedController;
-    
-}
-
-- (instancetype)init {
-    
-    self = [super init];
-    
-    if (self) {
-
-    }
-    return self;
     
 }
 
@@ -68,11 +59,19 @@
     
     @autoreleasepool {
         
-        [[NSNotificationCenter defaultCenter] addObserver:(id)[self class]
-                                                 selector:@selector(applicationDidBecomeActive)
-                                                     name:UIApplicationDidBecomeActiveNotification
-                                                   object:nil];
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        id observer = (id)[self class];
         
+        [nc addObserver:observer
+               selector:@selector(applicationDidBecomeActive)
+                   name:UIApplicationDidBecomeActiveNotification
+                 object:nil];
+
+        [nc addObserver:observer
+               selector:@selector(mediaServicesWereReset)
+                   name:AVAudioSessionMediaServicesWereResetNotification
+                 object:[AVAudioSession sharedInstance]];
+
     }
     
 }
@@ -80,6 +79,52 @@
 + (void)applicationDidBecomeActive {
     
     if ([self isRinging]) [self stopRinging];
+    
+}
+
++ (void)mediaServicesWereReset {
+    
+    [self initAudioSession];
+    [self sharedController].speechSynthesizer = nil;
+    
+}
+
++ (void)initAudioSession {
+    
+    [self sharedController];
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"initAudioSession"];
+    
+    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+    
+    NSError *error = nil;
+    
+    [audioSession setCategory:AVAudioSessionCategoryPlayback
+                  withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                        error:&error];
+    
+    if (error) {
+        
+        [logger saveLogMessageWithText:error.localizedDescription];
+        return;
+        
+    }
+    
+    [audioSession setActive:YES
+                      error:&error];
+    
+    if (error) {
+        
+        [logger saveLogMessageWithText:error.localizedDescription];
+        return;
+        
+    }
+    
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        [self startBackgroundPlay];
+    }
     
 }
 
@@ -94,9 +139,19 @@
 //    AudioServicesPlayAlertSound(1033);
 //    AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 
-    NSString *path  = [[NSBundle mainBundle] pathForResource:@"error" ofType:@"mp3"];
-    NSURL *pathURL = [NSURL fileURLWithPath:path];
-    [self playSoundAtURL:pathURL];
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"error" ofType:@"mp3"];
+    
+    if (path) {
+        
+        NSURL *pathURL = [NSURL fileURLWithPath:path];
+        [self playSoundAtURL:pathURL];
+
+    } else {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"have no path for file error.mp3"
+                                                 numType:STMLogMessageTypeError];
+        
+    }
     
 }
 
@@ -104,9 +159,19 @@
     
 //    AudioServicesPlaySystemSound(1003);
     
-    NSString *path  = [[NSBundle mainBundle] pathForResource:@"ok" ofType:@"mp3"];
-    NSURL *pathURL = [NSURL fileURLWithPath:path];
-    [self playSoundAtURL:pathURL];
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"ok" ofType:@"mp3"];
+    
+    if (path) {
+
+        NSURL *pathURL = [NSURL fileURLWithPath:path];
+        [self playSoundAtURL:pathURL];
+
+    } else {
+
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"have no path for file ok.mp3"
+                                                 numType:STMLogMessageTypeError];
+
+    }
     
 }
 
@@ -276,6 +341,138 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
             
         };
         
+    }
+    
+}
+
+
+#pragma mark - playing silent sound
+
++ (void)startBackgroundPlay {
+    [[self sharedController] startBackgroundPlay];
+}
+
++ (void)stopBackgroundPlay {
+    [[self sharedController] stopBackgroundPlay];
+}
+
+- (void)startBackgroundPlay {
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"startBackgroundPlay"];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(interruptedAudio:)
+                                                 name:AVAudioSessionInterruptionNotification
+                                               object:[AVAudioSession sharedInstance]];
+    [self playSilentAudio];
+    
+}
+
+- (void)stopBackgroundPlay {
+    
+    if (self.player.playing) {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"stopBackgroundPlay"];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:AVAudioSessionInterruptionNotification
+                                                      object:[AVAudioSession sharedInstance]];
+        [self.player stop];
+
+    } else {
+
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"player is not playing"];
+
+    }
+    
+}
+
+- (void)interruptedAudio:(NSNotification *)notification {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+
+    [logger saveLogMessageWithText:@"interuptedAudio notification"];
+    
+    if (![notification.name isEqualToString:AVAudioSessionInterruptionNotification]) return;
+    if (!notification.userInfo) return;
+    
+    [logger saveLogMessageWithText:@"AVAudioSessionInterruptionNotification"];
+    
+    NSDictionary *userInfo = notification.userInfo;
+    NSNumber *interruptionType = userInfo[AVAudioSessionInterruptionTypeKey];
+    
+    switch (interruptionType.unsignedIntegerValue) {
+            
+        case AVAudioSessionInterruptionTypeEnded: {
+            
+            [logger saveLogMessageWithText:@"interruption ended"];
+            
+            NSNumber *interruptionOption = userInfo[AVAudioSessionInterruptionOptionKey];
+            
+            if (interruptionOption.unsignedIntegerValue == AVAudioSessionInterruptionOptionShouldResume) {
+                
+                [logger saveLogMessageWithText:@"audio session should resume"];
+                
+                [self playSilentAudio];
+                
+            } else {
+                
+                [logger saveLogMessageWithText:@"something else"];
+                
+            }
+            
+        }
+            break;
+            
+        case AVAudioSessionInterruptionTypeBegan: {
+            
+            [logger saveLogMessageWithText:@"interruption began"];
+            
+        }
+            break;
+            
+        default:
+            break;
+            
+    }
+    
+}
+
+- (void)playSilentAudio {
+    
+    if (self.player.playing) [self.player stop];
+
+    STMLogger *logger = [STMLogger sharedLogger];
+
+    [logger saveLogMessageWithText:@"playAudio"];
+    
+    NSString *silentWavPath = [[NSBundle mainBundle] pathForResource:@"silent" ofType:@"wav"];
+    
+    if (silentWavPath) {
+        
+        NSURL *silentWavURL = [NSURL fileURLWithPath:silentWavPath];
+        
+        NSError *error = nil;
+        
+        self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:silentWavURL
+                                                             error:&error];
+        
+        if (error) {
+            
+            [logger saveLogMessageWithText:error.localizedDescription];
+            
+            return;
+            
+        }
+        
+        self.player.numberOfLoops = -1;
+        self.player.volume = 0;
+        
+        [self.player play];
+
+    } else {
+        [logger saveLogMessageWithText:@"have no path for file silent.wav"
+                               numType:STMLogMessageTypeError];
     }
     
 }

@@ -16,6 +16,8 @@
 
 + (STMSoundController *)sharedController;
 
++ (void)initAudioSession;
+
 + (void)playAlert;
 + (void)playOk;
 
@@ -36,6 +38,9 @@
 
 + (void)ringWithProperties:(NSDictionary *)ringProperties;
 + (void)stopRinging;
+
++ (void)startBackgroundPlay;
++ (void)stopBackgroundPlay;
 
 
 @end
