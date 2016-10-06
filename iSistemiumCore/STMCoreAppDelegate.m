@@ -61,19 +61,8 @@
                name:NOTIFICATION_SESSION_STATUS_CHANGED
              object:[self sessionManager].currentSession];
     
-    NSError *error = nil;
+    [STMSoundController initAudioSession];
     
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayback
-             withOptions:AVAudioSessionCategoryOptionMixWithOthers
-                   error:&error];
-    
-    if (error) {
-        // Do some error handling
-    }
-    
-    [session setActive:YES error:&error];
-
     [self setupWindow];
 
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
@@ -167,6 +156,9 @@
     
 }
 
+
+#pragma mark - app state changes
+
 - (void)applicationWillResignActive:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationWillResignActive"];
@@ -174,6 +166,8 @@
                                              numType:STMLogMessageTypeImportant];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    
+    [STMSoundController startBackgroundPlay];
     
 }
 
@@ -234,6 +228,8 @@
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
+    [STMSoundController stopBackgroundPlay];
+
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
@@ -253,6 +249,9 @@
     [self sendAppTerminateLocalNotification];
     
 }
+
+
+#pragma mark - app fetching
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     
@@ -325,6 +324,9 @@
 
 }
 
+
+#pragma mark - backgrounds
+
 - (void)backgroundTask:(UIBackgroundTaskIdentifier)bgTask startedInApplication:(UIApplication *)application {
     
     STMLogger *logger = [STMLogger sharedLogger];
@@ -366,6 +368,9 @@
     bgTask = UIBackgroundTaskInvalid;
     
 }
+
+
+#pragma mark -
 
 - (void)routeNotificationUserInfo:(NSDictionary *)userInfo completionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
     
