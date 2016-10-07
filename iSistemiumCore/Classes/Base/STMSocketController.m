@@ -1542,8 +1542,11 @@
 }
 
 - (NSString *)uploadLogType {
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type" forGroup:@"syncer"];
+    
+    NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                       forGroup:@"syncer"];
     return uploadLogType;
+    
 }
 
 - (NSArray <STMDatum *> *)unsyncedObjectsArray {
