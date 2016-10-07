@@ -46,6 +46,8 @@
 @property (nonatomic) BOOL getLocationsWithNegativeSpeed;
 @property (nonatomic, strong) NSTimer *locationWaitingTimer;
 
+@property (nonatomic, strong) CLLocation *bestCheckinLocation;
+
 @property (nonatomic, strong) NSTimer *startTimer;
 @property (nonatomic, strong) NSTimer *finishTimer;
 
@@ -626,7 +628,7 @@
             
             if (!self.getLocationsWithNegativeSpeed && newLocation.speed < 0) {
                 
-                [self.session.logger saveLogMessageWithText:@"location w/negative speed recieved" type:@""];
+                [self.session.logger saveLogMessageWithText:@"location w/negative speed recieved"];
                 
             } else {
                 
@@ -695,6 +697,12 @@
 	    }
 
         [self receiveCheckinLocation:location];
+        
+    } else {
+        
+        if (self.bestCheckinLocation && location.horizontalAccuracy < self.bestCheckinLocation.horizontalAccuracy) {
+            self.bestCheckinLocation = location;
+        }
         
     }
     
