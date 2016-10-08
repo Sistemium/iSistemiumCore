@@ -10,8 +10,12 @@
 
 @protocol STMCheckinDelegate <NSObject>
 
-- (void)getCheckinLocation:(NSDictionary *)checkinLocation forRequestId:(NSNumber *)requestId;
-- (void)checkinLocationError:(NSString *)errorString forRequestId:(NSNumber *)requestId;
+- (void)getCheckinLocation:(NSDictionary *)checkinLocation
+              forRequestId:(NSNumber *)requestId
+              timeoutOccur:(BOOL)timeoutOccur;
+
+- (void)checkinLocationError:(NSString *)errorString
+                forRequestId:(NSNumber *)requestId;
 
 
 @end

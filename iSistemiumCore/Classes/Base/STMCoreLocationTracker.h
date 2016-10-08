@@ -24,6 +24,7 @@
 - (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy
                 checkinData:(NSDictionary *)checkinData
                   requestId:(NSNumber *)requestId
+                    timeout:(NSTimeInterval)timeout
                    delegate:(id <STMCheckinDelegate>)delegate;
 
 - (NSString *)locationServiceStatus;

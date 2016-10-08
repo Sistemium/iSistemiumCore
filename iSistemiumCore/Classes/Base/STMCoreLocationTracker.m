@@ -517,10 +517,15 @@
     
 }
 
-- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy checkinData:(NSDictionary *)checkinData requestId:(NSNumber *)requestId delegate:(id <STMCheckinDelegate>)delegate {
+- (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy checkinData:(NSDictionary *)checkinData requestId:(NSNumber *)requestId timeout:(NSTimeInterval)timeout delegate:(id <STMCheckinDelegate>)delegate {
     
     if (!delegate || !requestId) return;
     if (!checkinData) checkinData = @{};
+    if (!timeout) timeout = 20;
+    
+    [self performSelector:@selector(checkinTimeout)
+               withObject:nil
+               afterDelay:timeout];
     
     self.checkinAccuracy = checkinAccuracy.doubleValue;
     
@@ -537,6 +542,8 @@
         self.tracking &&
         locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
+
+        self.checkinMode = YES;
 
         [self receiveCheckinLocation:lastLocation];
         
@@ -661,6 +668,9 @@
     
 }
 
+
+#pragma mark - handle tracker SinglePointMode
+
 - (void)handleSinglePointModeLocation:(CLLocation *)location {
     
     self.singlePointMode = NO;
@@ -674,12 +684,15 @@
 											  userInfo:@{@"currentLocation":location}];
 	
 }
-        
+
+
+#pragma mark - handle tracker CheckinMode
+
 - (void)handleCheckinModeLocation:(CLLocation *)location {
     
     if (location.horizontalAccuracy <= self.checkinAccuracy) {
         
-        self.checkinMode = NO;
+        [self receiveCheckinLocation:location];
 
         if (!self.tracking) {
             
@@ -695,8 +708,6 @@
             self.locationManager.distanceFilter = self.distanceFilter;
             
 	    }
-
-        [self receiveCheckinLocation:location];
         
     } else {
         
@@ -708,7 +719,24 @@
     
 }
 
+- (void)checkinTimeout {
+    [self receiveCheckinLocation:self.bestCheckinLocation timeoutOccur:YES];
+}
+
 - (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
+    [self receiveCheckinLocation:checkinLocation timeoutOccur:NO];
+}
+
+- (void)receiveCheckinLocation:(CLLocation *)checkinLocation timeoutOccur:(BOOL)timeoutOccur {
+    
+    if (!self.checkinMode) return;
+    
+    self.checkinMode = NO;
+    self.bestCheckinLocation = nil;
+
+    [STMCoreLocationTracker cancelPreviousPerformRequestsWithTarget:self
+                                                           selector:@selector(checkinTimeout)
+                                                             object:nil];
     
     for (NSDictionary *checkinRequest in self.checkinRequests) {
     
@@ -720,9 +748,11 @@
     
         [STMCoreObjectsController setObjectData:checkinData toObject:checkinLocationObject];
         
-        NSDictionary *checkinLocationDic = [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject];
+        NSDictionary *checkinLocationDic = checkinLocationObject ? [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject] : @{};
 
-        [checkinDelegate getCheckinLocation:checkinLocationDic forRequestId:requestId];
+        [checkinDelegate getCheckinLocation:checkinLocationDic
+                               forRequestId:requestId
+                               timeoutOccur:timeoutOccur];
 
     }
     
