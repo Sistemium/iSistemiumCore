@@ -177,7 +177,7 @@
     
     NSString *logMessage = @"applicationDidEnterBackground";
     [logger saveLogMessageWithText:logMessage
-                           numType:STMLogMessageTypeImportant];
+                           numType:STMLogMessageTypeInfo];
 
     __block UIBackgroundTaskIdentifier bgTask;
     
@@ -203,7 +203,7 @@
 
     logMessage = @"cancel scheduled socket close if have one";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+                                             numType:STMLogMessageTypeInfo];
 
     [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
                                                         selector:@selector(closeSocketInBackground)
@@ -216,7 +216,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationDidBecomeActive"];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+                                             numType:STMLogMessageTypeInfo];
 
     [self setupWindow];
 
@@ -347,7 +347,7 @@
         
         logMessage = [NSString stringWithFormat:@"socket will be closed in %@ sec due to background condition", @(timeRemaining)];
         [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeImportant];
+                               numType:STMLogMessageTypeInfo];
 
         [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
                                                    withObject:nil
