@@ -472,9 +472,15 @@
             userInfo = @{[anObject valueForKey:@"name"]: [anObject valueForKey:@"value"]};
         }
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self.session userInfo:userInfo];
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsChanged" object:self.session userInfo:@{@"changedObject": anObject}];
+        [nc postNotificationName:notificationName
+                          object:self.session
+                        userInfo:userInfo];
+        
+        [nc postNotificationName:@"settingsChanged"
+                          object:self.session
+                        userInfo:@{@"changedObject": anObject}];
         
     }
         
