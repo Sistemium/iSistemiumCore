@@ -16,6 +16,8 @@
 
 + (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location {
 
+    if (!location) return nil;
+    
     STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     
     Class locationClass = [currentSession locationClass];

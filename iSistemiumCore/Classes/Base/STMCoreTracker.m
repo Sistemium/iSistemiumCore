@@ -103,7 +103,9 @@
         
         _tracking = tracking;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackerStatusChanged", self.group] object:self];
+        NSString *notificationName = [NSString stringWithFormat:@"%@TrackerStatusChanged", self.group];
+        [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
+                                                            object:self];
         
     }
     
