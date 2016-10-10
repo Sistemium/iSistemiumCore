@@ -11,8 +11,7 @@
 @protocol STMCheckinDelegate <NSObject>
 
 - (void)getCheckinLocation:(NSDictionary *)checkinLocation
-              forRequestId:(NSNumber *)requestId
-              timeoutOccur:(BOOL)timeoutOccur;
+              forRequestId:(NSNumber *)requestId;
 
 - (void)checkinLocationError:(NSString *)errorString
                 forRequestId:(NSNumber *)requestId;

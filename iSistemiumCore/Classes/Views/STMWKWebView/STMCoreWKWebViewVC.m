@@ -160,8 +160,10 @@
 
 - (NSString *)webViewUrlString {
 
-    return @"http://maxbook.local:3000";
+    
+//    return @"http://maxbook.local:3000";
 //    return @"https://isissales.sistemium.com/";
+    
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
     
@@ -1462,13 +1464,11 @@ int counter = 0;
 
 #pragma mark - STMCheckinDelegate
 
-- (void)getCheckinLocation:(NSDictionary *)checkinLocation forRequestId:(NSNumber *)requestId timeoutOccur:(BOOL)timeoutOccur {
+- (void)getCheckinLocation:(NSDictionary *)checkinLocation forRequestId:(NSNumber *)requestId {
     
     if (requestId) {
         
-        NSMutableDictionary *parameters = self.checkinMessageParameters[requestId];
-        
-        if (timeoutOccur) parameters[@"timeoutOccur"] = @"true";
+        NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
         [self callbackWithData:@[checkinLocation]
                     parameters:parameters
