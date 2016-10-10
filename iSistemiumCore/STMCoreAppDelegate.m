@@ -29,7 +29,9 @@
 @implementation STMCoreAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+
+    [self sessionManager];
+
     [self startCrashlytics];
 
     NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
