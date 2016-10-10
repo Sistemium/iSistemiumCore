@@ -982,11 +982,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"addEventObserversToSocket %@", socket];
     [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                           numType:STMLogMessageTypeDebug];
-=======
                            numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
 
     
     [STMSocketController addOnAnyEventToSocket:socket];
@@ -1124,11 +1120,7 @@
         
         NSString *logMessage = [NSString stringWithFormat:@"disconnectCallback socket %@ %@", socket, socket.sid];
         [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                               numType:STMLogMessageTypeDebug];
-=======
                                numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
         
         [self socketLostConnection];
         
@@ -1136,11 +1128,7 @@
             
             logMessage = [NSString stringWithFormat:@"socket %@ %@ isManualReconnecting, start socket now", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                                   numType:STMLogMessageTypeDebug];
-=======
                                    numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
             
             sc.isManualReconnecting = NO;
             [self startSocket];
@@ -1149,11 +1137,7 @@
             
             logMessage = [NSString stringWithFormat:@"socket %@ %@ is not reconnecting, do nothing", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                                   numType:STMLogMessageTypeDebug];
-=======
                                    numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
             
         }
 
@@ -1167,11 +1151,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"errorCallback socket %@ %@ with data: %@", socket, socket.sid, data.description];
     [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                           numType:STMLogMessageTypeWarning];
-=======
                            numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
     
 }
 
@@ -1181,11 +1161,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectAttemptCallback socket %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                           numType:STMLogMessageTypeDebug];
-=======
                            numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
     
 }
 
@@ -1195,11 +1171,7 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectCallback socket %@ %@", socket, socket.sid];
     [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                           numType:STMLogMessageTypeDebug];
-=======
                            numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
 
     [self socketLostConnection];
 
@@ -1681,21 +1653,13 @@
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
     [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                           numType:STMLogMessageTypeDebug];
-=======
                            numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
 
     if (self.isRunning) {
 
         logMessage = [NSString stringWithFormat:@"socket %@ %@ isRunning, close socket first", self.socket, self.socket.sid];
         [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                               numType:STMLogMessageTypeWarning];
-=======
                                numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
 
         self.isManualReconnecting = YES;
         [STMSocketController closeSocket];
@@ -1726,11 +1690,7 @@
         
         NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", socket, socket.sid];
         [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                               numType:STMLogMessageTypeDebug];
-=======
                                numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
 
         if (socket.status == SocketIOClientStatusConnected) {
         
@@ -1754,11 +1714,7 @@
             
             logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
-<<<<<<< HEAD
-                                   numType:STMLogMessageTypeDebug];
-=======
                                    numType:STMLogMessageTypeInfo];
->>>>>>> checkinAccuracy
             
 //            [self startDelayedAuthorizationCheckForSocket:socket];
             

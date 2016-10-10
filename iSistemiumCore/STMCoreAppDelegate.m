@@ -29,15 +29,9 @@
 @implementation STMCoreAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-<<<<<<< HEAD
 
     [self sessionManager];
 
-=======
-    
-    [self sessionManager];
-    
->>>>>>> checkinAccuracy
     [self startCrashlytics];
 
     NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
@@ -203,17 +197,10 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     
-<<<<<<< HEAD
     NSString *logMessage = @"applicationWillEnterForeground";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-=======
-    NSString *logMessage = [NSString stringWithFormat:@"applicationWillEnterForeground"];
-//    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-//                                             numType:STMLogMessageTypeImportant];
-    
->>>>>>> checkinAccuracy
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
     logMessage = @"cancel scheduled socket close if have one";
