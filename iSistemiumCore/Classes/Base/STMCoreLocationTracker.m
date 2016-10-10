@@ -522,6 +522,7 @@
     if (!delegate || !requestId) return;
     if (!checkinData) checkinData = @{};
     if (!timeout) timeout = 20;
+    timeout = (timeout >= 1) ? timeout - 1 : 0;
     
     [self performSelector:@selector(checkinTimeout)
                withObject:nil
@@ -565,7 +566,8 @@
 - (void)startUpdatingLocation {
     
     [self.locationManager startUpdatingLocation];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidResumeLocationUpdates" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidResumeLocationUpdates"
+                                                        object:self];
 
 }
 
@@ -610,6 +612,64 @@
     
 }
 
+- (void)locationManagerDidResumeLocationUpdates:(CLLocationManager *)manager {
+    
+    [self.session.logger saveLogMessageWithText:@"locationManagerDidResumeLocationUpdates"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidResumeLocationUpdates"
+                                                        object:self];
+    
+}
+
+- (void)locationManagerDidPauseLocationUpdates:(CLLocationManager *)manager {
+    
+    [self.session.logger saveLogMessageWithText:@"locationManagerDidPauseLocationUpdates"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidPauseLocationUpdates"
+                                                        object:self];
+    
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    
+    if ([manager isEqual:self.requestManager]) {
+        
+        if (status == kCLAuthorizationStatusAuthorizedAlways || status == kCLAuthorizationStatusAuthorizedWhenInUse) [self checkTrackerAutoStart];
+        
+    } else {
+        
+        [STMClientDataController checkClientData];
+        
+        if ((status == kCLAuthorizationStatusAuthorizedAlways || status == kCLAuthorizationStatusAuthorizedWhenInUse) && self.tracking) {
+            
+            if ([CLLocationManager locationServicesEnabled]) {
+                [self startUpdatingLocation];
+            } else {
+                [[self.session logger] saveLogMessageWithText:@"location tracking disabled" type:@"error"];
+                [super stopTracking];
+            }
+            
+        }
+        
+    }
+    
+    switch (status) {
+        case kCLAuthorizationStatusNotDetermined: {
+            break;
+        }
+        case kCLAuthorizationStatusRestricted:
+        case kCLAuthorizationStatusDenied: {
+            [self checkinLocationError:@"location tracking is not permitted"];
+            break;
+        }
+        case kCLAuthorizationStatusAuthorizedAlways: {
+            break;
+        }
+        case kCLAuthorizationStatusAuthorizedWhenInUse: {
+            break;
+        }
+    }
+    
+}
+
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
     
     if ([manager isEqual:self.requestManager]) {
@@ -644,9 +704,7 @@
                 if (!self.lastLocation || time > self.timeFilter || self.currentAccuracy < previousAccuracy) {
                     
                     if (self.tracking) {
-                        
                         [self addLocation:newLocation];
-                        
                     }
                     
                 }
@@ -654,7 +712,6 @@
             }
 
         }
-        
         
         if (self.singlePointMode) {
             [self handleSinglePointModeLocation:newLocation];
@@ -711,7 +768,7 @@
         
     } else {
         
-        if (self.bestCheckinLocation && location.horizontalAccuracy < self.bestCheckinLocation.horizontalAccuracy) {
+        if (!self.bestCheckinLocation || location.horizontalAccuracy <= self.bestCheckinLocation.horizontalAccuracy) {
             self.bestCheckinLocation = location;
         }
         
@@ -720,20 +777,26 @@
 }
 
 - (void)checkinTimeout {
-    [self receiveCheckinLocation:self.bestCheckinLocation timeoutOccur:YES];
+    
+    if (self.bestCheckinLocation) {
+        [self receiveCheckinLocation:self.bestCheckinLocation];
+    } else {
+        [self checkinLocationError:NSLocalizedString(@"HAVE NO CHECKIN LOCATION", nil)];
+    }
+    
 }
 
 - (void)receiveCheckinLocation:(CLLocation *)checkinLocation {
-    [self receiveCheckinLocation:checkinLocation timeoutOccur:NO];
-}
-
-- (void)receiveCheckinLocation:(CLLocation *)checkinLocation timeoutOccur:(BOOL)timeoutOccur {
     
     if (!self.checkinMode) return;
     
-    self.checkinMode = NO;
-    self.bestCheckinLocation = nil;
-
+    if (!checkinLocation) {
+        
+        [self checkinLocationError:NSLocalizedString(@"HAVE NO CHECKIN LOCATION", nil)];
+        return;
+        
+    }
+    
     [STMCoreLocationTracker cancelPreviousPerformRequestsWithTarget:self
                                                            selector:@selector(checkinTimeout)
                                                              object:nil];
@@ -742,21 +805,24 @@
     
         STMCoreLocation *checkinLocationObject = [STMLocationController locationObjectFromCLLocation:checkinLocation];
 
-        id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
-        NSNumber *requestId = checkinRequest[@"requestId"];
-        NSDictionary *checkinData = checkinRequest[@"checkinData"];
-    
-        [STMCoreObjectsController setObjectData:checkinData toObject:checkinLocationObject];
+        if (checkinLocationObject) {
+
+            NSDictionary *checkinData = checkinRequest[@"checkinData"];
+            [STMCoreObjectsController setObjectData:checkinData toObject:checkinLocationObject];
+
+        }
         
         NSDictionary *checkinLocationDic = checkinLocationObject ? [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject] : @{};
 
+        id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
+        NSNumber *requestId = checkinRequest[@"requestId"];
+
         [checkinDelegate getCheckinLocation:checkinLocationDic
-                               forRequestId:requestId
-                               timeoutOccur:timeoutOccur];
+                               forRequestId:requestId];
 
     }
     
-    self.checkinRequests = nil;
+    [self endCheckinMode];
 
 }
 
@@ -771,60 +837,19 @@
         
     }
 
+    [self endCheckinMode];
+
+}
+
+- (void)endCheckinMode {
+
+    self.checkinMode = NO;
+    self.bestCheckinLocation = nil;
     self.checkinRequests = nil;
-
-}
-
-- (void)locationManagerDidResumeLocationUpdates:(CLLocationManager *)manager {
-    [self.session.logger saveLogMessageWithText:@"locationManagerDidResumeLocationUpdates" type:@""];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidResumeLocationUpdates" object:self];
-}
-
-- (void)locationManagerDidPauseLocationUpdates:(CLLocationManager *)manager {
-    [self.session.logger saveLogMessageWithText:@"locationManagerDidPauseLocationUpdates" type:@""];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationManagerDidPauseLocationUpdates" object:self];
-}
-
-- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-    
-    if ([manager isEqual:self.requestManager]) {
-        
-        if (status == kCLAuthorizationStatusAuthorizedAlways || status == kCLAuthorizationStatusAuthorizedWhenInUse) [self checkTrackerAutoStart];
-        
-    } else {
-    
-        [STMClientDataController checkClientData];
-        
-        if ((status == kCLAuthorizationStatusAuthorizedAlways || status == kCLAuthorizationStatusAuthorizedWhenInUse) && self.tracking) {
-            
-            if ([CLLocationManager locationServicesEnabled]) {
-                [self startUpdatingLocation];
-            } else {
-                [[self.session logger] saveLogMessageWithText:@"location tracking disabled" type:@"error"];
-                [super stopTracking];
-            }
-            
-        }
-
+    if (!self.tracking) {
+        [self.locationManager stopUpdatingLocation];
     }
-    
-    switch (status) {
-        case kCLAuthorizationStatusNotDetermined: {
-            break;
-        }
-        case kCLAuthorizationStatusRestricted:
-        case kCLAuthorizationStatusDenied: {
-            [self checkinLocationError:@"location tracking is not permitted"];
-            break;
-        }
-        case kCLAuthorizationStatusAuthorizedAlways: {
-            break;
-        }
-        case kCLAuthorizationStatusAuthorizedWhenInUse: {
-            break;
-        }
-    }
-    
+
 }
 
 
