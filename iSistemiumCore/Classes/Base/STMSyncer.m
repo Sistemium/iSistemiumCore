@@ -1346,14 +1346,31 @@
     if ([xid isEqual:[STMCoreObjectsController requestedFantomXid]]) {
         
         [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid} successfully:success];
+            
+            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
+                                                successfully:success];
+            
         }];
 
     } else {
         
-        NSLog(@"Wrong fantom xid in server response, get %@ instead of %@", xid, [STMCoreObjectsController requestedFantomXid]);
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":[STMCoreObjectsController requestedFantomXid]} successfully:NO];
+        NSData *requestedFantomXid = [STMCoreObjectsController requestedFantomXid];
+        
+        if (requestedFantomXid) {
+            
+            NSLog(@"Wrong fantom xid in server response, get %@ instead of %@", xid, requestedFantomXid);
+            
+            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":requestedFantomXid};
+            [STMCoreObjectsController didFinishResolveFantom:fantomDic
+                                                successfully:NO];
 
+        } else {
+
+            [STMCoreObjectsController didFinishResolveFantom:nil
+                                                successfully:NO];
+
+        }
+        
     }
 
     
