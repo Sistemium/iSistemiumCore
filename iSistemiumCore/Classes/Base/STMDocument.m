@@ -11,7 +11,7 @@
 #import "STMFunctions.h"
 
 
-#define SAVING_QUEUE_THRESHOLD 15
+#define SAVING_QUEUE_THRESHOLD 0
 
 @interface STMDocument()
 
