@@ -10,19 +10,20 @@ import Foundation
 
 @objc class STMGarbageCollector:NSObject{
     
-    static var unusedImages = Set<String>()
+    static var unusedImageFiles = Set<String>()
+    static var outOfDateImages = Set<STMCorePicture>()
     
     static func removeUnusedImages(){
         let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
             do {
-                if unusedImages.count > 0 {
-                    let logMessage = String(format: "Deleting %i images",unusedImages.count)
+                if unusedImageFiles.count > 0 {
+                    let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
                     STMLogger.sharedLogger().saveLogMessageWithText(logMessage, type:"important")
                 }
-                for unusedImage in unusedImages{
+                for unusedImage in unusedImageFiles{
                     try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+unusedImage)
-                    self.unusedImages.remove(unusedImage)
+                    self.unusedImageFiles.remove(unusedImage)
                     NSNotificationCenter.defaultCenter().postNotificationName("unusedImageRemoved", object: nil)
                 }
             } catch let error as NSError {
@@ -33,28 +34,54 @@ import Foundation
     
     static func searchUnusedImages(){
         do {
-            unusedImages = Set<String>()
-            var allImages = Set<String>()
-            var usedImages = Set<String>()
+            unusedImageFiles = Set<String>()
+            var allImageFiles = Set<String>()
+            var usedImageFiles = Set<String>()
             let document = STMCoreSessionManager.sharedManager().currentSession.document
             let fileManager = NSFileManager.defaultManager()
             let enumerator = fileManager.enumeratorAtPath(STMFunctions.documentsDirectory())
             while let element = enumerator?.nextObject() as? String {
                 if element.hasSuffix(".jpg") {
-                    allImages.insert(element)
+                    allImageFiles.insert(element)
                 }
             }
             let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
-            let photos = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
-            for image in photos{
+            let allImages = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+            for image in allImages{
                 if let path = image.imagePath{
-                    usedImages.insert(path)
+                    usedImageFiles.insert(path)
                 }
                 if let resizedPath = image.resizedImagePath{
-                    usedImages.insert(resizedPath)
+                    usedImageFiles.insert(resizedPath)
                 }
             }
-            unusedImages = allImages.subtract(usedImages)
+            unusedImageFiles = allImageFiles.subtract(usedImageFiles)
+        } catch let error as NSError {
+            NSLog(error.description)
+        }
+    }
+    
+    static func removeOutOfDateImages(){
+        do {
+            let document = STMCoreSessionManager.sharedManager().currentSession.document
+            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
+            let allImages = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+            for image in allImages{
+                print(image.deviceAts)
+                if let date = image.deviceAts{
+//                     if NSCalendar.currentCalendar().components(.Minute, fromDate: date, toDate: NSDate(), options: []).minute > 2{
+                    if NSCalendar.currentCalendar().components(.Hour, fromDate: date, toDate: NSDate(), options: []).hour > 24{
+                        if let imagePath = image.imagePath{
+                            try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
+                            image.imagePath = nil
+                        }
+                        if let resizedImagePath = image.resizedImagePath{
+                            try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                            image.resizedImagePath = nil
+                        }
+                    }
+                }
+            }
         } catch let error as NSError {
             NSLog(error.description)
         }

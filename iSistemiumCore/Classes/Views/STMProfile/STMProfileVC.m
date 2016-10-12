@@ -487,14 +487,14 @@
 
 - (void)updateUnusedPicturesInfo {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([STMGarbageCollector.unusedImages count] == 0) {
+        if ([STMGarbageCollector.unusedImageFiles count] == 0) {
             self.unusedPicturesButton.hidden = YES;
         }else{
-            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImages count]];
+            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImageFiles count]];
             NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
             NSString *unusedCount = [NSString stringWithFormat:@"%@UNUSED", pluralString];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImages count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImages count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
         }
     });
     

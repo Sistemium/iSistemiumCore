@@ -84,6 +84,7 @@
 - (void)statusChanged {
     
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
+        [STMGarbageCollector removeOutOfDateImages];
         [STMGarbageCollector searchUnusedImages];
     }
     
