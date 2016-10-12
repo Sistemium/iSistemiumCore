@@ -1,13 +1,12 @@
 //
-//  STMCorePicture.m
-//  iSistemiumCore
+//  STMCorePicture+CoreDataClass.m
+//  iSisSales
 //
-//  Created by Maxim Grigoriev on 12/05/16.
+//  Created by Edgar Jan Vuicik on 12/10/2016.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
 #import "STMCorePicture.h"
-
 #import "STMCorePicturesController.h"
 
 
@@ -28,8 +27,7 @@
 }
 
 - (void)checkPictureClass {
-
+    
 }
-
 
 @end

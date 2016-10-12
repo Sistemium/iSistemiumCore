@@ -1,40 +1,41 @@
 //
 //  STMEntity+CoreDataProperties.h
-//  iSistemiumCore
+//  iSisSales
 //
-//  Created by Maxim Grigoriev on 13/06/16.
+//  Created by Edgar Jan Vuicik on 12/10/2016.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
-//
-//  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
-//  to delete and recreate this implementation file for your updated model.
 //
 
 #import "STMEntity.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface STMEntity (CoreDataProperties)
 
-@property (nullable, nonatomic, retain) NSString *commentText;
-@property (nullable, nonatomic, retain) NSDate *deviceCts;
-@property (nullable, nonatomic, retain) NSDate *deviceTs;
-@property (nullable, nonatomic, retain) NSString *eTag;
-@property (nullable, nonatomic, retain) NSNumber *id;
-@property (nullable, nonatomic, retain) NSNumber *isFantom;
-@property (nullable, nonatomic, retain) NSNumber *isResolveFantoms;
-@property (nullable, nonatomic, retain) NSNumber *isUploadable;
-@property (nullable, nonatomic, retain) NSNumber *lifeTime;
-@property (nullable, nonatomic, retain) NSString *lifeTimeDateField;
-@property (nullable, nonatomic, retain) NSDate *lts;
-@property (nullable, nonatomic, retain) NSString *name;
++ (NSFetchRequest<STMEntity *> *)fetchRequest;
+
+@property (nullable, nonatomic, copy) NSString *commentText;
+@property (nullable, nonatomic, copy) NSDate *deviceCts;
+@property (nullable, nonatomic, copy) NSDate *deviceTs;
+@property (nullable, nonatomic, copy) NSString *eTag;
+@property (nullable, nonatomic, copy) NSNumber *id;
+@property (nullable, nonatomic, copy) NSNumber *isFantom;
+@property (nullable, nonatomic, copy) NSNumber *isResolveFantoms;
+@property (nullable, nonatomic, copy) NSNumber *isUploadable;
+@property (nullable, nonatomic, copy) NSNumber *lifeTime;
+@property (nullable, nonatomic, copy) NSString *lifeTimeDateField;
+@property (nullable, nonatomic, copy) NSDate *lts;
+@property (nullable, nonatomic, copy) NSString *name;
 @property (nullable, nonatomic, retain) NSData *ownerXid;
-@property (nullable, nonatomic, retain) NSString *roleName;
-@property (nullable, nonatomic, retain) NSString *roleOwner;
-@property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSString *target;
-@property (nullable, nonatomic, retain) NSString *url;
-@property (nullable, nonatomic, retain) NSString *workflow;
+@property (nullable, nonatomic, copy) NSString *roleName;
+@property (nullable, nonatomic, copy) NSString *roleOwner;
+@property (nullable, nonatomic, copy) NSString *source;
+@property (nullable, nonatomic, copy) NSString *target;
+@property (nullable, nonatomic, copy) NSString *url;
+@property (nullable, nonatomic, copy) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
+@property (nullable, nonatomic, copy) NSNumber *pictureLifeTime;
 @property (nullable, nonatomic, retain) STMWorkflow *wf;
 
 @end
