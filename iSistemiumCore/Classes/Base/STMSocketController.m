@@ -249,9 +249,9 @@
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeInfo];
     
-//    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isManualReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isManualReconnecting), sc.socket.sid];
-//    [logger saveLogMessageWithText:logMessage
-//                           numType:STMLogMessageTypeImportant];
+    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isManualReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isManualReconnecting), sc.socket.sid];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeInfo];
 
     if (sc.socketUrl && !sc.isRunning && !sc.isManualReconnecting) {
 
@@ -259,9 +259,9 @@
 
         sc.isRunning = YES;
         
-//        logMessage = [NSString stringWithFormat:@"sc.socket %@ sc.socket.sid %@ status %@", sc.socket, sc.socket.sid, @(sc.socket.status)];
-//        [logger saveLogMessageWithText:logMessage
-//                               numType:STMLogMessageTypeImportant];
+        logMessage = [NSString stringWithFormat:@"sc.socket %@ sc.socket.sid %@ status %@", sc.socket, sc.socket.sid, @(sc.socket.status)];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
 
         switch (sc.socket.status) {
                 
@@ -773,12 +773,12 @@
 
 + (void)socket:(SocketIOClient *)socket receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
     
-    NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", socket, socket.sid, event, data);
-    
     STMSocketEvent socketEvent = [self eventForString:event];
     
     if (socketEvent == STMSocketEventAuthorization) {
         [self socket:socket receiveAuthorizationAckWithData:data];
+    } else {
+        NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", socket, socket.sid, event, data);
     }
     
 }
@@ -804,9 +804,9 @@
             
             if (isAuthorized) {
                 
-//                logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", socket, socket.sid];
-//                [logger saveLogMessageWithText:logMessage
-//                                       numType:STMLogMessageTypeImportant];
+                logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", socket, socket.sid];
+                [logger saveLogMessageWithText:logMessage
+                                       numType:STMLogMessageTypeInfo];
                 
                 [self sharedInstance].isAuthorized = YES;
                 [self sharedInstance].isSendingData = NO;
@@ -986,16 +986,20 @@
 
     
     [STMSocketController addOnAnyEventToSocket:socket];
-
-    [STMSocketController addEvent:STMSocketEventConnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventDisconnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventError toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventReconnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventReconnectAttempt toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventRemoteCommands toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventData toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventJSData toSocket:socket];
     
+    NSArray *events = @[@(STMSocketEventConnect),
+                        @(STMSocketEventDisconnect),
+                        @(STMSocketEventError),
+                        @(STMSocketEventReconnect),
+                        @(STMSocketEventReconnectAttempt),
+                        @(STMSocketEventRemoteCommands),
+                        @(STMSocketEventData),
+                        @(STMSocketEventJSData)];
+
+    for (NSNumber *eventNum in events) {
+        [STMSocketController addEvent:eventNum.integerValue toSocket:socket];
+    }
+
 }
 
 + (void)addOnAnyEventToSocket:(SocketIOClient *)socket {
@@ -1097,9 +1101,9 @@
         
         [dataDic addEntriesFromDictionary:authDic];
         
-//        logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, socket, socket.sid];
-//        [logger saveLogMessageWithText:logMessage
-//                               numType:STMLogMessageTypeImportant];
+        logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, socket, socket.sid];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
         
         NSString *event = [STMSocketController stringValueForEvent:STMSocketEventAuthorization];
         
@@ -1715,8 +1719,6 @@
             logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeInfo];
-            
-//            [self startDelayedAuthorizationCheckForSocket:socket];
             
         }
 
