@@ -565,19 +565,17 @@
             
         } else {
             
-            startSettings = @{
-                              @"entityResource"            : self.entityResource,
-                              @"dataModelName"            : dataModelName,
+            startSettings = @{@"entityResource": self.entityResource,
+                              @"dataModelName": dataModelName//,
+//                              @"requestLocationServiceAuthorization": @"requestAlwaysAuthorization",
+//                              @"locationTrackerAutoStart": @YES
                               };
-            
         }
         
 #else
         
-        startSettings = @{
-                          @"entityResource"            : self.entityResource,
-                          @"dataModelName"            : dataModelName,
-                          };
+        startSettings = @{@"entityResource": self.entityResource,
+                          @"dataModelName": dataModelName};
         
 #endif
 

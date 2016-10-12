@@ -35,9 +35,12 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 @interface STMSocketController : NSObject
 
++ (STMSocketController *)sharedInstance;
+
 + (void)startSocketWithUrl:(NSString *)socketUrlString
          andEntityResource:(NSString *)entityResource;
 
++ (void)checkSocket;
 + (void)startSocket;
 + (void)closeSocket;
 + (void)reconnectSocket;
@@ -76,6 +79,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (void)sendFantomFindEventToResource:(NSString *)resource
                               withXid:(NSString *)xidString
                            andTimeout:(NSTimeInterval)timeout;
+
+- (void)closeSocketInBackground;
 
 
 @end

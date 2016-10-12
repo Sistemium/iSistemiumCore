@@ -302,6 +302,10 @@
     
     NSLog(@"Log %@: %@", type, text);
     
+#ifdef DEBUG
+//    [self sendLogMessageToLocalServerForDebugWithType:type andText:text];
+#endif
+    
     NSArray *uploadTypes = [self syncingTypesForSettingType:self.uploadLogType];
 
     if ([uploadTypes containsObject:type]) {
@@ -376,10 +380,31 @@
             }
             
         }
-        
+
         [self.document saveDocument:^(BOOL success) {
         }];
         
+    }];
+    
+}
+
+- (void)sendLogMessageToLocalServerForDebugWithType:(NSString *)type andText:(NSString *)text {
+    
+    NSURL *url = [NSURL URLWithString:@"http://maxbook.local:8888"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.dateStyle = NSDateFormatterShortStyle;
+    dateFormatter.timeStyle = NSDateFormatterMediumStyle;
+    
+    NSString *bodyString = [NSString stringWithFormat:@"%@ %@: %@", [dateFormatter stringFromDate:[NSDate date]], type, text];
+    request.HTTPBody = [bodyString dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        //            NSLog(@"%@", response);
     }];
     
 }

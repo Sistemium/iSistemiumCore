@@ -160,8 +160,10 @@
 
 - (NSString *)webViewUrlString {
 
+    
 //    return @"http://maxbook.local:3000";
 //    return @"https://isissales.sistemium.com/";
+    
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
     
@@ -1032,12 +1034,14 @@
         self.checkinMessageParameters[requestId] = parameters;
         
         NSNumber *accuracy = parameters[@"accuracy"];
+        NSTimeInterval timeout = [parameters[@"timeout"] doubleValue] / 1000;
         
         STMCoreLocationTracker *locationTracker = [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 
         [locationTracker checkinWithAccuracy:accuracy
                                  checkinData:checkinData
                                    requestId:requestId
+                                     timeout:timeout
                                     delegate:self];
 
     }
@@ -1482,9 +1486,6 @@ int counter = 0;
         
         NSDictionary *parameters = self.checkinMessageParameters[requestId];
         
-//        [self callbackWithData:errorString
-//                    parameters:parameters
-//            jsCallbackFunction:self.checkinCallbackJSFunction];
         [self callbackWithError:errorString
                      parameters:parameters];
         

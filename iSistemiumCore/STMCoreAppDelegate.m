@@ -29,7 +29,9 @@
 @implementation STMCoreAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+
+    [self sessionManager];
+
     [self startCrashlytics];
 
     NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
@@ -61,16 +63,8 @@
                name:NOTIFICATION_SESSION_STATUS_CHANGED
              object:[self sessionManager].currentSession];
     
-    NSError *error = nil;
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayback error:&error];
+    [STMSoundController initAudioSession];
     
-    if (error) {
-        // Do some error handling
-    }
-    
-    [session setActive:YES error:&error];
-
     [self setupWindow];
 
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
@@ -164,6 +158,9 @@
     
 }
 
+
+#pragma mark - app state changes
+
 - (void)applicationWillResignActive:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationWillResignActive"];
@@ -172,26 +169,25 @@
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
     
+    [STMSoundController startBackgroundPlay];
+    
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = @"applicationDidEnterBackground";
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeInfo];
+
     __block UIBackgroundTaskIdentifier bgTask;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
-        
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask:bgTask];
-        bgTask = UIBackgroundTaskInvalid;
-        
+        [self backgroundTask:bgTask endedInApplication:application];
     }];
     
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
-    
-    NSString *logMessage = [NSString stringWithFormat:@"applicationDidEnterBackground"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+    [self backgroundTask:bgTask startedInApplication:application];
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
@@ -201,19 +197,28 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     
-    NSString *logMessage = [NSString stringWithFormat:@"applicationWillEnterForeground"];
-//    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-//                                             numType:STMLogMessageTypeImportant];
-    
+    NSString *logMessage = @"applicationWillEnterForeground";
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeInfo];
+
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
+    logMessage = @"cancel scheduled socket close if have one";
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                             numType:STMLogMessageTypeInfo];
+
+    [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
+                                                        selector:@selector(closeSocketInBackground)
+                                                          object:nil];
+    [STMSocketController checkSocket];
+    
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     
     NSString *logMessage = [NSString stringWithFormat:@"applicationDidBecomeActive"];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+                                             numType:STMLogMessageTypeInfo];
 
     [self setupWindow];
 
@@ -224,6 +229,8 @@
     }
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+
+    [STMSoundController stopBackgroundPlay];
 
 }
 
@@ -246,19 +253,50 @@
 }
 
 
+#pragma mark - app fetching
+
+- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = @"applicationPerformFetchWithCompletionHandler";
+    [logger saveLogMessageWithText:logMessage];
+    
+    __block UIBackgroundTaskIdentifier bgTask;
+    
+    bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
+        
+        [self backgroundTask:bgTask endedInApplication:application];
+        
+        NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
+        [self tryCatchFetchResultHandler:completionHandler
+                              withResult:UIBackgroundFetchResultFailed
+                              methodName:methodName];
+        
+    }];
+    
+    [self backgroundTask:bgTask startedInApplication:application];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler" object:application];
+    
+    [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
+    
+}
+
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
     
-    NSLog(@"application didReceiveRemoteNotification userInfo: %@", userInfo);
+    STMLogger *logger = [STMLogger sharedLogger];
     
+    NSString *logMessage = [NSString stringWithFormat:@"application didReceiveRemoteNotification userInfo: %@", userInfo];
+    [logger saveLogMessageWithText:logMessage];
+
     __block UIBackgroundTaskIdentifier bgTask;
     
     __block BOOL handlerCompleted = NO;
     
     bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
         
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask:bgTask];
-        bgTask = UIBackgroundTaskInvalid;
+        [self backgroundTask:bgTask endedInApplication:application];
 
         if (!handlerCompleted) {
 
@@ -271,10 +309,7 @@
         
     }];
     
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
-
-//    [self routeNotificationUserInfo:userInfo completionHandler:handler];
+    [self backgroundTask:bgTask startedInApplication:application];
     
     [self routeNotificationUserInfo:userInfo completionHandler:^(UIBackgroundFetchResult result) {
         
@@ -290,6 +325,54 @@
 //    [self showTestLocalNotification];
 
 }
+
+
+#pragma mark - backgrounds
+
+- (void)backgroundTask:(UIBackgroundTaskIdentifier)bgTask startedInApplication:(UIApplication *)application {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+
+    NSString *logMessage = [NSString stringWithFormat:@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+    [logger saveLogMessageWithText:logMessage];
+    
+    NSTimeInterval timeRemaining = application.backgroundTimeRemaining;
+    
+    logMessage = [NSString stringWithFormat:@"BackgroundTimeRemaining %@", @(timeRemaining)];
+    [logger saveLogMessageWithText:logMessage];
+
+    if (timeRemaining != DBL_MAX) {
+        
+        timeRemaining -= 10; // is 10 sec enough for closing socket?
+        
+        NSTimeInterval delayInterval = timeRemaining >= 0 ? timeRemaining : 0;
+        
+        logMessage = [NSString stringWithFormat:@"socket will be closed in %@ sec due to background condition", @(timeRemaining)];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
+
+        [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
+                                                   withObject:nil
+                                                   afterDelay:delayInterval];
+
+    }
+    
+}
+
+- (void)backgroundTask:(UIBackgroundTaskIdentifier)bgTask endedInApplication:(UIApplication *)application {
+
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask];
+    [logger saveLogMessageWithText:logMessage];
+    
+    [application endBackgroundTask:bgTask];
+    bgTask = UIBackgroundTaskInvalid;
+    
+}
+
+
+#pragma mark -
 
 - (void)routeNotificationUserInfo:(NSDictionary *)userInfo completionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
     
@@ -309,8 +392,6 @@
 
     if (userInfo[@"syncer"]) {
         
-//        [nc postNotificationName:@"syncerDidReceiveRemoteNotification" object:app userInfo:userInfo];
-
         if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
             [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
                 
@@ -351,35 +432,6 @@
         }];
         
     }
-
-}
-
-- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    
-    NSString *logMessage = [NSString stringWithFormat:@"applicationPerformFetchWithCompletionHandler"];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
-    
-    __block UIBackgroundTaskIdentifier bgTask;
-    
-    bgTask = [application beginBackgroundTaskWithExpirationHandler: ^{
-        
-        NSLog(@"endBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-        [application endBackgroundTask:bgTask];
-        bgTask = UIBackgroundTaskInvalid;
-
-        NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
-        [self tryCatchFetchResultHandler:completionHandler
-                              withResult:UIBackgroundFetchResultFailed
-                              methodName:methodName];
-        
-    }];
-    
-    NSLog(@"startBackgroundTaskWithExpirationHandler %d", (unsigned int) bgTask);
-    NSLog(@"BackgroundTimeRemaining %d", (unsigned int)[application backgroundTimeRemaining]);
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler" object:application];
-    
-    [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
 
 }
 
