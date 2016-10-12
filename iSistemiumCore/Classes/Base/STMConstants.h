@@ -11,6 +11,8 @@
 
 #define ISISTEMIUM_PREFIX @"STM"
 
+#define MAIN_MAGIC_NUMBER 17
+
 #define ACTIVE_BLUE_COLOR [UIColor colorWithRed:0 green:0.478431 blue:1 alpha:1]
 #define GREY_LINE_COLOR [UIColor colorWithRed:0.785 green:0.78 blue:0.8 alpha:1]
 #define STM_LIGHT_BLUE_COLOR [UIColor colorWithRed:0.56 green:0.77 blue:1 alpha:1]
