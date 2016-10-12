@@ -67,10 +67,8 @@ import Foundation
             let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
             let allImages = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
             for image in allImages{
-                print(image.deviceAts)
-                if let date = image.deviceAts{
-//                     if NSCalendar.currentCalendar().components(.Minute, fromDate: date, toDate: NSDate(), options: []).minute > 2{
-                    if NSCalendar.currentCalendar().components(.Hour, fromDate: date, toDate: NSDate(), options: []).hour > 24{
+                if let date = image.deviceAts, let entityName = image.entity.name, let pictureLifeTime = (STMEntityController.stcEntities()[entityName] as? STMEntity)?.pictureLifeTime{
+                    if Double(NSCalendar.currentCalendar().components(.Hour, fromDate: date, toDate: NSDate(), options: []).hour) > Double(pictureLifeTime){
                         if let imagePath = image.imagePath{
                             try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
                             image.imagePath = nil
