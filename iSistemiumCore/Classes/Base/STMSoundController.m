@@ -15,7 +15,7 @@
 #import "STMLogger.h"
 
 
-@interface STMSoundController() <AVSpeechSynthesizerDelegate>
+@interface STMSoundController() <AVSpeechSynthesizerDelegate, AVAudioPlayerDelegate>
 
 @property (nonatomic, strong) AVSpeechSynthesizer *speechSynthesizer;
 @property (nonatomic, strong) AVAudioPlayer *player;
@@ -77,9 +77,7 @@
 }
 
 + (void)applicationDidBecomeActive {
-    
     if ([self isRinging]) [self stopRinging];
-    
 }
 
 + (void)mediaServicesWereReset {
@@ -94,9 +92,22 @@
     [self sharedController];
     
     STMLogger *logger = [STMLogger sharedLogger];
-    
     [logger saveLogMessageWithText:@"initAudioSession"];
     
+    if ([self initAudioSessionSharedInstance]) {
+    
+        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+            [self startBackgroundPlay];
+        }
+
+    }
+    
+}
+
++ (BOOL)initAudioSessionSharedInstance {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     
     NSError *error = nil;
@@ -108,7 +119,7 @@
     if (error) {
         
         [logger saveLogMessageWithText:error.localizedDescription];
-        return;
+        return NO;
         
     }
     
@@ -118,13 +129,11 @@
     if (error) {
         
         [logger saveLogMessageWithText:error.localizedDescription];
-        return;
+        return NO;
         
     }
-    
-    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-        [self startBackgroundPlay];
-    }
+
+    return YES;
     
 }
 
@@ -360,10 +369,15 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"startBackgroundPlay"];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(interruptedAudio:)
-                                                 name:AVAudioSessionInterruptionNotification
-                                               object:[AVAudioSession sharedInstance]];
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    
+    [nc removeObserver:self];
+    
+    [nc addObserver:self
+           selector:@selector(interruptedAudio:)
+               name:AVAudioSessionInterruptionNotification
+             object:[AVAudioSession sharedInstance]];
+
     [self playSilentAudio];
     
 }
@@ -374,9 +388,8 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
         
         [[STMLogger sharedLogger] saveLogMessageWithText:@"stopBackgroundPlay"];
         
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:AVAudioSessionInterruptionNotification
-                                                      object:[AVAudioSession sharedInstance]];
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+        
         [self.player stop];
 
     } else {
@@ -444,7 +457,14 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
     STMLogger *logger = [STMLogger sharedLogger];
 
-    [logger saveLogMessageWithText:@"playAudio"];
+    if (![STMSoundController initAudioSessionSharedInstance]) {
+        
+        [logger saveLogMessageWithText:@"initAudioSessionSharedInstance failed"];
+        return;
+        
+    }
+    
+    [logger saveLogMessageWithText:@"playSilentAudio"];
     
     NSString *silentWavPath = [[NSBundle mainBundle] pathForResource:@"silent" ofType:@"wav"];
     
@@ -456,6 +476,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
         
         self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:silentWavURL
                                                              error:&error];
+        self.player.delegate = self;
         
         if (error) {
             
@@ -474,6 +495,20 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
         [logger saveLogMessageWithText:@"have no path for file silent.wav"
                                numType:STMLogMessageTypeError];
     }
+    
+}
+
+
+#pragma mark - AVAudioPlayerDelegate
+
+- (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error {
+    [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription];
+}
+
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"audioPlayerDidFinishPlaying successfully:%@", @(flag)];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
     
 }
 
