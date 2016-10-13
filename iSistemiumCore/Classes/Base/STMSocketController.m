@@ -1241,25 +1241,9 @@
 
 - (void)objectContextDidSave:(NSNotification *)notification {
     
-//    NSLogMethodName;
-    
-//    if (self.controllersDidChangeContent && [notification.object isKindOfClass:[NSManagedObjectContext class]]) {
-//        
-//        NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
-//        
-//        if ([context isEqual:[STMSocketController document].managedObjectContext]) {
-//
-//            [[STMSocketController sharedInstance] performSelector:@selector(sendUnsyncedObjects) withObject:nil afterDelay:0];
-//
-//        }
-//        
-//    }
-    
 }
 
 - (void)documentSavedSuccessfully:(NSNotification *)notification {
-    
-//    NSLogMethodName;
     
     if (self.waitDocumentSavingToSyncNextObject) {
         
