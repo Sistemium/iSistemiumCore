@@ -41,6 +41,7 @@
 
 @property (nonatomic, strong) UIViewController *currentTappedVC;
 
+@property (nonatomic, strong) NSMutableDictionary *tabs;
 @property (nonatomic, strong) NSMutableDictionary *allTabsVCs;
 @property (nonatomic, strong) NSMutableArray *currentTabsVCs;
 @property (nonatomic, strong) NSMutableArray *authVCs;
@@ -137,11 +138,8 @@
     self = [super init];
     
     if (self) {
-        
         [self customInit];
-        
     }
-    
     return self;
     
 }
@@ -152,11 +150,8 @@
 
     self.delegate = self;
 
-//    [self prepareTabs];
-    
     self.tabBar.hidden = NO;
-    
-//    [self stateChanged];
+
     [self initAuthTab];
     
 }
@@ -258,7 +253,7 @@
     [defaults setValue:data forKey:[self orderedStcTabsKey]];
     [defaults synchronize];
     
-    (self.currentTabsVCs)[index] = vc;
+    self.currentTabsVCs[index] = vc;
     
     NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([vc class])];
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
@@ -311,7 +306,7 @@
                     
                     if ([tabs indexOfObject:vc] == showIndex) {
                         
-                        (self.currentTabsVCs)[index] = vc;
+                        self.currentTabsVCs[index] = vc;
                         
                     }
                     
@@ -319,7 +314,7 @@
                 
             }
             
-            (self.tabs)[name] = vc;
+            self.tabs[name] = vc;
             
             if ([name hasPrefix:@"STMAuth"]) {
                 [self.authVCs addObject:vc];
@@ -676,7 +671,7 @@
 
 - (void)showTabWithName:(NSString *)tabName {
     
-    UIViewController *vc = (self.tabs)[tabName];
+    UIViewController *vc = self.tabs[tabName];
     if (vc) {
         [self setSelectedViewController:vc];
     }
@@ -961,7 +956,7 @@
 
 - (void)showUnreadMessageCount {
     
-    UIViewController *vc = (self.tabs)[@"STMMessages"];
+    UIViewController *vc = self.tabs[@"STMMessages"];
     
     if (vc) {
         
@@ -993,7 +988,6 @@
             
             alertView.tag = 1;
             
-    //        UIViewController *vc = (self.tabs)[@"STMAuthTVC"];
             UIViewController *vc = [self.authVCs lastObject];
             vc.tabBarItem.badgeValue = @"!";
             
@@ -1128,42 +1122,27 @@
 
 #pragma mark - view lifecycle
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
     }
     return self;
+    
 }
 
 - (void)viewDidLoad {
-    
     [super viewDidLoad];
-
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    
     [super viewDidAppear:animated];
-    
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end
