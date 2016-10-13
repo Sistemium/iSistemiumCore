@@ -171,12 +171,23 @@
 
 - (void)updateSyncInfo {
     
+    [self updateSyncProgressBar];
     [self updateSyncDatesLabels];
     [self updateCloudImages];
     [self updateNonloadedPicturesInfo];
 
 }
 
+- (void)updateSyncProgressBar {
+    
+    float allUnsyncedObjectsCount = (float)[[self syncer] numbersOfAllUnsyncedObjects];
+    float currentlyUnsyncedObjectsCount = (float)[[self syncer] numberOfCurrentlyUnsyncedObjects];
+    
+    if (allUnsyncedObjectsCount > 0) {        
+        self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
+    }
+    
+}
 
 #pragma mark - cloud images for sync button
 
@@ -190,7 +201,7 @@
 - (void)setImageForSyncImageView {
     
     STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfUnsyncedObjects] > 0);
+    BOOL hasObjectsToUpload = ([syncer numbersOfAllUnsyncedObjects] > 0);
 
     [self.spinner removeFromSuperview];
     
@@ -237,7 +248,7 @@
     [self removeGestureRecognizersFromCloudImages];
     
     STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfUnsyncedObjects] > 0);
+    BOOL hasObjectsToUpload = ([syncer numbersOfAllUnsyncedObjects] > 0);
     UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
     SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
     
@@ -1042,7 +1053,7 @@
 
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
-               name:@"bunchOfObjectsSended"
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
              object:syncer];
 
     [nc addObserver:self
