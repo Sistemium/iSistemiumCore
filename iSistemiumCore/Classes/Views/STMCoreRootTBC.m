@@ -49,12 +49,16 @@
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
 
 @property (nonatomic, strong) NSMutableDictionary *orderedStcTabs;
+@property (nonatomic, strong) NSDictionary *lastSelectedTab;
 
 
 @end
 
 
 @implementation STMCoreRootTBC
+
+@synthesize lastSelectedTab = _lastSelectedTab;
+
 
 + (STMCoreRootTBC *)sharedRootVC {
     
@@ -85,6 +89,40 @@
         
     }
     return _orderedStcTabs;
+    
+}
+
+- (NSString *)lastSelectedTabKey {
+    return @"lastSelectedTab";
+}
+
+- (NSDictionary *)lastSelectedTab {
+    
+    if (!_lastSelectedTab) {
+        
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        NSData *data = [defaults objectForKey:[self lastSelectedTabKey]];
+        NSDictionary *lastSelectedTab = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        
+        _lastSelectedTab = lastSelectedTab;
+
+    }
+    return _lastSelectedTab;
+
+}
+
+- (void)setLastSelectedTab:(NSDictionary *)lastSelectedTab {
+
+    if (![lastSelectedTab isEqual:_lastSelectedTab]) {
+        
+        _lastSelectedTab = lastSelectedTab;
+        
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:lastSelectedTab];
+        [defaults setObject:data forKey:[self lastSelectedTabKey]];
+        [defaults synchronize];
+
+    }
     
 }
 
@@ -250,7 +288,7 @@
     
     STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.orderedStcTabs.copy];
-    [defaults setValue:data forKey:[self orderedStcTabsKey]];
+    [defaults setObject:data forKey:[self orderedStcTabsKey]];
     [defaults synchronize];
     
     self.currentTabsVCs[index] = vc;
@@ -620,7 +658,35 @@
         }
         
     }
+
+    [self selectLastSelectedVC];
     
+}
+
+- (void)selectLastSelectedVC {
+    
+    if (!self.lastSelectedTab)
+        return;
+
+    NSUInteger lastSelectedIndex = [self.lastSelectedTab.allKeys.firstObject integerValue];
+    
+    if (lastSelectedIndex >= self.viewControllers.count)
+        return;
+
+    NSDictionary *classNameAndTitle = self.lastSelectedTab.allValues.firstObject;
+    NSString *className = classNameAndTitle.allKeys.firstObject;
+    NSString *title = classNameAndTitle.allValues.firstObject;
+    
+    UIViewController *selectingVC = self.viewControllers[lastSelectedIndex];
+    
+    if (![NSStringFromClass([selectingVC class]) isEqualToString:className])
+        return;
+
+    if (![selectingVC.title isEqualToString:title])
+        return;
+
+    self.selectedIndex = lastSelectedIndex;
+
 }
 
 - (NSArray *)tabBarControlsArray {
@@ -766,8 +832,12 @@
 
 - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
 
-    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([viewController class])];
+    NSString *className = NSStringFromClass([viewController class]);
+    
+    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", className];
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    
+    self.lastSelectedTab = @{@(self.selectedIndex) : @{className : viewController.title}};
     
 //    [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate testCrash];
     
