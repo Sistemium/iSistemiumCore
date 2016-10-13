@@ -1264,6 +1264,7 @@
         self.isSendingData = NO;
         [[STMSocketController syncer] sendFinishedWithError:self.sendingCleanupError];
         self.sendingCleanupError = nil;
+        self.unsyncedObjectsArray = nil;
         self.syncDateDictionary = nil;
         self.sendingDate = nil;
 
