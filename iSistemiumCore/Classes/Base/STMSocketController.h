@@ -52,7 +52,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 + (void)reloadResultsControllers;
 
 + (NSArray <STMDatum *> *)unsyncedObjects;
-+ (NSUInteger)numbersOfUnsyncedObjects;
++ (NSUInteger)numbersOfAllUnsyncedObjects;
++ (NSUInteger)numberOfCurrentlyUnsyncedObjects;
 
 + (void)sendEvent:(STMSocketEvent)event withValue:(id)value;
 + (void)sendUnsyncedObjects:(id)sender withTimeout:(NSTimeInterval)timeout;

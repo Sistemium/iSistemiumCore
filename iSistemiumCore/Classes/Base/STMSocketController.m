@@ -222,8 +222,12 @@
     return [[self sharedInstance] unsyncedObjectsArray];
 }
 
-+ (NSUInteger)numbersOfUnsyncedObjects {
++ (NSUInteger)numbersOfAllUnsyncedObjects {
     return [self unsyncedObjects].count;
+}
+
++ (NSUInteger)numberOfCurrentlyUnsyncedObjects {
+    return [self sharedInstance].currentSyncObjects.count;
 }
 
 + (void)sendUnsyncedObjects:(id)sender withTimeout:(NSTimeInterval)timeout {

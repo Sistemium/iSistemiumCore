@@ -752,10 +752,13 @@
     return [STMSocketController unsyncedObjects];
 }
 
-- (NSUInteger)numbersOfUnsyncedObjects {
+- (NSUInteger)numbersOfAllUnsyncedObjects {
     return [self unsyncedObjects].count;
 }
 
+- (NSUInteger)numberOfCurrentlyUnsyncedObjects {
+    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
+}
 
 #pragma mark - receive
 
@@ -1506,7 +1509,8 @@
 - (void)bunchOfObjectsSended {
     
     [self saveSendDate];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"bunchOfObjectsSended" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+                                                        object:self];
     
 }
 
