@@ -1200,19 +1200,11 @@
     NSString *xid = [response valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];
 
-    if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
+    BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
     
-        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-                                                 errorString:errorString
-                                                   abortSync:NO];
-
-    } else {
-        
-        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-                                                 errorString:errorString
-                                                   abortSync:YES];
-
-    }
+    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                             errorString:errorString
+                                               abortSync:abortSync];
     
 }
 

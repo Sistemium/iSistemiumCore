@@ -476,7 +476,7 @@
     
     [sc releaseDoNotSyncObjectsWithObjectXid:xid];
     
-    if (sc.currentSyncObjects.count == 0 || sc.syncDateDictionary.allKeys.count == MAIN_MAGIC_NUMBER) {
+    if (sc.currentSyncObjects.count == 0 || sc.syncDateDictionary.allKeys.count >= MAIN_MAGIC_NUMBER) {
 
         sc.waitDocumentSavingToSyncNextObject = YES;
 
@@ -1507,14 +1507,11 @@
         NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
         NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-        SocketIOClient *socket = [[SocketIOClient alloc]
-                                  initWithSocketURL:socketUrl
-                                             config:@{
-                                                      @"voipEnabled"       : @NO,
-                                                      @"log"               : @NO,
-                                                      @"forceWebsockets"   : @YES,
-                                                      @"path"              : path
-                                                      }];
+        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
+                                                                    config:@{@"voipEnabled"         : @NO,
+                                                                              @"log"                : @NO,
+                                                                              @"forceWebsockets"    : @YES,
+                                                                              @"path"               : path}];
 
         STMLogger *logger = [STMLogger sharedLogger];
         
