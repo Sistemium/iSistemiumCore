@@ -49,6 +49,7 @@
 // Notification's names
 
 #define NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS @"syncerGetBunchOfObjects"
+#define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED @"bunchOfObjectsSended"
 #define NOTIFICATION_SESSION_STATUS_CHANGED @"sessionStatusChanged"
 
 #define FREE_SPACE_PRECISION_MiB 200
