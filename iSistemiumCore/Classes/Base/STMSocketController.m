@@ -474,6 +474,10 @@
     
     STMSocketController *sc = [self sharedInstance];
     
+    [STMSocketController cancelPreviousPerformRequestsWithTarget:sc
+                                                        selector:@selector(checkSendTimeoutForObjectXid:)
+                                                          object:xid];
+    
     [sc releaseDoNotSyncObjectsWithObjectXid:xid];
     
     if (sc.currentSyncObjects.count == 0 || sc.syncDateDictionary.allKeys.count >= MAIN_MAGIC_NUMBER) {
@@ -485,8 +489,9 @@
 
     } else {
     
-        [sc sendFinishedWithError:nil
-                        abortSync:nil];
+        [sc performSelector:@selector(sendFinishedWithError:abortSync:)
+                 withObject:nil
+                 withObject:nil];
 
     }
     
@@ -497,7 +502,11 @@
     STMSocketController *sc = [self sharedInstance];
     
     if (xid) {
-        
+    
+        [STMSocketController cancelPreviousPerformRequestsWithTarget:sc
+                                                            selector:@selector(checkSendTimeoutForObjectXid:)
+                                                              object:xid];
+
         [sc.syncDateDictionary removeObjectForKey:xid];
         [sc.doNotSyncObjectXids addObject:xid];
 
