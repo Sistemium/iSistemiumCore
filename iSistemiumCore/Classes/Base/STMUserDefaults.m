@@ -179,6 +179,10 @@
     return self.defaultsDic[defaultName];
 }
 
+- (void)setValue:(id)value forKey:(NSString *)key {
+    [self setObject:value forKey:key];
+}
+
 - (void)setObject:(id)value forKey:(NSString *)defaultName {
 	
     NSArray *availableClasses = @[[NSData class],
