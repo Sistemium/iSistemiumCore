@@ -484,7 +484,7 @@
     
     [sc releaseDoNotSyncObjectsWithObjectXid:xid];
     
-    if (sc.currentSyncObjects.count == 0 || sc.syncDateDictionary.allKeys.count >= MAIN_MAGIC_NUMBER) {
+    if (sc.currentSyncObjects.count == 0) {
 
         sc.waitDocumentSavingToSyncNextObject = YES;
 
