@@ -890,6 +890,7 @@
 + (void)receiveFinishedWithError:(NSString *)errorString {
 
     STMSocketController *sc = [self sharedInstance];
+    sc.unsyncedObjectsArray = nil;
     sc.doNotSyncObjectXids = nil;
 
 }
@@ -1011,6 +1012,7 @@
         STMSocketController *sc = [self sharedInstance];
         sc.isAuthorized = NO;
         sc.syncDateDictionary = nil;
+        sc.unsyncedObjectsArray = nil;
         sc.doNotSyncObjectXids = nil;
         sc.sendingDate = nil;
         
@@ -1645,11 +1647,15 @@
         }
         
         self.socketUrl = nil;
+        
         self.isSendingData = NO;
         self.isAuthorized = NO;
         self.isRunning = NO;
+        
+        self.unsyncedObjectsArray = nil;
         self.syncDateDictionary = nil;
         self.doNotSyncObjectXids = nil;
+        
         self.sendingDate = nil;
         
         [self.socket disconnect];

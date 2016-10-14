@@ -717,7 +717,7 @@
 
 - (void)nothingToSend {
     
-    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send" type:@""];
+    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send"];
 
     self.syncing = NO;
     
