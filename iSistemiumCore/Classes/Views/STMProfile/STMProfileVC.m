@@ -178,13 +178,7 @@
         float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
         
         if (allUnsyncedObjectsCount > 0) {
-            
             self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
-            
-            NSLog(@"allUnsyncedObjectsCount %@", @(allUnsyncedObjectsCount));
-            NSLog(@"currentlyUnsyncedObjectsCount %@", @(currentlyUnsyncedObjectsCount));
-            NSLog(@"self.progressBar.progress %@", @(self.progressBar.progress));
-            
         }
 
     }
