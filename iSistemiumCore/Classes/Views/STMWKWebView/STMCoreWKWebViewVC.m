@@ -1145,16 +1145,22 @@
         
     } else if ([action isEqualToString:@"hide"]) {
         
-        [[STMCoreRootTBC sharedRootVC] hideTabBar];
-        
-        UIEdgeInsets insets = self.webView.scrollView.contentInset;
-        self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
+        if (self.isInActiveTab) {
+            
+            [[STMCoreRootTBC sharedRootVC] hideTabBar];
+            
+            UIEdgeInsets insets = self.webView.scrollView.contentInset;
+            self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
+            
+            UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
+            self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
+            
+            [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
 
-        UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-        self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
+        } else {
+            [self callbackWithError:@"webview is not in active tab" parameters:parameters];
+        }
         
-        [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
-
     } else {
         [self callbackWithError:@"unknown action for tabbar message" parameters:parameters];
     }

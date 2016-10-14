@@ -39,6 +39,8 @@
 @property (nonatomic, strong) NSString *appDownloadUrl;
 @property (nonatomic) BOOL updateAlertIsShowing;
 
+@property (nonatomic) BOOL isInHideTabbarProcess;
+
 @property (nonatomic, strong) UIViewController *currentTappedVC;
 
 @property (nonatomic, strong) NSMutableDictionary *allTabsVCs;
@@ -707,8 +709,12 @@
 
 - (void)hideTabBar {
     
+    NSTimeInterval animationDuration = 0.5;
+    
+    self.isInHideTabbarProcess = YES;
+    
     [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:0.5];
+    [UIView setAnimationDuration:animationDuration];
     
     CGFloat viewHeight = CGRectGetHeight(self.view.frame);
     
@@ -724,6 +730,14 @@
     
     [UIView commitAnimations];
     
+    [self performSelector:@selector(releaseTabbarLock)
+               withObject:nil
+               afterDelay:animationDuration];
+    
+}
+
+- (void)releaseTabbarLock {
+    self.isInHideTabbarProcess = NO;
 }
 
 - (void)showTabBar {
@@ -763,7 +777,7 @@
         
     } else {
     
-        return YES;
+        return !self.isInHideTabbarProcess;
 
     }
     
