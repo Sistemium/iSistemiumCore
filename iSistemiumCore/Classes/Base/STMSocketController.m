@@ -818,11 +818,14 @@
                 
                 if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
                     
-                    if ([[STMCoreRootTBC sharedRootVC].selectedViewController class]) {
+                    UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
+                    
+                    if ([selectedVC class]) {
                         
-                        Class _Nonnull rootVCClass = (Class _Nonnull)[[STMCoreRootTBC sharedRootVC].selectedViewController class];
+                        Class _Nonnull rootVCClass = (Class _Nonnull)[selectedVC class];
                         
-                        NSString *stringValue = [@"selectedViewController: " stringByAppendingString:NSStringFromClass(rootVCClass)];
+                        NSString *stringValue = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
+
                         [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];
                         
                     }
