@@ -63,20 +63,25 @@ import Foundation
     
     static func removeOutOfDateImages(){
         do {
-            let document = STMCoreSessionManager.sharedManager().currentSession.document
-            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
-            let allImages = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
-            for image in allImages{
-                if let date = image.deviceAts, let entityName = image.entity.name, let pictureLifeTime = (STMEntityController.stcEntities()[entityName] as? STMEntity)?.pictureLifeTime{
-                    if Double(NSCalendar.currentCalendar().components(.Hour, fromDate: date, toDate: NSDate(), options: []).hour) > Double(pictureLifeTime){
-                        if let imagePath = image.imagePath{
-                            try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
-                            image.imagePath = nil
-                        }
-                        if let resizedImagePath = image.resizedImagePath{
-                            try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+resizedImagePath)
-                            image.resizedImagePath = nil
-                        }
+            let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
+            let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluateWithObject($1)}
+            for (key,value) in entities{
+                let entity = (value as! STMEntity)
+                print(entity)
+                let photoFetchRequest = STMFetchRequest(entityName: key as! String)
+                let limitDate = NSDate().dateByAddingTimeInterval(-Double(entity.pictureLifeTime!))
+                let photoPredicate = NSPredicate(format: "(imagePath != nil OR resizedImagePath != nil) AND deviceAts < %@",argumentArray: [limitDate])
+                photoFetchRequest.predicate = photoPredicate
+                let document = STMCoreSessionManager.sharedManager().currentSession.document
+                let images = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+                for image in images{
+                    if let imagePath = image.imagePath{
+                        try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
+                        image.imagePath = nil
+                    }
+                    if let resizedImagePath = image.resizedImagePath{
+                        try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                        image.resizedImagePath = nil
                     }
                 }
             }
