@@ -33,6 +33,7 @@
 
 - (void)nothingToSend;
 - (void)bunchOfObjectsSended;
+- (void)postObjectsSendedNotification;
 - (void)sendFinishedWithError:(NSString *)errorString;
 
 - (NSArray *)unsyncedObjects;

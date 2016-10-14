@@ -125,18 +125,10 @@
         STMSyncerState fromState = [notification.userInfo[@"from"] intValue];
         
         if (syncer.syncerState == STMSyncerIdle) {
+
+            self.progressBar.progress = 1.0;
             
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                
-                sleep(1);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    self.progressBar.hidden = YES;
-                    [UIApplication sharedApplication].idleTimerDisabled = NO;
-                    
-                });
-                
-            });
+            [self performSelector:@selector(hideProgressBar) withObject:nil afterDelay:1];
             
             if (!self.downloadAlertWasShown) [self showDownloadAlert];
             
@@ -150,16 +142,7 @@
         
         if (fromState == STMSyncerReceiveData) {
             
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                
-                sleep(5);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    [self hideNumberOfObjects];
-                    
-                });
-                
-            });
+            [self performSelector:@selector(hideNumberOfObjects) withObject:nil afterDelay:5];
             
         }
         
@@ -169,22 +152,41 @@
     
 }
 
+- (void)hideProgressBar {
+    
+    self.progressBar.hidden = YES;
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
+
+}
+
 - (void)updateSyncInfo {
     
-    [self updateSyncProgressBar];
+    [self updateUploadSyncProgressBar];
     [self updateSyncDatesLabels];
     [self updateCloudImages];
     [self updateNonloadedPicturesInfo];
 
 }
 
-- (void)updateSyncProgressBar {
+- (void)updateUploadSyncProgressBar {
     
-    float allUnsyncedObjectsCount = (float)[[self syncer] numbersOfAllUnsyncedObjects];
-    float currentlyUnsyncedObjectsCount = (float)[[self syncer] numberOfCurrentlyUnsyncedObjects];
+    STMSyncer *syncer = [self syncer];
     
-    if (allUnsyncedObjectsCount > 0) {        
-        self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
+    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
+        
+        float allUnsyncedObjectsCount = (float)[syncer numbersOfAllUnsyncedObjects];
+        float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
+        
+        if (allUnsyncedObjectsCount > 0) {
+            
+            self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
+            
+            NSLog(@"allUnsyncedObjectsCount %@", @(allUnsyncedObjectsCount));
+            NSLog(@"currentlyUnsyncedObjectsCount %@", @(currentlyUnsyncedObjectsCount));
+            NSLog(@"self.progressBar.progress %@", @(self.progressBar.progress));
+            
+        }
+
     }
     
 }
@@ -432,18 +434,6 @@
     
     self.sendDateLabel.text = (sendDateString) ? sendDateString : nil;
     self.receiveDateLabel.text = (receiveDateString) ? receiveDateString : nil;
-
-//    if (sendDateString) {
-//        self.sendDateLabel.text = [NSLocalizedString(@"SEND DATE", nil) stringByAppendingString:sendDateString];
-//    } else {
-//        self.sendDateLabel.text = nil;
-//    }
-//    
-//    if (receiveDateString) {
-//        self.receiveDateLabel.text = [NSLocalizedString(@"RECEIVE DATE", nil) stringByAppendingString:receiveDateString];
-//    } else {
-//        self.receiveDateLabel.text = nil;
-//    }
     
 }
 

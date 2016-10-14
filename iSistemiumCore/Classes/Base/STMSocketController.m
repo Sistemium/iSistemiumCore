@@ -528,6 +528,8 @@
 
 + (void)sendFinishedWithError:(NSString *)errorString abortSync:(NSNumber *)abortSync {
     
+    [[self syncer] postObjectsSendedNotification];
+    
     if (errorString && abortSync.boolValue) {
         
         [self sendingCleanupWithError:errorString];
