@@ -849,8 +849,6 @@
     if (picture.href) {
 
         [self addObserversForPicture:picture];
-
-        picture.imageThumbnail = nil;
         
         NSManagedObjectID *pictureID = picture.objectID;
         
