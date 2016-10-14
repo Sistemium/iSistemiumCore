@@ -65,16 +65,17 @@ import Foundation
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluateWithObject($1)}
+            let document = STMCoreSessionManager.sharedManager().currentSession.document
+
             for (key,value) in entities{
                 let entity = (value as! STMEntity)
-                print(entity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
                 let limitDate = NSDate().dateByAddingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
                 let photoPredicate = NSPredicate(format: "(imagePath != nil OR resizedImagePath != nil) AND deviceAts < %@",argumentArray: [limitDate])
                 photoFetchRequest.predicate = photoPredicate
-                let document = STMCoreSessionManager.sharedManager().currentSession.document
                 let images = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
                 for image in images{
+                    print("removeOutOfDateImages for:", entity.name, "deviceAts:", image.deviceAts)
                     if let imagePath = image.imagePath{
                         try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
                         image.imagePath = nil
