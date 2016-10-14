@@ -69,7 +69,7 @@ import Foundation
                 let entity = (value as! STMEntity)
                 print(entity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
-                let limitDate = NSDate().dateByAddingTimeInterval(-Double(entity.pictureLifeTime!))
+                let limitDate = NSDate().dateByAddingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
                 let photoPredicate = NSPredicate(format: "(imagePath != nil OR resizedImagePath != nil) AND deviceAts < %@",argumentArray: [limitDate])
                 photoFetchRequest.predicate = photoPredicate
                 let document = STMCoreSessionManager.sharedManager().currentSession.document
