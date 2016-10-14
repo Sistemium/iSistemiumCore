@@ -467,10 +467,10 @@
     
 }
 
-+ (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
++ (NSDate *)syncDateForSyncedObjectXid:(NSData *)xid {
     
-    NSDate *deviceTs = [self sharedInstance].syncDateDictionary[xid];
-    return deviceTs;
+    NSDate *syncDate = [self sharedInstance].syncDateDictionary[xid];
+    return syncDate;
     
 }
 
