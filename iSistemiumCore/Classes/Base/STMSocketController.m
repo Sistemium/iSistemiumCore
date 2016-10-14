@@ -1482,7 +1482,7 @@
         if (self.isAuthorized && [STMSocketController document].managedObjectContext) {
             
             NSArray <STMDatum *> *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
-            _unsyncedObjectsArray = fetchedObjects;
+            _unsyncedObjectsArray = (fetchedObjects.count > 0) ? fetchedObjects : nil;
             
         }
 
