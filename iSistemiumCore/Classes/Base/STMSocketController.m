@@ -1279,10 +1279,9 @@
             NSManagedObjectContext *context = [(STMDocument *)notification.object managedObjectContext];
             
             if ([context isEqual:[STMSocketController document].managedObjectContext]) {
-                
-                [self performSelector:@selector(sendUnsyncedObjects)
-                           withObject:nil
-                           afterDelay:0];
+
+                self.controllersDidChangeContent = NO;
+                [STMSocketController syncer].syncerState = STMSyncerSendDataOnce;
                 
             }
             
@@ -1290,13 +1289,6 @@
 
     }
 
-}
-
-- (void)sendUnsyncedObjects {
-
-    self.controllersDidChangeContent = NO;
-    [STMSocketController sendUnsyncedObjects:self withTimeout:self.sendTimeout];
-    
 }
 
 - (void)performFetches {
