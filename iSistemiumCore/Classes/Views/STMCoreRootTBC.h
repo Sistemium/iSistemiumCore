@@ -24,11 +24,8 @@
 - (void)showTabBar;
 - (void)hideTabBar;
 
-- (void)showTabWithName:(NSString *)tabName;
-- (void)showTabAtIndex:(NSUInteger)index;
 - (void)newAppVersionAvailable:(NSNotification *)notification;
 
-@property (nonatomic, strong) NSMutableDictionary *tabs;
 @property (nonatomic, strong) NSMutableArray *storyboardTitles;
 @property (nonatomic) BOOL newAppVersionAvailable;
 

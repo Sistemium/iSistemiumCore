@@ -41,6 +41,7 @@
 
 @property (nonatomic, strong) UIViewController *currentTappedVC;
 
+@property (nonatomic, strong) NSMutableDictionary *tabs;
 @property (nonatomic, strong) NSMutableDictionary *allTabsVCs;
 @property (nonatomic, strong) NSMutableArray *currentTabsVCs;
 @property (nonatomic, strong) NSMutableArray *authVCs;
@@ -48,12 +49,16 @@
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
 
 @property (nonatomic, strong) NSMutableDictionary *orderedStcTabs;
+@property (nonatomic, strong) NSDictionary *lastSelectedTab;
 
 
 @end
 
 
 @implementation STMCoreRootTBC
+
+@synthesize lastSelectedTab = _lastSelectedTab;
+
 
 + (STMCoreRootTBC *)sharedRootVC {
     
@@ -84,6 +89,40 @@
         
     }
     return _orderedStcTabs;
+    
+}
+
+- (NSString *)lastSelectedTabKey {
+    return @"lastSelectedTab";
+}
+
+- (NSDictionary *)lastSelectedTab {
+    
+    if (!_lastSelectedTab) {
+        
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        NSData *data = [defaults objectForKey:[self lastSelectedTabKey]];
+        NSDictionary *lastSelectedTab = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        
+        _lastSelectedTab = lastSelectedTab;
+
+    }
+    return _lastSelectedTab;
+
+}
+
+- (void)setLastSelectedTab:(NSDictionary *)lastSelectedTab {
+
+    if (![lastSelectedTab isEqual:_lastSelectedTab]) {
+        
+        _lastSelectedTab = lastSelectedTab;
+        
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:lastSelectedTab];
+        [defaults setObject:data forKey:[self lastSelectedTabKey]];
+        [defaults synchronize];
+
+    }
     
 }
 
@@ -137,11 +176,8 @@
     self = [super init];
     
     if (self) {
-        
         [self customInit];
-        
     }
-    
     return self;
     
 }
@@ -152,11 +188,8 @@
 
     self.delegate = self;
 
-//    [self prepareTabs];
-    
     self.tabBar.hidden = NO;
-    
-//    [self stateChanged];
+
     [self initAuthTab];
     
 }
@@ -255,14 +288,13 @@
     
     STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.orderedStcTabs.copy];
-    [defaults setValue:data forKey:[self orderedStcTabsKey]];
+    [defaults setObject:data forKey:[self orderedStcTabsKey]];
     [defaults synchronize];
     
-    (self.currentTabsVCs)[index] = vc;
+    self.currentTabsVCs[index] = vc;
     
-    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([vc class])];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
-
+    [self lastSelectedVC:vc];
+    
     [self showTabs];
     
 }
@@ -311,7 +343,7 @@
                     
                     if ([tabs indexOfObject:vc] == showIndex) {
                         
-                        (self.currentTabsVCs)[index] = vc;
+                        self.currentTabsVCs[index] = vc;
                         
                     }
                     
@@ -319,7 +351,7 @@
                 
             }
             
-            (self.tabs)[name] = vc;
+            self.tabs[name] = vc;
             
             if ([name hasPrefix:@"STMAuth"]) {
                 [self.authVCs addObject:vc];
@@ -424,11 +456,15 @@
         [self processTabsArray:stcTabs];
         
 // temporary tab for coding
-//        [self registerTabWithStoryboardParameters:
-//                                                    @{@"name": @"STMWKWebView",
-//                                                      @"title": @"VISITs"}
-//         
-//                                          atIndex:stcTabs.count];
+        
+//        [self registerTabWithStoryboardParameters:@{@"name"     : @"STMWKWebView",
+//                                                      @"title"  : @"VISITs"}
+//                                          atIndex:4/*stcTabs.count*/];
+//        
+//        [self registerTabWithStoryboardParameters:@{@"name"     : @"STMWKWebView",
+//                                                    @"title"    : @"VISITs111"}
+//                                          atIndex:4/*stcTabs.count*/];
+        
 // end of temporary tab
 
     }
@@ -588,11 +624,10 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"debug"];
 
     [self prepareTabs];
-    
     [self showUnreadMessageCount];
-    
     [self showTabs];
-    
+    [self selectLastSelectedVC];
+
 }
 
 - (void)showTabs {
@@ -626,6 +661,42 @@
         
     }
     
+}
+
+- (void)lastSelectedVC:(UIViewController *)vc {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@ %@", vc.title, vc];
+    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+
+    NSString *className = NSStringFromClass([vc class]);
+    self.lastSelectedTab = @{@(self.selectedIndex) : @{className : vc.title}};
+
+}
+
+- (void)selectLastSelectedVC {
+    
+    if (!self.lastSelectedTab)
+        return;
+
+    NSUInteger lastSelectedIndex = [self.lastSelectedTab.allKeys.firstObject integerValue];
+    
+    if (lastSelectedIndex >= self.viewControllers.count)
+        return;
+
+    NSDictionary *classNameAndTitle = self.lastSelectedTab.allValues.firstObject;
+    NSString *className = classNameAndTitle.allKeys.firstObject;
+    NSString *title = classNameAndTitle.allValues.firstObject;
+    
+    UIViewController *selectingVC = self.viewControllers[lastSelectedIndex];
+    
+    if (![NSStringFromClass([selectingVC class]) isEqualToString:className])
+        return;
+
+    if (![selectingVC.title isEqualToString:title])
+        return;
+
+    self.selectedIndex = lastSelectedIndex;
+
 }
 
 - (NSArray *)tabBarControlsArray {
@@ -676,7 +747,7 @@
 
 - (void)showTabWithName:(NSString *)tabName {
     
-    UIViewController *vc = (self.tabs)[tabName];
+    UIViewController *vc = self.tabs[tabName];
     if (vc) {
         [self setSelectedViewController:vc];
     }
@@ -771,8 +842,7 @@
 
 - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
 
-    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([viewController class])];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [self lastSelectedVC:viewController];
     
 //    [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate testCrash];
     
@@ -961,7 +1031,7 @@
 
 - (void)showUnreadMessageCount {
     
-    UIViewController *vc = (self.tabs)[@"STMMessages"];
+    UIViewController *vc = self.tabs[@"STMMessages"];
     
     if (vc) {
         
@@ -993,7 +1063,6 @@
             
             alertView.tag = 1;
             
-    //        UIViewController *vc = (self.tabs)[@"STMAuthTVC"];
             UIViewController *vc = [self.authVCs lastObject];
             vc.tabBarItem.badgeValue = @"!";
             
@@ -1128,42 +1197,27 @@
 
 #pragma mark - view lifecycle
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
     }
     return self;
+    
 }
 
 - (void)viewDidLoad {
-    
     [super viewDidLoad];
-
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-    
     [super viewDidAppear:animated];
-    
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end
