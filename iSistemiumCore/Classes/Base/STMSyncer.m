@@ -717,7 +717,7 @@
 
 - (void)nothingToSend {
     
-    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send" type:@""];
+    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send"];
 
     self.syncing = NO;
     
@@ -752,10 +752,13 @@
     return [STMSocketController unsyncedObjects];
 }
 
-- (NSUInteger)numbersOfUnsyncedObjects {
+- (NSUInteger)numbersOfAllUnsyncedObjects {
     return [self unsyncedObjects].count;
 }
 
+- (NSUInteger)numberOfCurrentlyUnsyncedObjects {
+    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
+}
 
 #pragma mark - receive
 
@@ -1200,19 +1203,11 @@
     NSString *xid = [response valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];
 
-    if (errorCode.integerValue > 399 && errorCode.integerValue < 500) {
+    BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
     
-        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-                                                 errorString:errorString
-                                                   abortSync:NO];
-
-    } else {
-        
-        [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-                                                 errorString:errorString
-                                                   abortSync:YES];
-
-    }
+    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+                                             errorString:errorString
+                                               abortSync:abortSync];
     
 }
 
@@ -1389,48 +1384,61 @@
 
 - (void)syncObject:(NSDictionary *)objectDictionary {
     
+    STMLogger *logger = [STMLogger sharedLogger];
+    
     NSString *xid = [objectDictionary valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];
     
-    NSManagedObject *syncedObject = [STMCoreObjectsController objectForXid:xidData];
-    
-    if ([syncedObject isKindOfClass:[STMDatum class]]) {
-        
-        STMDatum *object = (STMDatum *)syncedObject;
-        
-        if (object) {
-            
-            [object.managedObjectContext performBlockAndWait:^{
-                
-                if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
-                    
-                    [STMCoreObjectsController removeObject:object];
-                    
-                } else {
-                    
-                    NSDate *deviceTs = [STMSocketController deviceTsForSyncedObjectXid:xidData];
-                    object.lts = deviceTs;
-                    
-                }
-                
-                [STMSocketController successfullySyncObjectWithXid:xidData];
+    NSDate *syncDate = [STMSocketController syncDateForSyncedObjectXid:xidData];
 
-                NSString *entityName = object.entity.name;
-                
-                NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
-                NSLog(logMessage);
-                
-            }];
-            
-        } else {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
-            NSLog(logMessage);
-            
-        }
+    if (!syncDate) {
+
+        NSString *logMessage = [NSString stringWithFormat:@"Sync: object with xid %@ have no syncDate", xid];
+        [logger saveLogMessageWithText:logMessage];
+        
+        return;
         
     }
     
+    NSManagedObject *syncedObject = [STMCoreObjectsController objectForXid:xidData];
+    
+    if (!syncedObject) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
+        [logger saveLogMessageWithText:logMessage];
+        
+        return;
+
+    }
+    
+    if (![syncedObject isKindOfClass:[STMDatum class]]) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Sync: syncedObject %@ is not STMDatum class", xid];
+        [logger saveLogMessageWithText:logMessage];
+        
+        return;
+        
+    }
+
+    STMDatum *object = (STMDatum *)syncedObject;
+    
+    [object.managedObjectContext performBlockAndWait:^{
+        
+        if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
+            [STMCoreObjectsController removeObject:object];
+        } else {
+            object.lts = syncDate;
+        }
+        
+        [STMSocketController successfullySyncObjectWithXid:xidData];
+        
+        NSString *entityName = object.entity.name;
+        
+        NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
+        [logger saveLogMessageWithText:logMessage];
+        
+    }];
+
 }
 
 
@@ -1514,8 +1522,15 @@
 - (void)bunchOfObjectsSended {
     
     [self saveSendDate];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"bunchOfObjectsSended" object:self];
+    [self postObjectsSendedNotification];
     
+}
+
+- (void)postObjectsSendedNotification {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+                                                        object:self];
+
 }
 
 - (void)saveSendDate {

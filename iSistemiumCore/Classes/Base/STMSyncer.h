@@ -33,10 +33,12 @@
 
 - (void)nothingToSend;
 - (void)bunchOfObjectsSended;
+- (void)postObjectsSendedNotification;
 - (void)sendFinishedWithError:(NSString *)errorString;
 
 - (NSArray *)unsyncedObjects;
-- (NSUInteger)numbersOfUnsyncedObjects;
+- (NSUInteger)numbersOfAllUnsyncedObjects;
+- (NSUInteger)numberOfCurrentlyUnsyncedObjects;
 
 - (void)socketReceiveAuthorization;
 - (void)socketReceiveJSDataAck:(NSArray *)data;
