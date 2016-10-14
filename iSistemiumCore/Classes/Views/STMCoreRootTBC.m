@@ -293,9 +293,8 @@
     
     self.currentTabsVCs[index] = vc;
     
-    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", NSStringFromClass([vc class])];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
-
+    [self lastSelectedVC:vc];
+    
     [self showTabs];
     
 }
@@ -457,11 +456,15 @@
         [self processTabsArray:stcTabs];
         
 // temporary tab for coding
-//        [self registerTabWithStoryboardParameters:
-//                                                    @{@"name": @"STMWKWebView",
-//                                                      @"title": @"VISITs"}
-//         
-//                                          atIndex:stcTabs.count];
+        
+//        [self registerTabWithStoryboardParameters:@{@"name"     : @"STMWKWebView",
+//                                                      @"title"  : @"VISITs"}
+//                                          atIndex:4/*stcTabs.count*/];
+//        
+//        [self registerTabWithStoryboardParameters:@{@"name"     : @"STMWKWebView",
+//                                                    @"title"    : @"VISITs111"}
+//                                          atIndex:4/*stcTabs.count*/];
+        
 // end of temporary tab
 
     }
@@ -621,11 +624,10 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"debug"];
 
     [self prepareTabs];
-    
     [self showUnreadMessageCount];
-    
     [self showTabs];
-    
+    [self selectLastSelectedVC];
+
 }
 
 - (void)showTabs {
@@ -658,9 +660,17 @@
         }
         
     }
-
-    [self selectLastSelectedVC];
     
+}
+
+- (void)lastSelectedVC:(UIViewController *)vc {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@ %@", vc.title, vc];
+    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+
+    NSString *className = NSStringFromClass([vc class]);
+    self.lastSelectedTab = @{@(self.selectedIndex) : @{className : vc.title}};
+
 }
 
 - (void)selectLastSelectedVC {
@@ -832,12 +842,7 @@
 
 - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
 
-    NSString *className = NSStringFromClass([viewController class]);
-    
-    NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@", className];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
-    
-    self.lastSelectedTab = @{@(self.selectedIndex) : @{className : viewController.title}};
+    [self lastSelectedVC:viewController];
     
 //    [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate testCrash];
     
