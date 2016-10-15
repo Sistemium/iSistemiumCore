@@ -161,7 +161,6 @@
 
 - (void)updateSyncInfo {
     
-    [self updateUploadSyncProgressBar];
     [self updateSyncDatesLabels];
     [self updateCloudImages];
     [self updateNonloadedPicturesInfo];
@@ -1036,7 +1035,7 @@
              object:syncer];
 
     [nc addObserver:self
-           selector:@selector(updateSyncInfo)
+           selector:@selector(updateUploadSyncProgressBar)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
              object:syncer];
 
