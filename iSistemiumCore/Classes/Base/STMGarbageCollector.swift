@@ -71,7 +71,7 @@ import Foundation
                 let entity = (value as! STMEntity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
                 let limitDate = NSDate().dateByAddingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
-                let photoPredicate = NSPredicate(format: "(imagePath != nil OR resizedImagePath != nil) AND (deviceAts < %@ OR (deviceAts = nil AND deviceTs < %@)) ",argumentArray: [limitDate, limitDate])
+                let photoPredicate = NSPredicate(format: "(imagePath != nil OR resizedImagePath != nil) AND (deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)) ",argumentArray: [limitDate, limitDate])
                 photoFetchRequest.predicate = photoPredicate
                 let images = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
                 for image in images{
