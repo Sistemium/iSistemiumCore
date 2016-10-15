@@ -104,6 +104,10 @@
     return [[self webViewSettings] valueForKey:@"wv.title"];
 }
 
+- (BOOL)disableScroll {
+    return [self.webViewStoryboardParameters[@"disableScroll"] boolValue];
+}
+
 
 - (void)loadWebView {
 
@@ -203,6 +207,9 @@
 - (void)customInit {
 
     self.webView.delegate = self;
+    
+    self.webView.scrollView.scrollEnabled = ![self disableScroll];
+
     [self loadWebView];
     
 }
