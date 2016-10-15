@@ -166,7 +166,6 @@
     
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
-    
     return webViewUrlString ? webViewUrlString : @"https://sistemium.com";
     
 }
@@ -185,9 +184,12 @@
 - (NSString *)webViewAuthCheckJS {
     
     NSString *webViewAuthCheckJS = self.webViewStoryboardParameters[@"authCheck"];
-    
     return webViewAuthCheckJS ? webViewAuthCheckJS : [[self webViewSettings] valueForKey:@"wv.session.check"];
     
+}
+
+- (BOOL)disableScroll {
+    return [self.webViewStoryboardParameters[@"disableScroll"] boolValue];
 }
 
 - (void)reloadWebView {
@@ -400,6 +402,8 @@
     
     self.webView.navigationDelegate = self;
     
+    self.webView.scrollView.scrollEnabled = ![self disableScroll];
+
     [self loadWebView];
     
 }
