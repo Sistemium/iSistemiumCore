@@ -744,9 +744,13 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
-    NSDictionary *parameters = message.body;
-    [self handleGetPictureParameters:parameters];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSDictionary *parameters = message.body;
+        [self handleGetPictureParameters:parameters];
+        
+    });
+
 }
 
 - (void)handleGetPictureParameters:(NSDictionary *)parameters {
@@ -830,11 +834,6 @@
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
-//    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
-    
-//    [self callbackWithData:errorString
-//                parameters:parameters
-//        jsCallbackFunction:callbackJSFunction];
     
     [self callbackWithError:errorString
                  parameters:parameters];
