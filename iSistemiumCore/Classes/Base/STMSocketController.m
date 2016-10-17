@@ -1276,8 +1276,10 @@
         self.sendingDate = nil;
 
     } else {
-
-        if (self.controllersDidChangeContent && [notification.object isKindOfClass:[STMDocument class]]) {
+        
+        if ([STMSocketController socketIsAvailable] &&
+            self.controllersDidChangeContent &&
+            [notification.object isKindOfClass:[STMDocument class]]) {
             
             NSManagedObjectContext *context = [(STMDocument *)notification.object managedObjectContext];
             

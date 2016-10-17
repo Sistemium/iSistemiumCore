@@ -343,7 +343,6 @@
     if (!self.running) {
         
         self.settings = nil;
-        self.running = YES;
         
         [STMCoreObjectsController initObjectsCacheWithCompletionHandler:^(BOOL success) {
            
@@ -378,14 +377,22 @@
                             
                         }
                         
+                        self.running = YES;
+                        
                     } else {
-                        NSLog(@"checkStcEntities fail");
+                        
+                        [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
+                                                                 numType:STMLogMessageTypeError];
+
                     }
                 
                 }];
                 
             } else {
-                NSLog(@"init object's cache fail");
+
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"init object's cache fail"
+                                                         numType:STMLogMessageTypeError];
+                
             }
             
         }];
@@ -1492,6 +1499,9 @@
 - (void)sendFinishedWithError:(NSString *)errorString {
     
     if (errorString) {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
+                                                 numType:STMLogMessageTypeInfo];
         
         self.syncing = NO;
         if (self.fetchCompletionHandler) self.fetchResult = UIBackgroundFetchResultFailed;
