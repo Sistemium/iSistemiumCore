@@ -113,7 +113,7 @@
     
 }
 
-- (NSMutableDictionary *)getPictureCallbackJSFunctions {
+- (NSMutableDictionary <NSData *, NSString *> *)getPictureCallbackJSFunctions {
     
     if (!_getPictureCallbackJSFunctions) {
         _getPictureCallbackJSFunctions = @{}.mutableCopy;
@@ -898,12 +898,12 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureWasDownloaded:)
-                                                 name:@"downloadPicture"
+                                                 name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                object:picture];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureDownloadError:)
-                                                 name:@"pictureDownloadError"
+                                                 name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                object:picture];
 
 }
@@ -911,11 +911,11 @@
 - (void)removeObserversForPicture:(STMCorePicture *)picture {
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:@"downloadPicture"
+                                                    name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                   object:picture];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:@"pictureDownloadError"
+                                                    name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                   object:picture];
 
 }

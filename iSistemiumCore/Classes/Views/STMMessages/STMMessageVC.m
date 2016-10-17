@@ -57,7 +57,7 @@
     
 }
 
-- (void)pictureDownloaded:(NSNotification *)notification {
+- (void)pictureWasDownloaded:(NSNotification *)notification {
     
     [self removeObservers];
     [self setupImage];
@@ -88,7 +88,12 @@
 }
 
 - (void)addObservers {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pictureDownloaded:) name:@"downloadPicture" object:self.picture];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureWasDownloaded:)
+                                                 name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                               object:self.picture];
+    
 }
 
 - (void)removeObservers {

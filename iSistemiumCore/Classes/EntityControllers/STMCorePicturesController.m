@@ -562,8 +562,8 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadPicture" object:weakPicture];
-            //        NSLog(@"images set for %@", weakPicture.href);
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                                                object:weakPicture];
             
         });
 
@@ -770,7 +770,7 @@
                    
                     NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
                     
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"pictureDownloadError"
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                                         object:object
                                                                       userInfo:@{@"error" : connectionError.description}];
                     

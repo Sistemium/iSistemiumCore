@@ -341,7 +341,7 @@
     
 }
 
-- (void)downloadPicture:(NSNotification *)notification {
+- (void)pictureWasDownloaded:(NSNotification *)notification {
     
     if ([notification.object isKindOfClass:[STMMessagePicture class]]) {
         
@@ -450,8 +450,8 @@
 //             object:nil];
     
     [nc addObserver:self
-           selector:@selector(downloadPicture:)
-               name:@"downloadPicture"
+           selector:@selector(pictureWasDownloaded:)
+               name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
              object:nil];
     
 }
