@@ -897,14 +897,6 @@
 
 }
 
-+ (void)initObjectsCacheWithCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    [[self document] saveDocument:^(BOOL success) {
-        completionHandler(YES);
-    }];
-    
-}
-
 
 #pragma mark - getting entity properties
 

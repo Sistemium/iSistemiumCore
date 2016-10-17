@@ -344,53 +344,40 @@
         
         self.settings = nil;
         
-        [STMCoreObjectsController initObjectsCacheWithCompletionHandler:^(BOOL success) {
-           
+        [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
+            
             if (success) {
                 
-                [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
+                [STMEntityController checkEntitiesForDuplicates];
+                [STMClientDataController checkClientData];
+                [self.session.logger saveLogMessageDictionaryToDocument];
+                [self.session.logger saveLogMessageWithText:@"Syncer start"];
+                
+                [self checkUploadableEntities];
+                
+                [self addObservers];
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
+                                                                    object:self];
+                
+                if (self.socketUrlString) {
                     
-                    if (success) {
+                    [STMSocketController startSocketWithUrl:self.socketUrlString
+                                          andEntityResource:self.entityResource];
+                    
+                } else {
+                    
+                    NSLog(@"have NO socketURL, fail to start socket controller");
+                    
+                    [[STMCoreAuthController authController] logout];
+                    
+                }
                 
-                        [STMEntityController checkEntitiesForDuplicates];
-                        [STMClientDataController checkClientData];
-                        [self.session.logger saveLogMessageDictionaryToDocument];
-                        [self.session.logger saveLogMessageWithText:@"Syncer start"];
-                        
-                        [self checkUploadableEntities];
-                        
-                        [self addObservers];
-                        
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
-                                                                            object:self];
-                        
-                        if (self.socketUrlString) {
-                            
-                            [STMSocketController startSocketWithUrl:self.socketUrlString
-                                                  andEntityResource:self.entityResource];
-
-                        } else {
-                            
-                            NSLog(@"have NO socketURL, fail to start socket controller");
-                            
-                            [[STMCoreAuthController authController] logout];
-                            
-                        }
-                        
-                        self.running = YES;
-                        
-                    } else {
-                        
-                        [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                                 numType:STMLogMessageTypeError];
-
-                    }
-                
-                }];
+                self.running = YES;
                 
             } else {
-
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"init object's cache fail"
+                
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
                                                          numType:STMLogMessageTypeError];
                 
             }
