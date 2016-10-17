@@ -67,24 +67,42 @@ import Foundation
             let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluateWithObject($1)}
             let document = STMCoreSessionManager.sharedManager().currentSession.document
 
-            for (key,value) in entities{
+            for (key,value) in entities {
+                
                 let entity = (value as! STMEntity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
                 let limitDate = NSDate().dateByAddingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
-                let photoPredicate = NSPredicate(format: "href != nil AND deviceTs <= lts AND (imagePath != nil OR resizedImagePath != nil) AND (deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)) ",argumentArray: [limitDate, limitDate])
+                
+                let photoIsUploaded = NSPredicate(format: "href != nil")
+                let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
+                let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil")
+                let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [limitDate, limitDate])
+                
+                let subpredicates = [photoIsUploaded, photoIsSynced, photoHaveFiles, photoIsOutOfDate]
+                
+                let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
+                
                 photoFetchRequest.predicate = photoPredicate
+                
                 let images = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+                
                 for image in images{
-                    print("removeOutOfDateImages for:", entity.name, "deviceAts:", image.deviceAts)
+                    
+                    let logMessage = String(format: "removeOutOfDateImages for:\(entity.name) deviceAts:\(image.deviceAts)")
+                    STMLogger.sharedLogger().saveLogMessageWithText(logMessage, numType: STMLogMessageType.Info)
+                    
                     if let imagePath = image.imagePath{
                         try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
                         image.imagePath = nil
                     }
+                    
                     if let resizedImagePath = image.resizedImagePath{
                         try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+resizedImagePath)
                         image.resizedImagePath = nil
                     }
+                    
                 }
+                
             }
         } catch let error as NSError {
             NSLog(error.description)
