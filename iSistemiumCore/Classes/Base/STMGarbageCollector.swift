@@ -44,8 +44,8 @@ import Foundation
                     allImageFiles.insert(element)
                 }
             }
-            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
-            let allImages = try document?.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
+            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture.self))
+            let allImages = try document!.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
             for image in allImages{
                 if let path = image.imagePath{
                     usedImageFiles.insert(path)
@@ -83,7 +83,7 @@ import Foundation
                 
                 photoFetchRequest.predicate = photoPredicate
                 
-                let images = try document?.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
+                let images = try document!.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
                 
                 for image in images{
                     

@@ -44,7 +44,7 @@ class STMScriptMessageController: NSObject {
                     return nil
                 }
                 
-                return predicateForFilters(entityName, filter: ["xid": xid! as AnyObject], whereFilter: nil, error: error)
+                return predicateForFilters(entityName, filter: ["xid": xid as AnyObject], whereFilter: nil, error: error)
             
             case STMSwiftConstants.ScriptMessageNames.WK_SCRIPT_MESSAGE_FIND_ALL:
                 

@@ -10,6 +10,7 @@
 #import <CoreData/CoreData.h>
 
 #import "iSistemiumCore-Swift.h"
+@import SocketIO;
 
 
 static NSString *kSocketFindAllMethod = @"findAll";
