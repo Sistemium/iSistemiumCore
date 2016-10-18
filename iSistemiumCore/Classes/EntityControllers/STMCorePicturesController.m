@@ -269,6 +269,16 @@
 
         for (STMCorePicture *picture in result) {
             
+            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+                
+                NSString* thumbnailHref = picture.thumbnailHref;
+                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+                
+                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+                return;
+            }
+            
             NSArray *pathComponents = [picture.imagePath pathComponents];
             
             if (pathComponents.count == 0) {
