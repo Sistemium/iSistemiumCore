@@ -14,17 +14,16 @@ import Foundation
     static var outOfDateImages = Set<STMCorePicture>()
     
     static func removeUnusedImages(){
-        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
-        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+        DispatchQueue.global(qos: .default).async{
             do {
                 if unusedImageFiles.count > 0 {
                     let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
-                    STMLogger.sharedLogger().saveLogMessageWithText(logMessage, type:"important")
+                    STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
                 }
                 for unusedImage in unusedImageFiles{
-                    try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+unusedImage)
+                    try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
                     self.unusedImageFiles.remove(unusedImage)
-                    NSNotificationCenter.defaultCenter().postNotificationName("unusedImageRemoved", object: nil)
+                    NotificationCenter.default.post(name: Notification.Name(rawValue: "unusedImageRemoved"), object: nil)
                 }
             } catch let error as NSError {
                 NSLog(error.description)
@@ -37,16 +36,16 @@ import Foundation
             unusedImageFiles = Set<String>()
             var allImageFiles = Set<String>()
             var usedImageFiles = Set<String>()
-            let document = STMCoreSessionManager.sharedManager().currentSession.document
-            let fileManager = NSFileManager.defaultManager()
-            let enumerator = fileManager.enumeratorAtPath(STMFunctions.documentsDirectory())
+            let document = STMCoreSessionManager.shared().currentSession.document
+            let fileManager = FileManager.default
+            let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
             while let element = enumerator?.nextObject() as? String {
                 if element.hasSuffix(".jpg") {
                     allImageFiles.insert(element)
                 }
             }
             let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture))
-            let allImages = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+            let allImages = try document?.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
             for image in allImages{
                 if let path = image.imagePath{
                     usedImageFiles.insert(path)
@@ -55,7 +54,7 @@ import Foundation
                     usedImageFiles.insert(resizedPath)
                 }
             }
-            unusedImageFiles = allImageFiles.subtract(usedImageFiles)
+            unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
         } catch let error as NSError {
             NSLog(error.description)
         }
@@ -64,14 +63,14 @@ import Foundation
     static func removeOutOfDateImages(){
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
-            let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluateWithObject($1)}
-            let document = STMCoreSessionManager.sharedManager().currentSession.document
+            let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluate(with: $1)}
+            let document = STMCoreSessionManager.shared().currentSession.document
 
             for (key,value) in entities {
                 
                 let entity = (value as! STMEntity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
-                let limitDate = NSDate().dateByAddingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
+                let limitDate = Date().addingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
@@ -84,20 +83,20 @@ import Foundation
                 
                 photoFetchRequest.predicate = photoPredicate
                 
-                let images = try document.managedObjectContext.executeFetchRequest(photoFetchRequest) as! [STMCorePicture]
+                let images = try document?.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
                 
                 for image in images{
                     
                     let logMessage = String(format: "removeOutOfDateImages for:\(entity.name) deviceAts:\(image.deviceAts)")
-                    STMLogger.sharedLogger().saveLogMessageWithText(logMessage, numType: STMLogMessageType.Info)
+                    STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
                     if let imagePath = image.imagePath{
-                        try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+imagePath)
+                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
                         image.imagePath = nil
                     }
                     
                     if let resizedImagePath = image.resizedImagePath{
-                        try NSFileManager.defaultManager().removeItemAtPath(STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
                         image.resizedImagePath = nil
                     }
                     

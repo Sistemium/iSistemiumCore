@@ -14,7 +14,7 @@ extension String {
         return String(characters.suffix(1))
     }
     var uppercaseFirst: String {
-        return first.uppercaseString + String(characters.dropFirst())
+        return first.uppercased() + String(characters.dropFirst())
     }
     var dropLast: String{
         return String(characters.dropLast())

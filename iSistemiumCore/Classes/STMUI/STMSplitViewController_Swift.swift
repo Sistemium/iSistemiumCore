@@ -13,7 +13,7 @@ class STMSplitViewController_Swift: STMSplitViewController, UISplitViewControlle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        preferredDisplayMode = .AllVisible
+        preferredDisplayMode = .allVisible
         self.delegate = self
         //use this to config split size
         //minimumPrimaryColumnWidth = CGFloat(0.25)
@@ -21,7 +21,7 @@ class STMSplitViewController_Swift: STMSplitViewController, UISplitViewControlle
         //maximumPrimaryColumnWidth = view.bounds.size.width
     }
     
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController: UIViewController) -> Bool{
+    func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController: UIViewController, onto primaryViewController: UIViewController) -> Bool{
         return true
     }
     

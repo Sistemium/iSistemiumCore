@@ -42,7 +42,7 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
         
     }
     
-    func setPickerToCurrentDate(animated: Bool) {
+    func setPickerToCurrentDate(_ animated: Bool) {
         
         self.selectRow(self.currentDay() - 1, inComponent: 0, animated: animated)
         self.selectRow(self.currentMonth() - 1, inComponent: 1, animated: animated)
@@ -53,11 +53,11 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
     
 //MARK: - UIPickerViewDataSource
 
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 3
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         
         switch component {
             
@@ -77,7 +77,7 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
     
 //MARK: - UIPickerViewDelegate
 
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         
         var stringToShow: String
         
@@ -87,10 +87,10 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
             
         } else {
             
-            let numberFormatter: NSNumberFormatter = NSNumberFormatter.init()
+            let numberFormatter: NumberFormatter = NumberFormatter.init()
             numberFormatter.minimumIntegerDigits = 2
 
-            stringToShow = numberFormatter.stringFromNumber(row + 1)!
+            stringToShow = numberFormatter.string(from: row + 1)!
             
         }
         
@@ -98,22 +98,22 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
         
     }
     
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         
-        let dateComponents = NSDateComponents()
-        dateComponents.day = pickerView.selectedRowInComponent(0) + 1
-        dateComponents.month = pickerView.selectedRowInComponent(1) + 1
-        dateComponents.year = self.currentYear() - yearRangeLength + pickerView.selectedRowInComponent(2) + 1
+        var dateComponents = DateComponents()
+        dateComponents.day = pickerView.selectedRow(inComponent: 0) + 1
+        dateComponents.month = pickerView.selectedRow(inComponent: 1) + 1
+        dateComponents.year = self.currentYear() - yearRangeLength + pickerView.selectedRow(inComponent: 2) + 1
         
-        let calendar = NSCalendar.currentCalendar()
-        let date = calendar.dateFromComponents(dateComponents)!
+        let calendar = Calendar.current
+        let date = calendar.date(from: dateComponents)!
 
-        if date.compare(NSDate()) == NSComparisonResult.OrderedAscending {
+        if date.compare(Date()) == ComparisonResult.orderedAscending {
         
             if component > 0 {
                 
-                let month: Int = pickerView.selectedRowInComponent(1) + 1
-                let year: Int = self.currentYear() - yearRangeLength + pickerView.selectedRowInComponent(2) + 1
+                let month: Int = pickerView.selectedRow(inComponent: 1) + 1
+                let year: Int = self.currentYear() - yearRangeLength + pickerView.selectedRow(inComponent: 2) + 1
                 
                 numberOfDays = numberOfDaysForDate(month, year: year)
                 
@@ -132,15 +132,15 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
 
 // MARK:
     
-    func numberOfDaysForDate(month: Int, year: Int) -> Int {
+    func numberOfDaysForDate(_ month: Int, year: Int) -> Int {
     
-        let dateComponents = NSDateComponents()
+        var dateComponents = DateComponents()
         dateComponents.year = year
         dateComponents.month = month
         
-        let calendar = NSCalendar.currentCalendar()
-        let date = calendar.dateFromComponents(dateComponents)!
-        let range = calendar.rangeOfUnit(.Day, inUnit: .Month, forDate: date)
+        let calendar = Calendar.current
+        let date = calendar.date(from: dateComponents)!
+        let range = (calendar as NSCalendar).range(of: .day, in: .month, for: date)
         let numDays = range.length
 
         return numDays
@@ -149,44 +149,44 @@ class STMDatePicker: UIPickerView, UIPickerViewDelegate, UIPickerViewDataSource 
     
     func currentYear() -> Int {
     
-        let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components(.Year, fromDate: date)
+        let date = Date()
+        let calendar = Calendar.current
+        let components = (calendar as NSCalendar).components(.year, from: date)
         
-        return components.year
+        return components.year!
 
     }
 
     func currentMonth() -> Int {
 
-        let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components(.Month, fromDate: date)
+        let date = Date()
+        let calendar = Calendar.current
+        let components = (calendar as NSCalendar).components(.month, from: date)
         
-        return components.month
+        return components.month!
 
     }
 
     func currentDay() -> Int {
 
-        let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components(.Day, fromDate: date)
+        let date = Date()
+        let calendar = Calendar.current
+        let components = (calendar as NSCalendar).components(.day, from: date)
 
-        return components.day
+        return components.day!
 
     }
     
     func selectedDateAsString() -> String {
         
-        let day: Int = self.selectedRowInComponent(0) + 1
-        let month: Int = self.selectedRowInComponent(1) + 1
-        let year: Int = self.currentYear() - yearRangeLength + self.selectedRowInComponent(2) + 1
+        let day: Int = self.selectedRow(inComponent: 0) + 1
+        let month: Int = self.selectedRow(inComponent: 1) + 1
+        let year: Int = self.currentYear() - yearRangeLength + self.selectedRow(inComponent: 2) + 1
         
-        let numberFormatter: NSNumberFormatter = NSNumberFormatter.init()
+        let numberFormatter: NumberFormatter = NumberFormatter.init()
         numberFormatter.minimumIntegerDigits = 2
         
-        return String(year) + "-" + numberFormatter.stringFromNumber(month)! + "-" + numberFormatter.stringFromNumber(day)!
+        return String(year) + "-" + numberFormatter.string(from: NSNumber(month))! + "-" + numberFormatter.string(from: day)!
         
     }
     
