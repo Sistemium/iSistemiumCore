@@ -276,7 +276,7 @@
                 NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
                 
                 if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-                return;
+                continue;
             }
             
             NSArray *pathComponents = [picture.imagePath pathComponents];
