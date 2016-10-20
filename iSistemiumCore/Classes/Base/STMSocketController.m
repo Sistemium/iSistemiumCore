@@ -1452,7 +1452,8 @@
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerDidChangeContent" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
+                                                        object:self];
     
     self.controllersDidChangeContent = YES;
     

@@ -1054,7 +1054,7 @@
     
     [nc addObserver:self
            selector:@selector(syncerStatusChanged:)
-               name:@"syncStatusChanged"
+               name:NOTIFICATION_SYNCER_STATUS_CHANGED
              object:syncer];
     
     [nc addObserver:self
@@ -1089,7 +1089,7 @@
     
     [nc addObserver:self
            selector:@selector(syncerDidChangeContent:)
-               name:@"syncerDidChangeContent"
+               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
              object:nil];
     
     [nc addObserver:self

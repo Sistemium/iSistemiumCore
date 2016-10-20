@@ -230,7 +230,7 @@
         _syncerState = syncerState;
         
         NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncStatusChanged"
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
                                                             object:self
                                                           userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
         

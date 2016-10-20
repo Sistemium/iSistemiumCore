@@ -1145,7 +1145,7 @@
     
     [nc addObserver:self
            selector:@selector(syncStateChanged)
-               name:@"syncStatusChanged"
+               name:NOTIFICATION_SYNCER_STATUS_CHANGED
              object:self.session.syncer];
     
     [nc addObserver:self
