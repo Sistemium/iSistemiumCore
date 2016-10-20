@@ -61,7 +61,7 @@
 @property (nonatomic) BOOL downloadAlertWasShown;
 @property (nonatomic) BOOL newsReceiving;
 
-@property (nonatomic, strong) STMSpinnerView *spinner;
+@property (nonatomic, strong) STMSpinnerView *syncSpinner;
 
 @property (nonatomic, strong) UIAlertView *locationDisabledAlert;
 @property (nonatomic) BOOL locationDisabledAlertIsShown;
@@ -147,6 +147,8 @@
         }
         
     }
+    
+    [self stopSyncSpinner];
 
     [self updateSyncInfo];
     
@@ -196,9 +198,6 @@
 - (void)setImageForSyncImageView {
     
     STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfAllUnsyncedObjects] > 0);
-
-    [self.spinner removeFromSuperview];
     
     NSString *imageName = nil;
     
@@ -206,25 +205,37 @@
         
         switch (syncer.syncerState) {
             case STMSyncerIdle: {
-                imageName = (hasObjectsToUpload) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
+
+                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
                 break;
+                
             }
             case STMSyncerSendData:
             case STMSyncerSendDataOnce: {
+
+                if (!self.syncSpinner) {
+                    [self startSyncSpinnerInView:self.uploadImageView];
+                }
+                
                 imageName = @"Upload To Cloud-100";
-                self.spinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds indicatorStyle:UIActivityIndicatorViewStyleGray backgroundColor:[UIColor whiteColor] alfa:1];
-                [self.uploadImageView addSubview:self.spinner];
                 break;
+                
             }
             case STMSyncerReceiveData: {
+
+                if (!self.syncSpinner) {
+                    [self startSyncSpinnerInView:self.downloadImageView];
+                }
+                
                 imageName = @"Download From Cloud-100";
-                self.spinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds indicatorStyle:UIActivityIndicatorViewStyleGray backgroundColor:[UIColor whiteColor] alfa:1];
-                [self.downloadImageView addSubview:self.spinner];
                 break;
+                
             }
             default: {
+                
                 imageName = @"Download From Cloud-100";
                 break;
+                
             }
         }
 
@@ -236,6 +247,23 @@
     
     self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
+}
+
+- (void)startSyncSpinnerInView:(UIView *)view {
+    
+    self.syncSpinner = [STMSpinnerView spinnerViewWithFrame:view.bounds
+                                         indicatorStyle:UIActivityIndicatorViewStyleGray
+                                        backgroundColor:[UIColor whiteColor]
+                                                   alfa:1];
+    [view addSubview:self.syncSpinner];
+
+}
+
+- (void)stopSyncSpinner {
+    
+    [self.syncSpinner removeFromSuperview];
+    self.syncSpinner = nil;
+
 }
 
 - (void)setColorForSyncImageView {
