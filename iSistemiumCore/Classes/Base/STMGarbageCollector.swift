@@ -63,7 +63,16 @@ import Foundation
     static func removeOutOfDateImages(){
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
-            let entities = (STMEntityController.stcEntities() as NSDictionary).filter{entityPredicate.evaluate(with: $1)}
+            
+            let stcEntities:NSDictionary
+            
+            if STMEntityController.stcEntities() != nil{
+                stcEntities = STMEntityController.stcEntities() as NSDictionary
+            }else{
+                return
+            }
+            
+            let entities = stcEntities.filter{entityPredicate.evaluate(with: $1)}
             
             let document:STMDocument
             
@@ -77,7 +86,7 @@ import Foundation
                 
                 let entity = (value as! STMEntity)
                 let photoFetchRequest = STMFetchRequest(entityName: key as! String)
-                let limitDate = Date().addingTimeInterval(-3600 * Double(entity.pictureLifeTime!))
+                let limitDate = Date().addingTimeInterval(-1 * Double(entity.pictureLifeTime!))
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
