@@ -1,17 +1,18 @@
 //
 //  STMEntity+CoreDataProperties.m
-//  iSistemiumCore
+//  iSisSales
 //
-//  Created by Maxim Grigoriev on 13/06/16.
+//  Created by Edgar Jan Vuicik on 12/10/2016.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
-//  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
-//  to delete and recreate this implementation file for your updated model.
-//
 
-#import "STMEntity+CoreDataProperties.h"
+#import "STMEntity.h"
 
 @implementation STMEntity (CoreDataProperties)
+
++ (NSFetchRequest<STMEntity *> *)fetchRequest {
+	return [[NSFetchRequest alloc] initWithEntityName:@"STMEntity"];
+}
 
 @dynamic commentText;
 @dynamic deviceCts;
@@ -33,6 +34,7 @@
 @dynamic url;
 @dynamic workflow;
 @dynamic xid;
+@dynamic pictureLifeTime;
 @dynamic wf;
 
 @end

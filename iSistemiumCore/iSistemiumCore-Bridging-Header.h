@@ -5,3 +5,5 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
 #import "STMCoreUI.h"
+#import "STMEntityController.h"
+#import "STMEntity.h"

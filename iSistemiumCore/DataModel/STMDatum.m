@@ -62,11 +62,13 @@
     
     [changedKeysArray removeObjectsInArray:relationshipsToMany];
     
+    NSDate *currentDate = [NSDate date];
+
+    [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+    
     if (changedKeysArray.count > 0) {
         
         if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
-        
-        NSDate *currentDate = [NSDate date];
         
         [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
         self.deviceTs = currentDate;

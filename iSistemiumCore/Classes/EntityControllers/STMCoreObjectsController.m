@@ -27,7 +27,7 @@
 //#import "iSistemiumCore-Swift.h"
 
 
-#define FLUSH_LIMIT 17
+#define FLUSH_LIMIT MAIN_MAGIC_NUMBER
 
 
 @interface STMCoreObjectsController()
@@ -895,14 +895,6 @@
 
     return results;
 
-}
-
-+ (void)initObjectsCacheWithCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    [[self document] saveDocument:^(BOOL success) {
-        completionHandler(YES);
-    }];
-    
 }
 
 

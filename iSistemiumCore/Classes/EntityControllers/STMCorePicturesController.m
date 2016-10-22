@@ -145,7 +145,7 @@
             STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMCorePicture class])];
             
             NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imagePath == %@)", nil, nil];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imageThumbnail == %@)", nil, nil];
             
             request.sortDescriptors = @[sortDescriptor];
             request.predicate = [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
@@ -268,6 +268,16 @@
         NSLogMethodName;
 
         for (STMCorePicture *picture in result) {
+            
+            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+                
+                NSString* thumbnailHref = picture.thumbnailHref;
+                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+                
+                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+                continue;
+            }
             
             NSArray *pathComponents = [picture.imagePath pathComponents];
             
@@ -562,8 +572,8 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadPicture" object:weakPicture];
-            //        NSLog(@"images set for %@", weakPicture.href);
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                                                object:weakPicture];
             
         });
 
@@ -770,7 +780,7 @@
                    
                     NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
                     
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"pictureDownloadError"
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                                         object:object
                                                                       userInfo:@{@"error" : connectionError.description}];
                     

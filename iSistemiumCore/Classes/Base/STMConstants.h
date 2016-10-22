@@ -11,6 +11,8 @@
 
 #define ISISTEMIUM_PREFIX @"STM"
 
+#define MAIN_MAGIC_NUMBER 17
+
 #define ACTIVE_BLUE_COLOR [UIColor colorWithRed:0 green:0.478431 blue:1 alpha:1]
 #define GREY_LINE_COLOR [UIColor colorWithRed:0.785 green:0.78 blue:0.8 alpha:1]
 #define STM_LIGHT_BLUE_COLOR [UIColor colorWithRed:0.56 green:0.77 blue:1 alpha:1]
@@ -47,7 +49,12 @@
 // Notification's names
 
 #define NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS @"syncerGetBunchOfObjects"
+#define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED @"bunchOfObjectsSended"
+#define NOTIFICATION_SYNCER_DID_CHANGE_CONTENT @"syncerDidChangeContent"
+#define NOTIFICATION_SYNCER_STATUS_CHANGED @"syncStatusChanged"
 #define NOTIFICATION_SESSION_STATUS_CHANGED @"sessionStatusChanged"
+#define NOTIFICATION_PICTURE_WAS_DOWNLOADED @"pictureWasDownloaded"
+#define NOTIFICATION_PICTURE_DOWNLOAD_ERROR @"pictureDownloadError"
 
 #define FREE_SPACE_PRECISION_MiB 200
 #define FREE_SPACE_THRESHOLD 500

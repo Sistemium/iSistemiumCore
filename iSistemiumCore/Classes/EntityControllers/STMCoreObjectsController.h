@@ -19,8 +19,6 @@
 
 + (STMCoreObjectsController *)sharedController;
 
-+ (void)initObjectsCacheWithCompletionHandler:(void (^)(BOOL success))completionHandler;
-
 + (void)checkObjectsForFlushing;
 
 + (void)processingOfDataArray:(NSArray *)array

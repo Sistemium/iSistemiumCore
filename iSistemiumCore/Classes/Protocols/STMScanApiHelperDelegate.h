@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ScanApiHelper.h>
+#import "ScanApiHelper.h"
 
 @protocol STMScanApiHelperDelegate <ScanApiHelperDelegate>
 

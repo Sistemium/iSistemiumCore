@@ -11,7 +11,7 @@
 #import "STMFunctions.h"
 
 
-#define SAVING_QUEUE_THRESHOLD 15
+#define SAVING_QUEUE_THRESHOLD 0
 
 @interface STMDocument()
 
@@ -128,7 +128,7 @@
     
 }
 
-- (void)downloadPicture:(NSNotification *)notification {
+- (void)pictureWasDownloaded:(NSNotification *)notification {
     
     if (++self.savingQueue > SAVING_QUEUE_THRESHOLD) {
         self.savingQueue = 0;
@@ -149,8 +149,8 @@
              object:nil];
 
     [nc addObserver:self
-           selector: @selector(downloadPicture:)
-               name:@"downloadPicture"
+           selector: @selector(pictureWasDownloaded:)
+               name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
              object: nil];
     
     [nc addObserver:self

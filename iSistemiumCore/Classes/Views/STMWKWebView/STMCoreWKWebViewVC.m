@@ -113,7 +113,7 @@
     
 }
 
-- (NSMutableDictionary *)getPictureCallbackJSFunctions {
+- (NSMutableDictionary <NSData *, NSString *> *)getPictureCallbackJSFunctions {
     
     if (!_getPictureCallbackJSFunctions) {
         _getPictureCallbackJSFunctions = @{}.mutableCopy;
@@ -166,7 +166,6 @@
     
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
-    
     return webViewUrlString ? webViewUrlString : @"https://sistemium.com";
     
 }
@@ -185,9 +184,12 @@
 - (NSString *)webViewAuthCheckJS {
     
     NSString *webViewAuthCheckJS = self.webViewStoryboardParameters[@"authCheck"];
-    
     return webViewAuthCheckJS ? webViewAuthCheckJS : [[self webViewSettings] valueForKey:@"wv.session.check"];
     
+}
+
+- (BOOL)disableScroll {
+    return [self.webViewStoryboardParameters[@"disableScroll"] boolValue];
 }
 
 - (void)reloadWebView {
@@ -400,6 +402,8 @@
     
     self.webView.navigationDelegate = self;
     
+    self.webView.scrollView.scrollEnabled = ![self disableScroll];
+
     [self loadWebView];
     
 }
@@ -740,9 +744,13 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
-    NSDictionary *parameters = message.body;
-    [self handleGetPictureParameters:parameters];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSDictionary *parameters = message.body;
+        [self handleGetPictureParameters:parameters];
+        
+    });
+
 }
 
 - (void)handleGetPictureParameters:(NSDictionary *)parameters {
@@ -826,11 +834,6 @@
 - (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
-//    NSString *callbackJSFunction = (xid) ? self.getPictureCallbackJSFunctions[xid] : @"";
-    
-//    [self callbackWithData:errorString
-//                parameters:parameters
-//        jsCallbackFunction:callbackJSFunction];
     
     [self callbackWithError:errorString
                  parameters:parameters];
@@ -849,8 +852,6 @@
     if (picture.href) {
 
         [self addObserversForPicture:picture];
-
-        picture.imageThumbnail = nil;
         
         NSManagedObjectID *pictureID = picture.objectID;
         
@@ -896,12 +897,12 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureWasDownloaded:)
-                                                 name:@"downloadPicture"
+                                                 name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                object:picture];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureDownloadError:)
-                                                 name:@"pictureDownloadError"
+                                                 name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                object:picture];
 
 }
@@ -909,11 +910,11 @@
 - (void)removeObserversForPicture:(STMCorePicture *)picture {
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:@"downloadPicture"
+                                                    name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                   object:picture];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:@"pictureDownloadError"
+                                                    name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                                   object:picture];
 
 }
@@ -1145,16 +1146,22 @@
         
     } else if ([action isEqualToString:@"hide"]) {
         
-        [[STMCoreRootTBC sharedRootVC] hideTabBar];
-        
-        UIEdgeInsets insets = self.webView.scrollView.contentInset;
-        self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
+        if (self.isInActiveTab) {
+            
+            [[STMCoreRootTBC sharedRootVC] hideTabBar];
+            
+            UIEdgeInsets insets = self.webView.scrollView.contentInset;
+            self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
+            
+            UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
+            self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
+            
+            [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
 
-        UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-        self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
+        } else {
+            [self callbackWithError:@"webview is not in active tab" parameters:parameters];
+        }
         
-        [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
-
     } else {
         [self callbackWithError:@"unknown action for tabbar message" parameters:parameters];
     }

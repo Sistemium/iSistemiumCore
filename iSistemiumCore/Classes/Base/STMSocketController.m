@@ -37,16 +37,20 @@
 @property (nonatomic) BOOL wasClosedInBackground;
 @property (nonatomic) BOOL shouldSendData;
 @property (nonatomic) BOOL waitDocumentSavingToSyncNextObject;
+@property (nonatomic) BOOL waitDocumentSavingToSendingCleanup;
 @property (nonatomic) BOOL controllersDidChangeContent;
 
-@property (nonatomic, strong) NSMutableDictionary *syncDataDictionary;
-@property (nonatomic, strong) NSMutableArray *doNotSyncObjects;
+@property (nonatomic, strong) NSArray <STMDatum *> *unsyncedObjectsArray;
+@property (nonatomic, strong) NSMutableArray <STMDatum *> *currentSyncObjects;
+@property (nonatomic, strong) NSMutableDictionary *syncDateDictionary;
+@property (nonatomic, strong) NSMutableArray *doNotSyncObjectXids;
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
 
 @property (nonatomic, strong) NSDate *sendingDate;
 @property (nonatomic) NSTimeInterval sendTimeout;
 @property (nonatomic) NSTimeInterval receiveTimeout;
 @property (nonatomic, strong) NSDate *receivingStartDate;
+@property (nonatomic, strong) NSString *sendingCleanupError;
 
 
 @end
@@ -176,117 +180,19 @@
 }
 
 + (void)startSocketWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource {
-    
-    STMSocketController *sc = [self sharedInstance];
-
-    sc.socketUrl = socketUrlString;
-    sc.entityResource = entityResource;
-    
-    [self startSocket];
-    
+    [[self sharedInstance] startSocketWithUrl:socketUrlString andEntityResource:entityResource];
 }
 
 + (BOOL)isItCurrentSocket:(SocketIOClient *)socket failString:(NSString *)failString {
-    
-    STMSocketController *ssc = [STMSocketController sharedInstance];
-    
-    if ([socket isEqual:ssc.socket]) {
-        
-        return YES;
-        
-    } else {
-        
-        STMLogger *logger = [STMLogger sharedLogger];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ %@, is not the current socket", socket, socket.sid, failString];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeError];
-        
-        logMessage = [NSString stringWithFormat:@"current socket %@ %@", ssc.socket, ssc.socket.sid];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeInfo];
-        
-        if (socket.status != SocketIOClientStatusDisconnected || socket.status != SocketIOClientStatusNotConnected) {
-            
-            logMessage = [NSString stringWithFormat:@"not current socket disconnect"];
-            [logger saveLogMessageWithText:logMessage
-                                   numType:STMLogMessageTypeInfo];
-            
-            [socket disconnect];
-            
-        } else {
-            
-            socket = nil;
-            
-        }
-        
-        return NO;
-        
-    }
-    
+    return [[self sharedInstance] isItCurrentSocket:socket failString:failString];
 }
 
 + (void)checkSocket {
-    
-    STMSocketController *sc = [self sharedInstance];
-
-    if (sc.wasClosedInBackground) {
-        
-        sc.wasClosedInBackground = NO;
-        [self startSocket];
-        
-    }
-    
+    [[self sharedInstance] checkSocket];
 }
 
 + (void)startSocket {
-    
-    STMSocketController *sc = [self sharedInstance];
-    
-    STMLogger *logger = [STMLogger sharedLogger];
-    
-    NSString *logMessage = @"startSocket";
-    [logger saveLogMessageWithText:logMessage
-                           numType:STMLogMessageTypeInfo];
-    
-//    logMessage = [NSString stringWithFormat:@"sc.socket %@, sc.socketUrl %@, sc.isRunning %@, sc.isManualReconnecting %@, sc.socket.sid %@", sc.socket, sc.socketUrl, @(sc.isRunning), @(sc.isManualReconnecting), sc.socket.sid];
-//    [logger saveLogMessageWithText:logMessage
-//                           numType:STMLogMessageTypeImportant];
-
-    if (sc.socketUrl && !sc.isRunning && !sc.isManualReconnecting) {
-
-        NSLogMethodName;
-
-        sc.isRunning = YES;
-        
-//        logMessage = [NSString stringWithFormat:@"sc.socket %@ sc.socket.sid %@ status %@", sc.socket, sc.socket.sid, @(sc.socket.status)];
-//        [logger saveLogMessageWithText:logMessage
-//                               numType:STMLogMessageTypeImportant];
-
-        switch (sc.socket.status) {
-                
-            case SocketIOClientStatusNotConnected:
-            case SocketIOClientStatusDisconnected: {
-                [sc.socket connect];
-                break;
-            }
-            case SocketIOClientStatusConnecting: {
-                
-                break;
-            }
-            case SocketIOClientStatusConnected: {
-                
-                break;
-            }
-                
-        }
-
-    } else {
-        
-        [[self syncer] setSyncerState:STMSyncerReceiveData];
-        
-    }
-
+    [[self sharedInstance] startSocket];
 }
 
 + (void)closeSocket {
@@ -316,8 +222,12 @@
     return [[self sharedInstance] unsyncedObjectsArray];
 }
 
-+ (NSUInteger)numbersOfUnsyncedObjects {
++ (NSUInteger)numbersOfAllUnsyncedObjects {
     return [self unsyncedObjects].count;
+}
+
++ (NSUInteger)numberOfCurrentlyUnsyncedObjects {
+    return [self sharedInstance].currentSyncObjects.count;
 }
 
 + (void)sendUnsyncedObjects:(id)sender withTimeout:(NSTimeInterval)timeout {
@@ -361,20 +271,22 @@
 }
 
 + (BOOL)haveToSyncObjects {
-    
+
     NSArray <STMDatum *> *syncDataArray = [self unsyncedObjects];
 
     STMSocketController *sc = [self sharedInstance];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@) AND NOT (xid IN %@)", sc.doNotSyncObjects, sc.syncDataDictionary.allKeys];
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@) AND NOT (xid IN %@)", sc.doNotSyncObjectXids, sc.syncDateDictionary.allKeys];
     
     syncDataArray = [syncDataArray filteredArrayUsingPredicate:predicate];
     
     if (syncDataArray.count > 0) {
-
+        
         NSLog(@"have %d objects to send via Socket", syncDataArray.count);
 
-        [self sendObjectFromSyncArray:syncDataArray.mutableCopy];
+        sc.currentSyncObjects = syncDataArray.mutableCopy;
+
+        [self sendObjectFromSyncArray];
         
         return YES;
         
@@ -386,40 +298,40 @@
     
 }
 
-+ (void)sendObjectFromSyncArray:(NSMutableArray <STMDatum *> *)syncDataArray {
++ (void)sendObjectFromSyncArray {
     
     STMSocketController *sc = [self sharedInstance];
     
-    if (syncDataArray.count > 0) {
+    if (sc.currentSyncObjects.count > 0) {
         
-        STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:syncDataArray.mutableCopy];
+        STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:sc.currentSyncObjects.mutableCopy];
         
         if (syncObject) {
-            
+
+            [sc.currentSyncObjects removeObject:syncObject];
+
             if (syncObject.xid) {
 
                 NSData *xid = syncObject.xid;
 
-                if (![sc.syncDataDictionary.allKeys containsObject:xid]) {
+                if (![sc.syncDateDictionary.allKeys containsObject:xid]) {
 
-                    sc.syncDataDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
+                    sc.syncDateDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
                     [self sendObject:syncObject];
 
                 } else {
                     
                     NSString *message = [NSString stringWithFormat:@"skip %@ %@, already trying to sync", syncObject.entity.name, syncObject.xid];
                     NSLog(message);
-                    
-                    [syncDataArray removeObject:syncObject];
-                    [self sendObjectFromSyncArray:syncDataArray];
+
+                    [self sendObjectFromSyncArray];
                     
                 }
 
             } else {
                 
                 NSLog(@"    ERROR: sync object have no xid: %@", syncObject);
-                [syncDataArray removeObject:syncObject];
-                [self sendObjectFromSyncArray:syncDataArray];
+                [self sendObjectFromSyncArray];
 
             }
             
@@ -449,7 +361,7 @@
     
     STMSocketController *sc = [STMSocketController sharedInstance];
     
-    if ([sc.doNotSyncObjects containsObject:(NSData *)syncObject.xid]) {
+    if ([sc.doNotSyncObjectXids containsObject:(NSData *)syncObject.xid]) {
         
         return [self findObjectToSendFirstFromSyncArray:syncArray];
         
@@ -465,18 +377,11 @@
             
             STMDatum *relObject = [syncObject valueForKey:relName];
             
-            if (/*relObject.isFantom.boolValue || */[sc.doNotSyncObjects containsObject:(NSData *)relObject.xid]) {
+            if ([sc.doNotSyncObjectXids containsObject:(NSData *)relObject.xid]) {
                 
-                /*if (relObject.isFantom.boolValue) {
-                    
-                    [relObject addObserver:[self sharedInstance]
-                                forKeyPath:@"isFantom"
-                                   options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
-                                   context:nil];
-
-                }*/
-                
-                [sc.doNotSyncObjects addObject:(NSData *)syncObject.xid];
+                if (![sc.doNotSyncObjectXids containsObject:syncObject.xid]) {
+                    [sc.doNotSyncObjectXids addObject:(NSData *)syncObject.xid];
+                }
                 
                 NSString *log = [NSString stringWithFormat:@"%@ %@ have unsynced relation to %@", syncObject.entity.name, syncObject.xid, relObject.entity.name];
                 NSLog(log);
@@ -548,9 +453,10 @@
 
 - (void)checkSendTimeoutForObjectXid:(NSData *)xid {
     
-    if ([self.syncDataDictionary.allKeys containsObject:xid]) {
+    if ([self.syncDateDictionary.allKeys containsObject:xid]) {
         
         NSString *errorString = [NSString stringWithFormat:@"timeout for sending object with xid %@", xid];
+        
         [STMSocketController sendEvent:STMSocketEventInfo withStringValue:errorString];
         
         [STMSocketController unsuccessfullySyncObjectWithXid:xid
@@ -561,25 +467,37 @@
     
 }
 
-+ (NSDate *)deviceTsForSyncedObjectXid:(NSData *)xid {
++ (NSDate *)syncDateForSyncedObjectXid:(NSData *)xid {
     
-    NSDate *deviceTs = [self sharedInstance].syncDataDictionary[xid];
-    return deviceTs;
+    NSDate *syncDate = [self sharedInstance].syncDateDictionary[xid];
+    return syncDate;
     
 }
 
 + (void)successfullySyncObjectWithXid:(NSData *)xid {
     
-    [[self document] saveDocument:^(BOOL success) {
-    }];
-
     STMSocketController *sc = [self sharedInstance];
+    
+    [STMSocketController cancelPreviousPerformRequestsWithTarget:sc
+                                                        selector:@selector(checkSendTimeoutForObjectXid:)
+                                                          object:xid];
     
     [sc releaseDoNotSyncObjectsWithObjectXid:xid];
     
-    if (xid) [sc.syncDataDictionary removeObjectForKey:xid];
+    if (sc.currentSyncObjects.count == 0) {
+
+        sc.waitDocumentSavingToSyncNextObject = YES;
+
+        [[self document] saveDocument:^(BOOL success) {
+        }];
+
+    } else {
     
-    sc.waitDocumentSavingToSyncNextObject = YES;
+        [sc performSelector:@selector(sendFinishedWithError:abortSync:)
+                 withObject:nil
+                 withObject:nil];
+
+    }
     
 }
 
@@ -587,12 +505,14 @@
     
     STMSocketController *sc = [self sharedInstance];
     
-//    if (!xid) xid = sc.syncDataDictionary.allKeys.firstObject;
-    
     if (xid) {
-        
-        [sc.syncDataDictionary removeObjectForKey:xid];
-        [sc.doNotSyncObjects addObject:xid];
+    
+        [STMSocketController cancelPreviousPerformRequestsWithTarget:sc
+                                                            selector:@selector(checkSendTimeoutForObjectXid:)
+                                                              object:xid];
+
+        [sc.syncDateDictionary removeObjectForKey:xid];
+        [sc.doNotSyncObjectXids addObject:xid];
 
     }
     
@@ -607,6 +527,8 @@
 }
 
 + (void)sendFinishedWithError:(NSString *)errorString abortSync:(NSNumber *)abortSync {
+    
+    [[self syncer] postObjectsSendedNotification];
     
     if (errorString && abortSync.boolValue) {
         
@@ -632,11 +554,12 @@
     
     STMSocketController *sc = [self sharedInstance];
     
-    sc.isSendingData = NO;
-    [[self syncer] sendFinishedWithError:errorString];
-    sc.syncDataDictionary = nil;
-    sc.sendingDate = nil;
+    sc.sendingCleanupError = errorString;
+    sc.waitDocumentSavingToSendingCleanup = YES;
     
+    [[self document] saveDocument:^(BOOL success) {
+    }];
+
 }
 
 
@@ -705,7 +628,7 @@
             
             NSDictionary *dataDic = (NSDictionary *)value;
             
-            [socket emitWithAck:eventStringValue withItems:@[dataDic]](0, ^(NSArray *data) {
+            [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
                 [self receiveJSDataEventAckWithData:data];
             });
             
@@ -739,7 +662,7 @@
 //                            });
                             
                         } else {
-                            [socket emit:eventStringValue withItems:@[dataDic]];
+                            [socket emit:eventStringValue with:@[dataDic]];
                         }
                         
                     }
@@ -773,12 +696,12 @@
 
 + (void)socket:(SocketIOClient *)socket receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
     
-    NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", socket, socket.sid, event, data);
-    
     STMSocketEvent socketEvent = [self eventForString:event];
     
     if (socketEvent == STMSocketEventAuthorization) {
         [self socket:socket receiveAuthorizationAckWithData:data];
+    } else {
+        NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", socket, socket.sid, event, data);
     }
     
 }
@@ -804,9 +727,9 @@
             
             if (isAuthorized) {
                 
-//                logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", socket, socket.sid];
-//                [logger saveLogMessageWithText:logMessage
-//                                       numType:STMLogMessageTypeImportant];
+                logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", socket, socket.sid];
+                [logger saveLogMessageWithText:logMessage
+                                       numType:STMLogMessageTypeInfo];
                 
                 [self sharedInstance].isAuthorized = YES;
                 [self sharedInstance].isSendingData = NO;
@@ -970,7 +893,8 @@
 + (void)receiveFinishedWithError:(NSString *)errorString {
 
     STMSocketController *sc = [self sharedInstance];
-    sc.doNotSyncObjects = nil;
+    sc.unsyncedObjectsArray = nil;
+    sc.doNotSyncObjectXids = nil;
 
 }
 
@@ -989,16 +913,20 @@
 
     
     [STMSocketController addOnAnyEventToSocket:socket];
-
-    [STMSocketController addEvent:STMSocketEventConnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventDisconnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventError toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventReconnect toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventReconnectAttempt toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventRemoteCommands toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventData toSocket:socket];
-    [STMSocketController addEvent:STMSocketEventJSData toSocket:socket];
     
+    NSArray *events = @[@(STMSocketEventConnect),
+                        @(STMSocketEventDisconnect),
+                        @(STMSocketEventError),
+                        @(STMSocketEventReconnect),
+                        @(STMSocketEventReconnectAttempt),
+                        @(STMSocketEventRemoteCommands),
+                        @(STMSocketEventData),
+                        @(STMSocketEventJSData)];
+
+    for (NSNumber *eventNum in events) {
+        [STMSocketController addEvent:eventNum.integerValue toSocket:socket];
+    }
+
 }
 
 + (void)addOnAnyEventToSocket:(SocketIOClient *)socket {
@@ -1086,8 +1014,9 @@
         
         STMSocketController *sc = [self sharedInstance];
         sc.isAuthorized = NO;
-        sc.syncDataDictionary = nil;
-        sc.doNotSyncObjects = nil;
+        sc.syncDateDictionary = nil;
+        sc.unsyncedObjectsArray = nil;
+        sc.doNotSyncObjectXids = nil;
         sc.sendingDate = nil;
         
         [sc startDelayedAuthorizationCheckForSocket:socket];
@@ -1100,13 +1029,13 @@
         
         [dataDic addEntriesFromDictionary:authDic];
         
-//        logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, socket, socket.sid];
-//        [logger saveLogMessageWithText:logMessage
-//                               numType:STMLogMessageTypeImportant];
+        logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, socket, socket.sid];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
         
         NSString *event = [STMSocketController stringValueForEvent:STMSocketEventAuthorization];
         
-        [socket emitWithAck:event withItems:@[dataDic]](0, ^(NSArray *data) {
+        [socket emitWithAck:event with:@[dataDic]](0, ^(NSArray *data) {
             [self socket:socket receiveAckWithData:data forEvent:event];
         });
 
@@ -1319,45 +1248,45 @@
 
 - (void)objectContextDidSave:(NSNotification *)notification {
     
-//    NSLogMethodName;
-    
-//    if (self.controllersDidChangeContent && [notification.object isKindOfClass:[NSManagedObjectContext class]]) {
-//        
-//        NSManagedObjectContext *context = (NSManagedObjectContext *)notification.object;
-//        
-//        if ([context isEqual:[STMSocketController document].managedObjectContext]) {
-//
-//            [[STMSocketController sharedInstance] performSelector:@selector(sendUnsyncedObjects) withObject:nil afterDelay:0];
-//
-//        }
-//        
-//    }
-    
 }
 
 - (void)documentSavedSuccessfully:(NSNotification *)notification {
-    
-//    NSLogMethodName;
     
     if (self.waitDocumentSavingToSyncNextObject) {
         
         self.waitDocumentSavingToSyncNextObject = NO;
         
+        self.unsyncedObjectsArray = nil;
+        self.currentSyncObjects = nil;
+        self.syncDateDictionary = nil;
+        
         [self performSelector:@selector(sendFinishedWithError:abortSync:)
                    withObject:nil
                    withObject:nil];
         
-    } else {
+    } else if (self.waitDocumentSavingToSendingCleanup) {
+        
+        self.waitDocumentSavingToSendingCleanup = NO;
+        
+        self.isSendingData = NO;
+        [[STMSocketController syncer] sendFinishedWithError:self.sendingCleanupError];
+        self.sendingCleanupError = nil;
+        self.unsyncedObjectsArray = nil;
+        self.syncDateDictionary = nil;
+        self.sendingDate = nil;
 
-        if (self.controllersDidChangeContent && [notification.object isKindOfClass:[STMDocument class]]) {
+    } else {
+        
+        if ([STMSocketController socketIsAvailable] &&
+            self.controllersDidChangeContent &&
+            [notification.object isKindOfClass:[STMDocument class]]) {
             
             NSManagedObjectContext *context = [(STMDocument *)notification.object managedObjectContext];
             
             if ([context isEqual:[STMSocketController document].managedObjectContext]) {
-                
-                [self performSelector:@selector(sendUnsyncedObjects)
-                           withObject:nil
-                           afterDelay:0];
+
+                self.controllersDidChangeContent = NO;
+                [STMSocketController syncer].syncerState = STMSyncerSendDataOnce;
                 
             }
             
@@ -1365,13 +1294,6 @@
 
     }
 
-}
-
-- (void)sendUnsyncedObjects {
-
-    self.controllersDidChangeContent = NO;
-    [STMSocketController sendUnsyncedObjects:self withTimeout:self.sendTimeout];
-    
 }
 
 - (void)performFetches {
@@ -1402,21 +1324,21 @@
     
 }
 
-- (NSMutableDictionary *)syncDataDictionary {
+- (NSMutableDictionary *)syncDateDictionary {
     
-    if (!_syncDataDictionary) {
-        _syncDataDictionary = @{}.mutableCopy;
+    if (!_syncDateDictionary) {
+        _syncDateDictionary = @{}.mutableCopy;
     }
-    return _syncDataDictionary;
+    return _syncDateDictionary;
     
 }
 
-- (NSMutableArray *)doNotSyncObjects {
+- (NSMutableArray *)doNotSyncObjectXids {
     
-    if (!_doNotSyncObjects) {
-        _doNotSyncObjects = @[].mutableCopy;
+    if (!_doNotSyncObjectXids) {
+        _doNotSyncObjectXids = @[].mutableCopy;
     }
-    return _doNotSyncObjects;
+    return _doNotSyncObjectXids;
     
 }
 
@@ -1470,7 +1392,7 @@
 
 - (void)releaseDoNotSyncObjectsWithObject:(STMDatum *)object {
     
-    if (self.doNotSyncObjects.count == 0) return;
+    if (self.doNotSyncObjectXids.count == 0) return;
     
     NSDictionary *toManyRelationships = [STMCoreObjectsController toManyRelationshipsForEntityName:object.entity.name];
     
@@ -1479,7 +1401,7 @@
         NSSet *relObjects = [object valueForKey:relName];
         NSArray *relObjectsXids = [relObjects valueForKeyPath:@"@distinctUnionOfObjects.xid"];
         
-        for (NSData *xid in relObjectsXids) [self.doNotSyncObjects removeObject:xid];
+        for (NSData *xid in relObjectsXids) [self.doNotSyncObjectXids removeObject:xid];
         
     }
     
@@ -1530,7 +1452,8 @@
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerDidChangeContent" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
+                                                        object:self];
     
     self.controllersDidChangeContent = YES;
     
@@ -1560,15 +1483,17 @@
 
 - (NSArray <STMDatum *> *)unsyncedObjectsArray {
     
-    if (self.isAuthorized && [STMSocketController document].managedObjectContext) {
+    if (!_unsyncedObjectsArray) {
         
-        NSArray <STMDatum *> *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
-        
-        return fetchedObjects;
-        
-    } else {
-        return nil;
+        if (self.isAuthorized && [STMSocketController document].managedObjectContext) {
+            
+            NSArray <STMDatum *> *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
+            _unsyncedObjectsArray = (fetchedObjects.count > 0) ? fetchedObjects : nil;
+            
+        }
+
     }
+    return _unsyncedObjectsArray;
     
 }
 
@@ -1582,14 +1507,11 @@
         NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
         NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-        SocketIOClient *socket = [[SocketIOClient alloc]
-                                  initWithSocketURL:socketUrl
-                                             config:@{
-                                                      @"voipEnabled"       : @NO,
-                                                      @"log"               : @NO,
-                                                      @"forceWebsockets"   : @YES,
-                                                      @"path"              : path
-                                                      }];
+        SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
+                                                                    config:@{@"voipEnabled"         : @NO,
+                                                                              @"log"                : @NO,
+                                                                              @"forceWebsockets"    : @YES,
+                                                                              @"path"               : path}];
 
         STMLogger *logger = [STMLogger sharedLogger];
         
@@ -1606,21 +1528,109 @@
     
 }
 
-- (void)closeSocketInBackground {
+- (void)startSocketWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource {
+
+    self.socketUrl = socketUrlString;
+    self.entityResource = entityResource;
+    
+    [self startSocket];
+
+}
+
+- (BOOL)isItCurrentSocket:(SocketIOClient *)socket failString:(NSString *)failString {
+    
+    if ([socket isEqual:self.socket]) {
+        
+        return YES;
+        
+    } else {
+        
+        STMLogger *logger = [STMLogger sharedLogger];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ %@, is not the current socket", socket, socket.sid, failString];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeError];
+        
+        logMessage = [NSString stringWithFormat:@"current socket %@ %@", self.socket, self.socket.sid];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
+        
+        if (socket.status != SocketIOClientStatusDisconnected || socket.status != SocketIOClientStatusNotConnected) {
+            
+            logMessage = [NSString stringWithFormat:@"not current socket disconnect"];
+            [logger saveLogMessageWithText:logMessage
+                                   numType:STMLogMessageTypeInfo];
+            
+            [socket disconnect];
+            
+        } else {
+            
+            socket = nil;
+            
+        }
+        
+        return NO;
+        
+    }
+
+}
+
+- (void)checkSocket {
+    
+    if (self.wasClosedInBackground) {
+        
+        self.wasClosedInBackground = NO;
+        [self startSocket];
+        
+    }
+
+}
+
+- (void)startSocket {
     
     STMLogger *logger = [STMLogger sharedLogger];
     
-    [logger saveLogMessageWithText:@"close socket in background"
+    NSString *logMessage = @"startSocket";
+    [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeInfo];
-
-    self.wasClosedInBackground = YES;
-    [self closeSocket];
     
+    logMessage = [NSString stringWithFormat:@"self.socket %@, self.socketUrl %@, self.isRunning %@, self.isManualReconnecting %@, self.socket.sid %@", self.socket, self.socketUrl, @(self.isRunning), @(self.isManualReconnecting), self.socket.sid];
+    [logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeInfo];
+    
+    if (self.socketUrl && !self.isRunning && !self.isManualReconnecting) {
+        
+        self.isRunning = YES;
+        
+        logMessage = [NSString stringWithFormat:@"sc.socket %@ sc.socket.sid %@ status %@", self.socket, self.socket.sid, @(self.socket.status)];
+        [logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
+        
+        switch (self.socket.status) {
+                
+            case SocketIOClientStatusNotConnected:
+            case SocketIOClientStatusDisconnected: {
+                [self.socket connect];
+                break;
+            }
+            case SocketIOClientStatusConnecting: {
+                
+                break;
+            }
+            case SocketIOClientStatusConnected: {
+                
+                break;
+            }
+                
+        }
+        
+    } else {
+        [STMSocketController syncer].syncerState = STMSyncerReceiveData;
+    }
+
 }
 
 - (void)closeSocket {
-    
-    NSLogMethodName;
     
     if (self.isRunning) {
 
@@ -1635,11 +1645,15 @@
         }
         
         self.socketUrl = nil;
+        
         self.isSendingData = NO;
         self.isAuthorized = NO;
         self.isRunning = NO;
-        self.syncDataDictionary = nil;
-        self.doNotSyncObjects = nil;
+        
+        self.unsyncedObjectsArray = nil;
+        self.syncDateDictionary = nil;
+        self.doNotSyncObjectXids = nil;
+        
         self.sendingDate = nil;
         
         [self.socket disconnect];
@@ -1648,10 +1662,20 @@
 
 }
 
+- (void)closeSocketInBackground {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"close socket in background"
+                           numType:STMLogMessageTypeInfo];
+    
+    self.wasClosedInBackground = YES;
+    [self closeSocket];
+    
+}
+
 - (void)reconnectSocket {
 
-//    NSLogMethodName;
-    
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
@@ -1687,7 +1711,7 @@
 
 - (void)checkAuthorizationForSocket:(SocketIOClient *)socket {
     
-    if ([STMSocketController isItCurrentSocket:socket failString:@"checkAuthorization"]) {
+    if ([self isItCurrentSocket:socket failString:@"checkAuthorization"]) {
 
         STMLogger *logger = [STMLogger sharedLogger];
         
@@ -1718,8 +1742,6 @@
             logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeInfo];
-            
-//            [self startDelayedAuthorizationCheckForSocket:socket];
             
         }
 

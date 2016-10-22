@@ -84,6 +84,7 @@
 - (void)statusChanged {
     
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
+
         [STMGarbageCollector searchUnusedImages];
     }
     
@@ -191,6 +192,7 @@
     
     [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
+    [STMGarbageCollector removeOutOfDateImages];
 //    [self showTestLocalNotification];
     
 }

@@ -1,19 +1,18 @@
 //
-//  STMCorePicture.h
-//  iSistemiumCore
+//  STMCorePicture+CoreDataClass.h
+//  iSisSales
 //
-//  Created by Maxim Grigoriev on 12/05/16.
+//  Created by Edgar Jan Vuicik on 12/10/2016.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
+#import <CoreData/CoreData.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface STMCorePicture : STMDatum
-
-// Insert code here to declare functionality of your managed object subclass
 
 @end
 
