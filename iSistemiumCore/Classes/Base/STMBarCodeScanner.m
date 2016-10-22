@@ -393,17 +393,17 @@
 
 - (void)getBeepStatus {
     
-    [self.iOSScanHelper postGetDecodeAction:self.deviceInfo
-                                     Target:self
-                                   Response:@selector(onGetBeepStatus:)];
+    [self.iOSScanHelper postGetDecodeActionDevice:self.deviceInfo
+                                           Target:self
+                                         Response:@selector(onGetBeepStatus:)];
     
 }
 
 - (void)getRumbleStatus {
     
-    [self.iOSScanHelper postGetDecodeAction:self.deviceInfo
-                                     Target:self
-                                   Response:@selector(onGetRumbleStatus:)];
+    [self.iOSScanHelper postGetDecodeActionDevice:self.deviceInfo
+                                           Target:self
+                                         Response:@selector(onGetRumbleStatus:)];
     
 }
 
@@ -415,10 +415,10 @@
     
     int combineDecodeAction = (beepDecodeAction|rumbleDecodeAction|flashDecodeAction);
     
-    [self.iOSScanHelper postSetDecodeAction:self.deviceInfo
-                               DecodeAction:combineDecodeAction
-                                     Target:self
-                                   Response:@selector(onSetDecodeAction:)];
+    [self.iOSScanHelper postSetDecodeActionDevice:self.deviceInfo
+                                     DecodeAction:combineDecodeAction
+                                           Target:self
+                                         Response:@selector(onSetDecodeAction:)];
     
 }
 
