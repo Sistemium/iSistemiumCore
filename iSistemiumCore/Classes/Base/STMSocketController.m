@@ -1508,9 +1508,9 @@
         NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
         SocketIOClient *socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
-                                                                    config:@{@"voipEnabled"         : @NO,
+                                                                    config:@{@"voipEnabled"         : @YES,
                                                                               @"log"                : @NO,
-                                                                              @"forceWebsockets"    : @YES,
+                                                                              @"forceWebsockets"    : @NO,
                                                                               @"path"               : path}];
 
         STMLogger *logger = [STMLogger sharedLogger];
