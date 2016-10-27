@@ -62,6 +62,9 @@ import Foundation
     
     static func removeOutOfDateImages(){
         do {
+            if (!Thread.isMainThread){
+                CLSLogv("removeOutOfDateImages called not from main thread", getVaList([""]))
+            }
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             
             let stcEntities:NSDictionary
