@@ -84,7 +84,11 @@
 
 + (void)mediaServicesWereReset {
     
-    CLS_LOG(@"AudioSessionMediaServicesWereReset notification");
+    STMLogger *logger = [STMLogger sharedLogger];
+    NSString *logMessage = @"AudioSessionMediaServicesWereReset notification";
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"AudioSessionMediaServicesWereReset notification");
+    
     [self initAudioSession];
     [self sharedController].speechSynthesizer = nil;
     
@@ -97,7 +101,7 @@
     STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"initAudioSession";
     [logger saveLogMessageWithText:logMessage];
-    CLS_LOG(@"%@", logMessage);
+//    CLS_LOG(@"%@", logMessage);
     
     if ([self initAudioSessionSharedInstance]) {
         
@@ -112,7 +116,7 @@
 + (BOOL)initAudioSessionSharedInstance {
     
     STMLogger *logger = [STMLogger sharedLogger];
-    CLS_LOG(@"initAudioSessionSharedInstance");
+//    CLS_LOG(@"initAudioSessionSharedInstance");
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     
@@ -125,7 +129,7 @@
     if (error) {
         
         [logger saveLogMessageWithText:error.localizedDescription];
-        CLS_LOG(@"%@", error.localizedDescription);
+//        CLS_LOG(@"%@", error.localizedDescription);
         return NO;
         
     }
@@ -136,7 +140,7 @@
     if (error) {
         
         [logger saveLogMessageWithText:error.localizedDescription];
-        CLS_LOG(@"%@", error.localizedDescription);
+//        CLS_LOG(@"%@", error.localizedDescription);
         return NO;
         
     }
@@ -375,8 +379,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
 - (void)startBackgroundPlay {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"startBackgroundPlay"];
-    CLS_LOG(@"startBackgroundPlay");
+    STMLogger *logger = [STMLogger sharedLogger];
+    NSString *logMessage = @"startBackgroundPlay";
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"startBackgroundPlay");
     
     [self addAudioSessionObservers];
     
@@ -386,17 +392,21 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
 - (void)stopBackgroundPlay {
     
+    STMLogger *logger = [STMLogger sharedLogger];
+
     if (self.player.playing) {
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"stopBackgroundPlay"];
-        CLS_LOG(@"stopBackgroundPlay");
+        NSString *logMessage = @"stopBackgroundPlay";
+        [logger saveLogMessageWithText:logMessage];
+//        CLS_LOG(@"stopBackgroundPlay");
         
         [self removeAudioSessionObservers];
         [self.player stop];
         
     } else {
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"player is not playing"];
+        NSString *logMessage = @"player is not playing";
+        [logger saveLogMessageWithText:logMessage];
         
     }
     
@@ -417,7 +427,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     NSString *logMessage = @"playSilentAudio";
     [logger saveLogMessageWithText:logMessage];
-    CLS_LOG(@"%@", logMessage);
+//    CLS_LOG(@"%@", logMessage);
     
     NSString *silentWavPath = [[NSBundle mainBundle] pathForResource:@"silent" ofType:@"wav"];
     
@@ -442,10 +452,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
         self.player.numberOfLoops = -1;
         self.player.volume = 0;
         
-        CLS_LOG(@"self.player %@", self.player);
-        CLS_LOG(@"self.player.delegate %@", self.player.delegate);
-        CLS_LOG(@"[AVAudioSession sharedInstance] %@", [AVAudioSession sharedInstance]);
-        CLS_LOG(@"[AVAudioSession sharedInstance].delegate %@", [AVAudioSession sharedInstance].delegate);
+//        CLS_LOG(@"self.player %@", self.player);
+//        CLS_LOG(@"self.player.delegate %@", self.player.delegate);
+//        CLS_LOG(@"[AVAudioSession sharedInstance] %@", [AVAudioSession sharedInstance]);
+//        CLS_LOG(@"[AVAudioSession sharedInstance].delegate %@", [AVAudioSession sharedInstance].delegate);
         
         [self.player play];
         
@@ -463,7 +473,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     [self removeAudioSessionObservers];
     
-    CLS_LOG(@"addAudioSessionObservers");
+//    CLS_LOG(@"addAudioSessionObservers");
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -497,7 +507,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
 - (void)removeAudioSessionObservers {
     
-    CLS_LOG(@"removeAudioSessionObservers");
+//    CLS_LOG(@"removeAudioSessionObservers");
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -510,7 +520,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"audioSessionInterruption notification";
     [logger saveLogMessageWithText:logMessage];
-    CLS_LOG(@"%@", logMessage);
+//    CLS_LOG(@"%@", logMessage);
     
     if (!notification.userInfo) return;
     
@@ -523,7 +533,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
             
             logMessage = @"audioSessionInterruption ended";
             [logger saveLogMessageWithText:logMessage];
-            CLS_LOG(@"%@", logMessage);
+//            CLS_LOG(@"%@", logMessage);
             
             NSNumber *interruptionOption = userInfo[AVAudioSessionInterruptionOptionKey];
             
@@ -531,7 +541,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
                 
                 logMessage = @"audioSessionInterruption should resume";
                 [logger saveLogMessageWithText:logMessage];
-                CLS_LOG(@"%@", logMessage);
+//                CLS_LOG(@"%@", logMessage);
                 
                 [self playSilentAudio];
                 
@@ -539,7 +549,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
                 
                 logMessage = @"audioSessionInterruption something else";
                 [logger saveLogMessageWithText:logMessage];
-                CLS_LOG(@"%@", logMessage);
+//                CLS_LOG(@"%@", logMessage);
                 
             }
             
@@ -550,7 +560,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
             
             logMessage = @"audioSessionInterruption began";
             [logger saveLogMessageWithText:logMessage];
-            CLS_LOG(@"%@", logMessage);
+//            CLS_LOG(@"%@", logMessage);
             
             self.player.delegate = nil;
             self.player = nil;
@@ -569,8 +579,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     if (![notification.name isEqualToString:AVAudioSessionRouteChangeNotification]) return;
     
+    STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"audioSessionRouteChange notification";
-    CLS_LOG(@"%@", logMessage);
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"%@", logMessage);
     
     if (!notification.userInfo) return;
     
@@ -611,7 +623,8 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
                 break;
         }
         
-        CLS_LOG(@"%@", logMessage);
+        [logger saveLogMessageWithText:logMessage];
+//        CLS_LOG(@"%@", logMessage);
         
     }
     
@@ -633,7 +646,8 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
                 break;
         }
         
-        CLS_LOG(@"%@", logMessage);
+        [logger saveLogMessageWithText:logMessage];
+//        CLS_LOG(@"%@", logMessage);
         
     }
     
@@ -643,8 +657,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     if (![notification.name isEqualToString:AVAudioSessionMediaServicesWereLostNotification]) return;
     
+    STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"audioSessionMediaServicesWereLost notification";
-    CLS_LOG(@"%@", logMessage);
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"%@", logMessage);
     
 }
 
@@ -652,8 +668,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     if (![notification.name isEqualToString:AVAudioSessionMediaServicesWereResetNotification]) return;
     
+    STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"audioSessionMediaServicesWereReset notification";
-    CLS_LOG(@"%@", logMessage);
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"%@", logMessage);
     
 }
 
@@ -661,8 +679,10 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     if (![notification.name isEqualToString:AVAudioSessionSilenceSecondaryAudioHintNotification]) return;
     
+    STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = @"audioSessionSilenceSecondaryAudioHint notification";
-    CLS_LOG(@"%@", logMessage);
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"%@", logMessage);
     
     NSDictionary *userInfo = notification.userInfo;
     NSNumber *hintType = userInfo[AVAudioSessionSilenceSecondaryAudioHintTypeKey];
@@ -683,7 +703,8 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
                 break;
         }
         
-        CLS_LOG(@"%@", logMessage);
+        [logger saveLogMessageWithText:logMessage];
+//        CLS_LOG(@"%@", logMessage);
         
     }
     
@@ -694,16 +715,18 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
 - (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription];
-    CLS_LOG(@"%@", error.localizedDescription);
+    STMLogger *logger = [STMLogger sharedLogger];
+    [logger saveLogMessageWithText:error.localizedDescription];
+//    CLS_LOG(@"%@", error.localizedDescription);
     
 }
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
     
+    STMLogger *logger = [STMLogger sharedLogger];
     NSString *logMessage = [NSString stringWithFormat:@"audioPlayerDidFinishPlaying successfully:%@", @(flag)];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
-    CLS_LOG(@"%@", logMessage);
+    [logger saveLogMessageWithText:logMessage];
+//    CLS_LOG(@"%@", logMessage);
     
 }
 

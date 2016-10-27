@@ -599,7 +599,7 @@
             [(NSManagedObject *)object setValue:oldValue forKey:keyPath];
             
         } else {
-            CLS_LOG(@"observeValueForKeyPath oldValue class %@ != NSDate / did crashed here earlier", [oldValue class]);
+//            CLS_LOG(@"observeValueForKeyPath oldValue class %@ != NSDate / did crashed here earlier", [oldValue class]);
         }
         
     }
