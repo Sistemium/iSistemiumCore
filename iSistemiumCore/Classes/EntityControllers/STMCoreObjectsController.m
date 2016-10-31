@@ -1777,10 +1777,10 @@
                 
                 NSDictionary *updatedData = [self updateObjectWithData:objectData entityName:entityName error:&localError];
                 
-                if (localError) {
-                    errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:localError.localizedDescription] : localError.localizedDescription;
-                } else {
+                if (updatedData) {
                     [result addObject:updatedData];
+                } else {
+                    errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:localError.localizedDescription] : localError.localizedDescription;
                 }
                 
             }
@@ -2307,14 +2307,17 @@
         }
         
         NSError *fetchError;
-        NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&fetchError];
+        NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+                                                                              error:&fetchError];
         
-        if (afterRequestSort) {
-            result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
-        }
-        
-        if (!fetchError) {
+        if (result) {
+            
+            if (afterRequestSort) {
+                result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
+            }
+
             return result;
+            
         } else {
             errorMessage = fetchError.localizedDescription;
         }

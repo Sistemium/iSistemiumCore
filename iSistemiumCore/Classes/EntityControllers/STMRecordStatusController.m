@@ -15,13 +15,17 @@
 + (STMRecordStatus *)existingRecordStatusForXid:(NSData *)objectXid {
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                              ascending:YES
+                                                               selector:@selector(compare:)]];
+    
     request.predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
     
     NSError *error;
-    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request
+                                                                               error:&error];
     
-    STMRecordStatus *recordStatus = [fetchResult lastObject];
+    STMRecordStatus *recordStatus = fetchResult.lastObject;
     
     return recordStatus;
     
@@ -50,14 +54,18 @@
 + (NSArray *)recordStatusesForXids:(NSArray *)xids {
     
     STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                                     ascending:YES
+                                                                      selector:@selector(compare:)];
+    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectXid IN %@", xids];
     
     request.sortDescriptors = @[sortDescriptor];
     request.predicate = predicate;
     
     NSError *error;
-    NSArray *recordStatuses = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *recordStatuses = [[self document].managedObjectContext executeFetchRequest:request
+                                                                                  error:&error];
 
     return recordStatuses;
     

@@ -926,16 +926,16 @@
                                                options:0
                                                  error:&error];
     
-    if (error) {
-        
-        [self getPictureWithXid:picture.xid
-                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
+    if (imageData) {
 
-    } else {
-        
         [self getPictureSendData:imageData
                       parameters:parameters
               jsCallbackFunction:jsCallbackFunction];
+
+    } else {
+        
+        [self getPictureWithXid:picture.xid
+                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
         
     }
 

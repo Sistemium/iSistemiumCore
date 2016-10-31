@@ -395,36 +395,41 @@
         if (picture.imagePath) {
             
             NSError *error = nil;
-            NSData *photoData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath] options:0 error:&error];
-
-            if (error) {
-                
-                NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", picture.imagePath, error.localizedDescription];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
-            } else {
+            NSData *photoData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath]
+                                                       options:0
+                                                         error:&error];
             
-                if (photoData && photoData.length > 0) {
-                    
-                    [self setImagesFromData:photoData forPicture:picture andUpload:NO];
-                    
-                } else {
+            if (photoData && photoData.length > 0) {
+                
+                [self setImagesFromData:photoData
+                             forPicture:picture
+                              andUpload:NO];
+                
+            } else {
+                
+                if (!error) {
                     
                     if (picture.href) {
                         
                         [self hrefProcessingForObject:picture];
                         
                     } else {
-                    
-                            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos attempt to set images for picture %@, photoData %@, length %lu, have no photoData and have no href, will be deleted", picture, photoData, (unsigned long)photoData.length];
-                        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
                         
+                        NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos attempt to set images for picture %@, photoData %@, length %lu, have no photoData and have no href, will be deleted", picture, photoData, (unsigned long)photoData.length];
+                        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                                 numType:STMLogMessageTypeError];
                         [self deletePicture:picture];
-
+                        
                     }
                     
+                } else {
+                    
+                    NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", picture.imagePath, error.localizedDescription];
+                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                             numType:STMLogMessageTypeError];
+                    
                 }
-            
+                
             }
             
         } else {
@@ -436,8 +441,8 @@
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"picture %@ have no both imagePath and href", picture];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-                
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                         numType:STMLogMessageTypeError];
                 [self deletePicture:picture];
                 
             }
@@ -466,27 +471,29 @@
             NSError *error = nil;
             NSData *photoData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath] options:0 error:&error];
             
-            if (error) {
+            if (photoData && photoData.length > 0) {
                 
-                NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
+                [[self sharedController] addUploadOperationForPicture:picture
+                                                                 data:photoData];
+                counter++;
+                
             } else {
-            
-                if (photoData && photoData.length > 0) {
+                
+                if (!error) {
                     
-                    [[self sharedController] addUploadOperationForPicture:picture data:photoData];
-                    counter++;
+                    NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, photoData %@, length %lu — object will be deleted", picture, photoData, (unsigned long)photoData.length];
+                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                             numType:STMLogMessageTypeError];
+                    [self deletePicture:picture];
                     
                 } else {
                     
-                    NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, photoData %@, length %lu — object will be deleted", picture, photoData, (unsigned long)photoData.length];
-                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
-                    [self deletePicture:picture];
+                    NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
+                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                             numType:STMLogMessageTypeError];
                     
                 }
-
+                
             }
             
         }
@@ -604,12 +611,7 @@
                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                               error:&error];
     
-    if (error) {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"saveImageFile %@ writeToFile %@ error: %@", fileName, imagePath, error.localizedDescription];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
-    } else {
+    if (result) {
     
         if ([NSThread isMainThread]) {
             
@@ -622,6 +624,12 @@
             });
             
         }
+
+    } else {
+
+        NSString *logMessage = [NSString stringWithFormat:@"saveImageFile %@ writeToFile %@ error: %@", fileName, imagePath, error.localizedDescription];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
 
 	}
 
@@ -642,13 +650,8 @@
                                         options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                                           error:&error];
     
-    if (error) {
+    if (result) {
         
-        NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, resizedImagePath, error.localizedDescription];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-        
-    } else {
-    
         if ([NSThread isMainThread]) {
             
             picture.resizedImagePath = resizedFileName;
@@ -660,6 +663,11 @@
             });
             
         }
+        
+    } else {
+
+        NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, resizedImagePath, error.localizedDescription];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
 
 	}
 
@@ -729,14 +737,13 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSError *error;
+        NSError *error = nil;
         
-        NSManagedObject *object = [[STMCorePicturesController document].managedObjectContext existingObjectWithID:objectID error:&error];
+        NSManagedObject *object = [[STMCorePicturesController document].managedObjectContext existingObjectWithID:objectID
+                                                                                                            error:&error];
         
-        if (!error && object) {
-            
+        if (object) {
             [self downloadConnectionForObject:object];
-            
         } else {
             NSLog(@"existingObjectWithID %@ error: %@", objectID, error.localizedDescription);
         }
@@ -848,37 +855,51 @@
                 
                 if (statusCode == 200) {
                     
+                    NSError *localError = nil;
+                    
                     NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
                                                                                options:0
-                                                                                 error:&error];
-                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:(NSDictionary * _Nonnull)dictionary[@"pictures"]
-                                                                           options:0
-                                                                             error:&error];
+                                                                                 error:&localError];
                     
-                    if (!error) {
+                    if (dictionary) {
+
+                        NSArray *picturesDicts = dictionary[@"pictures"];
+
+                        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
+                                                                               options:0
+                                                                                 error:&localError];
                         
-                        dispatch_async(dispatch_get_main_queue(), ^{
+                        if (picturesJson) {
                             
-                            for (NSDictionary *dict in dictionary[@"pictures"]){
-                                if ([dict[@"name"] isEqual:@"original"]){
-                                    picture.href = dict[@"src"];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                
+                                for (NSDictionary *dict in picturesDicts){
+                                    if ([dict[@"name"] isEqual:@"original"]){
+                                        picture.href = dict[@"src"];
+                                    }
                                 }
-                            }
-                            
-                            NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
-                            picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
-                            
-                            NSLog(picture.picturesInfo);
-                            
-                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                            
-                            [session.document saveDocument:^(BOOL success) {
-                            }];
-                            
-                        });
+                                
+                                NSString *info = [[NSString alloc] initWithData:picturesJson
+                                                                       encoding:NSUTF8StringEncoding];
+                                
+                                picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
+                                                                                       withString:@"/"];
+                                
+                                NSLog(picture.picturesInfo);
+                                
+                                __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+                                
+                                [session.document saveDocument:^(BOOL success) {
+                                }];
+                                
+                            });
+
+                        } else {
+                            NSLog(@"error in json serialization", localError.localizedDescription);
+                        }
                         
                     } else {
-                        NSLog(@"error in json serialization", error.localizedDescription);
+                        NSLog(@"error in json serialization", localError.localizedDescription);
                     }
                     
                 } else {
@@ -935,12 +956,14 @@
         if (success) {
             
             NSString *logMessage = [NSString stringWithFormat:@"file %@ was successefully removed", [filePath lastPathComponent]];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeInfo];
             
         } else {
             
             NSString *logMessage = [NSString stringWithFormat:@"removeItemAtPath error: %@ ",[error localizedDescription]];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
             
         }
 

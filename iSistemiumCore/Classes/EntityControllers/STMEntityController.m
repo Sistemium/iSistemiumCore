@@ -197,9 +197,10 @@
     request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
     NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+                                                                          error:&error];
     
-    return [result lastObject];
+    return result.lastObject;
     
 }
 
@@ -306,17 +307,22 @@
     request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
     NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+                                                                          error:&error];
     
-    STMEntity *actualEntity = [result lastObject];
-    NSMutableArray *mutableResult = result.mutableCopy;
-    [mutableResult removeObject:actualEntity];
+    if (result) {
     
-    for (STMEntity *entity in mutableResult) {
-        [STMCoreObjectsController removeObject:entity];
+        STMEntity *actualEntity = result.lastObject;
+        NSMutableArray *mutableResult = result.mutableCopy;
+        [mutableResult removeObject:actualEntity];
+        
+        for (STMEntity *entity in mutableResult) {
+            [STMCoreObjectsController removeObject:entity];
+        }
+        
+        [[self document] saveDocument:^(BOOL success) {}];
+
     }
-    
-    [[self document] saveDocument:^(BOOL success) {}];
     
 }
 

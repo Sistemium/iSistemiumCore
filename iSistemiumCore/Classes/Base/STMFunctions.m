@@ -794,13 +794,13 @@
     
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
     
-    NSError *error;
+    NSError *error = nil;
     
     id jsonObject = [NSJSONSerialization JSONObjectWithData:data
                                                     options:NSJSONReadingMutableContainers
                                                       error:&error];
     
-    if (error) {
+    if (!jsonObject) {
         NSLog(@"jsonObjectFromString error: %@", error.localizedDescription);
     }
     

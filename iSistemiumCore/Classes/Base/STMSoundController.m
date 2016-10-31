@@ -120,32 +120,28 @@
     
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     
+    BOOL result = YES;
     NSError *error = nil;
     
-    [audioSession setCategory:AVAudioSessionCategoryPlayback
-                  withOptions:AVAudioSessionCategoryOptionMixWithOthers
-                        error:&error];
+    result = [audioSession setCategory:AVAudioSessionCategoryPlayback
+                           withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                                 error:&error];
     
-    if (error) {
+    if (result) {
         
-        [logger saveLogMessageWithText:error.localizedDescription];
-//        CLS_LOG(@"%@", error.localizedDescription);
-        return NO;
-        
-    }
-    
-    [audioSession setActive:YES
-                      error:&error];
-    
-    if (error) {
-        
-        [logger saveLogMessageWithText:error.localizedDescription];
-//        CLS_LOG(@"%@", error.localizedDescription);
-        return NO;
+        result = [audioSession setActive:YES
+                                   error:&error];
         
     }
     
-    return YES;
+    if (!result) {
+        
+        [logger saveLogMessageWithText:error.localizedDescription];
+        //        CLS_LOG(@"%@", error.localizedDescription);
+        
+    }
+    
+    return result;
     
 }
 
@@ -439,25 +435,24 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
         
         self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:silentWavURL
                                                              error:&error];
-        self.player.delegate = self;
         
-        if (error) {
+        if (self.player) {
             
+            self.player.delegate = self;
+            
+            self.player.numberOfLoops = -1;
+            self.player.volume = 0;
+            
+            //        CLS_LOG(@"self.player %@", self.player);
+            //        CLS_LOG(@"self.player.delegate %@", self.player.delegate);
+            //        CLS_LOG(@"[AVAudioSession sharedInstance] %@", [AVAudioSession sharedInstance]);
+            //        CLS_LOG(@"[AVAudioSession sharedInstance].delegate %@", [AVAudioSession sharedInstance].delegate);
+            
+            [self.player play];
+            
+        } else {
             [logger saveLogMessageWithText:error.localizedDescription];
-            
-            return;
-            
         }
-        
-        self.player.numberOfLoops = -1;
-        self.player.volume = 0;
-        
-//        CLS_LOG(@"self.player %@", self.player);
-//        CLS_LOG(@"self.player.delegate %@", self.player.delegate);
-//        CLS_LOG(@"[AVAudioSession sharedInstance] %@", [AVAudioSession sharedInstance]);
-//        CLS_LOG(@"[AVAudioSession sharedInstance].delegate %@", [AVAudioSession sharedInstance].delegate);
-        
-        [self.player play];
         
     } else {
         [logger saveLogMessageWithText:@"have no path for file silent.wav"

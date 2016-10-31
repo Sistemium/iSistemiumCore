@@ -110,9 +110,9 @@
     
     NSError *error = nil;
     
-    [fm createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:&error];
+    BOOL result = [fm createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:&error];
     
-    if (error) {
+    if (!result) {
         
         [self.owner appManifestLoadErrorText:error.localizedDescription];
         return nil;
@@ -232,10 +232,11 @@
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
-    NSError *error;
-    NSArray *dirFiles = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+    NSError *error = nil;
+    NSArray *dirFiles = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath
+                                                error:&error];
     
-    if (!error) {
+    if (dirFiles) {
         
         NSArray *currentETagFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", self.eTagFileName]];
         return (currentETagFiles.count == 0);
@@ -391,20 +392,15 @@
     
     NSError *error = nil;
     
-    [fileData writeToFile:localFilePath
-                  options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                    error:&error];
+    BOOL result = [fileData writeToFile:localFilePath
+                                options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                  error:&error];
     
     if (error) {
-        
         NSLog(@"%@", error.localizedDescription);
-        return NO;
-        
-    } else {
-        
-        return YES;
-        
     }
+    
+    return result;
     
 }
 
@@ -414,11 +410,7 @@
     NSError *error = nil;
     NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.updateDirPath error:&error];
     
-    if (error) {
-        
-        [self.owner appManifestLoadErrorText:error.localizedDescription];
-        
-    } else {
+    if (dirObjects) {
         
         if ([self backupLocalHTMLDir]) {
             
@@ -428,13 +420,15 @@
             
             if (self.localHTMLDirPath) {
                 
+                error = nil;
+                
                 for (NSString *dirObject in dirObjects) {
                     
-                    [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
-                                toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                                 error:&error];
+                    BOOL result = [fm moveItemAtPath:[self.updateDirPath stringByAppendingPathComponent:dirObject]
+                                              toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                               error:&error];
                     
-                    if (error) {
+                    if (!result) {
                         
                         [self.owner appManifestLoadErrorText:error.localizedDescription];
                         break;
@@ -450,7 +444,9 @@
             }
             
         }
-        
+
+    } else {
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
     }
 
 }
@@ -465,9 +461,10 @@
 
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *error = nil;
-    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath
+                                                  error:&error];
 
-    if (error) {
+    if (!dirObjects) {
         
         [self.owner appManifestLoadErrorText:error.localizedDescription];
         return NO;
@@ -480,13 +477,15 @@
     
     if (!self.tempHTMLDirPath) return NO;
 
+    BOOL result = YES;
+    
     for (NSString *dirObject in dirObjects) {
         
-        [fm moveItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                    toPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
-                     error:&error];
+        result = [fm moveItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                             toPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
+                              error:&error];
         
-        if (error) {
+        if (!result) {
             
             [self.owner appManifestLoadErrorText:error.localizedDescription];
             break;
@@ -495,9 +494,7 @@
         
     }
 
-    if (error) return NO;
-    
-    return YES;
+    return result;
     
 }
 
@@ -511,9 +508,10 @@
     
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *error = nil;
-    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.tempHTMLDirPath error:&error];
+    NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.tempHTMLDirPath
+                                                  error:&error];
     
-    if (error) {
+    if (!dirObjects) {
         
         [self.owner appManifestLoadErrorText:error.localizedDescription];
         return;
@@ -528,11 +526,11 @@
 
     for (NSString *dirObject in dirObjects) {
         
-        [fm moveItemAtPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
-                    toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                     error:&error];
+        BOOL result = [fm moveItemAtPath:[self.tempHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                  toPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                   error:&error];
         
-        if (error) {
+        if (!result) {
             
             [self.owner appManifestLoadErrorText:error.localizedDescription];
             break;
@@ -551,31 +549,31 @@
     
     NSString *eTagFilePath = [self.localHTMLDirPath stringByAppendingPathComponent:self.eTagFileName];
     
-    [eTagFileData writeToFile:eTagFilePath
-                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                        error:&error];
+    BOOL result = [eTagFileData writeToFile:eTagFilePath
+                                    options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                      error:&error];
     
-    if (error) {
-        
-        [self.owner appManifestLoadErrorText:error.localizedDescription];
-        [self restoreLocalHTMLDir];
-        
-    } else {
+    if (result) {
         
         self.tempHTMLDirPath = [self webViewLocalDirForPath:TEMP_DIR
                                            createIfNotExist:NO
                                         shoudCleanBeforeUse:NO];
-
+        
         if (self.tempHTMLDirPath) [self cleanDirAtPath:self.tempHTMLDirPath];
         
         self.checkingForUpdate = NO;
-
+        
         if (self.owner.haveLocalHTML) {
             [self.owner localHTMLUpdateIsAvailable];
         } else {
             [self loadLocalHTML];
         }
         
+    } else {
+
+        [self.owner appManifestLoadErrorText:error.localizedDescription];
+        [self restoreLocalHTMLDir];
+
     }
 
 }
@@ -594,6 +592,7 @@
     
     if (self.owner.haveLocalHTML) {
         
+        BOOL result = YES;
         NSError *error = nil;
         NSString *indexHTMLString = [NSString stringWithContentsOfFile:indexHTMLPath
                                                               encoding:NSUTF8StringEncoding
@@ -602,39 +601,43 @@
         NSString *relativePath = [self completeRelativePathForPath:LOCAL_HTML_DIR];
         NSString *completeTempPath = [STMFunctions absoluteTemporaryPathForPath:relativePath];
         
-        if (!error && [fm fileExistsAtPath:completeTempPath]) {
+        if (indexHTMLString && [fm fileExistsAtPath:completeTempPath]) {
             
-            [fm removeItemAtPath:completeTempPath
-                           error:&error];
+            result = [fm removeItemAtPath:completeTempPath
+                                    error:&error];
             
         }
 
-        if (!error) {
+        if (result) {
             
-            [fm createDirectoryAtPath:completeTempPath
-          withIntermediateDirectories:YES
-                           attributes:nil
-                                error:&error];
+            result = [fm createDirectoryAtPath:completeTempPath
+                   withIntermediateDirectories:YES
+                                    attributes:nil
+                                         error:&error];
             
         }
         
-        NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+        if (result) {
         
-        if (!error) {
-
-            for (NSString *dirObject in dirObjects) {
+            NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+            
+            if (dirObjects) {
                 
-                [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                            toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
-                             error:&error];
-                
-                if (error) break;
+                for (NSString *dirObject in dirObjects) {
+                    
+                    result = [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                         toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
+                                          error:&error];
+                    
+                    if (!result) break;
+                    
+                }
                 
             }
-            
-        }
 
-        if (!error) {
+        }
+        
+        if (result) {
             
             [self.owner loadHTML:indexHTMLString
                        atBaseDir:completeTempPath];
