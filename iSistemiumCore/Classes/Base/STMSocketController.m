@@ -19,6 +19,8 @@
 
 #import "STMFunctions.h"
 
+#import <Reachability/Reachability.h>
+
 
 #define SOCKET_URL @"https://socket.sistemium.com/socket.io-client"
 #define CHECK_AUTHORIZATION_DELAY 15
@@ -588,6 +590,10 @@
     
 }
 
++ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withStringValue:(NSString *)stringValue {
+    [self socket:socket sendEvent:event withValue:stringValue];
+}
+
 + (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value {
     
     // Log
@@ -686,12 +692,33 @@
             
         }
         
+        [self checkReachabilityAndSocketStatus:socket];
+        
     }
     
 }
 
-+ (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withStringValue:(NSString *)stringValue {
-    [self socket:socket sendEvent:event withValue:stringValue];
++ (void)checkReachabilityAndSocketStatus:(SocketIOClient *)socket {
+    
+    switch (socket.status) {
+        case SocketIOClientStatusNotConnected:
+        case SocketIOClientStatusDisconnected:
+            
+            if ([Reachability reachabilityWithHostname:[self sharedInstance].socketUrl].isReachable) {
+                
+                [self closeSocket];
+                [self startSocket];
+                
+            }
+            
+            break;
+            
+        case SocketIOClientStatusConnecting:
+        case SocketIOClientStatusConnected:
+        default:
+            break;
+    }
+    
 }
 
 + (void)socket:(SocketIOClient *)socket receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
