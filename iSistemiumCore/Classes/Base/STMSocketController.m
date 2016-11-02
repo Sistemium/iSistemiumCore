@@ -1511,7 +1511,8 @@
                                                                     config:@{@"voipEnabled"         : @YES,
                                                                               @"log"                : @NO,
                                                                               @"forceWebsockets"    : @NO,
-                                                                              @"path"               : path}];
+                                                                              @"path"               : path,
+                                                                              @"reconnects"         : @YES}];
 
         STMLogger *logger = [STMLogger sharedLogger];
         
@@ -1610,8 +1611,12 @@
                 
             case SocketIOClientStatusNotConnected:
             case SocketIOClientStatusDisconnected: {
+                
+                self.socket.reconnects = YES;
                 [self.socket connect];
+                
                 break;
+                
             }
             case SocketIOClientStatusConnecting: {
                 
