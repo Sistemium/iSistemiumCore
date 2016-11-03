@@ -638,15 +638,9 @@
         }
         
         if (result) {
-            
-            [self.owner loadHTML:indexHTMLString
-                       atBaseDir:completeTempPath];
-            
+            [self.owner loadHTML:indexHTMLString atBaseDir:completeTempPath];
         } else {
-
             [self.owner appManifestLoadErrorText:error.localizedDescription];
-            return;
-
         }
 
     } else {

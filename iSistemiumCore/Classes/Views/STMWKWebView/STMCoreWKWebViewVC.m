@@ -43,6 +43,7 @@
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
 @property (nonatomic, strong) STMBarCodeScanner *iOSModeBarCodeScanner;
 @property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
+@property (nonatomic, strong) STMLogger *logger;
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
@@ -84,6 +85,15 @@
         
     }
     return _appManifestHandler;
+    
+}
+
+- (STMLogger *)logger {
+    
+    if (!_logger) {
+        _logger = [STMLogger sharedLogger];
+    }
+    return _logger;
     
 }
 
@@ -160,10 +170,8 @@
 
 - (NSString *)webViewUrlString {
 
-    
 //    return @"http://maxbook.local:3000";
 //    return @"https://isissales.sistemium.com/";
-    
     
     NSString *webViewUrlString = self.webViewStoryboardParameters[@"url"];
     return webViewUrlString ? webViewUrlString : @"https://sistemium.com";
@@ -264,6 +272,9 @@
 
 - (void)loadURLString:(NSString *)urlString {
     
+    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
+                                numType:STMLogMessageTypeImportant];
+
     NSURL *url = [NSURL URLWithString:urlString];
     [self loadURL:url];
     
@@ -298,6 +309,9 @@
 
 - (void)loadLocalHTML {
     
+    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
+                                numType:STMLogMessageTypeImportant];
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self.appManifestHandler startLoadLocalHTML];
     });
@@ -307,7 +321,13 @@
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
 
     dispatch_async(dispatch_get_main_queue(), ^{
+
+        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeImportant];
+
         [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
+        
     });
 
 }
@@ -332,7 +352,7 @@
     
     infoText = [@"cache manifest load: " stringByAppendingString:infoText];
     [self appManifestLoadLogMessage:infoText
-                            numType:STMLogMessageTypeInfo];
+                            numType:STMLogMessageTypeImportant];
     
 }
 
@@ -340,8 +360,8 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
 
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:numType];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:numType];
         
         if (numType == STMLogMessageTypeError && !self.haveLocalHTML) {
             
@@ -371,6 +391,9 @@
 
 - (void)webViewInit {
 
+    [self.logger saveLogMessageWithText:@"webViewInit"
+                                numType:STMLogMessageTypeImportant];
+    
     [self flushWebView];
     
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
@@ -465,12 +488,15 @@
 #pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
-//    NSLogMethodName;
+    
+    NSString *logMessage = [NSString stringWithFormat:@"webView didCommitNavigation %@", webView.URL];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeImportant];
+
 }
 
 - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
     
-//    NSLogMethodName;
     [self webView:webView
              fail:@"didFailNavigation"
         withError:error.localizedDescription];
@@ -478,8 +504,6 @@
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
-    
-//    NSLogMethodName;
     
     [self webView:webView
              fail:@"didFailProvisionalNavigation"
@@ -490,7 +514,8 @@
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
     
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeError];
     
     if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
         [self flushWebView];
@@ -537,8 +562,10 @@
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     
-    NSLog(@"------ didFinishNavigation %@", webView.URL);
-    
+    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeImportant];
+
     self.wasLoadingOnce = YES;
     [self cancelWatingTimeout];
     
@@ -597,8 +624,8 @@
     if (webView && failString && errorString) {
     
         NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@", webView.URL, failString, errorString];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeError];
 
     }
     
@@ -737,8 +764,8 @@
 
     NSString *logMessage = [NSString stringWithFormat:@"JSErrorCatcher: %@", parameters.description];
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeError];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeError];
     
 }
 
@@ -1734,8 +1761,8 @@ int counter = 0;
 - (void)webviewIsDeadWithError:(NSString *)errorString {
     
     errorString = [NSString stringWithFormat:@"checkWebViewIsAlive error: %@, reload webView", errorString];
-    [[STMLogger sharedLogger] saveLogMessageWithText:errorString
-                                             numType:STMLogMessageTypeError];
+    [self.logger saveLogMessageWithText:errorString
+                                numType:STMLogMessageTypeError];
 
     [self webViewInit];
 
@@ -1797,12 +1824,12 @@ int counter = 0;
 - (void)handleMemoryWarning {
     
     NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass([self class])];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeImportant];
     
     logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeImportant];
 
     [self flushWebView];
 
