@@ -1155,7 +1155,18 @@
 }
 
 + (void)socketLostConnection {
-    [[self syncer] socketLostConnection];
+    
+    STMSyncer *syncer = [self syncer];
+    
+    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
+        
+        [self sendFinishedWithError:@"socket not connected"
+                          abortSync:@(YES)];
+        
+    }
+
+    [syncer socketLostConnection];
+    
 }
 
 #pragma mark - instance methods
