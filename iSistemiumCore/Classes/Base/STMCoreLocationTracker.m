@@ -393,8 +393,10 @@
         if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
             
             NSString *errorString = @"location tracking is not permitted";
-            [[self.session logger] saveLogMessageWithText:errorString type:@"error"];
+            [[self.session logger] saveLogMessageWithText:errorString
+                                                  numType:STMLogMessageTypeError];
             [self checkinLocationError:errorString];
+            
             self.locationManager = nil;
             [super stopTracking];
             
@@ -414,8 +416,10 @@
             } else {
                 
                 NSString *errorString = @"location tracking disabled";
-                [[self.session logger] saveLogMessageWithText:errorString type:@"error"];
+                [[self.session logger] saveLogMessageWithText:errorString
+                                                      numType:STMLogMessageTypeError];
                 [self checkinLocationError:errorString];
+                
                 [super stopTracking];
                 
             }
@@ -436,7 +440,8 @@
     
     if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
         
-        [[self.session logger] saveLogMessageWithText:@"location tracking is not permitted" type:@"error"];
+        [[self.session logger] saveLogMessageWithText:@"location tracking is not permitted"
+                                              numType:STMLogMessageTypeError];
         
         completionHandler(NO);
         
@@ -457,7 +462,8 @@
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"requestLocationServiceAuthorization wrong value: %@", self.requestLocationServiceAuthorization];
-                [[self.session logger] saveLogMessageWithText:logMessage type:@"error"];
+                [[self.session logger] saveLogMessageWithText:logMessage
+                                                      numType:STMLogMessageTypeError];
                 
             }
             
@@ -489,7 +495,7 @@
 - (void)flushLocationManager {
     
     [self resetLocationWaitingTimer];
-    [[self locationManager] stopUpdatingLocation];
+    [self.locationManager stopUpdatingLocation];
     self.locationManager.delegate = nil;
     self.locationManager = nil;
     
@@ -545,7 +551,6 @@
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
 
         self.checkinMode = YES;
-
         [self receiveCheckinLocation:lastLocation];
         
     } else {
@@ -846,6 +851,7 @@
     self.checkinMode = NO;
     self.bestCheckinLocation = nil;
     self.checkinRequests = nil;
+    
     if (!self.tracking) {
         [self.locationManager stopUpdatingLocation];
     }
