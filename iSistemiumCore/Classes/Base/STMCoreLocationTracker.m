@@ -866,7 +866,7 @@
     self.checkinRequests = nil;
     
     if (!self.tracking) {
-        [self.locationManager stopUpdatingLocation];
+        [self flushLocationManager];
     }
 
 }
