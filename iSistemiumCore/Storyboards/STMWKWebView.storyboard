@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2555" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="FUb-x0-0Vm">
-    <device id="retina4_7" orientation="portrait">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11542" systemVersion="15G1108" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="FUb-x0-0Vm">
+    <device id="ipad9_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -19,20 +19,20 @@
                         <viewControllerLayoutGuide type="bottom" id="ZK0-GL-Vb6"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="e9v-bK-fcj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5c8-H2-7iX">
-                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                                <rect key="frame" x="0.0" y="20" width="768" height="1004"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="ZK0-GL-Vb6" firstAttribute="top" secondItem="5c8-H2-7iX" secondAttribute="bottom" id="H8T-Oi-5eB"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="5c8-H2-7iX" secondAttribute="trailing" constant="-16" id="N1b-qg-MqL"/>
-                            <constraint firstItem="5c8-H2-7iX" firstAttribute="leading" secondItem="e9v-bK-fcj" secondAttribute="leadingMargin" constant="-16" id="nZC-Iw-HOD"/>
-                            <constraint firstItem="5c8-H2-7iX" firstAttribute="top" secondItem="T1A-do-zUD" secondAttribute="bottom" id="oh4-ji-Jcs"/>
+                            <constraint firstItem="ZK0-GL-Vb6" firstAttribute="top" secondItem="5c8-H2-7iX" secondAttribute="bottom" id="5TP-Xc-fQo"/>
+                            <constraint firstItem="5c8-H2-7iX" firstAttribute="top" secondItem="T1A-do-zUD" secondAttribute="bottom" id="lMv-Y2-w2Z"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="5c8-H2-7iX" secondAttribute="trailing" constant="-20" id="mih-h5-UEi"/>
+                            <constraint firstItem="5c8-H2-7iX" firstAttribute="leading" secondItem="e9v-bK-fcj" secondAttribute="leadingMargin" constant="-20" id="ztf-Po-EoI"/>
                         </constraints>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
@@ -43,7 +43,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LBg-hm-vgk" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1320.8000000000002" y="333.28335832083962"/>
+            <point key="canvasLocation" x="1319.53125" y="332.2265625"/>
         </scene>
         <!--Web ViewNC-->
         <scene sceneID="2Su-og-a03">
