@@ -550,12 +550,18 @@
         locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
 
+        NSString *logMessage = @"have recent location for checkin";
+        [[self.session logger] saveLogMessageWithText:logMessage
+                                              numType:STMLogMessageTypeImportant];
+        
         self.checkinMode = YES;
         [self receiveCheckinLocation:lastLocation];
         
     } else {
         
-        NSLog(@"location tracker checkin mode, set distance filter to none, desired accuracy to best for navigation");
+        NSString *logMessage = @"location tracker checkin mode, set distance filter to none, desired accuracy to best for navigation";
+        [[self.session logger] saveLogMessageWithText:logMessage
+                                              numType:STMLogMessageTypeImportant];
         
         [self checkStatus];
         
@@ -827,11 +833,18 @@
 
     }
     
+    NSString *logMessage = [NSString stringWithFormat:@"receiveCheckinLocation: %@", checkinLocation.description];
+    [[self.session logger] saveLogMessageWithText:logMessage
+                                          numType:STMLogMessageTypeImportant];
+    
     [self endCheckinMode];
 
 }
 
 - (void)checkinLocationError:(NSString *)errorString {
+    
+    [[self.session logger] saveLogMessageWithText:errorString
+                                          numType:STMLogMessageTypeError];
     
     for (NSDictionary *checkinRequest in self.checkinRequests) {
         
