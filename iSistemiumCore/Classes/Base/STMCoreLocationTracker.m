@@ -907,12 +907,16 @@
 
 - (void)resetLocationWaitingTimer {
     
-    [[NSRunLoop currentRunLoop] performSelector:@selector(invalidate)
-                                         target:self.locationWaitingTimer
-                                       argument:nil
-                                          order:0
-                                          modes:@[NSRunLoopCommonModes]];
-    self.locationWaitingTimer = nil;
+    if (self.locationWaitingTimer) {
+    
+        [[NSRunLoop currentRunLoop] performSelector:@selector(invalidate)
+                                             target:self.locationWaitingTimer
+                                           argument:nil
+                                              order:0
+                                              modes:@[NSRunLoopCommonModes]];
+        self.locationWaitingTimer = nil;
+
+    }
     
 }
 
