@@ -742,7 +742,7 @@
             
             [self.delegate barCodeScanner:self receiveError:error];
 
-            NSLog(error.localizedDescription);
+            NSLog(@"%@", error.localizedDescription);
 
         }
 
@@ -757,7 +757,7 @@
         
         [self.delegate barCodeScanner:self receiveError:error];
         
-        NSLog(error.localizedDescription);
+        NSLog(@"%@", error.localizedDescription);
         
     }
     

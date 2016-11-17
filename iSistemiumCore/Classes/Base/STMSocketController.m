@@ -279,7 +279,7 @@
     
     if (syncDataArray.count > 0) {
         
-        NSLog(@"have %d objects to send via Socket", syncDataArray.count);
+        NSLog(@"have %lu objects to send via Socket", (unsigned long)syncDataArray.count);
 
         sc.currentSyncObjects = syncDataArray.mutableCopy;
 
@@ -319,7 +319,7 @@
                 } else {
                     
                     NSString *message = [NSString stringWithFormat:@"skip %@ %@, already trying to sync", syncObject.entity.name, syncObject.xid];
-                    NSLog(message);
+                    NSLog(@"%@", message);
 
                     [self sendObjectFromSyncArray];
                     
@@ -381,7 +381,7 @@
                 }
                 
                 NSString *log = [NSString stringWithFormat:@"%@ %@ have unsynced relation to %@", syncObject.entity.name, syncObject.xid, relObject.entity.name];
-                NSLog(log);
+                NSLog(@"%@", log);
                 
                 shouldFindNext = YES;
                 break;

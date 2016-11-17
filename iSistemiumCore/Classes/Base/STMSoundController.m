@@ -328,7 +328,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     for (NSInteger i = 0; i < numberOfRepeats; ++i) {
         
-        NSLog(@"i %d", i);
+        NSLog(@"i %ld", (long)i);
         
         UILocalNotification *ln = [[UILocalNotification alloc] init];
         ln.soundName = soundName;

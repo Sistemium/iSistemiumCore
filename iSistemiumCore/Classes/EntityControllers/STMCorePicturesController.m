@@ -885,7 +885,7 @@
                                 picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
                                                                                        withString:@"/"];
                                 
-                                NSLog(picture.picturesInfo);
+                                NSLog(@"%@", picture.picturesInfo);
                                 
                                 __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
                                 
@@ -895,15 +895,15 @@
                             });
 
                         } else {
-                            NSLog(@"error in json serialization", localError.localizedDescription);
+                            NSLog(@"error in json serialization: %@", localError.localizedDescription);
                         }
                         
                     } else {
-                        NSLog(@"error in json serialization", localError.localizedDescription);
+                        NSLog(@"error in json serialization: %@", localError.localizedDescription);
                     }
                     
                 } else {
-                    NSLog(@"Request error, statusCode: %d", statusCode);
+                    NSLog(@"Request error, statusCode: %ld", (long)statusCode);
                 }
 
             } else {

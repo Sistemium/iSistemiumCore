@@ -235,7 +235,7 @@
                                                           userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
         
         NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-        NSLog(logMessage);
+        NSLog(@"%@", logMessage);
 
         switch (_syncerState) {
             case STMSyncerIdle: {
@@ -871,7 +871,7 @@
 
         if (errorMessage) {
             
-            NSLog(errorMessage);
+            NSLog(@"%@", errorMessage);
             [self entityCountDecrease];
             
         } else {
@@ -1131,7 +1131,7 @@
 - (void)socketReceiveTimeout {
     
     NSString *errorString = @"socket receive objects timeout";
-    NSLog(errorString);
+    NSLog(@"%@", errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
     (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinish];
     [STMCoreObjectsController stopDefantomizing];
@@ -1140,7 +1140,7 @@
 
 - (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
     
-    NSLog(errorString);
+    NSLog(@"%@", errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
     [self entityCountDecrease];
     
@@ -1154,7 +1154,7 @@
         
     } else {
 
-        NSLog(errorString);
+        NSLog(@"%@", errorString);
         
         if (!entityName) entityName = @"";
         
@@ -1191,7 +1191,7 @@
 
 - (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
     
-    NSLog(errorString);
+    NSLog(@"%@", errorString);
     [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
 
     NSString *xid = [response valueForKey:@"id"];
@@ -1254,7 +1254,7 @@
             
             if (success) {
                 
-                NSLog(@"    %@: get %d objects", entityName, data.count);
+                NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
                 
                 NSUInteger pageRowCount = data.count;
                 NSUInteger pageSize = self.fetchLimit;

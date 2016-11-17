@@ -442,7 +442,7 @@
                 
             } else {
                 
-                NSLog(@"value %@ is not a number or string, can't convert to decimal number");
+                NSLog(@"value %@ is not a number or string, can't convert to decimal number", value);
                 value = nil;
                 
             }
@@ -463,7 +463,7 @@
 
             } else {
                 
-                NSLog(@"value %@ is not a string, can't convert to date");
+                NSLog(@"value %@ is not a string, can't convert to date", value);
                 value = nil;
                 
             }
@@ -480,7 +480,7 @@
                 
             } else {
                 
-                NSLog(@"value %@ is not a number or string, can't convert to number");
+                NSLog(@"value %@ is not a number or string, can't convert to number", value);
                 value = nil;
                 
             }
@@ -1298,13 +1298,13 @@
     for (NSString *entityName in entityNames) {
         
         NSUInteger count = [self numberOfObjectsForEntityName:entityName];
-        NSLog(@"%@ count %d", entityName, count);
+        NSLog(@"%@ count %lu", entityName, (unsigned long)count);
         totalCount += count;
 
     }
     
-    NSLog(@"fantoms count %d", [self numberOfFantoms]);
-    NSLog(@"total count %d", totalCount);
+    NSLog(@"fantoms count %lu", (unsigned long)[self numberOfFantoms]);
+    NSLog(@"total count %lu", (unsigned long)totalCount);
 
 }
 
@@ -1488,7 +1488,7 @@
 + (void)requestFantomObjectErrorMessage:(NSString *)errorMessage parameters:(NSDictionary *)parameters {
 
     [self didFinishResolveFantom:parameters successfully:NO];
-    NSLog(errorMessage);
+    NSLog(@"%@", errorMessage);
 
 }
 
