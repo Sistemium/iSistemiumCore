@@ -1488,7 +1488,7 @@
     if (errorString) {
         
         [[STMLogger sharedLogger] saveLogMessageWithText:errorString
-                                                 numType:STMLogMessageTypeInfo];
+                                                 numType:STMLogMessageTypeImportant];
         
         self.syncing = NO;
         if (self.fetchCompletionHandler) self.fetchResult = UIBackgroundFetchResultFailed;
