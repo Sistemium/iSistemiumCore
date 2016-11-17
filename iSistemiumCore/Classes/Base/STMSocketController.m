@@ -238,12 +238,7 @@
     
     if (![self socketIsAvailable]) {
 
-        if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
-
-            [self sendFinishedWithError:@"socket not connected"
-                              abortSync:@(YES)];
-            
-        }
+        [self socketLostConnection:@"sendUnsyncedObjects"];
         return;
         
     }
@@ -682,16 +677,8 @@
         }
         
     } else {
-        
-        NSLog(@"socket not connected");
-        
-        if ([self syncer].syncerState == STMSyncerSendData || [self syncer].syncerState == STMSyncerSendDataOnce) {
-            
-            [self sendFinishedWithError:@"socket not connected"
-                              abortSync:@(YES)];
-            
-        }
-        
+
+        [self socketLostConnection:@"socket sendEvent"];
         [self checkReachabilityAndSocketStatus:socket];
         
     }
@@ -705,6 +692,9 @@
         case SocketIOClientStatusDisconnected:
             
             if ([Reachability reachabilityWithHostname:[self sharedInstance].socketUrl].isReachable) {
+                
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"socket is not connected but host is reachable, reconnect it"
+                                                         numType:STMLogMessageTypeImportant];
                 
                 [self closeSocket];
                 [self startSocket];
@@ -1081,7 +1071,7 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
         
-        [self socketLostConnection];
+        [self socketLostConnection:@"disconnectCallback"];
         
         if (sc.isManualReconnecting) {
             
@@ -1132,7 +1122,7 @@
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeInfo];
 
-    [self socketLostConnection];
+    [self socketLostConnection:@"reconnectCallback"];
 
 }
 
@@ -1154,19 +1144,20 @@
     NSLog(@"jsDataCallback socket %@ data %@", socket, data);
 }
 
-+ (void)socketLostConnection {
++ (void)socketLostConnection:(NSString *)infoString {
     
     STMSyncer *syncer = [self syncer];
     
     if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
         
-        [self sendFinishedWithError:@"socket not connected"
+        NSString *errorString = [NSString stringWithFormat:@"%@: socket not connected while sending data", infoString];
+        [self sendFinishedWithError:errorString
                           abortSync:@(YES)];
-        
+
     }
 
     [syncer socketLostConnection];
-    
+
 }
 
 #pragma mark - instance methods
