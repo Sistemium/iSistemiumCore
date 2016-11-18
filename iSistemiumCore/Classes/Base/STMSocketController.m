@@ -1674,6 +1674,8 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
         
+        [self.socket disconnect];
+
         if (!self.isManualReconnecting) {
             self.socket = nil;
         }
@@ -1689,8 +1691,6 @@
         self.doNotSyncObjectXids = nil;
         
         self.sendingDate = nil;
-        
-        [self.socket disconnect];
         
     }
 
