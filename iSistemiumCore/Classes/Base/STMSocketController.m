@@ -1075,11 +1075,12 @@
         
         if (sc.isManualReconnecting) {
             
-            logMessage = [NSString stringWithFormat:@"socket %@ %@ isManualReconnecting, start socket now", socket, socket.sid];
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ isManualReconnecting, start new socket now", socket, socket.sid];
             [logger saveLogMessageWithText:logMessage
                                    numType:STMLogMessageTypeInfo];
             
             sc.isManualReconnecting = NO;
+            sc.socket = nil;
             [self startSocket];
             
         } else {
@@ -1595,10 +1596,10 @@
             
         } else {
             
-            socket = nil;
-            
         }
         
+        socket = nil;
+
         return NO;
         
     }
@@ -1676,9 +1677,9 @@
         
         [self.socket disconnect];
 
-        if (!self.isManualReconnecting) {
+//        if (!self.isManualReconnecting) {
             self.socket = nil;
-        }
+//        }
         
         self.socketUrl = nil;
         
