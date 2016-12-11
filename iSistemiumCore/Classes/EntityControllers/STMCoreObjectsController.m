@@ -2086,8 +2086,12 @@
 
     }
     
+    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
-    
+
+    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     if (*error) return nil;
 
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
@@ -2107,6 +2111,8 @@
                                 inManagedObjectContext:[self document].managedObjectContext
                                                  error:error];
     
+    NSLog(@"find get objects %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     if (*error) {
         return nil;
     } else {
@@ -2180,6 +2186,8 @@
         
     }
     
+    NSLog(@"find prepare objects array %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     return dataArray;
     
 }
@@ -2269,9 +2277,9 @@
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
         STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
-
+        
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-
+        
         request.fetchLimit = fetchLimit;
         request.fetchOffset = fetchOffset;
         request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
@@ -2282,11 +2290,11 @@
         SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
         
         NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
-                                                         ascending:ascending
-                                                          selector:sortSelector];
+                                                                         ascending:ascending
+                                                                          selector:sortSelector];
         
         BOOL afterRequestSort = NO;
-
+        
         if ([entity.propertiesByName.allKeys containsObject:orderBy]) {
             
             request.sortDescriptors = @[sortDescriptor];
@@ -2303,7 +2311,7 @@
                                                            ascending:ascending
                                                             selector:@selector(compare:)];
             request.sortDescriptors = @[sortDescriptor];
-
+            
         }
         
         NSError *fetchError;
@@ -2315,13 +2323,13 @@
             if (afterRequestSort) {
                 result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
             }
-
+            
             return result;
             
         } else {
             errorMessage = fetchError.localizedDescription;
         }
-
+        
         
     } else {
         
