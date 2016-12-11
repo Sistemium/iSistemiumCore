@@ -2113,6 +2113,19 @@
     
     NSLog(@"find get objects %@", @([NSDate timeIntervalSinceReferenceDate]));
 
+    NSArray *testArray = [self objectsForEntityName:entityName
+                                               orderBy:orderBy
+                                             ascending:YES
+                                            fetchLimit:pageSize
+                                           fetchOffset:(pageSize * startPage)
+                                           withFantoms:NO
+                                             predicate:predicate
+                                            resultType:NSDictionaryResultType
+                                inManagedObjectContext:[self document].managedObjectContext
+                                                 error:error];
+
+    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     if (*error) {
         return nil;
     } else {
@@ -2262,6 +2275,21 @@
 
 + (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
     
+    return [self objectsForEntityName:entityName
+                              orderBy:orderBy
+                            ascending:ascending
+                           fetchLimit:fetchLimit
+                          fetchOffset:fetchOffset
+                          withFantoms:withFantoms
+                            predicate:nil
+                           resultType:NSManagedObjectResultType
+               inManagedObjectContext:context
+                                error:error];
+
+}
+
++ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
+
     NSString *errorMessage = nil;
     
     context = (context) ? context : [self document].managedObjectContext;
@@ -2283,6 +2311,7 @@
         request.fetchLimit = fetchLimit;
         request.fetchOffset = fetchOffset;
         request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
+        request.resultType = resultType;
         
         NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
         BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
