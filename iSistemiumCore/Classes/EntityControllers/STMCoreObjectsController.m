@@ -1705,8 +1705,9 @@
     if (object) {
         
             STMRecordStatus *recordStatus = [self createRecordStatusAndRemoveObject:object];
+#warning - replace it with arrayForJSWithObjectsDics ?
             return [self arrayForJSWithObjects:@[recordStatus]];
-            
+        
     } else {
         
         errorMessage = [NSString stringWithFormat:@"no object for destroy with xid %@ and entity name %@", xidString, entityName];
@@ -2155,6 +2156,7 @@
                 if (object.isFantom.boolValue) {
                     errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
                 } else {
+#warning - replace it with arrayForJSWithObjectsDics ?
                     return [self arrayForJSWithObjects:@[object]];
                 }
                 
@@ -2280,6 +2282,7 @@
     
 }
 
+#warning - replace it with arrayForJSWithObjectsDics ?
 + (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
 
     NSMutableArray *dataArray = @[].mutableCopy;
