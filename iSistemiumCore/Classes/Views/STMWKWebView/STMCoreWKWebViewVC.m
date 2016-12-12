@@ -1276,13 +1276,13 @@
     
     NSError *error = nil;
     
-    NSLog(@"handleKindOfFindMessage %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSLog(@"handleKindOfFindMessage %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     NSArray *result = [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message error:&error];
 
     if (!error) {
 
-        NSLog(@"FindMessage result %@", @([NSDate timeIntervalSinceReferenceDate]));
+//        NSLog(@"FindMessage result %@", @([NSDate timeIntervalSinceReferenceDate]));
 
         [self callbackWithData:result
                     parameters:parameters];
@@ -1310,7 +1310,7 @@
     
 #endif
 
-    NSLog(@"callbackWithData %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSLog(@"callbackWithData %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     NSMutableArray *arguments = @[].mutableCopy;
     
@@ -1319,11 +1319,11 @@
     
     NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
     
-    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError * _Nullable error) {
 
-        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
+//        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     }];
     

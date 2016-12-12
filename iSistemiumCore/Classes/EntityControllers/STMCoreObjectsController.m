@@ -2087,11 +2087,11 @@
 
     }
     
-    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
 
-    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     if (*error) return nil;
 
@@ -2112,8 +2112,8 @@
                                             resultType:NSDictionaryResultType
                                 inManagedObjectContext:[self document].managedObjectContext
                                                  error:error];
-
-    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+    
+//    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     if (*error) {
         return nil;
@@ -2193,6 +2193,7 @@
 
     }];
     
+//    NSLog(@"find prepare objectsDics array %@", @([NSDate timeIntervalSinceReferenceDate]));
     
     return dataArray;
 
@@ -2301,6 +2302,7 @@
 //        
 //    }
     
+//    NSLog(@"find prepare objects array %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     return dataArray;
     
