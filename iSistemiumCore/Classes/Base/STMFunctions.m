@@ -33,6 +33,7 @@
 
 @end
 
+STMDateFormatter *sharedDateFormatter;
 
 @implementation STMFunctions
 
@@ -51,12 +52,14 @@
 
 + (STMDateFormatter *)dateFormatter {
     
-    STMDateFormatter *dateFormatter = [[STMDateFormatter alloc] init];
-    dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    dateFormatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+    if (sharedDateFormatter) return sharedDateFormatter;
     
-    return dateFormatter;
+    sharedDateFormatter = [[STMDateFormatter alloc] init];
+    sharedDateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    sharedDateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    sharedDateFormatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+    
+    return sharedDateFormatter;
     
 }
 
