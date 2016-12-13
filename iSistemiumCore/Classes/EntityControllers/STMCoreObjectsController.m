@@ -2217,14 +2217,14 @@
         propertiesDictionary[@"ts"] = [dateFormatter stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
     }
     
-    [propertiesDictionary addEntriesFromDictionary:[self propertiesForKeys:ownKeys fromDic:objectDic]];
+    [propertiesDictionary addEntriesFromDictionary:[self propertiesForKeys:ownKeys fromDic:objectDic dateFormatter:dateFormatter]];
     [propertiesDictionary addEntriesFromDictionary:[self relationshipXidsForKeys:ownRelationships fromDic:objectDic]];
     
     return propertiesDictionary;
     
 }
 
-+ (NSDictionary *)propertiesForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic {
++ (NSDictionary *)propertiesForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic dateFormatter:(STMDateFormatter *)dateFormatter{
     
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
@@ -2236,7 +2236,7 @@
             
             if ([value isKindOfClass:[NSDate class]]) {
                 
-                value = [[STMFunctions dateFormatter] stringFromDate:value];
+                value = [dateFormatter stringFromDate:value];
                 
             } else if ([value isKindOfClass:[NSData class]]) {
                 
@@ -2267,6 +2267,12 @@
     }
     
     return propertiesDictionary;
+    
+}
+
++ (NSDictionary *)propertiesForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic {
+    
+    return [self propertiesForKeys:keys fromDic:objectDic dateFormatter:[STMFunctions dateFormatter]];
     
 }
 
