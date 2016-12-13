@@ -2183,16 +2183,13 @@
 
 + (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
     
-<<<<<<< HEAD
     NSMutableArray *dataArray = @[].mutableCopy;
     STMDateFormatter *dateFormatter = [STMFunctions dateFormatter];
+
     NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
-    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
-    
-=======
-    NSMutableArray *dataArray = [NSMutableArray arrayWithCapacity:objectsDics.count];
->>>>>>> origin/socketReconnect
+
+    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
     
     [objectsDics enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
@@ -2212,37 +2209,20 @@
 
 + (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships dateFormatter:(STMDateFormatter *)dateFormatter{
     
-<<<<<<< HEAD
-    NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
-=======
-    NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
-    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
-    
-    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
-
     NSUInteger capacity = ownKeys.count + ownRelationships.count + 2;
 
     NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithCapacity:capacity];
->>>>>>> origin/socketReconnect
     
     if (objectDic[@"xid"]) {
         propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)objectDic[@"xid"]];
     }
-<<<<<<< HEAD
+
     if (objectDic[@"deviceTs"]) {
         propertiesDictionary[@"ts"] = [dateFormatter stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
     }
     
-    [propertiesDictionary addEntriesFromDictionary:[self propertiesForKeys:ownKeys fromDic:objectDic dateFormatter:dateFormatter]];
-    [propertiesDictionary addEntriesFromDictionary:[self relationshipXidsForKeys:ownRelationships fromDic:objectDic]];
-=======
-    
-    if (objectDic[@"deviceTs"]) {
-        propertiesDictionary[@"ts"] = [[STMFunctions dateFormatter] stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
-    }
-    
     for (NSString *key in ownKeys) {
-        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key];
+        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key dateFormatter:(STMDateFormatter *)dateFormatter];
     }
     
     for (NSString *relationship in ownRelationships) {
@@ -2255,35 +2235,24 @@
         propertiesDictionary[dictKey] = (xidData.length != 0) ? [STMFunctions UUIDStringFromUUIDData:xidData] : [NSNull null];
 
     }
->>>>>>> origin/socketReconnect
     
     return propertiesDictionary;
     
 }
 
-<<<<<<< HEAD
-+ (NSDictionary *)propertiesForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic dateFormatter:(STMDateFormatter *)dateFormatter{
-    
-    NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
-=======
-+ (id)convertValue:(id)value forKey:(NSString *)key {
->>>>>>> origin/socketReconnect
++ (id)convertValue:(id)value forKey:(NSString *)key dateFormatter:(STMDateFormatter *)dateFormatter {
     
     if (value) {
         
         if ([value isKindOfClass:[NSDate class]]) {
             
-            value = [[STMFunctions dateFormatter] stringFromDate:value];
+            value = [dateFormatter stringFromDate:value];
             
         } else if ([value isKindOfClass:[NSData class]]) {
             
             if ([key isEqualToString:@"deviceUUID"] || [key hasSuffix:@"Xid"]) {
                 
-<<<<<<< HEAD
-                value = [dateFormatter stringFromDate:value];
-=======
                 value = [STMFunctions UUIDStringFromUUIDData:value];
->>>>>>> origin/socketReconnect
                 
             } else if ([key isEqualToString:@"deviceToken"]) {
                 
@@ -2297,38 +2266,11 @@
             
         }
         
-<<<<<<< HEAD
-    }
-    
-    return propertiesDictionary;
-    
-}
-
-+ (NSDictionary *)propertiesForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic {
-    
-    return [self propertiesForKeys:keys fromDic:objectDic dateFormatter:[STMFunctions dateFormatter]];
-    
-}
-
-+ (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys fromDic:(NSDictionary *)objectDic {
-    
-    NSMutableDictionary *relationshipsDictionary = @{}.mutableCopy;
-
-    for (NSString *key in keys) {
-
-        NSString *resultKey = [key stringByAppendingString:@".xid"];
-        NSString *dictKey = [key stringByAppendingString:@"Id"];
-
-        NSData *xidData = objectDic[resultKey];
-
-        relationshipsDictionary[dictKey] = (xidData.length != 0) ? [STMFunctions UUIDStringFromUUIDData:xidData] : [NSNull null];
-=======
         value = [NSString stringWithFormat:@"%@", value];
         
     } else {
         
         value = [NSNull null];
->>>>>>> origin/socketReconnect
         
     }
     
