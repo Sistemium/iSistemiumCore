@@ -2184,11 +2184,18 @@
 + (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
     
     NSMutableArray *dataArray = @[].mutableCopy;
+    STMDateFormatter *dateFormatter = [STMFunctions dateFormatter];
+    NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
+    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
+    
     
     [objectsDics enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
         NSDictionary *propertiesDictionary = [self dictionaryForJSWithObjectDic:obj
-                                                                     entityName:(NSString *)entityName];
+                                                                        ownKeys:ownKeys
+                                                               ownRelationships:ownRelationships
+                                                                  dateFormatter:dateFormatter];
         [dataArray addObject:propertiesDictionary];
 
     }];
@@ -2199,17 +2206,16 @@
 
 }
 
-+ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic entityName:(NSString *)entityName {
++ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships dateFormatter:(STMDateFormatter *)dateFormatter{
     
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
-    if (objectDic[@"xid"]) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)objectDic[@"xid"]];
-    if (objectDic[@"deviceTs"]) propertiesDictionary[@"ts"] = [[STMFunctions dateFormatter] stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
-    
-    NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
-    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
-    
-    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
+    if (objectDic[@"xid"]) {
+        propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)objectDic[@"xid"]];
+    }
+    if (objectDic[@"deviceTs"]) {
+        propertiesDictionary[@"ts"] = [dateFormatter stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
+    }
     
     [propertiesDictionary addEntriesFromDictionary:[self propertiesForKeys:ownKeys fromDic:objectDic]];
     [propertiesDictionary addEntriesFromDictionary:[self relationshipXidsForKeys:ownRelationships fromDic:objectDic]];
