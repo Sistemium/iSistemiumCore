@@ -31,7 +31,7 @@ class STMFmdb:NSObject{
         if !filemgr.fileExists(atPath: databasePath as String) {
             
             if (database?.open())!{
-                let sql_stmt = "CREATE TABLE IF NOT EXISTS STMPrice (ID TEXT  PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, isFantom INTEGER, lts TEXT,  ownerXid TEXT, price REAL, source TEXT, target TEXT, xid TEXT, articleid TEXT REFERENCES STMArticle(id), pricetypeid TEXT REFERENCES STMPriceType(id) ) "
+                let sql_stmt = "CREATE TABLE IF NOT EXISTS STMPrice (ID INTEGER PRIMARY KEY AUTOINCREMENT, commentText TEXT, deviceCts TEXT, deviceTs TEXT, isFantom INTEGER, lts TEXT,  ownerXid TEXT, price NUMERIC, source TEXT, target TEXT, xid TEXT UNIQUE, articleid TEXT REFERENCES STMArticle(id), pricetypeid TEXT REFERENCES STMPriceType(id) ) "
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
                 }
@@ -51,9 +51,12 @@ class STMFmdb:NSObject{
                 var values:[String] = []
                 
                 for (key, value) in dictionary{
-                    if key == "ts"{
+                    switch(key){
+                        case "ts":
                         keys.append("deviceTs")
-                    }else{
+                    case "id":
+                        keys.append("xid")
+                    default:
                         keys.append(key)
                     }
                     values.append("'\(value)'")
@@ -62,7 +65,7 @@ class STMFmdb:NSObject{
                 keys.append("lts")
                 values.append("'\(Date())'")
                 
-                let insertSQL = "INSERT INTO \(tablename) (\(keys.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
+                let insertSQL = "INSERT OR REPLACE INTO \(tablename) (\(keys.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
                 
                 let result = database?.executeUpdate(insertSQL,
                                                      withArgumentsIn: nil)
