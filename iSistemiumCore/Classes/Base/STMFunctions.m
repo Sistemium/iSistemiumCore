@@ -18,26 +18,11 @@
 
 @implementation STMDateFormatter
 
-- (NSDate *)dateFromString:(NSString *)string {
-
-    self.dateFormat = (string.length == 10) ? DATE_FORMAT_WITHOUT_TIME : DATE_FORMAT_WITH_MILLISECONDS;
-    
-    return [super dateFromString:string];
-    
-}
-
-- (NSString *)stringFromDate:(NSDate *)date {
-    
-    self.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
-    
-    return [super stringFromDate:date];
-    
-}
-
 
 @end
 
-STMDateFormatter *sharedDateFormatter;
+STMDateFormatter *sharedDateFormatterWithMilliseconds;
+STMDateFormatter *sharedDateFormatterWithoutTime;
 
 @implementation STMFunctions
 
@@ -54,16 +39,43 @@ STMDateFormatter *sharedDateFormatter;
 
 #pragma mark - date formatters
 
-+ (STMDateFormatter *)dateFormatter {
++ (STMDateFormatter *)dateFormatterWithMilliseconds {
     
-    if (sharedDateFormatter) return sharedDateFormatter;
+    if (sharedDateFormatterWithMilliseconds) return sharedDateFormatterWithMilliseconds;
     
-    sharedDateFormatter = [[STMDateFormatter alloc] init];
-    sharedDateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    sharedDateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    sharedDateFormatter.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
+    sharedDateFormatterWithMilliseconds = [[STMDateFormatter alloc] init];
+    sharedDateFormatterWithMilliseconds.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    sharedDateFormatterWithMilliseconds.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    sharedDateFormatterWithMilliseconds.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
     
-    return sharedDateFormatter;
+    return sharedDateFormatterWithMilliseconds;
+    
+}
+
++ (STMDateFormatter *)dateFormatterWithoutTime {
+    
+    if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
+    
+    sharedDateFormatterWithoutTime = [[STMDateFormatter alloc] init];
+    sharedDateFormatterWithoutTime.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    sharedDateFormatterWithoutTime.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    sharedDateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
+    
+    return sharedDateFormatterWithoutTime;
+    
+}
+
++ (NSDate *)dateFromString:(NSString *)string {
+    
+    STMDateFormatter *dateFormatter = (string.length == 10) ? [self dateFormatterWithoutTime] : [self dateFormatterWithMilliseconds];
+    
+    return [dateFormatter dateFromString:string];
+    
+}
+
++ (NSString *)stringFromDate:(NSDate *)date {
+    
+    return [[self dateFormatterWithMilliseconds] stringFromDate:date];
     
 }
 
@@ -184,7 +196,7 @@ STMDateFormatter *sharedDateFormatter;
 }
 
 + (void)NSLogCurrentDateWithMilliseconds {
-    NSLog(@"%@", [[self dateFormatter] stringFromDate:[NSDate date]]);
+    NSLog(@"%@", [self stringFromDate:[NSDate date]]);
 }
 
 
