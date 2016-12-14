@@ -366,11 +366,11 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 #pragma mark - playing silent sound
 
 + (void)startBackgroundPlay {
-    [[self sharedController] startBackgroundPlay];
+//    [[self sharedController] startBackgroundPlay];
 }
 
 + (void)stopBackgroundPlay {
-    [[self sharedController] stopBackgroundPlay];
+//    [[self sharedController] stopBackgroundPlay];
 }
 
 - (void)startBackgroundPlay {

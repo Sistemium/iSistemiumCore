@@ -1715,8 +1715,9 @@
     if (object) {
         
             STMRecordStatus *recordStatus = [self createRecordStatusAndRemoveObject:object];
+#warning - replace it with arrayForJSWithObjectsDics ?
             return [self arrayForJSWithObjects:@[recordStatus]];
-            
+        
     } else {
         
         errorMessage = [NSString stringWithFormat:@"no object for destroy with xid %@ and entity name %@", xidString, entityName];
@@ -2096,8 +2097,12 @@
 
     }
     
+//    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
-    
+
+//    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     if (*error) return nil;
 
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
@@ -2106,7 +2111,7 @@
     NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
     NSString *orderBy = options[@"sortBy"];
     if (!orderBy) orderBy = @"id";
-    
+
     NSArray *objectsArray = [self objectsForEntityName:entityName
                                                orderBy:orderBy
                                              ascending:YES
@@ -2114,13 +2119,16 @@
                                            fetchOffset:(pageSize * startPage)
                                            withFantoms:NO
                                              predicate:predicate
+                                            resultType:NSDictionaryResultType
                                 inManagedObjectContext:[self document].managedObjectContext
                                                  error:error];
     
+//    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     if (*error) {
         return nil;
     } else {
-        return [self arrayForJSWithObjects:objectsArray];
+        return [self arrayForJSWithObjectsDics:objectsArray entityName:entityName];
     }
 
 }
@@ -2158,6 +2166,7 @@
                 if (object.isFantom.boolValue) {
                     errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
                 } else {
+#warning - replace it with arrayForJSWithObjectsDics ?
                     return [self arrayForJSWithObjects:@[object]];
                 }
                 
@@ -2179,17 +2188,127 @@
 
 }
 
+
+#pragma mark - generate arrayForJS
+
++ (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
+    
+    NSMutableArray *dataArray = @[].mutableCopy;
+    STMDateFormatter *dateFormatter = [STMFunctions dateFormatter];
+
+    NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
+    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
+
+    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+    
+    [objectsDics enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObjectDic:obj
+                                                                        ownKeys:ownKeys
+                                                               ownRelationships:ownRelationships
+                                                                  dateFormatter:dateFormatter];
+        [dataArray addObject:propertiesDictionary];
+
+    }];
+    
+//    NSLog(@"find prepare objectsDics array %@", @([NSDate timeIntervalSinceReferenceDate]));
+    
+    return dataArray;
+
+}
+
++ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships dateFormatter:(STMDateFormatter *)dateFormatter{
+    
+    NSUInteger capacity = ownKeys.count + ownRelationships.count + 2;
+
+    NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithCapacity:capacity];
+    
+    if (objectDic[@"xid"]) {
+        propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)objectDic[@"xid"]];
+    }
+
+    if (objectDic[@"deviceTs"]) {
+        propertiesDictionary[@"ts"] = [dateFormatter stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
+    }
+    
+    for (NSString *key in ownKeys) {
+        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key dateFormatter:(STMDateFormatter *)dateFormatter];
+    }
+    
+    for (NSString *relationship in ownRelationships) {
+        
+        NSString *resultKey = [relationship stringByAppendingString:@".xid"];
+        NSString *dictKey = [relationship stringByAppendingString:@"Id"];
+        
+        NSData *xidData = objectDic[resultKey];
+        
+        propertiesDictionary[dictKey] = (xidData.length != 0) ? [STMFunctions UUIDStringFromUUIDData:xidData] : [NSNull null];
+
+    }
+    
+    return propertiesDictionary;
+    
+}
+
++ (id)convertValue:(id)value forKey:(NSString *)key dateFormatter:(STMDateFormatter *)dateFormatter {
+    
+    if (value) {
+        
+        if ([value isKindOfClass:[NSDate class]]) {
+            
+            value = [dateFormatter stringFromDate:value];
+            
+        } else if ([value isKindOfClass:[NSData class]]) {
+            
+            if ([key isEqualToString:@"deviceUUID"] || [key hasSuffix:@"Xid"]) {
+                
+                value = [STMFunctions UUIDStringFromUUIDData:value];
+                
+            } else if ([key isEqualToString:@"deviceToken"]) {
+                
+                value = [STMFunctions hexStringFromData:value];
+                
+            } else {
+                
+                value = [STMFunctions base64HexStringFromData:value];
+                
+            }
+            
+        }
+        
+        value = [NSString stringWithFormat:@"%@", value];
+        
+    } else {
+        
+        value = [NSNull null];
+        
+    }
+    
+    return value;
+
+}
+
+#warning - replace it with arrayForJSWithObjectsDics ?
 + (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
 
     NSMutableArray *dataArray = @[].mutableCopy;
     
-    for (STMDatum *object in objects) {
-        
-        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:object];
+    [objects enumerateObjectsUsingBlock:^(STMDatum * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+
+        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:obj];
         [dataArray addObject:propertiesDictionary];
-        
-    }
+
+    }];
     
+//    for (STMDatum *object in objects) {
+//        
+//        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:object];
+//        [dataArray addObject:propertiesDictionary];
+//        
+//    }
+    
+//    NSLog(@"find prepare objects array %@", @([NSDate timeIntervalSinceReferenceDate]));
+
     return dataArray;
     
 }
@@ -2264,6 +2383,21 @@
 
 + (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
     
+    return [self objectsForEntityName:entityName
+                              orderBy:orderBy
+                            ascending:ascending
+                           fetchLimit:fetchLimit
+                          fetchOffset:fetchOffset
+                          withFantoms:withFantoms
+                            predicate:nil
+                           resultType:NSManagedObjectResultType
+               inManagedObjectContext:context
+                                error:error];
+
+}
+
++ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
+
     NSString *errorMessage = nil;
     
     context = (context) ? context : [self document].managedObjectContext;
@@ -2279,12 +2413,30 @@
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
         STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
-
+        
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-
+        
         request.fetchLimit = fetchLimit;
         request.fetchOffset = fetchOffset;
         request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
+        request.resultType = resultType;
+        
+        if (resultType == NSDictionaryResultType) {
+
+            NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
+            ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[@"xid", @"deviceTs", @"deviceCts"]];
+
+            NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+
+            NSMutableArray *propertiesToFetch = ownKeys.mutableCopy;
+            
+            [ownRelationships enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [propertiesToFetch addObject:[NSString stringWithFormat:@"%@.xid", obj]];
+            }];
+            
+            request.propertiesToFetch = propertiesToFetch;
+            
+        }
         
         NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
         BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
@@ -2292,11 +2444,11 @@
         SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
         
         NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
-                                                         ascending:ascending
-                                                          selector:sortSelector];
+                                                                         ascending:ascending
+                                                                          selector:sortSelector];
         
         BOOL afterRequestSort = NO;
-
+        
         if ([entity.propertiesByName.allKeys containsObject:orderBy]) {
             
             request.sortDescriptors = @[sortDescriptor];
@@ -2313,7 +2465,7 @@
                                                            ascending:ascending
                                                             selector:@selector(compare:)];
             request.sortDescriptors = @[sortDescriptor];
-
+            
         }
         
         NSError *fetchError;
@@ -2325,13 +2477,13 @@
             if (afterRequestSort) {
                 result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
             }
-
+            
             return result;
             
         } else {
             errorMessage = fetchError.localizedDescription;
         }
-
+        
         
     } else {
         
