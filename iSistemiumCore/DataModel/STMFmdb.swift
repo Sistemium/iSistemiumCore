@@ -82,4 +82,17 @@ class STMFmdb:NSObject{
             completionHandler(false);
         }
     }
+    
+    func select(tablename:String){
+        if (database?.open())! {
+            let sql_stmt = "SELECT * FROM STMPrice WHERE xid = '86168941-ab33-11e6-8000-8c84fdbebcad'"
+            let rs = try? database.executeQuery(sql_stmt,values:[])
+            while rs!.next() {
+                rs?.resultDictionary().forEach { print("\($0): \($1)") }
+            }
+            database?.close()
+        } else {
+            NSLog("STMFmdb error: \(database?.lastErrorMessage())")
+        }
+    }
 }
