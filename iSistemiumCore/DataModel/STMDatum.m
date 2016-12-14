@@ -41,7 +41,7 @@
     
 }
 
-- (void)setLastModifiedTimestamp{
+- (void)setLastModifiedTimestamp {
     
     NSDictionary *changedValues = self.changedValues;
     
@@ -64,7 +64,9 @@
     
     NSDate *currentDate = [NSDate date];
 
-    [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+    if ([self.entity.propertiesByName.allKeys containsObject:@"deviceAts"]) {
+        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+    }
     
     if (changedKeysArray.count > 0) {
         
