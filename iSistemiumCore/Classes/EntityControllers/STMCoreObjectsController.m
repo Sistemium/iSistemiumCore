@@ -24,7 +24,7 @@
 
 #import "STMCoreNS.h"
 
-//#import "iSistemiumCore-Swift.h"
+#import "iSistemiumCore-Swift.h"
 
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
@@ -270,46 +270,52 @@
     
     if ([dataModelEntityNames containsObject:entityName]) {
         
-        NSString *xidString = dictionary[@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
-        
-        STMDatum *object = nil;
-        
-        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-            
-            object = [[[self session] settingsController] settingForDictionary:dictionary];
-            
-        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-            
-            NSString *internalName = dictionary[@"name"];
-            object = [STMEntityController entityWithName:internalName];
-            
+        if ([entityName isEqualToString:@"STMPrice"]){
+            STMFmdb *fmdb = [STMFmdb sharedInstance];
+            [fmdb insertWithTablename:entityName dictionary:dictionary];
         }
-        
-        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
-        
-        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
-        
-        if (!recordStatus.isRemoved.boolValue) {
-        
-            if (!object) object = [self newObjectForEntityName:entityName];
-
-            if (![self isWaitingToSyncForObject:object]) {
-
-                [object setValue:@NO forKey:@"isFantom"];
-                [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
-
-            }
+        else{
+            NSString *xidString = dictionary[@"id"];
+            NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
             
-        } else {
+            STMDatum *object = nil;
             
-            if (object) {
-
-                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
-                [self removeIsRemovedRecordStatusAffectedObject:object];
+            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+                
+                object = [[[self session] settingsController] settingForDictionary:dictionary];
+                
+            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+                
+                NSString *internalName = dictionary[@"name"];
+                object = [STMEntityController entityWithName:internalName];
                 
             }
+            
+            if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
+            
+            STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
+            
+            if (!recordStatus.isRemoved.boolValue) {
+            
+                if (!object) object = [self newObjectForEntityName:entityName];
 
+                if (![self isWaitingToSyncForObject:object]) {
+
+                    [object setValue:@NO forKey:@"isFantom"];
+                    [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
+
+                }
+                
+            } else {
+                
+                if (object) {
+
+                    NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
+                    [self removeIsRemovedRecordStatusAffectedObject:object];
+                    
+                }
+
+            }
         }
         
         completionHandler(YES);

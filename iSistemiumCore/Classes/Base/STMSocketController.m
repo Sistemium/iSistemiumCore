@@ -802,7 +802,7 @@
 //    NSLog(@"receiveJSDataEventAckWithData %@", data);
 
     [self cancelCheckReceiveTimeout];
-
+//    NSLog(@"receiveJSDataEventAckWithData", )
     [[self syncer] socketReceiveJSDataAck:data];
     
 }
@@ -828,6 +828,8 @@
     
     NSMutableDictionary *options = @{@"pageSize" : @(fetchLimit)}.mutableCopy;
     if (eTag) options[@"offset"] = eTag;
+    
+    [options setValue:@"500" forKey:@"pageSize"];
     
     value[@"options"] = options;
 
@@ -875,7 +877,7 @@
     sc.receivingStartDate = [NSDate date];
     
     [self cancelCheckReceiveTimeout];
-    
+
     sc.receiveTimeout = timeout;
     
     [sc performSelector:@selector(checkReceiveTimeout:)
