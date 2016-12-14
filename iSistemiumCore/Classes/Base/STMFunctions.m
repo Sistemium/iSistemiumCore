@@ -20,13 +20,17 @@
 
 - (NSDate *)dateFromString:(NSString *)string {
 
-    if (string.length == 10) {
-        
-        self.dateFormat = @"yyyy-MM-dd";
-        
-    }
+    self.dateFormat = (string.length == 10) ? DATE_FORMAT_WITHOUT_TIME : DATE_FORMAT_WITH_MILLISECONDS;
     
     return [super dateFromString:string];
+    
+}
+
+- (NSString *)stringFromDate:(NSDate *)date {
+    
+    self.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
+    
+    return [super stringFromDate:date];
     
 }
 
@@ -57,7 +61,7 @@ STMDateFormatter *sharedDateFormatter;
     sharedDateFormatter = [[STMDateFormatter alloc] init];
     sharedDateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
     sharedDateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    sharedDateFormatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+    sharedDateFormatter.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
     
     return sharedDateFormatter;
     
