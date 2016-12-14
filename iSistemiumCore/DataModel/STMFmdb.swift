@@ -42,35 +42,41 @@ class STMFmdb:NSObject{
         }
     }
     
-    func insert(tablename:String,dictionary:Dictionary<String, Any>){
+    func insert(tablename:String, array:Array<Dictionary<String, Any>>, completionHandler:(_ success:Bool)->Void){
         if (database?.open())! {
-            
-            var keys:[String] = []
-            
-            var values:[String] = []
-
-            for (key, value) in dictionary{
-                if key == "ts"{
-                    keys.append("deviceTs")
-                }else{
-                    keys.append(key)
+            database.beginTransaction()
+            for dictionary in array{
+                var keys:[String] = []
+                
+                var values:[String] = []
+                
+                for (key, value) in dictionary{
+                    if key == "ts"{
+                        keys.append("deviceTs")
+                    }else{
+                        keys.append(key)
+                    }
+                    values.append("'\(value)'")
                 }
-                values.append("'\(value)'")
+                
+                keys.append("lts")
+                values.append("'\(Date())'")
+                
+                let insertSQL = "INSERT INTO \(tablename) (\(keys.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
+                
+                let result = database?.executeUpdate(insertSQL,
+                                                     withArgumentsIn: nil)
+                
+                if !result! {
+                    NSLog("STMFmdb error: \(database?.lastErrorMessage())")
+                }
             }
-            
-            keys.append("lts")
-            values.append("'\(Date())'")
-            
-            let insertSQL = "INSERT INTO \(tablename) (\(keys.joined(separator: ", "))) VALUES (\(values.joined(separator: ", ")))"
-            
-            let result = database?.executeUpdate(insertSQL,
-                                                  withArgumentsIn: nil)
-            
-            if !result! {
-                NSLog("STMFmdb error: \(database?.lastErrorMessage())")
-            }
+            database?.commit();
+            database?.close()
+            completionHandler(true);
         } else {
             NSLog("STMFmdb error: \(database?.lastErrorMessage())")
+            completionHandler(false);
         }
     }
 }
