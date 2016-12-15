@@ -212,6 +212,7 @@
     [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
                                                         selector:@selector(closeSocketInBackground)
                                                           object:nil];
+    
     [STMSocketController checkSocket];
     
 }
@@ -279,9 +280,19 @@
     
     [self backgroundTask:bgTask startedInApplication:application];
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler" object:application];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
+                                                        object:application];
     
-    [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:completionHandler];
+    if ([STMSocketController socketIsAvailable]) {
+        
+        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData
+                                             fetchCompletionHandler:completionHandler];
+        
+    } else {
+        
+        [STMSocketController checkSocket];
+        
+    }
     
 }
 
