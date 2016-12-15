@@ -226,6 +226,8 @@
 
 + (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
+    STMFmdb *fmdb = [STMFmdb sharedInstance];
+    
     if (roleName) {
         
         [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
@@ -234,8 +236,7 @@
         
     } else {
         
-        if ([entityName isEqualToString:@"STMPrice"]){
-            STMFmdb *fmdb = [STMFmdb sharedInstance];
+        if ([fmdb containstTableWithNameWithName:entityName]){
             [fmdb insertWithTablename:entityName array:array completionHandler:^(BOOL success) {
                 completionHandler(success);
             }];
@@ -248,7 +249,7 @@
         
     }
     
-    if (![entityName isEqualToString:@"STMPrice"]){
+    if (![fmdb containstTableWithNameWithName:entityName]){
         [[self document] saveDocument:^(BOOL success) {
             
         }];
@@ -275,61 +276,67 @@
 }
 
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
+    STMFmdb *fmdb = [STMFmdb sharedInstance];
+    if ([fmdb containstTableWithNameWithName:entityName]){
+        [fmdb insertWithTablename:entityName dictionary:dictionary completionHandler:^(BOOL success) {
+            completionHandler(success);
+        }];
+    }else{
+        NSArray *dataModelEntityNames = [self localDataModelEntityNames];
         
-        NSString *xidString = dictionary[@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
-        
-        STMDatum *object = nil;
-        
-        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+        if ([dataModelEntityNames containsObject:entityName]) {
             
-            object = [[[self session] settingsController] settingForDictionary:dictionary];
+            NSString *xidString = dictionary[@"id"];
+            NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
             
-        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+            STMDatum *object = nil;
             
-            NSString *internalName = dictionary[@"name"];
-            object = [STMEntityController entityWithName:internalName];
-            
-        }
-        
-        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
-        
-        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
-        
-        if (!recordStatus.isRemoved.boolValue) {
-        
-            if (!object) object = [self newObjectForEntityName:entityName];
-
-            if (![self isWaitingToSyncForObject:object]) {
-
-                [object setValue:@NO forKey:@"isFantom"];
-                [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
-
+            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+                
+                object = [[[self session] settingsController] settingForDictionary:dictionary];
+                
+            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+                
+                NSString *internalName = dictionary[@"name"];
+                object = [STMEntityController entityWithName:internalName];
+                
             }
+            
+            if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
+            
+            STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
+            
+            if (!recordStatus.isRemoved.boolValue) {
+                
+                if (!object) object = [self newObjectForEntityName:entityName];
+                
+                if (![self isWaitingToSyncForObject:object]) {
+                    
+                    [object setValue:@NO forKey:@"isFantom"];
+                    [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
+                    
+                }
+                
+            } else {
+                
+                if (object) {
+                    
+                    NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
+                    [self removeIsRemovedRecordStatusAffectedObject:object];
+                    
+                }
+                
+            }
+            
+            completionHandler(YES);
             
         } else {
             
-            if (object) {
-
-                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
-                [self removeIsRemovedRecordStatusAffectedObject:object];
-                
-            }
-
+            NSLog(@"dataModel have no object's entity with name %@", entityName);
+            
+            completionHandler(NO);
+            
         }
-        
-        completionHandler(YES);
-        
-    } else {
-        
-        NSLog(@"dataModel have no object's entity with name %@", entityName);
-        
-        completionHandler(NO);
-        
     }
 
 }
