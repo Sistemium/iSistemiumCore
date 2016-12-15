@@ -1600,8 +1600,6 @@
                 
             }
             
-            socket = nil;
-
         } else {
             
             NSString *logMessage = [NSString stringWithFormat:@"there is no current socket for processing %@", failString];
@@ -1609,6 +1607,8 @@
                                    numType:STMLogMessageTypeError];
 
         }
+        
+        socket = nil;
         
         return NO;
         
