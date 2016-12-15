@@ -359,7 +359,7 @@
         
     } else if ([className isEqualToString:NSStringFromClass([NSDate class])]) {
         
-        return [[STMFunctions dateFormatter] dateFromString:value];
+        return [STMFunctions dateFromString:value];
         
     } else if ([className isEqualToString:NSStringFromClass([NSData class])]) {
         

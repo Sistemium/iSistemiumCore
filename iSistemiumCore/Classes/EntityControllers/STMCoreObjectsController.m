@@ -476,7 +476,7 @@
             
             if ([value isKindOfClass:[NSString class]]) {
                 
-                value = [[STMFunctions dateFormatter] dateFromString:value];
+                value = [STMFunctions dateFromString:value];
 
             } else {
                 
@@ -2061,7 +2061,7 @@
         
         if ([valueClass isSubclassOfClass:[NSDate class]]) {
             
-            value = [[STMFunctions dateFormatter] dateFromString:value];
+            value = [STMFunctions dateFromString:value];
             
         } else if ([valueClass isSubclassOfClass:[NSData class]]) {
             
@@ -2201,7 +2201,6 @@
 + (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
     
     NSMutableArray *dataArray = @[].mutableCopy;
-    STMDateFormatter *dateFormatter = [STMFunctions dateFormatter];
 
     NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
@@ -2212,8 +2211,7 @@
         
         NSDictionary *propertiesDictionary = [self dictionaryForJSWithObjectDic:obj
                                                                         ownKeys:ownKeys
-                                                               ownRelationships:ownRelationships
-                                                                  dateFormatter:dateFormatter];
+                                                               ownRelationships:ownRelationships];
         [dataArray addObject:propertiesDictionary];
 
     }];
@@ -2224,7 +2222,7 @@
 
 }
 
-+ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships dateFormatter:(STMDateFormatter *)dateFormatter{
++ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships {
     
     NSUInteger capacity = ownKeys.count + ownRelationships.count + 2;
 
@@ -2235,11 +2233,11 @@
     }
 
     if (objectDic[@"deviceTs"]) {
-        propertiesDictionary[@"ts"] = [dateFormatter stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
+        propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
     }
     
     for (NSString *key in ownKeys) {
-        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key dateFormatter:(STMDateFormatter *)dateFormatter];
+        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key];
     }
     
     for (NSString *relationship in ownRelationships) {
@@ -2257,13 +2255,13 @@
     
 }
 
-+ (id)convertValue:(id)value forKey:(NSString *)key dateFormatter:(STMDateFormatter *)dateFormatter {
++ (id)convertValue:(id)value forKey:(NSString *)key {
     
     if (value) {
         
         if ([value isKindOfClass:[NSDate class]]) {
             
-            value = [dateFormatter stringFromDate:value];
+            value = [STMFunctions stringFromDate:value];
             
         } else if ([value isKindOfClass:[NSData class]]) {
             
@@ -2333,7 +2331,7 @@
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
     if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
-    if (object.deviceTs) propertiesDictionary[@"ts"] = [[STMFunctions dateFormatter] stringFromDate:(NSDate *)object.deviceTs];
+    if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
     
     NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
     NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
