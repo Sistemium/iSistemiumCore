@@ -1281,8 +1281,6 @@
 
 #endif
     
-    [self resolveFantoms];
-
     [[self document] saveDocument:^(BOOL success) {
 
     }];
@@ -1370,6 +1368,10 @@
     }
 
     if (objController.fantomsArray.count > 0) {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                            object:objController
+                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
         
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
         
@@ -1525,9 +1527,21 @@
     }
     
     if (objController.fantomsArray.count > 0) {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                                            object:objController
+                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
+        
     } else {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                            object:objController
+                                                          userInfo:nil];
+
         [self resolveFantoms];
+        
     }
     
 }
@@ -1536,6 +1550,10 @@
     
     STMCoreObjectsController *objController = [self sharedController];
     
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                        object:objController
+                                                      userInfo:nil];
+
     objController.fantomsArray = nil;
     objController.notFoundFantomsArray = nil;
 

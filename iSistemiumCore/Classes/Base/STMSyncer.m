@@ -731,9 +731,14 @@
         } else {
             
             if (self.receivingEntitiesNames) {
+                
                 self.syncerState = STMSyncerReceiveData;
+                
             } else {
+                
                 self.syncerState = STMSyncerIdle;
+                [STMCoreObjectsController resolveFantoms];
+                
             }
             
         }
