@@ -35,19 +35,19 @@ class STMFmdb:NSObject{
             NSLog("Started creating fmdb tables")
             if (database?.open())!{
                 database.beginTransaction()
-                var sql_stmt = "CREATE TABLE IF NOT EXISTS STMPrice (ID TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, price NUMERIC, articleid TEXT REFERENCES STMArticle(id), pricetypeid TEXT REFERENCES STMPriceType(id) ) "
+                var sql_stmt = "CREATE TABLE IF NOT EXISTS STMPrice (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, price NUMERIC, articleId TEXT REFERENCES STMArticle(id), priceTypeId TEXT REFERENCES STMPriceType(id) ) "
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
                 }
-                sql_stmt = "CREATE TABLE IF NOT EXISTS STMArticle (ID TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, barcode TEXT, code TEXT, extraLabel TEXT,factor INTEGER, name TEXT, packageRel INTEGER, pieceVolume NUMERIC, pieceWeight NUMERIC, price NUMERIC, articlegroupid TEXT REFERENCES STMArticleGroup(id)) "
+                sql_stmt = "CREATE TABLE IF NOT EXISTS STMArticle (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, barcode TEXT, code TEXT, extraLabel TEXT,factor INTEGER, name TEXT, packageRel INTEGER, pieceVolume NUMERIC, pieceWeight NUMERIC, price NUMERIC, articleGroupId TEXT REFERENCES STMArticleGroup(id)) "
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
                 }
-                sql_stmt = "CREATE TABLE IF NOT EXISTS STMStock (ID TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, displayVolume TEXT, volume INTEGER, articleid TEXT REFERENCES STMArticle(id)) "
+                sql_stmt = "CREATE TABLE IF NOT EXISTS STMStock (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, displayVolume TEXT, volume INTEGER, articleId TEXT REFERENCES STMArticle(id)) "
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
                 }
-                sql_stmt = "CREATE TABLE IF NOT EXISTS STMArticleGroup (ID TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, name TEXT, articlegroupid TEXT REFERENCES STMArticleGroup(id)) "
+                sql_stmt = "CREATE TABLE IF NOT EXISTS STMArticleGroup (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, name TEXT, articleGroupId TEXT REFERENCES STMArticleGroup(id)) "
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
                 }
@@ -55,7 +55,7 @@ class STMFmdb:NSObject{
 //                if !(database?.executeStatements(sql_stmt))! {
 //                    NSLog("STMFmdb error: \(database?.lastErrorMessage())")
 //                }
-                sql_stmt = "CREATE TABLE IF NOT EXISTS STMSaleOrderPosition (ID TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, backVolume INTEGER, cost NUMERIC, price NUMERIC, priceDoc NUMERIC, priceOrigin NUMERIC, volume INTEGER, articleid TEXT REFERENCES STMArticle(id), saleorderId TEXT REFERENCES STMSaleOrder(id)) "
+                sql_stmt = "CREATE TABLE IF NOT EXISTS STMSaleOrderPosition (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, backVolume INTEGER, cost NUMERIC, price NUMERIC, priceDoc NUMERIC, priceOrigin NUMERIC, volume INTEGER, articleId TEXT REFERENCES STMArticle(id), saleorderId TEXT REFERENCES STMSaleOrder(id)) "
                 
                 if !(database?.executeStatements(sql_stmt))! {
                     NSLog("STMFmdb error: \(database?.lastErrorMessage())")
@@ -110,7 +110,7 @@ class STMFmdb:NSObject{
         }
         
         keys.append("lts")
-        values.append("'\(Date())'")
+        values.append("\(Date())")
         let v = [String](repeating: "?", count: keys.count)
         let insertSQL = "INSERT OR REPLACE INTO \(tablename) (\(keys.joined(separator: ", "))) VALUES (\(v.joined(separator: ", ")))"
         
@@ -163,6 +163,23 @@ class STMFmdb:NSObject{
     
     func containstTableWithName(name:String)->Bool{
         return getTableNames().contains(name)
+    }
+    
+    func getDataByEntityName(name:String)-> Array<[AnyHashable : Any]>{
+        var rez = Array<[AnyHashable : Any]>()
+        if (database?.open())! {
+            let sql_stmt = "SELECT * FROM \(name)"
+            let rs = try? database.executeQuery(sql_stmt,values:[])
+            while rs!.next() {
+                let data = rs!.resultDictionary()!
+//                data.forEach { if $1 is NSNull { data[$0] = nil } }
+                rez.append(data)
+            }
+            database?.close()
+        } else {
+            NSLog("STMFmdb error: \(database?.lastErrorMessage())")
+        }
+        return rez
     }
     
 }

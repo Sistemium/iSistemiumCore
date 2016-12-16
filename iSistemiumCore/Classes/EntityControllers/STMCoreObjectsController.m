@@ -2104,7 +2104,7 @@
 
     }
     
-//    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
+    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
 
@@ -2119,7 +2119,16 @@
     NSString *orderBy = options[@"sortBy"];
     if (!orderBy) orderBy = @"id";
 
-    NSArray *objectsArray = [self objectsForEntityName:entityName
+    STMFmdb *fmdb = [STMFmdb sharedInstance];
+    
+    NSArray *objectsArray;
+    
+    if ([fmdb containstTableWithNameWithName:entityName]){
+        objectsArray = [fmdb getDataByEntityNameWithName:entityName];
+        NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+        return objectsArray;
+    } else {
+        objectsArray = [self objectsForEntityName:entityName
                                                orderBy:orderBy
                                              ascending:YES
                                             fetchLimit:pageSize
@@ -2129,8 +2138,9 @@
                                             resultType:NSDictionaryResultType
                                 inManagedObjectContext:[self document].managedObjectContext
                                                  error:error];
+    }
     
-//    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     if (*error) {
         return nil;
