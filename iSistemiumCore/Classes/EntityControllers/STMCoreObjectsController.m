@@ -40,6 +40,7 @@
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
+@property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
 
@@ -1298,8 +1299,6 @@
 
 #endif
     
-    [self resolveFantoms];
-
     [[self document] saveDocument:^(BOOL success) {
 
     }];
@@ -1328,9 +1327,14 @@
 
 #pragma mark - resolving fantoms
 
++ (BOOL)isDefantomizingProcessRunning {
+    return [self sharedController].isDefantomizingProcessRunning;
+}
+
 + (void)resolveFantoms {
     
     STMCoreObjectsController *objController = [self sharedController];
+    objController.isDefantomizingProcessRunning = YES;
     
     NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
@@ -1388,10 +1392,20 @@
 
     if (objController.fantomsArray.count > 0) {
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                            object:objController
+                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+        
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
         
     } else {
         
+        objController.isDefantomizingProcessRunning = NO;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                            object:objController
+                                                          userInfo:nil];
+
         [objController.notFoundFantomsArray removeAllObjects];
         [[self document] saveDocument:^(BOOL success) {
             
@@ -1542,9 +1556,17 @@
     }
     
     if (objController.fantomsArray.count > 0) {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                                            object:objController
+                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
+        
     } else {
+        
         [self resolveFantoms];
+        
     }
     
 }
@@ -1552,7 +1574,12 @@
 + (void)stopDefantomizing {
     
     STMCoreObjectsController *objController = [self sharedController];
+    objController.isDefantomizingProcessRunning = NO;
     
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                        object:objController
+                                                      userInfo:nil];
+
     objController.fantomsArray = nil;
     objController.notFoundFantomsArray = nil;
 

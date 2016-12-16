@@ -58,6 +58,9 @@
 #define NOTIFICATION_SESSION_STATUS_CHANGED @"sessionStatusChanged"
 #define NOTIFICATION_PICTURE_WAS_DOWNLOADED @"pictureWasDownloaded"
 #define NOTIFICATION_PICTURE_DOWNLOAD_ERROR @"pictureDownloadError"
+#define NOTIFICATION_DEFANTOMIZING_START @"defantomizingStart"
+#define NOTIFICATION_DEFANTOMIZING_UPDATE @"defantomizingUpdate"
+#define NOTIFICATION_DEFANTOMIZING_FINISH @"defantomizingFinish"
 
 #define FREE_SPACE_PRECISION_MiB 200
 #define FREE_SPACE_THRESHOLD 500

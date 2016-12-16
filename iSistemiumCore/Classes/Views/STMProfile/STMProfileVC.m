@@ -68,6 +68,8 @@
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
 
+@property (nonatomic) NSUInteger fantomsCount;
+
 
 @end
 
@@ -127,8 +129,9 @@
         if (syncer.syncerState == STMSyncerIdle) {
 
             self.progressBar.progress = 1.0;
-            
-            [self performSelector:@selector(hideProgressBar) withObject:nil afterDelay:1];
+            [self performSelector:@selector(hideProgressBar)
+                       withObject:nil
+                       afterDelay:0];
             
             if (!self.downloadAlertWasShown) [self showDownloadAlert];
             
@@ -142,7 +145,9 @@
         
         if (fromState == STMSyncerReceiveData) {
             
-            [self performSelector:@selector(hideNumberOfObjects) withObject:nil afterDelay:5];
+            [self performSelector:@selector(hideNumberOfObjects)
+                       withObject:nil
+                       afterDelay:5];
             
         }
         
@@ -179,12 +184,45 @@
         float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
         
         if (allUnsyncedObjectsCount > 0) {
+            
+            self.progressBar.hidden = NO;
             self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
+            
         }
 
     }
     
 }
+
+- (void)defantomizingProgressBarStart:(NSNotification *)notification {
+    
+    [self setColorForSyncImageView];
+
+    self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+    [UIApplication sharedApplication].idleTimerDisabled = YES;
+    self.progressBar.hidden = NO;
+    self.progressBar.progress = 0.0;
+    
+}
+
+- (void)defantomizingProgressBarUpdate:(NSNotification *)notification {
+
+    NSUInteger currentFantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+    self.progressBar.hidden = NO;
+    self.progressBar.progress = (self.fantomsCount - currentFantomsCount) / (float)self.fantomsCount;
+
+}
+
+- (void)defantomizingProgressBarFinish {
+    
+    [self performSelector:@selector(hideProgressBar)
+               withObject:nil
+               afterDelay:0];
+    
+    [self setColorForSyncImageView];
+    
+}
+
 
 #pragma mark - cloud images for sync button
 
@@ -284,16 +322,18 @@
         
     } else {
         
-        if (syncer.syncerState == STMSyncerIdle) {
+        if (syncer.syncerState == STMSyncerIdle && ![STMCoreObjectsController isDefantomizingProcessRunning]) {
             
             [self.syncImageView setTintColor:color];
             
-            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:cloudTapSelector];
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                  action:cloudTapSelector];
             [self.syncImageView addGestureRecognizer:tap];
             
             if (hasObjectsToUpload) {
                 
-                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(uploadCloudLongPressed:)];
+                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                                                                        action:@selector(uploadCloudLongPressed:)];
                 [self.syncImageView addGestureRecognizer:longPress];
                 
             }
@@ -369,6 +409,7 @@
     if ([notification.object isKindOfClass:[STMSyncer class]] && !self.newsReceiving) {
         
         float countdownValue = [(notification.userInfo)[@"countdownValue"] floatValue];
+        self.progressBar.hidden = NO;
         self.progressBar.progress = (self.totalEntityCount - countdownValue) / self.totalEntityCount;
         
     }
@@ -394,6 +435,7 @@
         
         if (self.newsReceiving) {
             
+            self.progressBar.hidden = NO;
             self.progressBar.progress = numberOfObjects.floatValue / self.totalEntityCount;
             
         }
@@ -1162,6 +1204,21 @@
                name:@"unusedImageRemoved"
              object:nil];
     
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarStart:)
+               name:NOTIFICATION_DEFANTOMIZING_START
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarUpdate:)
+               name:NOTIFICATION_DEFANTOMIZING_UPDATE
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarFinish)
+               name:NOTIFICATION_DEFANTOMIZING_FINISH
+             object:nil];
+
 }
 
 - (void)sessionStatusChanged {
