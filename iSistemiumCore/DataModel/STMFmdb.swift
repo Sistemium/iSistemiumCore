@@ -165,15 +165,15 @@ class STMFmdb:NSObject{
         return getTableNames().contains(name)
     }
     
-    func getDataByEntityName(name:String)-> Array<[AnyHashable : Any]>{
-        var rez = Array<[AnyHashable : Any]>()
+    func getDataByEntityName(name:String)-> NSArray{
+        var rez = NSMutableArray()
         if (database?.open())! {
             let sql_stmt = "SELECT * FROM \(name)"
             let rs = try? database.executeQuery(sql_stmt,values:[])
             while rs!.next() {
                 let data = rs!.resultDictionary()!
 //                data.forEach { if $1 is NSNull { data[$0] = nil } }
-                rez.append(data)
+                rez.add(data)
             }
             database?.close()
         } else {

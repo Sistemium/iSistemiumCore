@@ -25,6 +25,7 @@
 #import "STMCoreNS.h"
 
 #import "iSistemiumCore-Swift.h"
+#import "STMFMDB_OBJC.h"
 
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
@@ -54,6 +55,8 @@
 
 
 @implementation STMCoreObjectsController
+
+STMFMDB_OBJC *fmdb;
 
 - (NSMutableArray *)fantomsArray {
     
@@ -133,6 +136,7 @@
     
     self = [super init];
     if (self) {
+        fmdb = [[STMFMDB_OBJC alloc]init];
         [self addObservers];
     }
     return self;
@@ -2106,7 +2110,6 @@
     
 }
 
-
 #pragma mark - find objects for WKWebView
 
 + (NSArray *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
@@ -2145,12 +2148,10 @@
     NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
     NSString *orderBy = options[@"sortBy"];
     if (!orderBy) orderBy = @"id";
-
-    STMFmdb *fmdb = [STMFmdb sharedInstance];
     
     NSArray *objectsArray;
     
-    if ([fmdb containstTableWithNameWithName:entityName]){
+    if ([entityName isEqualToString:@"STMPrice"] || [entityName isEqualToString:@"STMArticle"] || [entityName isEqualToString:@"STMStock"] ||[entityName isEqualToString:@"STMArticleGroup"] ||[entityName isEqualToString:@"STMSaleOrderPosition"]){
         objectsArray = [fmdb getDataByEntityNameWithName:entityName];
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
         return objectsArray;
