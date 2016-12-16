@@ -40,6 +40,7 @@
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
+@property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
 
@@ -1309,9 +1310,14 @@
 
 #pragma mark - resolving fantoms
 
++ (BOOL)isDefantomizingProcessRunning {
+    return [self sharedController].isDefantomizingProcessRunning;
+}
+
 + (void)resolveFantoms {
     
     STMCoreObjectsController *objController = [self sharedController];
+    objController.isDefantomizingProcessRunning = YES;
     
     NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
@@ -1377,6 +1383,12 @@
         
     } else {
         
+        objController.isDefantomizingProcessRunning = NO;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                            object:objController
+                                                          userInfo:nil];
+
         [objController.notFoundFantomsArray removeAllObjects];
         [[self document] saveDocument:^(BOOL success) {
             
@@ -1536,10 +1548,6 @@
         
     } else {
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                            object:objController
-                                                          userInfo:nil];
-
         [self resolveFantoms];
         
     }
@@ -1549,6 +1557,7 @@
 + (void)stopDefantomizing {
     
     STMCoreObjectsController *objController = [self sharedController];
+    objController.isDefantomizingProcessRunning = NO;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
                                                         object:objController

@@ -196,6 +196,8 @@
 
 - (void)defantomizingProgressBarStart:(NSNotification *)notification {
     
+    [self setColorForSyncImageView];
+
     self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
     [UIApplication sharedApplication].idleTimerDisabled = YES;
     self.progressBar.hidden = NO;
@@ -216,6 +218,8 @@
     [self performSelector:@selector(hideProgressBar)
                withObject:nil
                afterDelay:0];
+    
+    [self setColorForSyncImageView];
     
 }
 
@@ -318,16 +322,18 @@
         
     } else {
         
-        if (syncer.syncerState == STMSyncerIdle) {
+        if (syncer.syncerState == STMSyncerIdle && ![STMCoreObjectsController isDefantomizingProcessRunning]) {
             
             [self.syncImageView setTintColor:color];
             
-            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:cloudTapSelector];
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                  action:cloudTapSelector];
             [self.syncImageView addGestureRecognizer:tap];
             
             if (hasObjectsToUpload) {
                 
-                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(uploadCloudLongPressed:)];
+                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                                                                        action:@selector(uploadCloudLongPressed:)];
                 [self.syncImageView addGestureRecognizer:longPress];
                 
             }

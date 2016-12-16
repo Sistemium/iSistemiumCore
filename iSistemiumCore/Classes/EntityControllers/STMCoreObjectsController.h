@@ -86,6 +86,7 @@
 + (void)resolveFantoms;
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
 + (void)stopDefantomizing;
++ (BOOL)isDefantomizingProcessRunning;
 
 
 @end
