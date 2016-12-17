@@ -1363,7 +1363,9 @@
 //            [STMCoreObjectsController didFinishResolveFantom:nil
 //                                                successfully:NO];
             [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-                NSLog(@"parseFindAckResponseData: %@", entityName)
+                [[self document] saveDocument:^(BOOL success) {
+                    
+                }];
             }];
 
         }
