@@ -627,7 +627,7 @@
             
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
             
-            NSDictionary *dataDic = (NSDictionary *)value;
+            NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
             
             [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
                 [self receiveJSDataEventAckWithData:data];
@@ -861,9 +861,13 @@
 
 + (void)sendFantomFindEventToResource:(NSString *)resource withXid:(NSString *)xidString andTimeout:(NSTimeInterval)timeout {
 	
+    NSDictionary *contextDic = @{@"requestType" : @"defantomize",
+                                 @"fantomId"    : xidString};
+    
     NSDictionary *value = @{@"method"   : kSocketFindMethod,
                             @"resource" : resource,
-                            @"id"       : xidString};
+                            @"id"       : xidString,
+                            @"context"  : contextDic};
 
     [self sendFindWithValue:value andTimeout:timeout];
     
