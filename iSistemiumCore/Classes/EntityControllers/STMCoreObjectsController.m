@@ -1500,6 +1500,8 @@
         NSString *logMessage = [NSString stringWithFormat:@"parameters is not an NSDictionary class: %@", parameters];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
         
+        [self requestFantomObjectErrorMessage:logMessage parameters:parameters];
+
     }
 
 }
