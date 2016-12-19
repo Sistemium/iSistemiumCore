@@ -45,7 +45,6 @@
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
 
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
-@property (nonatomic, strong) NSData *requestedFantomXid;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 
@@ -1484,8 +1483,6 @@
 
         }
         
-        [self sharedController].requestedFantomXid = xid;
-        
         [STMSocketController sendFantomFindEventToResource:resource
                                                    withXid:xidString
                                                 andTimeout:[[self syncer] timeout]];
@@ -1506,15 +1503,9 @@
 
 }
 
-+ (NSData *)requestedFantomXid {
-    return [self sharedController].requestedFantomXid;
-}
-
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully {
     
     STMCoreObjectsController *objController = [self sharedController];
-    
-    objController.requestedFantomXid = nil;
     
     if (!fantomDic) {
         
