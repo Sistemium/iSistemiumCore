@@ -1366,13 +1366,19 @@
                     NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
                 }
 
+            } else {
+                NSLog(@"have no fantoms for %@", entityName);
             }
             
+        } else {
+            NSLog(@"wrong entityName: %@", entityName);
         }
         
     }
 
     if (objController.fantomsArray.count > 0) {
+        
+        NSLog(@"DEFANTOMIZING_START");
         
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
                                                             object:objController
@@ -1381,6 +1387,8 @@
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
         
     } else {
+    
+        NSLog(@"DEFANTOMIZING_FINISH");
         
         objController.isDefantomizingProcessRunning = NO;
         
