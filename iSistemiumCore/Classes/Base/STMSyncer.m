@@ -1102,7 +1102,8 @@
         [self socketReceiveJSDataFindAckErrorCode:errorCode
                                    andErrorString:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]
                                        entityName:entityName
-                                              xid:xid];
+                                              xid:xid
+                                         response:response];
     
         return;
         
@@ -1113,7 +1114,8 @@
         [self socketReceiveJSDataFindAckErrorCode:errorCode
                                    andErrorString:@"ERROR: have no resource string in response"
                                        entityName:entityName
-                                              xid:xid];
+                                              xid:xid
+                                         response:response];
         return;
         
     }
@@ -1126,16 +1128,19 @@
         [self socketReceiveJSDataFindAckErrorCode:errorCode
                                    andErrorString:errorString
                                        entityName:entityName
-                                              xid:xid];
+                                              xid:xid
+                                         response:response];
         return;
         
     }
     
     xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
+    NSDictionary *contextDic = ([response[@"context"] isKindOfClass:[NSDictionary class]]) ? response[@"context"] : nil;
     
     [self parseFindAckResponseData:responseData
                     withEntityName:entityName
-                               xid:xid];
+                               xid:xid
+                           context:contextDic];
 
 }
 
@@ -1179,7 +1184,7 @@
     
 }
 
-- (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid {
+- (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid response:(NSDictionary *)response {
     
     if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
 
@@ -1191,32 +1196,26 @@
         
         if (!entityName) entityName = @"";
         
-        NSData *requestedFantomXid = [STMCoreObjectsController requestedFantomXid];
-        
-        if (![requestedFantomXid isEqualToData:xid]) {
+        NSDictionary *contextDic = ([response[@"context"] isKindOfClass:[NSDictionary class]]) ? response[@"context"] : nil;
+
+        if ([contextDic[@"requestType"] isEqualToString:@"defantomize"]) {
             
-            NSString *formatString = @"requestedFantomXid %@ is not equal response xid: %@";
-            NSString *logMessage = [NSString stringWithFormat:formatString, requestedFantomXid, xid];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeWarning];
+            NSLog(@"DEFANTOMIZATION ERROR!");
+
+            if (!xid) {
+                
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization error: have no id in response, use context fantomId value"
+                                                         numType:STMLogMessageTypeError];
+                xid = [STMFunctions xidDataFromXidString:contextDic[@"fantomId"]];
+                
+            }
+
+            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
+                                                successfully:NO];
             
-            xid = requestedFantomXid;
         }
         
         [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-
-        if (xid) {
-            
-            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName,
-                                                               @"xid"       :xid}
-                                                successfully:NO];
-            
-        } else {
-            
-            NSString *logMessage = @"xid is nil in socketReceiveJSDataFindAckErrorCode:";
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-
-        }
 
     }
     
@@ -1358,15 +1357,22 @@
     
 }
 
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid {
+- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
 
     //    NSLog(@"find responseData %@", responseData);
 
     if (!entityName) entityName = @"";
-    if (!xid) xid = [NSData data];
     
-    if ([xid isEqual:[STMCoreObjectsController requestedFantomXid]]) {
+    if ([context[@"requestType"] isEqualToString:@"defantomize"]) {
         
+        if (!xid) {
+            
+            [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization: have no id in response, use context fantomId value"
+                                                     numType:STMLogMessageTypeError];
+            xid = [STMFunctions xidDataFromXidString:context[@"fantomId"]];
+            
+        }
+
         [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
             
             [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
@@ -1376,27 +1382,9 @@
 
     } else {
         
-        NSData *requestedFantomXid = [STMCoreObjectsController requestedFantomXid];
-        
-        if (requestedFantomXid) {
-            
-            NSLog(@"Wrong fantom xid in server response, get %@ instead of %@", xid, requestedFantomXid);
-            
-            NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":requestedFantomXid};
-            [STMCoreObjectsController didFinishResolveFantom:fantomDic
-                                                successfully:NO];
-
-        } else {
-
-//            [STMCoreObjectsController didFinishResolveFantom:nil
-//                                                successfully:NO];
-            [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-                [[self document] saveDocument:^(BOOL success) {
-                    
-                }];
-            }];
-
-        }
+        [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
+            [[self document] saveDocument:^(BOOL success) {}];
+        }];
         
     }
 
