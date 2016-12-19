@@ -24,8 +24,8 @@
 
 #import "STMCoreNS.h"
 
-#import "iSistemiumCore-Swift.h"
-#import "STMFMDB_OBJC.h"
+//#import "iSistemiumCore-Swift.h"
+#import "STMFmdb.h"
 
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
@@ -55,8 +55,6 @@
 
 
 @implementation STMCoreObjectsController
-
-STMFMDB_OBJC *fmdb;
 
 - (NSMutableArray *)fantomsArray {
     
@@ -136,7 +134,6 @@ STMFMDB_OBJC *fmdb;
     
     self = [super init];
     if (self) {
-        fmdb = [[STMFMDB_OBJC alloc]init];
         [self addObservers];
     }
     return self;
@@ -231,7 +228,7 @@ STMFMDB_OBJC *fmdb;
 
 + (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    STMFmdb *fmdb = [STMFmdb sharedInstance];
+    STMFmdb* fmdb = [STMFmdb sharedInstance];
     
     if (roleName) {
         
@@ -242,7 +239,7 @@ STMFMDB_OBJC *fmdb;
     } else {
         
         if ([fmdb containstTableWithNameWithName:entityName]){
-            [fmdb insertWithTablename:entityName array:array completionHandler:^(BOOL success) {
+            [fmdb insertWithTablename:entityName array:array withCompletionHandler:^(BOOL success) {
                 completionHandler(success);
             }];
         }else{
@@ -283,7 +280,7 @@ STMFMDB_OBJC *fmdb;
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     STMFmdb *fmdb = [STMFmdb sharedInstance];
     if ([fmdb containstTableWithNameWithName:entityName]){
-        [fmdb insertWithTablename:entityName dictionary:dictionary completionHandler:^(BOOL success) {
+        [fmdb insertWithTablename:entityName dictionary:dictionary withCompletionHandler:^(BOOL success) {
             completionHandler(success);
         }];
     }else{
@@ -2151,8 +2148,10 @@ STMFMDB_OBJC *fmdb;
     
     NSArray *objectsArray;
     
-    if ([entityName isEqualToString:@"STMPrice"] || [entityName isEqualToString:@"STMArticle"] || [entityName isEqualToString:@"STMStock"] ||[entityName isEqualToString:@"STMArticleGroup"] ||[entityName isEqualToString:@"STMSaleOrderPosition"]){
-        objectsArray = [fmdb getDataByEntityNameWithName:entityName];
+    STMFmdb* fmdb = [STMFmdb sharedInstance];
+    
+    if ([fmdb containstTableWithNameWithName:entityName]){
+        objectsArray = [fmdb getDataWithEntityName:entityName];
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
         return objectsArray;
     } else {
