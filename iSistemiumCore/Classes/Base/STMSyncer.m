@@ -1022,8 +1022,16 @@
         // don't know which method cause an error, send error to all of them
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
-        [self socketReceiveJSDataFindAckErrorCode:nil andErrorString:errorMessage entityName:nil xid:nil];
-        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorMessage withResponse:nil];
+        
+        [self socketReceiveJSDataFindAckErrorCode:nil
+                                   andErrorString:errorMessage
+                                       entityName:nil
+                                              xid:nil
+                                         response:nil];
+        
+        [self socketReceiveJSDataUpdateAckErrorCode:nil
+                                     andErrorString:errorMessage
+                                       withResponse:nil];
         return;
         
     }

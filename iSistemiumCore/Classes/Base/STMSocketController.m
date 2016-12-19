@@ -870,11 +870,8 @@
 }
 
 + (void)sendFindWithValue:(id)value {
-    
-    [self sendFindWithValue:value andTimeout: DEFAULT_SOCKET_TIMEOUT];
-    
+    [self sendFindWithValue:value andTimeout:DEFAULT_SOCKET_TIMEOUT];
 }
-
 
 + (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
     
