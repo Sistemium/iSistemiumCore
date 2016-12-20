@@ -344,7 +344,7 @@
 
         } else {
             
-            if (![object isKindOfClass:[STMCorePicture class]]) {
+            if (![object isKindOfClass:[STMCorePicture class]] && ![key isEqualToString:@"deviceAts"]) {
                 [object setValue:nil forKey:key];
             }
             
@@ -1859,9 +1859,15 @@
         id value = objectData[key];
         
         if (value && ![value isKindOfClass:[NSNull class]]) {
+            
             [object setValue:value forKey:key];
+            
         } else {
-            [object setValue:nil forKey:key];
+            
+            if (![key isEqualToString:@"deviceAts"]) {
+                [object setValue:nil forKey:key];
+            }
+
         }
         
     }

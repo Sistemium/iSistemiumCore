@@ -64,8 +64,11 @@
     
     NSDate *currentDate = [NSDate date];
 
-    if ([self.entity.propertiesByName.allKeys containsObject:@"deviceAts"]) {
-        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+    if ([self.entity.propertiesByName.allKeys containsObject:@"deviceAts"] && ![changedValues objectForKey:@"deviceAts"]) {
+        
+//        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+        [self setValue:currentDate forKey:@"deviceAts"];
+        
     }
     
     if (changedKeysArray.count > 0) {
@@ -101,6 +104,7 @@
         NSDate *ts = [NSDate date];
         [self setPrimitiveValue:ts forKey:@"deviceCts"];
         [self setPrimitiveValue:ts forKey:@"deviceTs"];
+        [self setPrimitiveValue:ts forKey:@"deviceAts"];
         
         STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         NSNumber *largestId = [defaults objectForKey:@"largestId"];
@@ -205,7 +209,8 @@
         excludeProperties = [coreEntityKeys arrayByAddingObjectsFromArray:@[@"imagePath",
                                                                             @"resizedImagePath",
                                                                             @"calculatedSum",
-                                                                            @"imageThumbnail"]];
+                                                                            @"imageThumbnail",
+                                                                            @"deviceAts"]];
     });
 
     return excludeProperties;
