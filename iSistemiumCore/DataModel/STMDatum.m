@@ -54,13 +54,9 @@
     NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
     [changedKeysArray removeObjectsInArray:excludeProperties];
     
-    NSMutableArray *relationshipsToMany = [NSMutableArray array];
-    
     for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
-        if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
+        if (relationship.isToMany) [changedKeysArray removeObject:relationship.name];
     }
-    
-    [changedKeysArray removeObjectsInArray:relationshipsToMany];
     
     NSDate *currentDate = [NSDate date];
 

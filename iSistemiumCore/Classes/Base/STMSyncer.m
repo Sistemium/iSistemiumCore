@@ -1288,6 +1288,8 @@
                 
                 NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
                 
+//                NSLog(@"timecheck %@", @([NSDate timeIntervalSinceReferenceDate]));
+
                 NSUInteger pageRowCount = data.count;
                 NSUInteger pageSize = self.fetchLimit;
                 
