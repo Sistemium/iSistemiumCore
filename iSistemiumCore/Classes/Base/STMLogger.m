@@ -375,7 +375,7 @@
         
         for (NSString *key in logMessageDic.allKeys) {
             
-            if ([logMessage.entity.propertiesByName.allKeys containsObject:key]) {
+            if ([logMessage.entity.propertiesByName objectForKey:key]) {
                 [logMessage setValue:logMessageDic[key] forKey:key];
             }
             

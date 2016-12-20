@@ -397,16 +397,27 @@
     
     if (iPhoneTabsData) {
         
-        NSMutableDictionary *iPhoneTabsJSON = [NSJSONSerialization JSONObjectWithData:iPhoneTabsData options:NSJSONReadingMutableContainers error:nil];
+        NSMutableDictionary *iPhoneTabsJSON = [NSJSONSerialization JSONObjectWithData:iPhoneTabsData
+                                                                              options:NSJSONReadingMutableContainers
+                                                                                error:nil];
         NSArray *nullKeys = [iPhoneTabsJSON allKeysForObject:[NSNull null]];
         [iPhoneTabsJSON removeObjectsForKeys:nullKeys];
         
         NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(NSObject *object, NSDictionary *bindings) {
-            if ([object isKindOfClass:[NSDictionary class]]){
-                return [iPhoneTabsJSON.allKeys containsObject: (id _Nonnull) ((NSDictionary*) object)[@"name"] ];
-            }else{
-                return[(NSArray*) object filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"name IN %@", iPhoneTabsJSON.allKeys]].count == ((NSArray*) object).count;
+            
+            if ([object isKindOfClass:[NSDictionary class]]) {
+                
+                NSString *name = ((NSDictionary *)object)[@"name"];
+                return [iPhoneTabsJSON objectForKey:name] ? YES : NO;
+                
+            } else {
+                
+                NSArray *objArray = (NSArray *)object;
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", iPhoneTabsJSON.allKeys];
+                return [objArray filteredArrayUsingPredicate:predicate].count == objArray.count;
+                
             }
+            
         }];
         stcTabs = [stcTabs filteredArrayUsingPredicate:predicate];
         

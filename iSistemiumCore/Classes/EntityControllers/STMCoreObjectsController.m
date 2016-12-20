@@ -374,7 +374,7 @@
 
     [self postprocessingForObject:object withEntityName:entityName];
     
-    if ([[self sharedController].entitiesToSubscribe.allKeys containsObject:entityName]) {
+    if ([[self sharedController].entitiesToSubscribe objectForKey:entityName]) {
         if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
     }
     
@@ -408,7 +408,7 @@
                 NSUInteger toIndex = key.length - relationshipSuffix.length;
                 NSString *localKey = [key substringToIndex:toIndex];
             
-                if ([ownObjectRelationships.allKeys containsObject:localKey]) {
+                if ([ownObjectRelationships objectForKey:localKey]) {
                     
                     NSString *destinationObjectXid = [objectData[key] isKindOfClass:[NSNull class]] ? nil : objectData[key];
 
@@ -2471,7 +2471,7 @@
         
         BOOL afterRequestSort = NO;
         
-        if ([entity.propertiesByName.allKeys containsObject:orderBy]) {
+        if ([entity.propertiesByName objectForKey:orderBy]) {
             
             request.sortDescriptors = @[sortDescriptor];
             

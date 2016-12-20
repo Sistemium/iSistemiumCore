@@ -311,7 +311,7 @@
 
                 NSData *xid = syncObject.xid;
 
-                if (![sc.syncDateDictionary.allKeys containsObject:xid]) {
+                if (![sc.syncDateDictionary objectForKey:xid]) {
 
                     sc.syncDateDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
                     [self sendObject:syncObject];
@@ -450,7 +450,7 @@
 
 - (void)checkSendTimeoutForObjectXid:(NSData *)xid {
     
-    if ([self.syncDateDictionary.allKeys containsObject:xid]) {
+    if ([self.syncDateDictionary objectForKey:xid]) {
         
         NSString *errorString = [NSString stringWithFormat:@"timeout for sending object with xid %@", xid];
         

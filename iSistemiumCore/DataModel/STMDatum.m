@@ -45,7 +45,7 @@
     
     NSDictionary *changedValues = self.changedValues;
     
-    BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
+    BOOL ltsIsChanged = [changedValues objectForKey:@"lts"] ? YES : NO;
 
     if (ltsIsChanged) return;
 
@@ -64,10 +64,12 @@
     
     NSDate *currentDate = [NSDate date];
 
-    if ([self.entity.propertiesByName.allKeys containsObject:@"deviceAts"] && ![changedValues objectForKey:@"deviceAts"]) {
+    if ([self.entity.propertiesByName objectForKey:@"deviceAts"] && ![changedValues objectForKey:@"deviceAts"]) {
         
 //        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
         [self setValue:currentDate forKey:@"deviceAts"];
+        
+        NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
         
     }
     
@@ -227,7 +229,7 @@
     
     for (NSString *key in keys) {
         
-        if ([self.entity.propertiesByName.allKeys containsObject:key]) {
+        if ([self.entity.propertiesByName objectForKey:key]) {
             
             id value = [self valueForKey:key];
             

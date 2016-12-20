@@ -280,7 +280,7 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     NSArray *notifications = [UIApplication sharedApplication].scheduledLocalNotifications.copy;
     
     for (UILocalNotification *ln in notifications) {
-        if ([ln.userInfo.allKeys containsObject:RINGING_LOCAL_NOTIFICATION]) return YES;
+        if ([ln.userInfo objectForKey:RINGING_LOCAL_NOTIFICATION]) return YES;
     }
     
     return NO;
@@ -352,10 +352,8 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
     
     for (UILocalNotification *ln in notifications) {
         
-        if ([ln.userInfo.allKeys containsObject:RINGING_LOCAL_NOTIFICATION]) {
-            
+        if ([ln.userInfo objectForKey:RINGING_LOCAL_NOTIFICATION]) {
             [[UIApplication sharedApplication] cancelLocalNotification:ln];
-            
         };
         
     }
