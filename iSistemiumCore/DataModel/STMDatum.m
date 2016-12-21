@@ -65,7 +65,7 @@
 //        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
         [self setValue:currentDate forKey:@"deviceAts"];
         
-        NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
+//        NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
         
     }
     
