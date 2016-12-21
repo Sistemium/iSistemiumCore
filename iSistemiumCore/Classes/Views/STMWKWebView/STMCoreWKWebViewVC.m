@@ -1217,6 +1217,12 @@
 
     NSError *error = nil;
     NSArray *result = [STMCoreObjectsController updateObjectsFromScriptMessage:message error:&error];
+    
+    [STMCoreObjectsController updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
+        
+        NSLog(@"!_!_!_!_!_!_!_!_!_!_!_!_!_ %@ %@ %@", @(success), @(updatedObjects.count), error.localizedDescription);
+        
+    }];
 
     if (result.count > 0) [self callbackWithData:result parameters:parameters];
     if (error) [self callbackWithError:error.localizedDescription parameters:parameters];

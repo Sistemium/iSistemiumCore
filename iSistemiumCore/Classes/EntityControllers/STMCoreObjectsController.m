@@ -1753,6 +1753,93 @@
 
 #pragma mark - update objects from WKWebView
 
++ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
+                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler {
+    
+    NSMutableArray *result = @[].mutableCopy;
+    BOOL boolResult = YES;
+    NSError *resultError = nil;
+    
+    if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
+        
+        [self error:&resultError withMessage:@"message.body is not a NSDictionary class"];
+        boolResult = NO;
+        
+    }
+    
+    NSDictionary *parameters = scriptMessage.body;
+    
+    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    
+    if (![[self localDataModelEntityNames] containsObject:entityName]) {
+        
+        [self error:&resultError withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        boolResult = NO;
+
+    }
+    
+    if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE]) {
+        
+        if (![parameters[@"data"] isKindOfClass:[NSDictionary class]]) {
+            
+            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
+            boolResult = NO;
+
+        } else {
+            
+            NSDictionary *updatedData = [self updateObjectWithData:parameters[@"data"] entityName:entityName error:&resultError];
+            if (resultError) {
+                boolResult = NO;
+            } else {
+                [result addObject:updatedData];
+            }
+            
+        }
+        
+    } else if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE_ALL]) {
+        
+        if (![parameters[@"data"] isKindOfClass:[NSArray <NSDictionary *> class]]) {
+            
+            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray[NSDictionary] class", scriptMessage.name]];
+            boolResult = NO;
+
+        } else {
+            
+            NSArray *data = parameters[@"data"];
+            
+            NSString *errorMessage = nil;
+            
+            for (NSDictionary *objectData in data) {
+                
+                NSError *localError = nil;
+                
+                NSDictionary *updatedData = [self updateObjectWithData:objectData entityName:entityName error:&localError];
+                
+                if (updatedData) {
+                    [result addObject:updatedData];
+                } else {
+                    errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:localError.localizedDescription] : localError.localizedDescription;
+                }
+                
+            }
+            
+            if (errorMessage) {
+                
+                [self error:&resultError withMessage:errorMessage];
+                boolResult = NO;
+
+            }
+            
+        }
+        
+    }
+    
+    [self error:&resultError withMessage:@"test error"];
+
+    completionHandler(boolResult, result, resultError);
+    
+}
+
 + (NSArray *)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
     
     NSMutableArray *result = @[].mutableCopy;

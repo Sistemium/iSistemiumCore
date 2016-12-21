@@ -87,6 +87,8 @@
 + (NSArray *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage
                                               error:(NSError **)error;
 
++ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
+                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
