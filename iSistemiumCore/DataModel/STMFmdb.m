@@ -16,6 +16,7 @@
 
 FMDatabase *database;
 NSArray* tableNames;
+FMDatabaseQueue *queue;
 
 - (instancetype)init {
     self = [super init];
@@ -24,6 +25,7 @@ NSArray* tableNames;
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         database = [FMDatabase databaseWithPath:dbPath];
+        queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         
         if ([database open]){
             [database beginTransaction];
@@ -65,74 +67,78 @@ NSArray* tableNames;
     
 }
 
-- (void)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array withCompletionHandler:(void (^ _Nonnull)(BOOL success))completionHandler{
-    
-    NSLog(@"Started inserting %@", tablename);
-    if ([database open]) {
-        [database beginTransaction];
-        for (NSDictionary* dict in array){
-            [self insertWithTablename:tablename dictionary:dict];
+- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array{
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+            NSLog(@"Started inserting %@", tablename);
+            NSMutableArray* promises = @[].mutableCopy;
+            for (NSDictionary* dict in array){
+                [promises addObject:[self insertWithTablename:tablename dictionary:dict database:db]];
+            }
+            PMKJoin(promises).then(^(NSArray *resultingValues){
+                resolve(nil);
+            }).catch(^(NSError *error){
+                resolve(error);
+            });
+            NSLog(@"Done inserting %@", tablename);
+        }];
+    }];
+}
+
+- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary database:(FMDatabase * _Nonnull)database {
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        NSMutableArray* keys = @[].mutableCopy;
+        
+        NSMutableArray* values = @[].mutableCopy;
+        
+        for(NSString* key in dictionary){
+            if ([key isEqualToString:@"ts"] || [key isEqualToString:@"discountPercent"]|| [key isEqualToString:@"author"]|| [key isEqualToString:@"articleSameId"]|| [key isEqualToString:@"productionInfoType"]){
+            }else{
+                [keys addObject:key];
+                [values addObject:[dictionary objectForKey:key]];
+            }
         }
-        [database commit];
-        [database close];
-        completionHandler(true);
-    } else {
-        NSLog(@"STMFmdb error:  %@", [database lastErrorMessage])
-        completionHandler(false);
-    }
-    NSLog(@"Done inserting %@", tablename);
+        
+        [keys addObject:@"lts"];
+        [values addObject:[NSDate date]];
+        NSMutableArray* v = @[].mutableCopy;
+        for (int i=0;i<[keys count];i++){
+            [v addObject:@"?"];
+        }
+        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+        
+        [database executeUpdate:insertSQL withArgumentsInArray:values];
+        resolve(nil);
+    }];
     
 }
 
-- (void)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary {
-    NSMutableArray* keys = @[].mutableCopy;
-    
-    NSMutableArray* values = @[].mutableCopy;
-    
-    for(NSString* key in dictionary){
-        if ([key isEqualToString:@"ts"] || [key isEqualToString:@"discountPercent"]|| [key isEqualToString:@"author"]|| [key isEqualToString:@"articleSameId"]|| [key isEqualToString:@"productionInfoType"]){
-        }else{
-            [keys addObject:key];
-            [values addObject:[dictionary objectForKey:key]];
-        }
-    }
-    
-    [keys addObject:@"lts"];
-    [values addObject:[NSDate date]];
-    NSMutableArray* v = @[].mutableCopy;
-    for (int i=0;i<[keys count];i++){
-        [v addObject:@"?"];
-    }
-    NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-    
-    [database executeUpdate:insertSQL withArgumentsInArray:values];
-    
+- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+            [self insertWithTablename:tablename dictionary:dictionary database:db].then(^{
+                resolve(nil);
+            });
+        }];
+    }];
 }
 
-- (void)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary withCompletionHandler:(void (^ _Nonnull)(BOOL success))completionHandler{
-    if ([database open]) {
-        [self insertWithTablename:tablename dictionary:dictionary];
-        completionHandler(true);
-    } else {
-        NSLog(@"STMFmdb error: %@", [database lastErrorMessage]);
-        completionHandler(false);
-    }
-}
-
--(NSArray<NSDictionary *> * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
+-(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
     
-    NSMutableArray *rez = @[].mutableCopy;
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        NSMutableArray *rez = @[].mutableCopy;
+        
+        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+            FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
+            while ([s next]) {
+                [rez addObject:[s resultDictionary]];
+            }
+            resolve(rez);
+        }];
+    }];
     
-    if ([database open]) {
-        FMResultSet *s = [database executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
-        while ([s next]) {
-            [rez addObject:[s resultDictionary]];
-        }
-        [database close];
-    } else {
-        NSLog(@"STMFmdb error: \(database?.lastErrorMessage())")
-    }
-    return rez;
+    
+    
     
 }
 
@@ -140,7 +146,6 @@ NSArray* tableNames;
     if ([tableNames containsObject:name]){
         return true;
     }
-    NSLog(@"%@",name);
     return false;
 }
 
