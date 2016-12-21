@@ -286,7 +286,7 @@
             
         }
         
-        if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
+        if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName andXid:xidData];
         
         STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
         
@@ -330,7 +330,7 @@
     ownObjectKeys = [ownObjectKeys setByAddingObject:@"deviceCts"];
     
     STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
-    NSDictionary *entityAttributes = [currentEntity attributesByName];
+    NSDictionary *entityAttributes = currentEntity.attributesByName;
     
     for (NSString *key in ownObjectKeys) {
         
@@ -372,7 +372,7 @@
     
     [object setValue:[NSDate date] forKey:@"lts"];
 
-    [self postprocessingForObject:object withEntityName:entityName];
+    [self postprocessingForObject:object];
     
     if ([[self sharedController].entitiesToSubscribe objectForKey:entityName]) {
         if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
@@ -412,7 +412,7 @@
                     
                     NSString *destinationObjectXid = [objectData[key] isKindOfClass:[NSNull class]] ? nil : objectData[key];
 
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
 
                     [object setValue:destinationObject forKey:localKey];
                     
@@ -532,7 +532,7 @@
     
     NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
     
-    for (NSString *relationship in [ownObjectRelationships allKeys]) {
+    for (NSString *relationship in ownObjectRelationships.allKeys) {
         
         NSString *relationshipId = [relationship stringByAppendingString:@"Id"];
         
@@ -540,7 +540,7 @@
         
         if (destinationObjectXid) {
             
-            NSManagedObject *destinationObject = [self objectForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
             
             if (![[object valueForKey:relationship] isEqual:destinationObject]) {
                 
@@ -606,29 +606,26 @@
 
 }
 
-+ (void)postprocessingForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName {
++ (void)postprocessingForObject:(NSManagedObject *)object {
 
-    if ([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
+    if ([object isKindOfClass:[STMMessage class]]) {
         
         //        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewMessage" object:nil];
         
-    } else if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
+    } else if ([object isKindOfClass:[STMRecordStatus class]]) {
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
         
-        STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
-        
-        if (affectedObject) {
-            
-            if (recordStatus.isRemoved.boolValue) {
-                [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
-            }
-            
+        if (recordStatus.isRemoved.boolValue) {
+
+            STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
+            if (affectedObject) [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
+
         }
         
         if (recordStatus.isTemporary.boolValue) [self removeObject:recordStatus];
         
-    } else if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+    } else if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;
         
@@ -706,8 +703,8 @@
 
         if (ok) {
             
-            NSManagedObject *ownerObject = [self objectForEntityName:roleOwnerEntityName andXidString:ownerXid];
-            NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:destinationXid];
+            NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
             
             NSSet *destinationSet = [ownerObject valueForKey:roleName];
             
@@ -806,7 +803,27 @@
     
 }
 
-+ (STMDatum *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
+    
+    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
+    
+    if ([dataModelEntityNames containsObject:entityName]) {
+        
+        STMDatum *object = [self objectForXid:xidData entityName:entityName];
+        
+        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
+        
+        return object;
+        
+    } else {
+        
+        return nil;
+        
+    }
+    
+}
+
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -816,20 +833,7 @@
 
         STMDatum *object = [self objectForXid:xidData entityName:entityName];
         
-        if (object) {
-            
-//            if (![object.entity.name isEqualToString:entityName]) {
-//                
-//                NSLog(@"No %@ object with xid %@, %@ object fetched instead", entityName, xid, object.entity.name);
-//                object = nil;
-//                
-//            }
-            
-        } else {
-            
-            object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        }
+        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
         
         return object;
         
@@ -1883,7 +1887,7 @@
             
             NSString *destinationEntityName = ownRelationships[key];
             
-            NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:xidString];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:xidString];
             
             if (![[object valueForKey:key] isEqual:destinationObject]) {
                 
