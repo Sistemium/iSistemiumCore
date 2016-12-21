@@ -396,7 +396,40 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - NSString <-> NSData manipulation
 
++ (NSData *)dataWithHexString:(NSString *)hexString {
+    
+// https://opensource.apple.com/source/Security/Security-55471.14.18/libsecurity_transform/NSData+HexString.m.auto.html
+    
+    char buf[3];
+    buf[2] = '\0';
+    
+    NSAssert(0 == hexString.length % 2, @"Hex strings should have an even number of digits (%@)", hexString);
+    
+    unsigned char *bytes = malloc(hexString.length/2);
+    unsigned char *bp = bytes;
+    
+    for (CFIndex i = 0; i < hexString.length; i += 2) {
+        
+        buf[0] = [hexString characterAtIndex:i];
+        buf[1] = [hexString characterAtIndex:i+1];
+        char *b2 = NULL;
+        *bp++ = strtol(buf, &b2, 16);
+        
+        NSAssert(b2 == buf + 2, @"String should be all hex digits: %@ (bad digit around %@)", hexString, @(i));
+        
+    }
+    
+    return [NSData dataWithBytesNoCopy:bytes
+                                length:hexString.length/2
+                          freeWhenDone:YES];
+    
+}
+
 + (NSData *)dataFromString:(NSString *)string {
+
+    return [self dataWithHexString:string];
+    
+/* old slow version, use apple code instead of it (dataWithHexString:) — 10 times faster
     
     NSMutableData *data = [NSMutableData data];
     int i;
@@ -413,6 +446,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     }
     
     return data;
+*/
     
 }
 
