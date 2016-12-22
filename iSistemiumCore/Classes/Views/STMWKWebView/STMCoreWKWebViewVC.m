@@ -1215,18 +1215,16 @@
     
     NSDictionary *parameters = message.body;
 
-    NSError *error = nil;
-    NSArray *result = [STMCoreObjectsController updateObjectsFromScriptMessage:message error:&error];
-    
     [STMCoreObjectsController updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
         
-        NSLog(@"!_!_!_!_!_!_!_!_!_!_!_!_!_ %@ %@ %@", @(success), @(updatedObjects.count), error.localizedDescription);
-        
-    }];
+        if (success) {
+            [self callbackWithData:updatedObjects parameters:parameters];
+        } else {
+            [self callbackWithError:error.localizedDescription parameters:parameters];
+        }
 
-    if (result.count > 0) [self callbackWithData:result parameters:parameters];
-    if (error) [self callbackWithError:error.localizedDescription parameters:parameters];
-        
+    }];
+    
 }
 
 - (void)handleSoundMessage:(WKScriptMessage *)message {
