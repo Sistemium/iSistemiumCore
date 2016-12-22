@@ -7,10 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "STMFmdb.h"
-
+#import "STMFunctions.h"
 #import "FMDB.h"
+#import "STMCoreObjectsController.h"
 
 @implementation STMFmdb
 
@@ -21,6 +21,7 @@ FMDatabaseQueue *queue;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        NSArray* entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
@@ -30,14 +31,24 @@ FMDatabaseQueue *queue;
         if ([database open]){
             [database beginTransaction];
             NSString *sql_stmt = @"CREATE TABLE IF NOT EXISTS STMPrice (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, price NUMERIC, articleId TEXT REFERENCES STMArticle(id), priceTypeId TEXT REFERENCES STMPriceType(id) ) ";
-            [database executeStatements:sql_stmt];
-            sql_stmt = @"CREATE TABLE IF NOT EXISTS STMArticle (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, barcode TEXT, code TEXT, extraLabel TEXT,factor INTEGER, name TEXT, packageRel INTEGER, pieceVolume NUMERIC, pieceWeight NUMERIC, price NUMERIC, articleGroupId TEXT REFERENCES STMArticleGroup(id)) ";
-            [database executeStatements:sql_stmt];
-            sql_stmt = @"CREATE TABLE IF NOT EXISTS STMStock (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, displayVolume TEXT, volume INTEGER, articleId TEXT REFERENCES STMArticle(id)) ";
-            [database executeStatements:sql_stmt];
-            sql_stmt = @"CREATE TABLE IF NOT EXISTS STMArticleGroup (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, name TEXT, articleGroupId TEXT REFERENCES STMArticleGroup(id)) ";
-            [database executeStatements:sql_stmt];
-            sql_stmt = @"CREATE TABLE IF NOT EXISTS STMSaleOrderPosition (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, INTEGER, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, backVolume INTEGER, cost NUMERIC, price NUMERIC, priceDoc NUMERIC, priceOrigin NUMERIC, volume INTEGER, articleId TEXT REFERENCES STMArticle(id), saleorderId TEXT REFERENCES STMSaleOrder(id)) ";
+            for (NSString* entityName in entityNames){
+                sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
+                sql_stmt = [sql_stmt stringByAppendingString:entityName];
+                sql_stmt = [sql_stmt stringByAppendingString:@" ("];
+                NSLog(@"TableName %@", entityName);
+                NSArray* keys = [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys;
+                for (NSString* entityKey in keys){
+                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][entityKey];
+                    switch (atribute.attributeType) {
+                        case NSStringAttributeType:
+
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                }
+            }
             [database executeStatements:sql_stmt];
             
             NSMutableArray* names = @[].mutableCopy;
