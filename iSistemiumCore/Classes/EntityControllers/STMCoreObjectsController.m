@@ -965,6 +965,10 @@
 
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+    
     NSMutableDictionary *entitiesOwnKeys = [self sharedController].entitiesOwnKeys;
     NSMutableSet *objectKeys = entitiesOwnKeys[entityName];
     
@@ -988,6 +992,10 @@
 
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesOwnRelationships = [self sharedController].entitiesOwnRelationships;
     NSDictionary *objectRelationships = entitiesOwnRelationships[entityName];
     
@@ -1004,10 +1012,14 @@
 
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesToOneRelationships = [self sharedController].entitiesToOneRelationships;
     NSDictionary *objectRelationships = entitiesToOneRelationships[entityName];
     
-    if (!objectRelationships) {
+    if (!objectRelationships && entityName) {
 
         objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(NO)];
         entitiesToOneRelationships[entityName] = objectRelationships;
@@ -1020,6 +1032,10 @@
 
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesToManyRelationships = [self sharedController].entitiesToManyRelationships;
     NSDictionary *objectRelationships = entitiesToManyRelationships[entityName];
     
@@ -1036,6 +1052,10 @@
 
 + (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany {
     
+    if (!entityName) {
+        return nil;
+    }
+
     STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
                                                       inManagedObjectContext:[self document].managedObjectContext];
     
