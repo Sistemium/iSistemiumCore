@@ -34,6 +34,7 @@
 @interface STMCoreObjectsController()
 
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
+@property (nonatomic, strong) NSMutableDictionary *allEntityKeys;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToOneRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToManyRelationships;
@@ -100,6 +101,15 @@
         _entitiesOwnKeys = [@{} mutableCopy];
     }
     return _entitiesOwnKeys;
+    
+}
+
+- (NSMutableDictionary *)allEntityKeys {
+    
+    if (!_allEntityKeys) {
+        _allEntityKeys = [@{} mutableCopy];
+    }
+    return _allEntityKeys;
     
 }
 
@@ -239,9 +249,11 @@
     } else {
         
         if ([fmdb containstTableWithNameWithName:entityName]){
-            [fmdb insertWithTablename:entityName array:array withCompletionHandler:^(BOOL success) {
-                completionHandler(success);
-            }];
+            [fmdb insertWithTablename:entityName array:array].then(^{
+                completionHandler(true);
+            }).catch(^{
+                completionHandler(false);
+            });
         }else{
         
             [self insertObjectsFromArray:array withEntityName:entityName withCompletionHandler:^(BOOL success) {
@@ -280,9 +292,11 @@
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     STMFmdb *fmdb = [STMFmdb sharedInstance];
     if ([fmdb containstTableWithNameWithName:entityName]){
-        [fmdb insertWithTablename:entityName dictionary:dictionary withCompletionHandler:^(BOOL success) {
-            completionHandler(success);
-        }];
+        [fmdb insertWithTablename:entityName dictionary:dictionary].then(^{
+            completionHandler(YES);
+        }).catch(^{
+            completionHandler(NO);
+        });
     }else{
         NSArray *dataModelEntityNames = [self localDataModelEntityNames];
         
@@ -956,6 +970,25 @@
         
         entitiesOwnKeys[entityName] = objectKeys;
         
+    }
+    
+    return objectKeys;
+    
+}
+
++ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName {
+    
+    NSMutableDictionary *allEntityKeys = [self sharedController].allEntityKeys;
+    NSDictionary *objectKeys = allEntityKeys[entityName];
+    
+    if (!objectKeys) {
+        
+        STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
+                                                          inManagedObjectContext:[self document].managedObjectContext];
+        
+        allEntityKeys[entityName] = objectEntity.attributesByName;
+        
+        objectKeys = allEntityKeys[entityName];
     }
     
     return objectKeys;
@@ -2109,7 +2142,7 @@
 
 #pragma mark - find objects for WKWebView
 
-+ (NSArray *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
++ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
     
     NSArray *result = nil;
 
@@ -2127,7 +2160,12 @@
         result = [self findObjectInCacheWithParameters:parameters error:error];
 
         if (*error) return nil;
-        if (result) return result;
+        if (result) {
+            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+                resolve(result);
+            }];
+
+        }
 
     }
     
@@ -2146,33 +2184,30 @@
     NSString *orderBy = options[@"sortBy"];
     if (!orderBy) orderBy = @"id";
     
-    NSArray *objectsArray;
-    
     STMFmdb* fmdb = [STMFmdb sharedInstance];
-    
     if ([fmdb containstTableWithNameWithName:entityName]){
-        objectsArray = [fmdb getDataWithEntityName:entityName];
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
-        return objectsArray;
+        return [fmdb getDataWithEntityName:entityName];
     } else {
-        objectsArray = [self objectsForEntityName:entityName
-                                               orderBy:orderBy
-                                             ascending:YES
-                                            fetchLimit:pageSize
-                                           fetchOffset:(pageSize * startPage)
-                                           withFantoms:NO
-                                             predicate:predicate
-                                            resultType:NSDictionaryResultType
-                                inManagedObjectContext:[self document].managedObjectContext
-                                                 error:error];
-    }
-    
-    NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
-
-    if (*error) {
-        return nil;
-    } else {
-        return [self arrayForJSWithObjectsDics:objectsArray entityName:entityName];
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            NSArray* objectsArray = [self objectsForEntityName:entityName
+                                                   orderBy:orderBy
+                                                 ascending:YES
+                                                fetchLimit:pageSize
+                                               fetchOffset:(pageSize * startPage)
+                                               withFantoms:NO
+                                                 predicate:predicate
+                                                resultType:NSDictionaryResultType
+                                    inManagedObjectContext:[self document].managedObjectContext
+                                                     error:error];
+            NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
+            
+            if (*error) {
+                return resolve(nil);
+            } else {
+                resolve([self arrayForJSWithObjectsDics:objectsArray entityName:entityName]);
+            }
+        }];
     }
 
 }

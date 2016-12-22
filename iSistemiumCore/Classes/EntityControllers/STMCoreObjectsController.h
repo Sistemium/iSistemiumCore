@@ -14,6 +14,8 @@
 
 #import "STMEntitiesSubscribable.h"
 
+@import PromiseKit;
+
 
 @interface STMCoreObjectsController : STMCoreController
 
@@ -45,6 +47,7 @@
 + (NSArray *)coreEntityKeys;
 + (NSArray *)coreEntityRelationships;
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
++ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName;
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
@@ -75,7 +78,7 @@
 + (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc toEntities:(NSArray *)entities error:(NSError **)error;
 + (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
 + (NSArray *)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
-+ (NSArray *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
++ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
 //+ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects;
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
