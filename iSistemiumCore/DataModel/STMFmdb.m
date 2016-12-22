@@ -94,8 +94,8 @@ FMDatabaseQueue *queue;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([key isEqualToString:@"ts"] || [key isEqualToString:@"discountPercent"]|| [key isEqualToString:@"author"]|| [key isEqualToString:@"articleSameId"]|| [key isEqualToString:@"productionInfoType"]){
-            }else{
+            NSString* keyWithoutId = [key substringToIndex:[key length] - 2];
+            if ([[STMCoreObjectsController allObjectsWithTypeForEntityName:tablename].allKeys containsObject:key] || [[STMCoreObjectsController toOneRelationshipsForEntityName:tablename].allKeys containsObject:keyWithoutId]){
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }
