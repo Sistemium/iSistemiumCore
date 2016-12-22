@@ -1576,10 +1576,15 @@
     NSData *fantomXid = fantomDic[@"xid"];
 
     if (successfully) {
+        
         NSLog(@"success defantomize %@ %@", entityName, fantomXid);
+        
     } else {
+        
+#warning - check fantomDic before inset it in array
         [objController.notFoundFantomsArray addObject:fantomDic];
         NSLog(@"bad luck defantomize %@ %@", entityName, fantomXid);
+        
     }
     
     if (objController.fantomsArray.count > 0) {
