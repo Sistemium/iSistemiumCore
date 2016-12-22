@@ -2396,6 +2396,10 @@
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
 
+    if (!object) {
+        return @{};
+    }
+    
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
     if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
