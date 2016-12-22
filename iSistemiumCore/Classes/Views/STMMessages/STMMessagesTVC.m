@@ -409,7 +409,7 @@
     
     for (NSString *field in editableValues.allKeys) {
         
-        if ([self.workflowSelectedMessage.entity.propertiesByName.allKeys containsObject:field]) {
+        if ([self.workflowSelectedMessage.entity.propertiesByName objectForKey:field]) {
             [self.workflowSelectedMessage setValue:editableValues[field] forKey:field];
         }
         

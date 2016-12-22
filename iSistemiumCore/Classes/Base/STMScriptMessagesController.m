@@ -182,21 +182,21 @@
         
         NSUInteger substringIndex = key.length - relKey.length;
         
-        if ([relationships.allKeys containsObject:[key substringToIndex:substringIndex]]) {
+        if ([relationships objectForKey:[key substringToIndex:substringIndex]]) {
             localKey = [key substringToIndex:substringIndex];
         }
         
     }
     
-    if (![properties.allKeys containsObject:localKey]) {
+    if (![properties objectForKey:localKey]) {
         
         NSLog(@"%@ have no property %@", entityName, localKey);
         return nil;
         
     }
     
-    BOOL isAttribute = [attributes.allKeys containsObject:localKey];
-    BOOL isRelationship = [relationships.allKeys containsObject:localKey];
+    BOOL isAttribute = [attributes objectForKey:localKey] ? YES : NO;
+    BOOL isRelationship = [relationships objectForKey:localKey] ? YES : NO;
     
     if (!isAttribute && !isRelationship) {
         
@@ -395,7 +395,7 @@
     
     NSString *checkingProperty = [key componentsSeparatedByString:@" "].lastObject;
     
-    if (![relationships.allKeys containsObject:checkingProperty]) {
+    if (![relationships objectForKey:checkingProperty]) {
         
         NSLog(@"%@ have no property %@ to make ANY predicate", entityName, checkingProperty);
         return nil;

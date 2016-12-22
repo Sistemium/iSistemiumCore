@@ -520,7 +520,7 @@
             
             STMCorePicturesController *pc = [self sharedController];
             
-            if (![pc.hrefDictionary.allKeys containsObject:href]) {
+            if (![pc.hrefDictionary objectForKey:href]) {
                 
                 (pc.hrefDictionary)[href] = object;
                 

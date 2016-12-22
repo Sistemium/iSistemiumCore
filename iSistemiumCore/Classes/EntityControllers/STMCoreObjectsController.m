@@ -47,7 +47,6 @@
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
 
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
-@property (nonatomic, strong) NSData *requestedFantomXid;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 
@@ -318,7 +317,7 @@
                 
             }
             
-            if (!object && xidString) object = [self objectForEntityName:entityName andXidString:xidString];
+            if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName andXid:xidData];
             
             STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
             
@@ -353,8 +352,8 @@
             completionHandler(NO);
             
         }
-    }
 
+    }
 }
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
@@ -363,7 +362,7 @@
     ownObjectKeys = [ownObjectKeys setByAddingObject:@"deviceCts"];
     
     STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
-    NSDictionary *entityAttributes = [currentEntity attributesByName];
+    NSDictionary *entityAttributes = currentEntity.attributesByName;
     
     for (NSString *key in ownObjectKeys) {
         
@@ -377,7 +376,7 @@
 
         } else {
             
-            if (![object isKindOfClass:[STMCorePicture class]]) {
+            if (![object isKindOfClass:[STMCorePicture class]] && ![key isEqualToString:@"deviceAts"]) {
                 [object setValue:nil forKey:key];
             }
             
@@ -405,9 +404,9 @@
     
     [object setValue:[NSDate date] forKey:@"lts"];
 
-    [self postprocessingForObject:object withEntityName:entityName];
+    [self postprocessingForObject:object];
     
-    if ([[self sharedController].entitiesToSubscribe.allKeys containsObject:entityName]) {
+    if ([[self sharedController].entitiesToSubscribe objectForKey:entityName]) {
         if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
     }
     
@@ -441,11 +440,11 @@
                 NSUInteger toIndex = key.length - relationshipSuffix.length;
                 NSString *localKey = [key substringToIndex:toIndex];
             
-                if ([ownObjectRelationships.allKeys containsObject:localKey]) {
+                if ([ownObjectRelationships objectForKey:localKey]) {
                     
                     NSString *destinationObjectXid = [objectData[key] isKindOfClass:[NSNull class]] ? nil : objectData[key];
 
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
 
                     [object setValue:destinationObject forKey:localKey];
                     
@@ -565,7 +564,7 @@
     
     NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
     
-    for (NSString *relationship in [ownObjectRelationships allKeys]) {
+    for (NSString *relationship in ownObjectRelationships.allKeys) {
         
         NSString *relationshipId = [relationship stringByAppendingString:@"Id"];
         
@@ -573,7 +572,7 @@
         
         if (destinationObjectXid) {
             
-            NSManagedObject *destinationObject = [self objectForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
             
             if (![[object valueForKey:relationship] isEqual:destinationObject]) {
                 
@@ -639,29 +638,26 @@
 
 }
 
-+ (void)postprocessingForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName {
++ (void)postprocessingForObject:(NSManagedObject *)object {
 
-    if ([entityName isEqualToString:NSStringFromClass([STMMessage class])]) {
+    if ([object isKindOfClass:[STMMessage class]]) {
         
         //        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewMessage" object:nil];
         
-    } else if ([entityName isEqualToString:NSStringFromClass([STMRecordStatus class])]) {
+    } else if ([object isKindOfClass:[STMRecordStatus class]]) {
         
         STMRecordStatus *recordStatus = (STMRecordStatus *)object;
         
-        STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
-        
-        if (affectedObject) {
-            
-            if (recordStatus.isRemoved.boolValue) {
-                [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
-            }
-            
+        if (recordStatus.isRemoved.boolValue) {
+
+            STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
+            if (affectedObject) [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
+
         }
         
         if (recordStatus.isTemporary.boolValue) [self removeObject:recordStatus];
         
-    } else if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+    } else if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;
         
@@ -739,8 +735,8 @@
 
         if (ok) {
             
-            NSManagedObject *ownerObject = [self objectForEntityName:roleOwnerEntityName andXidString:ownerXid];
-            NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:destinationXid];
+            NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
             
             NSSet *destinationSet = [ownerObject valueForKey:roleName];
             
@@ -839,7 +835,27 @@
     
 }
 
-+ (STMDatum *)objectForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
+    
+    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
+    
+    if ([dataModelEntityNames containsObject:entityName]) {
+        
+        STMDatum *object = [self objectForXid:xidData entityName:entityName];
+        
+        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
+        
+        return object;
+        
+    } else {
+        
+        return nil;
+        
+    }
+    
+}
+
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -849,20 +865,7 @@
 
         STMDatum *object = [self objectForXid:xidData entityName:entityName];
         
-        if (object) {
-            
-//            if (![object.entity.name isEqualToString:entityName]) {
-//                
-//                NSLog(@"No %@ object with xid %@, %@ object fetched instead", entityName, xid, object.entity.name);
-//                object = nil;
-//                
-//            }
-            
-        } else {
-            
-            object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        }
+        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
         
         return object;
         
@@ -1418,13 +1421,19 @@
                     NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
                 }
 
+            } else {
+                NSLog(@"have no fantoms for %@", entityName);
             }
             
+        } else {
+            NSLog(@"wrong entityName: %@", entityName);
         }
         
     }
 
     if (objController.fantomsArray.count > 0) {
+        
+        NSLog(@"DEFANTOMIZING_START");
         
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
                                                             object:objController
@@ -1433,6 +1442,8 @@
         [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
         
     } else {
+    
+        NSLog(@"DEFANTOMIZING_FINISH");
         
         objController.isDefantomizingProcessRunning = NO;
         
@@ -1535,8 +1546,6 @@
 
         }
         
-        [self sharedController].requestedFantomXid = xid;
-        
         [STMSocketController sendFantomFindEventToResource:resource
                                                    withXid:xidString
                                                 andTimeout:[[self syncer] timeout]];
@@ -1546,6 +1555,8 @@
         NSString *logMessage = [NSString stringWithFormat:@"parameters is not an NSDictionary class: %@", parameters];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
         
+        [self requestFantomObjectErrorMessage:logMessage parameters:parameters];
+
     }
 
 }
@@ -1557,15 +1568,9 @@
 
 }
 
-+ (NSData *)requestedFantomXid {
-    return [self sharedController].requestedFantomXid;
-}
-
 + (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully {
     
     STMCoreObjectsController *objController = [self sharedController];
-    
-    objController.requestedFantomXid = nil;
     
     if (!fantomDic) {
         
@@ -1909,9 +1914,15 @@
         id value = objectData[key];
         
         if (value && ![value isKindOfClass:[NSNull class]]) {
+            
             [object setValue:value forKey:key];
+            
         } else {
-            [object setValue:nil forKey:key];
+            
+            if (![key isEqualToString:@"deviceAts"]) {
+                [object setValue:nil forKey:key];
+            }
+
         }
         
     }
@@ -1927,7 +1938,7 @@
             
             NSString *destinationEntityName = ownRelationships[key];
             
-            NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:xidString];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:xidString];
             
             if (![[object valueForKey:key] isEqual:destinationObject]) {
                 
@@ -2526,7 +2537,7 @@
         
         BOOL afterRequestSort = NO;
         
-        if ([entity.propertiesByName.allKeys containsObject:orderBy]) {
+        if ([entity.propertiesByName objectForKey:orderBy]) {
             
             request.sortDescriptors = @[sortDescriptor];
             

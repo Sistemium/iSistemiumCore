@@ -82,6 +82,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
                               withXid:(NSString *)xidString
                            andTimeout:(NSTimeInterval)timeout;
 
++ (void)sendFindWithValue:(id)value;
+
 - (void)closeSocketInBackground;
 
 

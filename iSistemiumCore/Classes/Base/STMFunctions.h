@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isCorrectPhoneNumber:(NSString *)phoneNumberString;
 + (BOOL)isCorrectSMSCode:(NSString *)SMSCode;
 
++ (NSData *)dataWithHexString:(NSString *)hexString;
 + (NSData *)dataFromString:(NSString *)string;
 + (nullable NSData *)xidDataFromXidString:(nullable NSString  *)xidString;
 + (NSData *)UUIDDataFromNSUUID:(NSUUID *)nsuuid;

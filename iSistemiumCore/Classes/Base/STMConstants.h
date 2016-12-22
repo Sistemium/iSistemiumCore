@@ -90,3 +90,5 @@
 
 
 #endif
+
+#define DEFAULT_SOCKET_TIMEOUT 30

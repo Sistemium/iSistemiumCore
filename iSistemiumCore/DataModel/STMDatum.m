@@ -45,7 +45,7 @@
     
     NSDictionary *changedValues = self.changedValues;
     
-    BOOL ltsIsChanged = [changedValues.allKeys containsObject:@"lts"];
+    BOOL ltsIsChanged = [changedValues objectForKey:@"lts"] ? YES : NO;
 
     if (ltsIsChanged) return;
 
@@ -54,18 +54,19 @@
     NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
     [changedKeysArray removeObjectsInArray:excludeProperties];
     
-    NSMutableArray *relationshipsToMany = [NSMutableArray array];
-    
     for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
-        if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
+        if (relationship.isToMany) [changedKeysArray removeObject:relationship.name];
     }
-    
-    [changedKeysArray removeObjectsInArray:relationshipsToMany];
     
     NSDate *currentDate = [NSDate date];
 
-    if ([self.entity.propertiesByName.allKeys containsObject:@"deviceAts"]) {
-        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+    if ([self.entity.propertiesByName objectForKey:@"deviceAts"] && ![changedValues objectForKey:@"deviceAts"]) {
+        
+//        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+        [self setValue:currentDate forKey:@"deviceAts"];
+        
+        NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
+        
     }
     
     if (changedKeysArray.count > 0) {
@@ -101,6 +102,7 @@
         NSDate *ts = [NSDate date];
         [self setPrimitiveValue:ts forKey:@"deviceCts"];
         [self setPrimitiveValue:ts forKey:@"deviceTs"];
+        [self setPrimitiveValue:ts forKey:@"deviceAts"];
         
         STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         NSNumber *largestId = [defaults objectForKey:@"largestId"];
@@ -205,7 +207,8 @@
         excludeProperties = [coreEntityKeys arrayByAddingObjectsFromArray:@[@"imagePath",
                                                                             @"resizedImagePath",
                                                                             @"calculatedSum",
-                                                                            @"imageThumbnail"]];
+                                                                            @"imageThumbnail",
+                                                                            @"deviceAts"]];
     });
 
     return excludeProperties;
@@ -222,7 +225,7 @@
     
     for (NSString *key in keys) {
         
-        if ([self.entity.propertiesByName.allKeys containsObject:key]) {
+        if ([self.entity.propertiesByName objectForKey:key]) {
             
             id value = [self valueForKey:key];
             

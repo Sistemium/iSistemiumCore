@@ -311,7 +311,7 @@
 
                 NSData *xid = syncObject.xid;
 
-                if (![sc.syncDateDictionary.allKeys containsObject:xid]) {
+                if (![sc.syncDateDictionary objectForKey:xid]) {
 
                     sc.syncDateDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
                     [self sendObject:syncObject];
@@ -450,7 +450,7 @@
 
 - (void)checkSendTimeoutForObjectXid:(NSData *)xid {
     
-    if ([self.syncDateDictionary.allKeys containsObject:xid]) {
+    if ([self.syncDateDictionary objectForKey:xid]) {
         
         NSString *errorString = [NSString stringWithFormat:@"timeout for sending object with xid %@", xid];
         
@@ -627,7 +627,7 @@
             
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
             
-            NSDictionary *dataDic = (NSDictionary *)value;
+            NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
             
             [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
                 [self receiveJSDataEventAckWithData:data];
@@ -863,12 +863,20 @@
 
 + (void)sendFantomFindEventToResource:(NSString *)resource withXid:(NSString *)xidString andTimeout:(NSTimeInterval)timeout {
 	
+    NSDictionary *contextDic = @{@"requestType" : @"defantomize",
+                                 @"fantomId"    : xidString};
+    
     NSDictionary *value = @{@"method"   : kSocketFindMethod,
                             @"resource" : resource,
-                            @"id"       : xidString};
+                            @"id"       : xidString,
+                            @"context"  : contextDic};
 
     [self sendFindWithValue:value andTimeout:timeout];
     
+}
+
++ (void)sendFindWithValue:(id)value {
+    [self sendFindWithValue:value andTimeout:DEFAULT_SOCKET_TIMEOUT];
 }
 
 + (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
