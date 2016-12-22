@@ -47,6 +47,7 @@
 + (NSArray *)coreEntityKeys;
 + (NSArray *)coreEntityRelationships;
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
++ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName;
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;

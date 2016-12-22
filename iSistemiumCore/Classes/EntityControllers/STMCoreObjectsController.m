@@ -34,6 +34,7 @@
 @interface STMCoreObjectsController()
 
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
+@property (nonatomic, strong) NSMutableDictionary *allEntityKeys;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToOneRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToManyRelationships;
@@ -100,6 +101,15 @@
         _entitiesOwnKeys = [@{} mutableCopy];
     }
     return _entitiesOwnKeys;
+    
+}
+
+- (NSMutableDictionary *)allEntityKeys {
+    
+    if (!_allEntityKeys) {
+        _allEntityKeys = [@{} mutableCopy];
+    }
+    return _allEntityKeys;
     
 }
 
@@ -960,6 +970,25 @@
         
         entitiesOwnKeys[entityName] = objectKeys;
         
+    }
+    
+    return objectKeys;
+    
+}
+
++ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName {
+    
+    NSMutableDictionary *allEntityKeys = [self sharedController].allEntityKeys;
+    NSDictionary *objectKeys = allEntityKeys[entityName];
+    
+    if (!objectKeys) {
+        
+        STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
+                                                          inManagedObjectContext:[self document].managedObjectContext];
+        
+        allEntityKeys[entityName] = objectEntity.attributesByName;
+        
+        objectKeys = allEntityKeys[entityName];
     }
     
     return objectKeys;
