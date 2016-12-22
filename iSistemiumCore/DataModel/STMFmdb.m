@@ -69,19 +69,21 @@ FMDatabaseQueue *queue;
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array{
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-            NSLog(@"Started inserting %@", tablename);
-            NSMutableArray* promises = @[].mutableCopy;
-            for (NSDictionary* dict in array){
-                [promises addObject:[self insertWithTablename:tablename dictionary:dict database:db]];
-            }
-            PMKJoin(promises).then(^(NSArray *resultingValues){
-                resolve(nil);
-            }).catch(^(NSError *error){
-                resolve(error);
-            });
-            NSLog(@"Done inserting %@", tablename);
-        }];
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                NSLog(@"Started inserting %@", tablename);
+                NSMutableArray* promises = @[].mutableCopy;
+                for (NSDictionary* dict in array){
+                    [promises addObject:[self insertWithTablename:tablename dictionary:dict database:db]];
+                }
+                PMKJoin(promises).then(^(NSArray *resultingValues){
+                    resolve(nil);
+                }).catch(^(NSError *error){
+                    resolve(error);
+                });
+                NSLog(@"Done inserting %@", tablename);
+            }];
+        });
     }];
 }
 
@@ -126,15 +128,16 @@ FMDatabaseQueue *queue;
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        NSMutableArray *rez = @[].mutableCopy;
-        
-        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-            FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
-            while ([s next]) {
-                [rez addObject:[s resultDictionary]];
-            }
-            resolve(rez);
-        }];
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            NSMutableArray *rez = @[].mutableCopy;
+            [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
+                while ([s next]) {
+                    [rez addObject:[s resultDictionary]];
+                }
+                resolve(rez);
+            }];
+        });
     }];
     
     
