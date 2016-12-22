@@ -2161,7 +2161,7 @@
 
         if (*error) return nil;
         if (result) {
-            [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
                 resolve(result);
             }];
 
