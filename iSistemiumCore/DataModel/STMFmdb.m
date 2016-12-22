@@ -102,7 +102,7 @@ FMDatabaseQueue *queue;
         }
         
         [keys addObject:@"lts"];
-        [values addObject:[NSDate date]];
+        [values addObject:[STMFunctions stringFromDate:[NSDate date]]];
         NSMutableArray* v = @[].mutableCopy;
         for (int i=0;i<[keys count];i++){
             [v addObject:@"?"];
