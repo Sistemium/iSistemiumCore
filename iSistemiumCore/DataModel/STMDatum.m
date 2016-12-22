@@ -59,13 +59,20 @@
     }
     
     NSDate *currentDate = [NSDate date];
+    
+    if ([self.entity.propertiesByName objectForKey:@"deviceAts"]) {
 
-    if ([self.entity.propertiesByName objectForKey:@"deviceAts"] && ![changedValues objectForKey:@"deviceAts"]) {
+        BOOL onlyDeviceAtsChanged = (changedValues.count == 1 && [changedValues objectForKey:@"deviceAts"]);
+
+        if (!onlyDeviceAtsChanged) {
         
 //        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
-        [self setValue:currentDate forKey:@"deviceAts"];
-        
-//        NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
+            
+            [self setValue:currentDate forKey:@"deviceAts"];
+            
+//            NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
+
+        }
         
     }
     
