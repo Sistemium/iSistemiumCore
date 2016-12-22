@@ -61,12 +61,20 @@
 #define NOTIFICATION_DEFANTOMIZING_START @"defantomizingStart"
 #define NOTIFICATION_DEFANTOMIZING_UPDATE @"defantomizingUpdate"
 #define NOTIFICATION_DEFANTOMIZING_FINISH @"defantomizingFinish"
+#define NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY @"documentSavedSuccessfully"
+
+#define RINGING_LOCAL_NOTIFICATION @"ringingLocalNotification"
+
+
+//
+
+#define MAX_CODES_PER_BATCH 1
 
 #define FREE_SPACE_PRECISION_MiB 200
 #define FREE_SPACE_THRESHOLD 500
 
-#define RINGING_LOCAL_NOTIFICATION @"ringingLocalNotification"
-#define MAX_CODES_PER_BATCH 1
+
+// Script message's names
 
 #define WK_MESSAGE_ERROR_CATCHER @"errorCatcher"
 #define WK_MESSAGE_POST @"post"
