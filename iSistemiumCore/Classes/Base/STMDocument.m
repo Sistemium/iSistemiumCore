@@ -89,7 +89,7 @@
 
                         NSLog(@"--- Document saved successfully ---");
                         
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"documentSavedSuccessfully"
+                        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
                                                                             object:self];
 
                         completionHandler(YES);

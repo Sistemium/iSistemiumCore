@@ -600,7 +600,7 @@
  
     [nc addObserver:self
            selector:@selector(documentSavedSuccessfully:)
-               name:@"documentSavedSuccessfully"
+               name:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
              object:nil];
 
 }

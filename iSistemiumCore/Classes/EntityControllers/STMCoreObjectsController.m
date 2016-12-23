@@ -45,10 +45,11 @@
 @property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
-
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
+@property (nonatomic, strong) NSMutableArray *updateRequests;
+@property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
 
 
 @end
@@ -83,12 +84,28 @@
     
 }
 
+- (NSMutableArray *)updateRequests {
+    
+    if (!_updateRequests) {
+        _updateRequests = @[].mutableCopy;
+    }
+    return _updateRequests;
+    
+}
+
+- (NSMutableArray <STMDatum *> *)subscribedObjects {
+    
+    if (!_subscribedObjects) {
+        _subscribedObjects = @[].mutableCopy;
+    }
+    return _subscribedObjects;
+    
+}
+
 - (NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *)entitiesToSubscribe {
     
     if (!_entitiesToSubscribe) {
-    
         _entitiesToSubscribe = @{}.mutableCopy;
-        
     }
     return _entitiesToSubscribe;
     
@@ -165,7 +182,7 @@
 
     [nc addObserver:self
            selector:@selector(documentSavedSuccessfully)
-               name:@"documentSavedSuccessfully"
+               name:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
              object:nil];
     
 }
@@ -214,6 +231,66 @@
 
 - (void)documentSavedSuccessfully {
     
+    [self checkUpdateRequests];
+    [self checkSubscribedObjects];
+    
+}
+
+- (void)checkUpdateRequests {
+    
+    NSArray *checkRequests = self.updateRequests.copy;
+    self.updateRequests = nil;
+    
+    for (NSDictionary *updateRequest in checkRequests) {
+
+        NSString *entityName = updateRequest[@"entityName"];
+        NSArray *requestData = updateRequest[@"data"];
+        
+        void (^completionHandler)(BOOL success, NSArray *updatedObjects, NSError *error) = updateRequest[@"completionHandler"];
+        
+        NSMutableArray *result = @[].mutableCopy;
+        
+        for (NSDictionary *objectData in requestData) {
+            
+            NSString *xidString = objectData[@"id"];
+            NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+            
+            STMDatum *object = (STMDatum *)[STMCoreObjectsController objectForXid:xidData entityName:entityName];
+            [result addObject:[STMCoreObjectsController dictionaryForJSWithObject:object]];
+
+        }
+        
+        completionHandler(YES, result, nil);
+        
+    }
+    
+}
+
+- (void)checkSubscribedObjects {
+    
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        return;
+    }
+    
+    NSMutableArray *subscribedObjects = self.subscribedObjects.mutableCopy;
+    self.subscribedObjects = nil;
+    
+    for (NSString *entityName in self.entitiesToSubscribe.allKeys) {
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entity.name == %@", entityName];
+        NSArray *bunchOfObjects = [subscribedObjects filteredArrayUsingPredicate:predicate];
+        
+        if (bunchOfObjects.count > 0) {
+        
+            [STMCoreObjectsController sendSubscribedBunchOfObjects:bunchOfObjects
+                                                        entityName:entityName];
+
+            [subscribedObjects removeObjectsInArray:bunchOfObjects];
+            
+        }
+        
+    }
+
 }
 
 
@@ -406,8 +483,14 @@
 
     [self postprocessingForObject:object];
     
-    if ([[self sharedController].entitiesToSubscribe objectForKey:entityName]) {
-        if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
+    STMCoreObjectsController *coc = [self sharedController];
+    
+    if ([coc.entitiesToSubscribe objectForKey:entityName]) {
+        
+        if (object && [object isKindOfClass:[STMDatum class]]) {
+            [coc.subscribedObjects addObject:(STMDatum *)object];
+        }
+        
     }
     
 }
@@ -958,6 +1041,10 @@
 
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+    
     NSMutableDictionary *entitiesOwnKeys = [self sharedController].entitiesOwnKeys;
     NSMutableSet *objectKeys = entitiesOwnKeys[entityName];
     
@@ -1000,6 +1087,10 @@
 
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesOwnRelationships = [self sharedController].entitiesOwnRelationships;
     NSDictionary *objectRelationships = entitiesOwnRelationships[entityName];
     
@@ -1016,10 +1107,14 @@
 
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesToOneRelationships = [self sharedController].entitiesToOneRelationships;
     NSDictionary *objectRelationships = entitiesToOneRelationships[entityName];
     
-    if (!objectRelationships) {
+    if (!objectRelationships && entityName) {
 
         objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(NO)];
         entitiesToOneRelationships[entityName] = objectRelationships;
@@ -1032,6 +1127,10 @@
 
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
     
+    if (!entityName) {
+        return nil;
+    }
+
     NSMutableDictionary *entitiesToManyRelationships = [self sharedController].entitiesToManyRelationships;
     NSDictionary *objectRelationships = entitiesToManyRelationships[entityName];
     
@@ -1048,6 +1147,10 @@
 
 + (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany {
     
+    if (!entityName) {
+        return nil;
+    }
+
     STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
                                                       inManagedObjectContext:[self document].managedObjectContext];
     
@@ -1588,10 +1691,15 @@
     NSData *fantomXid = fantomDic[@"xid"];
 
     if (successfully) {
+        
         NSLog(@"success defantomize %@ %@", entityName, fantomXid);
+        
     } else {
+        
+#warning - check fantomDic before inset it in array
         [objController.notFoundFantomsArray addObject:fantomDic];
         NSLog(@"bad luck defantomize %@ %@", entityName, fantomXid);
+        
     }
     
     if (objController.fantomsArray.count > 0) {
@@ -1725,22 +1833,32 @@
     
 }
 
-+ (void)sendSubscribedEntityObject:(STMDatum *)object entityName:(NSString *)entityName {
-    
-    NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = [self sharedController].entitiesToSubscribe[entityName];
-    
-    for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
-    
-        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
-    
-        if (object.xid) {
-            
-            NSDictionary *subscribeDic = @{@"entity"    : entityName,
-                                           @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
-                                           @"data"      : [self dictionaryForJSWithObject:object]};
-            
-            [vc subscribedEntitiesObjectWasReceived:subscribeDic];
++ (void)sendSubscribedBunchOfObjects:(NSArray *)objectArray entityName:(NSString *)entityName {
 
+    NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = [self sharedController].entitiesToSubscribe[entityName];
+
+    if (vcArray.count > 0) {
+        
+        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
+
+        NSMutableArray *resultArray = @[].mutableCopy;
+
+        for (STMDatum *object in objectArray) {
+            
+            if (object.xid) {
+                
+                NSDictionary *subscribeDic = @{@"entity"    : entityName,
+                                               @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
+                                               @"data"      : [self dictionaryForJSWithObject:object]};
+                
+                [resultArray addObject:subscribeDic];
+                
+            }
+            
+        }
+        
+        for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
+            [vc subscribedObjectsArrayWasReceived:resultArray];
         }
 
     }
@@ -1804,86 +1922,98 @@
 
 #pragma mark - update objects from WKWebView
 
-+ (NSArray *)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
++ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
+                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler {
     
-    NSMutableArray *result = @[].mutableCopy;
+    NSError *resultError = nil;
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:error withMessage:@"message.body is not a NSDictionary class"];
-        return nil;
+        [self error:&resultError withMessage:@"message.body is not a NSDictionary class"];
+        completionHandler(NO, nil, resultError);
+        return;
         
     }
-    
+
     NSDictionary *parameters = scriptMessage.body;
-    
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
     if (![[self localDataModelEntityNames] containsObject:entityName]) {
         
-        [self error:error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
-        return nil;
-
+        [self error:&resultError withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        completionHandler(NO, nil, resultError);
+        return;
+        
     }
-
+    
+    id parametersData = parameters[@"data"];
+    
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE]) {
         
-        if (![parameters[@"data"] isKindOfClass:[NSDictionary class]]) {
+        if (![parametersData isKindOfClass:[NSDictionary class]]) {
             
-            [self error:error withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
-            return nil;
+            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
+            completionHandler(NO, nil, resultError);
+            return;
             
         } else {
             
-            NSDictionary *updatedData = [self updateObjectWithData:parameters[@"data"] entityName:entityName error:error];
-            if (*error) return nil;
+            parametersData = @[parametersData];
             
-            [result addObject:updatedData];
-
         }
-
+        
     } else if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE_ALL]) {
         
-        if (![parameters[@"data"] isKindOfClass:[NSArray <NSDictionary *> class]]) {
+        if (![parametersData isKindOfClass:[NSArray <NSDictionary *> class]]) {
             
-            [self error:error withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray[NSDictionary] class", scriptMessage.name]];
-            return nil;
-            
-        } else {
-            
-            NSArray *data = parameters[@"data"];
-            
-            NSString *errorMessage = nil;
-            
-            for (NSDictionary *objectData in data) {
-                
-                NSError *localError = nil;
-                
-                NSDictionary *updatedData = [self updateObjectWithData:objectData entityName:entityName error:&localError];
-                
-                if (updatedData) {
-                    [result addObject:updatedData];
-                } else {
-                    errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:localError.localizedDescription] : localError.localizedDescription;
-                }
-                
-            }
-            
-            if (errorMessage) [self error:error withMessage:errorMessage];
+            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
+            completionHandler(NO, nil, resultError);
+            return;
             
         }
         
+    } else {
+
+        [self error:&resultError withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
+        completionHandler(NO, nil, resultError);
+        return;
+
     }
     
-    [[self document] saveDocument:^(BOOL success) {
-        
-    }];
-    
-    return result;
+    [self handleUpdateMessageData:parametersData
+                       entityName:entityName
+                completionHandler:completionHandler];
     
 }
 
-+ (NSDictionary *)updateObjectWithData:(NSDictionary *)objectData entityName:(NSString *)entityName error:(NSError **)error {
++ (void)handleUpdateMessageData:(NSArray *)data entityName:(NSString *)entityName completionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler{
+    
+    NSError *localError = nil;
+
+    for (NSDictionary *objectData in data) {
+        
+        [self updateObjectWithData:objectData entityName:entityName error:&localError];
+        
+        if (localError) break;
+        
+    }
+
+    if (localError) {
+        
+        completionHandler(NO, nil, localError);
+        
+    } else {
+
+        [[self sharedController].updateRequests addObject:@{@"data"                 : data,
+                                                            @"entityName"           : entityName,
+                                                            @"completionHandler"    : completionHandler}];
+        [[self document] saveDocument:^(BOOL success) {}];
+
+    }
+
+}
+
++ (void)updateObjectWithData:(NSDictionary *)objectData entityName:(NSString *)entityName error:(NSError **)error {
     
     NSString *xidString = objectData[@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
@@ -1892,10 +2022,15 @@
     
     if (!object) object = (STMDatum *)[self newObjectForEntityName:entityName andXid:xidData isFantom:NO];
     object.isFantom = @(NO);
+    
+//    if ([object.entity.propertiesByName objectForKey:@"deviceAts"]) {
+//        NSLog(@"--------------- object ot update %@", [object valueForKey:@"deviceAts"]);
+//    }
 
     [self processingKeysForUpdatingObject:object withObjectData:objectData error:error];
 
-    return (*error) ? nil : [self dictionaryForJSWithObject:object];
+//    return (*error) ? NO : YES;
+//    return (*error) ? nil : [self dictionaryForJSWithObject:object];
     
 }
 
@@ -2004,19 +2139,7 @@
             
             value = [self normalizeValue:value forKey:key updatingObject:object];
             
-            if (value) {
-                
-                resultDic[key] =  value;
-                
-//            } else {
-//                
-//                NSString *message = [NSString stringWithFormat:@"%@ object %@ can't update value %@ for key %@\n", entityName, object.xid, value, key];
-//                
-//                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
-//                
-//                continue;
-                
-            }
+            if (value) resultDic[key] =  value;
             
         }
         
@@ -2030,30 +2153,8 @@
         
         id value = objectData[dicKey];
         
-        if (value) {
-            
-            if ([value isKindOfClass:[NSString class]]) {
-                
-//                NSString *xidString = (NSString *)value;
-//                
-//                NSString *destinationEntityName = ownRelationships[key];
-//                
-//                NSManagedObject *destinationObject = [self objectForEntityName:destinationEntityName andXidString:xidString];
-//                
-//                if (![[object valueForKey:key] isEqual:destinationObject]) {
-                    resultDic[dicKey] = value;
-//                }
-                
-//            } else {
-//                
-//                NSString *message = [NSString stringWithFormat:@"%@ object %@ relationship value %@ is not a String for key %@, can't get xid\n", entityName, object.xid, value, key];
-//                
-//                errorMessage = (errorMessage) ? [errorMessage stringByAppendingString:message] : message;
-//                
-//                continue;
-                
-            }
-            
+        if (value && [value isKindOfClass:[NSString class]]) {
+            resultDic[dicKey] = value;
         }
         
     }
@@ -2423,6 +2524,10 @@
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
 
+    if (!object) {
+        return @{};
+    }
+    
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
     if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
@@ -2436,6 +2541,8 @@
     [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
     [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
+//    NSLog(@"--------------- updated object %@", propertiesDictionary[@"deviceAts"]);
+
     return propertiesDictionary;
 
 }

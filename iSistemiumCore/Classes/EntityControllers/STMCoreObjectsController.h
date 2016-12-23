@@ -36,12 +36,13 @@
                     withEntityName:(NSString *)entityName
              withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object;
++ (void)setObjectData:(NSDictionary *)objectData
+             toObject:(STMDatum *)object;
 
-//+ (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
-
-+ (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler;
-+ (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler;
++ (void)setRelationshipsFromArray:(NSArray *)array
+            withCompletionHandler:(void (^)(BOOL success))completionHandler;
++ (void)setRelationshipFromDictionary:(NSDictionary *)dictionary
+                withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
@@ -52,18 +53,22 @@
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
-+ (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error;
++ (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters
+                                    error:(NSError **)error;
 
 + (void)removeObject:(STMDatum *)object;
 + (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object;
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object withComment:(NSString *)commentText;
++ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object
+                                           withComment:(NSString *)commentText;
 
 + (void)dataLoadingFinished;
 
-+ (STMDatum *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom;
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName
+                            isFantom:(BOOL)isFantom;
 
 + (STMDatum *)objectForXid:(NSData *)xidData;
-+ (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName;
++ (STMDatum *)objectForXid:(NSData *)xidData
+                entityName:(NSString *)entityName;
 
 + (NSArray *)objectsForEntityName:(NSString *)entityName;
 
@@ -75,17 +80,27 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
-+ (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc toEntities:(NSArray *)entities error:(NSError **)error;
-+ (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
-+ (NSArray *)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
-+ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
++ (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
+                     toEntities:(NSArray *)entities
+                          error:(NSError **)error;
++ (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage
+                                      error:(NSError **)error;
++ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage
+                                              error:(NSError **)error;
+
++ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
+                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls;
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData;
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
+                                  withNulls:(BOOL)withNulls;
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
+                                  withNulls:(BOOL)withNulls
+                             withBinaryData:(BOOL)withBinaryData;
 
 + (void)resolveFantoms;
-+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully;
++ (void)didFinishResolveFantom:(NSDictionary *)fantomDic
+                  successfully:(BOOL)successfully;
 + (void)stopDefantomizing;
 + (BOOL)isDefantomizingProcessRunning;
 

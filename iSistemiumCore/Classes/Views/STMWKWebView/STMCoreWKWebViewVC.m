@@ -1215,12 +1215,16 @@
     
     NSDictionary *parameters = message.body;
 
-    NSError *error = nil;
-    NSArray *result = [STMCoreObjectsController updateObjectsFromScriptMessage:message error:&error];
-
-    if (result.count > 0) [self callbackWithData:result parameters:parameters];
-    if (error) [self callbackWithError:error.localizedDescription parameters:parameters];
+    [STMCoreObjectsController updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
         
+        if (success) {
+            [self callbackWithData:updatedObjects parameters:parameters];
+        } else {
+            [self callbackWithError:error.localizedDescription parameters:parameters];
+        }
+
+    }];
+    
 }
 
 - (void)handleSoundMessage:(WKScriptMessage *)message {
@@ -1552,6 +1556,16 @@ int counter = 0;
     NSDictionary *parameters = @{@"reason": @"subscription"};
     
     [self callbackWithData:result
+                parameters:parameters
+        jsCallbackFunction:self.subscribeDataCallbackJSFunction];
+
+}
+
+- (void)subscribedObjectsArrayWasReceived:(NSArray *)objectsArray {
+
+    NSDictionary *parameters = @{@"reason": @"subscription"};
+    
+    [self callbackWithData:objectsArray
                 parameters:parameters
         jsCallbackFunction:self.subscribeDataCallbackJSFunction];
 
