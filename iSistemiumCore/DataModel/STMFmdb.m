@@ -136,6 +136,23 @@ FMDatabaseQueue *queue;
     }];
 }
 
+-(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK{
+    
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            NSMutableArray *rez = @[].mutableCopy;
+            [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE id = '%@'",name,PK];
+                FMResultSet *s = [db executeQuery:query];
+                while ([s next]) {
+                    [rez addObject:[s resultDictionary]];
+                }
+                resolve(rez);
+            }];
+        });
+    }];
+}
+
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
@@ -150,10 +167,6 @@ FMDatabaseQueue *queue;
             }];
         });
     }];
-    
-    
-    
-    
 }
 
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name{
