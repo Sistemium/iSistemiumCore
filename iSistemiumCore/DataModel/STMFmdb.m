@@ -30,25 +30,66 @@ FMDatabaseQueue *queue;
         
         if ([database open]){
             [database beginTransaction];
-            NSString *sql_stmt = @"CREATE TABLE IF NOT EXISTS STMPrice (id TEXT PRIMARY KEY, commentText TEXT, deviceCts TEXT, deviceTs TEXT, lts TEXT, ownerXid TEXT, source TEXT, target TEXT, price NUMERIC, articleId TEXT REFERENCES STMArticle(id), priceTypeId TEXT REFERENCES STMPriceType(id) ) ";
+            NSString *sql_stmt = @"";
             for (NSString* entityName in entityNames){
+                if ([entityName isEqualToString:@"STMSetting"] || [entityName isEqualToString:@"STMEntity"] ){
+                    continue;
+                }
                 sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
                 sql_stmt = [sql_stmt stringByAppendingString:entityName];
                 sql_stmt = [sql_stmt stringByAppendingString:@" ("];
-                NSLog(@"TableName %@", entityName);
-                NSArray* keys = [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys;
-                for (NSString* entityKey in keys){
+                BOOL first = true;
+                for (NSString* entityKey in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                    if (first){
+                        first = false;
+                    }else{
+                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
+                    }
+                    sql_stmt = [sql_stmt stringByAppendingString:entityKey];
                     NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][entityKey];
+                    if ([entityKey isEqualToString:@"id"]){
+                        sql_stmt = [sql_stmt stringByAppendingString:@" TEXT PRIMARY KEY"];
+                        continue;
+                    }
                     switch (atribute.attributeType) {
                         case NSStringAttributeType:
-
+                        case NSDateAttributeType:
+                        case NSUndefinedAttributeType:
+                        case NSBinaryDataAttributeType:
+                        case NSTransformableAttributeType:
+                            sql_stmt = [sql_stmt stringByAppendingString:@" TEXT"];
                             break;
-                            
+                        case NSInteger64AttributeType:
+                        case NSBooleanAttributeType:
+                        case NSObjectIDAttributeType:
+                        case NSInteger16AttributeType:
+                        case NSInteger32AttributeType:
+                            sql_stmt = [sql_stmt stringByAppendingString:@" INTEGER"];
+                            break;
+                        case NSDecimalAttributeType:
+                        case NSFloatAttributeType:
+                        case NSDoubleAttributeType:
+                            sql_stmt = [sql_stmt stringByAppendingString:@" NUMERIC"];
+                            break;
                         default:
                             break;
                     }
                 }
+                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
+                    if (first){
+                        first = false;
+                    }else{
+                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
+                    }
+                    sql_stmt = [sql_stmt stringByAppendingString:entityKey];
+                    sql_stmt = [sql_stmt stringByAppendingString:@"Id TEXT REFERENCES "];
+                    sql_stmt = [sql_stmt stringByAppendingString:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    sql_stmt = [sql_stmt stringByAppendingString:@"(id)"];
+                }
+                sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
             }
+            NSLog(@"%@",sql_stmt);
+        
             [database executeStatements:sql_stmt];
             
             NSMutableArray* names = @[].mutableCopy;
