@@ -43,11 +43,12 @@
 @property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
-
 @property (nonatomic, strong) NSMutableArray *fantomsArray;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 @property (nonatomic, strong) NSMutableArray *updateRequests;
+@property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
+
 
 @end
 
@@ -90,12 +91,19 @@
     
 }
 
+- (NSMutableArray <STMDatum *> *)subscribedObjects {
+    
+    if (!_subscribedObjects) {
+        _subscribedObjects = @[].mutableCopy;
+    }
+    return _subscribedObjects;
+    
+}
+
 - (NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *)entitiesToSubscribe {
     
     if (!_entitiesToSubscribe) {
-    
         _entitiesToSubscribe = @{}.mutableCopy;
-        
     }
     return _entitiesToSubscribe;
     
@@ -211,7 +219,10 @@
 }
 
 - (void)documentSavedSuccessfully {
+    
     [self checkUpdateRequests];
+    [self checkSubscribedObjects];
+    
 }
 
 - (void)checkUpdateRequests {
@@ -240,6 +251,22 @@
         
         completionHandler(YES, result, nil);
         
+    }
+    
+}
+
+- (void)checkSubscribedObjects {
+    
+    NSArray *subscribedObjects = self.subscribedObjects.copy;
+    self.subscribedObjects = nil;
+    
+    for (STMDatum *object in subscribedObjects) {
+        
+        NSString *entityName = object.entity.name;
+        
+        [STMCoreObjectsController sendSubscribedEntityObject:object
+                                                  entityName:entityName];
+
     }
     
 }
@@ -413,8 +440,14 @@
 
     [self postprocessingForObject:object];
     
-    if ([[self sharedController].entitiesToSubscribe objectForKey:entityName]) {
-        if ([object isKindOfClass:[STMDatum class]]) [self sendSubscribedEntityObject:(STMDatum *)object entityName:entityName];
+    STMCoreObjectsController *coc = [self sharedController];
+    
+    if ([coc.entitiesToSubscribe objectForKey:entityName]) {
+        
+        if (object && [object isKindOfClass:[STMDatum class]]) {
+            [coc.subscribedObjects addObject:(STMDatum *)object];
+        }
+        
     }
     
 }
