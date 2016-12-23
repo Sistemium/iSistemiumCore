@@ -2155,6 +2155,8 @@
 
 + (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
     
+    STMFmdb* fmdb = [STMFmdb sharedInstance];
+    
     NSArray *result = nil;
 
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
@@ -2167,15 +2169,22 @@
     NSDictionary *parameters = scriptMessage.body;
 
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
-        
-        result = [self findObjectInCacheWithParameters:parameters error:error];
-
-        if (*error) return nil;
-        if (result) {
-            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-                resolve(result);
-            }];
-
+        if ([fmdb containstTableWithNameWithName:[@"STM" stringByAppendingString:parameters[@"entity"]]]){
+            return [fmdb getDataWithEntityName:[@"STM" stringByAppendingString:parameters[@"entity"]] PK:parameters[@"id"]];
+        }
+        else{
+            result = [self findObjectInCacheWithParameters:parameters error:error];
+            if (*error) {
+                return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+                    resolve(*error);
+                }];
+            };
+            if (result) {
+                return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+                    resolve(result);
+                }];
+                
+            }
         }
 
     }
@@ -2186,7 +2195,11 @@
 
 //    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    if (*error) return nil;
+    if (*error) {
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(*error);
+        }];
+    }
 
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     NSDictionary *options = parameters[@"options"];
@@ -2195,7 +2208,6 @@
     NSString *orderBy = options[@"sortBy"];
     if (!orderBy) orderBy = @"id";
     
-    STMFmdb* fmdb = [STMFmdb sharedInstance];
     if ([fmdb containstTableWithNameWithName:entityName]){
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
         return [fmdb getDataWithEntityName:entityName];
@@ -2214,7 +2226,7 @@
             NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
             
             if (*error) {
-                return resolve(nil);
+                return resolve(*error);
             } else {
                 resolve([self arrayForJSWithObjectsDics:objectsArray entityName:entityName]);
             }
