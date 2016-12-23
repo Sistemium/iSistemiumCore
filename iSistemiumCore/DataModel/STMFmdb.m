@@ -145,12 +145,24 @@ FMDatabaseQueue *queue;
         
         NSMutableArray* values = @[].mutableCopy;
         
-        for(NSString* key in dictionary){
-            NSString* keyWithoutId = [key substringToIndex:[key length] - 2];
-            if ([[STMCoreObjectsController allObjectsWithTypeForEntityName:tablename].allKeys containsObject:key] || [[STMCoreObjectsController toOneRelationshipsForEntityName:tablename].allKeys containsObject:keyWithoutId]){
-                [keys addObject:key];
-                [values addObject:[dictionary objectForKey:key]];
-            }
+        NSArray* availableKeys = dictionary.allKeys;
+        
+        NSArray* relations = [STMCoreObjectsController toOneRelationshipsForEntityName:tablename].allKeys;
+        
+        [relations enumerateObjectsUsingBlock:^(id anObject, NSUInteger index, BOOL *stop) {
+            anObject = [anObject stringByAppendingString:@"Id"];
+        }];
+        
+        NSArray* supportedByModelKeys = [[STMCoreObjectsController allObjectsWithTypeForEntityName:tablename].allKeys.mutableCopy arrayByAddingObjectsFromArray:relations];
+        
+        NSMutableSet *set1 = [NSMutableSet setWithArray: dictionary.allKeys];
+        NSSet *set2 = [NSSet setWithArray: supportedByModelKeys];
+        [set1 intersectSet: set2];
+        NSArray *resultArray = [set1 allObjects];
+        
+        for(NSString* key in resultArray){
+            [keys addObject:key];
+            [values addObject:[dictionary objectForKey:key]];
         }
         
         [keys addObject:@"lts"];
