@@ -261,18 +261,25 @@
         return;
     }
     
-    NSArray *subscribedObjects = self.subscribedObjects.copy;
+    NSMutableArray *subscribedObjects = self.subscribedObjects.mutableCopy;
     self.subscribedObjects = nil;
     
-    for (STMDatum *object in subscribedObjects) {
+    for (NSString *entityName in self.entitiesToSubscribe.allKeys) {
         
-        NSString *entityName = object.entity.name;
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entity.name == %@", entityName];
+        NSArray *bunchOfObjects = [subscribedObjects filteredArrayUsingPredicate:predicate];
         
-        [STMCoreObjectsController sendSubscribedEntityObject:object
-                                                  entityName:entityName];
+        if (bunchOfObjects.count > 0) {
+        
+            [STMCoreObjectsController sendSubscribedBunchOfObjects:bunchOfObjects
+                                                        entityName:entityName];
 
+            [subscribedObjects removeObjectsInArray:bunchOfObjects];
+            
+        }
+        
     }
-    
+
 }
 
 
@@ -1775,22 +1782,32 @@
     
 }
 
-+ (void)sendSubscribedEntityObject:(STMDatum *)object entityName:(NSString *)entityName {
-    
-    NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = [self sharedController].entitiesToSubscribe[entityName];
-    
-    for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
-    
-        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
-    
-        if (object.xid) {
-            
-            NSDictionary *subscribeDic = @{@"entity"    : entityName,
-                                           @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
-                                           @"data"      : [self dictionaryForJSWithObject:object]};
-            
-            [vc subscribedEntitiesObjectWasReceived:subscribeDic];
++ (void)sendSubscribedBunchOfObjects:(NSArray *)objectArray entityName:(NSString *)entityName {
 
+    NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = [self sharedController].entitiesToSubscribe[entityName];
+
+    if (vcArray.count > 0) {
+        
+        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
+
+        NSMutableArray *resultArray = @[].mutableCopy;
+
+        for (STMDatum *object in objectArray) {
+            
+            if (object.xid) {
+                
+                NSDictionary *subscribeDic = @{@"entity"    : entityName,
+                                               @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
+                                               @"data"      : [self dictionaryForJSWithObject:object]};
+                
+                [resultArray addObject:subscribeDic];
+                
+            }
+            
+        }
+        
+        for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
+            [vc subscribedObjectsArrayWasReceived:resultArray];
         }
 
     }
