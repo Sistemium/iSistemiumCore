@@ -257,6 +257,10 @@
 
 - (void)checkSubscribedObjects {
     
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        return;
+    }
+    
     NSArray *subscribedObjects = self.subscribedObjects.copy;
     self.subscribedObjects = nil;
     
