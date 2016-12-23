@@ -1431,32 +1431,32 @@
         
     }
 
-    if (objController.fantomsArray.count > 0) {
-        
-        NSLog(@"DEFANTOMIZING_START");
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                            object:objController
-                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
-        
-        [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
-        
-    } else {
-    
-        NSLog(@"DEFANTOMIZING_FINISH");
-        
-        objController.isDefantomizingProcessRunning = NO;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                            object:objController
-                                                          userInfo:nil];
-
-        [objController.notFoundFantomsArray removeAllObjects];
-        [[self document] saveDocument:^(BOOL success) {
-            
-        }];
-        
-    }
+//    if (objController.fantomsArray.count > 0) {
+//        
+//        NSLog(@"DEFANTOMIZING_START");
+//        
+//        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+//                                                            object:objController
+//                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+//        
+//        [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
+//        
+//    } else {
+//    
+//        NSLog(@"DEFANTOMIZING_FINISH");
+//        
+//        objController.isDefantomizingProcessRunning = NO;
+//        
+//        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+//                                                            object:objController
+//                                                          userInfo:nil];
+//
+//        [objController.notFoundFantomsArray removeAllObjects];
+//        [[self document] saveDocument:^(BOOL success) {
+//            
+//        }];
+//        
+//    }
 
 }
 
