@@ -559,7 +559,8 @@
     if (self.isWaitingDocumentSaving) {
 
         self.isWaitingDocumentSaving = NO;
-        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+#warning disabled because it slows down object processing
+//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
 
     }
 
@@ -955,11 +956,11 @@
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
 
         if (self.entitySyncNames.firstObject) {
-            
-            self.isWaitingDocumentSaving = YES;
+#warning disabled because it slows down object processin
+//            self.isWaitingDocumentSaving = YES;
             [self.document saveDocument:^(BOOL success) {}];
 
-//            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
             
         } else {
             
@@ -1485,11 +1486,11 @@
         if (settingsIndex != NSNotFound) [self.entitySyncNames exchangeObjectAtIndex:settingsIndex withObjectAtIndex:0];
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish" object:self];
-        
-        self.isWaitingDocumentSaving = YES;
+#warning disabled because it slows down object processin
+//        self.isWaitingDocumentSaving = YES;
         [self.document saveDocument:^(BOOL success) {}];
         
-//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
         
     } else {
         [self entityCountDecrease];
