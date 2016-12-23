@@ -1279,19 +1279,11 @@
 //    NSLog(@"handleKindOfFindMessage %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message error:&error].then(^(NSArray *result){
-        if (!error) {
-            
-            //        NSLog(@"FindMessage result %@", @([NSDate timeIntervalSinceReferenceDate]));
-            
-            [self callbackWithData:result
-                        parameters:parameters];
-            
-        } else {
-            
-            [self callbackWithError:error.localizedDescription
-                         parameters:parameters];
-            
-        }
+        [self callbackWithData:result
+                    parameters:parameters];
+    }).catch(^(NSError *error){
+        [self callbackWithError:error.localizedDescription
+                     parameters:parameters];
     });
         
 }
