@@ -11,6 +11,7 @@
 @protocol STMEntitiesSubscribable <NSObject>
 
 - (void)subscribedEntitiesObjectWasReceived:(NSDictionary *)objectDic;
+- (void)subscribedObjectsArrayWasReceived:(NSArray *)objectsArray;
 
 
 @end

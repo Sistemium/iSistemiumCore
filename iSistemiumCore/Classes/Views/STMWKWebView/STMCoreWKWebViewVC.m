@@ -1569,6 +1569,16 @@ int counter = 0;
 
 }
 
+- (void)subscribedObjectsArrayWasReceived:(NSArray *)objectsArray {
+
+    NSDictionary *parameters = @{@"reason": @"subscription"};
+    
+    [self callbackWithData:objectsArray
+                parameters:parameters
+        jsCallbackFunction:self.subscribeDataCallbackJSFunction];
+
+}
+
 
 #pragma mark - barcode scanning
 
