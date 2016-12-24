@@ -1235,11 +1235,16 @@
         if (responseData.count > 0) {
             
             NSString *offset = response[@"offset"];
+            NSUInteger pageSize = [response[@"pageSize"] integerValue];
             
             if (offset) {
                 
+                BOOL isLastPage = responseData.count < pageSize;
+
                 if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
-                [self parseSocketFindAllResponseData:responseData forEntityName:entityName];
+                [self parseSocketFindAllResponseData:responseData
+                                       forEntityName:entityName
+                                            isLastPage:isLastPage];
                 
             } else {
                 
@@ -1267,7 +1272,7 @@
     
 }
 
-- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName {
+- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
     
     STMEntity *entity = (self.stcEntities)[entityName];
     
@@ -1280,11 +1285,8 @@
                 NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
                 
 //                NSLog(@"timecheck %@", @([NSDate timeIntervalSinceReferenceDate]));
-
-                NSUInteger pageRowCount = data.count;
-                NSUInteger pageSize = self.fetchLimit;
                 
-                if (pageRowCount < pageSize) {
+                if (isLastPage) {
                     
                     NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
                     
