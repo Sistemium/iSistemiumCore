@@ -49,7 +49,6 @@
 @property (nonatomic) BOOL errorOccured;
 @property (nonatomic) BOOL fullSyncWasDone;
 @property (nonatomic) BOOL isFirstSyncCycleIteration;
-@property (nonatomic) BOOL isWaitingDocumentSaving;
 
 @property (nonatomic, strong) NSMutableDictionary *responses;
 @property (nonatomic, strong) NSMutableDictionary *temporaryETag;
@@ -556,13 +555,6 @@
 
 - (void)documentSavedSuccessfully:(NSNotification *)notification {
     
-    if (self.isWaitingDocumentSaving) {
-
-        self.isWaitingDocumentSaving = NO;
-        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-
-    }
-
 }
 
 - (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
@@ -956,10 +948,9 @@
 
         if (self.entitySyncNames.firstObject) {
             
-            self.isWaitingDocumentSaving = YES;
             [self.document saveDocument:^(BOOL success) {}];
 
-//            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
             
         } else {
             
@@ -1486,10 +1477,9 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish" object:self];
         
-        self.isWaitingDocumentSaving = YES;
         [self.document saveDocument:^(BOOL success) {}];
         
-//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
         
     } else {
         [self entityCountDecrease];
