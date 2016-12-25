@@ -1299,9 +1299,23 @@
     NSNumber *requestId = parameters[@"options"][@"requestId"];
 
     if (requestId && [data isKindOfClass:[NSArray class]]) {
+        
         NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @([(NSArray *)data count]));
+        
     } else {
-        NSLog(@"callbackWithData: %@ for message parameters: %@", data, parameters);
+        
+        if ([parameters[@"reason"] isEqualToString:@"subscription"]) {
+
+            NSString *entityName = [[(NSArray *)data firstObject] valueForKey:@"entity"];
+            
+            NSLog(@"subscription %@ callbackWithData: %@ objects", entityName, @([(NSArray *)data count]));
+            
+        } else {
+        
+            NSLog(@"callbackWithData: %@ for message parameters: %@", data, parameters);
+
+        }
+        
     }
     
 #endif

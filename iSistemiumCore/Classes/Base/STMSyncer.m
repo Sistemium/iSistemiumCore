@@ -49,7 +49,6 @@
 @property (nonatomic) BOOL errorOccured;
 @property (nonatomic) BOOL fullSyncWasDone;
 @property (nonatomic) BOOL isFirstSyncCycleIteration;
-@property (nonatomic) BOOL isWaitingDocumentSaving;
 
 @property (nonatomic, strong) NSMutableDictionary *responses;
 @property (nonatomic, strong) NSMutableDictionary *temporaryETag;
@@ -556,14 +555,6 @@
 
 - (void)documentSavedSuccessfully:(NSNotification *)notification {
     
-    if (self.isWaitingDocumentSaving) {
-
-        self.isWaitingDocumentSaving = NO;
-#warning disabled because it slows down object processing
-//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-
-    }
-
 }
 
 - (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
@@ -956,8 +947,7 @@
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
 
         if (self.entitySyncNames.firstObject) {
-#warning disabled because it slows down object processin
-//            self.isWaitingDocumentSaving = YES;
+
             [self.document saveDocument:^(BOOL success) {}];
 
             [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
@@ -1245,11 +1235,16 @@
         if (responseData.count > 0) {
             
             NSString *offset = response[@"offset"];
+            NSUInteger pageSize = [response[@"pageSize"] integerValue];
             
             if (offset) {
                 
+                BOOL isLastPage = responseData.count < pageSize;
+
                 if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
-                [self parseSocketFindAllResponseData:responseData forEntityName:entityName];
+                [self parseSocketFindAllResponseData:responseData
+                                       forEntityName:entityName
+                                            isLastPage:isLastPage];
                 
             } else {
                 
@@ -1277,7 +1272,7 @@
     
 }
 
-- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName {
+- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
     
     STMEntity *entity = (self.stcEntities)[entityName];
     
@@ -1290,11 +1285,8 @@
                 NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
                 
 //                NSLog(@"timecheck %@", @([NSDate timeIntervalSinceReferenceDate]));
-
-                NSUInteger pageRowCount = data.count;
-                NSUInteger pageSize = self.fetchLimit;
                 
-                if (pageRowCount < pageSize) {
+                if (isLastPage) {
                     
                     NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
                     
@@ -1486,8 +1478,7 @@
         if (settingsIndex != NSNotFound) [self.entitySyncNames exchangeObjectAtIndex:settingsIndex withObjectAtIndex:0];
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish" object:self];
-#warning disabled because it slows down object processin
-//        self.isWaitingDocumentSaving = YES;
+        
         [self.document saveDocument:^(BOOL success) {}];
         
         [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
