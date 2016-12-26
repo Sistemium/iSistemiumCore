@@ -1740,6 +1740,8 @@
     
     if (result) {
 
+        NSLog(@"subscribeViewController: %@ toEntities: %@", vc, entitiesToSubscribe);
+
         [self flushSubscribedViewController:vc];
 
         for (NSString *entityName in entitiesToSubscribe) {
@@ -1811,6 +1813,13 @@
         }
 
     }
+    
+}
+
++ (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc {
+    
+    NSLog(@"unsubscribeViewController: %@", vc);
+    [self flushSubscribedViewController:vc];
     
 }
 

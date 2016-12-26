@@ -386,6 +386,8 @@
         [self.webView removeFromSuperview];
         self.webView = nil;
         
+        [STMCoreObjectsController unsubscribeViewController:self];
+        
     }
     
 }
