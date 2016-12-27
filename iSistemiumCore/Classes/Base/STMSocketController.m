@@ -1680,7 +1680,19 @@
         }
         
     } else {
-        [STMSocketController syncer].syncerState = STMSyncerReceiveData;
+        
+        if ([STMSocketController socketIsAvailable]) {
+            
+            [STMSocketController syncer].syncerState = STMSyncerReceiveData;
+    
+        } else {
+            
+            [self closeSocket];
+            self.isManualReconnecting = NO;
+            [self startSocket];
+            
+        }
+        
     }
 
 }
