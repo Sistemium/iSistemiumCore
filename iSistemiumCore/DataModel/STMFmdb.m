@@ -15,7 +15,7 @@
 @implementation STMFmdb
 
 FMDatabase *database;
-NSArray* tableNames;
+NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
 
 - (instancetype)init {
@@ -27,6 +27,7 @@ FMDatabaseQueue *queue;
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         database = [FMDatabase databaseWithPath:dbPath];
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+        NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
         if ([database open]){
             [database beginTransaction];
@@ -35,6 +36,7 @@ FMDatabaseQueue *queue;
                 if ([entityName isEqualToString:@"STMSetting"] || [entityName isEqualToString:@"STMEntity"] ){
                     continue;
                 }
+                NSMutableArray *columns = @[].mutableCopy;
                 sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
                 sql_stmt = [sql_stmt stringByAppendingString:entityName];
                 sql_stmt = [sql_stmt stringByAppendingString:@" ("];
@@ -45,6 +47,7 @@ FMDatabaseQueue *queue;
                     }else{
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
+                    [columns addObject:entityKey];
                     sql_stmt = [sql_stmt stringByAppendingString:entityKey];
                     NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][entityKey];
                     if ([entityKey isEqualToString:@"id"]){
@@ -81,24 +84,19 @@ FMDatabaseQueue *queue;
                     }else{
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
+                    [columns addObject:[entityKey stringByAppendingString:@"Id"]];
                     sql_stmt = [sql_stmt stringByAppendingString:entityKey];
                     sql_stmt = [sql_stmt stringByAppendingString:@"Id TEXT REFERENCES "];
                     sql_stmt = [sql_stmt stringByAppendingString:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
                     sql_stmt = [sql_stmt stringByAppendingString:@"(id)"];
                 }
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
+                columnsDictionary[entityName] = columns.copy;
             }
             NSLog(@"%@",sql_stmt);
-        
+            columnsByTable = columnsDictionary.copy;
             [database executeStatements:sql_stmt];
             
-            NSMutableArray* names = @[].mutableCopy;
-            sql_stmt = @"SELECT name FROM sqlite_master WHERE type='table'";
-            FMResultSet* rs =[database executeQuery:sql_stmt];
-            while ([rs next]) {
-                [names addObject:[rs stringForColumn:@"name"]];
-            }
-            tableNames = names;
             [database commit];
             [database close];
         }
@@ -146,8 +144,7 @@ FMDatabaseQueue *queue;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            NSString* keyWithoutId = [key substringToIndex:[key length] - 2];
-            if ([[STMCoreObjectsController allObjectsWithTypeForEntityName:tablename].allKeys containsObject:key] || [[STMCoreObjectsController toOneRelationshipsForEntityName:tablename].allKeys containsObject:keyWithoutId]){
+            if ([columnsByTable[tablename] containsObject:key]){
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }
@@ -204,14 +201,14 @@ FMDatabaseQueue *queue;
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
                 }
-                resolve(rez);
+                resolve(rez.copy);
             }];
         });
     }];
 }
 
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name{
-    if ([tableNames containsObject:name]){
+    if ([columnsByTable.allKeys containsObject:name]){
         return true;
     }
     return false;
