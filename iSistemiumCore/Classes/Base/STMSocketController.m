@@ -1648,7 +1648,7 @@
     logMessage = [NSString stringWithFormat:@"self.socket %@, self.socketUrl %@, self.isRunning %@, self.isManualReconnecting %@, self.socket.sid %@", self.socket, self.socketUrl, @(self.isRunning), @(self.isManualReconnecting), self.socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeInfo];
-    
+
     if (self.socketUrl && !self.isRunning && !self.isManualReconnecting) {
         
         self.isRunning = YES;
@@ -1697,23 +1697,26 @@
         
         [self.socket disconnect];
 
-//        if (!self.isManualReconnecting) {
-            self.socket = nil;
-//        }
-        
-        self.socketUrl = nil;
-        
-        self.isSendingData = NO;
-        self.isAuthorized = NO;
-        self.isRunning = NO;
-        
-        self.unsyncedObjectsArray = nil;
-        self.syncDateDictionary = nil;
-        self.doNotSyncObjectXids = nil;
-        
-        self.sendingDate = nil;
+        [self flushSocket];
         
     }
+
+}
+
+- (void)flushSocket {
+    
+    self.socket = nil;
+    self.socketUrl = nil;
+    
+    self.isSendingData = NO;
+    self.isAuthorized = NO;
+    self.isRunning = NO;
+    
+    self.unsyncedObjectsArray = nil;
+    self.syncDateDictionary = nil;
+    self.doNotSyncObjectXids = nil;
+    
+    self.sendingDate = nil;
 
 }
 
@@ -1776,7 +1779,7 @@
                                numType:STMLogMessageTypeInfo];
 
         if (socket.status == SocketIOClientStatusConnected) {
-        
+
             if (self.isAuthorized) {
                 
                 logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
