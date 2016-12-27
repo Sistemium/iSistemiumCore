@@ -2254,7 +2254,9 @@
 
 #pragma mark - find objects for WKWebView
 
-+ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
++ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
+    
+    NSError* error = nil;
     
     STMFmdb* fmdb = [STMFmdb sharedInstance];
     
@@ -2262,8 +2264,10 @@
 
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:error withMessage:@"message.body is not a NSDictionary class"];
-        return nil;
+        [self error:&error withMessage:@"message.body is not a NSDictionary class"];
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
         
     }
 
@@ -2274,10 +2278,10 @@
             return [fmdb getDataWithEntityName:[@"STM" stringByAppendingString:parameters[@"entity"]] PK:parameters[@"id"]];
         }
         else{
-            result = [self findObjectInCacheWithParameters:parameters error:error];
-            if (*error) {
+            result = [self findObjectInCacheWithParameters:parameters error:&error];
+            if (error) {
                 return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-                    resolve(*error);
+                    resolve(error);
                 }];
             };
             if (result) {
@@ -2292,13 +2296,13 @@
     
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:error];
+    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
 
 //    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    if (*error) {
+    if (error) {
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(*error);
+            resolve(error);
         }];
     }
 
@@ -2314,6 +2318,7 @@
         return [fmdb getDataWithEntityName:entityName];
     } else {
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            NSError* error = nil;
             NSArray* objectsArray = [self objectsForEntityName:entityName
                                                    orderBy:orderBy
                                                  ascending:YES
@@ -2323,11 +2328,11 @@
                                                  predicate:predicate
                                                 resultType:NSDictionaryResultType
                                     inManagedObjectContext:[self document].managedObjectContext
-                                                     error:error];
+                                                     error:&error];
             NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
             
-            if (*error) {
-                return resolve(*error);
+            if (error) {
+                return resolve(error);
             } else {
                 resolve([self arrayForJSWithObjectsDics:objectsArray entityName:entityName]);
             }

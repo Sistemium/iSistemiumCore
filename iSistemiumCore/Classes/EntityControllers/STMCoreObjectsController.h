@@ -85,8 +85,7 @@
                           error:(NSError **)error;
 + (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage
                                       error:(NSError **)error;
-+ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage
-                                              error:(NSError **)error;
++ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage;
 
 + (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
                  withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;

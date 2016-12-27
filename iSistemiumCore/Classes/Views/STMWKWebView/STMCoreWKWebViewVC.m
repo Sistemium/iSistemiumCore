@@ -1278,11 +1278,9 @@
     
     NSDictionary *parameters = message.body;
     
-    NSError *error = nil;
-    
 //    NSLog(@"handleKindOfFindMessage %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message error:&error].then(^(NSArray *result){
+    [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
         [self callbackWithData:result
                     parameters:parameters];
     }).catch(^(NSError *error){
