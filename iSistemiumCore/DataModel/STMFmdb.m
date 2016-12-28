@@ -119,7 +119,7 @@ FMDatabaseQueue *queue;
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array{
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
                 NSLog(@"Started inserting %@", tablename);
                 NSMutableArray* promises = @[].mutableCopy;
@@ -166,18 +166,20 @@ FMDatabaseQueue *queue;
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-            [self insertWithTablename:tablename dictionary:dictionary database:db].then(^{
-                resolve(nil);
-            });
-        }];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                [self insertWithTablename:tablename dictionary:dictionary database:db].then(^{
+                    resolve(nil);
+                });
+            }];
+        });
     }];
 }
 
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK{
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
             [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
                 NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE id = '%@'",name,PK];
@@ -194,7 +196,7 @@ FMDatabaseQueue *queue;
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
             [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
                 FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
@@ -212,6 +214,10 @@ FMDatabaseQueue *queue;
         return true;
     }
     return false;
+}
+
+- (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj{
+    return columnsByTable[obj];
 }
 
 @end

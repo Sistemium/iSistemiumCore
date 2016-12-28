@@ -26,7 +26,7 @@
 
 //#import "iSistemiumCore-Swift.h"
 #import "STMFmdb.h"
-
+#import "STMPredicateToSQL.h"
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
 
@@ -2297,6 +2297,9 @@
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
+    NSLog(@"scriptMessage: %@",scriptMessage.body);
+    NSLog(@"predicate: %@",predicate);
+    NSLog(@"predicatetoSQL: %@",[[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate]);
 
 //    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
 

@@ -16,5 +16,6 @@
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary;
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK;
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name;
+- (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
 
 @end
