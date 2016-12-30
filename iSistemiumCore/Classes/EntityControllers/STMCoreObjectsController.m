@@ -2318,7 +2318,11 @@
     
     if ([fmdb containstTableWithNameWithName:entityName]){
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
-        return [fmdb getDataWithEntityName:entityName];
+        if (predicate){
+            return [fmdb getDataWithEntityName:entityName whereStatement:[[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate]];
+        }else{
+            return [fmdb getDataWithEntityName:entityName];
+        }
     } else {
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             NSError* error = nil;

@@ -110,6 +110,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (uint64_t)freeDiskspace;
 
++ (NSString *)uppercaseFirst:(NSString *)inputString;
++ (NSString *)lowercaseFirst:(NSString *)inputString;
+
 NS_ASSUME_NONNULL_END
 
 

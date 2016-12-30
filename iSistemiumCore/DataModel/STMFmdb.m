@@ -38,7 +38,7 @@ FMDatabaseQueue *queue;
                 }
                 NSMutableArray *columns = @[].mutableCopy;
                 sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
-                sql_stmt = [sql_stmt stringByAppendingString:entityName];
+                sql_stmt = [sql_stmt stringByAppendingString:[self entityToTableName:entityName]];
                 sql_stmt = [sql_stmt stringByAppendingString:@" ("];
                 BOOL first = true;
                 for (NSString* entityKey in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
@@ -87,11 +87,11 @@ FMDatabaseQueue *queue;
                     [columns addObject:[entityKey stringByAppendingString:@"Id"]];
                     sql_stmt = [sql_stmt stringByAppendingString:entityKey];
                     sql_stmt = [sql_stmt stringByAppendingString:@"Id TEXT REFERENCES "];
-                    sql_stmt = [sql_stmt stringByAppendingString:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    sql_stmt = [sql_stmt stringByAppendingString:[self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]]];
                     sql_stmt = [sql_stmt stringByAppendingString:@"(id)"];
                 }
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
-                columnsDictionary[entityName] = columns.copy;
+                columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
             }
             NSLog(@"%@",sql_stmt);
             columnsByTable = columnsDictionary.copy;
@@ -102,6 +102,13 @@ FMDatabaseQueue *queue;
         }
     }
     return self;
+}
+
+- (NSString *)entityToTableName:(NSString *)entity{
+    if ([entity hasPrefix:@"STM"]){
+        return [entity substringFromIndex:3];
+    }
+    return entity ;
 }
 
 + (STMFmdb *)sharedInstance {
@@ -118,6 +125,7 @@ FMDatabaseQueue *queue;
 }
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array{
+    tablename = [self entityToTableName:tablename];
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
@@ -138,6 +146,7 @@ FMDatabaseQueue *queue;
 }
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary database:(FMDatabase * _Nonnull)database {
+    tablename = [self entityToTableName:tablename];
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         NSMutableArray* keys = @[].mutableCopy;
         
@@ -165,6 +174,7 @@ FMDatabaseQueue *queue;
 }
 
 - (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+    tablename = [self entityToTableName:tablename];
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
@@ -177,7 +187,7 @@ FMDatabaseQueue *queue;
 }
 
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK{
-    
+    name = [self entityToTableName:name];
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
@@ -187,14 +197,33 @@ FMDatabaseQueue *queue;
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
                 }
-                resolve(rez);
+                resolve(rez.copy);
+            }];
+        });
+    }];
+}
+
+- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name whereStatement:(NSString * _Nonnull)where{
+    name = [self entityToTableName:name];
+    where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
+    where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSMutableArray *rez = @[].mutableCopy;
+            [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+                NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",name,where];
+                FMResultSet *s = [db executeQuery:query];
+                while ([s next]) {
+                    [rez addObject:[s resultDictionary]];
+                }
+                resolve(rez.copy);
             }];
         });
     }];
 }
 
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
-    
+    name = [self entityToTableName:name];
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
@@ -210,6 +239,7 @@ FMDatabaseQueue *queue;
 }
 
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name{
+    name = [self entityToTableName:name];
     if ([columnsByTable.allKeys containsObject:name]){
         return true;
     }
@@ -217,6 +247,7 @@ FMDatabaseQueue *queue;
 }
 
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj{
+    obj = [self entityToTableName:obj];
     return columnsByTable[obj];
 }
 

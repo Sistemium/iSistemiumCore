@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMPredicateToSQL.h"
 #import "STMFmdb.h"
+#import "STMFunctions.h"
 
 @implementation STMPredicateToSQL
 
@@ -91,14 +92,24 @@ static STMPredicateToSQL *sharedInstance;
 
 
 - (NSString *)DatabaseKeyfor:(NSString *)obj{
-    NSArray *keysForObj = [[STMFmdb sharedInstance] allKeysForObject:obj];
-    if ([keysForObj count] > 0) {
-        return [keysForObj objectAtIndex:0];
+    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:obj]];
+    if (isTable) {
+        return [STMFunctions uppercaseFirst:obj];
+    }
+    isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
+    if (isTable) {
+        return [STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]];
     }
     return obj ;
 }
 
-
+- (NSString *)FKToTablename:(NSString *)obj{
+    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:obj]];
+    if (isTable) {
+        return [obj stringByAppendingString:@"Id"];
+    }
+    return obj ;
+}
 
 - (NSString *)SQLExpressionForLeftKeyPath:(NSString *)keyPath{
     NSString *retStr = nil;
@@ -112,9 +123,9 @@ static STMPredicateToSQL *sharedInstance;
     }
     
     if (retStr != nil) {
-        return [self DatabaseKeyfor:retStr];
+        return [self FKToTablename:retStr];
     }
-    return [self DatabaseKeyfor:keyPath];
+    return [self FKToTablename:keyPath];
 }
 
 
@@ -127,11 +138,11 @@ static STMPredicateToSQL *sharedInstance;
     }
     
     if ([val isKindOfClass:[NSString class]]){
-        return [self DatabaseKeyfor:val];
+        return [self FKToTablename:val];
     }
     else {
         if ([val respondsToSelector:@selector(intValue)]){
-            return [self DatabaseKeyfor:[val stringValue]];
+            return [self FKToTablename:[val stringValue]];
         }
         else {
             return [self SQLConstantForLeftValue:[val description]];
@@ -266,48 +277,57 @@ static STMPredicateToSQL *sharedInstance;
 }
 
 - (NSString *) SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate{
+    
     NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
     
+    rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+    
+    if ([predicate comparisonPredicateModifier] == NSAnyPredicateModifier ){
+        NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
+        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self DatabaseKeyfor:tables[0]],[self FKToTablename:tables[1]]];
+        rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
+    }
+    
     switch ([predicate predicateOperatorType]){
         case NSLessThanPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ < '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ < %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSLessThanOrEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ <= '%@')",leftSQLExpression,rightSQLExpression] ;
+            return [NSString stringWithFormat:@"(%@ <= %@)",leftSQLExpression,rightSQLExpression] ;
         }
         case NSGreaterThanPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ > '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ > %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSGreaterThanOrEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ >= '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ >= %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ = '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ = %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ <> '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ <> %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSMatchesPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ MATCH '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSInPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ IN '%@')",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ IN %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSBetweenPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
+            return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
                                                        [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
-                                                       [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]]);
+                                                       [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]] ;
         }
         case NSLikePredicateOperatorType:
         case NSContainsPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE '%%%@%%')",leftSQLExpression,rightSQLExpression]);
+            return([NSString stringWithFormat:@"(%@ LIKE %%%@%%)",leftSQLExpression,rightSQLExpression]);
         }
         case NSBeginsWithPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE '%@%%')",leftSQLExpression,rightSQLExpression]);
+            return([NSString stringWithFormat:@"(%@ LIKE %@%%)",leftSQLExpression,rightSQLExpression]);
         }
         case NSEndsWithPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE '%%%@')",leftSQLExpression,rightSQLExpression]);
+            return([NSString stringWithFormat:@"(%@ LIKE %%%@)",leftSQLExpression,rightSQLExpression]);
         }
         case NSCustomSelectorPredicateOperatorType: {
             NSLog(@"SQLWhereClauseForComparisonPredicate custom selectors are not supported");
@@ -323,6 +343,10 @@ static STMPredicateToSQL *sharedInstance;
     
     for (NSPredicate *sub in [predicate subpredicates]) {
         [subs addObject:[self SQLFilterForPredicate:sub]];
+    }
+    
+    if (subs.count == 1){
+        return subs[0];
     }
     
     NSString *conjunction;

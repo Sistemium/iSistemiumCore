@@ -1092,5 +1092,23 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (NSString *)uppercaseFirst:(NSString *)inputString{
+    
+    NSString *firstChar = [inputString substringToIndex:1];
+    
+    NSString *result = [[firstChar uppercaseString] stringByAppendingString:[inputString substringFromIndex:1]];
+    
+    return result;
+}
+
++ (NSString *)lowercaseFirst:(NSString *)inputString{
+    
+    NSString *firstChar = [inputString substringToIndex:1];
+    
+    NSString *result = [[firstChar lowercaseString] stringByAppendingString:[inputString substringFromIndex:1]];
+    
+    return result;
+}
+
 
 @end
