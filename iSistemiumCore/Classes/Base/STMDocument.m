@@ -16,9 +16,9 @@
 @interface STMDocument()
 
 @property (nonatomic, strong) NSString *dataModelName;
-@property (nonatomic) BOOL saving;
 @property (nonatomic) BOOL savingHaveToRepeat;
 @property (nonatomic) int savingQueue;
+
 
 @end
 
@@ -62,17 +62,17 @@
 
 - (void)saveDocument:(void (^)(BOOL success))completionHandler {
     
-    if (!self.saving) {
+    if (!self.isSaving) {
         
         if (self.documentState == UIDocumentStateNormal) {
             
-            self.saving = YES;
+            self.isSaving = YES;
             
 //            NSLog(@"--- Document saving start ---");
             
             [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
                 
-                self.saving = NO;
+                self.isSaving = NO;
 
                 if (success) {
                     

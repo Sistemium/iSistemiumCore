@@ -13,6 +13,7 @@
 
 @property (nonatomic, strong, readonly) NSManagedObjectModel *myManagedObjectModel;
 @property (nonatomic, strong) NSString *uid;
+@property (nonatomic) BOOL isSaving;
 
 + (STMDocument *)documentWithUID:(NSString *)uid
                           iSisDB:(NSString *)iSisDB

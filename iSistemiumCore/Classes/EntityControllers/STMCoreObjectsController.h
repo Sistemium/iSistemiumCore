@@ -83,6 +83,8 @@
 + (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
                      toEntities:(NSArray *)entities
                           error:(NSError **)error;
++ (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc;
+
 + (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage
                                       error:(NSError **)error;
 + (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage;

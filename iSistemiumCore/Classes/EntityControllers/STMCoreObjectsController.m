@@ -184,7 +184,12 @@
            selector:@selector(documentSavedSuccessfully)
                name:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
              object:nil];
-    
+
+    [nc addObserver:self
+           selector:@selector(applicationDidBecomeActive)
+               name:UIApplicationDidBecomeActiveNotification
+             object:nil];
+
 }
 
 - (void)removeObservers {
@@ -234,6 +239,10 @@
     [self checkUpdateRequests];
     [self checkSubscribedObjects];
     
+}
+
+- (void)applicationDidBecomeActive {
+    if (![STMCoreObjectsController document].isSaving) [self checkSubscribedObjects];
 }
 
 - (void)checkUpdateRequests {
@@ -1791,6 +1800,8 @@
     
     if (result) {
 
+        NSLog(@"subscribeViewController: %@ toEntities: %@", vc, entitiesToSubscribe);
+
         [self flushSubscribedViewController:vc];
 
         for (NSString *entityName in entitiesToSubscribe) {
@@ -1862,6 +1873,13 @@
         }
 
     }
+    
+}
+
++ (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc {
+    
+    NSLog(@"unsubscribeViewController: %@", vc);
+    [self flushSubscribedViewController:vc];
     
 }
 
