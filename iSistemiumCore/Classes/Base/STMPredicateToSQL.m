@@ -96,7 +96,11 @@ static STMPredicateToSQL *sharedInstance;
     if (isTable) {
         return [STMFunctions uppercaseFirst:obj];
     }
-    isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
+    return obj ;
+}
+
+- (NSString *)ToManyKeyToTablename:(NSString *)obj{
+    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
     if (isTable) {
         return [STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]];
     }
@@ -285,8 +289,13 @@ static STMPredicateToSQL *sharedInstance;
     
     if ([predicate comparisonPredicateModifier] == NSAnyPredicateModifier ){
         NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
-        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self DatabaseKeyfor:tables[0]],[self FKToTablename:tables[1]]];
-        rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
+        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]],[self FKToTablename:tables[1]]];
+        if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]){
+            rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )",tables[0]]];
+        }else{
+            rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
+        }
+        
     }
     
     switch ([predicate predicateOperatorType]){
