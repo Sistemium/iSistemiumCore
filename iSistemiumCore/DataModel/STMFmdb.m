@@ -204,6 +204,9 @@ FMDatabaseQueue *queue;
 }
 
 - (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name whereStatement:(NSString * _Nonnull)where{
+    if ([where isEqualToString:@"( )"] || [where isEqualToString:@""] || [where isEqualToString:@"()"]){
+        return [self getDataWithEntityName:name];
+    }
     name = [self entityToTableName:name];
     where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];

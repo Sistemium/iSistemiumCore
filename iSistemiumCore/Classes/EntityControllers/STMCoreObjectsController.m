@@ -2314,8 +2314,8 @@
     
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
     NSLog(@"scriptMessage: %@",scriptMessage.body);
+    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
     NSLog(@"predicate: %@",predicate);
     NSLog(@"predicatetoSQL: %@",[[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate]);
 
