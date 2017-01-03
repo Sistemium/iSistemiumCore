@@ -2337,7 +2337,7 @@
     if ([fmdb containstTableWithNameWithName:entityName]){
         NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
         if (predicate){
-            return [fmdb getDataWithEntityName:entityName whereStatement:[[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate]];
+            return [fmdb getDataWithEntityName:entityName withPredicate:predicate];
         }else{
             return [fmdb getDataWithEntityName:entityName];
         }

@@ -11,6 +11,7 @@
 #import "STMFunctions.h"
 #import "FMDB.h"
 #import "STMCoreObjectsController.h"
+#import "STMPredicateToSQL.h"
 
 @implementation STMFmdb
 
@@ -203,7 +204,8 @@ FMDatabaseQueue *queue;
     }];
 }
 
-- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name whereStatement:(NSString * _Nonnull)where{
+- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
+    NSString* where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
     if ([where isEqualToString:@"( )"] || [where isEqualToString:@""] || [where isEqualToString:@"()"]){
         return [self getDataWithEntityName:name];
     }
