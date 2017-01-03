@@ -312,7 +312,9 @@
             
         }
         
-        value = [self relationshipObjectForValue:value className:className];
+        value = [STMFunctions dataFromString:value];
+        
+        localKey = [localKey stringByAppendingString:@".xid"];
         
     }
     
@@ -370,21 +372,6 @@
         return value;
         
     }
-    
-}
-
-+ (id)relationshipObjectForValue:(id)value className:(NSString *)className {
-    
-    if (![value isKindOfClass:[NSString class]]) {
-        
-        NSLog(@"relationship value is not a String, can not get xid");
-        return nil;
-        
-    }
-    
-    value = [STMCoreObjectsController objectForXid:[STMFunctions dataFromString:value] entityName:className];
-    
-    return value;
     
 }
 

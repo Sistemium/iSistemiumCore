@@ -217,6 +217,9 @@ static STMPredicateToSQL *sharedInstance;
     if ([val isKindOfClass:[NSString class]]){
         return val;
     }
+    if ([val isKindOfClass:[NSData class]]){
+        return [[STMFunctions UUIDStringFromUUIDData:val] lowercaseString];
+    }
     else {
         if ([val respondsToSelector:@selector(intValue)]){
             return [val stringValue];
@@ -287,16 +290,28 @@ static STMPredicateToSQL *sharedInstance;
     
     rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
     
-    if ([predicate comparisonPredicateModifier] == NSAnyPredicateModifier ){
-        NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
+    NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
+    
+    NSMutableArray<NSString*>* mtables = tables.mutableCopy;
+    
+    for (int i=0; i < [mtables count]; i++){
+        if ([mtables[i] isEqualToString:@"xid"]){
+            mtables[i] = @"id";
+        }
+    }
+             
+    tables = mtables.copy;
+    
+    if (tables.count > 1){
         leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]],[self FKToTablename:tables[1]]];
         if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]){
             rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )",tables[0]]];
         }else{
             rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
         }
-        
     }
+    
+    
     
     switch ([predicate predicateOperatorType]){
         case NSLessThanPredicateOperatorType: {
