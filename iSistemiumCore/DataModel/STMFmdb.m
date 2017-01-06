@@ -18,7 +18,6 @@
 FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
-int ussages = 0;
 
 - (instancetype)init {
     self = [super init];
@@ -148,7 +147,6 @@ int ussages = 0;
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [queue inDatabase:^(FMDatabase *db) {
-                ussages++;
                 if (![db inTransaction]){
                     [db beginTransaction];
                 }
@@ -172,10 +170,6 @@ int ussages = 0;
                 NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
                 
                 [db executeUpdate:insertSQL withArgumentsInArray:values];
-                ussages--;
-                if(ussages == 0){
-                    [db commit];
-                }
                 resolve(nil);
             }];
         });
@@ -188,18 +182,10 @@ int ussages = 0;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
             [queue inDatabase:^(FMDatabase *db) {
-                ussages++;
-                if (![db inTransaction]){
-                    [db beginTransaction];
-                }
                 NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE id = '%@'",name,PK];
                 FMResultSet *s = [db executeQuery:query];
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
-                }
-                ussages--;
-                if(ussages == 0){
-                    [db commit];
                 }
                 resolve(rez.copy);
             }];
@@ -219,18 +205,10 @@ int ussages = 0;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
             [queue inDatabase:^(FMDatabase *db) {
-                ussages++;
-                if (![db inTransaction]){
-                    [db beginTransaction];
-                }
                 NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",name,where];
                 FMResultSet *s = [db executeQuery:query];
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
-                }
-                ussages--;
-                if(ussages == 0){
-                    [db commit];
                 }
                 resolve(rez.copy);
             }];
@@ -244,17 +222,9 @@ int ussages = 0;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSMutableArray *rez = @[].mutableCopy;
             [queue inDatabase:^(FMDatabase *db) {
-                ussages++;
-                if (![db inTransaction]){
-                    [db beginTransaction];
-                }
                 FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
-                }
-                ussages--;
-                if(ussages == 0){
-                    [db commit];
                 }
                 resolve(rez.copy);
             }];
@@ -273,6 +243,14 @@ int ussages = 0;
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj{
     obj = [self entityToTableName:obj];
     return columnsByTable[obj];
+}
+
+- (void)commit{
+    [queue inDatabase:^(FMDatabase *db) {
+        if ([db inTransaction]){
+            [db commit];
+        }
+    }];
 }
 
 @end

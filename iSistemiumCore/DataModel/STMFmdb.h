@@ -18,5 +18,6 @@
 -(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK;
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name;
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
+- (void) commit;
 
 @end
