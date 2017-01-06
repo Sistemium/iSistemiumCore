@@ -27,6 +27,7 @@
     return persister;
 }
 
+
 #pragma mark - STMPersistingSync
 
 - (NSDictionary *)findSyncWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options withError:(NSError *)error{
@@ -57,11 +58,12 @@
     return nil;
 }
 
-#pragma mark - STMPersistingAsync
-
 - (NSArray *)updateAllSyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options WithError:(NSError *)error{
     return nil;
 }
+
+
+#pragma mark - STMPersistingAsync
 
 - (void)findAsyncWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options withError:(NSError *)error withCompletionHandler:(void (^)(NSDictionary *))completionHandler{
 }
@@ -86,6 +88,7 @@
 
 - (void)updateAllAsyncWithEntityName:(NSString *)entityName WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error withCompletionHandler:(void (^)(NSArray *))completionHandler{
 }
+
 
 #pragma mark - STMPersistingPromised
 
