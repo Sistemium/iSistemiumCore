@@ -10,14 +10,20 @@
 
 @protocol STMPersistingAsync <NSObject>
 
-- (NSDictionary *)createAsyncWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (void)findAsyncWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options withError:(NSError *)error withCompletionHandler:(void (^)(NSDictionary *))completionHandler;
 
-- (NSDictionary *)findAsyncWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (void)findAllAsyncWithEntityName:(NSString *)entityName withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options withError:(NSError *)error withCompletionHandler:(void (^)(NSArray *))completionHandler;
 
-- (NSArray *)findAllAsyncWithEntityName:(NSString *)entityName WithPredicate:(NSPredicate *)predicate WithOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (void)mergeAsyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options withError:(NSError *)error withCompletionHandler:(void (^)(NSDictionary *))completionHandler;
 
-- (NSDictionary *)mergeAsyncWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (void)mergeManyAsyncWithEntityName:(NSString *)entityName withAttributeArray:(NSArray *)attributeArray withOptions:(NSDictionary *)options withError:(NSError *)error withCompletionHandler:(void (^)(NSArray *))completionHandler;
 
-- (NSDictionary *)destroyAsyncWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (void)destroyAsyncWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithOptions:(NSDictionary *)options WithError:(NSError *)error withCompletionHandler:(void (^)(bool *))completionHandler;
+
+- (void)createAsyncWithEntityName:(NSString *)entityName WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error withCompletionHandler:(void (^)(NSDictionary *))completionHandler;
+
+- (void)updateAsyncWithEntityName:(NSString *)entityName WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error withCompletionHandler:(void (^)(NSDictionary *))completionHandler;
+
+- (void)updateAllAsyncWithEntityName:(NSString *)entityName WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options WithError:(NSError *)error withCompletionHandler:(void (^)(NSArray *))completionHandler;
 
 @end

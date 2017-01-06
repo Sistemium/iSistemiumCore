@@ -8,16 +8,24 @@
 
 #import <Foundation/Foundation.h>
 
+@import PromiseKit;
+
 @protocol STMPersistingPromised <NSObject>
 
-- (AnyPromise *)createPromisedWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options;
+- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName qithId:(NSDictionary *)identifier qithOptions:(NSDictionary *)options;
 
-- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithOptions:(NSDictionary *)options;
+- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName qithPredicate:(NSPredicate *)predicate qithOptions:(NSDictionary *)options;
 
-- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName WithPredicate:(NSPredicate *)predicate WithOptions:(NSDictionary *)options;
+- (AnyPromise *)mergePromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
 
-- (AnyPromise *)mergePromisedWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithAttributes:(NSDictionary *)attributes WithOptions:(NSDictionary *)options;
+- (AnyPromise *)mergeManyPromisedWithEntityName:(NSString *)entityName withAttributeArray:(NSArray *)attributeArray withOptions:(NSDictionary *)options;
 
-- (AnyPromise *)destroyPromisedWithEntityName:(NSString *)entityName WithId:(NSDictionary *)identifier WithOptions:(NSDictionary *)options;
+- (AnyPromise *)destroyPromisedWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options;
+
+- (AnyPromise *)createPromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
+
+- (AnyPromise *)updatePromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
+
+- (AnyPromise *)updateAllPromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options;
 
 @end
