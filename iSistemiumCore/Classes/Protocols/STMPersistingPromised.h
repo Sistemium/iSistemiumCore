@@ -12,20 +12,42 @@
 
 @protocol STMPersistingPromised <NSObject>
 
-- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options;
+@required
 
-- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options;
+@optional
 
-- (AnyPromise *)mergePromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
+- (AnyPromise *)find:(NSString *)entityName
+                  id:(NSString *)identifier
+             options:(NSDictionary *)options;
 
-- (AnyPromise *)mergeManyPromisedWithEntityName:(NSString *)entityName withAttributeArray:(NSArray *)attributeArray withOptions:(NSDictionary *)options;
+- (AnyPromise *)findAll:(NSString *)entityName
+              predicate:(NSPredicate *)predicate
+                options:(NSDictionary *)options;
 
-- (AnyPromise *)destroyPromisedWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options;
+- (AnyPromise *)merge:(NSString *)entityName
+           attributes:(NSDictionary *)attributes
+              options:(NSDictionary *)options;
 
-- (AnyPromise *)createPromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
+- (AnyPromise *)mergeMany:(NSString *)entityName
+           attributeArray:(NSArray *)attributeArray
+                  options:(NSDictionary *)options;
 
-- (AnyPromise *)updatePromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
+- (AnyPromise *)destroy:(NSString *)entityName
+                     id:(NSString *)identifier
+                options:(NSDictionary *)options;
 
-- (AnyPromise *)updateAllPromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options;
+- (AnyPromise *)create:(NSString *)entityName
+            attributes:(NSDictionary *)attributes
+               options:(NSDictionary *)options;
+
+- (AnyPromise *)update:(NSString *)entityName
+            attributes:(NSDictionary *)attributes
+               options:(NSDictionary *)options;
+
+- (AnyPromise *)updateAll:(NSString *)entityName
+               attributes:(NSDictionary *)attributes
+                predicate:(NSPredicate *)predicate
+                  options:(NSDictionary *)options;
+
 
 @end

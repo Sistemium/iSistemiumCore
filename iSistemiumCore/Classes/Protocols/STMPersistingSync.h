@@ -12,20 +12,48 @@
 
 @required
 
-- (NSDictionary *)findSyncWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options withError:(NSError *)error;
+@optional
 
-- (NSArray *)findAllSyncWithEntityName:(NSString *)entityName withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options withError:(NSError *)error;
+- (NSDictionary *)findSync:(NSString *)entityName
+                        id:(NSString *)identifier
+                   options:(NSDictionary *)options
+                     error:(NSError *)error;
 
-- (NSDictionary *)mergeSyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options withError:(NSError *)error;
+- (NSArray *)findAllSync:(NSString *)entityName
+               predicate:(NSPredicate *)predicate
+                 options:(NSDictionary *)options
+                   error:(NSError *)error;
 
-- (NSArray *)mergeManySyncWithEntityName:(NSString *)entityName withAttributeArray:(NSArray *)attributeArray withOptions:(NSDictionary *)options withError:(NSError *)error;
+- (NSDictionary *)mergeSync:(NSString *)entityName
+                 attributes:(NSDictionary *)attributes
+                    options:(NSDictionary *)options
+                      error:(NSError *)error;
 
-- (bool *)destroySyncWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options withError:(NSError *)error;
+- (NSArray *)mergeManySync:(NSString *)entityName
+            attributeArray:(NSArray *)attributeArray
+                   options:(NSDictionary *)options
+                     error:(NSError *)error;
 
-- (NSDictionary *)createSyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (BOOL *)destroySync:(NSString *)entityName
+                   id:(NSString *)identifier
+              options:(NSDictionary *)options
+                error:(NSError *)error;
 
-- (NSDictionary *)updateSyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (NSDictionary *)createSync:(NSString *)entityName
+                  attributes:(NSDictionary *)attributes
+                     options:(NSDictionary *)options
+                       error:(NSError *)error;
 
-- (NSArray *)updateAllSyncWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options WithError:(NSError *)error;
+- (NSDictionary *)updateSync:(NSString *)entityName
+                  attributes:(NSDictionary *)attributes
+                     options:(NSDictionary *)options
+                       error:(NSError *)error;
+
+- (NSArray *)updateAllSync:(NSString *)entityName
+                attributes:(NSDictionary *)attributes
+                 predicate:(NSPredicate *)predicate
+                   options:(NSDictionary *)options
+                     error:(NSError *)error;
+
 
 @end
