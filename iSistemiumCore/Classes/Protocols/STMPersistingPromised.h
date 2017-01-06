@@ -12,9 +12,9 @@
 
 @protocol STMPersistingPromised <NSObject>
 
-- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName qithId:(NSDictionary *)identifier qithOptions:(NSDictionary *)options;
+- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options;
 
-- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName qithPredicate:(NSPredicate *)predicate qithOptions:(NSDictionary *)options;
+- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options;
 
 - (AnyPromise *)mergePromisedWithEntityName:(NSString *)entityName withAttributes:(NSDictionary *)attributes withOptions:(NSDictionary *)options;
 

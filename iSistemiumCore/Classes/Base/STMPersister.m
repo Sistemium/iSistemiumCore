@@ -92,11 +92,11 @@
 
 #pragma mark - STMPersistingPromised
 
-- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName qithId:(NSDictionary *)identifier qithOptions:(NSDictionary *)options{
+- (AnyPromise *)findPromisedWithEntityName:(NSString *)entityName withId:(NSDictionary *)identifier withOptions:(NSDictionary *)options{
     return nil;
 }
 
-- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName qithPredicate:(NSPredicate *)predicate qithOptions:(NSDictionary *)options{
+- (AnyPromise *)findPromisedAllWithEntityName:(NSString *)entityName withPredicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options{
     return nil;
 }
 
