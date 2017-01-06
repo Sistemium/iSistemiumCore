@@ -6,11 +6,14 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPersisting.h"
+#import "STMPersistingAsync.h"
+#import "STMPersistingSync.h"
+#import "STMPersistingPromised.h"
 #import "STMDocument.h"
 
-@interface STMPersister : NSObject <STMPersisting>
+@interface STMPersister : NSObject <STMPersistingSync, STMPersistingAsync, STMPersistingPromised>
 
 + (instancetype)initWithDocument:(STMDocument *)stmdocument;
+
 
 @end
