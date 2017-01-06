@@ -638,6 +638,36 @@
         }
         
         if (result) {
+
+            NSString *testImageName = @"3colors-colorless.png";
+            
+            UIImage *testImage = [UIImage imageNamed:testImageName];
+            NSData *testImageData = UIImageJPEGRepresentation(testImage, 1);
+            
+            NSString *imagePath = [STMFunctions absolutePathForPath:testImageName];
+            
+            NSError *error = nil;
+            BOOL result = [testImageData writeToFile:imagePath
+                                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                               error:&error];
+            
+            if (result) {
+                
+                [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
+                         withDestinationPath:imagePath
+                                       error:&error];
+                
+                if (!result) {
+                    NSLog(@"createSymbolicLinkAtPath error: %@", error.localizedDescription);
+                }
+                
+            } else {
+                NSLog(@"writeToFile error: %@", error.localizedDescription);
+            }
+
+        }
+        
+        if (result) {
             [self.owner loadHTML:indexHTMLString atBaseDir:completeTempPath];
         } else {
             [self.owner appManifestLoadErrorText:error.localizedDescription];
