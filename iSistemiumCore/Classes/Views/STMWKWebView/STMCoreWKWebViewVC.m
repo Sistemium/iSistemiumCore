@@ -27,6 +27,8 @@
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
 
+#import "STMScriptMessageHandler.h"
+
 
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate,
                                   WKScriptMessageHandler,
@@ -47,7 +49,6 @@
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
-@property (nonatomic, strong) NSString *subscribeDataCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
@@ -709,10 +710,6 @@
 
         NSLog(@"GET");
 
-    } else if ([@[WK_MESSAGE_UPDATE, WK_MESSAGE_UPDATE_ALL] containsObject:message.name]) {
-        
-        [self handleKindOfUpdateMessage:message];
-        
     } else if ([message.name isEqualToString:WK_MESSAGE_SOUND]) {
         
         [self handleSoundMessage:message];
@@ -721,21 +718,9 @@
 
         [self handleScannerMessage:message];
         
-    } else if ([@[WK_MESSAGE_FIND, WK_MESSAGE_FIND_ALL] containsObject:message.name]) {
-        
-        [self handleKindOfFindMessage:message];
-        
-    } else if ([message.name isEqualToString:WK_MESSAGE_DESTROY]) {
-        
-        [self handleDestroyMessage:message];
-        
     } else if ([message.name isEqualToString:WK_MESSAGE_TABBAR]) {
         
         [self handleTabbarMessage:message];
-        
-    } else if ([message.name isEqualToString:WK_MESSAGE_SUBSCRIBE]) {
-        
-        [self handleSubscribeMessage:message];
         
     } else if ([message.name isEqualToString:WK_MESSAGE_REMOTE_CONTROL]) {
         
@@ -756,6 +741,28 @@
     } else if ([message.name isEqualToString:WK_MESSAGE_GET_PICTURE]) {
         
         [self handleGetPictureMessage:message];
+        
+// persistence messages
+        
+    } else if ([@[WK_MESSAGE_FIND, WK_MESSAGE_FIND_ALL] containsObject:message.name]) {
+        
+        [STMScriptMessageHandler webViewVC:self
+                        receiveFindMessage:message];
+        
+    } else if ([@[WK_MESSAGE_UPDATE, WK_MESSAGE_UPDATE_ALL] containsObject:message.name]) {
+        
+        [STMScriptMessageHandler webViewVC:self
+                      receiveUpdateMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_SUBSCRIBE]) {
+        
+        [STMScriptMessageHandler webViewVC:self
+                   receiveSubscribeMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_DESTROY]) {
+        
+        [STMScriptMessageHandler webViewVC:self
+                     receiveDestroyMessage:message];
         
     }
     
@@ -1121,40 +1128,6 @@
 
 }
 
-- (void)handleSubscribeMessage:(WKScriptMessage *)message {
-    
-    NSDictionary *parameters = message.body;
-
-    NSLog(@"%@", parameters);
-
-    if ([parameters[@"entities"] isKindOfClass:[NSArray class]]) {
-        
-        self.subscribeDataCallbackJSFunction = parameters[@"dataCallback"];
-        
-        NSArray *entities = parameters[@"entities"];
-        
-        NSError *error = nil;
-
-        if ([STMCoreObjectsController subscribeViewController:self toEntities:entities error:&error]) {
-        
-            [self callbackWithData:@[@"subscribe to entities success"] parameters:parameters jsCallbackFunction:parameters[@"callback"]];
-
-        } else {
-            
-            [self callbackWithError:error.localizedDescription
-                         parameters:parameters];
-            
-        }
-        
-    } else {
-        
-        [self callbackWithError:@"message.parameters.entities is not a NSArray class"
-                     parameters:parameters];
-
-    }
-    
-}
-
 - (void)handleTabbarMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
@@ -1196,37 +1169,6 @@
         [self callbackWithError:@"unknown action for tabbar message" parameters:parameters];
     }
 
-}
-
-- (void)handleDestroyMessage:(WKScriptMessage *)message {
-    
-    NSDictionary *parameters = message.body;
-
-    NSError *error = nil;
-    NSArray *result = [STMCoreObjectsController destroyObjectFromScriptMessage:message error:&error];
-    
-    if (error) {
-        [self callbackWithError:error.localizedDescription parameters:parameters];
-    } else {
-        [self callbackWithData:result parameters:parameters];
-    }
-    
-}
-
-- (void)handleKindOfUpdateMessage:(WKScriptMessage *)message {
-    
-    NSDictionary *parameters = message.body;
-
-    [STMCoreObjectsController updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
-        
-        if (success) {
-            [self callbackWithData:updatedObjects parameters:parameters];
-        } else {
-            [self callbackWithError:error.localizedDescription parameters:parameters];
-        }
-
-    }];
-    
 }
 
 - (void)handleSoundMessage:(WKScriptMessage *)message {
@@ -1276,21 +1218,8 @@
     
 }
 
-- (void)handleKindOfFindMessage:(WKScriptMessage *)message {
-    
-    NSDictionary *parameters = message.body;
-    
-//    NSLog(@"handleKindOfFindMessage %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
-        [self callbackWithData:result
-                    parameters:parameters];
-    }).catch(^(NSError *error){
-        [self callbackWithError:error.localizedDescription
-                     parameters:parameters];
-    });
-        
-}
+#pragma mark - callbacks
 
 - (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
