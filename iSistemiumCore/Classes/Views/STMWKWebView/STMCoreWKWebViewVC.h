@@ -16,6 +16,8 @@
 
 @interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable, STMCheckinDelegate>
 
+@property (nonatomic, strong) NSString *subscribeDataCallbackJSFunction;
+
 @property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
 @property (nonatomic) BOOL haveLocalHTML;
 
@@ -26,6 +28,16 @@
 - (void)appManifestLoadInfoText:(NSString *)infoText;
 - (void)localHTMLUpdateIsAvailable;
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
+
+- (void)callbackWithData:(NSArray *)data
+              parameters:(NSDictionary *)parameters;
+
+- (void)callbackWithData:(id)data
+              parameters:(NSDictionary *)parameters
+      jsCallbackFunction:(NSString *)jsCallbackFunction;
+
+- (void)callbackWithError:(NSString *)errorDescription
+               parameters:(NSDictionary *)parameters;
 
 
 @end
