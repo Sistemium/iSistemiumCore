@@ -75,6 +75,23 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
+    if ([notification.object conformsToProtocol:@protocol(STMSession)]) {
+        
+        id <STMSession> session = (id <STMSession>)notification.object;
+        
+        if (session == self.session) {
+            
+            if (session.status == STMSessionRemoving) {
+                
+                [self removeObservers];
+                self.session = nil;
+                
+            }
+            
+        }
+        
+    }
+
 }
 
 - (void)documentReady:(NSNotification *)notification {
