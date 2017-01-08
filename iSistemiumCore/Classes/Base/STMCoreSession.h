@@ -48,8 +48,9 @@
             documentPrefix:(NSString *)prefix;
 
 - (void)stopSession;
-
 - (void)dismissSession;
+
+- (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
 
 - (Class)locationClass;
 

@@ -158,6 +158,30 @@
 
 }
 
+- (void)persisterCompleteInitializationWithSuccess:(BOOL)success {
+    
+    if (success) {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
+        
+        self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+        self.trackers = [NSMutableDictionary dictionary];
+        self.syncer = [[STMSyncer alloc] init];
+        
+        [self checkTrackersToStart];
+        
+        self.logger = [STMLogger sharedLogger];
+        self.logger.session = self;
+        self.settingsController.session = self;
+
+    } else {
+        
+        NSLog(@"persister is not ready, have to do something with it");
+
+    }
+    
+}
+
 
 #pragma mark - properties classes definition (may override in subclasses)
 

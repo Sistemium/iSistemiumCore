@@ -66,9 +66,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMSession <NSObject>
 
-+ (id <STMSession>)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id <STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix;
-
-@property (nonatomic, strong) STMDocument *document;
+@property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic) STMSessionStatus status;
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
@@ -76,6 +74,11 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic, strong) NSDictionary *defaultSettings;
 @property (nonatomic, strong) id <STMLogger> logger;
 @property (nonatomic, strong) id <STMSyncer> syncer;
+
++ (id <STMSession>)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id <STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix;
+
+- (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
+
 
 @end
 
