@@ -202,6 +202,8 @@
     }
 //    ———————————————————————
     
+    prefix = (prefix) ? prefix : @"";
+    
     NSString *filename = [@[prefix, documentID, dataModelName] componentsJoinedByString:@"_"];
     url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@", filename, @"sqlite"]];
 
