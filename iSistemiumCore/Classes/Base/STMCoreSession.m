@@ -72,10 +72,22 @@
         [self.document saveDocument:^(BOOL success) {
             
             if (success) {
+                
                 self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionStopped;
+                
+                if (self.status == STMSessionRemoving) {
+
+                    self.document = nil;
+                    self.persister = nil;
+
+                }
+                
                 [self.manager sessionStopped:self];
+                
             } else {
+                
                 NSLog(@"Can not stop session with uid %@", self.uid);
+                
             }
             
         }];
