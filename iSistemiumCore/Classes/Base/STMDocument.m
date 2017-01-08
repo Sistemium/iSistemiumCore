@@ -276,6 +276,8 @@
 
 + (void)documentReady:(STMDocument *)document {
     
+    [[STMLogger sharedLogger] saveLogMessageWithText:NOTIFICATION_DOCUMENT_READY];
+
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_READY
                                                         object:document
                                                       userInfo:@{@"uid": document.uid}];
@@ -284,6 +286,8 @@
 
 + (void)documentNotReady:(STMDocument *)document {
     
+    [[STMLogger sharedLogger] saveLogMessageWithText:NOTIFICATION_DOCUMENT_NOT_READY];
+
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_NOT_READY
                                                         object:document
                                                       userInfo:@{@"uid": document.uid}];
