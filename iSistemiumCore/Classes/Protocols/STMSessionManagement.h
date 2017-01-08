@@ -75,7 +75,11 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic, strong) id <STMLogger> logger;
 @property (nonatomic, strong) id <STMSyncer> syncer;
 
-+ (id <STMSession>)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id <STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings documentPrefix:(NSString *)prefix;
++ (id <STMSession>)initWithUID:(NSString *)uid
+                        iSisDB:(NSString *)iSisDB
+                  authDelegate:(id <STMRequestAuthenticatable>)authDelegate
+                      trackers:(NSArray *)trackers
+                 startSettings:(NSDictionary *)startSettings;
 
 - (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
 
@@ -85,7 +89,13 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMSessionManager <NSObject>
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id <STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName documentPrefix:(NSString *)prefix;
+- (id <STMSession>)startSessionForUID:(NSString *)uid
+                               iSisDB:(NSString *)iSisDB
+                         authDelegate:(id <STMRequestAuthenticatable>)authDelegate
+                             trackers:(NSArray *)trackers
+                        startSettings:(NSDictionary *)startSettings
+              defaultSettingsFileName:(NSString *)defualtSettingsFileName;
+
 - (void)stopSessionForUID:(NSString *)uid;
 - (void)sessionStopped:(id)session;
 - (void)cleanStoppedSessions;

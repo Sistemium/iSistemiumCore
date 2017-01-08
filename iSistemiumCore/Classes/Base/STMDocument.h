@@ -17,8 +17,7 @@
 
 + (STMDocument *)documentWithUID:(NSString *)uid
                           iSisDB:(NSString *)iSisDB
-                   dataModelName:(NSString *)dataModelName
-                          prefix:(NSString *)prefix;
+                   dataModelName:(NSString *)dataModelName;
 
 + (void)openDocument:(STMDocument *)document;
 

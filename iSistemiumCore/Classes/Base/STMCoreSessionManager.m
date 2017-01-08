@@ -58,15 +58,18 @@
     if ([[self.sessions allKeys] containsObject:currentSessionUID] || !currentSessionUID) {
         
         if (_currentSessionUID != currentSessionUID) {
+            
             _currentSessionUID = currentSessionUID;
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged" object:(self.sessions)[_currentSessionUID]];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged"
+                                                                object:(self.sessions)[_currentSessionUID]];
+            
         }
         
     }
     
 }
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName documentPrefix:(NSString *)prefix {
+- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
     
     if (uid) {
         
@@ -80,8 +83,7 @@
                                                 iSisDB:(NSString *)iSisDB
                                           authDelegate:authDelegate
                                               trackers:trackers
-                                         startSettings:startSettings
-                                        documentPrefix:prefix];
+                                         startSettings:startSettings];
             
             session.defaultSettings = validSettings[@"values"];
             session.settingsControls = validSettings[@"controls"];

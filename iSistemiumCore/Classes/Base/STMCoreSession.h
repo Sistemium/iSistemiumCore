@@ -44,8 +44,7 @@
                      iSisDB:(NSString *)iSisDB
               authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                   trackers:(NSArray *)trackers
-             startSettings:(NSDictionary *)startSettings
-            documentPrefix:(NSString *)prefix;
+             startSettings:(NSDictionary *)startSettings;
 
 - (void)stopSession;
 - (void)dismissSession;

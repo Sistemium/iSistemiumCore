@@ -184,10 +184,13 @@
     
 }
 
-+ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB dataModelName:(NSString *)dataModelName prefix:(NSString *)prefix {
++ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB dataModelName:(NSString *)dataModelName {
 
     NSURL *documentDirectoryUrl = [STMFunctions documentsDirectoryURL];
     NSString *documentID = (iSisDB) ? iSisDB : uid;
+
+    NSString *prefix = [NSBundle mainBundle].bundleIdentifier;
+    prefix = (prefix) ? prefix : @"";
 
 //    from now we delete old document with STMDataModel data model and use new STMDataModel2
     NSURL *url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@_%@.%@", prefix, documentID, @"sqlite"]];
@@ -201,8 +204,6 @@
         
     }
 //    ———————————————————————
-    
-    prefix = (prefix) ? prefix : @"";
     
     NSString *filename = [@[prefix, documentID, dataModelName] componentsJoinedByString:@"_"];
     url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@", filename, @"sqlite"]];

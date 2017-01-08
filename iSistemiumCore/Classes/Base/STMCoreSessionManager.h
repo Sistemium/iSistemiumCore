@@ -22,8 +22,7 @@
                         authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                             trackers:(NSArray *)trackers
                             startSettings:(NSDictionary *)startSettings
-                    defaultSettingsFileName:(NSString *)defaultSettingsFileName
-                      documentPrefix:(NSString *)prefix;
+                    defaultSettingsFileName:(NSString *)defaultSettingsFileName;
 
 - (void)stopSessionForUID:(NSString *)uid;
 

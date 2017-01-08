@@ -597,8 +597,7 @@
                           authDelegate:self
                               trackers:trackers
                          startSettings:startSettings
-               defaultSettingsFileName:@"settings"
-                        documentPrefix:[[NSBundle mainBundle] bundleIdentifier]];
+               defaultSettingsFileName:@"settings"];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(sessionNotAuthorized)
