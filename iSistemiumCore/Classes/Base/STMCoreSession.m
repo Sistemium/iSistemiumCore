@@ -40,10 +40,15 @@
             dataModelName = [[STMCoreAuthController authController] dataModelName];
         }
 
-        session.document = [STMDocument documentWithUID:session.uid
-                                                 iSisDB:session.iSisDB
-                                          dataModelName:dataModelName
-                                                 prefix:prefix];
+        STMDocument *document = [STMDocument documentWithUID:session.uid
+                                                      iSisDB:session.iSisDB
+                                               dataModelName:dataModelName
+                                                      prefix:prefix];
+        
+        session.persister = [STMPersister initWithDocument:document
+                                                forSession:session];
+        
+        session.document = document;
 
         return session;
         
