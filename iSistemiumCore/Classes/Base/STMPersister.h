@@ -6,6 +6,8 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import "STMSessionManagement.h"
+
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
 #import "STMPersistingPromised.h"
@@ -13,7 +15,8 @@
 
 @interface STMPersister : NSObject <STMPersistingSync, STMPersistingAsync, STMPersistingPromised>
 
-+ (instancetype)initWithDocument:(STMDocument *)stmdocument;
++ (instancetype)initWithDocument:(STMDocument *)stmdocument
+                      forSession:(id <STMSession>)session;
 
 
 @end

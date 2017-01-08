@@ -10,6 +10,8 @@
 #import "STMPersister.h"
 
 @interface STMPersister()
+
+@property (nonatomic, strong) id <STMSession> session;
 @property (nonatomic, strong) STMDocument *document;
 
 @end
@@ -18,10 +20,11 @@
 
 @synthesize document;
 
-+ (instancetype)initWithDocument:(STMDocument *)stmdocument{
++ (instancetype)initWithDocument:(STMDocument *)stmdocument forSession:(id<STMSession>)session {
     
-    STMPersister* persister = [[STMPersister alloc] init];
+    STMPersister *persister = [[STMPersister alloc] init];
     
+    persister.session = session;
     persister.document = stmdocument;
     
     return persister;
