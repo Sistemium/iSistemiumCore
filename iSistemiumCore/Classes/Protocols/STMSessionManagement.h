@@ -68,10 +68,12 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
 @property (nonatomic, strong) NSString *uid;
+@property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;
+@property (nonatomic, strong) NSDictionary *startSettings;
 @property (nonatomic, strong) id <STMLogger> logger;
 @property (nonatomic, strong) id <STMSyncer> syncer;
 
