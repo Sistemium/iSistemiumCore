@@ -15,8 +15,9 @@
 
 @interface STMPersister : NSObject <STMPersistingSync, STMPersistingAsync, STMPersistingPromised>
 
-+ (instancetype)initWithDocument:(STMDocument *)stmdocument
-                      forSession:(id <STMSession>)session;
+@property (nonatomic, strong) STMDocument *document; // have to hide it from public (now it needs for session)
+
++ (instancetype)initWithSession:(id <STMSession>)session;
 
 
 @end

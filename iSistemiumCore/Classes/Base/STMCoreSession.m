@@ -14,7 +14,6 @@
 
 @interface STMCoreSession()
 
-@property (nonatomic, strong) NSDictionary *startSettings;
 
 @end
 
@@ -33,22 +32,10 @@
         session.startTrackers = trackers;
         
         [session addObservers];
-
-        NSString *dataModelName = [startSettings valueForKey:@"dataModelName"];
         
-        if (!dataModelName) {
-            dataModelName = [[STMCoreAuthController authController] dataModelName];
-        }
-
-        STMDocument *document = [STMDocument documentWithUID:session.uid
-                                                      iSisDB:session.iSisDB
-                                               dataModelName:dataModelName
-                                                      prefix:prefix];
+        session.persister = [STMPersister initWithSession:session];
         
-        session.persister = [STMPersister initWithDocument:document
-                                                forSession:session];
-        
-        session.document = document;
+        session.document = session.persister.document;
 
         return session;
         

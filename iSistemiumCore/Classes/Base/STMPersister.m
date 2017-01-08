@@ -10,12 +10,12 @@
 #import "STMPersister.h"
 
 #import "STMConstants.h"
+#import "STMCoreAuthController.h"
 
 
 @interface STMPersister()
 
-@property (nonatomic, strong) id <STMSession> session;
-@property (nonatomic, strong) STMDocument *document;
+@property (nonatomic, weak) id <STMSession> session;
 
 
 @end
@@ -23,12 +23,23 @@
 
 @implementation STMPersister
 
-+ (instancetype)initWithDocument:(STMDocument *)stmdocument forSession:(id<STMSession>)session {
++ (instancetype)initWithSession:(id <STMSession>)session {
     
     STMPersister *persister = [[STMPersister alloc] init];
     
     persister.session = session;
-    persister.document = stmdocument;
+    
+    NSString *dataModelName = [session.startSettings valueForKey:@"dataModelName"];
+    
+    if (!dataModelName) {
+        dataModelName = [[STMCoreAuthController authController] dataModelName];
+    }
+    
+    STMDocument *document = [STMDocument documentWithUID:session.uid
+                                                  iSisDB:session.iSisDB
+                                           dataModelName:dataModelName];
+
+    persister.document = document;
     
     return persister;
     
@@ -77,7 +88,7 @@
     
     if ([notification.object conformsToProtocol:@protocol(STMSession)]) {
         
-        id <STMSession> session = (id <STMSession>)notification.object;
+        id <STMSession>session = (id <STMSession>)notification.object;
         
         if (session == self.session) {
             
