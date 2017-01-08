@@ -96,10 +96,24 @@
 
 - (void)documentReady:(NSNotification *)notification {
     
+    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
+        
+        [self.session persisterCompleteInitializationWithSuccess:YES];
+        // here we can remove document observers
+        
+    }
+
 }
 
 - (void)documentNotReady:(NSNotification *)notification {
-    
+
+    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
+        
+        [self.session persisterCompleteInitializationWithSuccess:NO];
+        // here we can remove document observers
+
+    }
+
 }
 
 

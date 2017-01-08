@@ -131,16 +131,6 @@
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
     [nc addObserver:self
-           selector:@selector(documentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(documentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:nil];
-    
-    [nc addObserver:self
            selector:@selector(settingsLoadComplete:)
                name:@"settingsLoadComplete"
              object:self.settingsController];
@@ -200,26 +190,6 @@
 
 #pragma mark - handle notifications
 
-- (void)documentReady:(NSNotification *)notification {
-    
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.uid]) {
-    
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
-
-        self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
-        self.trackers = [NSMutableDictionary dictionary];
-        self.syncer = [[STMSyncer alloc] init];
-
-        [self checkTrackersToStart];
-        
-        self.logger = [STMLogger sharedLogger];
-        self.logger.session = self;
-        self.settingsController.session = self;
-
-    }
-    
-}
-
 - (void)checkTrackersToStart {
     
     if ([self.startTrackers containsObject:@"location"]) {
@@ -236,14 +206,6 @@
         
     }
 
-}
-
-- (void)documentNotReady:(NSNotification *)notification {
-    
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.uid]) {
-        NSLog(@"document not ready");
-    }
-    
 }
 
 - (void)settingsLoadComplete:(NSNotification *)notification {
