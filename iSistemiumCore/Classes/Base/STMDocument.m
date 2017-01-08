@@ -276,7 +276,7 @@
 
 + (void)documentReady:(STMDocument *)document {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentReady"
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_READY
                                                         object:document
                                                       userInfo:@{@"uid": document.uid}];
     
@@ -284,7 +284,7 @@
 
 + (void)documentNotReady:(STMDocument *)document {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"documentNotReady"
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_NOT_READY
                                                         object:document
                                                       userInfo:@{@"uid": document.uid}];
     

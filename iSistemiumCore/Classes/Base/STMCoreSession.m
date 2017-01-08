@@ -115,12 +115,12 @@
     
     [nc addObserver:self
            selector:@selector(documentReady:)
-               name:@"documentReady"
+               name:NOTIFICATION_DOCUMENT_READY
              object:nil];
     
     [nc addObserver:self
            selector:@selector(documentNotReady:)
-               name:@"documentNotReady"
+               name:NOTIFICATION_DOCUMENT_NOT_READY
              object:nil];
     
     [nc addObserver:self

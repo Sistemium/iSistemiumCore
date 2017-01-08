@@ -61,6 +61,9 @@
 #define NOTIFICATION_DEFANTOMIZING_START @"defantomizingStart"
 #define NOTIFICATION_DEFANTOMIZING_UPDATE @"defantomizingUpdate"
 #define NOTIFICATION_DEFANTOMIZING_FINISH @"defantomizingFinish"
+
+#define NOTIFICATION_DOCUMENT_READY @"documentReady"
+#define NOTIFICATION_DOCUMENT_NOT_READY @"documentNotReady"
 #define NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY @"documentSavedSuccessfully"
 
 #define RINGING_LOCAL_NOTIFICATION @"ringingLocalNotification"
