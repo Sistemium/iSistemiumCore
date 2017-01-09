@@ -607,29 +607,33 @@
                                     error:&error];
             
         }
+        
+        if (SYSTEM_VERSION < 9.0) {
 
-        if (result) {
-            
-            result = [fm createDirectoryAtPath:completeTempPath
-                   withIntermediateDirectories:YES
-                                    attributes:nil
-                                         error:&error];
-            
-        }
-        
-        if (result) {
-        
-            NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
-            
-            if (dirObjects) {
+            if (result) {
                 
-                for (NSString *dirObject in dirObjects) {
+                result = [fm createDirectoryAtPath:completeTempPath
+                       withIntermediateDirectories:YES
+                                        attributes:nil
+                                             error:&error];
+                
+            }
+            
+            if (result) {
+                
+                NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+                
+                if (dirObjects) {
                     
-                    result = [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                                         toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
-                                          error:&error];
-                    
-                    if (!result) break;
+                    for (NSString *dirObject in dirObjects) {
+                        
+                        result = [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                             toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
+                                              error:&error];
+                        
+                        if (!result) break;
+                        
+                    }
                     
                 }
                 
@@ -639,56 +643,17 @@
         
         if (result) {
             
-            NSString *documentsPath = [STMFunctions documentsDirectory];
-            
-            
-            
-            result = [fm linkItemAtPath:documentsPath
-                                 toPath:[[completeTempPath stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"documents"]
-                                  error:&error];
+            if (SYSTEM_VERSION < 9.0) {
 
-            if (!result) {
-                NSLog(@"link documents folder error: %@", error.localizedDescription);
+                [self.owner loadHTML:indexHTMLString
+                           atBaseDir:completeTempPath];
+                
+            } else {
+                
+                [self.owner loadUrl:[NSURL fileURLWithPath:indexHTMLPath]
+                          atBaseDir:self.localHTMLDirPath];
+                
             }
-
-//            NSString *testImageName = @"3colors-colorless.png";
-//            
-//            UIImage *testImage = [UIImage imageNamed:testImageName];
-//            NSData *testImageData = UIImageJPEGRepresentation(testImage, 1);
-//            
-//            NSString *imagePath = [STMFunctions absolutePathForPath:testImageName];
-//            
-//            NSError *error = nil;
-//            BOOL result = [testImageData writeToFile:imagePath
-//                                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-//                                               error:&error];
-//            
-//            if (result) {
-//                
-//                result = [fm linkItemAtPath:imagePath
-//                                     toPath:[completeTempPath stringByAppendingPathComponent:testImageName]
-//                                      error:&error];
-////                result = [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
-////                         withDestinationPath:imagePath
-////                                       error:&error];
-//                
-//                if (!result) {
-//                    NSLog(@"createSymbolicLinkAtPath error: %@", error.localizedDescription);
-//                }
-//            
-//            } else {
-//                NSLog(@"writeToFile error: %@", error.localizedDescription);
-//            }
-
-        }
-        
-        if (result) {
-            
-//            crashed in iOS8, work in iOS9+
-//            [self.owner loadUrl:[NSURL fileURLWithPath:[completeTempPath stringByAppendingPathComponent:INDEX_HTML]]
-//                      atBaseDir:completeTempPath];
-            
-            [self.owner loadHTML:indexHTMLString atBaseDir:completeTempPath];
             
         } else {
             [self.owner appManifestLoadErrorText:error.localizedDescription];

@@ -182,7 +182,7 @@
 - (NSString *)webViewAppManifestURI {
     
 //    return nil;
-//    return @"https://isd.sistemium.com/app.manifest";
+    return @"https://isd.sistemium.com/app.manifest";
 //    return @"https://r50.sistemium.com/app.manifest";
 //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
     
@@ -327,8 +327,18 @@
         [self.logger saveLogMessageWithText:logMessage
                                     numType:STMLogMessageTypeImportant];
         
-        [self.webView loadFileURL:fileUrl allowingReadAccessToURL:fileUrl];
-                
+        if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
+        
+            [self.webView loadFileURL:fileUrl allowingReadAccessToURL:[NSURL fileURLWithPath:baseDir]];
+
+        } else {
+            
+            logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
+            [self.logger saveLogMessageWithText:logMessage
+                                        numType:STMLogMessageTypeError];
+
+        }
+        
     });
 
 }
