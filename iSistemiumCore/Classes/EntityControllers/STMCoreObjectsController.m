@@ -23,9 +23,9 @@
 #import "STMCoreDataModel.h"
 
 #import "STMCoreNS.h"
+#import "STMFmdb.h"
 
 //#import "iSistemiumCore-Swift.h"
-#import "STMFmdb.h"
 #import "STMPredicateToSQL.h"
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
@@ -50,7 +50,6 @@
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 @property (nonatomic, strong) NSMutableArray *updateRequests;
 @property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
-
 
 @end
 
@@ -323,35 +322,23 @@
 
 + (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    STMFmdb* fmdb = [STMFmdb sharedInstance];
-    
     if (roleName) {
-        
+        #warning move to Persisting protocol
         [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
             completionHandler(success);
         }];
         
+        [[self document] saveDocument:^(BOOL success) {
+        }];
+        
     } else {
         
-        if ([fmdb containstTableWithNameWithName:entityName]){
-            [fmdb insertWithTablename:entityName array:array].then(^{
-                completionHandler(true);
-            }).catch(^{
-                completionHandler(false);
-            });
-        }else{
+        [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:nil].then(^(NSArray *result){
+            completionHandler(YES);
+        }).catch(^(NSError *error){
+            completionHandler(NO);
+        });
         
-            [self insertObjectsFromArray:array withEntityName:entityName withCompletionHandler:^(BOOL success) {
-                completionHandler(success);
-            }];
-        }
-        
-    }
-    
-    if (![fmdb containstTableWithNameWithName:entityName]){
-        [[self document] saveDocument:^(BOOL success) {
-            
-        }];
     }
 
 }
@@ -371,75 +358,66 @@
     }
     
     completionHandler(result);
-
+    
 }
 
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-    STMFmdb *fmdb = [STMFmdb sharedInstance];
-    if ([fmdb containstTableWithNameWithName:entityName]){
-        [fmdb insertWithTablename:entityName dictionary:dictionary].then(^{
-            completionHandler(YES);
-        }).catch(^{
-            completionHandler(NO);
-        });
-    }else{
-        NSArray *dataModelEntityNames = [self localDataModelEntityNames];
+    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
+    
+    if ([dataModelEntityNames containsObject:entityName]) {
         
-        if ([dataModelEntityNames containsObject:entityName]) {
+        NSString *xidString = dictionary[@"id"];
+        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+        
+        STMDatum *object = nil;
+        
+        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
             
-            NSString *xidString = dictionary[@"id"];
-            NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+            object = [[[self.class session] settingsController] settingForDictionary:dictionary];
             
-            STMDatum *object = nil;
+        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
             
-            if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+            NSString *internalName = dictionary[@"name"];
+            object = [STMEntityController entityWithName:internalName];
+            
+        }
+        
+        if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName andXid:xidData];
+        
+        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
+        
+        if (!recordStatus.isRemoved.boolValue) {
+            
+            if (!object) object = [self newObjectForEntityName:entityName];
+            
+            if (![self isWaitingToSyncForObject:object]) {
                 
-                object = [[[self session] settingsController] settingForDictionary:dictionary];
-                
-            } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-                
-                NSString *internalName = dictionary[@"name"];
-                object = [STMEntityController entityWithName:internalName];
+                [object setValue:@NO forKey:@"isFantom"];
+                [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
                 
             }
-            
-            if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName andXid:xidData];
-            
-            STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
-            
-            if (!recordStatus.isRemoved.boolValue) {
-                
-                if (!object) object = [self newObjectForEntityName:entityName];
-                
-                if (![self isWaitingToSyncForObject:object]) {
-                    
-                    [object setValue:@NO forKey:@"isFantom"];
-                    [self processingOfObject:object withEntityName:entityName fillWithValues:dictionary];
-                    
-                }
-                
-            } else {
-                
-                if (object) {
-                    
-                    NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
-                    [self removeIsRemovedRecordStatusAffectedObject:object];
-                    
-                }
-                
-            }
-            
-            completionHandler(YES);
             
         } else {
             
-            NSLog(@"dataModel have no object's entity with name %@", entityName);
-            
-            completionHandler(NO);
+            if (object) {
+                
+                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
+                [self removeIsRemovedRecordStatusAffectedObject:object];
+                
+            }
             
         }
-
+        
+        completionHandler(YES);
+        
+    } else {
+        
+        NSLog(@"dataModel have no object's entity with name %@", entityName);
+        
+        completionHandler(NO);
+        
     }
+    
 }
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
@@ -1263,8 +1241,7 @@
             
             [context deleteObject:object];
             
-            [[self document] saveDocument:^(BOOL success) {
-            }];
+            
             
         }];
 
@@ -2276,8 +2253,6 @@
     
     NSError* error = nil;
     
-    STMFmdb* fmdb = [STMFmdb sharedInstance];
-    
     NSArray *result = nil;
 
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
@@ -2290,8 +2265,10 @@
     }
 
     NSDictionary *parameters = scriptMessage.body;
-
+    
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
+        #warning move to persistence protocol
+        STMFmdb* fmdb = [STMFmdb sharedInstance];
         if ([fmdb containstTableWithNameWithName:[@"STM" stringByAppendingString:parameters[@"entity"]]]){
             return [fmdb getDataWithEntityName:[@"STM" stringByAppendingString:parameters[@"entity"]] PK:parameters[@"id"]];
         }
@@ -2314,11 +2291,6 @@
     
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
 
-    NSLog(@"scriptMessage: %@",scriptMessage.body);
-    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
-    NSLog(@"predicate: %@",predicate);
-    NSLog(@"predicatetoSQL: %@",[[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate]);
-
 //    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
 
     if (error) {
@@ -2329,40 +2301,10 @@
 
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     NSDictionary *options = parameters[@"options"];
-    NSUInteger pageSize = [options[@"pageSize"] integerValue];
-    NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
-    NSString *orderBy = options[@"sortBy"];
-    if (!orderBy) orderBy = @"id";
     
-    if ([fmdb containstTableWithNameWithName:entityName]){
-        NSLog(@"fmdb get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
-        if (predicate){
-            return [fmdb getDataWithEntityName:entityName withPredicate:predicate];
-        }else{
-            return [fmdb getDataWithEntityName:entityName];
-        }
-    } else {
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            NSError* error = nil;
-            NSArray* objectsArray = [self objectsForEntityName:entityName
-                                                   orderBy:orderBy
-                                                 ascending:YES
-                                                fetchLimit:pageSize
-                                               fetchOffset:(pageSize * startPage)
-                                               withFantoms:NO
-                                                 predicate:predicate
-                                                resultType:NSDictionaryResultType
-                                    inManagedObjectContext:[self document].managedObjectContext
-                                                     error:&error];
-            NSLog(@"find get dictionaries %@", @([NSDate timeIntervalSinceReferenceDate]));
-            
-            if (error) {
-                return resolve(error);
-            } else {
-                resolve([self arrayForJSWithObjectsDics:objectsArray entityName:entityName]);
-            }
-        }];
-    }
+    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
+    
+    return [[self persistenceDelegate] findAll:entityName predicate:predicate options:options];
 
 }
 

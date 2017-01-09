@@ -19,12 +19,19 @@
 #import "STMCoreAuthController.h"
 
 #import "STMCoreDataModel.h"
+#import "STMPersistingPromised.h"
+#import "STMPersistingAsync.h"
+#import "STMPersistingSync.h"
 
 
 @interface STMCoreController : NSObject
 
 + (STMCoreSession *)session;
+
+#warning have to remove document property after full implementation of persister
 + (STMDocument *)document;
+
++ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *) persistenceDelegate;
 + (STMSyncer *)syncer;
 
 @end

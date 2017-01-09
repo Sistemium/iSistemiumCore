@@ -80,6 +80,17 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
++ (NSArray *)objectsForEntityName:(NSString *)entityName
+                          orderBy:(NSString *)orderBy
+                        ascending:(BOOL)ascending
+                       fetchLimit:(NSUInteger)fetchLimit
+                      fetchOffset:(NSUInteger)fetchOffset
+                      withFantoms:(BOOL)withFantoms
+                        predicate:(NSPredicate *)predicate
+                       resultType:(NSFetchRequestResultType)resultType
+           inManagedObjectContext:(NSManagedObjectContext *)context
+                            error:(NSError **)error;
+
 + (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
                      toEntities:(NSArray *)entities
                           error:(NSError **)error;
@@ -92,6 +103,7 @@
 + (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
                  withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
 
++ (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls;

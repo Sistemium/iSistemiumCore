@@ -17,9 +17,16 @@
     
 }
 
+#warning have to remove document property after full implementation of persister
 + (STMDocument *)document {
     
     return [self session].document;
+    
+}
+
++ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
+    
+    return [self session].persister;
     
 }
 
