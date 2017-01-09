@@ -109,6 +109,14 @@ FMDatabaseQueue *queue;
                 
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
+ 
+                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
+                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
+                    
+                    NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
+                    NSLog(@"%@", createIndexSQL);
+                    sql_stmt = [sql_stmt stringByAppendingString:createIndexSQL];
+                }
             }
             NSLog(@"%@",sql_stmt);
             columnsByTable = columnsDictionary.copy;
