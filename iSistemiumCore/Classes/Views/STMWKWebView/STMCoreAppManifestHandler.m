@@ -641,8 +641,10 @@
             
             NSString *documentsPath = [STMFunctions documentsDirectory];
             
+            
+            
             result = [fm linkItemAtPath:documentsPath
-                                 toPath:[completeTempPath stringByAppendingPathComponent:@"documents"]
+                                 toPath:[[completeTempPath stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"documents"]
                                   error:&error];
 
             if (!result) {
