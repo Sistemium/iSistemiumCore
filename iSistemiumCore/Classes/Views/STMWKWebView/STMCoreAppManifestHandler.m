@@ -638,35 +638,45 @@
         }
         
         if (result) {
+            
+            NSString *documentsPath = [STMFunctions documentsDirectory];
+            
+            result = [fm linkItemAtPath:documentsPath
+                                 toPath:[completeTempPath stringByAppendingPathComponent:@"documents"]
+                                  error:&error];
 
-            NSString *testImageName = @"3colors-colorless.png";
-            
-            UIImage *testImage = [UIImage imageNamed:testImageName];
-            NSData *testImageData = UIImageJPEGRepresentation(testImage, 1);
-            
-            NSString *imagePath = [STMFunctions absolutePathForPath:testImageName];
-            
-            NSError *error = nil;
-            BOOL result = [testImageData writeToFile:imagePath
-                                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                               error:&error];
-            
-            if (result) {
-                
-                [fm linkItemAtPath:imagePath
-                            toPath:[completeTempPath stringByAppendingPathComponent:testImageName]
-                             error:&error];
-//                [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
-//                         withDestinationPath:imagePath
-//                                       error:&error];
-                
-                if (!result) {
-                    NSLog(@"createSymbolicLinkAtPath error: %@", error.localizedDescription);
-                }
-                
-            } else {
-                NSLog(@"writeToFile error: %@", error.localizedDescription);
+            if (!result) {
+                NSLog(@"link documents folder error: %@", error.localizedDescription);
             }
+
+//            NSString *testImageName = @"3colors-colorless.png";
+//            
+//            UIImage *testImage = [UIImage imageNamed:testImageName];
+//            NSData *testImageData = UIImageJPEGRepresentation(testImage, 1);
+//            
+//            NSString *imagePath = [STMFunctions absolutePathForPath:testImageName];
+//            
+//            NSError *error = nil;
+//            BOOL result = [testImageData writeToFile:imagePath
+//                                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+//                                               error:&error];
+//            
+//            if (result) {
+//                
+//                result = [fm linkItemAtPath:imagePath
+//                                     toPath:[completeTempPath stringByAppendingPathComponent:testImageName]
+//                                      error:&error];
+////                result = [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
+////                         withDestinationPath:imagePath
+////                                       error:&error];
+//                
+//                if (!result) {
+//                    NSLog(@"createSymbolicLinkAtPath error: %@", error.localizedDescription);
+//                }
+//            
+//            } else {
+//                NSLog(@"writeToFile error: %@", error.localizedDescription);
+//            }
 
         }
         
