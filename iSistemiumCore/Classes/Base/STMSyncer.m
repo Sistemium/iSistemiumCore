@@ -22,6 +22,10 @@
 
 #import "STMSocketController.h"
 
+#import "STMPersistingPromised.h"
+#import "STMPersistingAsync.h"
+#import "STMPersistingSync.h"
+
 
 #define SEND_DATA_CONNECTION @"SEND_DATA"
 
@@ -29,7 +33,7 @@
 @interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
-
+@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSString *entityResource;
@@ -99,6 +103,7 @@
     if (session != _session) {
         
         self.document = (STMDocument *)session.document;
+        self.persistenceDelegate = (STMPersister *)session.persister;
         _session = session;
         
         [self startSyncer];
@@ -1367,19 +1372,15 @@
             xid = [STMFunctions xidDataFromXidString:context[@"fantomId"]];
             
         }
-
-        [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-            
+        
+        [[self persistenceDelegate] merge:entityName attributes:responseData options:nil].then(^(NSDictionary *result){
             [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
-                                                successfully:success];
-            
-        }];
+                                                successfully:YES];
+        });
 
     } else {
         
-        [STMCoreObjectsController insertObjectFromDictionary:responseData withEntityName:entityName withCompletionHandler:^(BOOL success) {
-            [[self document] saveDocument:^(BOOL success) {}];
-        }];
+        [[self persistenceDelegate] merge:entityName attributes:responseData options:nil];
         
     }
 

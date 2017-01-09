@@ -63,10 +63,12 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @end
 
+@class STMPersister;
 
 @protocol STMSession <NSObject>
 
 @property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
+@property (nonatomic, strong) STMPersister *persister;
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;
