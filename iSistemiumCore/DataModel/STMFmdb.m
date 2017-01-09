@@ -187,7 +187,7 @@ FMDatabaseQueue *queue;
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
                 }
-                resolve(rez.copy);
+                resolve(rez);
             }];
         });
     }];
@@ -210,7 +210,7 @@ FMDatabaseQueue *queue;
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
                 }
-                resolve(rez.copy);
+                resolve(rez);
             }];
         });
     }];
@@ -226,7 +226,7 @@ FMDatabaseQueue *queue;
                 while ([s next]) {
                     [rez addObject:[s resultDictionary]];
                 }
-                resolve(rez.copy);
+                resolve(rez);
             }];
         });
     }];
