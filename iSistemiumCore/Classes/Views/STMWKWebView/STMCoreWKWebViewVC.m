@@ -1229,7 +1229,7 @@
 
     if (requestId && [data isKindOfClass:[NSArray class]]) {
         
-        NSLog(@"requestId %@ callbackWithData: %@ objects", requestId, @([(NSArray *)data count]));
+        NSLog(@"requestId %@ (%@) callbackWithData: %@ objects", requestId, parameters[@"entity"], @([(NSArray *)data count]));
         
     } else {
         
