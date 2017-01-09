@@ -1272,6 +1272,7 @@
         
         if (session.status == STMSessionRunning) {
             
+            [self checkSocket];
             [self performFetches];
             
         } else {
