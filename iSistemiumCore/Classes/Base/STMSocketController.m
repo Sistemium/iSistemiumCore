@@ -1640,6 +1640,12 @@
 - (void)startSocket {
     
     STMLogger *logger = [STMLogger sharedLogger];
+
+    STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+
+    if (session.status != STMSessionRunning) {
+        return;
+    }
     
     NSString *logMessage = @"startSocket";
     [logger saveLogMessageWithText:logMessage
@@ -1648,7 +1654,7 @@
     logMessage = [NSString stringWithFormat:@"self.socket %@, self.socketUrl %@, self.isRunning %@, self.isManualReconnecting %@, self.socket.sid %@", self.socket, self.socketUrl, @(self.isRunning), @(self.isManualReconnecting), self.socket.sid];
     [logger saveLogMessageWithText:logMessage
                            numType:STMLogMessageTypeInfo];
-
+    
     if (self.socketUrl && !self.isRunning && !self.isManualReconnecting) {
         
         self.isRunning = YES;
