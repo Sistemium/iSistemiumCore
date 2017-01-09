@@ -653,9 +653,12 @@
             
             if (result) {
                 
-                [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
-                         withDestinationPath:imagePath
-                                       error:&error];
+                [fm linkItemAtPath:imagePath
+                            toPath:[completeTempPath stringByAppendingPathComponent:testImageName]
+                             error:&error];
+//                [fm createSymbolicLinkAtPath:[completeTempPath stringByAppendingPathComponent:testImageName]
+//                         withDestinationPath:imagePath
+//                                       error:&error];
                 
                 if (!result) {
                     NSLog(@"createSymbolicLinkAtPath error: %@", error.localizedDescription);
