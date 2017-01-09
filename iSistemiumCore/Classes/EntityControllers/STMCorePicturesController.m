@@ -379,8 +379,11 @@
             }
 
             NSLog(@"save new resizedImage file for picture %@", picture.xid);
-            NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:newImagePath]];
-            [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath] forPicture:picture fromImageData:imageData];
+            NSData *imageData = [NSData dataWithContentsOfFile:[[self imagesCachePath] stringByAppendingPathComponent:newImagePath]];
+            
+            [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
+                            forPicture:picture
+                         fromImageData:imageData];
             
         }
         
@@ -391,7 +394,8 @@
         if (picture.href) {
             
             NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and have href for picture %@, flush picture and download data again", picture.xid];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
             
             [self removeImageFilesForPicture:picture];
             [self hrefProcessingForObject:picture];
@@ -399,7 +403,8 @@
         } else {
 
             NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and no href for picture %@, will be deleted", picture.xid];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
             
             [self deletePicture:picture];
             
@@ -412,7 +417,7 @@
 + (NSString *)convertImagePath:(NSString *)path {
     
     NSString *lastPathComponent = [path lastPathComponent];
-    NSString *imagePath = [STMFunctions absolutePathForPath:lastPathComponent];
+    NSString *imagePath = [[self imagesCachePath] stringByAppendingPathComponent:lastPathComponent];
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
         return lastPathComponent;
@@ -439,7 +444,7 @@
         if (picture.imagePath) {
             
             NSError *error = nil;
-            NSData *photoData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath]
+            NSData *photoData = [NSData dataWithContentsOfFile:[[self imagesCachePath] stringByAppendingPathComponent:picture.imagePath]
                                                        options:0
                                                          error:&error];
             
@@ -513,7 +518,9 @@
         if (!picture.hasChanges && picture.imagePath) {
             
             NSError *error = nil;
-            NSData *photoData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:picture.imagePath] options:0 error:&error];
+            NSData *photoData = [NSData dataWithContentsOfFile:[[self imagesCachePath] stringByAppendingPathComponent:picture.imagePath]
+                                                       options:0
+                                                         error:&error];
             
             if (photoData && photoData.length > 0) {
                 
@@ -648,7 +655,7 @@
 
     }
     
-    NSString *imagePath = [STMFunctions absolutePathForPath:fileName];
+    NSString *imagePath = [[self imagesCachePath] stringByAppendingPathComponent:fileName];
     
     NSError *error = nil;
     BOOL result = [data writeToFile:imagePath
@@ -683,7 +690,7 @@
 
 + (BOOL)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
 
-    NSString *resizedImagePath = [STMFunctions absolutePathForPath:resizedFileName];
+    NSString *resizedImagePath = [[self imagesCachePath] stringByAppendingPathComponent:resizedFileName];
     
     UIImage *resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(1024, 1024) allowRetina:NO];
     NSData *resizedImageData = nil;
@@ -988,7 +995,7 @@
 
 + (void)removeImageFile:(NSString *)filePath {
     
-    NSString *imagePath = [STMFunctions absolutePathForPath:filePath];
+    NSString *imagePath = [[self imagesCachePath] stringByAppendingPathComponent:filePath];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
 

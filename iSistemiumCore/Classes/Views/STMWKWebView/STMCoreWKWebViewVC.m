@@ -976,7 +976,7 @@
 - (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
-    NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:imagePath]
+    NSData *imageData = [NSData dataWithContentsOfFile:[[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath]
                                                options:0
                                                  error:&error];
     
