@@ -31,17 +31,29 @@ FMDatabaseQueue *queue;
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
         if ([database open]){
+            
             [database beginTransaction];
+            
             NSString *sql_stmt = @"";
+            NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
+            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
+            
             for (NSString* entityName in entityNames){
+                
                 if ([entityName isEqualToString:@"STMSetting"] || [entityName isEqualToString:@"STMEntity"] ){
                     continue;
                 }
+                
+                NSString *tableName = [self entityToTableName:entityName];
+                
                 NSMutableArray *columns = @[].mutableCopy;
+                
                 sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
-                sql_stmt = [sql_stmt stringByAppendingString:[self entityToTableName:entityName]];
+                sql_stmt = [sql_stmt stringByAppendingString:tableName];
                 sql_stmt = [sql_stmt stringByAppendingString:@" ("];
+                
                 BOOL first = true;
+                
                 for (NSString* entityKey in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
                     if (first){
                         first = false;
@@ -79,18 +91,22 @@ FMDatabaseQueue *queue;
                             break;
                     }
                 }
+                
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     if (first){
                         first = false;
                     }else{
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
-                    [columns addObject:[entityKey stringByAppendingString:@"Id"]];
-                    sql_stmt = [sql_stmt stringByAppendingString:entityKey];
-                    sql_stmt = [sql_stmt stringByAppendingString:@"Id TEXT REFERENCES "];
-                    sql_stmt = [sql_stmt stringByAppendingString:[self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]]];
-                    sql_stmt = [sql_stmt stringByAppendingString:@"(id)"];
+                    
+                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
+                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
+                    
+                    [columns addObject:fkColumn];
+                    sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
                 }
+                
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
             }
