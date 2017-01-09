@@ -651,7 +651,7 @@
             } else {
                 
                 [self.owner loadUrl:[NSURL fileURLWithPath:indexHTMLPath]
-                          atBaseDir:self.localHTMLDirPath];
+                          atBaseDir:[STMFunctions absoluteDataCachePath]];
                 
             }
             
