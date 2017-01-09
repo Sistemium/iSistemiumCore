@@ -53,7 +53,7 @@
     
     NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    completePath = [STMFunctions absoluteDocumentsPathForPath:completePath];
+    completePath = (SYSTEM_VERSION < 9.0) ? [STMFunctions absoluteDocumentsPathForPath:completePath] : [STMFunctions absoluteDataCachePathForPath:completePath];
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
