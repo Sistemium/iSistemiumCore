@@ -668,7 +668,13 @@
         }
         
         if (result) {
+            
+//            crashed in iOS8, work in iOS9+
+//            [self.owner loadUrl:[NSURL fileURLWithPath:[completeTempPath stringByAppendingPathComponent:INDEX_HTML]]
+//                      atBaseDir:completeTempPath];
+            
             [self.owner loadHTML:indexHTMLString atBaseDir:completeTempPath];
+            
         } else {
             [self.owner appManifestLoadErrorText:error.localizedDescription];
         }

@@ -182,7 +182,7 @@
 - (NSString *)webViewAppManifestURI {
     
 //    return nil;
-//    return @"https://r50.sistemium.com/app.manifest";
+    return @"https://r50.sistemium.com/app.manifest";
 //    return @"https://isd.sistemium.com/app.manifest";
 //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
     
@@ -317,6 +317,20 @@
         [self.appManifestHandler startLoadLocalHTML];
     });
     
+}
+
+- (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeImportant];
+        
+        [self.webView loadFileURL:fileUrl allowingReadAccessToURL:fileUrl];
+                
+    });
+
 }
 
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
