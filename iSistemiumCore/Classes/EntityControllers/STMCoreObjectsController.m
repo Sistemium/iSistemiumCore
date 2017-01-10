@@ -23,7 +23,6 @@
 #import "STMCoreDataModel.h"
 
 #import "STMCoreNS.h"
-#import "STMFmdb.h"
 
 //#import "iSistemiumCore-Swift.h"
 #import "STMPredicateToSQL.h"
@@ -2267,24 +2266,17 @@
     NSDictionary *parameters = scriptMessage.body;
     
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
-        #warning move to persistence protocol
-        STMFmdb* fmdb = [STMFmdb sharedInstance];
-        if ([fmdb containstTableWithNameWithName:[@"STM" stringByAppendingString:parameters[@"entity"]]]){
-            return [fmdb getDataWithEntityName:[@"STM" stringByAppendingString:parameters[@"entity"]] PK:parameters[@"id"]];
-        }
-        else{
-            result = [self findObjectInCacheWithParameters:parameters error:&error];
-            if (error) {
-                return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-                    resolve(error);
-                }];
-            };
-            if (result) {
-                return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-                    resolve(result);
-                }];
-                
-            }
+        result = [self findObjectInCacheWithParameters:parameters error:&error];
+        if (error) {
+            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+                resolve(error);
+            }];
+        };
+        if (result) {
+            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+                resolve(result);
+            }];
+            
         }
 
     }
@@ -2332,13 +2324,11 @@
         
         if (xidString) {
             
-            NSData *xid = [STMFunctions xidDataFromXidString:xidString];
-            
-            STMDatum *object = (STMDatum *)[self objectForXid:xid entityName:entityName];
+            NSDictionary* object = [[self persistenceDelegate] findSync:entityName id:xidString options:nil error:*error];
             
             if (object) {
                 
-                if (object.isFantom.boolValue) {
+                if ([object[@"isFantom"] boolValue]) {
                     errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
                 } else {
 #warning - replace it with arrayForJSWithObjectsDics ?
