@@ -2327,12 +2327,12 @@
             NSDictionary* object = [[self persistenceDelegate] findSync:entityName id:xidString options:nil error:*error];
             
             if (object) {
-                
-                if ([object[@"isFantom"] boolValue]) {
+
+                if (object[@"isFantom"] != [NSNull null] && [object[@"isFantom"] boolValue]) {
                     errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
                 } else {
 #warning - replace it with arrayForJSWithObjectsDics ?
-                    return [self arrayForJSWithObjects:@[object]];
+                    return @[object];
                 }
                 
             } else {

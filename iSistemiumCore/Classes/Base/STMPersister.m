@@ -189,7 +189,7 @@
     __block NSError* blockError = nil;
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        
+        [[STMFmdb sharedInstance] commit];
     }else{
         [[self document] saveDocument:^(BOOL success){
             if (!success){

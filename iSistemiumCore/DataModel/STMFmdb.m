@@ -186,9 +186,11 @@ FMDatabaseQueue *queue;
     NSString* where = @"";
     if (predicate){
         where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
-    }
-    if ([where isEqualToString:@"( )"] || [where isEqualToString:@""] || [where isEqualToString:@"()"]){
-        where = [@" WHERE " stringByAppendingString:where];
+        if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
+            where = @"";
+        }else{
+            where = [@" WHERE " stringByAppendingString:where];
+        }
     }
     where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
