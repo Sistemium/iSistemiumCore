@@ -12,8 +12,6 @@
 
 @required
 
-@optional
-
 - (void)findAsync:(NSString *)entityName
                id:(NSString *)identifier
           options:(NSDictionary *)options
@@ -33,6 +31,8 @@ completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))
         attributeArray:(NSArray *)attributeArray
                options:(NSDictionary *)options
      completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler;
+
+@optional
 
 - (void)destroyAsync:(NSString *)entityName
                   id:(NSString *)identifier

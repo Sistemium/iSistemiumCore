@@ -12,8 +12,6 @@
 
 @required
 
-@optional
-
 - (NSDictionary *)findSync:(NSString *)entityName
                         id:(NSString *)identifier
                    options:(NSDictionary *)options
@@ -33,6 +31,8 @@
             attributeArray:(NSArray *)attributeArray
                    options:(NSDictionary *)options
                      error:(NSError *)error;
+
+@optional
 
 - (BOOL *)destroySync:(NSString *)entityName
                    id:(NSString *)identifier

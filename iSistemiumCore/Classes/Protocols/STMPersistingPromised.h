@@ -14,6 +14,14 @@
 
 @required
 
+- (AnyPromise *)find:(NSString *)entityName
+                  id:(NSString *)identifier
+             options:(NSDictionary *)options;
+
+- (AnyPromise *)findAll:(NSString *)entityName
+              predicate:(NSPredicate *)predicate
+                options:(NSDictionary *)options;
+
 - (AnyPromise *)merge:(NSString *)entityName
            attributes:(NSDictionary *)attributes
               options:(NSDictionary *)options;
@@ -22,15 +30,7 @@
            attributeArray:(NSArray *)attributeArray
                   options:(NSDictionary *)options;
 
-- (AnyPromise *)findAll:(NSString *)entityName
-              predicate:(NSPredicate *)predicate
-                options:(NSDictionary *)options;
-
 @optional
-
-- (AnyPromise *)find:(NSString *)entityName
-                  id:(NSString *)identifier
-             options:(NSDictionary *)options;
 
 - (AnyPromise *)destroy:(NSString *)entityName
                      id:(NSString *)identifier
