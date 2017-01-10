@@ -6,16 +6,11 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-@import PromiseKit;
-
 @interface STMFmdb : NSObject
 
 + (STMFmdb * _Nonnull)sharedInstance;
-- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name;
-- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate;
-- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array;
-- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary;
--(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK;
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate;
+- (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary;
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name;
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
 - (void) commit;

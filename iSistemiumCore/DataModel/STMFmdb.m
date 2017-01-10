@@ -6,6 +6,8 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
+//Note: The calls to FMDatabaseQueue's methods are blocking. So even though you are passing along blocks, they will not be run on another thread.
+
 #import <Foundation/Foundation.h>
 #import "STMFmdb.h"
 #import "STMFunctions.h"
@@ -149,111 +151,56 @@ FMDatabaseQueue *queue;
     
 }
 
-- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename array:(NSArray<NSDictionary<NSString *, id> *> * _Nonnull)array{
+- (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
     tablename = [self entityToTableName:tablename];
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        NSLog(@"Started inserting %@", tablename);
-        NSMutableArray* promises = @[].mutableCopy;
-        for (NSDictionary* dict in array){
-            [promises addObject:[self insertWithTablename:tablename dictionary:dict]];
+    [queue inDatabase:^(FMDatabase *db) {
+        if (![db inTransaction]){
+            [db beginTransaction];
         }
-        PMKJoin(promises).then(^(NSArray *resultingValues){
-            resolve(resultingValues);
-        }).catch(^(NSError *error){
-            resolve(error);
-        });
-        NSLog(@"Done inserting %@", tablename);
+        NSMutableArray* keys = @[].mutableCopy;
+        
+        NSMutableArray* values = @[].mutableCopy;
+        
+        for(NSString* key in dictionary){
+            if ([columnsByTable[tablename] containsObject:key]){
+                [keys addObject:key];
+                [values addObject:[dictionary objectForKey:key]];
+            }
+        }
+        
+        [keys addObject:@"lts"];
+        [values addObject:[STMFunctions stringFromDate:[NSDate date]]];
+        NSMutableArray* v = @[].mutableCopy;
+        for (int i=0;i<[keys count];i++){
+            [v addObject:@"?"];
+        }
+        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+        
+        [db executeUpdate:insertSQL withArgumentsInArray:values];
     }];
+    return dictionary;
 }
 
-- (AnyPromise * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
-    tablename = [self entityToTableName:tablename];
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [queue inDatabase:^(FMDatabase *db) {
-                if (![db inTransaction]){
-                    [db beginTransaction];
-                }
-                NSMutableArray* keys = @[].mutableCopy;
-                
-                NSMutableArray* values = @[].mutableCopy;
-                
-                for(NSString* key in dictionary){
-                    if ([columnsByTable[tablename] containsObject:key]){
-                        [keys addObject:key];
-                        [values addObject:[dictionary objectForKey:key]];
-                    }
-                }
-                
-                [keys addObject:@"lts"];
-                [values addObject:[STMFunctions stringFromDate:[NSDate date]]];
-                NSMutableArray* v = @[].mutableCopy;
-                for (int i=0;i<[keys count];i++){
-                    [v addObject:@"?"];
-                }
-                NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-                
-                [db executeUpdate:insertSQL withArgumentsInArray:values];
-                resolve(dictionary);
-            }];
-        });
-    }];
-}
-
--(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name PK:(NSString * _Nonnull)PK{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
     name = [self entityToTableName:name];
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSMutableArray *rez = @[].mutableCopy;
-            [queue inDatabase:^(FMDatabase *db) {
-                NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE id = '%@'",name,PK];
-                FMResultSet *s = [db executeQuery:query];
-                while ([s next]) {
-                    [rez addObject:[s resultDictionary]];
-                }
-                resolve(rez);
-            }];
-        });
-    }];
-}
-
-- (AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
-    NSString* where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
-    if ([where isEqualToString:@"( )"] || [where isEqualToString:@""] || [where isEqualToString:@"()"]){
-        return [self getDataWithEntityName:name];
+    NSString* where = @"";
+    if (predicate){
+        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
     }
-    name = [self entityToTableName:name];
+    if ([where isEqualToString:@"( )"] || [where isEqualToString:@""] || [where isEqualToString:@"()"]){
+        where = [@" WHERE " stringByAppendingString:where];
+    }
     where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSMutableArray *rez = @[].mutableCopy;
-            [queue inDatabase:^(FMDatabase *db) {
-                NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",name,where];
-                FMResultSet *s = [db executeQuery:query];
-                while ([s next]) {
-                    [rez addObject:[s resultDictionary]];
-                }
-                resolve(rez);
-            }];
-        });
+    NSMutableArray *rez = @[].mutableCopy;
+    [queue inDatabase:^(FMDatabase *db) {
+        NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@",name,where];
+        FMResultSet *s = [db executeQuery:query];
+        while ([s next]) {
+            [rez addObject:[s resultDictionary]];
+        }
     }];
-}
-
--(AnyPromise * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name{
-    name = [self entityToTableName:name];
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSMutableArray *rez = @[].mutableCopy;
-            [queue inDatabase:^(FMDatabase *db) {
-                FMResultSet *s = [db executeQuery:[@"SELECT * FROM " stringByAppendingString:name]];
-                while ([s next]) {
-                    [rez addObject:[s resultDictionary]];
-                }
-                resolve(rez);
-            }];
-        });
-    }];
+    return rez;
 }
 
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name{
