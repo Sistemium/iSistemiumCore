@@ -158,7 +158,7 @@ FMDatabaseQueue *queue;
             [promises addObject:[self insertWithTablename:tablename dictionary:dict]];
         }
         PMKJoin(promises).then(^(NSArray *resultingValues){
-            resolve(nil);
+            resolve(resultingValues);
         }).catch(^(NSError *error){
             resolve(error);
         });
@@ -194,7 +194,7 @@ FMDatabaseQueue *queue;
                 NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
                 
                 [db executeUpdate:insertSQL withArgumentsInArray:values];
-                resolve(nil);
+                resolve(dictionary);
             }];
         });
     }];

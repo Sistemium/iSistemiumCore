@@ -175,7 +175,7 @@
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         return [[STMFmdb sharedInstance] insertWithTablename:entityName array:attributeArray].then(^(NSArray *result){
             [[STMFmdb sharedInstance] commit];
-        });;
+        });
     }else{
         return[AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             [STMCoreObjectsController insertObjectsFromArray:attributeArray withEntityName:entityName withCompletionHandler:^(BOOL sucess){
