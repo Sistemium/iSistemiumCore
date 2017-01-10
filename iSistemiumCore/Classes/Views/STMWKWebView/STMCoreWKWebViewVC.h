@@ -27,6 +27,8 @@
 - (void)appManifestLoadErrorText:(NSString *)errorText;
 - (void)appManifestLoadInfoText:(NSString *)infoText;
 - (void)localHTMLUpdateIsAvailable;
+
+- (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir;
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
 
 - (void)callbackWithData:(NSArray *)data

@@ -183,8 +183,8 @@
 - (NSString *)webViewAppManifestURI {
     
 //    return nil;
-//    return @"https://r50.sistemium.com/app.manifest";
 //    return @"https://isd.sistemium.com/app.manifest";
+//    return @"https://r50.sistemium.com/app.manifest";
 //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
     
     return self.webViewStoryboardParameters[@"appManifestURI"];
@@ -318,6 +318,30 @@
         [self.appManifestHandler startLoadLocalHTML];
     });
     
+}
+
+- (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeImportant];
+        
+        if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
+        
+            [self.webView loadFileURL:fileUrl allowingReadAccessToURL:[NSURL fileURLWithPath:baseDir]];
+
+        } else {
+            
+            logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
+            [self.logger saveLogMessageWithText:logMessage
+                                        numType:STMLogMessageTypeError];
+
+        }
+        
+    });
+
 }
 
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
@@ -959,7 +983,7 @@
 - (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
-    NSData *imageData = [NSData dataWithContentsOfFile:[STMFunctions absolutePathForPath:imagePath]
+    NSData *imageData = [NSData dataWithContentsOfFile:[[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath]
                                                options:0
                                                  error:&error];
     

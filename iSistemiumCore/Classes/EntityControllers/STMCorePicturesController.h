@@ -19,6 +19,8 @@
 
 + (CGFloat)jpgQuality;
 
++ (NSString *)imagesCachePath;
+
 + (void)checkPhotos;
 
 + (void)hrefProcessingForObject:(NSManagedObject *)object;

@@ -53,7 +53,7 @@
     
     NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    completePath = [STMFunctions absoluteDocumentsPathForPath:completePath];
+    completePath = (SYSTEM_VERSION < 9.0) ? [STMFunctions absoluteDocumentsPathForPath:completePath] : [STMFunctions absoluteDataCachePathForPath:completePath];
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
@@ -607,29 +607,33 @@
                                     error:&error];
             
         }
+        
+        if (SYSTEM_VERSION < 9.0) {
 
-        if (result) {
-            
-            result = [fm createDirectoryAtPath:completeTempPath
-                   withIntermediateDirectories:YES
-                                    attributes:nil
-                                         error:&error];
-            
-        }
-        
-        if (result) {
-        
-            NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
-            
-            if (dirObjects) {
+            if (result) {
                 
-                for (NSString *dirObject in dirObjects) {
+                result = [fm createDirectoryAtPath:completeTempPath
+                       withIntermediateDirectories:YES
+                                        attributes:nil
+                                             error:&error];
+                
+            }
+            
+            if (result) {
+                
+                NSArray *dirObjects = [fm contentsOfDirectoryAtPath:self.localHTMLDirPath error:&error];
+                
+                if (dirObjects) {
                     
-                    result = [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
-                                         toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
-                                          error:&error];
-                    
-                    if (!result) break;
+                    for (NSString *dirObject in dirObjects) {
+                        
+                        result = [fm copyItemAtPath:[self.localHTMLDirPath stringByAppendingPathComponent:dirObject]
+                                             toPath:[completeTempPath stringByAppendingPathComponent:dirObject]
+                                              error:&error];
+                        
+                        if (!result) break;
+                        
+                    }
                     
                 }
                 
@@ -638,7 +642,19 @@
         }
         
         if (result) {
-            [self.owner loadHTML:indexHTMLString atBaseDir:completeTempPath];
+            
+            if (SYSTEM_VERSION < 9.0) {
+
+                [self.owner loadHTML:indexHTMLString
+                           atBaseDir:completeTempPath];
+                
+            } else {
+                
+                [self.owner loadUrl:[NSURL fileURLWithPath:indexHTMLPath]
+                          atBaseDir:[STMFunctions absoluteDataCachePath]];
+                
+            }
+            
         } else {
             [self.owner appManifestLoadErrorText:error.localizedDescription];
         }
