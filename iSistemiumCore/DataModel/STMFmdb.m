@@ -32,8 +32,6 @@ FMDatabaseQueue *queue;
         
         if ([database open]){
             
-            [database beginTransaction];
-            
             NSString *sql_stmt = @"";
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
@@ -110,19 +108,21 @@ FMDatabaseQueue *queue;
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
  
+                [database executeStatements:sql_stmt];
+                NSLog(@"%@",sql_stmt);
+                sql_stmt = @"";
+                
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
                     NSLog(@"%@", createIndexSQL);
                     sql_stmt = [sql_stmt stringByAppendingString:createIndexSQL];
+                    sql_stmt = @"";
                 }
             }
-            NSLog(@"%@",sql_stmt);
             columnsByTable = columnsDictionary.copy;
-            [database executeStatements:sql_stmt];
-            
-            [database commit];
+        
             [database close];
         }
     }
