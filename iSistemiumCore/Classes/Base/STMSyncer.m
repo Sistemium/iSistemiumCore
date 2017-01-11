@@ -395,6 +395,7 @@
 
 - (void)socketReceiveAuthorization {
     [self initTimer];
+    self.syncerState = STMSyncerReceiveData;
 }
 
 - (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
