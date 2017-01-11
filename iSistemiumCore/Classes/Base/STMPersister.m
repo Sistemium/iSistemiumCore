@@ -138,7 +138,12 @@
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
     }
-    return [self findAllSync:entityName predicate:predicate options:options error:error][0];
+    NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
+    if ([results count]) {
+        return results.firstObject;
+    } else {
+        return nil;
+    }
 }
 
 - (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *)error{
