@@ -52,6 +52,8 @@ FMDatabaseQueue *queue;
                 
                 for (NSString* columnName in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
                     
+                    if ([columnName isEqualToString:@"xid"]) continue;
+                    
                     if (first){
                         first = false;
                     }else{
