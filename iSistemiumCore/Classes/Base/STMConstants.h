@@ -31,6 +31,7 @@
 #define IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 #define IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 
+#define CurrentMethodName [NSString stringWithFormat:@"%@", NSStringFromSelector(_cmd)]
 #define NSLogMethodName NSLog(@"%@", NSStringFromSelector(_cmd))
 
 #define BUNDLE_DISPLAY_NAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
