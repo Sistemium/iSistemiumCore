@@ -172,6 +172,10 @@ NSArray *ignoreColumns;
 #warning need to handle errors
     tablename = [self entityToTableName:tablename];
     
+    NSString *subQueryFormat = @"(select %@ from %@ where id = '%@')";
+    NSString *pk = dictionary [@"id"];
+    NSArray *columns = columnsByTable[tablename];
+    
     [queue inDatabase:^(FMDatabase *db) {
         
         if (![db inTransaction]){
@@ -182,8 +186,7 @@ NSArray *ignoreColumns;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([columnsByTable[tablename] containsObject:key]){
-                if ([ignoreColumns containsObject:key] && ![dictionary objectForKey:key]) continue;
+            if ([columns containsObject:key]){
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }
@@ -193,7 +196,18 @@ NSArray *ignoreColumns;
         for (int i=0;i<[keys count];i++){
             [v addObject:@"?"];
         }
-        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+        
+        for(NSString* key in ignoreColumns) {
+            if (![keys containsObject:key]) {
+                [keys addObject:key];
+                [v addObject:[NSString stringWithFormat:subQueryFormat, key, tablename, pk]];
+            }
+        }
+        
+        NSLog(@"v: %@", v);
+        NSLog(@"keys: %@", keys);
+        
+        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) SELECT %@",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
         
         [db executeUpdate:insertSQL withArgumentsInArray:values];
     }];
