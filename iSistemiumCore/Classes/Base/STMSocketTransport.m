@@ -247,7 +247,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
             [self.syncer socketReceiveAuthorization];
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"socketAuthorizationSuccess"
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
                                                                 object:self];
             
 //            [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];

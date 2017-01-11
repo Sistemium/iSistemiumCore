@@ -1136,7 +1136,7 @@
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)
-               name:@"socketAuthorizationSuccess"
+               name:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
              object:nil];
     
     [nc addObserver:self

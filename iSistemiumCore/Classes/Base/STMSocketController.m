@@ -752,7 +752,8 @@
                 [self sharedInstance].isSendingData = NO;
                 [[self syncer] socketReceiveAuthorization];
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"socketAuthorizationSuccess" object:self];
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
+                                                                    object:self];
                 
                 [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];
                 

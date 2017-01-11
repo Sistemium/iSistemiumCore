@@ -59,6 +59,9 @@
 #define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED @"bunchOfObjectsSended"
 #define NOTIFICATION_SYNCER_DID_CHANGE_CONTENT @"syncerDidChangeContent"
 #define NOTIFICATION_SYNCER_STATUS_CHANGED @"syncStatusChanged"
+
+#define NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS @"socketAuthorizationSuccess"
+
 #define NOTIFICATION_SESSION_STATUS_CHANGED @"sessionStatusChanged"
 #define NOTIFICATION_PICTURE_WAS_DOWNLOADED @"pictureWasDownloaded"
 #define NOTIFICATION_PICTURE_DOWNLOAD_ERROR @"pictureDownloadError"
