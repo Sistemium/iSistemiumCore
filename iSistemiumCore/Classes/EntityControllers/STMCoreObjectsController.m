@@ -2324,7 +2324,7 @@
         
         if (xidString) {
             
-            NSDictionary* object = [[self persistenceDelegate] findSync:entityName id:xidString options:nil error:*error];
+            NSDictionary* object = [[self persistenceDelegate] findSync:entityName id:xidString options:nil error:error];
             
             if (object) {
 

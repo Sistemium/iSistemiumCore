@@ -131,26 +131,39 @@
 
 #pragma mark - STMPersistingSync
 
-- (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError *)error{
+- (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+    
     NSPredicate* predicate;
+    
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         predicate = [NSPredicate predicateWithFormat:@"id == %@",identifier];
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
     }
-    return [self findAllSync:entityName predicate:predicate options:options error:error][0];
+    
+    NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
+    
+    if (results.count) {
+        return results.firstObject;
+    } else {
+        return nil;
+    }
+    
 }
 
-- (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *)error{
+- (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
     NSUInteger pageSize = [options[@"pageSize"] integerValue];
     NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
     NSString *orderBy = options[@"sortBy"];
+    
     if (!orderBy) orderBy = @"id";
     if (!startPage) startPage = 0;
     if (!pageSize) pageSize = 0;
+    
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate];
-    }else{
+    } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
                                                                      ascending:YES
@@ -160,51 +173,53 @@
                                                                      predicate:predicate
                                                                     resultType:NSDictionaryResultType
                                                         inManagedObjectContext:[self document].managedObjectContext
-                                                                         error:&error];
+                                                                         error:error];
         
         return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray entityName:entityName];
     }
 }
 
-- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *)error{
-    __block NSDictionary* result = nil;
+- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
     __block NSError* blockError = nil;
+    
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        result = [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:attributes];
-        return result;
-    }else{
+        
+        return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:attributes];
+    
+    } else {
+        
         [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-            blockError = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                             code:0
-                                         userInfo:@{NSLocalizedDescriptionKey: @"insert error"}];
-            result = attributes;
-        }];
-        error = blockError;
-        return result;
-    }
-}
-
-- (void)saveWithEntityName:(NSString *)entityName error:(NSError *)error{
-    __block NSError* blockError = nil;
-    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        [[STMFmdb sharedInstance] commit];
-    }else{
-        [[self document] saveDocument:^(BOOL success){
-            if (!success){
+            if (!sucess) {
                 blockError = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
                                                  code:0
-                                             userInfo:@{NSLocalizedDescriptionKey: @"document save failed"}];
-                
+                                             userInfo:@{NSLocalizedDescriptionKey: @"insert error"}];
             }
         }];
+        
+        return attributes;
     }
-    error = blockError;
-
 }
 
-- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *)error{
+- (void)saveWithEntityName:(NSString *)entityName error:(NSError **)error{
+    
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        [[STMFmdb sharedInstance] commit];
+    } else {
+        [[self document] saveDocument:^(BOOL success){
+            if (success) return;
+            *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                                         code:0
+                                     userInfo:@{NSLocalizedDescriptionKey: @"document save failed"}];
+        }];
+    }
+}
+
+- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     if (!error){
         [self saveWithEntityName:entityName error:error];
@@ -215,7 +230,7 @@
     return nil;
 }
 
-- (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *)error{
+- (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
     for (NSDictionary* dictionary in attributeArray){
         [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
         if (error){
@@ -232,19 +247,21 @@
 #pragma mark - STMPersistingAsync
 
 - (void)findAsync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
+    
     __block NSDictionary* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
+    
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            result = [self findSync:entityName id:identifier options:options error:error];
+            result = [self findSync:entityName id:identifier options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,result,error);
         });
-    }else{
-        result = [self findSync:entityName id:identifier options:options error:error];
+    } else {
+        result = [self findSync:entityName id:identifier options:options error:&error];
         completionHandler(success,result,error);
     }
 }
@@ -255,14 +272,14 @@
     __block NSError* error = nil;
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            result = [self findAllSync:entityName predicate:predicate options:options error:error];
+            result = [self findAllSync:entityName predicate:predicate options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,result,error);
         });
     }else{
-        result = [self findAllSync:entityName predicate:predicate options:options error:error];
+        result = [self findAllSync:entityName predicate:predicate options:options error:&error];
         completionHandler(success,result,error);
     }
 }
@@ -273,14 +290,14 @@
     __block NSError* error = nil;
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            result = [self mergeSync:entityName attributes:attributes options:options error:error];
+            result = [self mergeSync:entityName attributes:attributes options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,result,error);
         });
     }else{
-        result = [self mergeSync:entityName attributes:attributes options:options error:error];
+        result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         completionHandler(success,result,error);
     }
 }
@@ -291,14 +308,14 @@
     __block NSError* error = nil;
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:error];
+            result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,result,error);
         });
     }else{
-        result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:error];
+        result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
         completionHandler(success,result,error);
     }
 }
