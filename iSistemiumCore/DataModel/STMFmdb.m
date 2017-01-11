@@ -34,9 +34,9 @@ FMDatabaseQueue *queue;
         
         if ([database open]){
             
-            NSString *sql_stmt = @"";
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
+            NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             
             for (NSString* entityName in entityNames){
                 
@@ -45,12 +45,8 @@ FMDatabaseQueue *queue;
                 }
                 
                 NSString *tableName = [self entityToTableName:entityName];
-                
                 NSMutableArray *columns = @[].mutableCopy;
-                
-                sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
-                sql_stmt = [sql_stmt stringByAppendingString:tableName];
-                sql_stmt = [sql_stmt stringByAppendingString:@" ("];
+                NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
                 
                 BOOL first = true;
                 
@@ -112,15 +108,13 @@ FMDatabaseQueue *queue;
  
                 [database executeStatements:sql_stmt];
                 NSLog(@"%@",sql_stmt);
-                sql_stmt = @"";
                 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
                     NSLog(@"%@", createIndexSQL);
-                    sql_stmt = [sql_stmt stringByAppendingString:createIndexSQL];
-                    sql_stmt = @"";
+                    [database executeStatements:createIndexSQL];
                 }
             }
             columnsByTable = columnsDictionary.copy;
