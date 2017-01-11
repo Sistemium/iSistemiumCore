@@ -94,6 +94,26 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 - (void)closeSocket {
     
+    [self.logger saveLogMessageWithText:CurrentMethodName
+                                numType:STMLogMessageTypeInfo];
+
+    [self.socket disconnect];
+    [self flushSocket];
+    
+}
+
+- (void)reconnectSocket {
+    
+    [self closeSocket];
+    [self startSocket];
+    
+}
+
+- (void)flushSocket {
+    
+    self.socket = nil;
+    self.isAuthorized = NO;
+    
 }
 
 - (void)addEventObservers {
@@ -396,43 +416,36 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 - (void)checkAuthorization {
     
     NSLogMethodName;
-    
-//    
-//    if ([self isItCurrentSocket:socket failString:@"checkAuthorization"]) {
-//        
-//        STMLogger *logger = [STMLogger sharedLogger];
-//        
-//        NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", socket, socket.sid];
-//        [logger saveLogMessageWithText:logMessage
-//                               numType:STMLogMessageTypeInfo];
-//        
-//        if (socket.status == SocketIOClientStatusConnected) {
-//            
-//            if (self.isAuthorized) {
-//                
-//                logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
-//                [logger saveLogMessageWithText:logMessage
-//                                       numType:STMLogMessageTypeInfo];
-//                
-//            } else {
-//                
-//                logMessage = [NSString stringWithFormat:@"socket %@ %@ is connected but don't receive authorization ack, reconnecting", socket, socket.sid];
-//                [logger saveLogMessageWithText:logMessage
-//                                       numType:STMLogMessageTypeError];
-//                
-//                [self reconnectSocket];
-//                
-//            }
-//            
-//        } else {
-//            
-//            logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected", socket, socket.sid];
-//            [logger saveLogMessageWithText:logMessage
-//                                   numType:STMLogMessageTypeInfo];
-//            
-//        }
-//        
-//    }
+
+    NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", self.socket, self.socket.sid];
+    [self.logger saveLogMessageWithText:logMessage
+                           numType:STMLogMessageTypeInfo];
+
+    if (self.socket.status == SocketIOClientStatusConnected) {
+
+        if (self.isAuthorized) {
+
+            logMessage = @"socket is authorized";
+            [self.logger saveLogMessageWithText:logMessage
+                                   numType:STMLogMessageTypeInfo];
+
+        } else {
+
+            logMessage = @"socket is connected but don't receive authorization ack, reconnecting";
+            [self.logger saveLogMessageWithText:logMessage
+                                   numType:STMLogMessageTypeError];
+
+            [self reconnectSocket];
+
+        }
+
+    } else {
+
+        logMessage = @"socket is not connected";
+        [self.logger saveLogMessageWithText:logMessage
+                               numType:STMLogMessageTypeInfo];
+        
+    }
     
 }
 
