@@ -79,6 +79,12 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
++ (NSString *)stringFromNow {
+    
+    return [[self dateFormatterWithMilliseconds] stringFromDate:[NSDate date]];
+    
+}
+
 + (NSDateFormatter *)dateNumbersFormatter {
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
