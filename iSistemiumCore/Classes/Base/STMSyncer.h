@@ -13,11 +13,17 @@
 
 @interface STMSyncer : NSObject <STMSyncer>
 
+// new
 
 @property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic) double syncInterval;
+
+- (void)socketReceiveAuthorization;
+
+// old
+
 @property (nonatomic, strong) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
-@property (nonatomic) double syncInterval;
 @property (nonatomic) STMSyncerState syncerState;
 @property (nonatomic) STMSyncerState timeoutErrorSyncerState;
 
@@ -40,7 +46,6 @@
 - (NSUInteger)numbersOfAllUnsyncedObjects;
 - (NSUInteger)numberOfCurrentlyUnsyncedObjects;
 
-- (void)socketReceiveAuthorization;
 - (void)socketReceiveJSDataAck:(NSArray *)data;
 - (void)socketReceiveTimeout;
 

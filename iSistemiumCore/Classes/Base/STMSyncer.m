@@ -33,12 +33,24 @@
 
 @interface STMSyncer()
 
+
+// new
+
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
+@property (nonatomic, strong) STMSocketTransport *socketTransport;
+
 @property (nonatomic, strong) NSMutableDictionary *settings;
-@property (nonatomic) NSInteger fetchLimit;
+
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
+
+@property (nonatomic) BOOL running;
+
+
+// old
+
+@property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSString *xmlNamespace;
 @property (nonatomic) NSTimeInterval httpTimeoutForeground;
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
@@ -47,7 +59,6 @@
 @property (nonatomic, strong) NSTimer *syncTimer;
 @property (nonatomic) BOOL timerTicked;
 
-@property (nonatomic) BOOL running;
 @property (nonatomic) BOOL syncing;
 @property (nonatomic) BOOL checkSending;
 @property (nonatomic) BOOL sendOnce;
@@ -71,8 +82,6 @@
 - (void)didEnterBackground;
 
 
-@property (nonatomic, strong) STMSocketTransport *socketTransport;
-
 @end
 
 
@@ -81,6 +90,9 @@
 @synthesize syncInterval = _syncInterval;
 @synthesize syncerState = _syncerState;
 
+
+#pragma mark - NEW IMPLEMENTATION
+#pragma mark
 
 - (instancetype)init {
     
@@ -115,13 +127,6 @@
     
 }
 
-- (NSMutableArray *)entitySyncNames {
-    if (!_entitySyncNames) {
-        _entitySyncNames = [NSMutableArray array];
-    }
-    return _entitySyncNames;
-}
-
 - (NSMutableDictionary *)settings {
     if (!_settings) {
         _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
@@ -129,18 +134,232 @@
     return _settings;
 }
 
-- (NSInteger)fetchLimit {
-    if (!_fetchLimit) {
-        _fetchLimit = [self.settings[@"fetchLimit"] integerValue];
-    }
-    return _fetchLimit;
-}
-
 - (double)syncInterval {
     if (!_syncInterval) {
         _syncInterval = [self.settings[@"syncInterval"] doubleValue];
     }
     return _syncInterval;
+}
+
+
+#pragma mark - syncer methods
+
+- (void)startSyncer {
+    
+    if (!self.running) {
+        
+        self.settings = nil;
+        
+        [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
+            
+            if (success) {
+                
+                [STMEntityController checkEntitiesForDuplicates];
+                [STMClientDataController checkClientData];
+                [self.session.logger saveLogMessageDictionaryToDocument];
+                [self.session.logger saveLogMessageWithText:@"Syncer start"];
+                
+                [self checkUploadableEntities];
+                
+                [self addObservers];
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
+                                                                    object:self];
+                
+                if (self.socketUrlString) {
+                    
+                    self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
+                                                         andEntityResource:self.entityResource
+                                                                 forSyncer:self];
+                    
+                    if (!self.socketTransport) {
+                        
+                        NSLog(@"can not start socket transport");
+                        [[STMCoreAuthController authController] logout];
+                        
+                    }
+                    
+                    //                    [STMSocketController startSocketWithUrl:self.socketUrlString
+                    //                                          andEntityResource:self.entityResource];
+                    
+                } else {
+                    
+                    NSLog(@"have NO socketURL, fail to start socket controller");
+                    [[STMCoreAuthController authController] logout];
+                    
+                }
+                
+                self.running = YES;
+                
+            } else {
+                
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
+                                                         numType:STMLogMessageTypeError];
+                
+            }
+            
+        }];
+        
+    }
+    
+}
+
+- (void)socketReceiveAuthorization {
+    
+    NSLogMethodName;
+    [self initTimer];
+    
+}
+
+- (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
+    
+    NSDictionary *stcEntities = [STMEntityController stcEntities];
+    
+    NSString *stcEntityName = NSStringFromClass([STMEntity class]);
+    
+    if (!stcEntities[stcEntityName]) {
+        
+        STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
+        
+        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
+            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
+        }
+        
+        entity.name = stcEntityName;
+        entity.url = self.entityResource;
+        
+        [self.document saveDocument:^(BOOL success) {
+            completionHandler(success);
+        }];
+        
+    } else {
+        
+        STMEntity *entity = stcEntities[stcEntityName];
+        
+        if (![entity.url isEqualToString:self.entityResource]) {
+            
+            NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
+            
+            entity.url = self.entityResource;
+            
+        }
+        
+        completionHandler(YES);
+        
+    }
+    
+}
+
+- (void)checkUploadableEntities {
+    
+    NSArray *uploadableEntitiesNames = [STMEntityController uploadableEntitiesNames];
+    NSLog(@"uploadableEntitiesNames %@", uploadableEntitiesNames);
+    
+    if (uploadableEntitiesNames.count == 0) {
+        
+        NSString *stcEntityName = NSStringFromClass([STMEntity class]);
+        
+        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
+            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
+        }
+        
+        STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:stcEntityName];
+        clientEntity.eTag = nil;
+        
+    }
+    
+}
+
+
+#pragma mark - timer
+
+- (NSTimer *)syncTimer {
+    
+    if (!_syncTimer) {
+        
+        if (!self.syncInterval) {
+            
+            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
+                                                  interval:0
+                                                    target:self
+                                                  selector:@selector(onTimerTick:)
+                                                  userInfo:nil
+                                                   repeats:NO];
+            
+        } else {
+            
+            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
+                                                  interval:self.syncInterval
+                                                    target:self
+                                                  selector:@selector(onTimerTick:)
+                                                  userInfo:nil
+                                                   repeats:YES];
+            
+        }
+        
+    }
+    
+    return _syncTimer;
+    
+}
+
+- (void)initTimer {
+    
+    if (self.syncTimer) {
+        [self releaseTimer];
+    }
+    
+    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
+                                 forMode:NSRunLoopCommonModes];
+    
+}
+
+- (void)releaseTimer {
+    
+    [self.syncTimer invalidate];
+    self.syncTimer = nil;
+    
+}
+
+- (void)onTimerTick:(NSTimer *)timer {
+    
+#ifdef DEBUG
+    NSTimeInterval bgTR = [UIApplication sharedApplication].backgroundTimeRemaining;
+    NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
+#endif
+    
+//    if ([STMSocketController isSendingData]) {
+//        self.timerTicked = YES;
+//    } else {
+//        self.syncerState = STMSyncerSendData;
+//    }
+    
+}
+
+
+
+// ----------------------
+// | OLD IMPLEMENTATION |
+// ----------------------
+
+
+
+#pragma mark - OLD IMPLEMENTATION
+
+#pragma mark - variables setters & getters
+
+- (NSMutableArray *)entitySyncNames {
+    if (!_entitySyncNames) {
+        _entitySyncNames = [NSMutableArray array];
+    }
+    return _entitySyncNames;
+}
+
+- (NSInteger)fetchLimit {
+    if (!_fetchLimit) {
+        _fetchLimit = [self.settings[@"fetchLimit"] integerValue];
+    }
+    return _fetchLimit;
 }
 
 - (void)setSyncInterval:(double)syncInterval {
@@ -347,132 +566,6 @@
 
 #pragma mark - syncer methods
 
-- (void)startSyncer {
-    
-    if (!self.running) {
-        
-        self.settings = nil;
-        
-        [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
-            
-            if (success) {
-                
-                [STMEntityController checkEntitiesForDuplicates];
-                [STMClientDataController checkClientData];
-                [self.session.logger saveLogMessageDictionaryToDocument];
-                [self.session.logger saveLogMessageWithText:@"Syncer start"];
-                
-                [self checkUploadableEntities];
-                
-                [self addObservers];
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
-                                                                    object:self];
-                
-                if (self.socketUrlString) {
-                    
-                    self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
-                                                         andEntityResource:self.entityResource
-                                                                 forSyncer:self];
-                    
-                    if (!self.socketTransport) {
-
-                        NSLog(@"can not start socket transport");
-                        [[STMCoreAuthController authController] logout];
-                        
-                    }
-                    
-//                    [STMSocketController startSocketWithUrl:self.socketUrlString
-//                                          andEntityResource:self.entityResource];
-                    
-                } else {
-                    
-                    NSLog(@"have NO socketURL, fail to start socket controller");
-                    [[STMCoreAuthController authController] logout];
-                    
-                }
-                
-                self.running = YES;
-                
-            } else {
-                
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                         numType:STMLogMessageTypeError];
-                
-            }
-            
-        }];
-        
-    }
-    
-}
-
-- (void)socketReceiveAuthorization {
-    
-    NSLogMethodName;
-//    [self initTimer];
-    
-}
-
-- (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    NSDictionary *stcEntities = [STMEntityController stcEntities];
-    
-    NSString *stcEntityName = NSStringFromClass([STMEntity class]);
-    
-    if (!stcEntities[stcEntityName]) {
-        
-        STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
-        
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
-        
-        entity.name = stcEntityName;
-        entity.url = self.entityResource;
-        
-        [self.document saveDocument:^(BOOL success) {
-            completionHandler(success);
-        }];
-        
-    } else {
-        
-        STMEntity *entity = stcEntities[stcEntityName];
-        
-        if (![entity.url isEqualToString:self.entityResource]) {
-            
-            NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
-            
-            entity.url = self.entityResource;
-            
-        }
-        
-        completionHandler(YES);
-        
-    }
-
-}
-
-- (void)checkUploadableEntities {
-    
-    NSArray *uploadableEntitiesNames = [STMEntityController uploadableEntitiesNames];
-    NSLog(@"uploadableEntitiesNames %@", uploadableEntitiesNames);
-    
-    if (uploadableEntitiesNames.count == 0) {
-        
-        NSString *stcEntityName = NSStringFromClass([STMEntity class]);
-        
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
-        
-        STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:stcEntityName];
-        clientEntity.eTag = nil;
-        
-    }
-
-}
-
 - (void)stopSyncer {
     
     if (self.running) {
@@ -672,70 +765,6 @@
     
 }
 
-#pragma mark - timer
-
-- (NSTimer *)syncTimer {
-    
-    if (!_syncTimer) {
-
-        if (!self.syncInterval) {
-            
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
-                                                  interval:0
-                                                    target:self
-                                                  selector:@selector(onTimerTick:)
-                                                  userInfo:nil
-                                                   repeats:NO];
-            
-        } else {
-            
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
-                                                  interval:self.syncInterval
-                                                    target:self
-                                                  selector:@selector(onTimerTick:)
-                                                  userInfo:nil
-                                                   repeats:YES];
-            
-        }
-        
-    }
-    
-    return _syncTimer;
-    
-}
-
-- (void)initTimer {
-    
-    if (self.syncTimer) {
-        [self releaseTimer];
-    }
-    
-    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
-                                 forMode:NSRunLoopCommonModes];
-    
-}
-
-- (void)releaseTimer {
-    
-    [self.syncTimer invalidate];
-    self.syncTimer = nil;
-    
-}
-
-- (void)onTimerTick:(NSTimer *)timer {
-    
-#ifdef DEBUG
-    NSTimeInterval bgTR = [UIApplication sharedApplication].backgroundTimeRemaining;
-    NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
-#endif
-    
-    if ([STMSocketController isSendingData]) {
-        self.timerTicked = YES;
-    } else {
-        self.syncerState = STMSyncerSendData;
-    }
-    
-}
 
 #pragma mark - syncing
 #pragma mark - send
