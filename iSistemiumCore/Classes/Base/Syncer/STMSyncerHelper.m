@@ -14,8 +14,11 @@
 
 @interface STMSyncerHelper() <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, strong) NSArray <STMDatum *> *unsyncedObjectsArray;
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
+@property (nonatomic, strong) NSArray *unsyncedObjects;
+@property (nonatomic, strong) NSMutableArray *currentSyncObjects;
+@property (nonatomic, strong) NSMutableArray *doNotSyncObjectXids;
+@property (nonatomic, strong) NSMutableDictionary *syncDateDictionary;
 
 
 @end
@@ -35,6 +38,24 @@
 
 - (void)customInit {
     [self reloadResultsControllers];
+}
+
+- (NSMutableArray *)doNotSyncObjectXids {
+    
+    if (!_doNotSyncObjectXids) {
+        _doNotSyncObjectXids = @[].mutableCopy;
+    }
+    return _doNotSyncObjectXids;
+    
+}
+
+- (NSMutableDictionary *)syncDateDictionary {
+    
+    if (!_syncDateDictionary) {
+        _syncDateDictionary = @{}.mutableCopy;
+    }
+    return _syncDateDictionary;
+    
 }
 
 
@@ -128,15 +149,162 @@
     
 }
 
-- (NSArray <STMDatum *> *)unsyncedObjectsArray {
+- (NSArray *)unsyncedObjects {
     
-    if (!_unsyncedObjectsArray) {
+    if (!_unsyncedObjects) {
+
+        NSArray *unsyncedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
         
-        NSArray <STMDatum *> *fetchedObjects = [self.resultsControllers valueForKeyPath:@"@distinctUnionOfArrays.fetchedObjects"];
-        _unsyncedObjectsArray = (fetchedObjects.count > 0) ? fetchedObjects : nil;
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (xid IN %@) AND NOT (xid IN %@)", self.doNotSyncObjectXids, self.syncDateDictionary.allKeys];
+        
+        _unsyncedObjects = [unsyncedObjects filteredArrayUsingPredicate:predicate];
+        
+        if (_unsyncedObjects.count > 0) {
+            
+            NSLog(@"have %@ objects to send via Socket", @(_unsyncedObjects.count));
+            
+            self.currentSyncObjects = _unsyncedObjects.mutableCopy;
+            
+        } else {
+            
+            self.currentSyncObjects = nil;
+            
+        }
+
+    }
+    return _unsyncedObjects;
+    
+}
+
+- (id)objectToSend {
+
+    [self unsyncedObjects]; // fill currentSyncObjects
+
+    if (self.currentSyncObjects.count > 0) {
+        
+        STMDatum *syncObject = [self findObjectToSendFirstFromSyncArray:self.currentSyncObjects.mutableCopy];
+
+        if (syncObject) {
+
+            [self.currentSyncObjects removeObject:syncObject];
+
+            if (syncObject.xid) {
+
+                NSData *xid = syncObject.xid;
+
+                if (![self.syncDateDictionary objectForKey:xid]) {
+
+                    self.syncDateDictionary[xid] = (syncObject.deviceTs) ? syncObject.deviceTs : [NSDate date];
+                    return syncObject;
+
+                } else {
+
+                    NSString *message = [NSString stringWithFormat:@"skip %@ %@, already trying to sync", syncObject.entity.name, syncObject.xid];
+                    NSLog(@"%@", message);
+
+                    return [self objectToSend];
+
+                }
+
+            } else {
+
+                NSLog(@"    ERROR: sync object have no xid: %@", syncObject);
+                return [self objectToSend];
+                
+            }
+            
+        } else {
+
+            self.unsyncedObjects = nil; // refill currentSyncObjects
+            return [self objectToSend];
+        
+        }
+        
+    } else {
+        
+        [self haveNoObjectsToSend];
+        return nil;
         
     }
-    return _unsyncedObjectsArray;
+    
+}
+
+- (void)haveNoObjectsToSend {
+    
+//    self.currentSyncObjects = nil;
+//    self.doNotSyncObjectXids = nil;
+//    self.syncDateDictionary = nil;
+    
+}
+
+- (STMDatum *)findObjectToSendFirstFromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
+    
+    if (syncArray.firstObject) {
+        return [self checkRelationshipsObjectsForObject:syncArray.firstObject fromSyncArray:syncArray];
+    } else {
+        return nil;
+    }
+    
+}
+
+- (STMDatum *)checkRelationshipsObjectsForObject:(STMDatum *)syncObject fromSyncArray:(NSMutableArray <STMDatum *> *)syncArray {
+    
+    [syncArray removeObject:syncObject];
+    
+    if ([self.doNotSyncObjectXids containsObject:(NSData *)syncObject.xid]) {
+        
+        return [self findObjectToSendFirstFromSyncArray:syncArray];
+        
+    } else {
+        
+        NSEntityDescription *objectEntity = syncObject.entity;
+        NSString *entityName = objectEntity.name;
+        NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
+        
+        BOOL shouldFindNext = NO;
+        
+        for (NSString *relName in relationships.allKeys) {
+            
+            STMDatum *relObject = [syncObject valueForKey:relName];
+            
+            if ([self.doNotSyncObjectXids containsObject:(NSData *)relObject.xid]) {
+                
+                if (![self.doNotSyncObjectXids containsObject:syncObject.xid]) {
+                    [self.doNotSyncObjectXids addObject:(NSData *)syncObject.xid];
+                }
+                
+                NSString *log = [NSString stringWithFormat:@"%@ %@ have unsynced relation to %@", syncObject.entity.name, syncObject.xid, relObject.entity.name];
+                NSLog(@"%@", log);
+                
+                shouldFindNext = YES;
+                break;
+                
+            }
+            
+            if (![syncArray containsObject:relObject]) continue;
+            
+            NSEntityDescription *relObjectEntity = relObject.entity;
+            NSArray *checkingRelationships = [relObjectEntity relationshipsWithDestinationEntity:objectEntity];
+            
+            BOOL doBreak = NO;
+            
+            for (NSRelationshipDescription *relDesc in checkingRelationships) {
+                
+                if (!relDesc.isToMany) continue;
+                if (![[relObject valueForKey:relDesc.name] containsObject:syncObject]) continue;
+                
+                syncObject = [self checkRelationshipsObjectsForObject:relObject fromSyncArray:syncArray];
+                doBreak = YES;
+                break;
+                
+            }
+            
+            if (doBreak) break;
+            
+        }
+        return (shouldFindNext) ? [self findObjectToSendFirstFromSyncArray:syncArray] : syncObject;
+        
+    }
     
 }
 

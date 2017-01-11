@@ -10,4 +10,7 @@
 
 @interface STMSyncerHelper : NSObject
 
+- (id)objectToSend;
+
+
 @end

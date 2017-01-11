@@ -351,7 +351,14 @@
 
 - (void)startFullSyncing {
     
+    id objectToSend = [self.helper objectToSend];
     
+    if (objectToSend) {
+        NSLog(@"send object via socket");
+    } else {
+        NSLog(@"have nothing to send");
+        NSLog(@"go to receiving objects");
+    }
     
 }
 
