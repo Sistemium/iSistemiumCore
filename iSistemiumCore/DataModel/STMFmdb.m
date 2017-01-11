@@ -50,19 +50,24 @@ FMDatabaseQueue *queue;
                 
                 BOOL first = true;
                 
-                for (NSString* entityKey in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                for (NSString* columnName in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                    
                     if (first){
                         first = false;
                     }else{
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
-                    [columns addObject:entityKey];
-                    sql_stmt = [sql_stmt stringByAppendingString:entityKey];
-                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][entityKey];
-                    if ([entityKey isEqualToString:@"id"]){
+                    
+                    [columns addObject:columnName];
+                    sql_stmt = [sql_stmt stringByAppendingString:columnName];
+                    
+                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][columnName];
+                    
+                    if ([columnName isEqualToString:@"id"]){
                         sql_stmt = [sql_stmt stringByAppendingString:@" TEXT PRIMARY KEY"];
                         continue;
                     }
+                    
                     switch (atribute.attributeType) {
                         case NSStringAttributeType:
                         case NSDateAttributeType:
@@ -85,6 +90,10 @@ FMDatabaseQueue *queue;
                             break;
                         default:
                             break;
+                    }
+                    
+                    if ([columnName isEqualToString:@"deviceCts"]) {
+                        sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
                     }
                 }
                 
