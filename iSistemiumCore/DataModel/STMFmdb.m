@@ -20,6 +20,8 @@
 FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
+NSArray *ignoreColumns;
+
 
 - (instancetype)init {
     self = [super init];
@@ -32,11 +34,14 @@ FMDatabaseQueue *queue;
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
+        ignoreColumns = [NSArray arrayWithObjects: @"deviceTs", @"lts", @"deviceCts", nil];
+        
         if ([database open]){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
+            NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(IGNORE) WHERE OLD.deviceTs <> NEW.lts; END";
             
             for (NSString* entityName in entityNames){
                 
@@ -117,15 +122,22 @@ FMDatabaseQueue *queue;
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
  
-                [database executeStatements:sql_stmt];
-                NSLog(@"%@",sql_stmt);
+                BOOL res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
+                
+                sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName];
+                
+                res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+
                 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
-                    NSLog(@"%@", createIndexSQL);
-                    [database executeStatements:createIndexSQL];
+                    res = [database executeStatements:createIndexSQL];
+                    NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
+                    
                 }
             }
             columnsByTable = columnsDictionary.copy;
@@ -171,6 +183,7 @@ FMDatabaseQueue *queue;
         
         for(NSString* key in dictionary){
             if ([columnsByTable[tablename] containsObject:key]){
+                if ([ignoreColumns containsObject:key] && ![dictionary objectForKey:key]) continue;
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }

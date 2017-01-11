@@ -140,6 +140,8 @@
         if (options[@"lts"]) {
 #warning check if deviceTs is not greater than if entity is uploadable
             [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+        } else {
+            [savingAttributes setValue:[STMFunctions stringFromNow] forKey:@"deviceTs"];
         }
         
         return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:savingAttributes];
