@@ -408,7 +408,10 @@
 }
 
 - (void)socketReceiveAuthorization {
-    [self initTimer];
+    
+    NSLogMethodName;
+//    [self initTimer];
+    
 }
 
 - (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
