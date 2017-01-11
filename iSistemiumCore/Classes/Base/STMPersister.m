@@ -203,28 +203,24 @@
     }
 }
 
-- (void)saveWithEntityName:(NSString *)entityName error:(NSError **)error{
-    
-    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+- (BOOL)saveWithEntityName:(NSString *)entityName{
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        [[STMFmdb sharedInstance] commit];
+        return [[STMFmdb sharedInstance] commit];
     } else {
-        [[self document] saveDocument:^(BOOL success){
-            if (success) return;
-            *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                         code:0
-                                     userInfo:@{NSLocalizedDescriptionKey: @"document save failed"}];
-        }];
+        [[self document] saveDocument:^(BOOL success){}];
+        return YES;
     }
+    
 }
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     if (!error){
-        [self saveWithEntityName:entityName error:error];
-        if (!error){
+        if ([self saveWithEntityName:entityName]){
             return result;
+        } else {
+            [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         }
     }
     return nil;
@@ -237,9 +233,10 @@
             return nil;
         }
     }
-    [self saveWithEntityName:entityName error:error];
-    if (!error){
+    if ([self saveWithEntityName:entityName]){
         return attributeArray;
+    } else {
+        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     return nil;
 }

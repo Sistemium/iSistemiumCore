@@ -13,6 +13,6 @@
 - (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary;
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name;
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
-- (void) commit;
+- (BOOL) commit;
 
 @end
