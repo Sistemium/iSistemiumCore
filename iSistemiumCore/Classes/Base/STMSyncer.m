@@ -415,8 +415,10 @@
         entity.url = self.entityResource;
         
         [self.document saveDocument:^(BOOL success) {
-            completionHandler(success);
+//            completionHandler(success);
         }];
+        // otherwise syncer does not start before socket is connected+authorized
+        completionHandler(YES);
         
     } else {
         
