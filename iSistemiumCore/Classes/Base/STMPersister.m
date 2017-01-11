@@ -129,6 +129,41 @@
 
 }
 
+#pragma mark - Private methods
+
+- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        
+        NSMutableDictionary *savingAttributes = attributes.mutableCopy;
+        
+        
+        return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:savingAttributes];
+        
+    } else {
+        
+        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
+            if (!sucess) {
+                [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
+            }
+        }];
+        
+        return attributes;
+    }
+}
+
+- (BOOL)saveWithEntityName:(NSString *)entityName{
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        return [[STMFmdb sharedInstance] commit];
+    } else {
+        [[self document] saveDocument:^(BOOL success){}];
+        return YES;
+    }
+    
+}
+
+
 #pragma mark - STMPersistingSync
 
 - (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
@@ -177,35 +212,6 @@
         
         return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray entityName:entityName];
     }
-}
-
-- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-    
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        
-        return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:attributes];
-    
-    } else {
-        
-        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-            if (!sucess) {
-                [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
-            }
-        }];
-        
-        return attributes;
-    }
-}
-
-- (BOOL)saveWithEntityName:(NSString *)entityName{
-    
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] commit];
-    } else {
-        [[self document] saveDocument:^(BOOL success){}];
-        return YES;
-    }
-    
 }
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
