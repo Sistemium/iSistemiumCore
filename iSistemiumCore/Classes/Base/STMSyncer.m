@@ -142,7 +142,7 @@
 }
 
 
-#pragma mark - syncer methods
+#pragma mark - start syncer methods
 
 - (void)startSyncer {
     
@@ -328,6 +328,8 @@
     NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
 #endif
     
+    [self startFullSyncing];
+    
 //    if ([STMSocketController isSendingData]) {
 //        self.timerTicked = YES;
 //    } else {
@@ -336,6 +338,11 @@
     
 }
 
+- (void)startFullSyncing {
+    
+    
+    
+}
 
 
 // ----------------------
