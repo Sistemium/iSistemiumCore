@@ -8,25 +8,33 @@
 
 #import <AdSupport/AdSupport.h>
 
+// new
+
 #import "STMSyncer.h"
 #import "STMDocument.h"
-#import "STMCoreObjectsController.h"
-#import "STMFunctions.h"
-#import "STMEntityController.h"
-#import "STMClientEntityController.h"
-#import "STMClientDataController.h"
-#import "STMCorePicturesController.h"
-#import "STMCoreAuthController.h"
-
-#import "STMCoreDataModel.h"
-
-#import "STMSocketController.h"
-#import "STMSocketTransport.h"
 
 #import "STMPersistingPromised.h"
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
 
+#import "STMSocketTransport.h"
+#import "STMSyncerHelper.h"
+
+#import "STMCoreObjectsController.h"
+#import "STMEntityController.h"
+#import "STMClientEntityController.h"
+#import "STMClientDataController.h"
+#import "STMCoreAuthController.h"
+
+
+//old
+
+#import "STMFunctions.h"
+#import "STMCorePicturesController.h"
+
+#import "STMCoreDataModel.h"
+
+#import "STMSocketController.h"
 
 #define SEND_DATA_CONNECTION @"SEND_DATA"
 
