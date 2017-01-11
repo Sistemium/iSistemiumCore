@@ -1161,7 +1161,7 @@
     
     [nc addObserver:self
            selector:@selector(syncerInitSuccessfully)
-               name:@"Syncer init successfully"
+               name:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
              object:self.session.syncer];
     
 //    [nc addObserver:self

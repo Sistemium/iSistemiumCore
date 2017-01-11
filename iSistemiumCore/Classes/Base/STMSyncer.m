@@ -90,9 +90,7 @@
 }
 
 - (void)customInit {
-    
     NSLog(@"syncer init");
-    
 }
 
 
@@ -341,6 +339,7 @@
     
 }
 
+
 #pragma mark - syncer methods
 
 - (void)startSyncer {
@@ -362,7 +361,7 @@
                 
                 [self addObservers];
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
                                                                     object:self];
                 
                 if (self.socketUrlString) {
