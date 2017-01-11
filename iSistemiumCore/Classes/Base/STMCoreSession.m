@@ -203,8 +203,9 @@
         self.locationTracker.session = self;
         self.batteryTracker.session = self;
         self.syncer.authDelegate = self.authDelegate;
-        self.syncer.session = self;
         self.status = STMSessionRunning;
+
+        self.syncer.session = self;
 
     }
     
