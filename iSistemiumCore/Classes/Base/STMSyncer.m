@@ -21,6 +21,7 @@
 #import "STMCoreDataModel.h"
 
 #import "STMSocketController.h"
+#import "STMSocketTransport.h"
 
 #import "STMPersistingPromised.h"
 #import "STMPersistingAsync.h"
@@ -69,7 +70,11 @@
 - (void)didReceiveRemoteNotification;
 - (void)didEnterBackground;
 
+
+@property (nonatomic, strong) STMSocketTransport *socketTransport;
+
 @end
+
 
 @implementation STMSyncer
 
@@ -366,13 +371,23 @@
                 
                 if (self.socketUrlString) {
                     
-                    [STMSocketController startSocketWithUrl:self.socketUrlString
-                                          andEntityResource:self.entityResource];
+                    self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
+                                                         andEntityResource:self.entityResource
+                                                                 forSyncer:self];
+                    
+                    if (!self.socketTransport) {
+
+                        NSLog(@"can not start socket transport");
+                        [[STMCoreAuthController authController] logout];
+                        
+                    }
+                    
+//                    [STMSocketController startSocketWithUrl:self.socketUrlString
+//                                          andEntityResource:self.entityResource];
                     
                 } else {
                     
                     NSLog(@"have NO socketURL, fail to start socket controller");
-                    
                     [[STMCoreAuthController authController] logout];
                     
                 }
