@@ -157,7 +157,7 @@
 
 - (void)startSyncer {
     
-    if (!self.running) {
+    if (!self.running && self.session.status == STMSessionRunning) {
         
         self.settings = nil;
         
