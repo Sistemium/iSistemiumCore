@@ -47,6 +47,7 @@
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) STMSocketTransport *socketTransport;
+@property (nonatomic, strong) STMSyncerHelper *helper;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
@@ -127,6 +128,8 @@
         
         self.document = (STMDocument *)session.document;
         self.persistenceDelegate = (STMPersister *)session.persister;
+        self.helper = [[STMSyncerHelper alloc] init];
+        
         _session = session;
         
         [self startSyncer];
