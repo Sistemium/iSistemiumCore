@@ -117,5 +117,6 @@
 + (void)stopDefantomizing;
 + (BOOL)isDefantomizingProcessRunning;
 
++ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 
 @end
