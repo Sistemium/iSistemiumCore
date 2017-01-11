@@ -1642,6 +1642,8 @@
 
 - (void)startSocket {
     
+    return;
+    
     STMLogger *logger = [STMLogger sharedLogger];
 
     STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
@@ -1757,6 +1759,8 @@
 
 - (void)reconnectSocket {
 
+    return;
+    
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
