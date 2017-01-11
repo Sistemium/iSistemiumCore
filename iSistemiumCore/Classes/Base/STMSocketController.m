@@ -591,6 +591,7 @@
 
 + (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value {
     
+    return;
     // Log
     // ----------
     

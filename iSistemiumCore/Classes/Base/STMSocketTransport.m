@@ -8,7 +8,10 @@
 
 #import "STMSocketTransport.h"
 
+#import <Reachability/Reachability.h>
+
 #import "STMClientDataController.h"
+#import "STMCoreRootTBC.h"
 
 
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
@@ -86,6 +89,10 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     [self addEventObservers];
     
     [self.socket connect];
+    
+}
+
+- (void)closeSocket {
     
 }
 
@@ -249,24 +256,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
             
             [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
                                                                 object:self];
-            
-//            [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];
-//            
-//            if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
-//                
-//                UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
-//                
-//                if ([selectedVC class]) {
-//                    
-//                    Class _Nonnull rootVCClass = (Class _Nonnull)[selectedVC class];
-//                    
-//                    NSString *stringValue = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
-//                    
-//                    [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];
-//                    
-//                }
-//                
-//            }
+            [self checkAppState];
             
         } else {
             [self notAuthorizedWithError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
@@ -276,6 +266,114 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
         [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
     }
     
+}
+
+- (void)checkAppState {
+    
+    NSString *appState = [STMFunctions appStateString];
+    
+    [self sendEvent:STMSocketEventStatusChange withValue:appState];
+    
+    if ([appState isEqualToString:@"UIApplicationStateActive"]) {
+        
+        UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
+        
+        if ([selectedVC class]) {
+            
+            Class _Nonnull rootVCClass = (Class _Nonnull)[selectedVC class];
+            
+            NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
+            
+            [self sendEvent:STMSocketEventStatusChange withValue:value];
+            
+        }
+        
+    }
+
+}
+
+
+#pragma mark - send events
+
+- (void)sendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+    [self logSendEvent:event withValue:value];
+    
+    if (self.socket.status == SocketIOClientStatusConnected) {
+        
+        if (event == STMSocketEventJSData) {
+            
+            if ([value isKindOfClass:[NSDictionary class]]) {
+            
+                //            NSString *method = value[@"method"];
+                //
+                //            if ([method isEqualToString:@"update"]) {
+                //
+                //                [self sharedInstance].isSendingData = YES;
+                //                [self sharedInstance].sendingDate = [NSDate date];
+                //
+                //            }
+                //
+                //            NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
+                //
+                //            NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
+                //
+                //            [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
+                //                [self receiveJSDataEventAckWithData:data];
+                //            });
+
+            } else {
+                
+            }
+            
+        } else {
+            
+            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
+            
+            if (value && primaryKey) {
+                
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+
+                if (dataDic) {
+                    
+                    [self.socket emit:eventStringValue
+                                 with:@[dataDic]];
+                    
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
+                }
+                
+            }
+            
+        }
+        
+    } else {
+        [self socketLostConnection:@"socket sendEvent"];
+    }
+
+}
+
+- (void)logSendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+#ifdef DEBUG
+    
+    if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
+        
+        //        NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
+        //        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
+        
+    } else if (event == STMSocketEventInfo || event == STMSocketEventStatusChange) {
+        
+        NSLog(@"socket:%@ %@ sendEvent:%@ withValue:%@", self.socket, self.socket.sid, [STMSocketTransport stringValueForEvent:event], value);
+        
+    }
+    
+#endif
+
 }
 
 
@@ -350,7 +448,56 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 }
 
 
-#pragma mark - socket events names
+#pragma mark - checking connection
+
+- (void)checkReachabilityAndSocketStatus {
+    
+    switch (self.socket.status) {
+        case SocketIOClientStatusNotConnected:
+        case SocketIOClientStatusDisconnected:
+            
+            if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
+                
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"socket is not connected but host is reachable, reconnect it"
+                                                         numType:STMLogMessageTypeImportant];
+                
+                [self closeSocket];
+                [self startSocket];
+                
+            }
+            
+            break;
+            
+        case SocketIOClientStatusConnecting:
+        case SocketIOClientStatusConnected:
+        default:
+            break;
+    }
+    
+}
+
+- (void)socketLostConnection:(NSString *)infoString {
+    
+    NSLogMethodName;
+    
+    [self checkReachabilityAndSocketStatus];
+
+//    STMSyncer *syncer = [self syncer];
+//    
+//    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
+//        
+//        NSString *errorString = [NSString stringWithFormat:@"%@: socket not connected while sending data", infoString];
+//        [self sendFinishedWithError:errorString
+//                          abortSync:@(YES)];
+//        
+//    }
+//    
+//    [syncer socketLostConnection];
+    
+}
+
+
+#pragma mark - socket events names and keys
 
 + (NSString *)stringValueForEvent:(STMSocketEvent)event {
     
@@ -434,6 +581,29 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     } else {
         return STMSocketEventInfo;
     }
+    
+}
+
++ (NSString *)primaryKeyForEvent:(STMSocketEvent)event {
+    
+    NSString *primaryKey = @"url";
+    
+    switch (event) {
+        case STMSocketEventConnect:
+        case STMSocketEventStatusChange:
+        case STMSocketEventInfo:
+        case STMSocketEventAuthorization:
+        case STMSocketEventRemoteCommands:
+            break;
+        case STMSocketEventData: {
+            primaryKey = @"data";
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    return primaryKey;
     
 }
 
