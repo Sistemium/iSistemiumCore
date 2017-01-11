@@ -218,12 +218,14 @@ FMDatabaseQueue *queue;
     return columnsByTable[obj];
 }
 
-- (void)commit{
+- (BOOL)commit{
+    __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db) {
         if ([db inTransaction]){
-            [db commit];
+            result = [db commit];
         }
     }];
+    return result;
 }
 
 @end
