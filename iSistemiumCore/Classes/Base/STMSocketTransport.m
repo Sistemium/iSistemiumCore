@@ -266,6 +266,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
         
         if (isAuthorized) {
             
+            [self cancelDelayedAuthorizationCheck];
+            
             logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
             [self.logger saveLogMessageWithText:logMessage
                                         numType:STMLogMessageTypeInfo];
@@ -400,17 +402,25 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 #pragma mark - authorization check
 
 - (void)startDelayedAuthorizationCheck {
-    
+
+    [self cancelDelayedAuthorizationCheck];
+
     SEL checkAuthSel = @selector(checkAuthorization);
-    
-    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                       selector:checkAuthSel
-                                                         object:nil];
     
     [self performSelector:checkAuthSel
                withObject:nil
                afterDelay:CHECK_SOCKET_AUTHORIZATION_DELAY];
     
+}
+
+- (void)cancelDelayedAuthorizationCheck {
+
+    SEL checkAuthSel = @selector(checkAuthorization);
+    
+    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
+                                                       selector:checkAuthSel
+                                                         object:nil];
+
 }
 
 - (void)checkAuthorization {
