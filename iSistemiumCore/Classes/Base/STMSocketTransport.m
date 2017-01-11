@@ -8,6 +8,8 @@
 
 #import "STMSocketTransport.h"
 
+#import "STMClientDataController.h"
+
 
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventConnect,
@@ -31,6 +33,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
 @property (nonatomic, strong) NSString *entityResource;
+@property (nonatomic) BOOL isAuthorized;
 
 
 @end
@@ -137,53 +140,212 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
         
         switch (event) {
             case STMSocketEventConnect: {
-//                [self connectCallbackWithData:data ack:ack socket:socket];
+                [self connectEventHandleWithData:data ack:ack];
                 break;
             }
-            case STMSocketEventDisconnect: {
-//                [self disconnectCallbackWithData:data ack:ack socket:socket];
+
+            case STMSocketEventDisconnect:
+            case STMSocketEventError:
+            case STMSocketEventReconnect:
+            case STMSocketEventReconnectAttempt:
+            case STMSocketEventStatusChange:
+            case STMSocketEventInfo:
+            case STMSocketEventAuthorization:
+            case STMSocketEventRemoteCommands:
+            case STMSocketEventData:
+            case STMSocketEventJSData:
+            default:
                 break;
-            }
-            case STMSocketEventError: {
-//                [self errorCallbackWithData:data ack:ack socket:socket];
-                break;
-            }
-            case STMSocketEventReconnect: {
-//                [self reconnectCallbackWithData:data ack:ack socket:socket];
-                break;
-            }
-            case STMSocketEventReconnectAttempt: {
-//                [self reconnectAttemptCallbackWithData:data ack:ack socket:socket];
-                break;
-            }
-            case STMSocketEventStatusChange: {
                 
-                break;
-            }
-            case STMSocketEventInfo: {
-                
-                break;
-            }
-            case STMSocketEventAuthorization: {
-                
-                break;
-            }
-            case STMSocketEventRemoteCommands: {
-//                [self remoteCommandsCallbackWithData:data ack:ack socket:socket];
-                break;
-            }
-            case STMSocketEventData: {
-//                [self dataCallbackWithData:data ack:ack socket:socket];
-            }
-            case STMSocketEventJSData: {
-//                [self jsDataCallbackWithData:data ack:ack socket:socket];
-            }
-            default: {
-                break;
-            }
         }
         
     }];
+    
+}
+
+
+#pragma mark - socket events handlers
+
+- (void)connectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    
+    [self startDelayedAuthorizationCheck];
+    
+    STMClientData *clientData = [STMClientDataController clientData];
+    NSMutableDictionary *dataDic = [STMCoreObjectsController dictionaryForJSWithObject:clientData].mutableCopy;
+    
+    NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
+                              @"accessToken"    : [STMCoreAuthController authController].accessToken};
+    
+    [dataDic addEntriesFromDictionary:authDic];
+    
+    NSString *logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, self.socket, self.socket.sid];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeInfo];
+    
+    STMSocketEvent eventNum = STMSocketEventAuthorization;
+    NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
+    
+    [self.socket emitWithAck:event with:@[dataDic]](0, ^(NSArray *data) {
+        [self receiveAckWithData:data forEventNum:eventNum];
+    });
+
+}
+
+
+#pragma mark - ack handlers
+
+- (void)receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
+    
+    STMSocketEvent eventNum = [STMSocketTransport eventForString:event];
+    [self receiveAckWithData:data forEventNum:eventNum];
+    
+}
+
+- (void)receiveAckWithData:(NSArray *)data forEventNum:(STMSocketEvent)eventNum {
+    
+    switch (eventNum) {
+        case STMSocketEventAuthorization: {
+            [self receiveAuthorizationAckWithData:data];
+            break;
+        }
+        case STMSocketEventConnect:
+        case STMSocketEventDisconnect:
+        case STMSocketEventError:
+        case STMSocketEventReconnect:
+        case STMSocketEventReconnectAttempt:
+        case STMSocketEventStatusChange:
+        case STMSocketEventInfo:
+        case STMSocketEventRemoteCommands:
+        case STMSocketEventData:
+        case STMSocketEventJSData:
+        default:
+            NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", self.socket, self.socket.sid, eventNum, data);
+            break;
+            
+    }
+
+}
+
+- (void)receiveAuthorizationAckWithData:(NSArray *)data {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", self.socket, self.socket.sid, data];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeInfo];
+
+    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
+        
+        NSDictionary *dataDic = data.firstObject;
+        BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
+        
+        if (isAuthorized) {
+            
+            logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
+            [self.logger saveLogMessageWithText:logMessage
+                                        numType:STMLogMessageTypeInfo];
+            
+            self.isAuthorized = YES;
+
+            [self.syncer socketReceiveAuthorization];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"socketAuthorizationSuccess"
+                                                                object:self];
+            
+//            [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:[STMFunctions appStateString]];
+//            
+//            if ([[STMFunctions appStateString] isEqualToString:@"UIApplicationStateActive"]) {
+//                
+//                UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
+//                
+//                if ([selectedVC class]) {
+//                    
+//                    Class _Nonnull rootVCClass = (Class _Nonnull)[selectedVC class];
+//                    
+//                    NSString *stringValue = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
+//                    
+//                    [self socket:socket sendEvent:STMSocketEventStatusChange withStringValue:stringValue];
+//                    
+//                }
+//                
+//            }
+            
+        } else {
+            [self notAuthorizedWithError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
+        }
+        
+    } else {
+        [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
+    }
+    
+}
+
+
+#pragma mark - authorization check
+
+- (void)startDelayedAuthorizationCheck {
+    
+    SEL checkAuthSel = @selector(checkAuthorization);
+    
+    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
+                                                       selector:checkAuthSel
+                                                         object:nil];
+    
+    [self performSelector:checkAuthSel
+               withObject:nil
+               afterDelay:CHECK_SOCKET_AUTHORIZATION_DELAY];
+    
+}
+
+- (void)checkAuthorization {
+    
+    NSLogMethodName;
+    
+//    
+//    if ([self isItCurrentSocket:socket failString:@"checkAuthorization"]) {
+//        
+//        STMLogger *logger = [STMLogger sharedLogger];
+//        
+//        NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", socket, socket.sid];
+//        [logger saveLogMessageWithText:logMessage
+//                               numType:STMLogMessageTypeInfo];
+//        
+//        if (socket.status == SocketIOClientStatusConnected) {
+//            
+//            if (self.isAuthorized) {
+//                
+//                logMessage = [NSString stringWithFormat:@"socket %@ %@ is authorized", socket, socket.sid];
+//                [logger saveLogMessageWithText:logMessage
+//                                       numType:STMLogMessageTypeInfo];
+//                
+//            } else {
+//                
+//                logMessage = [NSString stringWithFormat:@"socket %@ %@ is connected but don't receive authorization ack, reconnecting", socket, socket.sid];
+//                [logger saveLogMessageWithText:logMessage
+//                                       numType:STMLogMessageTypeError];
+//                
+//                [self reconnectSocket];
+//                
+//            }
+//            
+//        } else {
+//            
+//            logMessage = [NSString stringWithFormat:@"socket %@ %@ is not connected", socket, socket.sid];
+//            [logger saveLogMessageWithText:logMessage
+//                                   numType:STMLogMessageTypeInfo];
+//            
+//        }
+//        
+//    }
+    
+}
+
+- (void)notAuthorizedWithError:(NSString *)errorString {
+    
+    NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ not authorized\n%@", self.socket, self.socket.sid, errorString];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeWarning];
+    
+//    [self sharedInstance].isAuthorized = NO;
+    [[STMCoreAuthController authController] logout];
     
 }
 
