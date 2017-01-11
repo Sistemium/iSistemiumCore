@@ -1,0 +1,13 @@
+//
+//  STMSyncerHelper.m
+//  iSisSales
+//
+//  Created by Maxim Grigoriev on 11/01/2017.
+//  Copyright © 2017 Sistemium UAB. All rights reserved.
+//
+
+#import "STMSyncerHelper.h"
+
+@implementation STMSyncerHelper
+
+@end
