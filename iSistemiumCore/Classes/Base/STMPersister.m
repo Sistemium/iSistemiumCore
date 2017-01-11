@@ -137,6 +137,9 @@
         
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
         
+        if (options[@"lts"]) {
+            [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+        }
         
         return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:savingAttributes];
         

@@ -157,13 +157,16 @@ FMDatabaseQueue *queue;
 }
 
 - (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+#warning need to handle errors
     tablename = [self entityToTableName:tablename];
+    
     [queue inDatabase:^(FMDatabase *db) {
+        
         if (![db inTransaction]){
             [db beginTransaction];
         }
-        NSMutableArray* keys = @[].mutableCopy;
         
+        NSMutableArray* keys = @[].mutableCopy;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
@@ -173,8 +176,6 @@ FMDatabaseQueue *queue;
             }
         }
         
-        [keys addObject:@"lts"];
-        [values addObject:[STMFunctions stringFromDate:[NSDate date]]];
         NSMutableArray* v = @[].mutableCopy;
         for (int i=0;i<[keys count];i++){
             [v addObject:@"?"];
