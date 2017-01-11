@@ -138,6 +138,7 @@
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
         
         if (options[@"lts"]) {
+#warning check if deviceTs is not greater than if entity is uploadable
             [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
         }
         
