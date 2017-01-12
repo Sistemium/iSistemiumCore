@@ -139,8 +139,10 @@
         
         if (options[@"lts"]) {
             [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+            [savingAttributes removeObjectForKey:@"deviceTs"];
         } else {
             [savingAttributes setValue:[STMFunctions stringFromNow] forKey:@"deviceTs"];
+            [savingAttributes removeObjectForKey:@"lts"];
         }
         
         return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
