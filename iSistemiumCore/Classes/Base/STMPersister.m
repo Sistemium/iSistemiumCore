@@ -135,15 +135,18 @@
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         
+        NSString *now = [STMFunctions stringFromNow];
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
         
         if (options[@"lts"]) {
             [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
             [savingAttributes removeObjectForKey:@"deviceTs"];
         } else {
-            [savingAttributes setValue:[STMFunctions stringFromNow] forKey:@"deviceTs"];
+            [savingAttributes setValue:now forKey:@"deviceTs"];
             [savingAttributes removeObjectForKey:@"lts"];
         }
+        
+        [savingAttributes setValue:now forKey:@"deviceAts"];
         
         return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
         
