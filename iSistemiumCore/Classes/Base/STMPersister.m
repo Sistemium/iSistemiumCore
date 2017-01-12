@@ -150,7 +150,13 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
+        if(options[@"lts"]){
+            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
+            return nil;
+        }else{
+            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
+            return nil;
+        }
         
     } else {
         
@@ -246,8 +252,16 @@
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
     
+    NSMutableArray *result = @[].mutableCopy;
+    
     for (NSDictionary* dictionary in attributeArray){
-        [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        
+        NSDictionary* dict = [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        
+        if (dict){
+            [result addObject:dict];
+        }
+        
         if (*error){
             #warning possible danger, will roleback changes from other threads
             [[STMFmdb sharedInstance] roleback];
@@ -255,7 +269,7 @@
         }
     }
     if ([self saveWithEntityName:entityName]){
-        return attributeArray;
+        return result;
     } else {
         [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }

@@ -162,8 +162,10 @@ FMDatabaseQueue *queue;
     
 }
 
-- (NSDictionary * _Nonnull)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
-#warning need to handle errors
+- (BOOL)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+
+    __block BOOL result = YES;
+    
     tablename = [self entityToTableName:tablename];
     
     NSArray *columns = columnsByTable[tablename];
@@ -190,17 +192,23 @@ FMDatabaseQueue *queue;
         
         NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
-        [db executeUpdate:updateSQL withArgumentsInArray:values];
+        if(![db executeUpdate:updateSQL values:values error:error]){
+            result = NO;
+            return;
+        };
         
         #warning need to check if the update was ignored or errored then don't insert
         
         if (!db.changes) {
             NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-            [db executeUpdate:insertSQL withArgumentsInArray:values];
+            if (![db executeUpdate:insertSQL values:values error:error]){
+                result = NO;
+                return;
+            }
         }
-        
     }];
-    return dictionary;
+    
+    return result;
 }
 
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
