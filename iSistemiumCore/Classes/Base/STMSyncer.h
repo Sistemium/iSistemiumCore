@@ -47,7 +47,7 @@
 - (NSUInteger)numberOfCurrentlyUnsyncedObjects;
 
 - (void)socketReceiveJSDataAck:(NSArray *)data;
-- (void)socketReceiveTimeout;
+//- (void)socketReceiveTimeout;
 
 - (void)socketLostConnection;
 

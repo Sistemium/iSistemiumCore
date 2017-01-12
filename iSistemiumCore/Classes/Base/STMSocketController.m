@@ -904,7 +904,7 @@
     NSTimeInterval elapsedTime = -[self.receivingStartDate timeIntervalSinceNow];
     
     if (elapsedTime >= timeout) {
-        [[STMSocketController syncer] socketReceiveTimeout];
+//        [[STMSocketController syncer] socketReceiveTimeout];
     }
     
 }

@@ -579,12 +579,12 @@
     
 }
 
-- (void)socketReceiveTimeout {
-    
-    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
-//    [STMCoreObjectsController stopDefantomizing];
-    
-}
+//- (void)socketReceiveTimeout {
+//    
+//    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
+////    [STMCoreObjectsController stopDefantomizing];
+//    
+//}
 
 
 // ----------------------
