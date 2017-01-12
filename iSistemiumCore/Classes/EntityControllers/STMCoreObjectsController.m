@@ -332,7 +332,9 @@
         
     } else {
         
-        [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:nil].then(^(NSArray *result){
+        NSDictionary *options = @{@"lts": STMFunctions.stringFromNow};
+        
+        [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
             completionHandler(YES);
         }).catch(^(NSError *error){
             completionHandler(NO);

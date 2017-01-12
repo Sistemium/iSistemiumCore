@@ -1696,7 +1696,7 @@
         
         if ([STMSocketController socketIsAvailable]) {
             
-            [STMSocketController syncer].syncerState = STMSyncerReceiveData;
+//            [STMSocketController syncer].syncerState = STMSyncerReceiveData;
     
         } else {
             

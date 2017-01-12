@@ -21,6 +21,7 @@ FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
 
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -34,9 +35,10 @@ FMDatabaseQueue *queue;
         
         if ([database open]){
             
-            NSString *sql_stmt = @"";
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
+            NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
+            NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(IGNORE) WHERE OLD.deviceTs <> NEW.lts; END";
             
             for (NSString* entityName in entityNames){
                 
@@ -45,28 +47,31 @@ FMDatabaseQueue *queue;
                 }
                 
                 NSString *tableName = [self entityToTableName:entityName];
-                
                 NSMutableArray *columns = @[].mutableCopy;
-                
-                sql_stmt = [sql_stmt stringByAppendingString:@"CREATE TABLE IF NOT EXISTS "];
-                sql_stmt = [sql_stmt stringByAppendingString:tableName];
-                sql_stmt = [sql_stmt stringByAppendingString:@" ("];
+                NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
                 
                 BOOL first = true;
                 
-                for (NSString* entityKey in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                for (NSString* columnName in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                    
+                    if ([columnName isEqualToString:@"xid"]) continue;
+                    
                     if (first){
                         first = false;
                     }else{
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
-                    [columns addObject:entityKey];
-                    sql_stmt = [sql_stmt stringByAppendingString:entityKey];
-                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][entityKey];
-                    if ([entityKey isEqualToString:@"id"]){
+                    
+                    [columns addObject:columnName];
+                    sql_stmt = [sql_stmt stringByAppendingString:columnName];
+                    
+                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][columnName];
+                    
+                    if ([columnName isEqualToString:@"id"]){
                         sql_stmt = [sql_stmt stringByAppendingString:@" TEXT PRIMARY KEY"];
                         continue;
                     }
+                    
                     switch (atribute.attributeType) {
                         case NSStringAttributeType:
                         case NSDateAttributeType:
@@ -90,6 +95,10 @@ FMDatabaseQueue *queue;
                         default:
                             break;
                     }
+                    
+                    if ([columnName isEqualToString:@"deviceCts"]) {
+                        sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
+                    }
                 }
                 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
@@ -110,17 +119,22 @@ FMDatabaseQueue *queue;
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
  
-                [database executeStatements:sql_stmt];
-                NSLog(@"%@",sql_stmt);
-                sql_stmt = @"";
+                BOOL res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
+                
+                sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName];
+                
+                res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+
                 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
-                    NSLog(@"%@", createIndexSQL);
-                    sql_stmt = [sql_stmt stringByAppendingString:createIndexSQL];
-                    sql_stmt = @"";
+                    res = [database executeStatements:createIndexSQL];
+                    NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
+                    
                 }
             }
             columnsByTable = columnsDictionary.copy;
@@ -151,32 +165,47 @@ FMDatabaseQueue *queue;
     
 }
 
-- (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+- (NSDictionary * _Nonnull)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+#warning need to handle errors
     tablename = [self entityToTableName:tablename];
+    
+    NSArray *columns = columnsByTable[tablename];
+    NSString *pk = dictionary [@"id"];
+    
     [queue inDatabase:^(FMDatabase *db) {
+        
         if (![db inTransaction]){
             [db beginTransaction];
         }
-        NSMutableArray* keys = @[].mutableCopy;
         
+        NSMutableArray* keys = @[].mutableCopy;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([columnsByTable[tablename] containsObject:key]){
+            if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }
         }
         
-        [keys addObject:@"lts"];
-        [values addObject:[STMFunctions stringFromDate:[NSDate date]]];
+        [values addObject:pk];
+        
         NSMutableArray* v = @[].mutableCopy;
         for (int i=0;i<[keys count];i++){
             [v addObject:@"?"];
         }
-        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
         
-        [db executeUpdate:insertSQL withArgumentsInArray:values];
+        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+        
+        [db executeUpdate:updateSQL withArgumentsInArray:values];
+        
+        #warning need to check if the update was ignored or errored then don't insert
+        
+        if (!db.changes) {
+            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+            [db executeUpdate:insertSQL withArgumentsInArray:values];
+        }
+        
     }];
     return dictionary;
 }

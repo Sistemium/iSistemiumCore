@@ -129,6 +129,51 @@
 
 }
 
+#pragma mark - Private methods
+
+- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        
+        NSString *now = [STMFunctions stringFromNow];
+        NSMutableDictionary *savingAttributes = attributes.mutableCopy;
+        
+        if (options[@"lts"]) {
+            [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+            [savingAttributes removeObjectForKey:@"deviceTs"];
+        } else {
+            [savingAttributes setValue:now forKey:@"deviceTs"];
+            [savingAttributes removeObjectForKey:@"lts"];
+        }
+        
+        [savingAttributes setValue:now forKey:@"deviceAts"];
+        
+        return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
+        
+    } else {
+        
+        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
+            if (!sucess) {
+                [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
+            }
+        }];
+        
+        return attributes;
+    }
+}
+
+- (BOOL)saveWithEntityName:(NSString *)entityName{
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        return [[STMFmdb sharedInstance] commit];
+    } else {
+        [[self document] saveDocument:^(BOOL success){}];
+        return YES;
+    }
+    
+}
+
+
 #pragma mark - STMPersistingSync
 
 - (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
@@ -179,57 +224,30 @@
     }
 }
 
-- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-    
-    __block NSError* blockError = nil;
-    
-    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
-    
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        
-        return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:attributes];
-    
-    } else {
-        
-        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-            if (!sucess) {
-                blockError = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                                 code:0
-                                             userInfo:@{NSLocalizedDescriptionKey: @"insert error"}];
-            }
-        }];
-        
-        return attributes;
-    }
-}
-
-- (BOOL)saveWithEntityName:(NSString *)entityName{
-    
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] commit];
-    } else {
-        [[self document] saveDocument:^(BOOL success){}];
-        return YES;
-    }
-    
-}
-
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
-    if (!error){
-        if ([self saveWithEntityName:entityName]){
-            return result;
-        } else {
-            [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
-        }
+    
+    if (*error){
+        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
+        return nil;
     }
-    return nil;
+    
+    if (![self saveWithEntityName:entityName]){
+        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        return nil;
+    }
+    
+    return result;
+
 }
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
+    
     for (NSDictionary* dictionary in attributeArray){
         [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
-        if (error){
+        if (*error){
+            #warning here should be a rollback
             return nil;
         }
     }
