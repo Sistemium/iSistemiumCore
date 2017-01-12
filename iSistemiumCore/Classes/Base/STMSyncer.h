@@ -17,13 +17,13 @@
 
 @property (nonatomic, strong) id <STMSession> session;
 @property (nonatomic) double syncInterval;
+@property (nonatomic, strong) NSMutableDictionary *stcEntities;
 
 - (void)socketReceiveAuthorization;
 
 // old
 
 @property (nonatomic, strong) id <STMRequestAuthenticatable> authDelegate;
-@property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic) STMSyncerState syncerState;
 @property (nonatomic) STMSyncerState timeoutErrorSyncerState;
 

@@ -50,16 +50,22 @@
 @property (nonatomic, strong) STMSyncerHelper *helper;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
+@property (nonatomic) NSInteger fetchLimit;
 
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
 
 @property (nonatomic) BOOL running;
+@property (nonatomic) BOOL receivingData;
+
+@property (nonatomic, strong) NSArray *receivingEntitiesNames;
+@property (nonatomic, strong) NSMutableArray *entitySyncNames;
+
+@property (nonatomic) NSUInteger entityCount;
 
 
 // old
 
-@property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSString *xmlNamespace;
 @property (nonatomic) NSTimeInterval httpTimeoutForeground;
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
@@ -71,16 +77,13 @@
 @property (nonatomic) BOOL syncing;
 @property (nonatomic) BOOL checkSending;
 @property (nonatomic) BOOL sendOnce;
-@property (nonatomic) BOOL errorOccured;
 @property (nonatomic) BOOL fullSyncWasDone;
 @property (nonatomic) BOOL isFirstSyncCycleIteration;
+@property (nonatomic) BOOL errorOccured;
 
 @property (nonatomic, strong) NSMutableDictionary *responses;
 @property (nonatomic, strong) NSMutableDictionary *temporaryETag;
 @property (nonatomic, strong) NSMutableArray *sendedEntities;
-@property (nonatomic, strong) NSArray *receivingEntitiesNames;
-@property (nonatomic) NSUInteger entityCount;
-@property (nonatomic, strong) NSMutableArray *entitySyncNames;
 
 
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
@@ -139,17 +142,72 @@
 }
 
 - (NSMutableDictionary *)settings {
+    
     if (!_settings) {
         _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
     }
     return _settings;
+    
 }
 
 - (double)syncInterval {
+    
     if (!_syncInterval) {
         _syncInterval = [self.settings[@"syncInterval"] doubleValue];
     }
     return _syncInterval;
+    
+}
+
+- (void)setSyncInterval:(double)syncInterval {
+
+    if (_syncInterval != syncInterval) {
+        
+        [self releaseTimer];
+        _syncInterval = syncInterval;
+        [self initTimer];
+        
+    }
+    
+}
+
+- (NSInteger)fetchLimit {
+
+    if (!_fetchLimit) {
+        _fetchLimit = [self.settings[@"fetchLimit"] integerValue];
+    }
+    return _fetchLimit;
+    
+}
+
+
+- (NSMutableDictionary *)stcEntities {
+    
+    if (!_stcEntities) {
+        _stcEntities = [STMEntityController stcEntities].mutableCopy;
+    }
+    return _stcEntities;
+    
+}
+
+- (void)setReceivingData:(BOOL)receivingData {
+    
+    if (_receivingData != receivingData) {
+        
+        _receivingData = receivingData;
+        
+        if (receivingData) {
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        } else {
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        }
+        
+    }
+    
+}
+
+- (NSTimeInterval)timeout {
+    return ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
 }
 
 
@@ -239,18 +297,10 @@
         entity.name = stcEntityName;
         entity.url = self.entityResource;
         
-        [self.document saveDocument:^(BOOL success) {
-            completionHandler(success);
-        }];
-        
-        /* from persisting branch
          [self.document saveDocument:^(BOOL success) {
-         //            completionHandler(success);
          }];
          // otherwise syncer does not start before socket is connected+authorized
          completionHandler(YES);
-         */
-        
         
     } else {
         
@@ -348,26 +398,178 @@
     NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
 #endif
     
-    [self startFullSyncing];
+    [self receiveData];
+
+}
+
+
+#pragma mark - recieve data
+
+- (void)receiveData {
     
-//    if ([STMSocketController isSendingData]) {
-//        self.timerTicked = YES;
-//    } else {
-//        self.syncerState = STMSyncerSendData;
-//    }
+    if (!self.receivingData) {
+     
+        self.receivingData = YES;
+        
+        if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
+            
+            self.entityCount = 1;
+            
+            [self checkConditionForReceivingEntityWithName:@"STMEntity"];
+            
+        } else {
+            
+            self.entitySyncNames = self.receivingEntitiesNames.mutableCopy;
+            self.receivingEntitiesNames = nil;
+            self.entityCount = self.entitySyncNames.count;
+            
+            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+            
+        }
+        
+    }
+
+}
+
+- (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
+    
+    NSString *errorMessage = nil;
+    
+    STMEntity *entity = (self.stcEntities)[entityName];
+    
+    NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+    
+    if (entity.roleName) {
+        
+        NSString *roleOwner = entity.roleOwner;
+        NSString *roleOwnerEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:roleOwner];
+        
+        if (![localDataModelEntityNames containsObject:roleOwnerEntityName]) {
+            errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", roleOwnerEntityName, entityName];
+        } else {
+            
+            NSString *roleName = entity.roleName;
+            NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+            NSString *destinationEntityName = ownerRelationships[roleName];
+            
+            if (![localDataModelEntityNames containsObject:destinationEntityName]) {
+                errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", destinationEntityName, entityName];
+            }
+            
+        }
+        
+    }
+    
+    if (errorMessage) {
+        
+        NSLog(@"%@", errorMessage);
+        [self entityCountDecrease];
+        
+    } else {
+        
+        if (entity.roleName || [localDataModelEntityNames containsObject:entityName]) {
+            
+            NSString *resource = entity.url;
+            
+            if (resource) {
+                
+                STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
+                
+                NSString *eTag = clientEntity.eTag;
+                eTag = eTag ? eTag : @"*";
+                
+                [self.socketTransport startReceiveDataFromResource:resource
+                                                          withETag:eTag
+                                                        fetchLimit:self.fetchLimit
+                                                           timeout:[self timeout]
+                                                            params:nil];
+                
+            } else {
+                
+                NSLog(@"    %@: have no url", entityName);
+                [self entityCountDecrease];
+                
+            }
+            
+        } else {
+            
+            NSLog(@"    %@: do not exist in local data model", entityName);
+            [self entityCountDecrease];
+            
+        }
+        
+    }
     
 }
 
-- (void)startFullSyncing {
+- (void)entityCountDecrease {
     
-    id objectToSend = [self.helper objectToSend];
+    self.entityCount -= 1;
     
-    if (objectToSend) {
-        NSLog(@"send object via socket");
+    if (self.entityCount == 0) {
+        
+        [self receivingDidFinish];
+        
     } else {
-        NSLog(@"have nothing to send");
-        NSLog(@"go to receiving objects");
+        
+        if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
+        
+        if (self.entitySyncNames.firstObject) {
+            
+            [self.document saveDocument:^(BOOL success) {}];
+            
+            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+            
+        } else {
+            
+            [self receivingDidFinish];
+            
+        }
+        
     }
+    
+}
+
+- (void)receivingDidFinish {
+    [self receivingDidFinishWithError:nil];
+}
+
+- (void)receivingDidFinishWithError:(NSString *)errorString {
+    
+    self.receivingData = NO;
+
+    if (errorString) {
+
+        NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+    } else {
+        
+        [self saveReceiveDate];
+        [STMCoreObjectsController dataLoadingFinished];
+        
+    }
+    
+}
+
+- (void)saveReceiveDate {
+    
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+    
+    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+    
+    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [defaults setObject:receiveDateString forKey:key];
+    [defaults synchronize];
+    
+}
+
+- (void)socketReceiveTimeout {
+    
+    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
+//    [STMCoreObjectsController stopDefantomizing];
     
 }
 
@@ -387,21 +589,6 @@
         _entitySyncNames = [NSMutableArray array];
     }
     return _entitySyncNames;
-}
-
-- (NSInteger)fetchLimit {
-    if (!_fetchLimit) {
-        _fetchLimit = [self.settings[@"fetchLimit"] integerValue];
-    }
-    return _fetchLimit;
-}
-
-- (void)setSyncInterval:(double)syncInterval {
-    if (_syncInterval != syncInterval) {
-        [self releaseTimer];
-        _syncInterval = syncInterval;
-        [self initTimer];
-    }
 }
 
 - (NSString *)entityResource {
@@ -444,14 +631,6 @@
         _uploadLogType = self.settings[@"uploadLog.type"];
     }
     return _uploadLogType;
-}
-
-- (NSTimeInterval)timeout {
-    
-    NSTimeInterval timeout = ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
-    
-    return timeout;
-    
 }
 
 - (NSMutableArray *)sendedEntities {
@@ -571,20 +750,6 @@
         _responses = [NSMutableDictionary dictionary];
     }
     return _responses;
-    
-}
-
-- (NSMutableDictionary *)stcEntities {
-    
-    if (!_stcEntities) {
-        
-        NSDictionary *stcEntities = [STMEntityController stcEntities];
-        
-        _stcEntities = [stcEntities mutableCopy];
-        
-    }
-    
-    return _stcEntities;
     
 }
 
@@ -914,175 +1079,11 @@
     
 }
 
-- (void)receiveData {
-    
-    if (self.syncerState == STMSyncerReceiveData) {
-        
-        if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
-            
-            self.entityCount = 1;
-            self.errorOccured = NO;
-            
-            [self checkConditionForReceivingEntityWithName:@"STMEntity"];
-            
-        } else {
-            
-            self.entitySyncNames = self.receivingEntitiesNames.mutableCopy;
-            self.receivingEntitiesNames = nil;
-            self.entityCount = self.entitySyncNames.count;
-
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-            
-        }
-
-    }
-    
-}
-
-- (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
-    
-    if (self.syncerState != STMSyncerIdle) {
-
-        NSString *errorMessage = nil;
-        
-        STMEntity *entity = (self.stcEntities)[entityName];
-
-        if (entity.roleName) {
-            
-            NSString *roleOwner = entity.roleOwner;
-            NSString *roleOwnerEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:roleOwner];
-
-            if (![[STMCoreObjectsController localDataModelEntityNames] containsObject:roleOwnerEntityName]) {
-                errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", roleOwnerEntityName, entityName];
-            } else {
-            
-                NSString *roleName = entity.roleName;
-                NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
-                NSString *destinationEntityName = ownerRelationships[roleName];
-                
-                if (![[STMCoreObjectsController localDataModelEntityNames] containsObject:destinationEntityName]) {
-                    errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", destinationEntityName, entityName];
-                }
-
-            }
-            
-        }
-
-        if (errorMessage) {
-            
-            NSLog(@"%@", errorMessage);
-            [self entityCountDecrease];
-            
-        } else {
-
-            if (entity.roleName || [[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
-                
-                NSString *resource = entity.url;
-                
-                if (resource) {
-                    
-                    STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
-                    
-                    NSString *eTag = clientEntity.eTag;
-                    eTag = eTag ? eTag : @"*";
-                    
-                    [STMSocketController startReceiveDataFromResource:resource
-                                                             withETag:eTag
-                                                           fetchLimit:self.fetchLimit
-                                                           andTimeout:120/*[self timeout]*/];
-                    
-                } else {
-                    
-                    NSLog(@"    %@: have no url", entityName);
-                    [self entityCountDecrease];
-                    
-                }
-                
-            } else {
-
-                NSLog(@"    %@: do not exist in local data model", entityName);
-                [self entityCountDecrease];
-                
-            }
-
-        }
-        
-    }
-    
-}
-
 - (void)notAuthorized {
     
     self.fetchResult = UIBackgroundFetchResultFailed;
     [self stopSyncer];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notAuthorized" object:self];
-    
-}
-
-- (void)entityCountDecrease {
-    
-    self.entityCount -= 1;
-    
-    if (self.entityCount == 0) {
-
-        [self receivingDidFinish];
-        
-    } else {
-        
-        if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
-
-        if (self.entitySyncNames.firstObject) {
-
-            [self.document saveDocument:^(BOOL success) {}];
-
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-            
-        } else {
-            
-            [self receivingDidFinish];
-
-        }
-        
-    }
-    
-}
-
-- (void)receivingDidFinish {
-    [self receivingDidFinishWithError:nil];
-}
-
-- (void)receivingDidFinishWithError:(NSString *)errorString {
-    
-    if (errorString) {
-        
-        self.syncing = NO;
-        [STMSocketController receiveFinishedWithError:errorString];
-        self.syncerState = STMSyncerIdle;
-
-    } else {
-        
-        [self saveReceiveDate];
-        
-        self.fullSyncWasDone = YES;
-        self.isFirstSyncCycleIteration = NO;
-        
-        [self.document saveDocument:^(BOOL success) {
-            
-            if (success) {
-                
-                [STMCoreObjectsController dataLoadingFinished];
-                
-                self.syncing = NO;
-                
-                [STMSocketController receiveFinishedWithError:nil];
-                
-                self.syncerState = (self.errorOccured) ? STMSyncerIdle : STMSyncerSendDataOnce;
-                
-            }
-            
-        }];
-
-    }
     
 }
 
@@ -1239,16 +1240,6 @@
     }
     
     [self parseUpdateAckResponseData:responseData];
-
-}
-
-- (void)socketReceiveTimeout {
-    
-    NSString *errorString = @"socket receive objects timeout";
-    NSLog(@"%@", errorString);
-    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinish];
-    [STMCoreObjectsController stopDefantomizing];
 
 }
 
@@ -1642,19 +1633,6 @@
     NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
     
     [defaults setObject:sendDateString forKey:key];
-    [defaults synchronize];
-    
-}
-
-- (void)saveReceiveDate {
-    
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [defaults setObject:receiveDateString forKey:key];
     [defaults synchronize];
     
 }
