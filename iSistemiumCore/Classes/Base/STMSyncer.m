@@ -243,6 +243,15 @@
             completionHandler(success);
         }];
         
+        /* from persisting branch
+         [self.document saveDocument:^(BOOL success) {
+         //            completionHandler(success);
+         }];
+         // otherwise syncer does not start before socket is connected+authorized
+         completionHandler(YES);
+         */
+        
+        
     } else {
         
         STMEntity *entity = stcEntities[stcEntityName];
@@ -589,125 +598,7 @@
 }
 
 
-<<<<<<< HEAD
 #pragma mark - syncer methods
-=======
-- (void)startSyncer {
-    
-    if (!self.running) {
-        
-        self.settings = nil;
-        
-        [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
-            
-            if (success) {
-                
-                [STMEntityController checkEntitiesForDuplicates];
-                [STMClientDataController checkClientData];
-                [self.session.logger saveLogMessageDictionaryToDocument];
-                [self.session.logger saveLogMessageWithText:@"Syncer start"];
-                
-                [self checkUploadableEntities];
-                
-                [self addObservers];
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"Syncer init successfully"
-                                                                    object:self];
-                
-                if (self.socketUrlString) {
-                    
-                    [STMSocketController startSocketWithUrl:self.socketUrlString
-                                          andEntityResource:self.entityResource];
-                    
-                } else {
-                    
-                    NSLog(@"have NO socketURL, fail to start socket controller");
-                    
-                    [[STMCoreAuthController authController] logout];
-                    
-                }
-                
-                self.running = YES;
-                
-            } else {
-                
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                         numType:STMLogMessageTypeError];
-                
-            }
-            
-        }];
-        
-    }
-    
-}
-
-- (void)socketReceiveAuthorization {
-    [self initTimer];
-    self.syncerState = STMSyncerReceiveData;
-}
-
-- (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    NSDictionary *stcEntities = [STMEntityController stcEntities];
-    
-    NSString *stcEntityName = NSStringFromClass([STMEntity class]);
-    
-    if (!stcEntities[stcEntityName]) {
-        
-        STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
-        
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
-        
-        entity.name = stcEntityName;
-        entity.url = self.entityResource;
-        
-        [self.document saveDocument:^(BOOL success) {
-//            completionHandler(success);
-        }];
-        // otherwise syncer does not start before socket is connected+authorized
-        completionHandler(YES);
-        
-    } else {
-        
-        STMEntity *entity = stcEntities[stcEntityName];
-        
-        if (![entity.url isEqualToString:self.entityResource]) {
-            
-            NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
-            
-            entity.url = self.entityResource;
-            
-        }
-        
-        completionHandler(YES);
-        
-    }
-
-}
-
-- (void)checkUploadableEntities {
-    
-    NSArray *uploadableEntitiesNames = [STMEntityController uploadableEntitiesNames];
-    NSLog(@"uploadableEntitiesNames %@", uploadableEntitiesNames);
-    
-    if (uploadableEntitiesNames.count == 0) {
-        
-        NSString *stcEntityName = NSStringFromClass([STMEntity class]);
-        
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
-        
-        STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:stcEntityName];
-        clientEntity.eTag = nil;
-        
-    }
-
-}
->>>>>>> persisting
 
 - (void)stopSyncer {
     
