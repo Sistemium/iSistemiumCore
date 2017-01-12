@@ -1364,29 +1364,30 @@
 
     //    NSLog(@"find responseData %@", responseData);
 
-    if (!entityName) entityName = @"";
+    if (!entityName) {
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer parseFindAckResponseData !entityName"
+                                                 numType:STMLogMessageTypeError];
+        return;
+    }
     
-    if ([context[@"requestType"] isEqualToString:@"defantomize"]) {
+    NSDictionary *options = @{@"lts": [STMFunctions stringFromNow]};
+    
+    [[self persistenceDelegate] merge:entityName attributes:responseData options:options].then(^(NSDictionary *result){
+        
+        if (![context[@"requestType"] isEqualToString:@"defantomize"]) return;
+        
+        NSData *fantomXid = xid ? xid : [STMFunctions xidDataFromXidString:context[@"fantomId"]];
         
         if (!xid) {
             
             [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization: have no id in response, use context fantomId value"
                                                      numType:STMLogMessageTypeError];
-            xid = [STMFunctions xidDataFromXidString:context[@"fantomId"]];
-            
         }
-        
-        [[self persistenceDelegate] merge:entityName attributes:responseData options:nil].then(^(NSDictionary *result){
-            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
-                                                successfully:YES];
-        });
 
-    } else {
+        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":fantomXid}
+                                            successfully:YES];
         
-        [[self persistenceDelegate] merge:entityName attributes:responseData options:nil];
-        
-    }
-
+    });
     
 }
 
