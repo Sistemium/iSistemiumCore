@@ -143,7 +143,7 @@
             [savingAttributes setValue:[STMFunctions stringFromNow] forKey:@"deviceTs"];
         }
         
-        return [[STMFmdb sharedInstance] insertWithTablename:entityName dictionary:savingAttributes];
+        return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
         
     } else {
         
