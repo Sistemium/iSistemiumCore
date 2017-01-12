@@ -17,7 +17,6 @@
 
 @implementation STMFmdb
 
-FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
 
@@ -29,11 +28,10 @@ FMDatabaseQueue *queue;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
-        database = [FMDatabase databaseWithPath:dbPath];
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
-        if ([database open]){
+        [queue inDatabase:^(FMDatabase *database){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
@@ -139,8 +137,7 @@ FMDatabaseQueue *queue;
             }
             columnsByTable = columnsDictionary.copy;
         
-            [database close];
-        }
+        }];
     }
     return self;
 }
@@ -165,18 +162,25 @@ FMDatabaseQueue *queue;
     
 }
 
-- (NSDictionary * _Nonnull)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
-#warning need to handle errors
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+    if (![self mergeInto:tablename dictionary:dictionary error:error]){
+        return nil;
+    }
+    
+    return [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", dictionary[@"id"]]][0];
+    
+}
+
+- (BOOL)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+
+    __block BOOL result = YES;
+    
     tablename = [self entityToTableName:tablename];
     
     NSArray *columns = columnsByTable[tablename];
     NSString *pk = dictionary [@"id"];
     
     [queue inDatabase:^(FMDatabase *db) {
-        
-        if (![db inTransaction]){
-            [db beginTransaction];
-        }
         
         NSMutableArray* keys = @[].mutableCopy;
         NSMutableArray* values = @[].mutableCopy;
@@ -197,17 +201,23 @@ FMDatabaseQueue *queue;
         
         NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
-        [db executeUpdate:updateSQL withArgumentsInArray:values];
+        if(![db executeUpdate:updateSQL values:values error:error]){
+            result = NO;
+            return;
+        };
         
         #warning need to check if the update was ignored or errored then don't insert
         
         if (!db.changes) {
             NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-            [db executeUpdate:insertSQL withArgumentsInArray:values];
+            if (![db executeUpdate:insertSQL values:values error:error]){
+                result = NO;
+                return;
+            }
         }
-        
     }];
-    return dictionary;
+    
+    return result;
 }
 
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
@@ -253,6 +263,24 @@ FMDatabaseQueue *queue;
         if ([db inTransaction]){
             result = [db commit];
         }
+    }];
+    return result;
+}
+
+- (BOOL)startTransaction{
+    __block BOOL result = YES;
+    [queue inDatabase:^(FMDatabase *db){
+        if (![db inTransaction]){
+            result = [db beginTransaction];
+        }
+    }];
+    return result;
+}
+     
+- (BOOL)roleback{
+    __block BOOL result = YES;
+    [queue inDatabase:^(FMDatabase *db){
+        [db rollback];
     }];
     return result;
 }

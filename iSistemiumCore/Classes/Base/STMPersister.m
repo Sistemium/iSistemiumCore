@@ -135,6 +135,8 @@
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         
+        [[STMFmdb sharedInstance] startTransaction];
+        
         NSString *now = [STMFunctions stringFromNow];
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
         
@@ -148,7 +150,12 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        return [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes];
+        if(options[@"lts"]){
+            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
+            return nil;
+        }else{
+            return [[STMFmdb sharedInstance] mergeIntoAndResponse:entityName dictionary:savingAttributes error:error];
+        }
         
     } else {
         
@@ -244,15 +251,24 @@
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
     
+    NSMutableArray *result = @[].mutableCopy;
+    
     for (NSDictionary* dictionary in attributeArray){
-        [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        
+        NSDictionary* dict = [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        
+        if (dict){
+            [result addObject:dict];
+        }
+        
         if (*error){
-            #warning here should be a rollback
+            #warning possible danger, will roleback changes from other threads
+            [[STMFmdb sharedInstance] roleback];
             return nil;
         }
     }
     if ([self saveWithEntityName:entityName]){
-        return attributeArray;
+        return result;
     } else {
         [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
