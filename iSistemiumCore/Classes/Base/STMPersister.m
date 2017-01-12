@@ -154,8 +154,7 @@
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
         }else{
-            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
-            return nil;
+            return [[STMFmdb sharedInstance] mergeIntoAndResponse:entityName dictionary:savingAttributes error:error];
         }
         
     } else {

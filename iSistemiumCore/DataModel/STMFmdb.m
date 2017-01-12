@@ -162,6 +162,15 @@ FMDatabaseQueue *queue;
     
 }
 
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+    if (![self mergeInto:tablename dictionary:dictionary error:error]){
+        return nil;
+    }
+    
+    return [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", dictionary[@"id"]]][0];
+    
+}
+
 - (BOOL)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
 
     __block BOOL result = YES;

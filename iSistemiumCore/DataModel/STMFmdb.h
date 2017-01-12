@@ -11,6 +11,7 @@
 + (STMFmdb * _Nonnull)sharedInstance;
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate;
 - (BOOL)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error;
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error;
 - (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name;
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
 - (BOOL) commit;
