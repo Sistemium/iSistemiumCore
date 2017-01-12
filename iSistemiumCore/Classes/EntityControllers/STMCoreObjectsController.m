@@ -260,10 +260,11 @@
         for (NSDictionary *objectData in requestData) {
             
             NSString *xidString = objectData[@"id"];
-            NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+            NSError *error = nil;
             
-            STMDatum *object = (STMDatum *)[STMCoreObjectsController objectForXid:xidData entityName:entityName];
-            [result addObject:[STMCoreObjectsController dictionaryForJSWithObject:object]];
+            NSDictionary *object = [STMCoreObjectsController.persistenceDelegate findSync:entityName id:xidString options:nil error:&error];
+            // TODO: check errors
+            [result addObject:object];
 
         }
         
@@ -1985,14 +1986,8 @@
 + (void)handleUpdateMessageData:(NSArray *)data entityName:(NSString *)entityName completionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler{
     
     NSError *localError = nil;
-
-    for (NSDictionary *objectData in data) {
-        
-        [self updateObjectWithData:objectData entityName:entityName error:&localError];
-        
-        if (localError) break;
-        
-    }
+    
+    [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:nil error:&localError];
 
     if (localError) {
         
@@ -2003,7 +1998,8 @@
         [[self sharedController].updateRequests addObject:@{@"data"                 : data,
                                                             @"entityName"           : entityName,
                                                             @"completionHandler"    : completionHandler}];
-        [[self document] saveDocument:^(BOOL success) {}];
+        // Assuming there's no CoreData
+        [[self sharedController] checkUpdateRequests];
 
     }
 
