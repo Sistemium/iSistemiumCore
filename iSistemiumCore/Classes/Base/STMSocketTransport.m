@@ -337,22 +337,22 @@ static NSString *kSocketDestroyMethod = @"destroy";
             
                 NSLog(@"STMSocketEventJSData value: %@", value);
                 
-                //            NSString *method = value[@"method"];
-                //
-                //            if ([method isEqualToString:@"update"]) {
-                //
-                //                [self sharedInstance].isSendingData = YES;
-                //                [self sharedInstance].sendingDate = [NSDate date];
-                //
-                //            }
-                //
-                //            NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
-                //
-                //            NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
-                //
-                //            [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
-                //                [self receiveJSDataEventAckWithData:data];
-                //            });
+//                NSString *method = value[@"method"];
+//    
+//                if ([method isEqualToString:@"update"]) {
+//    
+//                    [self sharedInstance].isSendingData = YES;
+//                    [self sharedInstance].sendingDate = [NSDate date];
+//    
+//                }
+//    
+//                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+//    
+//                NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
+//    
+//                [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
+//                    [self receiveJSDataEventAckWithData:data];
+//                });
 
             } else {
                 
@@ -532,7 +532,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 #pragma mark - receiving data
 
-- (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params {
+- (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
                                    @"resource" : resourceString

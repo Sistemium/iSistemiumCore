@@ -24,6 +24,7 @@
                             withETag:(NSString *)eTag
                           fetchLimit:(NSInteger)fetchLimit
                              timeout:(NSTimeInterval)timeout
-                              params:(NSDictionary *)params;
+                              params:(NSDictionary *)params
+                   completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 @end

@@ -482,7 +482,10 @@
                                                           withETag:eTag
                                                         fetchLimit:self.fetchLimit
                                                            timeout:[self timeout]
-                                                            params:nil];
+                                                            params:nil
+                                                 completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+                                                     
+                                                 }];
                 
             } else {
                 
