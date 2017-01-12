@@ -262,8 +262,8 @@
         }
         
         if (*error){
-            #warning possible danger, will roleback changes from other threads
-            [[STMFmdb sharedInstance] roleback];
+            #warning possible danger, will rollback changes from other threads
+            [[STMFmdb sharedInstance] rollback];
             return nil;
         }
     }

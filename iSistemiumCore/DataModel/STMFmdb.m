@@ -283,7 +283,7 @@ FMDatabaseQueue *queue;
     return result;
 }
      
-- (BOOL)roleback{
+- (BOOL)rollback{
     __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db){
         [db rollback];

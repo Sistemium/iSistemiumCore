@@ -16,6 +16,6 @@
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
 - (BOOL) commit;
 - (BOOL)startTransaction;
-- (BOOL)roleback;
+- (BOOL)rollback;
 
 @end
