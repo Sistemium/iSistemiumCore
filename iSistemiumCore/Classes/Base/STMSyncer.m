@@ -485,6 +485,16 @@
                                                             params:nil
                                                  completionHandler:^(BOOL success, NSArray *data, NSError *error) {
                                                      
+                                                     if (success) {
+                                                         
+                                                         [self socketReceiveJSDataAck:data];
+                                                         
+                                                     } else {
+                                                         
+                                                         (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:error.localizedDescription];
+
+                                                     }
+                                                     
                                                  }];
                 
             } else {

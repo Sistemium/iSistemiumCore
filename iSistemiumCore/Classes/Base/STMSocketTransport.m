@@ -325,6 +325,62 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 #pragma mark - send events
 
+- (void)sendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+    
+    [self logSendEvent:event withValue:value];
+    
+    if (self.socket.status == SocketIOClientStatusConnected) {
+        
+        if (event == STMSocketEventJSData) {
+            
+            if ([value isKindOfClass:[NSDictionary class]]) {
+                
+                NSLog(@"STMSocketEventJSData value: %@", value);
+                
+                NSString *method = value[@"method"];
+
+                if ([method isEqualToString:@"update"]) {
+
+//                    [self sharedInstance].isSendingData = YES;
+//                    [self sharedInstance].sendingDate = [NSDate date];
+
+                }
+
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+
+                NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
+
+                [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
+
+                    [self cancelCheckReceiveTimeoutWithCompletionHandler:completionHandler];
+                    completionHandler(YES, data, nil);
+
+                });
+                
+            } else {
+                
+            }
+            
+        } else {
+            
+        }
+        
+    } else {
+        
+        NSString *errorMessage = @"socket not connected while sendEvent";
+        
+        [self socketLostConnection:errorMessage];
+        
+        NSError *error = nil;
+        [STMCoreObjectsController error:&error
+                            withMessage:errorMessage];
+        
+        completionHandler(NO, nil, error);
+        
+    }
+
+}
+
 - (void)sendEvent:(STMSocketEvent)event withValue:(id)value {
     
     [self logSendEvent:event withValue:value];
@@ -547,29 +603,32 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
     if (params) value[@"params"] = params;
     
-    [self sendFindWithValue:value andTimeout:timeout];
+    [self sendFindWithValue:value
+                 andTimeout:timeout
+          completionHandler:completionHandler];
     
 }
 
-- (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
+- (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     self.receivingStartDate = [NSDate date];
     
-    [self cancelCheckReceiveTimeout];
-    
     self.receiveTimeout = timeout;
     
+    NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
+                             @"completionHandler": completionHandler};
+    
     [self performSelector:@selector(checkReceiveTimeout:)
-               withObject:@(self.receiveTimeout)
+               withObject:params
                afterDelay:timeout];
     
-    [self sendEvent:STMSocketEventJSData withValue:value];
+    [self sendEvent:STMSocketEventJSData withValue:value completionHandler:completionHandler];
     
 }
 
-- (void)checkReceiveTimeout:(NSNumber *)timeoutNumber {
+- (void)checkReceiveTimeout:(NSDictionary *)params {
     
-    NSTimeInterval timeout = timeoutNumber.doubleValue;
+    NSTimeInterval timeout = [params[@"timeout"] doubleValue];
     NSTimeInterval elapsedTime = -self.receivingStartDate.timeIntervalSinceNow;
     
     if (elapsedTime >= timeout) {
@@ -577,18 +636,30 @@ static NSString *kSocketDestroyMethod = @"destroy";
         NSString *errorString = @"socket receive objects timeout";
         [self sendEvent:STMSocketEventInfo
               withValue:errorString];
-
-        [self.syncer socketReceiveTimeout];
+        
+        void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = params[@"completionHandler"];
+        
+        NSError *error = nil;
+        
+        [STMCoreObjectsController error:&error
+                            withMessage:errorString];
+        
+        completionHandler(NO, nil, error);
+        
+//        [self.syncer socketReceiveTimeout];
         
     }
-    
+
 }
 
-- (void)cancelCheckReceiveTimeout {
+- (void)cancelCheckReceiveTimeoutWithCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
+    NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
+                             @"completionHandler": completionHandler};
+
     [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
                                                        selector:@selector(checkReceiveTimeout:)
-                                                         object:@(self.receiveTimeout)];
+                                                         object:params];
     
 }
 
