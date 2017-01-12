@@ -28,6 +28,11 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventJSData
 };
 
+static NSString *kSocketFindAllMethod = @"findAll";
+static NSString *kSocketFindMethod = @"find";
+static NSString *kSocketUpdateMethod = @"update";
+static NSString *kSocketDestroyMethod = @"destroy";
+
 
 @interface STMSocketTransport()
 
@@ -37,6 +42,9 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 @property (nonatomic, strong) NSString *socketUrl;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isAuthorized;
+
+@property (nonatomic) NSTimeInterval receiveTimeout;
+@property (nonatomic, strong) NSDate *receivingStartDate;
 
 
 @end
@@ -327,6 +335,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
             
             if ([value isKindOfClass:[NSDictionary class]]) {
             
+                NSLog(@"STMSocketEventJSData value: %@", value);
+                
                 //            NSString *method = value[@"method"];
                 //
                 //            if ([method isEqualToString:@"update"]) {
@@ -516,6 +526,69 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 //    }
 //    
 //    [syncer socketLostConnection];
+    
+}
+
+
+#pragma mark - receiving data
+
+- (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params {
+    
+    NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
+                                   @"resource" : resourceString
+                                   }.mutableCopy;
+    
+    NSMutableDictionary *options = @{@"pageSize" : @(fetchLimit)}.mutableCopy;
+    if (eTag) options[@"offset"] = eTag;
+    
+    [options setValue:@"500" forKey:@"pageSize"];
+    
+    value[@"options"] = options;
+    
+    if (params) value[@"params"] = params;
+    
+    [self sendFindWithValue:value andTimeout:timeout];
+    
+}
+
+- (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
+    
+    self.receivingStartDate = [NSDate date];
+    
+    [self cancelCheckReceiveTimeout];
+    
+    self.receiveTimeout = timeout;
+    
+    [self performSelector:@selector(checkReceiveTimeout:)
+               withObject:@(self.receiveTimeout)
+               afterDelay:timeout];
+    
+    [self sendEvent:STMSocketEventJSData withValue:value];
+    
+}
+
+- (void)checkReceiveTimeout:(NSNumber *)timeoutNumber {
+    
+    NSTimeInterval timeout = timeoutNumber.doubleValue;
+    NSTimeInterval elapsedTime = -self.receivingStartDate.timeIntervalSinceNow;
+    
+    if (elapsedTime >= timeout) {
+        
+        NSString *errorString = @"socket receive objects timeout";
+        [self sendEvent:STMSocketEventInfo
+              withValue:errorString];
+
+        [self.syncer socketReceiveTimeout];
+        
+    }
+    
+}
+
+- (void)cancelCheckReceiveTimeout {
+    
+    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
+                                                       selector:@selector(checkReceiveTimeout:)
+                                                         object:@(self.receiveTimeout)];
     
 }
 

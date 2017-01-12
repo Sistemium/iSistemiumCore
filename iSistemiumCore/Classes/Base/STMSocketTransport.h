@@ -20,5 +20,10 @@
           andEntityResource:(NSString *)entityResource
                   forSyncer:(STMSyncer *)syncer;
 
+- (void)startReceiveDataFromResource:(NSString *)resourceString
+                            withETag:(NSString *)eTag
+                          fetchLimit:(NSInteger)fetchLimit
+                             timeout:(NSTimeInterval)timeout
+                              params:(NSDictionary *)params;
 
 @end
