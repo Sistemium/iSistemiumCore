@@ -20,7 +20,6 @@
 FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
-NSArray *ignoreColumns;
 
 
 - (instancetype)init {
@@ -33,8 +32,6 @@ NSArray *ignoreColumns;
         database = [FMDatabase databaseWithPath:dbPath];
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
-        
-        ignoreColumns = [NSArray arrayWithObjects: @"deviceTs", @"lts", @"deviceCts", nil];
         
         if ([database open]){
             
@@ -168,13 +165,12 @@ NSArray *ignoreColumns;
     
 }
 
-- (NSDictionary * _Nonnull)insertWithTablename:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
+- (NSDictionary * _Nonnull)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary{
 #warning need to handle errors
     tablename = [self entityToTableName:tablename];
     
-    NSString *subQueryFormat = @"(select %@ from %@ where id = '%@')";
-    NSString *pk = dictionary [@"id"];
     NSArray *columns = columnsByTable[tablename];
+    NSString *pk = dictionary [@"id"];
     
     [queue inDatabase:^(FMDatabase *db) {
         
@@ -186,30 +182,30 @@ NSArray *ignoreColumns;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([columns containsObject:key]){
+            if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
                 [keys addObject:key];
                 [values addObject:[dictionary objectForKey:key]];
             }
         }
+        
+        [values addObject:pk];
         
         NSMutableArray* v = @[].mutableCopy;
         for (int i=0;i<[keys count];i++){
             [v addObject:@"?"];
         }
         
-        for(NSString* key in ignoreColumns) {
-            if (![keys containsObject:key]) {
-                [keys addObject:key];
-                [v addObject:[NSString stringWithFormat:subQueryFormat, key, tablename, pk]];
-            }
+        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+        
+        [db executeUpdate:updateSQL withArgumentsInArray:values];
+        
+        #warning need to check if the update was ignored or errored then don't insert
+        
+        if (!db.changes) {
+            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+            [db executeUpdate:insertSQL withArgumentsInArray:values];
         }
         
-        NSLog(@"v: %@", v);
-        NSLog(@"keys: %@", keys);
-        
-        NSString* insertSQL = [NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ (%@) SELECT %@",tablename,[keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-        
-        [db executeUpdate:insertSQL withArgumentsInArray:values];
     }];
     return dictionary;
 }
