@@ -17,7 +17,6 @@
 
 @implementation STMFmdb
 
-FMDatabase *database;
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
 
@@ -29,11 +28,10 @@ FMDatabaseQueue *queue;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
-        database = [FMDatabase databaseWithPath:dbPath];
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
-        if ([database open]){
+        [queue inDatabase:^(FMDatabase *database){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
@@ -139,8 +137,7 @@ FMDatabaseQueue *queue;
             }
             columnsByTable = columnsDictionary.copy;
         
-            [database close];
-        }
+        }];
     }
     return self;
 }
