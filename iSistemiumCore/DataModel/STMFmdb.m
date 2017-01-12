@@ -36,7 +36,7 @@ FMDatabaseQueue *queue;
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
-            NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(IGNORE) WHERE OLD.deviceTs <> NEW.lts; END";
+            NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
             for (NSString* entityName in entityNames){
                 
@@ -97,6 +97,9 @@ FMDatabaseQueue *queue;
                     if ([columnName isEqualToString:@"deviceCts"]) {
                         sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
                     }
+                    if ([columnName isEqualToString:@"lts"]) {
+                        sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT('')"];
+                    }
                 }
                 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
@@ -119,8 +122,8 @@ FMDatabaseQueue *queue;
  
                 BOOL res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
-                
-                sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName];
+
+                sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName];
                 
                 res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
@@ -202,11 +205,14 @@ FMDatabaseQueue *queue;
         NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
         if(![db executeUpdate:updateSQL values:values error:error]){
-            result = NO;
+            if ([[*error localizedDescription] isEqualToString:@"ignored"]){
+                *error = nil;
+            }
+            else{
+                result = NO;
+            }
             return;
         };
-        
-        #warning need to check if the update was ignored or errored then don't insert
         
         if (!db.changes) {
             NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
