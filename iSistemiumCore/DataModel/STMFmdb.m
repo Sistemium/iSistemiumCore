@@ -171,10 +171,6 @@ FMDatabaseQueue *queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         
-        if (![db inTransaction]){
-            [db beginTransaction];
-        }
-        
         NSMutableArray* keys = @[].mutableCopy;
         NSMutableArray* values = @[].mutableCopy;
         
@@ -250,6 +246,24 @@ FMDatabaseQueue *queue;
         if ([db inTransaction]){
             result = [db commit];
         }
+    }];
+    return result;
+}
+
+- (BOOL)startTransaction{
+    __block BOOL result = YES;
+    [queue inDatabase:^(FMDatabase *db){
+        if (![db inTransaction]){
+            result = [db beginTransaction];
+        }
+    }];
+    return result;
+}
+     
+- (BOOL)roleback{
+    __block BOOL result = YES;
+    [queue inDatabase:^(FMDatabase *db){
+        [db rollback];
     }];
     return result;
 }

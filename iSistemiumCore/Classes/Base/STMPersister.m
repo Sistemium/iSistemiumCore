@@ -135,6 +135,8 @@
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
         
+        [[STMFmdb sharedInstance] startTransaction];
+        
         NSString *now = [STMFunctions stringFromNow];
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
         
@@ -247,7 +249,8 @@
     for (NSDictionary* dictionary in attributeArray){
         [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
         if (*error){
-            #warning here should be a rollback
+            #warning possible danger, will roleback changes from other threads
+            [[STMFmdb sharedInstance] roleback];
             return nil;
         }
     }
