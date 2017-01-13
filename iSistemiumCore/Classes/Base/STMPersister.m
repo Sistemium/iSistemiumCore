@@ -139,6 +139,7 @@
         
         NSString *now = [STMFunctions stringFromNow];
         NSMutableDictionary *savingAttributes = attributes.mutableCopy;
+        BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
         
         if (options[@"lts"]) {
             [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
@@ -150,7 +151,7 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        if(options[@"lts"]){
+        if(returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
         }else{
