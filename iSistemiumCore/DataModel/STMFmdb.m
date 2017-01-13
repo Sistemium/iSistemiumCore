@@ -191,7 +191,13 @@ FMDatabaseQueue *queue;
         for(NSString* key in dictionary){
             if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
                 [keys addObject:key];
-                [values addObject:[dictionary objectForKey:key]];
+                id value = [dictionary objectForKey:key];
+                if ([value isKindOfClass:[NSDate class]]) {
+                    [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+                } else {
+                    [values addObject:(NSString*)value];
+                }
+                
             }
         }
         
