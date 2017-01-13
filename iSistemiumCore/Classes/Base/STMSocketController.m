@@ -1013,7 +1013,7 @@
                 break;
             }
             case STMSocketEventRemoteCommands: {
-                [self remoteCommandsCallbackWithData:data ack:ack socket:socket];
+//                [self remoteCommandsCallbackWithData:data ack:ack socket:socket];
                 break;
             }
             case STMSocketEventData: {
