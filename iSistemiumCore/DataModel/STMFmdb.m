@@ -170,7 +170,11 @@ FMDatabaseQueue *queue;
         return nil;
     }
     
-    return [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", dictionary[@"id"]]][0];
+    NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[NSUUID alloc] init].UUIDString;
+    
+    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]];
+    
+    return [results firstObject];
     
 }
 
