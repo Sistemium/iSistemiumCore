@@ -64,6 +64,8 @@
 
 @property (nonatomic) NSUInteger entityCount;
 
+@property (nonatomic, strong) NSString *subscriptionId;
+@property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
 
 // old
 
@@ -276,14 +278,27 @@
 - (void)socketReceiveAuthorization {
     
     NSLogMethodName;
+    
     [self initTimer];
+    
+    self.subscriptionId = [self.dataSyncingHelper subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
     
 }
 
 - (void)socketLostConnection {
 
     NSLogMethodName;
+    
     [self releaseTimer];
+    
+    if ([self.dataSyncingHelper unSubscribe:self.subscriptionId]) {
+        
+        NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
+        self.subscriptionId = nil;
+        
+    } else {
+        NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
+    }
 
 }
 
@@ -836,6 +851,23 @@
     }
     
 }
+
+
+#pragma mark - unsynced subscription
+
+- (void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))unsyncedSubscriptionHandler {
+    
+    if (!_unsyncedSubscriptionHandler) {
+        
+        _unsyncedSubscriptionHandler = ^(NSString *entity, NSDictionary *itemData, NSString *itemVersion) {
+            NSLog(@"unsyncedSubscriptionHandler");
+        };
+        
+    }
+    return _unsyncedSubscriptionHandler;
+    
+}
+
 
 
 // ----------------------
