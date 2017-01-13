@@ -435,7 +435,7 @@
     
     NSString *errorMessage = nil;
     
-    STMEntity *entity = (self.stcEntities)[entityName];
+    STMEntity *entity = self.stcEntities[entityName];
     
     NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
     
@@ -486,15 +486,17 @@
                                                  completionHandler:^(BOOL success, NSArray *data, NSError *error) {
                                                      
                                                      if (success) {
-                                                         
                                                          [self socketReceiveJSDataAck:data];
-                                                         
                                                      } else {
                                                          
-                                                         (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:error.localizedDescription];
-
+                                                         if (self.entityCount > 0) {
+                                                             [self entityCountDecreaseWithError:error.localizedDescription];
+                                                         } else {
+                                                             [self receivingDidFinishWithError:error.localizedDescription];
+                                                         }
+                                                         
                                                      }
-                                                     
+
                                                  }];
                 
             } else {
@@ -540,7 +542,7 @@
         }
         
     }
-    
+
 }
 
 - (void)receivingDidFinish {
