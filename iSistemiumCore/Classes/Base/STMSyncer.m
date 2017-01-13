@@ -103,7 +103,7 @@
     if (session != _session) {
         
         self.document = (STMDocument *)session.document;
-        self.persistenceDelegate = (STMPersister *)session.persister;
+        self.persistenceDelegate = session.persistenceDelegate;
         _session = session;
         
         [self startSyncer];

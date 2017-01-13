@@ -10,7 +10,7 @@
 
 #import "STMCoreDataModel.h"
 #import "STMCoreAuthController.h"
-
+#import "STMPersister.h"
 
 @interface STMCoreSession()
 
@@ -33,9 +33,11 @@
         
         [session addObservers];
         
-        session.persister = [STMPersister initWithSession:session];
+        STMPersister *persister = [STMPersister initWithSession:session];
         
-        session.document = session.persister.document;
+        session.persistenceDelegate = persister;
+#warning need to remove direct links to document after full persisting concept realization
+        session.document = persister.document;
 
         return session;
         
@@ -65,7 +67,7 @@
                 if (self.status == STMSessionRemoving) {
 
                     self.document = nil;
-                    self.persister = nil;
+                    self.persistenceDelegate = nil;
 
                 }
                 
