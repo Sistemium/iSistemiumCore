@@ -592,12 +592,238 @@
     
 }
 
-//- (void)socketReceiveTimeout {
-//    
-//    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
-////    [STMCoreObjectsController stopDefantomizing];
-//    
-//}
+- (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
+    
+    if ([entityName isEqualToString:@"STMEntity"]) {
+        
+        [STMEntityController flushSelf];
+        [STMSocketController reloadResultsControllers];
+        
+        self.stcEntities = nil;
+        NSMutableArray *entityNames = [self.stcEntities.allKeys mutableCopy];
+        [entityNames removeObject:entityName];
+        
+        self.entitySyncNames = entityNames;
+        
+        self.entityCount = entityNames.count;
+        
+        NSUInteger settingsIndex = [self.entitySyncNames indexOfObject:@"STMSetting"];
+        if (settingsIndex != NSNotFound) [self.entitySyncNames exchangeObjectAtIndex:settingsIndex
+                                                                   withObjectAtIndex:0];
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish"
+                                                            object:self];
+        
+        [self.document saveDocument:^(BOOL success) {}];
+        
+        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+        
+    } else {
+        [self entityCountDecrease];
+    }
+    
+}
+
+- (void)fillETagWithTemporaryValueForEntityName:(NSString *)entityName {
+    
+    NSString *eTag = self.temporaryETag[entityName];
+    STMEntity *entity = self.stcEntities[entityName];
+    STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
+    
+    clientEntity.eTag = eTag;
+    
+}
+
+- (void)nextReceiveEntityWithName:(NSString *)entityName {
+    
+    [self fillETagWithTemporaryValueForEntityName:entityName];
+    [self checkConditionForReceivingEntityWithName:entityName];
+    
+}
+
+
+#pragma mark - socket ack handlers
+
+- (void)socketReceiveJSDataAck:(NSArray *)data {
+    
+    NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+    
+    if (!response) {
+        
+        // don't know which method cause an error, send error to all of them
+        NSString *errorMessage = @"ERROR: response contain no dictionary";
+        [self socketReceiveJSDataFindAllAckError:errorMessage];
+        
+        [self socketReceiveJSDataFindAckErrorCode:nil
+                                   andErrorString:errorMessage
+                                       entityName:nil
+                                              xid:nil
+                                         response:nil];
+        
+        [self socketReceiveJSDataUpdateAckErrorCode:nil
+                                     andErrorString:errorMessage
+                                       withResponse:nil];
+        return;
+        
+    }
+    
+    NSString *resource = response[@"resource"];
+    NSString *entityName = [STMEntityController entityNameForURLString:resource];
+    NSNumber *errorCode = response[@"error"];
+    NSString *methodName = response[@"method"];
+    
+    if ([methodName isEqualToString:kSocketFindAllMethod]) {
+        
+        [self receiveFindAllAck:data
+                   withResponse:response
+                       resource:resource
+                     entityName:entityName
+                      errorCode:errorCode];
+        
+    } else if ([methodName isEqualToString:kSocketFindMethod]) {
+        
+        [self receiveFindAck:data
+                withResponse:response
+                    resource:resource
+                  entityName:entityName
+                   errorCode:errorCode];
+        
+    } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
+        
+        [self receiveUpdateAck:data
+                  withResponse:response
+                      resource:resource
+                    entityName:entityName
+                     errorCode:errorCode];
+        
+    }
+    
+}
+
+
+#pragma mark findAll ack handlers
+
+- (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
+    
+    if (errorCode) {
+        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]]; return;
+    }
+    
+    if (!resource) {
+        [self socketReceiveJSDataFindAllAckError:@"ERROR: have no resource string in response"]; return;
+    }
+    
+    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+    
+    if (!responseData) {
+        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
+    }
+    
+    [self parseFindAllAckData:data
+                 responseData:responseData
+                     resource:resource
+                   entityName:entityName
+                     response:response];
+    
+}
+
+- (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
+    
+    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    [self entityCountDecreaseWithError:errorString];
+    
+}
+
+- (void)parseFindAllAckData:(NSArray *)data responseData:(NSArray *)responseData resource:(NSString *)resource entityName:(NSString *)entityName response:(NSDictionary *)response {
+    
+    if (entityName) {
+        
+        if (responseData.count > 0) {
+            
+            NSString *offset = response[@"offset"];
+            NSUInteger pageSize = [response[@"pageSize"] integerValue];
+            
+            if (offset) {
+                
+                BOOL isLastPage = responseData.count < pageSize;
+                
+                if (entityName) self.temporaryETag[entityName] = offset;
+                [self parseSocketFindAllResponseData:responseData
+                                       forEntityName:entityName
+                                          isLastPage:isLastPage];
+                
+            } else {
+                
+                NSLog(@"    %@: receive data w/o offset", entityName);
+                [self receiveNoContentStatusForEntityWithName:entityName];
+                
+            }
+            
+        } else {
+            
+            NSLog(@"    %@: have no new data", entityName);
+            [self receiveNoContentStatusForEntityWithName:entityName];
+            
+        }
+        
+    } else {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", data];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+//        if ([resource isEqualToString:[STMSocketController newsResourceString]]) {
+//            [self parseNewsData:responseData];
+//        } else {
+//            NSLog(@"ERROR: unknown response: %@", data);
+//        }
+        
+    }
+    
+}
+
+- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
+    
+    STMEntity *entity = self.stcEntities[entityName];
+    
+    if (entity) {
+        
+        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+            
+            if (success) {
+                
+                NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
+                
+                if (isLastPage) {
+                    
+                    NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
+                    
+                    [self fillETagWithTemporaryValueForEntityName:entityName];
+                    [self receiveNoContentStatusForEntityWithName:entityName];
+                    
+                } else {
+                    
+                    [self nextReceiveEntityWithName:entityName];
+                    
+                }
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+                                                                    object:self
+                                                                  userInfo:@{@"count"         :@(data.count),
+                                                                             @"entityName"    :entityName}];
+                
+            } else {
+                
+                NSString *errorString = [NSString stringWithFormat:@"error in processingOfDataArray:%@ withEntityName: %@", data, entityName];
+                [self entityCountDecreaseWithError:errorString];
+                
+            }
+            
+        }];
+        
+    }
+    
+}
 
 
 // ----------------------
@@ -607,6 +833,13 @@
 
 
 #pragma mark - OLD IMPLEMENTATION
+
+//- (void)socketReceiveTimeout {
+//
+//    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
+////    [STMCoreObjectsController stopDefantomizing];
+//
+//}
 
 #pragma mark - variables setters & getters
 
@@ -1116,86 +1349,6 @@
 
 #pragma mark - socket receive ack handler
 
-- (void)socketReceiveJSDataAck:(NSArray *)data {
-
-    NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-    
-    if (!response) {
-        
-        // don't know which method cause an error, send error to all of them
-        NSString *errorMessage = @"ERROR: response contain no dictionary";
-        [self socketReceiveJSDataFindAllAckError:errorMessage];
-        
-        [self socketReceiveJSDataFindAckErrorCode:nil
-                                   andErrorString:errorMessage
-                                       entityName:nil
-                                              xid:nil
-                                         response:nil];
-        
-        [self socketReceiveJSDataUpdateAckErrorCode:nil
-                                     andErrorString:errorMessage
-                                       withResponse:nil];
-        return;
-        
-    }
-    
-    NSString *resource = response[@"resource"];
-    NSString *entityName = [STMEntityController entityNameForURLString:resource];
-    NSNumber *errorCode = response[@"error"];
-    NSString *methodName = response[@"method"];
-    
-    if ([methodName isEqualToString:kSocketFindAllMethod]) {
-
-        [self receiveFindAllAck:data
-                   withResponse:response
-                       resource:resource
-                     entityName:entityName
-                    errorCode:errorCode];
-
-    } else if ([methodName isEqualToString:kSocketFindMethod]) {
-    
-        [self receiveFindAck:data
-                withResponse:response
-                    resource:resource
-                  entityName:entityName
-                 errorCode:errorCode];
-        
-    } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
-
-        [self receiveUpdateAck:data
-                  withResponse:response
-                      resource:resource
-                    entityName:entityName
-                   errorCode:errorCode];
-        
-    }
-    
-}
-
-- (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
-    
-    if (errorCode) {
-        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]]; return;
-    }
-    
-    if (!resource) {
-        [self socketReceiveJSDataFindAllAckError:@"ERROR: have no resource string in response"]; return;
-    }
-    
-    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-    
-    if (!responseData) {
-        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
-    }
-    
-    [self parseFindAllAckData:data
-                 responseData:responseData
-                     resource:resource
-                   entityName:entityName
-                     response:response];
-
-}
-
 - (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
@@ -1269,14 +1422,6 @@
 
 }
 
-- (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
-    
-    NSLog(@"%@", errorString);
-    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-    [self entityCountDecrease];
-    
-}
-
 - (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid response:(NSDictionary *)response {
     
     if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
@@ -1328,93 +1473,6 @@
                                              errorString:errorString
                                                abortSync:abortSync];
     
-}
-
-- (void)parseFindAllAckData:(NSArray *)data responseData:(NSArray *)responseData resource:(NSString *)resource entityName:(NSString *)entityName response:(NSDictionary *)response {
-    
-    if (entityName) {
-        
-        if (responseData.count > 0) {
-            
-            NSString *offset = response[@"offset"];
-            NSUInteger pageSize = [response[@"pageSize"] integerValue];
-            
-            if (offset) {
-                
-                BOOL isLastPage = responseData.count < pageSize;
-
-                if (entityName && self.syncerState != STMSyncerIdle) self.temporaryETag[entityName] = offset;
-                [self parseSocketFindAllResponseData:responseData
-                                       forEntityName:entityName
-                                            isLastPage:isLastPage];
-                
-            } else {
-                
-                NSLog(@"    %@: receive data w/o offset", entityName);
-                [self receiveNoContentStatusForEntityWithName:entityName];
-                
-            }
-            
-        } else {
-            
-            NSLog(@"    %@: have no new data", entityName);
-            [self receiveNoContentStatusForEntityWithName:entityName];
-            
-        }
-        
-    } else {
-        
-        if ([resource isEqualToString:[STMSocketController newsResourceString]]) {
-            [self parseNewsData:responseData];
-        } else {
-            NSLog(@"ERROR: unknown response: %@", data);
-        }
-        
-    }
-    
-}
-
-- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
-    
-    STMEntity *entity = (self.stcEntities)[entityName];
-    
-    if (entity) {
-        
-        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
-            
-            if (success) {
-                
-                NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
-                
-//                NSLog(@"timecheck %@", @([NSDate timeIntervalSinceReferenceDate]));
-                
-                if (isLastPage) {
-                    
-                    NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
-                    
-                    [self fillETagWithTemporaryValueForEntityName:entityName];
-                    [self receiveNoContentStatusForEntityWithName:entityName];
-                    
-                } else {
-                    
-                    [self nextReceiveEntityWithName:entityName];
-                    
-                }
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-                                                                    object:self
-                                                                  userInfo:@{@"count"         :@(data.count),
-                                                                             @"entityName"    :entityName}];
-                
-            } else {
-                self.errorOccured = YES;
-                [self entityCountDecrease];
-            }
-            
-        }];
-        
-    }
-
 }
 
 - (void)parseNewsData:(NSArray *)newsData {
@@ -1557,53 +1615,6 @@
 
 
 #pragma mark - some sync methods
-
-- (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
-
-    if ([entityName isEqualToString:@"STMEntity"]) {
-        
-        [STMEntityController flushSelf];
-        [STMSocketController reloadResultsControllers];
-        
-        self.stcEntities = nil;
-        NSMutableArray *entityNames = [self.stcEntities.allKeys mutableCopy];
-        [entityNames removeObject:entityName];
-        
-        self.entitySyncNames = entityNames;
-        
-        self.entityCount = entityNames.count;
-        
-        NSUInteger settingsIndex = [self.entitySyncNames indexOfObject:@"STMSetting"];        
-        if (settingsIndex != NSNotFound) [self.entitySyncNames exchangeObjectAtIndex:settingsIndex withObjectAtIndex:0];
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish" object:self];
-        
-        [self.document saveDocument:^(BOOL success) {}];
-        
-        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-        
-    } else {
-        [self entityCountDecrease];
-    }
-
-}
-
-- (void)fillETagWithTemporaryValueForEntityName:(NSString *)entityName {
-    
-    NSString *eTag = self.temporaryETag[entityName];
-    STMEntity *entity = self.stcEntities[entityName];
-    STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
-    
-    clientEntity.eTag = eTag;
-    
-}
-
-- (void)nextReceiveEntityWithName:(NSString *)entityName {
-    
-    [self fillETagWithTemporaryValueForEntityName:entityName];
-    [self checkConditionForReceivingEntityWithName:entityName];
-    
-}
 
 - (void)sendFinishedWithError:(NSString *)errorString {
     
