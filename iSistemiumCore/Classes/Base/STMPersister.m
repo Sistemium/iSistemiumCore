@@ -225,7 +225,11 @@
     if (!orderBy) orderBy = @"id";
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate orderBy:orderBy fetchLimit:&pageSize fetchOffset:&offset];
+        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
+                                                 withPredicate:predicate
+                                                       orderBy:orderBy
+                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                                   fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
