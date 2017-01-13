@@ -612,7 +612,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 - (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     self.receivingStartDate = [NSDate date];
-    
+        
     self.receiveTimeout = timeout;
     
     NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
@@ -654,12 +654,16 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 - (void)cancelCheckReceiveTimeoutWithCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
-    NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
-                             @"completionHandler": completionHandler};
+    if (completionHandler) {
+    
+        NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
+                                 @"completionHandler": completionHandler};
+        
+        [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
+                                                           selector:@selector(checkReceiveTimeout:)
+                                                             object:params];
 
-    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                       selector:@selector(checkReceiveTimeout:)
-                                                         object:params];
+    }
     
 }
 
