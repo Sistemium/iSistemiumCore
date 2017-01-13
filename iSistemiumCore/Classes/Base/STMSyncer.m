@@ -18,6 +18,7 @@
 #import "STMPersistingSync.h"
 
 #import "STMSocketTransport.h"
+#import "STMDataSyncing.h"
 #import "STMSyncerHelper.h"
 
 #import "STMCoreObjectsController.h"
@@ -47,7 +48,7 @@
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) STMSocketTransport *socketTransport;
-@property (nonatomic, strong) STMSyncerHelper *helper;
+@property (nonatomic, strong) id <STMDataSyncing>dataSyncingHelper;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 
@@ -130,7 +131,7 @@
         
         self.document = (STMDocument *)session.document;
         self.persistenceDelegate = session.persistenceDelegate;
-        self.helper = [[STMSyncerHelper alloc] init];
+        self.dataSyncingHelper = [[STMSyncerHelper alloc] init];
 
         _session = session;
         
