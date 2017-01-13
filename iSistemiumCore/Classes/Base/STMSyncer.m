@@ -462,8 +462,7 @@
     
     if (errorMessage) {
         
-        NSLog(@"%@", errorMessage);
-        [self entityCountDecrease];
+        [self entityCountDecreaseWithError:errorMessage];
         
     } else {
         
@@ -501,15 +500,15 @@
                 
             } else {
                 
-                NSLog(@"    %@: have no url", entityName);
-                [self entityCountDecrease];
+                NSString *errorMessage = [NSString stringWithFormat:@"    %@: have no url", entityName];
+                [self entityCountDecreaseWithError:errorMessage];
                 
             }
             
         } else {
             
-            NSLog(@"    %@: do not exist in local data model", entityName);
-            [self entityCountDecrease];
+            NSString *errorMessage = [NSString stringWithFormat:@"    %@: do not exist in local data model", entityName];
+            [self entityCountDecreaseWithError:errorMessage];
             
         }
         
@@ -518,6 +517,18 @@
 }
 
 - (void)entityCountDecrease {
+    [self entityCountDecreaseWithError:nil];
+}
+
+- (void)entityCountDecreaseWithError:(NSString *)errorMessage {
+    
+    if (errorMessage) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+    }
     
     self.entityCount -= 1;
     
