@@ -160,11 +160,19 @@
         
     } else {
         
-        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-            if (!sucess) {
-                [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
-            }
-        }];
+        if (options[@"roleName"]){
+            [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
+                if (!sucess) {
+                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
+                }
+            }];
+        }else{
+            [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
+                if (!sucess) {
+                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Relationship error %@", entityName]];
+                }
+            }];
+        }
         
         return attributes;
     }

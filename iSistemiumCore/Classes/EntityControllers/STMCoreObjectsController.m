@@ -321,27 +321,20 @@
 #pragma mark - recieved objects management
 
 + (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
+
+    NSDictionary *options;
     
-    if (roleName) {
-        #warning move to Persisting protocol
-        [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
-            completionHandler(success);
-        }];
-        
-        [[self document] saveDocument:^(BOOL success) {
-        }];
-        
-    } else {
-        
-        NSDictionary *options = @{@"lts": STMFunctions.stringFromNow};
-        
-        [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
-            completionHandler(YES);
-        }).catch(^(NSError *error){
-            completionHandler(NO);
-        });
-        
+    if (roleName){
+        options = @{@"lts": STMFunctions.stringFromNow,@"roleName":roleName};
+    }else{
+        options = @{@"lts": STMFunctions.stringFromNow};
     }
+    
+    [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
+        completionHandler(YES);
+    }).catch(^(NSError *error){
+        completionHandler(NO);
+    });
 
 }
 
