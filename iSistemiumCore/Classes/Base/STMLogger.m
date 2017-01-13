@@ -368,24 +368,10 @@
 
 - (void)createAndSaveLogMessageFromDictionary:(NSDictionary *)logMessageDic {
     
-    [self.document.managedObjectContext performBlock:^{
-        
-        STMLogMessage *logMessage = (STMLogMessage *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMLogMessage class])
-                                                                                         isFantom:NO];
-        
-        for (NSString *key in logMessageDic.allKeys) {
-            
-            if ([logMessage.entity.propertiesByName objectForKey:key]) {
-                [logMessage setValue:logMessageDic[key] forKey:key];
-            }
-            
-        }
-
-        [self.document saveDocument:^(BOOL success) {
-        }];
-        
-    }];
+    NSError *error = nil;
+    NSDictionary *options = @{@"returnSaved": @NO};
     
+    [self.session.persistenceDelegate mergeSync:NSStringFromClass([STMLogMessage class]) attributes:logMessageDic options:options error:&error];
 }
 
 - (void)sendLogMessageToLocalServerForDebugWithType:(NSString *)type andText:(NSString *)text {
