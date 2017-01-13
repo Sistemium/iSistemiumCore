@@ -8,9 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface STMSyncerHelper : NSObject
+#import "STMDataSyncing.h"
 
-- (id)objectToSend;
+
+@interface STMSyncerHelper : NSObject <STMDataSyncing>
 
 
 @end
