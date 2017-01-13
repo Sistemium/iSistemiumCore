@@ -181,7 +181,7 @@ FMDatabaseQueue *queue;
     tablename = [self entityToTableName:tablename];
     
     NSArray *columns = columnsByTable[tablename];
-    NSString *pk = dictionary [@"id"];
+    NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[NSUUID alloc] init].UUIDString;
     
     [queue inDatabase:^(FMDatabase *db) {
         
