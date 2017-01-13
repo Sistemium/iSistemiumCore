@@ -51,6 +51,7 @@
 @property (nonatomic, strong) id <STMDataSyncing>dataSyncingHelper;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
+@property (nonatomic, strong) NSTimer *syncTimer;
 
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
@@ -71,7 +72,6 @@
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
 @property (nonatomic, strong) NSString *uploadLogType;
 
-@property (nonatomic, strong) NSTimer *syncTimer;
 @property (nonatomic) BOOL timerTicked;
 
 @property (nonatomic) BOOL syncing;
@@ -350,34 +350,20 @@
 
 #pragma mark - timer
 
-- (NSTimer *)syncTimer {
-    
-    if (!_syncTimer) {
-        
-        if (!self.syncInterval) {
-            
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
-                                                  interval:0
+- (NSTimer *)newSyncTimer {
+   
+    NSTimeInterval syncInterval = self.syncInterval ? self.syncInterval : 0;
+    BOOL repeats = self.syncInterval ? YES : NO;
+
+    NSTimer *syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
+                                                  interval:syncInterval
                                                     target:self
                                                   selector:@selector(onTimerTick:)
                                                   userInfo:nil
-                                                   repeats:NO];
-            
-        } else {
-            
-            _syncTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
-                                                  interval:self.syncInterval
-                                                    target:self
-                                                  selector:@selector(onTimerTick:)
-                                                  userInfo:nil
-                                                   repeats:YES];
-            
-        }
-        
-    }
+                                                   repeats:repeats];
     
-    return _syncTimer;
-    
+    return syncTimer;
+
 }
 
 - (void)initTimer {
@@ -386,6 +372,8 @@
         [self releaseTimer];
     }
     
+    self.syncTimer = [self newSyncTimer];
+    
     [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
                                  forMode:NSRunLoopCommonModes];
     
@@ -393,8 +381,12 @@
 
 - (void)releaseTimer {
     
-    [self.syncTimer invalidate];
-    self.syncTimer = nil;
+    if (self.syncTimer) {
+    
+        [self.syncTimer invalidate];
+        self.syncTimer = nil;
+
+    }
     
 }
 
