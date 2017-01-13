@@ -476,6 +476,8 @@
                 NSString *eTag = clientEntity.eTag;
                 eTag = eTag ? eTag : @"*";
                 
+                __block BOOL blockIsComplete = NO;
+                
                 [self.socketTransport startReceiveDataFromResource:resource
                                                           withETag:eTag
                                                         fetchLimit:self.fetchLimit
@@ -483,8 +485,19 @@
                                                             params:nil
                                                  completionHandler:^(BOOL success, NSArray *data, NSError *error) {
                                                      
+                                                     if (blockIsComplete) {
+                                                         NSLog(@"completionHandler for %@ already complete", entityName);
+                                                         return;
+                                                     }
+
+                                                     blockIsComplete = YES;
+                                                     
                                                      if (success) {
+                                                         
+                                                         NSLog(@"completionHandler");
+                                                         
                                                          [self socketReceiveJSDataAck:data];
+                                                         
                                                      } else {
                                                          
                                                          if (self.entityCount > 0) {
@@ -494,7 +507,7 @@
                                                          }
                                                          
                                                      }
-
+                                                     
                                                  }];
                 
             } else {
