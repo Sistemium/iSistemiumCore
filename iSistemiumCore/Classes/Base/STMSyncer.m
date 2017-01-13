@@ -45,14 +45,9 @@
 // new
 
 @property (nonatomic, strong) STMDocument *document;
-<<<<<<< HEAD
-@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
+@property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) STMSocketTransport *socketTransport;
 @property (nonatomic, strong) STMSyncerHelper *helper;
-
-=======
-@property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
->>>>>>> persisting
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 
@@ -134,13 +129,9 @@
     if (session != _session) {
         
         self.document = (STMDocument *)session.document;
-<<<<<<< HEAD
-        self.persistenceDelegate = (STMPersister *)session.persister;
-        self.helper = [[STMSyncerHelper alloc] init];
-        
-=======
         self.persistenceDelegate = session.persistenceDelegate;
->>>>>>> persisting
+        self.helper = [[STMSyncerHelper alloc] init];
+
         _session = session;
         
         [self startSyncer];
