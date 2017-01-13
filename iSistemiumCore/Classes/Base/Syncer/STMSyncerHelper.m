@@ -8,24 +8,27 @@
 
 #import "STMSyncerHelper.h"
 
+/*
 #import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
+*/
 
+@interface STMSyncerHelper() //<NSFetchedResultsControllerDelegate>
 
-@interface STMSyncerHelper() <NSFetchedResultsControllerDelegate>
-
+/*
 @property (nonatomic, strong) NSMutableArray *resultsControllers;
 @property (nonatomic, strong) NSArray *unsyncedObjects;
 @property (nonatomic, strong) NSMutableArray *currentSyncObjects;
 @property (nonatomic, strong) NSMutableArray *doNotSyncObjectXids;
 @property (nonatomic, strong) NSMutableDictionary *syncDateDictionary;
-
+*/
 
 @end
 
 
 @implementation STMSyncerHelper
 
+/*
 - (instancetype)init {
     
     self = [super init];
@@ -307,6 +310,6 @@
     }
     
 }
-
+*/
 
 @end
