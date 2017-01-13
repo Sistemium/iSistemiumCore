@@ -211,7 +211,7 @@ FMDatabaseQueue *queue;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
+            if ([columns containsObject:key] && ![key isEqualToString:@"id"] && ![key isEqualToString:@"isFantom"]){
                 [keys addObject:key];
                 id value = [dictionary objectForKey:key];
                 if ([value isKindOfClass:[NSDate class]]) {
@@ -230,7 +230,7 @@ FMDatabaseQueue *queue;
             [v addObject:@"?"];
         }
         
-        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
         if(![db executeUpdate:updateSQL values:values error:error]){
             if ([[*error localizedDescription] isEqualToString:@"ignored"]){
@@ -243,7 +243,7 @@ FMDatabaseQueue *queue;
         };
         
         if (!db.changes) {
-            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
             if (![db executeUpdate:insertSQL values:values error:error]){
                 result = NO;
                 return;
@@ -265,6 +265,7 @@ FMDatabaseQueue *queue;
             where = [@" WHERE " stringByAppendingString:where];
         }
     }
+    where = [where stringByReplacingOccurrencesOfString:@" AND ()" withString:@""];
     where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
     NSMutableArray *rez = @[].mutableCopy;

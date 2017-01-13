@@ -189,7 +189,7 @@
     NSPredicate* predicate;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        predicate = [NSPredicate predicateWithFormat:@"id == %@",identifier];
+        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",identifier];
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
     }
@@ -210,12 +210,23 @@
     NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
     NSString *orderBy = options[@"sortBy"];
     
+    // TODO: maybe could be simplified
+    NSMutableArray *predicates = [[NSMutableArray alloc] init];
+    
+    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %d", options[@"fantoms"] ? 1 : 0]];
+    
+    if (predicate) {
+        [predicates addObject:predicate];
+    }
+    
+    NSCompoundPredicate *predicateWithFantoms = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+    
     if (!orderBy) orderBy = @"id";
     if (!startPage) startPage = 0;
     if (!pageSize) pageSize = 0;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate];
+        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicateWithFantoms];
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
