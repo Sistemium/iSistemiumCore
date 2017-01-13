@@ -48,7 +48,7 @@
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) STMSocketTransport *socketTransport;
-@property (nonatomic, strong) id <STMDataSyncing>dataSyncingHelper;
+@property (nonatomic, strong) id <STMDataSyncing>dataSyncingDelegate;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSTimer *syncTimer;
@@ -133,7 +133,7 @@
         
         self.document = (STMDocument *)session.document;
         self.persistenceDelegate = session.persistenceDelegate;
-        self.dataSyncingHelper = [[STMSyncerHelper alloc] init];
+        self.dataSyncingDelegate = [[STMSyncerHelper alloc] init];
 
         _session = session;
         
@@ -281,7 +281,7 @@
     
     [self initTimer];
     
-    self.subscriptionId = [self.dataSyncingHelper subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
+    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
     
 }
 
@@ -291,7 +291,7 @@
     
     [self releaseTimer];
     
-    if ([self.dataSyncingHelper unSubscribe:self.subscriptionId]) {
+    if ([self.dataSyncingDelegate unSubscribe:self.subscriptionId]) {
         
         NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
         self.subscriptionId = nil;
