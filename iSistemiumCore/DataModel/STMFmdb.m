@@ -170,7 +170,11 @@ FMDatabaseQueue *queue;
         return nil;
     }
     
-    return [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", dictionary[@"id"]]][0];
+    NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[NSUUID alloc] init].UUIDString;
+    
+    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]];
+    
+    return [results firstObject];
     
 }
 
@@ -181,7 +185,7 @@ FMDatabaseQueue *queue;
     tablename = [self entityToTableName:tablename];
     
     NSArray *columns = columnsByTable[tablename];
-    NSString *pk = dictionary [@"id"];
+    NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[NSUUID alloc] init].UUIDString;
     
     [queue inDatabase:^(FMDatabase *db) {
         
@@ -191,7 +195,13 @@ FMDatabaseQueue *queue;
         for(NSString* key in dictionary){
             if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
                 [keys addObject:key];
-                [values addObject:[dictionary objectForKey:key]];
+                id value = [dictionary objectForKey:key];
+                if ([value isKindOfClass:[NSDate class]]) {
+                    [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+                } else {
+                    [values addObject:(NSString*)value];
+                }
+                
             }
         }
         

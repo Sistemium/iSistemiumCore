@@ -26,7 +26,7 @@
 
 + (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
     
-    return [self session].persister;
+    return [self session].persistenceDelegate;
     
 }
 
