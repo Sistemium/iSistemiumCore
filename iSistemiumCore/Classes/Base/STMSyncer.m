@@ -33,7 +33,7 @@
 @interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
+@property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSString *entityResource;
