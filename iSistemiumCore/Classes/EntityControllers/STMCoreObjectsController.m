@@ -1987,7 +1987,7 @@
     
     NSError *localError = nil;
     
-    [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:nil error:&localError];
+    NSArray *results = [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:nil error:&localError];
 
     if (localError) {
         
@@ -1995,11 +1995,8 @@
         
     } else {
 
-        [[self sharedController].updateRequests addObject:@{@"data"                 : data,
-                                                            @"entityName"           : entityName,
-                                                            @"completionHandler"    : completionHandler}];
         // Assuming there's no CoreData
-        [[self sharedController] checkUpdateRequests];
+        completionHandler(YES, results, localError);
 
     }
 
