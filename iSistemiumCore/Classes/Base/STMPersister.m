@@ -151,7 +151,7 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        if(returnSaved){
+        if(!returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
         }else{
