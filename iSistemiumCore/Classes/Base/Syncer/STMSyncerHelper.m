@@ -7,7 +7,7 @@
 //
 
 #import "STMSyncerHelper.h"
-
+#import "STMConstants.h"
 
 @interface STMSyncerHelper()
 
@@ -15,6 +15,44 @@
 
 
 @implementation STMSyncerHelper
+
+- (instancetype)init {
+    
+    self = [super init];
+    if (self) {
+        [self customInit];
+    }
+    return self;
+    
+}
+
+- (void)customInit {
+    [self addObservers];
+}
+
+
+#pragma mark - observers
+
+- (void)addObservers {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(persisterHaveUnsyncedObjects:)
+                                                 name:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                               object:nil];
+    
+}
+
+- (void)removeObservers {
+    
+#warning - have to remove observers if helper dealloc/nullify
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+}
+
+- (void)persisterHaveUnsyncedObjects:(NSNotification *)notification {
+    NSLogMethodName;
+}
+
 
 #pragma mark - STMDataSyncing
 
