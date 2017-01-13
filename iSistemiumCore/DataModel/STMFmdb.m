@@ -172,7 +172,7 @@ FMDatabaseQueue *queue;
     
     NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
     
-    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]];
+    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:nil fetchOffset:nil];
     
     return [results firstObject];
     
@@ -236,7 +236,20 @@ FMDatabaseQueue *queue;
     return result;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+    NSString* options = @"";
+    if (orderBy) {
+        NSString *order = [NSString stringWithFormat:@" ORDER BY %@", orderBy];
+        options = [options stringByAppendingString:order];
+    }
+    if (fetchLimit) {
+        NSString *limit = [NSString stringWithFormat:@" LIMIT %ld", (unsigned long)*fetchLimit];
+        options = [options stringByAppendingString:limit];
+    }
+    if (fetchOffset) {
+        NSString *offset = [NSString stringWithFormat:@" OFFSET %ld", (unsigned long)*fetchOffset];
+        options = [options stringByAppendingString:offset];
+    }
     name = [self entityToTableName:name];
     NSString* where = @"";
     if (predicate){
@@ -251,7 +264,7 @@ FMDatabaseQueue *queue;
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
     NSMutableArray *rez = @[].mutableCopy;
     [queue inDatabase:^(FMDatabase *db) {
-        NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@",name,where];
+        NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@",name,where,options];
         FMResultSet *s = [db executeQuery:query];
         while ([s next]) {
             [rez addObject:[s resultDictionary]];

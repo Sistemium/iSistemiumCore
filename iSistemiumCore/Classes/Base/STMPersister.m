@@ -207,21 +207,23 @@
 - (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger pageSize = [options[@"pageSize"] integerValue];
-    NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
+    NSUInteger offset = [options[@"startPage"] integerValue];
+    if (offset) {
+        offset -= 1;
+        offset *= pageSize;
+    }
     NSString *orderBy = options[@"sortBy"];
     
     if (!orderBy) orderBy = @"id";
-    if (!startPage) startPage = 0;
-    if (!pageSize) pageSize = 0;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate];
+        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate orderBy:orderBy fetchLimit:&pageSize fetchOffset:&offset];
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
                                                                      ascending:YES
                                                                     fetchLimit:pageSize
-                                                                   fetchOffset:(pageSize * startPage)
+                                                                   fetchOffset:offset
                                                                    withFantoms:NO
                                                                      predicate:predicate
                                                                     resultType:NSDictionaryResultType
