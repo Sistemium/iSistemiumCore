@@ -580,8 +580,8 @@ static NSString *kSocketDestroyMethod = @"destroy";
 //                          abortSync:@(YES)];
 //        
 //    }
-//    
-//    [syncer socketLostConnection];
+    
+    [self.syncer socketLostConnection];
     
 }
 

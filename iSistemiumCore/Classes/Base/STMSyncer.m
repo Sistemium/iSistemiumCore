@@ -280,6 +280,13 @@
     
 }
 
+- (void)socketLostConnection {
+
+    NSLogMethodName;
+    [self releaseTimer];
+
+}
+
 - (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
     
     NSDictionary *stcEntities = [STMEntityController stcEntities];
@@ -1688,12 +1695,12 @@
     
 }
 
-- (void)socketLostConnection {
-    
-    self.syncing = NO;
-    self.syncerState = STMSyncerIdle;
-
-}
+//- (void)socketLostConnection {
+//    
+//    self.syncing = NO;
+//    self.syncerState = STMSyncerIdle;
+//
+//}
 
 
 @end
