@@ -10,7 +10,11 @@
 
 @protocol STMDataSyncing <NSObject>
 
-- (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion));
+@required
+
+@optional
+
+- (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))completionHandler;
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId;
 
