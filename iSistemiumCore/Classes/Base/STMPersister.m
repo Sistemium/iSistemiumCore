@@ -151,7 +151,7 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        if(returnSaved){
+        if(!returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
         }else{
@@ -197,7 +197,7 @@
     NSPredicate* predicate;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        predicate = [NSPredicate predicateWithFormat:@"id == %@",identifier];
+        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",identifier];
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
     }
@@ -222,14 +222,27 @@
     }
     NSString *orderBy = options[@"sortBy"];
     
+    // TODO: maybe could be simplified
+    NSMutableArray *predicates = [[NSMutableArray alloc] init];
+    
+    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %d", options[@"fantoms"] ? 1 : 0]];
+    
+    if (predicate) {
+        [predicates addObject:predicate];
+    }
+    
+    NSCompoundPredicate *predicateWithFantoms = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+    
     if (!orderBy) orderBy = @"id";
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
-                                                 withPredicate:predicate
+                                                 withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
                                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
                                                    fetchOffset:options[@"offset"] ? &offset : nil];
+
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy

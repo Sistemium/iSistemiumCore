@@ -38,6 +38,11 @@ FMDatabaseQueue *queue;
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
+            NSString *createFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@ BEFORE INSERT ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
+            NSString *updateFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@_update BEFORE UPDATE OF %@ ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
+            NSString *fantomIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_isFantom on %@ (isFantom);";
+            
+            
             for (NSString* entityName in entityNames){
                 
                 if ([entityName isEqualToString:@"STMSetting"] || [entityName isEqualToString:@"STMEntity"] ){
@@ -122,19 +127,32 @@ FMDatabaseQueue *queue;
  
                 BOOL res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
+                
+                sql_stmt = [NSString stringWithFormat:fantomIndexFormat, tableName, tableName];
+                res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
 
                 sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName];
                 
                 res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
 
-                
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
                     res = [database executeStatements:createIndexSQL];
                     NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
+                    
+                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    
+                    sql_stmt = [NSString stringWithFormat:createFantomTriggerFormat, tableName, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
+                    res = [database executeStatements:sql_stmt];
+                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+                    
+                    sql_stmt = [NSString stringWithFormat:updateFantomTriggerFormat, tableName, fkColumn, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
+                    res = [database executeStatements:sql_stmt];
+                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
                     
                 }
             }
@@ -193,7 +211,7 @@ FMDatabaseQueue *queue;
         NSMutableArray* values = @[].mutableCopy;
         
         for(NSString* key in dictionary){
-            if ([columns containsObject:key] && ![key isEqualToString:@"id"]){
+            if ([columns containsObject:key] && ![key isEqualToString:@"id"] && ![key isEqualToString:@"isFantom"]){
                 [keys addObject:key];
                 id value = [dictionary objectForKey:key];
                 if ([value isKindOfClass:[NSDate class]]) {
@@ -212,7 +230,7 @@ FMDatabaseQueue *queue;
             [v addObject:@"?"];
         }
         
-        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
         if(![db executeUpdate:updateSQL values:values error:error]){
             if ([[*error localizedDescription] isEqualToString:@"ignored"]){
@@ -225,7 +243,7 @@ FMDatabaseQueue *queue;
         };
         
         if (!db.changes) {
-            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, id) VALUES(%@, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
             if (![db executeUpdate:insertSQL values:values error:error]){
                 result = NO;
                 return;
@@ -260,6 +278,7 @@ FMDatabaseQueue *queue;
             where = [@" WHERE " stringByAppendingString:where];
         }
     }
+    where = [where stringByReplacingOccurrencesOfString:@" AND ()" withString:@""];
     where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
     where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
     NSMutableArray *rez = @[].mutableCopy;
