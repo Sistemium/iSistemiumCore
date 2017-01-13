@@ -16,7 +16,7 @@
 // new
 
 @property (nonatomic, strong) id <STMSession> session;
-@property (nonatomic) double syncInterval;
+@property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 
 - (void)socketReceiveAuthorization;

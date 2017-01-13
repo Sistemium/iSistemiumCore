@@ -149,7 +149,7 @@
     
 }
 
-- (double)syncInterval {
+- (NSTimeInterval)syncInterval {
     
     if (!_syncInterval) {
         _syncInterval = [self.settings[@"syncInterval"] doubleValue];
