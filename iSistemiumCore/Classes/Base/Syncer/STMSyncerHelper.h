@@ -19,7 +19,7 @@
 
 @property (nonatomic, weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>persistenceDelegate;
 
-- (void)findFantomsWithCompletionHandler:(void (^)(NSArray *fantomsArray))completionHandler;
-
+- (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler;
+- (void)defantomizingFinished;
 
 @end

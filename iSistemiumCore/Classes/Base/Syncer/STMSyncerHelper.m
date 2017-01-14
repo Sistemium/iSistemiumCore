@@ -79,9 +79,9 @@
 }
 
 
-#pragma mark - defantomization
+#pragma mark - defantomizing
 
-- (void)findFantomsWithCompletionHandler:(void (^)(NSArray *fantomsArray))completionHandler {
+- (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler {
     
     NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
@@ -138,13 +138,26 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
                                                             object:self
                                                           userInfo:@{@"fantomsCount": @(self.fantomsArray.count)}];
-        
+
         completionHandler(self.fantomsArray);
         
     } else {
         completionHandler(nil);
     }
     
+}
+
+- (void)defantomizingFinished {
+    
+    NSLog(@"DEFANTOMIZING_FINISHED");
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                        object:self
+                                                      userInfo:nil];
+    
+    self.fantomsArray = nil;
+    self.notFoundFantomsArray = nil;
+
 }
 
 
