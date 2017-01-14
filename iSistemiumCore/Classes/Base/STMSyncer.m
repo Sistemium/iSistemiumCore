@@ -525,37 +525,37 @@
                 
                 __block BOOL blockIsComplete = NO;
                 
-                [self.socketTransport startReceiveDataFromResource:resource
-                                                          withETag:eTag
-                                                        fetchLimit:self.fetchLimit
-                                                           timeout:[self timeout]
-                                                            params:nil
-                                                 completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                                                     
-                                                     if (blockIsComplete) {
-                                                         NSLog(@"completionHandler for %@ already complete", entityName);
-                                                         return;
-                                                     }
+                [self.socketTransport findAllFromResource:resource
+                                                 withETag:eTag
+                                               fetchLimit:self.fetchLimit
+                                                  timeout:[self timeout]
+                                                   params:nil
+                                        completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+                                             
+                                            if (blockIsComplete) {
+                                                NSLog(@"completionHandler for %@ already complete", entityName);
+                                                return;
+                                            }
 
-                                                     blockIsComplete = YES;
-                                                     
-                                                     if (success) {
-                                                         
-                                                         NSLog(@"completionHandler");
-                                                         
-                                                         [self socketReceiveJSDataAck:data];
-                                                         
-                                                     } else {
-                                                         
-                                                         if (self.entityCount > 0) {
-                                                             [self entityCountDecreaseWithError:error.localizedDescription];
-                                                         } else {
-                                                             [self receivingDidFinishWithError:error.localizedDescription];
-                                                         }
-                                                         
-                                                     }
-                                                     
-                                                 }];
+                                            blockIsComplete = YES;
+                                             
+                                            if (success) {
+                                                 
+                                                NSLog(@"completionHandler");
+                                                 
+                                                [self socketReceiveJSDataAck:data];
+                                                 
+                                            } else {
+                                                 
+                                                if (self.entityCount > 0) {
+                                                    [self entityCountDecreaseWithError:error.localizedDescription];
+                                                } else {
+                                                    [self receivingDidFinishWithError:error.localizedDescription];
+                                                }
+                                                 
+                                            }
+                                             
+                                        }];
                 
             } else {
                 

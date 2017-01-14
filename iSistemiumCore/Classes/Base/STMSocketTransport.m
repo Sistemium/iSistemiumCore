@@ -43,8 +43,8 @@ static NSString *kSocketDestroyMethod = @"destroy";
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isAuthorized;
 
-@property (nonatomic) NSTimeInterval receiveTimeout;
-@property (nonatomic, strong) NSDate *receivingStartDate;
+@property (nonatomic) NSTimeInterval findAllTimeout;
+@property (nonatomic, strong) NSDate *findAllStartTime;
 
 
 @end
@@ -352,7 +352,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
                 [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
 
-                    [self cancelCheckReceiveTimeoutWithCompletionHandler:completionHandler];
+                    [self cancelCheckFindAllTimeoutWithCompletionHandler:completionHandler];
                     completionHandler(YES, data, nil);
 
                 });
@@ -588,7 +588,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 #pragma mark - receiving data
 
-- (void)startReceiveDataFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
                                    @"resource" : resourceString
@@ -603,22 +603,22 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
     if (params) value[@"params"] = params;
     
-    [self sendFindWithValue:value
-                 andTimeout:timeout
-          completionHandler:completionHandler];
+    [self sendFindAllWithValue:value
+                    andTimeout:timeout
+             completionHandler:completionHandler];
     
 }
 
-- (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)sendFindAllWithValue:(id)value andTimeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
-    self.receivingStartDate = [NSDate date];
+    self.findAllStartTime = [NSDate date];
         
-    self.receiveTimeout = timeout;
+    self.findAllTimeout = timeout;
     
-    NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
+    NSDictionary *params = @{@"timeout": @(self.findAllTimeout),
                              @"completionHandler": completionHandler};
     
-    [self performSelector:@selector(checkReceiveTimeout:)
+    [self performSelector:@selector(checkFindAllTimeout:)
                withObject:params
                afterDelay:timeout];
     
@@ -626,10 +626,10 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
 }
 
-- (void)checkReceiveTimeout:(NSDictionary *)params {
+- (void)checkFindAllTimeout:(NSDictionary *)params {
     
     NSTimeInterval timeout = [params[@"timeout"] doubleValue];
-    NSTimeInterval elapsedTime = -self.receivingStartDate.timeIntervalSinceNow;
+    NSTimeInterval elapsedTime = -self.findAllStartTime.timeIntervalSinceNow;
     
     if (elapsedTime >= timeout) {
         
@@ -646,21 +646,19 @@ static NSString *kSocketDestroyMethod = @"destroy";
         
         completionHandler(NO, nil, error);
         
-//        [self.syncer socketReceiveTimeout];
-        
     }
 
 }
 
-- (void)cancelCheckReceiveTimeoutWithCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)cancelCheckFindAllTimeoutWithCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     if (completionHandler) {
     
-        NSDictionary *params = @{@"timeout": @(self.receiveTimeout),
+        NSDictionary *params = @{@"timeout": @(self.findAllTimeout),
                                  @"completionHandler": completionHandler};
         
         [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                           selector:@selector(checkReceiveTimeout:)
+                                                           selector:@selector(checkFindAllTimeout:)
                                                              object:params];
 
     }

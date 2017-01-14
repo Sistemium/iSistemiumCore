@@ -20,11 +20,11 @@
           andEntityResource:(NSString *)entityResource
                   forSyncer:(STMSyncer *)syncer;
 
-- (void)startReceiveDataFromResource:(NSString *)resourceString
-                            withETag:(NSString *)eTag
-                          fetchLimit:(NSInteger)fetchLimit
-                             timeout:(NSTimeInterval)timeout
-                              params:(NSDictionary *)params
-                   completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
+- (void)findAllFromResource:(NSString *)resourceString
+                   withETag:(NSString *)eTag
+                 fetchLimit:(NSInteger)fetchLimit
+                    timeout:(NSTimeInterval)timeout
+                     params:(NSDictionary *)params
+          completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 @end
