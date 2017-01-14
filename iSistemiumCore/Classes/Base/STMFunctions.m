@@ -41,12 +41,17 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (STMDateFormatter *)dateFormatterWithMilliseconds {
     
-    if (sharedDateFormatterWithMilliseconds) return sharedDateFormatterWithMilliseconds;
+    @synchronized (sharedDateFormatterWithMilliseconds) {
     
-    sharedDateFormatterWithMilliseconds = [[STMDateFormatter alloc] init];
-    sharedDateFormatterWithMilliseconds.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    sharedDateFormatterWithMilliseconds.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    sharedDateFormatterWithMilliseconds.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
+        if (sharedDateFormatterWithMilliseconds) return sharedDateFormatterWithMilliseconds;
+    
+        STMDateFormatter *dateFormatterWithMilliseconds = [[STMDateFormatter alloc] init];
+        dateFormatterWithMilliseconds.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        dateFormatterWithMilliseconds.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        dateFormatterWithMilliseconds.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
+        
+        sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
+    }
     
     return sharedDateFormatterWithMilliseconds;
     
@@ -54,12 +59,18 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (STMDateFormatter *)dateFormatterWithoutTime {
     
-    if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
+    @synchronized (sharedDateFormatterWithoutTime) {
     
-    sharedDateFormatterWithoutTime = [[STMDateFormatter alloc] init];
-    sharedDateFormatterWithoutTime.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    sharedDateFormatterWithoutTime.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    sharedDateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
+            if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
+    
+            STMDateFormatter *dateFormatterWithoutTime = [[STMDateFormatter alloc] init];
+            dateFormatterWithoutTime.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+            dateFormatterWithoutTime.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+            dateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
+        
+            sharedDateFormatterWithoutTime = dateFormatterWithoutTime;
+        
+    }
     
     return sharedDateFormatterWithoutTime;
     

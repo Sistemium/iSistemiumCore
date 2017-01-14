@@ -217,6 +217,9 @@ static STMPredicateToSQL *sharedInstance;
     if ([val isKindOfClass:[NSString class]]){
         return val;
     }
+    if ([val isKindOfClass:[NSDate class]]){
+        return [STMFunctions stringFromDate:val];
+    }
     if ([val isKindOfClass:[NSData class]]){
         return [[STMFunctions UUIDStringFromUUIDData:val] lowercaseString];
     }

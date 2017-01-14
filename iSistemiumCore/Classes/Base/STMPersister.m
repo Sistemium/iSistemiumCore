@@ -151,7 +151,7 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        if(returnSaved){
+        if(!returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
         }else{
@@ -160,11 +160,19 @@
         
     } else {
         
-        [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-            if (!sucess) {
-                [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
-            }
-        }];
+        if (options[@"roleName"]){
+            [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
+                if (!sucess) {
+                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
+                }
+            }];
+        }else{
+            [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
+                if (!sucess) {
+                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Relationship error %@", entityName]];
+                }
+            }];
+        }
         
         return attributes;
     }
@@ -189,7 +197,7 @@
     NSPredicate* predicate;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        predicate = [NSPredicate predicateWithFormat:@"id == %@",identifier];
+        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",identifier];
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
     }
@@ -207,21 +215,40 @@
 - (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger pageSize = [options[@"pageSize"] integerValue];
-    NSUInteger startPage = [options[@"startPage"] integerValue] - 1;
+    NSUInteger offset = [options[@"startPage"] integerValue];
+    if (offset) {
+        offset -= 1;
+        offset *= pageSize;
+    }
     NSString *orderBy = options[@"sortBy"];
     
+    // TODO: maybe could be simplified
+    NSMutableArray *predicates = [[NSMutableArray alloc] init];
+    
+    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %d", options[@"fantoms"] ? 1 : 0]];
+    
+    if (predicate) {
+        [predicates addObject:predicate];
+    }
+    
+    NSCompoundPredicate *predicateWithFantoms = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+    
     if (!orderBy) orderBy = @"id";
-    if (!startPage) startPage = 0;
-    if (!pageSize) pageSize = 0;
     
     if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
-        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName withPredicate:predicate];
+
+        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
+                                                 withPredicate:predicateWithFantoms
+                                                       orderBy:orderBy
+                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                                   fetchOffset:options[@"offset"] ? &offset : nil];
+
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
                                                                      ascending:YES
                                                                     fetchLimit:pageSize
-                                                                   fetchOffset:(pageSize * startPage)
+                                                                   fetchOffset:offset
                                                                    withFantoms:NO
                                                                      predicate:predicate
                                                                     resultType:NSDictionaryResultType

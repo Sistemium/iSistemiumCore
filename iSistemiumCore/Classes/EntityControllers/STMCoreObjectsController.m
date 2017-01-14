@@ -321,27 +321,20 @@
 #pragma mark - recieved objects management
 
 + (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
+
+    NSDictionary *options;
     
-    if (roleName) {
-        #warning move to Persisting protocol
-        [self setRelationshipsFromArray:array withCompletionHandler:^(BOOL success) {
-            completionHandler(success);
-        }];
-        
-        [[self document] saveDocument:^(BOOL success) {
-        }];
-        
-    } else {
-        
-        NSDictionary *options = @{@"lts": STMFunctions.stringFromNow};
-        
-        [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
-            completionHandler(YES);
-        }).catch(^(NSError *error){
-            completionHandler(NO);
-        });
-        
+    if (roleName){
+        options = @{@"lts": STMFunctions.stringFromNow,@"roleName":roleName};
+    }else{
+        options = @{@"lts": STMFunctions.stringFromNow};
     }
+    
+    [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
+        completionHandler(YES);
+    }).catch(^(NSError *error){
+        completionHandler(NO);
+    });
 
 }
 
@@ -1462,134 +1455,60 @@
 + (void)resolveFantoms {
     
     STMCoreObjectsController *objController = [self sharedController];
-    objController.isDefantomizingProcessRunning = YES;
     
     NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
     for (NSString *entityName in entityNamesWithResolveFantoms) {
         
-        NSFetchRequest *request = [self isFantomFetchRequestForEntityName:entityName];
-        
-        if (request) {
-
-            NSError *error;
-            NSArray *results = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+        NSError *error;
+        NSArray *results = [self.persistenceDelegate findAllSync:entityName predicate:nil options:@{@"fantoms":@YES} error:&error];
             
-            if (results.count > 0) {
-                
-                NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
+        if (results.count > 0) {
+            
+            NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
 
-                STMEntity *entity = [STMEntityController stcEntities][entityName];
+            STMEntity *entity = [STMEntityController stcEntities][entityName];
 
-                if (entity.url) {
+            if (entity.url) {
 
-                    for (STMDatum *fantomObject in results) {
-                        
-                        if ([self fantomObjectHaveRelationshipObjects:fantomObject]) {
-                        
-                            if (fantomObject.xid) {
-                                
-                                NSDictionary *fantomDic = @{@"entityName":entityName, @"xid":fantomObject.xid/*, @"isFantomResolving": @(YES)*/};
-                                
-                                if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
-                                    [objController.fantomsArray addObject:fantomDic];
-                                }
-                                
-                            }
-
-                        } else {
-                            
-                            NSString *logMessage = [NSString stringWithFormat:@"fantom object %@ %@ have no relationships objects, remove it", fantomObject.entity.name, fantomObject.xid];
-                            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
-                            
-                            [self removeObject:fantomObject];
-                            
-                        }
-                        
+                for (NSDictionary *fantomObject in results) {
+            
+                    NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
+                    
+                    if (![objController.notFoundFantomsArray containsObject:fantomDic] && ![objController.fantomsArray containsObject:fantomDic]) {
+                        [objController.fantomsArray addObject:fantomDic];
                     }
                     
-                } else {
-                    NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
                 }
-
+                
             } else {
-                NSLog(@"have no fantoms for %@", entityName);
+                NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
             }
-            
+
         } else {
-            NSLog(@"wrong entityName: %@", entityName);
+            NSLog(@"have no fantoms for %@", entityName);
         }
         
     }
+    
+    if (objController.fantomsArray.count > 0) {
+        
+        objController.isDefantomizingProcessRunning = YES;
 
-//    if (objController.fantomsArray.count > 0) {
-//        
-//        NSLog(@"DEFANTOMIZING_START");
-//        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-//                                                            object:objController
-//                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
-//        
-//        [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
-//        
-//    } else {
-//    
-//        NSLog(@"DEFANTOMIZING_FINISH");
-//        
-//        objController.isDefantomizingProcessRunning = NO;
-//        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-//                                                            object:objController
-//                                                          userInfo:nil];
-//
-//        [objController.notFoundFantomsArray removeAllObjects];
-//        [[self document] saveDocument:^(BOOL success) {
-//            
-//        }];
-//        
-//    }
+        NSLog(@"DEFANTOMIZING_START");
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                            object:objController
+                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+        
+        [self requestFantomObjectWithParameters:objController.fantomsArray.lastObject];
+        
+    } else {
+        [self stopDefantomizing];
+    }
 
 }
 
-+ (BOOL)fantomObjectHaveRelationshipObjects:(STMDatum *)fantomObject {
-
-    BOOL result = NO;
-    
-    NSString *entityName = fantomObject.entity.name;
-    
-    NSDictionary *toOneRelationships = [self toOneRelationshipsForEntityName:entityName];
-    
-    for (NSString *toOneKey in toOneRelationships.allKeys) {
-        
-        if ([fantomObject valueForKey:toOneKey]) {
-            
-            result = YES;
-            break;
-            
-        }
-        
-    }
-    
-    if (result) return result;
-    
-    NSDictionary *toManyRelationships = [self toManyRelationshipsForEntityName:entityName];
-    
-    for (NSString *toManyKey in toManyRelationships.allKeys) {
-        
-        NSSet *relObjects = [fantomObject valueForKey:toManyKey];
-        
-        if (relObjects.count > 0) {
-
-            result = YES;
-            break;
-            
-        }
-        
-    }
-    
-    return result;
-    
-}
 
 + (void)requestFantomObjectWithParameters:(NSDictionary *)parameters {
     
@@ -1614,20 +1533,9 @@
         }
         
         NSString *resource = entity.url;
+        NSString *xidString = parameters[@"id"];
         
-        NSString *xidString = nil;
-        BOOL isEmptyXid = NO;
-        id xidParameter = parameters[@"xid"];
-        
-        NSData *xid = (NSData *)xidParameter;
-        
-        if (!xid || xid.length == 0) {
-            isEmptyXid = YES;
-        } else {
-            xidString = [STMFunctions UUIDStringFromUUIDData:xid];
-        }
-        
-        if (isEmptyXid) {
+        if (!xidString) {
             
             NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", parameters];
             
@@ -1676,7 +1584,7 @@
     [objController.fantomsArray removeObject:fantomDic];
     
     NSString *entityName = fantomDic[@"entityName"];
-    NSData *fantomXid = fantomDic[@"xid"];
+    NSString *fantomXid = fantomDic[@"id"];
 
     if (successfully) {
         
@@ -1696,7 +1604,9 @@
                                                             object:objController
                                                           userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
 
-        [self requestFantomObjectWithParameters:objController.fantomsArray.firstObject];
+        NSDictionary *nextFantom = objController.fantomsArray.lastObject;
+        [objController.fantomsArray removeLastObject];
+        [self requestFantomObjectWithParameters:nextFantom];
         
     } else {
         
@@ -1720,6 +1630,7 @@
 
 }
 
+#warning need to do with persister
 + (NSFetchRequest *)isFantomFetchRequestForEntityName:(NSString *)entityName {
     
     if ([[self localDataModelEntityNames] containsObject:entityName]) {

@@ -1484,15 +1484,7 @@
             
             NSLog(@"DEFANTOMIZATION ERROR!");
 
-            if (!xid) {
-                
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization error: have no id in response, use context fantomId value"
-                                                         numType:STMLogMessageTypeError];
-                xid = [STMFunctions xidDataFromXidString:contextDic[@"fantomId"]];
-                
-            }
-
-            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":xid}
+            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"id":contextDic[@"fantomId"]}
                                                 successfully:NO];
             
         }
@@ -1568,22 +1560,23 @@
     
     NSDictionary *options = @{@"lts": [STMFunctions stringFromNow]};
     
-    [[self persistenceDelegate] merge:entityName attributes:responseData options:options].then(^(NSDictionary *result){
+    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
         
         if (![context[@"requestType"] isEqualToString:@"defantomize"]) return;
         
-        NSData *fantomXid = xid ? xid : [STMFunctions xidDataFromXidString:context[@"fantomId"]];
+        NSString *fantomId = context[@"fantomId"];
         
-        if (!xid) {
-            
+        if (!fantomId) {
             [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization: have no id in response, use context fantomId value"
                                                      numType:STMLogMessageTypeError];
         }
-
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"xid":fantomXid}
-                                            successfully:YES];
         
-    });
+       
+        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"id":fantomId}
+                                                successfully:!error];
+    
+    }];
+    
     
 }
 
