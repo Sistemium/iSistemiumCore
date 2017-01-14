@@ -13,10 +13,6 @@
 #import "STMSyncer.h"
 #import "STMDocument.h"
 
-#import "STMPersistingPromised.h"
-#import "STMPersistingAsync.h"
-#import "STMPersistingSync.h"
-
 #import "STMSocketTransport.h"
 #import "STMDataSyncing.h"
 #import "STMSyncerHelper.h"
@@ -46,9 +42,11 @@
 // new
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, weak) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>persistenceDelegate;
 @property (nonatomic, strong) STMSocketTransport *socketTransport;
 @property (nonatomic, strong) id <STMDataSyncing>dataSyncingDelegate;
+@property (nonatomic, strong) STMSyncerHelper *syncerHelper;
+
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) NSTimer *syncTimer;
@@ -135,7 +133,11 @@
         
         self.document = (STMDocument *)session.document;
         self.persistenceDelegate = session.persistenceDelegate;
-        self.dataSyncingDelegate = [[STMSyncerHelper alloc] init];
+        
+        self.syncerHelper = [[STMSyncerHelper alloc] init];
+        self.syncerHelper.persistenceDelegate = session.persistenceDelegate;
+        
+        self.dataSyncingDelegate = self.syncerHelper;
 
         _session = session;
         
@@ -613,42 +615,6 @@
 
 }
 
-- (void)receivingDidFinish {
-    [self receivingDidFinishWithError:nil];
-}
-
-- (void)receivingDidFinishWithError:(NSString *)errorString {
-    
-    self.receivingData = NO;
-
-    if (errorString) {
-
-        NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
-        
-    } else {
-        
-        [self saveReceiveDate];
-        [STMCoreObjectsController dataLoadingFinished];
-        
-    }
-    
-}
-
-- (void)saveReceiveDate {
-    
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [defaults setObject:receiveDateString forKey:key];
-    [defaults synchronize];
-    
-}
-
 - (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
     
     if ([entityName isEqualToString:@"STMEntity"]) {
@@ -695,6 +661,59 @@
     
     [self fillETagWithTemporaryValueForEntityName:entityName];
     [self checkConditionForReceivingEntityWithName:entityName];
+    
+}
+
+- (void)receivingDidFinish {
+    [self receivingDidFinishWithError:nil];
+}
+
+- (void)receivingDidFinishWithError:(NSString *)errorString {
+    
+    self.isReceivingData = NO;
+    
+    if (errorString) {
+        
+        NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
+        
+    } else {
+        
+#warning - do it only if have no error or always?
+        [self saveReceiveDate];
+        [STMCoreObjectsController dataLoadingFinished];
+        [self startDefantomization];
+        
+    }
+    
+}
+
+- (void)saveReceiveDate {
+    
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+    
+    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+    
+    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [defaults setObject:receiveDateString forKey:key];
+    [defaults synchronize];
+    
+}
+
+
+#pragma mark - defantomization
+
+- (void)startDefantomization {
+    
+    self.isDefantomizing = YES;
+    
+    [self.syncerHelper findFantomsWithCompletionHandler:^(NSArray *fantomsArray) {
+        
+        NSLog(@"fantomsArray: %@", fantomsArray);
+        
+    }];
     
 }
 

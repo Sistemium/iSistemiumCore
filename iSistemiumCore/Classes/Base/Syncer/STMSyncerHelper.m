@@ -7,9 +7,16 @@
 //
 
 #import "STMSyncerHelper.h"
+
 #import "STMConstants.h"
+#import "STMEntityController.h"
+
 
 @interface STMSyncerHelper()
+
+@property (nonatomic, strong) NSMutableArray *fantomsArray;
+@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+
 
 @end
 
@@ -28,6 +35,24 @@
 
 - (void)customInit {
     [self addObservers];
+}
+
+- (NSMutableArray *)fantomsArray {
+    
+    if (!_fantomsArray) {
+        _fantomsArray = @[].mutableCopy;
+    }
+    return _fantomsArray;
+    
+}
+
+- (NSMutableArray *)notFoundFantomsArray {
+    
+    if (!_notFoundFantomsArray) {
+        _notFoundFantomsArray = @[].mutableCopy;
+    }
+    return _notFoundFantomsArray;
+    
 }
 
 
@@ -51,6 +76,75 @@
 
 - (void)persisterHaveUnsyncedObjects:(NSNotification *)notification {
     NSLogMethodName;
+}
+
+
+#pragma mark - defantomization
+
+- (void)findFantomsWithCompletionHandler:(void (^)(NSArray *fantomsArray))completionHandler {
+    
+    NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
+    
+    for (NSString *entityName in entityNamesWithResolveFantoms) {
+        
+        STMEntity *entity = [STMEntityController stcEntities][entityName];
+        
+        if (!entity.url) {
+            
+            NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
+            continue;
+            
+        }
+
+        NSError *error = nil;
+        NSArray *results = [self.persistenceDelegate findAllSync:entityName
+                                                       predicate:nil
+                                                         options:@{@"fantoms":@YES}
+                                                           error:&error];
+        
+        if (results.count > 0) {
+            
+            NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
+
+            for (NSDictionary *fantomObject in results) {
+                
+                if (!fantomObject[@"id"]) {
+
+                    NSLog(@"fantomObject have no id: %@", fantomObject);
+                    continue;
+                    
+                }
+
+                NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
+
+                if ([self.notFoundFantomsArray containsObject:fantomDic] || [self.fantomsArray containsObject:fantomDic]) {
+                    continue;
+                }
+
+                [self.fantomsArray addObject:fantomDic];
+
+            }
+
+        } else {
+            NSLog(@"have no fantoms for %@", entityName);
+        }
+        
+    }
+    
+    if (self.fantomsArray.count > 0) {
+        
+        NSLog(@"DEFANTOMIZING_START");
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                            object:self
+                                                          userInfo:@{@"fantomsCount": @(self.fantomsArray.count)}];
+        
+        completionHandler(self.fantomsArray);
+        
+    } else {
+        completionHandler(nil);
+    }
+    
 }
 
 
