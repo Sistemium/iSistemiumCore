@@ -28,7 +28,7 @@
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 - (void)findFromResource:(NSString *)resource
-                      id:(NSString *)objectId
+                objectId:(NSString *)objectId
                  timeout:(NSTimeInterval)timeout
        completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
