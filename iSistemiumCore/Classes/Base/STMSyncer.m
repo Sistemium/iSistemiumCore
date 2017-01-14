@@ -63,6 +63,7 @@
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
 
 @property (nonatomic) NSUInteger entityCount;
+@property (atomic) NSUInteger fantomsCount;
 
 @property (nonatomic, strong) NSString *subscriptionId;
 @property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
@@ -540,9 +541,7 @@
                                             blockIsComplete = YES;
                                              
                                             if (success) {
-                                                 
-                                                NSLog(@"completionHandler");
-                                                 
+
                                                 [self socketReceiveJSDataAck:data];
                                                  
                                             } else {
@@ -589,13 +588,7 @@
         
     }
     
-    self.entityCount -= 1;
-    
-    if (self.entityCount == 0) {
-        
-        [self receivingDidFinish];
-        
-    } else {
+    if (--self.entityCount) {
         
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
         
@@ -610,6 +603,10 @@
             [self receivingDidFinish];
             
         }
+        
+    } else {
+        
+        [self receivingDidFinish];
         
     }
 
@@ -707,20 +704,130 @@
 
 - (void)startDefantomization {
     
+    if (self.isDefantomizing) {
+        return;
+    }
+    
     self.isDefantomizing = YES;
     
-    [self.syncerHelper findFantomsWithCompletionHandler:^(NSArray *fantomsArray) {
+    [self.syncerHelper findFantomsWithCompletionHandler:^(NSArray <NSDictionary *> *fantomsArray) {
         
-        NSLog(@"fantomsArray: %@", fantomsArray);
+        if (fantomsArray) {
+        
+            NSLog(@"fantomsArray: %@", fantomsArray);
+            
+            self.fantomsCount = fantomsArray.count;
+
+            for (NSDictionary *fantomDic in fantomsArray) {
+                [self defantomizeObject:fantomDic];
+            }
+            
+        } else {
+            
+            self.isDefantomizing = NO;
+            [self.syncerHelper defantomizingFinished];
+            
+        }
         
     }];
     
+}
+
+- (void)defantomizeObject:(NSDictionary *)fantomDic {
+    
+    NSString *entityName = fantomDic[@"entityName"];
+    
+    if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
+        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+    }
+    
+    __block STMEntity *entity = [STMEntityController stcEntities][entityName];
+    
+    if (!entity.url) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
+        [self defantomizeObject:fantomDic
+                          error:errorMessage];
+        
+        return;
+        
+    }
+
+    NSString *resource = entity.url;
+    NSString *fantomId = fantomDic[@"id"];
+    
+    if (!fantomId) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
+        [self defantomizeObject:fantomDic
+                          error:errorMessage];
+        
+        return;
+        
+    }
+    
+    __block BOOL blockIsComplete = NO;
+    
+    [self.socketTransport findFromResource:resource
+                                  objectId:fantomId
+                                   timeout:[self timeout]
+                         completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+                             
+                             if (blockIsComplete) {
+                                 NSLog(@"completionHandler for %@ already complete", entityName);
+                                 return;
+                             }
+                             
+                             blockIsComplete = YES;
+                             
+                             if (success) {
+                                 
+                                 NSDictionary *context = @{@"id"    : DEFANTOMIZING_CONTEXT,
+                                                           @"object": fantomDic};
+                                 
+                                 [self socketReceiveJSDataAck:data
+                                                      context:context];
+                                 
+                             } else {
+                                 
+                                 [self defantomizeObject:fantomDic
+                                                   error:error.localizedDescription];
+                                 
+                             }
+                             
+                         }];
+    
+}
+
+- (void)defantomizeObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
+    
+    NSLog(@"defantomizeObject: %@ error: %@", fantomDic, errorString);
+    
+    [self.syncerHelper defantomizeErrorWithObject:fantomDic];
+    
+    [self fantomsCountDecrease];
+    
+}
+
+- (void)fantomsCountDecrease {
+
+    if (!--self.fantomsCount) {
+        
+        self.isDefantomizing = NO;
+        [self startDefantomization];
+        
+    }
+
 }
 
 
 #pragma mark - socket ack handlers
 
 - (void)socketReceiveJSDataAck:(NSArray *)data {
+    [self socketReceiveJSDataAck:data context:nil];
+}
+
+- (void)socketReceiveJSDataAck:(NSArray *)data context:(NSDictionary *)context {
     
     NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
     
@@ -734,7 +841,8 @@
                                    andErrorString:errorMessage
                                        entityName:nil
                                               xid:nil
-                                         response:nil];
+                                         response:nil
+                                          context:context];
         
         [self socketReceiveJSDataUpdateAckErrorCode:nil
                                      andErrorString:errorMessage
@@ -762,7 +870,8 @@
                 withResponse:response
                     resource:resource
                   entityName:entityName
-                   errorCode:errorCode];
+                   errorCode:errorCode
+                     context:context];
         
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
         
@@ -777,7 +886,7 @@
 }
 
 
-#pragma mark findAll ack handlers
+#pragma mark findAll ack handler
 
 - (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
@@ -824,6 +933,7 @@
                 BOOL isLastPage = responseData.count < pageSize;
                 
                 if (entityName) self.temporaryETag[entityName] = offset;
+                
                 [self parseSocketFindAllResponseData:responseData
                                        forEntityName:entityName
                                           isLastPage:isLastPage];
@@ -898,6 +1008,136 @@
         }];
         
     }
+    
+}
+
+
+#pragma mark find ack handler
+
+- (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode context:(NSDictionary *)context {
+    
+    NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
+    
+    if (errorCode) {
+        
+        [self socketReceiveJSDataFindAckErrorCode:errorCode
+                                   andErrorString:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]
+                                       entityName:entityName
+                                              xid:xid
+                                         response:response
+                                          context:context];
+        
+        return;
+        
+    }
+    
+    if (!resource) {
+        
+        [self socketReceiveJSDataFindAckErrorCode:errorCode
+                                   andErrorString:@"ERROR: have no resource string in response"
+                                       entityName:entityName
+                                              xid:xid
+                                         response:response
+                                          context:context];
+        return;
+        
+    }
+    
+    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+    
+    if (!responseData) {
+        
+        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
+        [self socketReceiveJSDataFindAckErrorCode:errorCode
+                                   andErrorString:errorString
+                                       entityName:entityName
+                                              xid:xid
+                                         response:response
+                                          context:context];
+        return;
+        
+    }
+    
+    xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
+    
+    [self parseFindAckResponseData:responseData
+                    withEntityName:entityName
+                               xid:xid
+                           context:context];
+    
+}
+
+- (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid response:(NSDictionary *)response context:(NSDictionary *)context {
+    
+    BOOL defantomizing = [context[@"id"] isEqualToString:DEFANTOMIZING_CONTEXT];
+    
+    if (defantomizing) {
+        
+        [self defantomizeObject:context[@"object"]
+                          error:errorString];
+        
+    }
+
+    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
+        
+    }
+
+    NSLog(@"find errorCode: %@", errorCode);
+    NSLog(@"find error: %@", errorString);
+    
+}
+
+- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
+    
+    BOOL defantomizing = [context[@"id"] isEqualToString:DEFANTOMIZING_CONTEXT];
+    
+    //    NSLog(@"find responseData %@", responseData);
+    
+    if (!entityName) {
+
+        NSString *errorMessage = @"Syncer parseFindAckResponseData !entityName";
+        
+        if (defantomizing) {
+        
+            [self defantomizeObject:context[@"object"]
+                              error:errorMessage];
+
+        } else {
+        
+            [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage
+                                                     numType:STMLogMessageTypeError];
+
+        }
+        
+        return;
+        
+    }
+    
+    NSDictionary *options = @{@"lts": [STMFunctions stringFromNow]};
+    
+    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+
+        if (defantomizing) {
+            
+            NSDictionary *object = context[@"object"];
+        
+            if (success) {
+                
+                NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
+                
+                [self fantomsCountDecrease];
+                
+            } else {
+                
+                [self defantomizeObject:object
+                                  error:error.localizedDescription];
+                
+            }
+
+        }
+        
+    }];
+    
     
 }
 
@@ -1442,57 +1682,6 @@
 
 #pragma mark - socket receive ack handler
 
-- (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
-    
-    NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
-
-    if (errorCode) {
-        
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response];
-    
-        return;
-        
-    }
-    
-    if (!resource) {
-
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:@"ERROR: have no resource string in response"
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response];
-        return;
-        
-    }
-
-    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-    
-    if (!responseData) {
-        
-        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:errorString
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response];
-        return;
-        
-    }
-    
-    xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
-    NSDictionary *contextDic = ([response[@"context"] isKindOfClass:[NSDictionary class]]) ? response[@"context"] : nil;
-    
-    [self parseFindAckResponseData:responseData
-                    withEntityName:entityName
-                               xid:xid
-                           context:contextDic];
-
-}
-
 - (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
     
     NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
@@ -1513,35 +1702,6 @@
     
     [self parseUpdateAckResponseData:responseData];
 
-}
-
-- (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid response:(NSDictionary *)response {
-    
-    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
-
-        [STMCoreObjectsController stopDefantomizing];
-        
-    } else {
-
-        NSLog(@"%@", errorString);
-        
-        if (!entityName) entityName = @"";
-        
-        NSDictionary *contextDic = ([response[@"context"] isKindOfClass:[NSDictionary class]]) ? response[@"context"] : nil;
-
-        if ([contextDic[@"requestType"] isEqualToString:@"defantomize"]) {
-            
-            NSLog(@"DEFANTOMIZATION ERROR!");
-
-            [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"id":contextDic[@"fantomId"]}
-                                                successfully:NO];
-            
-        }
-        
-        [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
-
-    }
-    
 }
 
 - (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
@@ -1596,39 +1756,6 @@
     }
     
 }
-
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
-
-    //    NSLog(@"find responseData %@", responseData);
-
-    if (!entityName) {
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer parseFindAckResponseData !entityName"
-                                                 numType:STMLogMessageTypeError];
-        return;
-    }
-    
-    NSDictionary *options = @{@"lts": [STMFunctions stringFromNow]};
-    
-    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-        
-        if (![context[@"requestType"] isEqualToString:@"defantomize"]) return;
-        
-        NSString *fantomId = context[@"fantomId"];
-        
-        if (!fantomId) {
-            [[STMLogger sharedLogger] saveLogMessageWithText:@"defantomization: have no id in response, use context fantomId value"
-                                                     numType:STMLogMessageTypeError];
-        }
-        
-       
-        [STMCoreObjectsController didFinishResolveFantom:@{@"entityName":entityName, @"id":fantomId}
-                                                successfully:!error];
-    
-    }];
-    
-    
-}
-
 
 - (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
 
