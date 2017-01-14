@@ -53,6 +53,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
         
         return sharedDateFormatterWithMilliseconds;
+        
     }
     
 }
@@ -69,12 +70,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         dateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
     
         sharedDateFormatterWithoutTime = dateFormatterWithoutTime;
-<<<<<<< HEAD
-=======
-    
-    
+
         return sharedDateFormatterWithoutTime;
->>>>>>> persisting
         
     }
     
