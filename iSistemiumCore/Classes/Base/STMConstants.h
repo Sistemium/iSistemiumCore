@@ -52,6 +52,8 @@
 #define DATA_CACHE_PATH @"dataCache"
 #define IMAGES_CACHE_PATH @"images"
 
+#define DEFANTOMIZING_CONTEXT @"defantomizingContext"
+
 // Notification's names
 
 #define NOTIFICATION_SYNCER_INIT_SUCCESSFULLY @"Syncer init successfully"
