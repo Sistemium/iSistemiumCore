@@ -56,8 +56,10 @@
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
 
-@property (nonatomic) BOOL running;
-@property (nonatomic) BOOL receivingData;
+@property (nonatomic) BOOL isRunning;
+@property (nonatomic) BOOL isReceivingData;
+@property (nonatomic) BOOL isDefantomizing;
+@property (nonatomic) BOOL isUsingNetwork;
 
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
@@ -192,20 +194,48 @@
     
 }
 
-- (void)setReceivingData:(BOOL)receivingData {
-    
-    if (_receivingData != receivingData) {
-        
-        _receivingData = receivingData;
-        
-        if (receivingData) {
+- (void)setIsReceivingData:(BOOL)isReceivingData {
+
+    if (_isReceivingData != isReceivingData) {
+
+        _isReceivingData = isReceivingData;
+
+        if (isReceivingData) {
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         } else {
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+            [self turnOffNetworkActivityIndicator];
+        }
+        
+    }
+
+}
+
+- (void)setIsDefantomizing:(BOOL)isDefantomizing {
+    
+    if (_isDefantomizing != isDefantomizing) {
+        
+        _isDefantomizing = isDefantomizing;
+        
+        if (isDefantomizing) {
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        } else {
+            [self turnOffNetworkActivityIndicator];
         }
         
     }
     
+}
+
+- (void)turnOffNetworkActivityIndicator {
+    
+    if (!self.isUsingNetwork) {
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    }
+
+}
+
+- (BOOL)isUsingNetwork {
+    return self.isReceivingData || self.isDefantomizing;
 }
 
 - (NSTimeInterval)timeout {
@@ -217,7 +247,7 @@
 
 - (void)startSyncer {
     
-    if (!self.running && self.session.status == STMSessionRunning) {
+    if (!self.isRunning && self.session.status == STMSessionRunning) {
         
         self.settings = nil;
         
@@ -260,7 +290,7 @@
                     
                 }
                 
-                self.running = YES;
+                self.isRunning = YES;
                 
             } else {
                 
@@ -421,9 +451,9 @@
 
 - (void)receiveData {
     
-    if (!self.receivingData) {
+    if (!self.isReceivingData) {
      
-        self.receivingData = YES;
+        self.isReceivingData = YES;
         
         if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
             
@@ -966,7 +996,7 @@
 
 - (void)setSyncerState:(STMSyncerState)syncerState {
     
-    if (self.running && !self.syncing && syncerState != _syncerState) {
+    if (self.isRunning && !self.syncing && syncerState != _syncerState) {
 
         STMSyncerState previousState = _syncerState;
         
@@ -1070,7 +1100,7 @@
 
 - (void)stopSyncer {
     
-    if (self.running) {
+    if (self.isRunning) {
         
         [STMSocketController closeSocket];
         
@@ -1079,7 +1109,7 @@
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         self.settings = nil;
-        self.running = NO;
+        self.isRunning = NO;
         
     }
 
