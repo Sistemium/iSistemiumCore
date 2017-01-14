@@ -144,6 +144,14 @@
     
 }
 
+- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic {
+    
+    @synchronized (self.notFoundFantomsArray) {
+        [self.notFoundFantomsArray addObject:fantomDic];
+    }
+    
+}
+
 - (void)defantomizingFinished {
     
     NSLog(@"DEFANTOMIZING_FINISHED");
