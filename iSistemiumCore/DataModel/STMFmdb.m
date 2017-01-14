@@ -330,7 +330,8 @@ FMDatabasePool *pool;
         [rez addObject:[s resultDictionary]];
     }
     
-    return rez;
+    // there will be memory warnings loading catalogue on an old device if no copy
+    return rez.copy;
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
