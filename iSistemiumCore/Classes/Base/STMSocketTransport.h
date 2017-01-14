@@ -27,4 +27,10 @@
                      params:(NSDictionary *)params
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
+- (void)findFromResource:(NSString *)resource
+                      id:(NSString *)objectId
+                 timeout:(NSTimeInterval)timeout
+       completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
+
+
 @end

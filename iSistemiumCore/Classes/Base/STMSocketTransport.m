@@ -43,8 +43,8 @@ static NSString *kSocketDestroyMethod = @"destroy";
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isAuthorized;
 
-@property (nonatomic) NSTimeInterval findAllTimeout;
-@property (nonatomic, strong) NSDate *findAllStartTime;
+//@property (nonatomic) NSTimeInterval findAllTimeout;
+//@property (nonatomic, strong) NSDate *findAllStartTime;
 
 
 @end
@@ -325,7 +325,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 #pragma mark - send events
 
-- (void)sendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)sendEvent:(STMSocketEvent)event withValue:(id)value context:(NSDictionary *)context completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     [self logSendEvent:event withValue:value];
     
@@ -337,22 +337,13 @@ static NSString *kSocketDestroyMethod = @"destroy";
                 
                 NSLog(@"STMSocketEventJSData value: %@", value);
                 
-                NSString *method = value[@"method"];
-
-                if ([method isEqualToString:@"update"]) {
-
-//                    [self sharedInstance].isSendingData = YES;
-//                    [self sharedInstance].sendingDate = [NSDate date];
-
-                }
-
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
 
                 NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
 
                 [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
 
-                    [self cancelCheckFindAllTimeoutWithCompletionHandler:completionHandler];
+                    [self cancelCheckFindTimeoutWithContext:context];
                     completionHandler(YES, data, nil);
 
                 });
@@ -587,6 +578,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 
 #pragma mark - receiving data
+#pragma mark findAll
 
 - (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
@@ -603,33 +595,47 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
     if (params) value[@"params"] = params;
     
-    [self sendFindAllWithValue:value
-                    andTimeout:timeout
-             completionHandler:completionHandler];
+    NSDictionary *context = @{@"startTime"           : [NSDate date],
+                              @"timeout"             : @(timeout),
+                              @"completionHandler"   : completionHandler};
     
-}
-
-- (void)sendFindAllWithValue:(id)value andTimeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    self.findAllStartTime = [NSDate date];
-        
-    self.findAllTimeout = timeout;
-    
-    NSDictionary *params = @{@"timeout": @(self.findAllTimeout),
-                             @"completionHandler": completionHandler};
-    
-    [self performSelector:@selector(checkFindAllTimeout:)
-               withObject:params
+    [self performSelector:@selector(checkFindTimeout:)
+               withObject:context
                afterDelay:timeout];
     
-    [self sendEvent:STMSocketEventJSData withValue:value completionHandler:completionHandler];
+    [self sendEvent:STMSocketEventJSData withValue:value context:context completionHandler:completionHandler];
     
 }
 
-- (void)checkFindAllTimeout:(NSDictionary *)params {
+
+#pragma mark find
+
+- (void)findFromResource:(NSString *)resource id:(NSString *)objectId timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
-    NSTimeInterval timeout = [params[@"timeout"] doubleValue];
-    NSTimeInterval elapsedTime = -self.findAllStartTime.timeIntervalSinceNow;
+    NSDictionary *value = @{@"method"   : kSocketFindMethod,
+                            @"resource" : resource,
+                            @"id"       : objectId};
+
+    NSDictionary *context = @{@"startTime"           : [NSDate date],
+                              @"timeout"             : @(timeout),
+                              @"completionHandler"   : completionHandler};
+    
+    [self performSelector:@selector(checkFindTimeout:)
+               withObject:context
+               afterDelay:timeout];
+    
+    [self sendEvent:STMSocketEventJSData withValue:value context:context completionHandler:completionHandler];
+    
+}
+
+
+#pragma mark check timeouts
+
+- (void)checkFindTimeout:(NSDictionary *)context {
+    
+    NSTimeInterval timeout = [context[@"timeout"] doubleValue];
+    NSDate *startTime = context[@"startTime"];
+    NSTimeInterval elapsedTime = -startTime.timeIntervalSinceNow;
     
     if (elapsedTime >= timeout) {
         
@@ -637,7 +643,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
         [self sendEvent:STMSocketEventInfo
               withValue:errorString];
         
-        void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = params[@"completionHandler"];
+        void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = context[@"completionHandler"];
         
         NSError *error = nil;
         
@@ -647,21 +653,14 @@ static NSString *kSocketDestroyMethod = @"destroy";
         completionHandler(NO, nil, error);
         
     }
-
+    
 }
 
-- (void)cancelCheckFindAllTimeoutWithCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)cancelCheckFindTimeoutWithContext:(NSDictionary *)context {
     
-    if (completionHandler) {
-    
-        NSDictionary *params = @{@"timeout": @(self.findAllTimeout),
-                                 @"completionHandler": completionHandler};
-        
-        [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                           selector:@selector(checkFindAllTimeout:)
-                                                             object:params];
-
-    }
+    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
+                                                       selector:@selector(checkFindTimeout:)
+                                                         object:context];
     
 }
 
