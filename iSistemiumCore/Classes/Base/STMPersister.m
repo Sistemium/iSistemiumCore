@@ -326,9 +326,11 @@
 }
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler{
+    
     __block NSArray* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
+    
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self findAllSync:entityName predicate:predicate options:options error:&error];
@@ -337,16 +339,18 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self findAllSync:entityName predicate:predicate options:options error:&error];
         completionHandler(success,result,error);
     }
 }
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
+    
     __block NSDictionary* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
+    
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeSync:entityName attributes:attributes options:options error:&error];
@@ -355,16 +359,18 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         completionHandler(success,result,error);
     }
 }
 
 - (void)mergeManyAsync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler{
+    
     __block NSArray* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
+    
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
@@ -373,7 +379,7 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
         completionHandler(success,result,error);
     }
