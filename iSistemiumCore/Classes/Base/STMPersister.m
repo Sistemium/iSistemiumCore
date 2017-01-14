@@ -133,7 +133,7 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
         [[STMFmdb sharedInstance] startTransaction];
         
@@ -180,7 +180,7 @@
 
 - (BOOL)saveWithEntityName:(NSString *)entityName{
     
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         return [[STMFmdb sharedInstance] commit];
     } else {
         [[self document] saveDocument:^(BOOL success){}];
@@ -196,7 +196,7 @@
     
     NSPredicate* predicate;
     
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",identifier];
     }else{
         predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
@@ -235,7 +235,7 @@
     
     if (!orderBy) orderBy = @"id";
     
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
 
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
@@ -311,7 +311,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self findSync:entityName id:identifier options:options error:&error];
             if(error){
@@ -326,10 +326,12 @@
 }
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler{
+    
     __block NSArray* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self findAllSync:entityName predicate:predicate options:options error:&error];
             if(error){
@@ -337,17 +339,19 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self findAllSync:entityName predicate:predicate options:options error:&error];
         completionHandler(success,result,error);
     }
 }
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
+    
     __block NSDictionary* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeSync:entityName attributes:attributes options:options error:&error];
             if(error){
@@ -355,17 +359,19 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         completionHandler(success,result,error);
     }
 }
 
 - (void)mergeManyAsync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler{
+    
     __block NSArray* result;
     __block BOOL success = YES;
     __block NSError* error = nil;
-    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+    
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
             if(error){
@@ -373,7 +379,7 @@
             }
             completionHandler(success,result,error);
         });
-    }else{
+    } else {
         result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
         completionHandler(success,result,error);
     }
