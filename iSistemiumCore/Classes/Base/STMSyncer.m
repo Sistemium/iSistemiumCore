@@ -816,6 +816,12 @@
         self.isDefantomizing = NO;
         [self startDefantomization];
         
+    } else {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                                            object:self
+                                                          userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
+
     }
 
 }
