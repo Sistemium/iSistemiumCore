@@ -51,9 +51,9 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         dateFormatterWithMilliseconds.dateFormat = DATE_FORMAT_WITH_MILLISECONDS;
         
         sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
+        
+        return sharedDateFormatterWithMilliseconds;
     }
-    
-    return sharedDateFormatterWithMilliseconds;
     
 }
 
@@ -61,18 +61,19 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
     @synchronized (sharedDateFormatterWithoutTime) {
     
-            if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
+        if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
+
+        STMDateFormatter *dateFormatterWithoutTime = [[STMDateFormatter alloc] init];
+        dateFormatterWithoutTime.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        dateFormatterWithoutTime.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        dateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
     
-            STMDateFormatter *dateFormatterWithoutTime = [[STMDateFormatter alloc] init];
-            dateFormatterWithoutTime.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-            dateFormatterWithoutTime.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-            dateFormatterWithoutTime.dateFormat = DATE_FORMAT_WITHOUT_TIME;
-        
-            sharedDateFormatterWithoutTime = dateFormatterWithoutTime;
+        sharedDateFormatterWithoutTime = dateFormatterWithoutTime;
+    
+    
+        return sharedDateFormatterWithoutTime;
         
     }
-    
-    return sharedDateFormatterWithoutTime;
     
 }
 
