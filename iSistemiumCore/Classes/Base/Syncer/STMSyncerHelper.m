@@ -14,7 +14,6 @@
 
 @interface STMSyncerHelper()
 
-@property (nonatomic, strong) NSMutableArray *fantomsArray;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 
 
@@ -22,6 +21,7 @@
 
 
 @implementation STMSyncerHelper
+
 
 - (instancetype)init {
     
@@ -35,15 +35,6 @@
 
 - (void)customInit {
     [self addObservers];
-}
-
-- (NSMutableArray *)fantomsArray {
-    
-    if (!_fantomsArray) {
-        _fantomsArray = @[].mutableCopy;
-    }
-    return _fantomsArray;
-    
 }
 
 - (NSMutableArray *)notFoundFantomsArray {
@@ -83,6 +74,8 @@
 
 - (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler {
     
+    NSMutableArray <NSDictionary *> *fantomsArray = @[].mutableCopy;
+    
     NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
     for (NSString *entityName in entityNamesWithResolveFantoms) {
@@ -117,11 +110,15 @@
 
                 NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
 
-                if ([self.notFoundFantomsArray containsObject:fantomDic] || [self.fantomsArray containsObject:fantomDic]) {
-                    continue;
+                @synchronized (self.notFoundFantomsArray) {
+
+                    if ([self.notFoundFantomsArray containsObject:fantomDic]) {
+                        continue;
+                    }
+
                 }
 
-                [self.fantomsArray addObject:fantomDic];
+                [fantomsArray addObject:fantomDic];
 
             }
 
@@ -131,15 +128,15 @@
         
     }
     
-    if (self.fantomsArray.count > 0) {
+    if (fantomsArray.count > 0) {
         
         NSLog(@"DEFANTOMIZING_START");
         
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
                                                             object:self
-                                                          userInfo:@{@"fantomsCount": @(self.fantomsArray.count)}];
+                                                          userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
 
-        completionHandler(self.fantomsArray);
+        completionHandler(fantomsArray);
         
     } else {
         completionHandler(nil);
@@ -155,7 +152,6 @@
                                                         object:self
                                                       userInfo:nil];
     
-    self.fantomsArray = nil;
     self.notFoundFantomsArray = nil;
 
 }
