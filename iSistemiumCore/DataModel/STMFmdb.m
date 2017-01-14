@@ -200,7 +200,12 @@ FMDatabasePool *pool;
         
         if (!pk) return;
         
-        NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:nil fetchOffset:nil db:db];
+        NSArray *results = [self getDataWithEntityName:tablename
+                                         withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
+                                               orderBy:nil
+                                            fetchLimit:nil
+                                           fetchOffset:nil
+                                                    db:db];
         
         response = [results firstObject];
         
@@ -215,7 +220,10 @@ FMDatabasePool *pool;
     __block BOOL result;
     
     [queue inDatabase:^(FMDatabase *db) {
-        result = !![self mergeInto:tablename dictionary:dictionary error:error db:db];
+        result = !![self mergeInto:tablename
+                        dictionary:dictionary
+                             error:error
+                                db:db];
     }];
     
     return result;
@@ -232,7 +240,7 @@ FMDatabasePool *pool;
     NSMutableArray* values = @[].mutableCopy;
     
     for(NSString* key in dictionary){
-        if ([columns containsObject:key] && ![key isEqualToString:@"id"] && ![key isEqualToString:@"isFantom"]){
+        if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
             [keys addObject:key];
             id value = [dictionary objectForKey:key];
             if ([value isKindOfClass:[NSDate class]]) {
@@ -278,7 +286,12 @@ FMDatabasePool *pool;
     
     [pool inDatabase:^(FMDatabase *db) {
     
-        results = [self getDataWithEntityName:name withPredicate:predicate orderBy:orderBy fetchLimit:fetchLimit fetchOffset:fetchOffset db:db];
+        results = [self getDataWithEntityName:name
+                                withPredicate:predicate
+                                      orderBy:orderBy
+                                   fetchLimit:fetchLimit
+                                  fetchOffset:fetchOffset
+                                           db:db];
     
     }];
     
@@ -317,17 +330,20 @@ FMDatabasePool *pool;
         }
     }
     
-    where = [where stringByReplacingOccurrencesOfString:@" AND ()" withString:@""];
-    where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
-    where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
+    where = [where stringByReplacingOccurrencesOfString:@" AND ()"
+                                             withString:@""];
+    where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?"
+                                             withString:[STMFunctions lowercaseFirst:name]];
+    where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?"
+                                             withString:name];
     
     NSMutableArray *rez = @[].mutableCopy;
-    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@",name,where,options];
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@", name, where, options];
     
     FMResultSet *s = [db executeQuery:query];
     
     while ([s next]) {
-        [rez addObject:[s resultDictionary]];
+        [rez addObject:s.resultDictionary];
     }
     
     // there will be memory warnings loading catalogue on an old device if no copy
