@@ -41,7 +41,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (STMDateFormatter *)dateFormatterWithMilliseconds {
     
-    @synchronized (sharedDateFormatterWithMilliseconds) {
+//    @synchronized (sharedDateFormatterWithMilliseconds) {
     
         if (sharedDateFormatterWithMilliseconds) return sharedDateFormatterWithMilliseconds;
     
@@ -53,13 +53,13 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
         
         return sharedDateFormatterWithMilliseconds;
-    }
+//    }
     
 }
 
 + (STMDateFormatter *)dateFormatterWithoutTime {
     
-    @synchronized (sharedDateFormatterWithoutTime) {
+//    @synchronized (sharedDateFormatterWithoutTime) {
     
         if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
 
@@ -73,7 +73,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
         return sharedDateFormatterWithoutTime;
         
-    }
+//    }
     
 }
 

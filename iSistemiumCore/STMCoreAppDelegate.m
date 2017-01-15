@@ -30,6 +30,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
+    [STMFunctions stringFromNow];
+    
     [self sessionManager];
 
     [self startCrashlytics];
