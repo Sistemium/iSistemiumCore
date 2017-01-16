@@ -629,16 +629,19 @@
         [STMSocketController reloadResultsControllers];
         
         self.stcEntities = nil;
-        NSMutableArray *entityNames = [self.stcEntities.allKeys mutableCopy];
-        [entityNames removeObject:entityName];
         
-        self.entitySyncNames = entityNames;
+        NSMutableArray *entitiesNames = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            return [obj valueForKey:@"url"] ? YES : NO;
+        }].allObjects.mutableCopy;
         
-        self.entityCount = entityNames.count;
+        [entitiesNames removeObject:entityName];
         
-        NSUInteger settingsIndex = [self.entitySyncNames indexOfObject:@"STMSetting"];
-        if (settingsIndex != NSNotFound) [self.entitySyncNames exchangeObjectAtIndex:settingsIndex
+        NSUInteger settingsIndex = [entitiesNames indexOfObject:@"STMSetting"];
+        if (settingsIndex != NSNotFound) [entitiesNames exchangeObjectAtIndex:settingsIndex
                                                                    withObjectAtIndex:0];
+
+        self.entitySyncNames = entitiesNames;
+        self.entityCount = entitiesNames.count;
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish"
                                                             object:self];
