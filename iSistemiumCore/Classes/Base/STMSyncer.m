@@ -998,7 +998,7 @@
     
     if (entity) {
         
-        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+        [self.persistenceDelegate mergeManyAsync:entityName attributeArray:data options:nil completionHandler:^(BOOL success, NSArray *result, NSError *error) {
             
             if (success) {
                 
@@ -1032,8 +1032,12 @@
                 [self entityCountDecreaseWithError:errorString];
                 
             }
-            
+
         }];
+        
+//        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+//            
+//        }];
         
     }
     
