@@ -16,6 +16,8 @@
 
 @interface STMSocketTransport : NSObject
 
+@property (nonatomic) BOOL isReady;
+
 + (instancetype)initWithUrl:(NSString *)socketUrlString
           andEntityResource:(NSString *)entityResource
                   forSyncer:(STMSyncer *)syncer;

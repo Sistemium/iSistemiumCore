@@ -79,6 +79,10 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
 }
 
+- (BOOL)isReady {
+    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
+}
+
 - (void)startSocket {
     
     [self.logger saveLogMessageWithText:CurrentMethodName
