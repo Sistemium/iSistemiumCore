@@ -32,12 +32,12 @@
                    options:(NSDictionary *)options
                      error:(NSError **)error;
 
-@optional
-
-- (BOOL *)destroySync:(NSString *)entityName
+- (BOOL)destroySync:(NSString *)entityName
                    id:(NSString *)identifier
               options:(NSDictionary *)options
                 error:(NSError **)error;
+
+@optional
 
 - (NSDictionary *)createSync:(NSString *)entityName
                   attributes:(NSDictionary *)attributes

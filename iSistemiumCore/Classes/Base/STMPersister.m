@@ -14,6 +14,7 @@
 
 #import "STMFmdb.h"
 #import "STMCoreObjectsController.h"
+#import "STMRecordStatusController.h"
 
 @import PromiseKit;
 
@@ -151,6 +152,28 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
+        if ([entityName isEqualToString:@"STMRecordStatus"]) {
+            if (![savingAttributes[@"isRemoved"] isEqual:[NSNull null]] ? [savingAttributes[@"isRemoved"] boolValue]: false) {
+                
+                [self destroyWithoutSave:savingAttributes[@"name"] id:savingAttributes[@"objectXid"] options:nil error:error];
+                
+            }
+            
+            if (![savingAttributes[@"isTemporary"] isEqual:[NSNull null]] ? [savingAttributes[@"isTemporary"] boolValue]: false) {
+                [self destroyWithoutSave:@"STMRecordStatus" id:savingAttributes[@"id"] options:nil error:error];
+                return nil;
+            }
+        }else if (attributes[@"id"]) {
+            NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:savingAttributes withEntityName:entityName];
+            
+            if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
+                
+                [self destroyWithoutSave:recordStatus[@"name"] id:recordStatus[@"objectXid"] options:nil error:error];
+                return nil;
+                
+            }
+        }
+        
         if(!returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
@@ -176,6 +199,40 @@
         
         return attributes;
     }
+}
+
+- (BOOL)destroyWithoutSave:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+
+    NSDictionary *object = [self findSync:entityName id:identifier options:options error:error];
+    
+    if (error){
+        return NO;
+    }
+    
+    NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:object withEntityName:entityName];
+    
+    [recordStatus setValue:@YES forKey:@"isRemoved"];
+    
+    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
+    
+    if (error){
+        return NO;
+    }
+    
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        
+        return [[STMFmdb sharedInstance] destroy:entityName identifier:identifier error:error];
+        
+    }else{
+        
+        NSData* xidData = [STMFunctions xidDataFromXidString:identifier];
+        
+        [STMCoreObjectsController removeObjectForXid:xidData entityName:entityName];
+        
+        return YES;
+
+    }
+    
 }
 
 - (BOOL)saveWithEntityName:(NSString *)entityName{
@@ -303,6 +360,24 @@
     return nil;
 }
 
+- (BOOL)destroySync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+    
+    [self destroyWithoutSave:entityName id:identifier options:options error:error];
+    
+    if (error){
+    #warning possible danger, will rollback changes from other threads
+        [[STMFmdb sharedInstance] rollback];
+        return NO;
+    }
+    
+    if ([self saveWithEntityName:entityName]){
+        return YES;
+    } else {
+        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        return YES;
+    }
+}
+
 #pragma mark - STMPersistingAsync
 
 - (void)findAsync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
@@ -321,6 +396,9 @@
         });
     } else {
         result = [self findSync:entityName id:identifier options:options error:&error];
+        if(error){
+            success = NO;
+        }
         completionHandler(success,result,error);
     }
 }
@@ -339,6 +417,9 @@
         });
     }else{
         result = [self findAllSync:entityName predicate:predicate options:options error:&error];
+        if(error){
+            success = NO;
+        }
         completionHandler(success,result,error);
     }
 }
@@ -357,6 +438,9 @@
         });
     }else{
         result = [self mergeSync:entityName attributes:attributes options:options error:&error];
+        if(error){
+            success = NO;
+        }
         completionHandler(success,result,error);
     }
 }
@@ -375,10 +459,32 @@
         });
     }else{
         result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
+        if(error){
+            success = NO;
+        }
         completionHandler(success,result,error);
     }
 }
 
+- (void)destroyAsync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
+    __block BOOL success = YES;
+    __block NSError* error = nil;
+    if ([[STMFmdb sharedInstance] containstTableWithNameWithName:entityName]){
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            success = [self destroySync:entityName id:identifier options:options error:&error];
+            if(error){
+                success = NO;
+            }
+            completionHandler(success,error);
+        });
+    }else{
+        success = [self destroySync:entityName id:identifier options:options error:&error];
+        if(error){
+            success = NO;
+        }
+        completionHandler(success,error);
+    }
+}
 
 #pragma mark - STMPersistingPromised
 
@@ -423,6 +529,18 @@
         [self mergeManyAsync:entityName attributeArray:attributeArray options:options completionHandler:^(BOOL success, NSArray *result, NSError *error){
             if (success){
                 resolve(result);
+            }else{
+                resolve(error);
+            }
+        }];
+    }];
+}
+
+- (AnyPromise *)destroy:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options{
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        [self destroyAsync:entityName id:identifier options:options completionHandler:^(BOOL success, NSError *error){
+            if (success){
+                resolve([NSNumber numberWithBool:success]);
             }else{
                 resolve(error);
             }
