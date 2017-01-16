@@ -840,9 +840,11 @@
         
     } else {
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
-                                                            object:self
-                                                          userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                                                object:self
+                                                              userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
 
     }
 
@@ -1021,10 +1023,14 @@
                     
                 }
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-                                                                    object:self
-                                                                  userInfo:@{@"count"         :@(data.count),
-                                                                             @"entityName"    :entityName}];
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+                                                                        object:self
+                                                                      userInfo:@{@"count"         :@(data.count),
+                                                                                 @"entityName"    :entityName}];
+
+                }];
                 
             } else {
                 
