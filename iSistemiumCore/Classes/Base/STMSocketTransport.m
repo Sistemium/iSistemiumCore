@@ -586,6 +586,17 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 - (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
+    if (!self.isReady) {
+        
+        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
+        
+        [self completeHandler:completionHandler
+             withErrorMessage:errorMessage];
+        
+        return;
+        
+    }
+    
     NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
                                    @"resource" : resourceString
                                    }.mutableCopy;
@@ -616,6 +627,17 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 - (void)findFromResource:(NSString *)resource objectId:(NSString *)objectId timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
+    if (!self.isReady) {
+        
+        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
+        
+        [self completeHandler:completionHandler
+             withErrorMessage:errorMessage];
+        
+        return;
+        
+    }
+
     NSDictionary *value = @{@"method"   : kSocketFindMethod,
                             @"resource" : resource,
                             @"id"       : objectId};
