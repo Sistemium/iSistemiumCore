@@ -163,8 +163,12 @@
                 [self destroyWithoutSave:@"STMRecordStatus" id:savingAttributes[@"id"] options:nil error:error];
                 return nil;
             }
-        }else if (attributes[@"id"]) {
-            NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:savingAttributes withEntityName:entityName];
+        }else if (savingAttributes[@"id"] && ![savingAttributes[@"id"] isEqual:[NSNull null]]) {
+            NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:attributes[@"id"]];
+            
+            if (!recordStatus){
+                recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":savingAttributes[@"id"],@"name":entityName} options:nil error:error];
+            }
             
             if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
                 
@@ -202,14 +206,12 @@
 }
 
 - (BOOL)destroyWithoutSave:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
-
-    NSDictionary *object = [self findSync:entityName id:identifier options:options error:error];
     
-    if (error){
-        return NO;
+    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:identifier];
+    
+    if (!recordStatus){
+        recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":identifier,@"name":entityName} options:nil error:error];
     }
-    
-    NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:object withEntityName:entityName];
     
     [recordStatus setValue:@YES forKey:@"isRemoved"];
     

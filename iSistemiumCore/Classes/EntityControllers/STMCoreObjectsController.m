@@ -1277,6 +1277,10 @@
     [self removeObject:object inContext:nil];
 }
 
++ (void)removeObjectForXid:(NSData *)xidData entityName:(NSString *)name{
+    [STMCoreObjectsController removeObject:[STMCoreObjectsController objectForXid:xidData entityName:name]];
+}
+
 + (void)removeObject:(NSManagedObject *)object inContext:(NSManagedObjectContext *)context {
     
     if (object) {
@@ -1292,22 +1296,6 @@
         }];
 
     }
-    
-}
-
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object {
-    return [self createRecordStatusAndRemoveObject:object withComment:nil];
-}
-
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object withComment:(NSString *)commentText {
-    
-    STMRecordStatus *recordStatus = [STMRecordStatusController recordStatusForObject:object];
-    recordStatus.isRemoved = @YES;
-    recordStatus.commentText = commentText;
-    
-    [self removeObject:object];
-    
-    return recordStatus;
     
 }
 
@@ -1844,8 +1832,11 @@
     
     if (![[self localDataModelEntityNames] containsObject:entityName]) {
         
-        [self error:error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
-        return nil;
+        [self error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
         
     }
     
