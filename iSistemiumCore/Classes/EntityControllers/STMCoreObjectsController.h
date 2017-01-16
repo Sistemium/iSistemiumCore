@@ -51,6 +51,7 @@
 + (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName;
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
++ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName cascade:(BOOL)cascade;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters

@@ -35,6 +35,7 @@ FMDatabaseQueue *queue;
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
+            NSString *cascadeDelete  = @" ON DELETE CASCADE";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
@@ -107,7 +108,7 @@ FMDatabaseQueue *queue;
                     }
                 }
                 
-                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
+                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName cascade:false].allKeys){
                     if (first){
                         first = false;
                     }else{
@@ -117,6 +118,23 @@ FMDatabaseQueue *queue;
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
                     NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
+                    
+                    [columns addObject:fkColumn];
+                    sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
+                }
+                
+                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName cascade:true].allKeys){
+                    if (first){
+                        first = false;
+                    }else{
+                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
+                    }
+                    
+                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
+                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
+                    
+                    fkSQL = [fkSQL stringByAppendingString:cascadeDelete];
                     
                     [columns addObject:fkColumn];
                     sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
@@ -248,6 +266,23 @@ FMDatabaseQueue *queue;
                 result = NO;
                 return;
             }
+        }
+    }];
+    
+    return result;
+}
+
+- (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error{
+    
+    __block BOOL result = YES;
+    
+    NSString* destroySQL = @"DELETE FROM ? WHERE id=?";
+    
+    NSArray* values = @[tablename,idendifier];
+    
+    [queue inDatabase:^(FMDatabase *db) {
+        if(![db executeUpdate:destroySQL values:values error:error]){
+            result = NO;
         }
     }];
     

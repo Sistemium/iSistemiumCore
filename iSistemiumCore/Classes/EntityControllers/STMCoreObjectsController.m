@@ -1107,6 +1107,26 @@
 
 }
 
++ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName cascade:(BOOL)cascade{
+    
+    if (!entityName) {
+        return nil;
+    }
+    
+    NSMutableDictionary *entitiesToOneRelationships = [self sharedController].entitiesToOneRelationships;
+    NSDictionary *objectRelationships = entitiesToOneRelationships[entityName];
+    
+    if (!objectRelationships && entityName) {
+        
+        objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(NO)];
+        entitiesToOneRelationships[entityName] = objectRelationships;
+        
+    }
+    
+    return objectRelationships;
+    
+}
+
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
     
     if (!entityName) {
@@ -1149,7 +1169,7 @@
         NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
         
         if (isToMany) {
-        
+            
             if (relationship.isToMany == isToMany.boolValue) {
                 objectRelationships[relationshipName] = relationship.destinationEntity.name;
             }
@@ -1157,11 +1177,62 @@
         } else {
             objectRelationships[relationshipName] = relationship.destinationEntity.name;
         }
-        
     }
     
     return objectRelationships;
 
+}
+
++ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany  cascade:(BOOL)cascade{
+    
+    if (!entityName) {
+        return nil;
+    }
+    
+    STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
+                                                      inManagedObjectContext:[self document].managedObjectContext];
+    
+    NSSet *coreRelationshipNames = [NSSet setWithArray:[self coreEntityRelationships]];
+    
+    NSMutableSet *objectRelationshipNames = [NSMutableSet setWithArray:objectEntity.relationshipsByName.allKeys];
+    
+    [objectRelationshipNames minusSet:coreRelationshipNames];
+    
+    NSMutableDictionary *objectRelationships = [NSMutableDictionary dictionary];
+    
+    for (NSString *relationshipName in objectRelationshipNames) {
+        
+        NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
+        
+        if (isToMany) {
+            if (relationship.isToMany == isToMany.boolValue) {
+                
+                if (cascade && relationship.deleteRule == NSCascadeDeleteRule){
+                    objectRelationships[relationshipName] = relationship.destinationEntity.name;
+                }
+                
+                if (!cascade && relationship.deleteRule != NSCascadeDeleteRule){
+                    objectRelationships[relationshipName] = relationship.destinationEntity.name;
+                }
+            
+            }
+            
+        } else {
+            
+            if (cascade && relationship.deleteRule == NSCascadeDeleteRule){
+                objectRelationships[relationshipName] = relationship.destinationEntity.name;
+            }
+            
+            if (!cascade && relationship.deleteRule != NSCascadeDeleteRule){
+                objectRelationships[relationshipName] = relationship.destinationEntity.name;
+            }
+            
+        }
+        
+    }
+    
+    return objectRelationships;
+    
 }
 
 + (NSArray <NSString *> *)localDataModelEntityNames {
