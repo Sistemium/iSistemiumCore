@@ -1456,7 +1456,7 @@
     
     STMCoreObjectsController *objController = [self sharedController];
     
-    NSSet *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
+    NSArray *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
     
     for (NSString *entityName in entityNamesWithResolveFantoms) {
         
