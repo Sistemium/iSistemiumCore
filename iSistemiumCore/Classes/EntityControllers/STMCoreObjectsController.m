@@ -2210,9 +2210,9 @@
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
-    if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                                        code:1
-                                                    userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    if (bundleId && error && errorMessage) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                                                                        code:1
+                                                                    userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
     
     return (error == nil);
 
