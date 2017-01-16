@@ -1415,7 +1415,8 @@
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG
-    [self totalNumberOfObjects];
+    [self totalNumberOfObjectsInCoreData];
+    [self totalNumberOfObjectsInFMDB];
 #else
 
 #endif
@@ -1426,22 +1427,60 @@
 
 }
 
-+ (void)totalNumberOfObjects {
++ (void)totalNumberOfObjectsInCoreData {
 
     NSArray *entityNames = [self localDataModelEntityNames];
     
     NSUInteger totalCount = 0;
     
+    NSMutableString *logMessage = @"".mutableCopy;
+    
     for (NSString *entityName in entityNames) {
         
-        NSUInteger count = [self numberOfObjectsForEntityName:entityName];
-        NSLog(@"%@ count %lu", entityName, (unsigned long)count);
+        NSUInteger count = [self numberOfObjectsForEntityNameInCoreData:entityName];
+        [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
         totalCount += count;
 
     }
     
-    NSLog(@"fantoms count %lu", (unsigned long)[self numberOfFantoms]);
-    NSLog(@"total count %lu", (unsigned long)totalCount);
+    NSLog(@"CoreData: number of objects: %@", logMessage);
+    NSLog(@"CoreData: fantoms count %lu", (unsigned long)[self numberOfFantoms]);
+    NSLog(@"CoreData: total count %lu", (unsigned long)totalCount);
+
+}
+
++ (void)totalNumberOfObjectsInFMDB {
+    
+    NSArray *entityNames = [self localDataModelEntityNames];
+    
+    NSUInteger totalCount = 0;
+    NSUInteger fantomsCount = 0;
+    
+    NSMutableString *logMessage = @"".mutableCopy;
+    
+    for (NSString *entityName in entityNames) {
+
+        NSError *error = nil;
+        NSArray *results = [self.persistenceDelegate findAllSync:entityName
+                                                       predicate:nil
+                                                         options:@{@"fantoms":@NO}
+                                                           error:&error];
+        NSUInteger count = results.count;
+        results = [self.persistenceDelegate findAllSync:entityName
+                                              predicate:nil
+                                                options:@{@"fantoms":@YES}
+                                                  error:&error];
+        fantomsCount += results.count;
+        count += results.count;
+        totalCount += count;
+        
+        [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
+        
+    }
+    
+    NSLog(@"FMDB: number of objects: %@", logMessage);
+    NSLog(@"FMDB: fantoms count %@", @(fantomsCount));
+    NSLog(@"FMDB: total count %@", @(totalCount));
 
 }
 
@@ -2572,7 +2611,7 @@
 
 }
 
-+ (NSUInteger)numberOfObjectsForEntityName:(NSString *)entityName {
++ (NSUInteger)numberOfObjectsForEntityNameInCoreData:(NSString *)entityName {
 
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
