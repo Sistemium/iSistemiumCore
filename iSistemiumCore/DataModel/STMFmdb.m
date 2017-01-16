@@ -22,9 +22,12 @@ FMDatabaseQueue *queue;
 
 
 - (instancetype)init {
+    
     self = [super init];
+    
     if (self) {
-        NSArray* entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
+        
+        NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
@@ -327,7 +330,7 @@ FMDatabaseQueue *queue;
     return rez;
 }
 
-- (BOOL)containstTableWithNameWithName:(NSString * _Nonnull)name{
+- (BOOL) hasTable:(NSString * _Nonnull)name {
     name = [self entityToTableName:name];
     if ([columnsByTable.allKeys containsObject:name]){
         return true;
@@ -335,12 +338,12 @@ FMDatabaseQueue *queue;
     return false;
 }
 
-- (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj{
+- (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj {
     obj = [self entityToTableName:obj];
     return columnsByTable[obj];
 }
 
-- (BOOL)commit{
+- (BOOL) commit {
     __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db) {
         if ([db inTransaction]){
@@ -350,7 +353,7 @@ FMDatabaseQueue *queue;
     return result;
 }
 
-- (BOOL)startTransaction{
+- (BOOL) startTransaction {
     __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db){
         if (![db inTransaction]){
@@ -360,7 +363,7 @@ FMDatabaseQueue *queue;
     return result;
 }
      
-- (BOOL)rollback{
+- (BOOL) rollback {
     __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db){
         [db rollback];

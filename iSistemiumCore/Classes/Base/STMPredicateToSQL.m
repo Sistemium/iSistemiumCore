@@ -92,7 +92,7 @@ static STMPredicateToSQL *sharedInstance;
 
 
 - (NSString *)DatabaseKeyfor:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:obj]];
+    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:obj]];
     if (isTable) {
         return [STMFunctions uppercaseFirst:obj];
     }
@@ -100,7 +100,7 @@ static STMPredicateToSQL *sharedInstance;
 }
 
 - (NSString *)ToManyKeyToTablename:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
+    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
     if (isTable) {
         return [STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]];
     }
@@ -108,7 +108,7 @@ static STMPredicateToSQL *sharedInstance;
 }
 
 - (NSString *)FKToTablename:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] containstTableWithNameWithName:[STMFunctions uppercaseFirst:obj]];
+    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:obj]];
     if (isTable) {
         return [obj stringByAppendingString:@"Id"];
     }
