@@ -111,7 +111,7 @@ FMDatabaseQueue *queue;
                     }
                 }
                 
-                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName cascade:false].allKeys){
+                for (NSString* entityKey in [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(NO) cascade:false].allKeys){
                     if (first){
                         first = false;
                     }else{
@@ -126,7 +126,7 @@ FMDatabaseQueue *queue;
                     sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
                 }
                 
-                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName cascade:true].allKeys){
+                for (NSString* entityKey in [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(NO) cascade:true].allKeys){
                     if (first){
                         first = false;
                     }else{

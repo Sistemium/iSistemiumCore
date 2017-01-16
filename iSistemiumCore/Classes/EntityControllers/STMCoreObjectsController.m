@@ -1107,26 +1107,6 @@
 
 }
 
-+ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName cascade:(BOOL)cascade{
-    
-    if (!entityName) {
-        return nil;
-    }
-    
-    NSMutableDictionary *entitiesToOneRelationships = [self sharedController].entitiesToOneRelationships;
-    NSDictionary *objectRelationships = entitiesToOneRelationships[entityName];
-    
-    if (!objectRelationships && entityName) {
-        
-        objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(NO)];
-        entitiesToOneRelationships[entityName] = objectRelationships;
-        
-    }
-    
-    return objectRelationships;
-    
-}
-
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
     
     if (!entityName) {
@@ -1183,7 +1163,7 @@
 
 }
 
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany  cascade:(BOOL)cascade{
++ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(BOOL)cascade{
     
     if (!entityName) {
         return nil;
