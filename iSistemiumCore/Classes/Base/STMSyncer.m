@@ -756,6 +756,21 @@
 }
 
 - (void)defantomizeObject:(NSDictionary *)fantomDic {
+    [self defantomizeObject:fantomDic error:nil];
+}
+
+- (void)defantomizeObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
+    
+    if (errorString) {
+    
+//        NSLog(@"defantomizeObject: %@ error: %@", fantomDic, errorString);
+        
+        [self.syncerHelper defantomizeErrorWithObject:fantomDic];
+        [self fantomsCountDecrease];
+
+        return;
+
+    }
     
     NSString *entityName = fantomDic[@"entityName"];
     
@@ -818,17 +833,7 @@
                              }
                              
                          }];
-    
-}
 
-- (void)defantomizeObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
-    
-    NSLog(@"defantomizeObject: %@ error: %@", fantomDic, errorString);
-    
-    [self.syncerHelper defantomizeErrorWithObject:fantomDic];
-    
-    [self fantomsCountDecrease];
-    
 }
 
 - (void)fantomsCountDecrease {
@@ -846,6 +851,8 @@
                                                                 object:self
                                                               userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
 
+        }];
+        
     }
 
 }
