@@ -445,8 +445,10 @@
     NSLog(@"syncTimer tick at %@, bgTimeRemaining %.0f", [NSDate date], bgTR > 3600 ? -1 : bgTR);
 #endif
     
-    [self receiveData];
-
+    if (self.socketTransport.isReady) {
+        [self receiveData];
+    }
+    
 }
 
 
@@ -479,6 +481,13 @@
 }
 
 - (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
+    
+    if (!self.socketTransport.isReady) {
+        
+        [self receivingDidFinishWithError:@"socket transport is not ready"];
+        return;
+        
+    }
     
     NSString *errorMessage = nil;
     
@@ -703,6 +712,13 @@
 #pragma mark - defantomization
 
 - (void)startDefantomization {
+    
+    if (!self.socketTransport.isReady) {
+        
+        [self.syncerHelper defantomizingFinished];
+        return;
+        
+    }
     
     if (self.isDefantomizing) {
         return;
