@@ -1319,7 +1319,8 @@
                 [STMClientDataController checkClientData];
                 self.syncing = YES;
 
-                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+//                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+                self.syncerState = STMSyncerIdle;
                 
                 break;
             }
@@ -1327,7 +1328,8 @@
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
                 self.syncing = YES;
-                [self checkNews];
+//                [self checkNews];
+                self.syncerState = STMSyncerIdle;
 
                 break;
             }
