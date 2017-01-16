@@ -643,19 +643,15 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
     if (elapsedTime >= timeout) {
         
-        NSString *errorString = @"socket receive objects timeout";
+        NSString *errorMessage = @"socket receive objects timeout";
         [self sendEvent:STMSocketEventInfo
-              withValue:errorString];
+              withValue:errorMessage];
         
         void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = context[@"completionHandler"];
         
-        NSError *error = nil;
-        
-        [STMCoreObjectsController error:&error
-                            withMessage:errorString];
-        
-        completionHandler(NO, nil, error);
-        
+        [self completeHandler:completionHandler
+             withErrorMessage:errorMessage];
+                
     }
     
 }
@@ -666,6 +662,17 @@ static NSString *kSocketDestroyMethod = @"destroy";
                                                        selector:@selector(checkFindTimeout:)
                                                          object:context];
     
+}
+
+- (void)completeHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler withErrorMessage:(NSString *)errorMessage {
+    
+    NSError *error = nil;
+    
+    [STMCoreObjectsController error:&error
+                        withMessage:errorMessage];
+    
+    completionHandler(NO, nil, error);
+
 }
 
 
