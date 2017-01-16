@@ -339,7 +339,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
             
             if ([value isKindOfClass:[NSDictionary class]]) {
                 
-                NSLog(@"STMSocketEventJSData value: %@", value);
+//                NSLog(@"STMSocketEventJSData value: %@", value);
                 
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
 
