@@ -10,11 +10,14 @@
 
 #import "STMConstants.h"
 #import "STMEntityController.h"
+#import "STMCoreObjectsController.h"
 
 
 @interface STMSyncerHelper()
 
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+
+@property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
 
 
 @end
@@ -66,7 +69,13 @@
 }
 
 - (void)persisterHaveUnsyncedObjects:(NSNotification *)notification {
+    
     NSLogMethodName;
+    
+    if (self.unsyncedSubscriptionBlock) {
+        [self handleUnsyncedObjects];
+    }
+    
 }
 
 
@@ -168,15 +177,94 @@
 #pragma mark - STMDataSyncing
 
 - (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))completionHandler {
-    return nil;
+    
+    self.unsyncedSubscriptionBlock = completionHandler;
+    
+    return nil; // have to return subscriptionId if it will be needed
+
 }
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId {
+    
+    self.unsyncedSubscriptionBlock = nil;
     return YES;
+    
 }
 
 - (BOOL)setSynced:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     return YES;
+}
+
+
+#pragma mark - handle unsynced objects
+
+- (void)handleUnsyncedObjects {
+    
+    NSArray *unsyncedObjects = [self unsyncedObjects];
+    
+    NSLog(@"%@ unsynced total", @(unsyncedObjects.count));
+    
+}
+
+- (NSArray *)unsyncedObjects {
+    
+    NSMutableArray *unsyncedObjects = @[].mutableCopy;
+    
+    NSArray *uploadableEntitiesNames = [STMEntityController uploadableEntitiesNames];
+    
+    for (NSString *entityName in uploadableEntitiesNames) {
+        
+        if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
+            
+            NSError *error = nil;
+            NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+
+            NSArray *result = [self.persistenceDelegate findAllSync:entityName
+                                                          predicate:predicate
+                                                            options:nil
+                                                              error:&error];
+            
+            NSLog(@"%@ unsynced %@", @(result.count), entityName);
+            
+            [unsyncedObjects addObjectsFromArray:result];
+            
+        }
+
+    }
+
+    return unsyncedObjects;
+    
+}
+
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+//        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+        NSMutableArray *syncTypesSubpredicates = @[].mutableCopy;
+        
+        for (NSString *type in logMessageSyncTypes) {
+            [syncTypesSubpredicates addObject:[NSPredicate predicateWithFormat:@"type == %@", type]];
+        }
+        
+        [subpredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:syncTypesSubpredicates]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"(lts == %@ || deviceTs > lts)", nil]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+
+    return predicate;
+    
 }
 
 

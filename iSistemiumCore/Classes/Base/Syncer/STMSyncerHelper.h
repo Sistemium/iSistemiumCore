@@ -23,4 +23,5 @@
 - (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic;
 - (void)defantomizingFinished;
 
+
 @end

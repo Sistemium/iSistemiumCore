@@ -691,6 +691,9 @@
         [STMCoreObjectsController dataLoadingFinished];
         [self startDefantomization];
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                            object:self];
+        
     }
     
 }
