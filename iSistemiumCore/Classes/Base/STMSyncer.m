@@ -1005,8 +1005,8 @@
     
     if (entity) {
         
-        [self.persistenceDelegate mergeManyAsync:entityName attributeArray:data options:nil completionHandler:^(BOOL success, NSArray *result, NSError *error) {
-            
+        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+
             if (success) {
                 
                 NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
@@ -1025,12 +1025,12 @@
                 }
                 
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
+                    
                     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
                                                                         object:self
                                                                       userInfo:@{@"count"         :@(data.count),
                                                                                  @"entityName"    :entityName}];
-
+                    
                 }];
                 
             } else {
@@ -1041,8 +1041,8 @@
             }
 
         }];
-        
-//        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+
+//        [self.persistenceDelegate mergeManyAsync:entityName attributeArray:data options:nil completionHandler:^(BOOL success, NSArray *result, NSError *error) {
 //            
 //        }];
         
