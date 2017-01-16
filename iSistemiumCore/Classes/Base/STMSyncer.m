@@ -736,7 +736,7 @@
         
         if (fantomsArray) {
         
-            NSLog(@"fantomsArray: %@", fantomsArray);
+//            NSLog(@"fantomsArray: %@", fantomsArray);
             
             self.fantomsCount = fantomsArray.count;
 
@@ -774,7 +774,7 @@
         return;
         
     }
-
+    
     NSString *resource = entity.url;
     NSString *fantomId = fantomDic[@"id"];
     
@@ -988,12 +988,6 @@
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
         
-//        if ([resource isEqualToString:[STMSocketController newsResourceString]]) {
-//            [self parseNewsData:responseData];
-//        } else {
-//            NSLog(@"ERROR: unknown response: %@", data);
-//        }
-        
     }
     
 }
@@ -1116,7 +1110,7 @@
         
     }
 
-    NSLog(@"find errorCode: %@", errorCode);
+//    NSLog(@"find errorCode: %@", errorCode);
     NSLog(@"find error: %@", errorString);
     
 }
@@ -1154,7 +1148,7 @@
         if (defantomizing) {
             
             NSDictionary *object = context[@"object"];
-        
+            
             if (success) {
                 
                 NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
@@ -1167,7 +1161,7 @@
                                   error:error.localizedDescription];
                 
             }
-
+            
         }
         
     }];
