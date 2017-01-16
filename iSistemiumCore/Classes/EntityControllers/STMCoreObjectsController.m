@@ -379,9 +379,9 @@
         
         if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName andXid:xidData];
         
-        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidData];
+        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidString];
         
-        if (!recordStatus.isRemoved.boolValue) {
+        if (!(![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false)) {
             
             if (!object) object = [self newObjectForEntityName:entityName];
             
@@ -1815,14 +1815,16 @@
 
 #pragma mark - destroy objects from WKWebView
 
-+ (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
++ (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage{
 
-    NSString *errorMessage = nil;
+    NSError* error;
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:error withMessage:@"message.body is not a NSDictionary class"];
-        return nil;
+        [self error:&error withMessage:@"message.body is not a NSDictionary class"];
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
         
     }
     
@@ -1844,28 +1846,15 @@
     
     if (!xidString) {
         
-        [self error:error withMessage:@"empty xid"];
-        return nil;
+        [self error:&error withMessage:@"empty xid"];
+        
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
 
     }
-            
-    NSData *xid = [STMFunctions xidDataFromXidString:xidString];
     
-    STMDatum *object = (STMDatum *)[self objectForXid:xid entityName:entityName];
-    
-    if (object) {
-        
-            STMRecordStatus *recordStatus = [self createRecordStatusAndRemoveObject:object];
-#warning - replace it with arrayForJSWithObjectsDics ?
-            return [self arrayForJSWithObjects:@[recordStatus]];
-        
-    } else {
-        
-        errorMessage = [NSString stringWithFormat:@"no object for destroy with xid %@ and entity name %@", xidString, entityName];
-        [self error:error withMessage:errorMessage];
-        return nil;
-
-    }
+    return [[self persistenceDelegate] destroy:entityName id:xidString options:nil];
     
 }
 

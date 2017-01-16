@@ -58,9 +58,7 @@
                                     error:(NSError **)error;
 
 + (void)removeObject:(STMDatum *)object;
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object;
-+ (STMRecordStatus *)createRecordStatusAndRemoveObject:(STMDatum *)object
-                                           withComment:(NSString *)commentText;
++ (void)removeObjectForXid:(NSData *)xidData entityName:(NSString *)name;
 
 + (void)dataLoadingFinished;
 
@@ -97,8 +95,7 @@
                           error:(NSError **)error;
 + (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc;
 
-+ (NSArray *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage
-                                      error:(NSError **)error;
++ (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage;
 + (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage;
 
 + (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
