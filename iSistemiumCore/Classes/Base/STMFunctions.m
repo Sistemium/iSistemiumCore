@@ -53,12 +53,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
         
         return sharedDateFormatterWithMilliseconds;
-<<<<<<< HEAD
-        
-    }
-=======
+
 //    }
->>>>>>> origin/FMDatabasePool
     
 }
 

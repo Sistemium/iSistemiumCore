@@ -194,9 +194,6 @@ FMDatabasePool *pool;
     
     __block NSDictionary *response;
     
-<<<<<<< HEAD
-    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:0 fetchOffset:0];
-=======
     [queue inDatabase:^(FMDatabase *db) {
         
         NSString *pk = [self mergeInto:tablename dictionary:dictionary error:error db:db];
@@ -206,14 +203,13 @@ FMDatabasePool *pool;
         NSArray *results = [self getDataWithEntityName:tablename
                                          withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
                                                orderBy:nil
-                                            fetchLimit:nil
-                                           fetchOffset:nil
+                                            fetchLimit:0
+                                           fetchOffset:0
                                                     db:db];
         
         response = [results firstObject];
         
     }];
->>>>>>> origin/FMDatabasePool
     
     return response;
     
@@ -284,7 +280,7 @@ FMDatabasePool *pool;
     return pk;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
     
     __block NSArray* results;
     
@@ -302,11 +298,7 @@ FMDatabasePool *pool;
     return results;
 }
 
-<<<<<<< HEAD
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset {
-=======
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
->>>>>>> origin/FMDatabasePool
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset db:(FMDatabase *)db {
     
     NSString* options = @"";
     
@@ -346,17 +338,7 @@ FMDatabasePool *pool;
                                              withString:name];
     
     NSMutableArray *rez = @[].mutableCopy;
-<<<<<<< HEAD
-    [queue inDatabase:^(FMDatabase *db) {
-        NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@",name,where,options];
-        FMResultSet *s = [db executeQuery:query];
-        while ([s next]) {
-            [rez addObject:[s resultDictionary]];
-        }
-    }];
-    return rez;
-    
-=======
+
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@", name, where, options];
     
     FMResultSet *s = [db executeQuery:query];
@@ -367,7 +349,7 @@ FMDatabasePool *pool;
     
     // there will be memory warnings loading catalogue on an old device if no copy
     return rez.copy;
->>>>>>> origin/FMDatabasePool
+
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
