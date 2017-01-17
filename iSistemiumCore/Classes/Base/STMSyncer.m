@@ -874,11 +874,8 @@
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
         
-        [self socketReceiveJSDataFindAckErrorCode:nil
-                                   andErrorString:errorMessage
-                                       entityName:nil
-                                              xid:nil
-                                         response:nil
+        [self socketReceiveJSDataFindAckWithErrorCode:nil
+                                   errorString:errorMessage
                                           context:context];
         
         [self socketReceiveJSDataUpdateAckErrorCode:nil
@@ -1059,12 +1056,9 @@
     
     if (errorCode) {
         
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response
-                                          context:context];
+        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
+                                          errorString:[NSString stringWithFormat:@"    %@ %@: ERROR: %@", entityName, xid, errorCode]
+                                              context:context];
         
         return;
         
@@ -1072,12 +1066,9 @@
     
     if (!resource) {
         
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:@"ERROR: have no resource string in response"
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response
-                                          context:context];
+        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
+                                          errorString:@"ERROR: have no resource string in response"
+                                              context:context];
         return;
         
     }
@@ -1087,12 +1078,9 @@
     if (!responseData) {
         
         NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckErrorCode:errorCode
-                                   andErrorString:errorString
-                                       entityName:entityName
-                                              xid:xid
-                                         response:response
-                                          context:context];
+        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
+                                          errorString:errorString
+                                              context:context];
         return;
         
     }
@@ -1106,8 +1094,15 @@
     
 }
 
-- (void)socketReceiveJSDataFindAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString entityName:(NSString *)entityName xid:(NSData *)xid response:(NSDictionary *)response context:(NSDictionary *)context {
+- (void)socketReceiveJSDataFindAckWithErrorCode:(NSNumber *)errorCode errorString:(NSString *)errorString context:(NSDictionary *)context {
+
+    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
+        
+    }
     
+    //    NSLog(@"find errorCode: %@", errorCode);
+    NSLog(@"find error: %@", errorString);
+
     BOOL defantomizing = [context[@"id"] isEqualToString:DEFANTOMIZING_CONTEXT];
     
     if (defantomizing) {
@@ -1116,13 +1111,6 @@
                           error:errorString];
         
     }
-
-    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
-        
-    }
-
-//    NSLog(@"find errorCode: %@", errorCode);
-    NSLog(@"find error: %@", errorString);
     
 }
 
