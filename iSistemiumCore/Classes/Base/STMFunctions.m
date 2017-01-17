@@ -627,6 +627,13 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
++ (NSString *)entityToTableName:(NSString *)entity{
+    if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
+        return [entity substringFromIndex:3];
+    }
+    return entity ;
+}
+
 + (NSString *)pluralTypeForCount:(NSUInteger)count {
     
     NSString *result;
