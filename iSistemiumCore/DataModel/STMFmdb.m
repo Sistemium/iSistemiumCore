@@ -51,6 +51,8 @@ FMDatabasePool *pool;
             
             NSString *createCascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
             
+            NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
+            
             
             for (NSString* entityName in entityNames){
                 
@@ -149,7 +151,13 @@ FMDatabasePool *pool;
                 
                 res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-
+                
+                sql_stmt = [NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName];
+                
+                res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+                
+                
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     

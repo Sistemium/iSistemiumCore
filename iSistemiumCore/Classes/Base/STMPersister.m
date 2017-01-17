@@ -165,6 +165,17 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
+    if ([entityName isEqualToString:@"STMRecordStatus"]) {
+        
+        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
+            
+            [self destroyWithoutSave:attributes[@"name"] id:attributes[@"objectXid"] options:nil error:error];
+            
+        }
+        
+        if (![attributes[@"isTemporary"] isEqual:[NSNull null]] && [attributes[@"isTemporary"] boolValue]) return nil;
+    }
+    
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
         return [self mergeWithoutSave:entityName
@@ -294,28 +305,6 @@
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    
-    if ([entityName isEqualToString:@"STMRecordStatus"]) {
-        
-        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
-            
-            [self destroyWithoutSave:attributes[@"name"] id:attributes[@"objectXid"] options:nil error:error];
-            
-        }
-        
-        if ([attributes[@"isTemporary"] boolValue]) return nil;
-        
-    } else if (attributes[@"id"]) {
-        
-#warning may be not needed at all or moved to trigger
-        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:attributes[@"id"]];
-        
-        if ([recordStatus[@"isRemoved"] boolValue]) {
-            [self destroyWithoutSave:recordStatus[@"name"] id:recordStatus[@"objectXid"] options:nil error:error];
-            return nil;
-        }
-    }
-    
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     
     if (*error){
@@ -370,7 +359,7 @@
     
     [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
     
-    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
+//    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
     
     if (error){
     #warning possible danger, will rollback changes from other threads
