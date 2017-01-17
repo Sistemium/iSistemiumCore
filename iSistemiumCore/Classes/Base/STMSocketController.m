@@ -621,7 +621,7 @@
 + (AnyPromise *)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value timeout:(NSTimeInterval)timeout{
 
     
-    return;
+    return nil;
     // Log
     // ----------
     
@@ -938,7 +938,7 @@
     [self socket:sc.socket sendEvent:STMSocketEventJSData withValue:value timeout:timeout]
         .catch(^(NSError* error){
             // TODO: check if the error is a timeout error
-            [[STMSocketController syncer] socketReceiveTimeout];
+//            [[STMSocketController syncer] socketReceiveTimeout];
         });
 
 }
