@@ -196,31 +196,35 @@
 
 - (void)defantomizingProgressBarStart:(NSNotification *)notification {
     
-    [self setColorForSyncImageView];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self setColorForSyncImageView];
 
-    self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
-    [UIApplication sharedApplication].idleTimerDisabled = YES;
-    self.progressBar.hidden = NO;
-    self.progressBar.progress = 0.0;
+        self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+        [UIApplication sharedApplication].idleTimerDisabled = YES;
+        self.progressBar.hidden = NO;
+        self.progressBar.progress = 0.0;
+    });
     
 }
 
 - (void)defantomizingProgressBarUpdate:(NSNotification *)notification {
 
-    NSUInteger currentFantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
-    self.progressBar.hidden = NO;
-    self.progressBar.progress = (self.fantomsCount - currentFantomsCount) / (float)self.fantomsCount;
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSUInteger currentFantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+        self.progressBar.hidden = NO;
+        self.progressBar.progress = (self.fantomsCount - currentFantomsCount) / (float)self.fantomsCount;
+    });
 }
 
 - (void)defantomizingProgressBarFinish {
     
-    [self performSelector:@selector(hideProgressBar)
-               withObject:nil
-               afterDelay:0];
-    
-    [self setColorForSyncImageView];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self performSelector:@selector(hideProgressBar)
+                   withObject:nil
+                   afterDelay:0];
+        
+        [self setColorForSyncImageView];
+    });
 }
 
 
