@@ -250,7 +250,7 @@
                                                                      ascending:YES
                                                                     fetchLimit:pageSize
                                                                    fetchOffset:offset
-                                                                   withFantoms:NO
+                                                                   withFantoms:YES
                                                                      predicate:predicateWithFantoms
                                                                     resultType:NSDictionaryResultType
                                                         inManagedObjectContext:[self document].managedObjectContext
