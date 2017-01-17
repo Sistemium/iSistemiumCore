@@ -26,6 +26,8 @@
 
 //#import "iSistemiumCore-Swift.h"
 #import "STMPredicateToSQL.h"
+#import "STMFmdb.h"
+
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
 
@@ -1460,23 +1462,29 @@
     
     for (NSString *entityName in entityNames) {
 
-        NSError *error = nil;
-        NSArray *result = [[self persistenceDelegate] findAllSync:entityName
-                                                        predicate:nil
-                                                          options:@{@"fantoms": @NO}
-                                                            error:&error];
-        
-        NSUInteger count = result.count;
-        result = [[self persistenceDelegate] findAllSync:entityName
-                                               predicate:nil
-                                                 options:@{@"fantoms": @YES}
-                                                   error:&error];
-        count += result.count;
-        fantomsCount += result.count;
-        
-        totalCount += count;
-        
-        [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
+        if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+            
+            NSError *error = nil;
+            NSArray *result = [[self persistenceDelegate] findAllSync:entityName
+                                                            predicate:nil
+                                                              options:@{@"fantoms": @NO}
+                                                                error:&error];
+            
+            NSUInteger count = result.count;
+            result = [[self persistenceDelegate] findAllSync:entityName
+                                                   predicate:nil
+                                                     options:@{@"fantoms": @YES}
+                                                       error:&error];
+            count += result.count;
+            fantomsCount += result.count;
+            
+            totalCount += count;
+            
+            [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
+            
+        } else {
+            [logMessage appendString:[NSString stringWithFormat:@"\n%@ count 0", entityName]];
+        }
         
     }
     
