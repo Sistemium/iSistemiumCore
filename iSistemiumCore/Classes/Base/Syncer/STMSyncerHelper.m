@@ -104,6 +104,11 @@
                                                          options:@{@"fantoms":@YES}
                                                            error:&error];
         
+        NSArray *notFoundFantomsIds = [self.notFoundFantomsArray valueForKeyPath:@"id"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", notFoundFantomsIds];
+        
+        results = [results filteredArrayUsingPredicate:predicate];
+
         if (results.count > 0) {
             
             NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
@@ -118,21 +123,12 @@
                 }
 
                 NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
-
-                @synchronized (self.notFoundFantomsArray) {
-
-                    if ([self.notFoundFantomsArray containsObject:fantomDic]) {
-                        continue;
-                    }
-
-                }
-
                 [fantomsArray addObject:fantomDic];
 
             }
 
         } else {
-            NSLog(@"have no fantoms for %@", entityName);
+//            NSLog(@"have no fantoms for %@", entityName);
         }
         
     }
