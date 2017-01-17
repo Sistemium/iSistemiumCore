@@ -132,32 +132,46 @@
 
 #pragma mark - Private methods
 
+- (NSDictionary *) mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inSTMFmdb:(STMFmdb *)db{
+    
+    [db startTransaction];
+    
+    NSString *now = [STMFunctions stringFromNow];
+    NSMutableDictionary *savingAttributes = attributes.mutableCopy;
+    BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
+    
+    if (options[@"lts"]) {
+        [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+        [savingAttributes removeObjectForKey:@"deviceTs"];
+    } else {
+        [savingAttributes setValue:now forKey:@"deviceTs"];
+        [savingAttributes removeObjectForKey:@"lts"];
+    }
+    
+    savingAttributes[@"deviceAts"] = now;
+    
+    if(!returnSaved){
+        [db mergeInto:entityName
+           dictionary:savingAttributes
+                error:error];
+        return nil;
+    } else {
+        return [db mergeIntoAndResponse:entityName
+                             dictionary:savingAttributes
+                                  error:error];
+    }
+    
+}
+
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
-        [[STMFmdb sharedInstance] startTransaction];
-        
-        NSString *now = [STMFunctions stringFromNow];
-        NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-        BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
-        
-        if (options[@"lts"]) {
-            [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
-            [savingAttributes removeObjectForKey:@"deviceTs"];
-        } else {
-            [savingAttributes setValue:now forKey:@"deviceTs"];
-            [savingAttributes removeObjectForKey:@"lts"];
-        }
-        
-        [savingAttributes setValue:now forKey:@"deviceAts"];
-        
-        if(!returnSaved){
-            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
-            return nil;
-        }else{
-            return [[STMFmdb sharedInstance] mergeIntoAndResponse:entityName dictionary:savingAttributes error:error];
-        }
+        return [self mergeWithoutSave:entityName
+                           attributes:attributes
+                              options:options
+                                error:error
+                            inSTMFmdb:STMFmdb.sharedInstance];
         
     } else {
         

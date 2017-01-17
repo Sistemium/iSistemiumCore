@@ -19,6 +19,7 @@
 
 NSDictionary* columnsByTable;
 FMDatabaseQueue *queue;
+FMDatabasePool *pool;
 
 
 - (instancetype)init {
@@ -31,7 +32,10 @@ FMDatabaseQueue *queue;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
+        
         queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+        pool = [FMDatabasePool databasePoolWithPath:dbPath];
+        
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
         [queue inDatabase:^(FMDatabase *database){
@@ -208,51 +212,84 @@ FMDatabaseQueue *queue;
 }
 
 - (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
-    if (![self mergeInto:tablename dictionary:dictionary error:error]){
-        return nil;
-    }
     
-    NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
+    __block NSDictionary *response;
     
-    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:nil fetchOffset:nil];
+    [queue inDatabase:^(FMDatabase *db) {
+        
+        NSString *pk = [self mergeInto:tablename dictionary:dictionary error:error db:db];
+        
+        if (!pk) return;
+        
+        NSArray *results = [self getDataWithEntityName:tablename
+                                         withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
+                                               orderBy:nil
+                                            fetchLimit:nil
+                                           fetchOffset:nil
+                                                    db:db];
+        
+        response = [results firstObject];
+        
+    }];
     
-    return [results firstObject];
+    return response;
     
 }
 
-- (BOOL)mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+- (BOOL) mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error {
+    
+    __block BOOL result;
+    
+    [queue inDatabase:^(FMDatabase *db) {
+        result = !![self mergeInto:tablename
+                        dictionary:dictionary
+                             error:error
+                                db:db];
+    }];
+    
+    return result;
+}
 
-    __block BOOL result = YES;
+- (NSString *) mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error db:(FMDatabase *)db{
     
     tablename = [self entityToTableName:tablename];
     
     NSArray *columns = columnsByTable[tablename];
     NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
     
-    [queue inDatabase:^(FMDatabase *db) {
-        
-        NSMutableArray* keys = @[].mutableCopy;
-        NSMutableArray* values = @[].mutableCopy;
-        
-        for(NSString* key in dictionary){
-            if ([columns containsObject:key] && ![key isEqualToString:@"id"] && ![key isEqualToString:@"isFantom"]){
-                [keys addObject:key];
-                id value = [dictionary objectForKey:key];
-                if ([value isKindOfClass:[NSDate class]]) {
-                    [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
-                } else {
-                    [values addObject:(NSString*)value];
-                }
-                
+    NSMutableArray* keys = @[].mutableCopy;
+    NSMutableArray* values = @[].mutableCopy;
+    
+    for(NSString* key in dictionary){
+        if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
+            [keys addObject:key];
+            id value = [dictionary objectForKey:key];
+            if ([value isKindOfClass:[NSDate class]]) {
+                [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+            } else {
+                [values addObject:(NSString*)value];
             }
+            
         }
-        
-        [values addObject:pk];
-        
-        NSMutableArray* v = @[].mutableCopy;
-        for (int i=0;i<[keys count];i++){
-            [v addObject:@"?"];
+    }
+    
+    [values addObject:pk];
+    
+    NSMutableArray* v = @[].mutableCopy;
+    for (int i=0;i<[keys count];i++){
+        [v addObject:@"?"];
+    }
+    
+    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+    
+    if(![db executeUpdate:updateSQL values:values error:error]){
+        if ([[*error localizedDescription] isEqualToString:@"ignored"]){
+            *error = nil;
+            return pk;
+        } else{
+            return nil;
         }
+<<<<<<< HEAD
         
         if (!keys.count) {
             NSLog(@"keys.count=0");
@@ -276,12 +313,39 @@ FMDatabaseQueue *queue;
                 result = NO;
                 return;
             }
-        }
-    }];
+=======
+    };
     
-    return result;
+    if (!db.changes) {
+        NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+        if (![db executeUpdate:insertSQL values:values error:error]){
+            return nil;
+>>>>>>> FMDatabasePool
+        }
+    }
+
+    return pk;
 }
 
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+    
+    __block NSArray* results;
+    
+    [pool inDatabase:^(FMDatabase *db) {
+    
+        results = [self getDataWithEntityName:name
+                                withPredicate:predicate
+                                      orderBy:orderBy
+                                   fetchLimit:fetchLimit
+                                  fetchOffset:fetchOffset
+                                           db:db];
+    
+    }];
+    
+    return results;
+}
+
+<<<<<<< HEAD
 - (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error{
     
     __block BOOL result = YES;
@@ -300,21 +364,31 @@ FMDatabaseQueue *queue;
 }
 
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+=======
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
+    
+>>>>>>> FMDatabasePool
     NSString* options = @"";
+    
     if (orderBy) {
         NSString *order = [NSString stringWithFormat:@" ORDER BY %@", orderBy];
         options = [options stringByAppendingString:order];
     }
+    
     if (fetchLimit) {
         NSString *limit = [NSString stringWithFormat:@" LIMIT %ld", (unsigned long)*fetchLimit];
         options = [options stringByAppendingString:limit];
     }
+    
     if (fetchOffset) {
         NSString *offset = [NSString stringWithFormat:@" OFFSET %ld", (unsigned long)*fetchOffset];
         options = [options stringByAppendingString:offset];
     }
+    
     name = [self entityToTableName:name];
+    
     NSString* where = @"";
+    
     if (predicate){
         where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
         if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
@@ -323,18 +397,25 @@ FMDatabaseQueue *queue;
             where = [@" WHERE " stringByAppendingString:where];
         }
     }
-    where = [where stringByReplacingOccurrencesOfString:@" AND ()" withString:@""];
-    where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?" withString:[STMFunctions lowercaseFirst:name]];
-    where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?" withString:name];
+    
+    where = [where stringByReplacingOccurrencesOfString:@" AND ()"
+                                             withString:@""];
+    where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?"
+                                             withString:[STMFunctions lowercaseFirst:name]];
+    where = [where stringByReplacingOccurrencesOfString:@"?capitalizedTableName?"
+                                             withString:name];
+    
     NSMutableArray *rez = @[].mutableCopy;
-    [queue inDatabase:^(FMDatabase *db) {
-        NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@",name,where,options];
-        FMResultSet *s = [db executeQuery:query];
-        while ([s next]) {
-            [rez addObject:[s resultDictionary]];
-        }
-    }];
-    return rez;
+    NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@", name, where, options];
+    
+    FMResultSet *s = [db executeQuery:query];
+    
+    while ([s next]) {
+        [rez addObject:s.resultDictionary];
+    }
+    
+    // there will be memory warnings loading catalogue on an old device if no copy
+    return rez.copy;
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {

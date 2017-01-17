@@ -117,6 +117,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)uppercaseFirst:(NSString *)inputString;
 + (NSString *)lowercaseFirst:(NSString *)inputString;
 
++ (id)popArray:(NSMutableArray *)array;
+
 NS_ASSUME_NONNULL_END
 
 

@@ -49,11 +49,21 @@
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 @property (nonatomic, strong) NSMutableArray *updateRequests;
 @property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
+@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
 
 @end
 
 
 @implementation STMCoreObjectsController
+
+- (NSMutableArray *)fantomsPendingArray {
+    
+    if (!_fantomsPendingArray) {
+        _fantomsPendingArray = @[].mutableCopy;
+    }
+    return _fantomsPendingArray;
+    
+}
 
 - (NSMutableArray *)fantomsArray {
     
@@ -1474,7 +1484,7 @@
     return [self sharedController].isDefantomizingProcessRunning;
 }
 
-+ (void)resolveFantoms {
++ (void)fillFantomsArray {
     
     STMCoreObjectsController *objController = [self sharedController];
     
@@ -1484,20 +1494,20 @@
         
         NSError *error;
         NSArray *results = [self.persistenceDelegate findAllSync:entityName predicate:nil options:@{@"fantoms":@YES} error:&error];
-            
+        
         if (results.count > 0) {
             
             NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
-
-            STMEntity *entity = [STMEntityController stcEntities][entityName];
-
-            if (entity.url) {
-
-                for (NSDictionary *fantomObject in results) {
             
+            STMEntity *entity = [STMEntityController stcEntities][entityName];
+            
+            if (entity.url) {
+                
+                for (NSDictionary *fantomObject in results) {
+                    
                     NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
                     
-                    if (![objController.notFoundFantomsArray containsObject:fantomDic] && ![objController.fantomsArray containsObject:fantomDic]) {
+                    if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
                         [objController.fantomsArray addObject:fantomDic];
                     }
                     
@@ -1506,31 +1516,57 @@
             } else {
                 NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
             }
-
+            
         } else {
             NSLog(@"have no fantoms for %@", entityName);
         }
         
     }
     
-    if (objController.fantomsArray.count > 0) {
-        
-        objController.isDefantomizingProcessRunning = YES;
-
-        NSLog(@"DEFANTOMIZING_START");
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                            object:objController
-                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
-        
-        [self requestFantomObjectWithParameters:objController.fantomsArray.lastObject];
-        
-    } else {
-        [self stopDefantomizing];
-    }
-
 }
 
++ (void)resolveFantoms {
+    
+    STMCoreObjectsController *objController = [self sharedController];
+    
+    @synchronized (objController) {
+        
+        if (!objController.isDefantomizingProcessRunning || !objController.fantomsArray.count) {
+            [self fillFantomsArray];
+        }
+    
+        if (objController.fantomsArray.count > 0) {
+            
+            objController.isDefantomizingProcessRunning = YES;
+
+            NSLog(@"DEFANTOMIZING_START");
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                                object:objController
+                                                              userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+            
+            for (int i = 1; i<=10 && objController.fantomsArray.count > 0; i++) {
+                [self requestNextFantom];
+            }
+            
+        } else {
+            [self stopDefantomizing];
+        }
+        
+    }
+}
+
++ (NSDictionary *)requestNextFantom{
+
+    NSDictionary *fantom = [STMFunctions popArray:self.sharedController.fantomsArray];
+    
+    if (fantom) {
+        [self.sharedController.fantomsPendingArray addObject:fantom];
+        [self requestFantomObjectWithParameters:fantom];
+    }
+    
+    return fantom;
+}
 
 + (void)requestFantomObjectWithParameters:(NSDictionary *)parameters {
     
@@ -1542,7 +1578,7 @@
             entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
         }
         
-        __block STMEntity *entity = [STMEntityController stcEntities][entityName];
+        STMEntity *entity = [STMEntityController stcEntities][entityName];
         
         if (!entity.url) {
             
@@ -1603,37 +1639,38 @@
         
     }
     
-    [objController.fantomsArray removeObject:fantomDic];
+    @synchronized (objController.fantomsPendingArray) {
+        [objController.fantomsPendingArray removeObject:fantomDic];
+    }
     
     NSString *entityName = fantomDic[@"entityName"];
     NSString *fantomXid = fantomDic[@"id"];
 
     if (successfully) {
         
-        NSLog(@"success defantomize %@ %@", entityName, fantomXid);
+        NSLog(@"success defantomize %@ %@ pending: %u", entityName, fantomXid, objController.fantomsPendingArray.count);
         
     } else {
         
-#warning - check fantomDic before inset it in array
         [objController.notFoundFantomsArray addObject:fantomDic];
         NSLog(@"bad luck defantomize %@ %@", entityName, fantomXid);
         
     }
     
-    if (objController.fantomsArray.count > 0) {
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
-                                                            object:objController
-                                                          userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
+    @synchronized (objController) {
+        if (objController.fantomsArray.count > 0) {
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                                                object:objController
+                                                              userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
 
-        NSDictionary *nextFantom = objController.fantomsArray.lastObject;
-        [objController.fantomsArray removeLastObject];
-        [self requestFantomObjectWithParameters:nextFantom];
-        
-    } else {
-        
-        [self resolveFantoms];
-        
+            [self requestNextFantom];
+            
+        } else {
+            if (!objController.fantomsPendingArray.count) {
+                [self resolveFantoms];
+            }
+        }
     }
     
 }
@@ -1647,8 +1684,9 @@
                                                         object:objController
                                                       userInfo:nil];
 
-    objController.fantomsArray = nil;
-    objController.notFoundFantomsArray = nil;
+    [objController.fantomsArray removeAllObjects];
+    [objController.notFoundFantomsArray removeAllObjects];
+    [objController.fantomsPendingArray removeAllObjects];
 
 }
 
