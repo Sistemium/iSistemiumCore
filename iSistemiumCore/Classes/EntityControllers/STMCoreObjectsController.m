@@ -1461,17 +1461,19 @@
     for (NSString *entityName in entityNames) {
 
         NSError *error = nil;
-        NSArray *results = [self.persistenceDelegate findAllSync:entityName
-                                                       predicate:nil
-                                                         options:@{@"fantoms":@NO}
-                                                           error:&error];
-        NSUInteger count = results.count;
-        results = [self.persistenceDelegate findAllSync:entityName
-                                              predicate:nil
-                                                options:@{@"fantoms":@YES}
-                                                  error:&error];
-        fantomsCount += results.count;
-        count += results.count;
+        NSArray *result = [[self persistenceDelegate] findAllSync:entityName
+                                                        predicate:nil
+                                                          options:@{@"fantoms": @NO}
+                                                            error:&error];
+        
+        NSUInteger count = result.count;
+        result = [[self persistenceDelegate] findAllSync:entityName
+                                               predicate:nil
+                                                 options:@{@"fantoms": @YES}
+                                                   error:&error];
+        count += result.count;
+        fantomsCount += result.count;
+        
         totalCount += count;
         
         [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
