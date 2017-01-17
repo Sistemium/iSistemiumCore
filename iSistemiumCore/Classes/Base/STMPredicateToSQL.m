@@ -286,12 +286,16 @@ static STMPredicateToSQL *sharedInstance;
     return retStr;
 }
 
-- (NSString *) SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate{
+- (NSString *)SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate entityName:(NSString *)entityName {
     
-    NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
-    NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
+    NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:predicate.leftExpression];
+    NSString *rightSQLExpression = [self SQLExpressionForNSExpression:predicate.rightExpression];
     
-    rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+    NSArray *allKeys = [[STMFmdb sharedInstance] allKeysForObject:entityName];
+    
+    if (![allKeys containsObject:rightSQLExpression]) {
+        rightSQLExpression = [NSString stringWithFormat:@"'%@'", rightSQLExpression];
+    }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
     
@@ -365,11 +369,11 @@ static STMPredicateToSQL *sharedInstance;
     return nil;
 }
 
-- (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate{
+- (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate entityName:(NSString *)entityName {
     NSMutableArray *subs = [NSMutableArray array];
     
     for (NSPredicate *sub in [predicate subpredicates]) {
-        [subs addObject:[self SQLFilterForPredicate:sub]];
+        [subs addObject:[self SQLFilterForPredicate:sub entityName:entityName]];
     }
     
     if (subs.count == 1){
@@ -399,13 +403,13 @@ static STMPredicateToSQL *sharedInstance;
     return [NSString stringWithFormat:@"(%@)", [subs componentsJoinedByString:conjunction]];
 }
 
-- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate{
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
     if ([predicate respondsToSelector:@selector(compoundPredicateType)]){
-        return [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate];
+        return [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate entityName:entityName];
     }
     else {
         if ([predicate respondsToSelector:@selector(predicateOperatorType)]){
-            return [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate];
+            return [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate entityName:entityName];
         }
         else {
             NSLog(@"SQLFilterForPredicate predicate is not of a convertible class");

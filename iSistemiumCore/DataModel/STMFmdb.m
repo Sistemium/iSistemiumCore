@@ -275,7 +275,7 @@ FMDatabaseQueue *queue;
     name = [self entityToTableName:name];
     NSString* where = @"";
     if (predicate){
-        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
+        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate entityName:name];
         if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
             where = @"";
         }else{
