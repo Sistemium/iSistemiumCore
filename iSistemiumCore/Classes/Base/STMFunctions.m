@@ -627,6 +627,14 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
++ (id)popArray:(NSMutableArray *)array {
+    @synchronized (array) {
+        id result = array.lastObject;
+        if (result) [array removeLastObject];
+        return result;
+    }
+}
+
 + (NSString *)pluralTypeForCount:(NSUInteger)count {
     
     NSString *result;
