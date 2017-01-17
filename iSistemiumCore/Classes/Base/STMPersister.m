@@ -152,32 +152,6 @@
         
         [savingAttributes setValue:now forKey:@"deviceAts"];
         
-        if ([entityName isEqualToString:@"STMRecordStatus"]) {
-            if (![savingAttributes[@"isRemoved"] isEqual:[NSNull null]] ? [savingAttributes[@"isRemoved"] boolValue]: false) {
-                
-                [self destroyWithoutSave:savingAttributes[@"name"] id:savingAttributes[@"objectXid"] options:nil error:error];
-                
-            }
-            
-            if (![savingAttributes[@"isTemporary"] isEqual:[NSNull null]] ? [savingAttributes[@"isTemporary"] boolValue]: false) {
-                [self destroyWithoutSave:@"STMRecordStatus" id:savingAttributes[@"id"] options:nil error:error];
-                return nil;
-            }
-        }else if (savingAttributes[@"id"] && ![savingAttributes[@"id"] isEqual:[NSNull null]]) {
-            NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:attributes[@"id"]];
-            
-            if (!recordStatus){
-                recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":savingAttributes[@"id"],@"name":entityName} options:nil error:error];
-            }
-            
-            if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
-                
-                [self destroyWithoutSave:recordStatus[@"name"] id:recordStatus[@"objectXid"] options:nil error:error];
-                return nil;
-                
-            }
-        }
-        
         if(!returnSaved){
             [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
             return nil;
@@ -206,20 +180,6 @@
 }
 
 - (BOOL)destroyWithoutSave:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
-    
-    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:identifier];
-    
-    if (!recordStatus){
-        recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":identifier,@"name":entityName} options:nil error:error];
-    }
-    
-    [recordStatus setValue:@YES forKey:@"isRemoved"];
-    
-    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
-    
-    if (error){
-        return NO;
-    }
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
@@ -320,6 +280,28 @@
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
+    
+    if ([entityName isEqualToString:@"STMRecordStatus"]) {
+        
+        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
+            
+            [self destroyWithoutSave:attributes[@"name"] id:attributes[@"objectXid"] options:nil error:error];
+            
+        }
+        
+        if ([attributes[@"isTemporary"] boolValue]) return nil;
+        
+    } else if (attributes[@"id"]) {
+        
+#warning may be not needed at all or moved to trigger
+        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:attributes[@"id"]];
+        
+        if ([recordStatus[@"isRemoved"] boolValue]) {
+            [self destroyWithoutSave:recordStatus[@"name"] id:recordStatus[@"objectXid"] options:nil error:error];
+            return nil;
+        }
+    }
+    
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     
     if (*error){
@@ -365,6 +347,16 @@
 - (BOOL)destroySync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     [self destroyWithoutSave:entityName id:identifier options:options error:error];
+    
+    if (error){
+        return NO;
+    }
+    
+    NSDictionary *recordStatus = @{@"objectXid":identifier, @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
+    
+    [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+    
+    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
     
     if (error){
     #warning possible danger, will rollback changes from other threads
