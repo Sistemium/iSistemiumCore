@@ -1002,49 +1002,111 @@
     
     if (entity) {
         
-        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+        NSMutableDictionary *options = @{@"lts": [STMFunctions stringFromNow]}.mutableCopy;
 
+        NSString *roleName = entity.roleName;
+        
+        if (roleName) {
+            options[@"roleName"] = roleName;
+        }
+
+// sync
+//        NSError *error = nil;
+//        NSArray *result = [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:options error:&error];
+//        
+//        if (error) {
+//            [self findAllResultMergedWithError:error.localizedDescription];
+//        } else {
+//            
+//            [self findAllResultMergedWithSuccess:data
+//                                      entityName:entityName
+//                                      isLastPage:isLastPage];
+//            
+//        }
+
+// async
+        [self.persistenceDelegate mergeManyAsync:entityName
+                                  attributeArray:data
+                                         options:options
+                               completionHandler:^(BOOL success, NSArray *result, NSError *error) {
+            
             if (success) {
-                
-                NSLog(@"    %@: get %lu objects", entityName, (unsigned long)data.count);
-                
-                if (isLastPage) {
-                    
-                    NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
-                    
-                    [self fillETagWithTemporaryValueForEntityName:entityName];
-                    [self receiveNoContentStatusForEntityWithName:entityName];
-                    
-                } else {
-                    
-                    [self nextReceiveEntityWithName:entityName];
-                    
-                }
-                
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-                                                                        object:self
-                                                                      userInfo:@{@"count"         :@(data.count),
-                                                                                 @"entityName"    :entityName}];
-                    
-                }];
-                
+
+                [self findAllResultMergedWithSuccess:data
+                                          entityName:entityName
+                                          isLastPage:isLastPage];
+
             } else {
-                
-                NSString *errorString = [NSString stringWithFormat:@"error in processingOfDataArray:%@ withEntityName: %@", data, entityName];
-                [self entityCountDecreaseWithError:errorString];
-                
+                [self findAllResultMergedWithError:error.localizedDescription];
             }
-
+            
         }];
+        
+// promised
+//        [self.persistenceDelegate mergeMany:entityName attributeArray:data options:options].then(^(NSArray *result){
+//
+//            [self findAllResultMergedWithSuccess:data
+//                                      entityName:entityName
+//                                      isLastPage:isLastPage];
+//
+//        }).catch(^(NSError *error){
+//
+//            [self findAllResultMergedWithError:error.localizedDescription];
+//
+//        });
 
-//        [self.persistenceDelegate mergeManyAsync:entityName attributeArray:data options:nil completionHandler:^(BOOL success, NSArray *result, NSError *error) {
+// old style — same as promised
+//        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
+//
+//            if (success) {
+//
+//                [self findAllResultMergedWithSuccess:data
+//                                         entityName:entityName
+//                                         isLastPage:isLastPage];
+//
+//            } else {
+//                
+//                NSString *errorString = [NSString stringWithFormat:@"error in processingOfDataArray:%@ withEntityName: %@", data, entityName];
+//                [self findAllResultMergedWithError:errorString];
+//                
+//            }
 //            
 //        }];
         
     }
     
+}
+
+- (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
+    
+    NSLog(@"    %@: get %@ objects", entityName, @(result.count));
+    
+    if (isLastPage) {
+        
+        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
+        
+        [self fillETagWithTemporaryValueForEntityName:entityName];
+        [self receiveNoContentStatusForEntityWithName:entityName];
+        
+    } else {
+        
+        [self nextReceiveEntityWithName:entityName];
+        
+    }
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+                                                            object:self
+                                                          userInfo:@{@"count"         :@(result.count),
+                                                                     @"entityName"    :entityName}];
+        
+    }];
+
+}
+
+- (void)findAllResultMergedWithError:(NSString *)errorString {
+    [self entityCountDecreaseWithError:errorString];
 }
 
 
