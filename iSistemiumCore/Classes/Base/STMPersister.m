@@ -226,14 +226,7 @@
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
     
     BOOL isFantom = [options[@"fantoms"] boolValue];
-    
-    if (isFantom) {
-        [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = YES"]];
-    } else {
-        [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = NO OR isFantom = nil"]];
-    }
-    
-//    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %d", options[@"fantoms"] ? 1 : 0]];
+    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
     
     if (predicate) {
         [predicates addObject:predicate];
