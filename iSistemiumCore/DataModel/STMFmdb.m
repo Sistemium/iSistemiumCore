@@ -193,7 +193,7 @@ FMDatabaseQueue *queue;
     
     NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
     
-    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:nil fetchOffset:nil];
+    NSArray *results = [self getDataWithEntityName:tablename withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk] orderBy:nil fetchLimit:0 fetchOffset:0];
     
     return [results firstObject];
     
@@ -257,18 +257,19 @@ FMDatabaseQueue *queue;
     return result;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset {
+    
     NSString* options = @"";
     if (orderBy) {
         NSString *order = [NSString stringWithFormat:@" ORDER BY %@", orderBy];
         options = [options stringByAppendingString:order];
     }
     if (fetchLimit) {
-        NSString *limit = [NSString stringWithFormat:@" LIMIT %ld", (unsigned long)*fetchLimit];
+        NSString *limit = [NSString stringWithFormat:@" LIMIT %@", @(fetchLimit)];
         options = [options stringByAppendingString:limit];
     }
     if (fetchOffset) {
-        NSString *offset = [NSString stringWithFormat:@" OFFSET %ld", (unsigned long)*fetchOffset];
+        NSString *offset = [NSString stringWithFormat:@" OFFSET %@", @(fetchOffset)];
         options = [options stringByAppendingString:offset];
     }
     name = [self entityToTableName:name];
@@ -293,6 +294,7 @@ FMDatabaseQueue *queue;
         }
     }];
     return rez;
+    
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {

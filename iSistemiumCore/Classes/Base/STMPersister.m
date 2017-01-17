@@ -248,8 +248,8 @@
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
-                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
-                                                   fetchOffset:options[@"offset"] ? &offset : nil];
+                                                    fetchLimit:pageSize
+                                                   fetchOffset:offset];
 
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
