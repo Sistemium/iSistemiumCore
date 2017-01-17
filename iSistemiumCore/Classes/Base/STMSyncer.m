@@ -819,7 +819,7 @@
                              
                              if (success) {
                                  
-                                 NSDictionary *context = @{@"id"    : DEFANTOMIZING_CONTEXT,
+                                 NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
                                                            @"object": fantomDic};
                                  
                                  [self socketReceiveJSDataAck:data
@@ -1165,7 +1165,7 @@
     //    NSLog(@"find errorCode: %@", errorCode);
     NSLog(@"find error: %@", errorString);
 
-    BOOL defantomizing = [context[@"id"] isEqualToString:DEFANTOMIZING_CONTEXT];
+    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
     
     if (defantomizing) {
         
@@ -1178,7 +1178,7 @@
 
 - (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
     
-    BOOL defantomizing = [context[@"id"] isEqualToString:DEFANTOMIZING_CONTEXT];
+    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
     
     //    NSLog(@"find responseData %@", responseData);
     
