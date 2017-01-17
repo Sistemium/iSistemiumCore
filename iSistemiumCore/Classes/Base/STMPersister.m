@@ -226,7 +226,7 @@
     
 }
 
-- (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger pageSize = [options[@"pageSize"] integerValue];
     NSUInteger offset = [options[@"startPage"] integerValue];
@@ -259,6 +259,7 @@
                                                    fetchOffset:offset];
 
     } else {
+        
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
                                                                      ascending:YES
@@ -270,8 +271,11 @@
                                                         inManagedObjectContext:[self document].managedObjectContext
                                                                          error:error];
         
-        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray entityName:entityName];
+        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
+                                                        entityName:entityName];
+        
     }
+    
 }
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{

@@ -103,7 +103,7 @@
 + (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
                  withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
 
-+ (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
++ (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls;

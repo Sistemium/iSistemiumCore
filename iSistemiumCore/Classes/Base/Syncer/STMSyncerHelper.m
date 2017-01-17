@@ -196,13 +196,13 @@
 
 - (void)handleUnsyncedObjects {
     
-    NSArray *unsyncedObjects = [self unsyncedObjects];
+    NSArray <NSDictionary *> *unsyncedObjects = [self unsyncedObjects];
     
     NSLog(@"%@ unsynced total", @(unsyncedObjects.count));
     
 }
 
-- (NSArray *)unsyncedObjects {
+- (NSArray <NSDictionary *> *)unsyncedObjects {
     
     NSMutableArray *unsyncedObjects = @[].mutableCopy;
     
@@ -215,10 +215,10 @@
             NSError *error = nil;
             NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
 
-            NSArray *result = [self.persistenceDelegate findAllSync:entityName
-                                                          predicate:predicate
-                                                            options:nil
-                                                              error:&error];
+            NSArray <NSDictionary *> *result = [self.persistenceDelegate findAllSync:entityName
+                                                                           predicate:predicate
+                                                                             options:nil
+                                                                               error:&error];
             
             if (result.count > 0) {
             

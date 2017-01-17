@@ -2347,7 +2347,7 @@
 
 #pragma mark - generate arrayForJS
 
-+ (NSArray *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
++ (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray <NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
     
     NSMutableArray *dataArray = @[].mutableCopy;
 
