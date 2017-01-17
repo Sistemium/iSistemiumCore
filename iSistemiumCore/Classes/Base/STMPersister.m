@@ -251,7 +251,7 @@
                                                                     fetchLimit:pageSize
                                                                    fetchOffset:offset
                                                                    withFantoms:NO
-                                                                     predicate:predicate
+                                                                     predicate:predicateWithFantoms
                                                                     resultType:NSDictionaryResultType
                                                         inManagedObjectContext:[self document].managedObjectContext
                                                                          error:error];
