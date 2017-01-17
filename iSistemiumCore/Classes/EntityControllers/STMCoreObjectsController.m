@@ -1184,29 +1184,12 @@
         
         NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
         
-        if (isToMany) {
-            if (relationship.isToMany == isToMany.boolValue) {
+        if (!isToMany || relationship.isToMany == isToMany.boolValue) {
                 
-                if (cascade && relationship.deleteRule == NSCascadeDeleteRule){
-                    objectRelationships[relationshipName] = relationship.destinationEntity.name;
-                }
-                
-                if (!cascade && relationship.deleteRule != NSCascadeDeleteRule){
-                    objectRelationships[relationshipName] = relationship.destinationEntity.name;
-                }
-            
+            if ((cascade && relationship.deleteRule == NSCascadeDeleteRule) || relationship.deleteRule != NSCascadeDeleteRule){
+                objectRelationships[relationshipName] = relationship;
             }
-            
-        } else {
-            
-            if (cascade && relationship.deleteRule == NSCascadeDeleteRule){
-                objectRelationships[relationshipName] = relationship.destinationEntity.name;
-            }
-            
-            if (!cascade && relationship.deleteRule != NSCascadeDeleteRule){
-                objectRelationships[relationshipName] = relationship.destinationEntity.name;
-            }
-            
+        
         }
         
     }
@@ -1854,7 +1837,9 @@
 
     }
     
-    return [[self persistenceDelegate] destroy:entityName id:xidString options:nil];
+    return [[self persistenceDelegate] destroy:entityName id:xidString options:nil].then(^(NSNumber *result){
+        return @[@{@"objectXid":xidString}];
+    });
     
 }
 
