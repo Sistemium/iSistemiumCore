@@ -121,7 +121,7 @@ FMDatabasePool *pool;
                         sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     }
                     
-                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
+                    NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
                     NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
                     NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
                     
@@ -145,7 +145,7 @@ FMDatabasePool *pool;
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
 
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
-                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
+                    NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
                     res = [database executeStatements:createIndexSQL];

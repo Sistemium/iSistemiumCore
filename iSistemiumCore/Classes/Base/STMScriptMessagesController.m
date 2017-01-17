@@ -175,12 +175,10 @@
     
     if ([key isEqualToString:@"id"]) localKey = @"xid";
     if ([key isEqualToString:@"ts"]) localKey = @"deviceTs";
-    
-    NSString *relKey = @"Id";
-    
-    if ([key hasSuffix:relKey]) {
         
-        NSUInteger substringIndex = key.length - relKey.length;
+    if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
+        
+        NSUInteger substringIndex = key.length - RELATIONSHIP_SUFFIX.length;
         
         if ([relationships objectForKey:[key substringToIndex:substringIndex]]) {
             localKey = [key substringToIndex:substringIndex];

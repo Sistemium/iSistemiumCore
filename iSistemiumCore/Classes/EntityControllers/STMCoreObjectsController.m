@@ -510,11 +510,9 @@
             
         } else {
         
-            NSString *relationshipSuffix = @"Id";
-            
-            if ([key hasSuffix:relationshipSuffix]) {
+            if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
                 
-                NSUInteger toIndex = key.length - relationshipSuffix.length;
+                NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
                 NSString *localKey = [key substringToIndex:toIndex];
             
                 if ([ownObjectRelationships objectForKey:localKey]) {
@@ -643,7 +641,7 @@
     
     for (NSString *relationship in ownObjectRelationships.allKeys) {
         
-        NSString *relationshipId = [relationship stringByAppendingString:@"Id"];
+        NSString *relationshipId = [relationship stringByAppendingString:RELATIONSHIP_SUFFIX];
         
         NSString *destinationObjectXid = [properties[relationshipId] isKindOfClass:[NSNull class]] ? nil : properties[relationshipId];
         
@@ -2053,7 +2051,7 @@
     
     for (NSString *key in ownRelationships.allKeys) {
         
-        NSString *dicKey = [key stringByAppendingString:@"Id"];
+        NSString *dicKey = [key stringByAppendingString:RELATIONSHIP_SUFFIX];
         NSString *xidString = objectData[dicKey];
 
         if (xidString) {
@@ -2136,7 +2134,7 @@
     
     for (NSString *key in ownRelationships.allKeys) {
     
-        NSString *dicKey = [key stringByAppendingString:@"Id"];
+        NSString *dicKey = [key stringByAppendingString:RELATIONSHIP_SUFFIX];
         
         id value = objectData[dicKey];
         
@@ -2394,7 +2392,7 @@
     for (NSString *relationship in ownRelationships) {
         
         NSString *resultKey = [relationship stringByAppendingString:@".xid"];
-        NSString *dictKey = [relationship stringByAppendingString:@"Id"];
+        NSString *dictKey = [relationship stringByAppendingString:RELATIONSHIP_SUFFIX];
         
         NSData *xidData = objectDic[resultKey];
         

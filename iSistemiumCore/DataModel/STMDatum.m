@@ -290,7 +290,7 @@
             
             STMDatum *relationshipObject = [self valueForKey:key];
         
-            NSString *dictKey = [key stringByAppendingString:@"Id"];
+            NSString *dictKey = [key stringByAppendingString:RELATIONSHIP_SUFFIX];
 
             if (relationshipObject) {
                 

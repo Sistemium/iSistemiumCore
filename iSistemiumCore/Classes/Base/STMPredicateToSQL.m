@@ -110,7 +110,7 @@ static STMPredicateToSQL *sharedInstance;
 - (NSString *)FKToTablename:(NSString *)obj{
     bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:obj]];
     if (isTable) {
-        return [obj stringByAppendingString:@"Id"];
+        return [obj stringByAppendingString:RELATIONSHIP_SUFFIX];
     }
     return obj ;
 }
