@@ -259,7 +259,7 @@
         
     }
     
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"(lts == %@ || deviceTs > lts)", nil]];
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts"]];
     
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
 
