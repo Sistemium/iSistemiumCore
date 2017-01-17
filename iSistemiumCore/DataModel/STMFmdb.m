@@ -37,14 +37,15 @@ FMDatabaseQueue *queue;
         [queue inDatabase:^(FMDatabase *database){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
-            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
-            NSString *cascadeDelete  = @" ON DELETE CASCADE";
+            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
             NSString *createFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@ BEFORE INSERT ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
             NSString *updateFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@_update BEFORE UPDATE OF %@ ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
             NSString *fantomIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_isFantom on %@ (isFantom);";
+            
+            NSString *createCascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
             
             
             for (NSString* entityName in entityNames){
@@ -111,22 +112,9 @@ FMDatabaseQueue *queue;
                     }
                 }
                 
-                for (NSString* entityKey in [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(NO) cascade:false].allKeys){
-                    if (first){
-                        first = false;
-                    }else{
-                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
-                    }
-                    
-                    NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
-                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
-                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
-                    
-                    [columns addObject:fkColumn];
-                    sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
-                }
+                NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
                 
-                for (NSString* entityKey in [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(NO) cascade:true].allKeys){
+                for (NSString* entityKey in relationships.allKeys){
                     if (first){
                         first = false;
                     }else{
@@ -135,9 +123,9 @@ FMDatabaseQueue *queue;
                     
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
-                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
                     
-                    fkSQL = [fkSQL stringByAppendingString:cascadeDelete];
+                    NSString *cascadeAction = @"SET NULL";
+                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable, cascadeAction];
                     
                     [columns addObject:fkColumn];
                     sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
@@ -176,6 +164,21 @@ FMDatabaseQueue *queue;
                     NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
                     
                 }
+                
+                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:true];
+                
+                for (NSString* relationKey in cascadeRelations.allKeys){
+                    
+                    NSRelationshipDescription *relation = cascadeRelations[relationKey];
+                    NSString *childTableName = [self entityToTableName:relation.destinationEntity.name];
+                    NSString *fkColumn = [relation.inverseRelationship.name stringByAppendingString:@"Id"];
+                    
+                    sql_stmt = [NSString stringWithFormat:createCascadeTriggerFormat, tableName, relationKey,tableName, relationKey,tableName, childTableName, fkColumn];
+                    res = [database executeStatements:sql_stmt];
+                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+                    
+                }
+                
             }
             columnsByTable = columnsDictionary.copy;
         
@@ -251,6 +254,10 @@ FMDatabaseQueue *queue;
             [v addObject:@"?"];
         }
         
+        if (!keys.count) {
+            NSLog(@"keys.count=0");
+        }
+        
         NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
         
         if(![db executeUpdate:updateSQL values:values error:error]){
@@ -279,9 +286,9 @@ FMDatabaseQueue *queue;
     
     __block BOOL result = YES;
     
-    NSString* destroySQL = @"DELETE FROM ? WHERE id=?";
+    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@ WHERE id=?", [self entityToTableName:tablename]];
     
-    NSArray* values = @[tablename,idendifier];
+    NSArray* values = @[idendifier];
     
     [queue inDatabase:^(FMDatabase *db) {
         if(![db executeUpdate:destroySQL values:values error:error]){
