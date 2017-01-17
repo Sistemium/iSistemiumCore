@@ -220,9 +220,13 @@
                                                             options:nil
                                                               error:&error];
             
-            NSLog(@"%@ unsynced %@", @(result.count), entityName);
+            if (result.count > 0) {
             
-            [unsyncedObjects addObjectsFromArray:result];
+                NSLog(@"%@ unsynced %@", @(result.count), entityName);
+                
+                [unsyncedObjects addObjectsFromArray:result];
+
+            }
             
         }
 
