@@ -289,38 +289,12 @@ FMDatabasePool *pool;
         } else{
             return nil;
         }
-<<<<<<< HEAD
-        
-        if (!keys.count) {
-            NSLog(@"keys.count=0");
-        }
-        
-        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
-        
-        if(![db executeUpdate:updateSQL values:values error:error]){
-            if ([[*error localizedDescription] isEqualToString:@"ignored"]){
-                *error = nil;
-            }
-            else{
-                result = NO;
-            }
-            return;
-        };
-        
-        if (!db.changes) {
-            NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
-            if (![db executeUpdate:insertSQL values:values error:error]){
-                result = NO;
-                return;
-            }
-=======
-    };
+    }
     
     if (!db.changes) {
         NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
         if (![db executeUpdate:insertSQL values:values error:error]){
             return nil;
->>>>>>> FMDatabasePool
         }
     }
 
@@ -345,7 +319,6 @@ FMDatabasePool *pool;
     return results;
 }
 
-<<<<<<< HEAD
 - (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error{
     
     __block BOOL result = YES;
@@ -363,11 +336,8 @@ FMDatabasePool *pool;
     return result;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
-=======
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
     
->>>>>>> FMDatabasePool
     NSString* options = @"";
     
     if (orderBy) {

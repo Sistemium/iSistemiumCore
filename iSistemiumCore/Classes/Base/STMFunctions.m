@@ -627,20 +627,19 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
-<<<<<<< HEAD
 + (NSString *)entityToTableName:(NSString *)entity{
     if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
         return [entity substringFromIndex:3];
     }
     return entity ;
-=======
+}
+
 + (id)popArray:(NSMutableArray *)array {
     @synchronized (array) {
         id result = array.lastObject;
         if (result) [array removeLastObject];
         return result;
     }
->>>>>>> FMDatabasePool
 }
 
 + (NSString *)pluralTypeForCount:(NSUInteger)count {
