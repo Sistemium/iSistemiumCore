@@ -756,23 +756,9 @@
 }
 
 - (void)defantomizeObject:(NSDictionary *)fantomDic {
-    [self defantomizeObject:fantomDic error:nil];
-}
-
-- (void)defantomizeObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
-    
-    if (errorString) {
-    
-//        NSLog(@"defantomizeObject: %@ error: %@", fantomDic, errorString);
-        
-        [self.syncerHelper defantomizeErrorWithObject:fantomDic];
-        [self fantomsCountDecrease];
-
-        return;
-
-    }
     
     NSString *entityName = fantomDic[@"entityName"];
+    NSString *fantomId = fantomDic[@"id"];
     
     if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
@@ -783,25 +769,24 @@
     if (!entity.url) {
         
         NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-        [self defantomizeObject:fantomDic
-                          error:errorMessage];
+        [self defantomizingObject:fantomDic
+                            error:errorMessage];
+        
+        return;
+        
+    }
+    
+    if (!fantomId) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
+        [self defantomizingObject:fantomDic
+                            error:errorMessage];
         
         return;
         
     }
     
     NSString *resource = entity.url;
-    NSString *fantomId = fantomDic[@"id"];
-    
-    if (!fantomId) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
-        [self defantomizeObject:fantomDic
-                          error:errorMessage];
-        
-        return;
-        
-    }
     
     __block BOOL blockIsComplete = NO;
     
@@ -827,13 +812,24 @@
                                  
                              } else {
                                  
-                                 [self defantomizeObject:fantomDic
-                                                   error:error.localizedDescription];
+                                 [self defantomizingObject:fantomDic
+                                                     error:error.localizedDescription];
                                  
                              }
                              
                          }];
 
+}
+
+- (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
+    
+    NSLog(@"defantomize error: %@", errorString);
+    
+    [self.syncerHelper defantomizeErrorWithObject:fantomDic];
+    [self fantomsCountDecrease];
+    
+    return;
+    
 }
 
 - (void)fantomsCountDecrease {
@@ -1161,17 +1157,16 @@
     if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
         
     }
-    
-    //    NSLog(@"find errorCode: %@", errorCode);
-    NSLog(@"find error: %@", errorString);
 
     BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
     
     if (defantomizing) {
         
-        [self defantomizeObject:context[@"object"]
-                          error:errorString];
+        [self defantomizingObject:context[@"object"]
+                            error:errorString];
         
+    } else {
+        NSLog(@"find error: %@", errorString);
     }
     
 }
@@ -1188,8 +1183,8 @@
         
         if (defantomizing) {
         
-            [self defantomizeObject:context[@"object"]
-                              error:errorMessage];
+            [self defantomizingObject:context[@"object"]
+                                error:errorMessage];
 
         } else {
         
@@ -1218,8 +1213,8 @@
                 
             } else {
                 
-                [self defantomizeObject:object
-                                  error:error.localizedDescription];
+                [self defantomizingObject:object
+                                    error:error.localizedDescription];
                 
             }
             
