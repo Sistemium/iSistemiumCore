@@ -11,7 +11,7 @@
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
-
+@import PromiseKit;
 
 static NSString *kSocketFindAllMethod = @"findAll";
 static NSString *kSocketFindMethod = @"find";

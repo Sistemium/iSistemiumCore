@@ -590,6 +590,36 @@
 }
 
 + (void)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value {
+
+    [self socket:socket
+       sendEvent:event
+       withValue:value
+         timeout:0];
+
+}
+
++ (AnyPromise *)socket:(SocketIOClient *)socket emitPromise:(NSString*)event data:(NSArray*)data timeout:(NSTimeInterval)timeout {
+    
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        NSTimer *timer;
+        if (timeout) {
+            timer = [NSTimer timerWithTimeInterval:timeout target:self selector:@selector(rejectAfterTimeout:) userInfo:resolve repeats:NO];
+        }
+        [socket emitWithAck:event with:data](0, ^(NSArray *data) {
+            if (timer) [timer invalidate];
+            resolve(data);
+        });
+    }];
+}
+
++(void)rejectAfterTimeout:(PMKResolver)resolve {
+    NSError *error;
+    [STMCoreObjectsController error:&error withMessage:@"socket emit timeout"];
+    resolve(error);
+}
+
++ (AnyPromise *)socket:(SocketIOClient *)socket sendEvent:(STMSocketEvent)event withValue:(id)value timeout:(NSTimeInterval)timeout{
+
     
     return;
     // Log
@@ -613,6 +643,8 @@
     // ----------
     // End of log
     
+    NSError *error = nil;
+    
     if (socket.status == SocketIOClientStatusConnected) {
         
         if (event == STMSocketEventJSData && [value isKindOfClass:[NSDictionary class]]) {
@@ -628,11 +660,12 @@
             
             NSString *eventStringValue = [STMSocketController stringValueForEvent:event];
             
-            NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
+            NSDictionary *dataDic = [(NSDictionary *)value copy] ;
             
-            [socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
-                [self receiveJSDataEventAckWithData:data];
-            });
+            return [self socket:socket emitPromise:eventStringValue data:@[dataDic] timeout:timeout]
+                .then(^(NSArray *data){
+                    [self receiveJSDataEventAckWithData:data];
+                });
             
         } else {
             
@@ -665,6 +698,7 @@
                             
                         } else {
                             [socket emit:eventStringValue with:@[dataDic]];
+                            return [AnyPromise promiseWithValue:dataDic];
                         }
                         
                     }
@@ -675,14 +709,20 @@
                 
             }
             
+            [STMCoreObjectsController error:&error withMessage:@"invalid event"];
+            
         }
         
     } else {
 
+        [STMCoreObjectsController error:&error withMessage:@"socket not connected"];
+        
         [self socketLostConnection:@"socket sendEvent"];
         [self checkReachabilityAndSocketStatus:socket];
         
     }
+    
+    return [AnyPromise promiseWithValue:error];
     
 }
 
@@ -884,17 +924,22 @@
 + (void)sendFindWithValue:(id)value andTimeout:(NSTimeInterval)timeout {
     
     STMSocketController *sc = [self sharedInstance];
-    sc.receivingStartDate = [NSDate date];
+//    sc.receivingStartDate = [NSDate date];
+//    
+//    [self cancelCheckReceiveTimeout];
+//
+//    sc.receiveTimeout = timeout;
+//    
+//    [sc performSelector:@selector(checkReceiveTimeout:)
+//             withObject:@(sc.receiveTimeout)
+//             afterDelay:timeout];
     
-    [self cancelCheckReceiveTimeout];
-
-    sc.receiveTimeout = timeout;
-    
-    [sc performSelector:@selector(checkReceiveTimeout:)
-             withObject:@(sc.receiveTimeout)
-             afterDelay:timeout];
-    
-    [self sendEvent:STMSocketEventJSData withValue:value];
+//    [self sendEvent:STMSocketEventJSData withValue:value];
+    [self socket:sc.socket sendEvent:STMSocketEventJSData withValue:value timeout:timeout]
+        .catch(^(NSError* error){
+            // TODO: check if the error is a timeout error
+            [[STMSocketController syncer] socketReceiveTimeout];
+        });
 
 }
 
