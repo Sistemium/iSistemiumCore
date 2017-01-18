@@ -217,6 +217,12 @@
 
 - (void)startHandleUnsyncedObjects {
     
+    if (self.isHandlingUnsyncedObjects) {
+        return;
+    }
+    
+    self.isHandlingUnsyncedObjects = YES;
+    
     self.unsyncedObjects = [self findUnsyncedObjects];
     
     NSLog(@"%@ unsynced total", @(self.unsyncedObjects.count));
@@ -229,9 +235,27 @@
     
     NSDictionary *objectToSend = [self findObjectToSendFromSyncArray:self.unsyncedObjects];
     
-    [self.unsyncedObjects removeObject:objectToSend];
+    if (objectToSend) {
     
-    self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, nil);
+        [self.unsyncedObjects removeObject:objectToSend];
+        
+        if (self.unsyncedSubscriptionBlock) {
+            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, nil);
+        }
+
+    } else {
+
+        [self finishHandleUnsyncedObjects];
+        
+    }
+    
+}
+
+- (void)finishHandleUnsyncedObjects {
+    
+    self.isHandlingUnsyncedObjects = NO;
+    self.unsyncedObjects = nil;
+    self.failToSyncObjects = nil;
 
 }
 
