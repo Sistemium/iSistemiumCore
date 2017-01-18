@@ -1233,7 +1233,10 @@
     if (!_unsyncedSubscriptionHandler) {
         
         _unsyncedSubscriptionHandler = ^(NSString *entity, NSDictionary *itemData, NSString *itemVersion) {
+            
             NSLog(@"unsyncedSubscriptionHandler");
+            NSLog(@"entity %@, itemData %@, itemVersion %@", entity, itemData, itemVersion);
+            
         };
         
     }
