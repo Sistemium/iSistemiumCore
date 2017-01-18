@@ -31,7 +31,7 @@ FMDatabasePool *pool;
         NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSArray *ignoredEntities = @[@"STMSetting", @"STMEntity"];
-        NSArray *ignoredAttributes = @[@"xid"];
+        NSArray *ignoredAttributes = @[@"xid", @"id"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         
@@ -44,7 +44,7 @@ FMDatabasePool *pool;
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
-            NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
+            NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (id TEXT PRIMARY KEY";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
             NSString *createFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@ BEFORE INSERT ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
@@ -66,29 +66,18 @@ FMDatabasePool *pool;
                 NSMutableArray *columns = @[].mutableCopy;
                 NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
                 
-                BOOL first = true;
-                
                 NSDictionary *tableColumns = [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName];
                 
                 for (NSString* columnName in tableColumns.allKeys){
                     
                     if ([ignoredAttributes containsObject:columnName]) continue;
                     
-                    if (first){
-                        first = false;
-                    }else{
-                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
-                    }
+                    sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     
                     [columns addObject:columnName];
                     sql_stmt = [sql_stmt stringByAppendingString:columnName];
                     
                     NSAttributeDescription* atribute = tableColumns[columnName];
-                    
-                    if ([columnName isEqualToString:@"id"]){
-                        sql_stmt = [sql_stmt stringByAppendingString:@" TEXT PRIMARY KEY"];
-                        continue;
-                    }
                     
                     switch (atribute.attributeType) {
                         case NSStringAttributeType:
@@ -125,11 +114,8 @@ FMDatabasePool *pool;
                 NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
                 
                 for (NSString* entityKey in relationships.allKeys){
-                    if (first){
-                        first = false;
-                    }else{
-                        sql_stmt = [sql_stmt stringByAppendingString:@", "];
-                    }
+                    
+                    sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     
                     NSString *fkColumn = [entityKey stringByAppendingString:@"Id"];
                     NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
