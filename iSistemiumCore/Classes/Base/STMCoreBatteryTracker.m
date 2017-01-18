@@ -55,8 +55,10 @@
 
 - (void)getBatteryStatus {
     
-    STMBatteryStatus *batteryStatus = (STMBatteryStatus *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMBatteryStatus class]) isFantom:NO];
-    batteryStatus.batteryLevel = [NSDecimalNumber decimalNumberWithDecimal:@((double)[UIDevice currentDevice].batteryLevel).decimalValue];
+    NSMutableDictionary *batteryStatus = @{}.mutableCopy;
+    
+    batteryStatus[@"batteryLevel"] = [NSDecimalNumber decimalNumberWithDecimal:@((double)[UIDevice currentDevice].batteryLevel).decimalValue];
+    
     NSString *batteryState;
     
     switch ([UIDevice currentDevice].batteryState) {
@@ -76,10 +78,16 @@
             
     }
     
-    batteryStatus.batteryState = batteryState;
+    batteryStatus[@"batteryState"] = batteryState;
     
-    NSLog(@"batteryLevel %@", batteryStatus.batteryLevel);
-    NSLog(@"batteryState %@", batteryStatus.batteryState);
+    NSLog(@"batteryLevel %@", batteryStatus[@"batteryLevel"]);
+    NSLog(@"batteryState %@", batteryState);
+    
+    [self.session.persistenceDelegate mergeAsync:@"STMBatteryStatus"
+                                      attributes:batteryStatus
+                                         options:nil
+                               completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+                               }];
     
 }
 
