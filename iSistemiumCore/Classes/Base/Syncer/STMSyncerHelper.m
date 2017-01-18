@@ -242,6 +242,10 @@
     
     for (NSString *entityName in uploadableEntitiesNames) {
         
+        if ([entityName isEqualToString:@"STMLogMessage"]) {
+            continue;
+        }
+        
         if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
             
             NSError *error = nil;
