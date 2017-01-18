@@ -30,6 +30,8 @@ FMDatabasePool *pool;
         
         NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSArray *ignoredEntities = @[@"STMSetting", @"STMEntity"];
+        NSArray *ignoredAttributes = @[@"xid"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         
@@ -40,7 +42,7 @@ FMDatabasePool *pool;
         
         [queue inDatabase:^(FMDatabase *database){
             
-            NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
+            NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
@@ -56,7 +58,7 @@ FMDatabasePool *pool;
             
             for (NSString* entityName in entityNames){
                 
-                if ([entityName isEqualToString:@"STMSetting"] || [entityName isEqualToString:@"STMEntity"] ){
+                if ([ignoredEntities containsObject:entityName]){
                     continue;
                 }
                 
@@ -66,9 +68,11 @@ FMDatabasePool *pool;
                 
                 BOOL first = true;
                 
-                for (NSString* columnName in [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName].allKeys){
+                NSDictionary *tableColumns = [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName];
+                
+                for (NSString* columnName in tableColumns.allKeys){
                     
-                    if ([columnName isEqualToString:@"xid"]) continue;
+                    if ([ignoredAttributes containsObject:columnName]) continue;
                     
                     if (first){
                         first = false;
@@ -79,7 +83,7 @@ FMDatabasePool *pool;
                     [columns addObject:columnName];
                     sql_stmt = [sql_stmt stringByAppendingString:columnName];
                     
-                    NSAttributeDescription* atribute= [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName][columnName];
+                    NSAttributeDescription* atribute = tableColumns[columnName];
                     
                     if ([columnName isEqualToString:@"id"]){
                         sql_stmt = [sql_stmt stringByAppendingString:@" TEXT PRIMARY KEY"];
@@ -139,14 +143,14 @@ FMDatabasePool *pool;
                 
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
                 columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
- 
+                
                 BOOL res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
                 
                 sql_stmt = [NSString stringWithFormat:fantomIndexFormat, tableName, tableName];
                 res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
-
+                
                 sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName];
                 
                 res = [database executeStatements:sql_stmt];
@@ -191,9 +195,22 @@ FMDatabasePool *pool;
                     
                 }
                 
+                for (NSString* columnName in tableColumns.allKeys){
+                    
+                    NSAttributeDescription* atribute = tableColumns[columnName];
+                    
+                    if (!atribute.indexed || [ignoredAttributes containsObject:columnName]) continue;
+                    
+                    NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, atribute.name, tableName, atribute.name];
+                    res = [database executeStatements:createIndexSQL];
+                    NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
+                    
+                }
+                
             }
+            
             columnsByTable = columnsDictionary.copy;
-        
+            
         }];
     }
     return self;
