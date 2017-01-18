@@ -211,7 +211,10 @@
 - (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     if (!success) {
+        
         self.failToSyncObjects[itemData[@"id"]] = itemData;
+        NSLog(@"failToSync %@", itemData);
+        
     }
 
     [self sendNextUnsyncedObject];
