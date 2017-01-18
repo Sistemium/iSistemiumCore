@@ -41,13 +41,17 @@ FMDatabasePool *pool;
         [queue inDatabase:^(FMDatabase *database){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS FK_%@_%@ on %@ (%@);";
-            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id)";
+            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
             NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (";
             NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
             
             NSString *createFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@ BEFORE INSERT ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
             NSString *updateFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@_update BEFORE UPDATE OF %@ ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
             NSString *fantomIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_isFantom on %@ (isFantom);";
+            
+            NSString *createCascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
+            
+            NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
             
             
             for (NSString* entityName in entityNames){
@@ -114,7 +118,9 @@ FMDatabasePool *pool;
                     }
                 }
                 
-                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
+                NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
+                
+                for (NSString* entityKey in relationships.allKeys){
                     if (first){
                         first = false;
                     }else{
@@ -123,7 +129,9 @@ FMDatabasePool *pool;
                     
                     NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
                     NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
-                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable];
+                    
+                    NSString *cascadeAction = @"SET NULL";
+                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable, cascadeAction];
                     
                     [columns addObject:fkColumn];
                     sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
@@ -143,7 +151,13 @@ FMDatabasePool *pool;
                 
                 res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-
+                
+                sql_stmt = [NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName];
+                
+                res = [database executeStatements:sql_stmt];
+                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+                
+                
                 for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
                     
@@ -162,6 +176,21 @@ FMDatabasePool *pool;
                     NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
                     
                 }
+                
+                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:true];
+                
+                for (NSString* relationKey in cascadeRelations.allKeys){
+                    
+                    NSRelationshipDescription *relation = cascadeRelations[relationKey];
+                    NSString *childTableName = [self entityToTableName:relation.destinationEntity.name];
+                    NSString *fkColumn = [relation.inverseRelationship.name stringByAppendingString:@"Id"];
+                    
+                    sql_stmt = [NSString stringWithFormat:createCascadeTriggerFormat, tableName, relationKey,tableName, relationKey,tableName, childTableName, fkColumn];
+                    res = [database executeStatements:sql_stmt];
+                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
+                    
+                }
+                
             }
             columnsByTable = columnsDictionary.copy;
         
@@ -268,7 +297,7 @@ FMDatabasePool *pool;
         } else{
             return nil;
         }
-    };
+    }
     
     if (!db.changes) {
         NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
@@ -298,7 +327,28 @@ FMDatabasePool *pool;
     return results;
 }
 
+<<<<<<< HEAD
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset db:(FMDatabase *)db {
+=======
+- (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error{
+    
+    __block BOOL result = YES;
+    
+    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@ WHERE id=?", [self entityToTableName:tablename]];
+    
+    NSArray* values = @[idendifier];
+    
+    [queue inDatabase:^(FMDatabase *db) {
+        if(![db executeUpdate:destroySQL values:values error:error]){
+            result = NO;
+        }
+    }];
+    
+    return result;
+}
+
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
+>>>>>>> persisting
     
     NSString* options = @"";
     

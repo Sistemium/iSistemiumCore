@@ -12,38 +12,41 @@
 
 @implementation STMRecordStatusController
 
-+ (STMRecordStatus *)existingRecordStatusForXid:(NSData *)objectXid {
++ (NSDictionary *)existingRecordStatusForXid:(NSString *)objectXid {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id"
-                                                              ascending:YES
-                                                               selector:@selector(compare:)]];
+    NSError* error;
     
-    request.predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
     
-    NSError *error;
-    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request
-                                                                               error:&error];
+    NSArray* recordStatus = [[self persistenceDelegate] findAllSync:@"STMRecordStatus" predicate:predicate options:nil error:&error];
     
-    STMRecordStatus *recordStatus = fetchResult.lastObject;
+    if (error){
+        return nil;
+    }
     
-    return recordStatus;
+    if ([recordStatus count] > 0){
+        return recordStatus.firstObject;
+    }
+    
+    return nil;
     
 }
 
-+ (STMRecordStatus *)recordStatusForObject:(NSManagedObject *)object {
++ (NSDictionary *)recordStatusForObject:(NSDictionary *)object withEntityName:(NSString*)entityName{
     
-    NSData *objectXid = [object valueForKey:@"xid"];
+    NSString *objectId = object[@"id"];
     
-    STMRecordStatus *recordStatus = [self existingRecordStatusForXid:objectXid];
+    NSDictionary *recordStatus = [self existingRecordStatusForXid:objectId];
     
     if (!recordStatus) {
         
-        NSString *objectEntityName = [object.entity.name stringByReplacingOccurrencesOfString:ISISTEMIUM_PREFIX withString:@""];
-
-        recordStatus = (STMRecordStatus *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMRecordStatus class]) isFantom:NO];
-        recordStatus.objectXid = objectXid;
-        recordStatus.name = objectEntityName;
+        NSError* error;
+        
+        recordStatus = [[self persistenceDelegate] mergeSync:@"STMRecordStatus" attributes:@{@"objectXid":objectId,@"name":entityName} options:nil error:&error];
+        
+        if (error){
+            return nil;
+        }
         
     }
     
@@ -53,19 +56,10 @@
 
 + (NSArray *)recordStatusesForXids:(NSArray *)xids {
     
-    STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
-                                                                     ascending:YES
-                                                                      selector:@selector(compare:)];
-    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectXid IN %@", xids];
     
-    request.sortDescriptors = @[sortDescriptor];
-    request.predicate = predicate;
-    
     NSError *error;
-    NSArray *recordStatuses = [[self document].managedObjectContext executeFetchRequest:request
-                                                                                  error:&error];
+    NSArray *recordStatuses = [[self persistenceDelegate] findAllSync:@"RecordStatus" predicate:predicate options:nil error:&error];
 
     return recordStatuses;
     

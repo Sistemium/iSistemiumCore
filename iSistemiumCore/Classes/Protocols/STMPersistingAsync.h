@@ -32,12 +32,12 @@ completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))
                options:(NSDictionary *)options
      completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler;
 
-@optional
-
 - (void)destroyAsync:(NSString *)entityName
                   id:(NSString *)identifier
              options:(NSDictionary *)options
    completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
+
+@optional
 
 - (void)createAsync:(NSString *)entityName
          attributes:(NSDictionary *)attributes

@@ -317,35 +317,20 @@
     [[self sharedInstance] pictureDidShown:picture];
 }
 
-+ (void)markMessageAsRead:(STMMessage *)message andSync:(BOOL)shouldSync {
++ (void)markMessageAsRead:(STMMessage *)message{
     
-    STMRecordStatus *recordStatus = [STMRecordStatusController recordStatusForObject:message];
+    NSDictionary *object = [STMCoreObjectsController dictionaryForJSWithObject:message];
     
-    if (recordStatus.isRead.boolValue != YES) {
+    NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:object withEntityName:@"STMMessage"];
+    
+    if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
         
-        recordStatus.isRead = @YES;
+        [recordStatus setValue:@YES forKey:@"isRead"];
         
-        if (shouldSync) {
-            
-            [self.document saveDocument:^(BOOL success) {
-                
-//                if (success) {
-//                    
-//                    //            [[NSNotificationCenter defaultCenter] postNotificationName:@"messageIsRead" object:nil];
-//                    self.syncer.syncerState = STMSyncerSendDataOnce;
-//                    
-//                }
-                
-            }];
-
-        }
+        [[self persistenceDelegate] merge:@"STMMessage" attributes:recordStatus options:nil];
         
     }
 
-}
-
-+ (void)markMessageAsRead:(STMMessage *)message {
-    [self markMessageAsRead:message andSync:YES];
 }
 
 + (void)markAllMessageAsRead {
@@ -358,7 +343,7 @@
     if (messageArray.count > 0) {
         
         for (STMMessage *message in messageArray) {
-            [self markMessageAsRead:message andSync:NO];
+            [self markMessageAsRead:message];
         }
         
         [self.document saveDocument:^(BOOL success) {
@@ -371,9 +356,9 @@
 
 + (BOOL)messageIsRead:(STMMessage *)message {
 
-    STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:message.xid];
-
-    return [recordStatus.isRead boolValue];
+    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:[STMFunctions UUIDStringFromUUIDData:message.xid]];
+    
+    return ![recordStatus[@"isRead"] isEqual:[NSNull null]] ? [recordStatus[@"isRead"] boolValue]: false;
     
 }
 
