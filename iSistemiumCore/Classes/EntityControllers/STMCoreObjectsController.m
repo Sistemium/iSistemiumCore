@@ -2310,10 +2310,12 @@
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+
+    NSDictionary *userInfo = (errorMessage) ? @{NSLocalizedDescriptionKey: errorMessage} : nil;
     
-    if (bundleId && error && errorMessage) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                                                        code:1
-                                                                    userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
+    if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                                                        code:1
+                                                    userInfo:userInfo];
     
     return (error == nil);
 
