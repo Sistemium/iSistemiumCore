@@ -371,7 +371,7 @@
     NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
     
     BOOL needToGoDeeper = NO;
-    BOOL failToSync = NO;
+    BOOL declineFromSync = NO;
     
     for (NSString *relName in relationships.allKeys) {
         
@@ -384,8 +384,7 @@
         
         if (self.failToSyncObjects[relObjectId]) {
 
-//            self.failToSyncObjects[object[@"id"]] = object;
-            failToSync = YES;
+            declineFromSync = YES;
             break;
             
         }
@@ -403,7 +402,7 @@
         
     }
     
-    if (failToSync) {
+    if (declineFromSync) {
         
         return nil;
         
