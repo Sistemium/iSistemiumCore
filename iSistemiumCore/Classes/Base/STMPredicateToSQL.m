@@ -291,7 +291,12 @@ static STMPredicateToSQL *sharedInstance;
     NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
     
-    rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+    if (predicate.rightExpression.expressionType == NSConstantValueExpressionType) {
+        if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
+            rightSQLExpression = [predicate.rightExpression.constantValue componentsJoinedByString:@"','"];
+        }
+        rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+    }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
     
@@ -339,7 +344,7 @@ static STMPredicateToSQL *sharedInstance;
             return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSInPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ IN %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ IN (%@))",leftSQLExpression,rightSQLExpression];
         }
         case NSBetweenPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
