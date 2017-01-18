@@ -55,5 +55,10 @@
                    options:(NSDictionary *)options
                      error:(NSError **)error;
 
+- (NSUInteger)countSync:(NSString *)entityName
+              predicate:(NSPredicate *)predicate
+                options:(NSDictionary *)options
+                  error:(NSError **)error;
+
 
 @end
