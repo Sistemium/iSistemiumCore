@@ -87,14 +87,15 @@
     
     NSDictionary *parameters = message.body;
     
-    NSError *error = nil;
-    NSArray *result = [STMCoreObjectsController destroyObjectFromScriptMessage:message error:&error];
-    
-    if (error) {
-        [webViewVC callbackWithError:error.localizedDescription parameters:parameters];
-    } else {
+    [STMCoreObjectsController destroyObjectFromScriptMessage:message].then(^(NSArray *result){
+        
         [webViewVC callbackWithData:result parameters:parameters];
-    }
+        
+    }).catch(^(NSError *error){
+        
+        [webViewVC callbackWithError:error.localizedDescription parameters:parameters];
+        
+    });
 
 }
 

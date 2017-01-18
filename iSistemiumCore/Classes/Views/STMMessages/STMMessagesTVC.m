@@ -149,9 +149,9 @@
         
         [self fillCell:customCell atIndexPath:indexPath withMessage:message];
         
-        STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:message.xid];
+        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:[STMFunctions UUIDStringFromUUIDData:message.xid]];
         
-        UIColor *textColor = ([recordStatus.isRead boolValue]) ? [UIColor blackColor] : ACTIVE_BLUE_COLOR;
+        UIColor *textColor = (![recordStatus[@"isRead"] isEqual:[NSNull null]] ? [recordStatus[@"isRead"] boolValue]: false) ? [UIColor blackColor] : ACTIVE_BLUE_COLOR;
         
         customCell.titleLabel.textColor = textColor;
 

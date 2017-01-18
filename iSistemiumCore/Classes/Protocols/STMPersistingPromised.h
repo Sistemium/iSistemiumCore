@@ -30,11 +30,11 @@
            attributeArray:(NSArray *)attributeArray
                   options:(NSDictionary *)options;
 
-@optional
-
 - (AnyPromise *)destroy:(NSString *)entityName
                      id:(NSString *)identifier
                 options:(NSDictionary *)options;
+
+@optional
 
 - (AnyPromise *)create:(NSString *)entityName
             attributes:(NSDictionary *)attributes

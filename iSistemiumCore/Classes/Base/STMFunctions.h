@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)hexStringFromData:(NSData *)data;
 + (NSString *)base64HexStringFromData:(NSData *)data;
 
++ (NSString *)entityToTableName:(NSString *)entity;
 + (NSString *)pluralTypeForCount:(NSUInteger)count;
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size;
@@ -115,6 +116,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)uppercaseFirst:(NSString *)inputString;
 + (NSString *)lowercaseFirst:(NSString *)inputString;
+
++ (id)popArray:(NSMutableArray *)array;
 
 NS_ASSUME_NONNULL_END
 
