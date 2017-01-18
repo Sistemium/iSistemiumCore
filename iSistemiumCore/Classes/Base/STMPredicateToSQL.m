@@ -295,7 +295,10 @@ static STMPredicateToSQL *sharedInstance;
         if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
             rightSQLExpression = [predicate.rightExpression.constantValue componentsJoinedByString:@"','"];
         }
-        rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+        if (![rightSQLExpression isEqual: @"NULL"]){
+            rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+        }
+        
     }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
@@ -335,7 +338,10 @@ static STMPredicateToSQL *sharedInstance;
             return [NSString stringWithFormat:@"(%@ >= %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ = %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ %@ %@)",
+                    leftSQLExpression,
+                    [rightSQLExpression isEqual: @"NULL"] ? @"IS" : @"=",
+                    rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ <> %@)",leftSQLExpression,rightSQLExpression];
