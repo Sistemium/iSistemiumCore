@@ -244,19 +244,30 @@
 
 - (void)sendNextUnsyncedObject {
     
-    NSDictionary *objectToSend = [self findObjectToSendFromSyncArray:self.unsyncedObjects];
-    
+    NSError *error = nil;
+    NSDictionary *objectToSend = [self findObjectToSendFromSyncArray:self.unsyncedObjects
+                                                               error:&error];
+
     if (objectToSend) {
-    
+        
         [self.unsyncedObjects removeObject:objectToSend];
         
         if (self.unsyncedSubscriptionBlock) {
             self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, nil);
         }
-
+        
     } else {
 
-        [self finishHandleUnsyncedObjects];
+        if (error) {
+            
+            [self sendNextUnsyncedObject];
+            
+        } else {
+
+            [self finishHandleUnsyncedObjects];
+
+        }
+
         
     }
     
@@ -350,22 +361,35 @@
     
 }
 
-- (NSDictionary *)findObjectToSendFromSyncArray:(NSArray <NSDictionary *> *)syncArray {
+- (NSDictionary *)findObjectToSendFromSyncArray:(NSArray <NSDictionary *> *)syncArray error:(NSError *__autoreleasing *)error {
     
     NSDictionary *object = syncArray.firstObject;
     
     if (!object) {
         return nil;
     }
+    
+    NSError *localError = nil;
 
     NSDictionary *unsyncedObject = [self unsyncedObjectForObject:object
-                                                     inSyncArray:syncArray];
+                                                     inSyncArray:syncArray
+                                                           error:&localError];
     
-    return unsyncedObject;
+    if (localError) {
+
+        [STMCoreObjectsController error:error
+                            withMessage:nil];
+        return nil;
+        
+    } else {
+    
+        return unsyncedObject;
+
+    }
     
 }
 
-- (NSDictionary *)unsyncedObjectForObject:(NSDictionary *)object inSyncArray:(NSArray <NSDictionary *> *)syncArray {
+- (NSDictionary *)unsyncedObjectForObject:(NSDictionary *)object inSyncArray:(NSArray <NSDictionary *> *)syncArray error:(NSError *__autoreleasing *)error {
     
     NSMutableArray *syncArrayCopy = syncArray.mutableCopy;
     [syncArrayCopy removeObject:object];
@@ -407,33 +431,46 @@
     
     if (declineFromSync) {
         
+        [self declineFromSyncObject:object error:error];
         return nil;
         
     } else {
         
         if (needToGoDeeper) {
             
-            NSDictionary *objectToSend = [self unsyncedObjectForObject:object inSyncArray:syncArrayCopy];
+            NSError *localError = nil;
+            NSDictionary *objectToSend = [self unsyncedObjectForObject:object
+                                                           inSyncArray:syncArrayCopy
+                                                                 error:&localError];
 
-            if (!objectToSend) {
-                
-                
-                
+            if (objectToSend) {
+                return objectToSend;
             }
             
-            return objectToSend;
+            if (localError) {
+                [self declineFromSyncObject:object error:error];
+            }
+            return nil;
             
         } else {
-            
             return object;
-            
         }
         
     }
     
 }
 
+- (void)declineFromSyncObject:(NSDictionary *)object error:(NSError **)error {
+    
+    NSLog(@"declineFromSync %@", object);
+    
+    self.failToSyncObjects[object[@"id"]] = object;
+    [self.unsyncedObjects removeObject:object];
+    
+    [STMCoreObjectsController error:error
+                        withMessage:nil];
 
+}
 
 
 
