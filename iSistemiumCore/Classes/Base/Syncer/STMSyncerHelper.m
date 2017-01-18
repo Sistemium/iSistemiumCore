@@ -16,7 +16,7 @@
 @interface STMSyncerHelper()
 
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
-@property (nonatomic, strong) NSMutableArray *doNotSyncObjectIds;
+@property (nonatomic, strong) NSMutableArray *failToSyncObjectsIds;
 
 @property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
 
@@ -52,10 +52,10 @@
 
 - (NSMutableArray *)doNotSyncObjectIds {
     
-    if (!_doNotSyncObjectIds) {
-        _doNotSyncObjectIds = @[].mutableCopy;
+    if (!_failToSyncObjectsIds) {
+        _failToSyncObjectsIds = @[].mutableCopy;
     }
-    return _doNotSyncObjectIds;
+    return _failToSyncObjectsIds;
     
 }
 
@@ -306,7 +306,7 @@
     
     NSString *syncObjectId = syncObject[@"id"];
     
-    if ([self.doNotSyncObjectIds containsObject:syncObjectId]) {
+    if ([self.failToSyncObjectsIds containsObject:syncObjectId]) {
         
         return [self findObjectToSendFirstFromSyncArray:syncArray];
         
