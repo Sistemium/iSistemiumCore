@@ -14,7 +14,8 @@
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId;
 
-- (BOOL)setSynced:(NSString *)entity
+- (BOOL)setSynced:(BOOL)success
+           entity:(NSString *)entity
          itemData:(NSDictionary *)itemData
       itemVersion:(NSString *)itemVersion;
 
