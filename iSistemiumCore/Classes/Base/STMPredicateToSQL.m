@@ -291,12 +291,6 @@ static STMPredicateToSQL *sharedInstance;
     NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:predicate.leftExpression];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:predicate.rightExpression];
     
-<<<<<<< HEAD
-    NSArray *allKeys = [[STMFmdb sharedInstance] allKeysForObject:entityName];
-    
-    if (![allKeys containsObject:rightSQLExpression]) {
-        rightSQLExpression = [NSString stringWithFormat:@"'%@'", rightSQLExpression];
-=======
     if (predicate.rightExpression.expressionType == NSConstantValueExpressionType) {
         if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
             rightSQLExpression = [predicate.rightExpression.constantValue componentsJoinedByString:@"','"];
@@ -304,8 +298,6 @@ static STMPredicateToSQL *sharedInstance;
         if (![rightSQLExpression isEqual: @"NULL"]){
             rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
         }
-        
->>>>>>> persisting
     }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
