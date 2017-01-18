@@ -291,7 +291,15 @@ static STMPredicateToSQL *sharedInstance;
     NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
     
-    rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+    if (predicate.rightExpression.expressionType == NSConstantValueExpressionType) {
+        if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
+            rightSQLExpression = [predicate.rightExpression.constantValue componentsJoinedByString:@"','"];
+        }
+        if (![rightSQLExpression isEqual: @"NULL"]){
+            rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
+        }
+        
+    }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
     
@@ -330,7 +338,10 @@ static STMPredicateToSQL *sharedInstance;
             return [NSString stringWithFormat:@"(%@ >= %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ = %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ %@ %@)",
+                    leftSQLExpression,
+                    [rightSQLExpression isEqual: @"NULL"] ? @"IS" : @"=",
+                    rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ <> %@)",leftSQLExpression,rightSQLExpression];
@@ -339,7 +350,7 @@ static STMPredicateToSQL *sharedInstance;
             return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSInPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ IN %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ IN (%@))",leftSQLExpression,rightSQLExpression];
         }
         case NSBetweenPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
