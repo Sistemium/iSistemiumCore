@@ -371,6 +371,7 @@
     NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
     
     BOOL needToGoDeeper = NO;
+    BOOL failToSync = NO;
     
     for (NSString *relName in relationships.allKeys) {
         
@@ -379,6 +380,14 @@
         
         if (!relObjectId) {
             continue;
+        }
+        
+        if (self.failToSyncObjects[relObjectId]) {
+
+//            self.failToSyncObjects[object[@"id"]] = object;
+            failToSync = YES;
+            break;
+            
         }
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"id = %@", relObjectId];
@@ -393,8 +402,32 @@
         break;
         
     }
+    
+    if (failToSync) {
+        
+        return nil;
+        
+    } else {
+        
+        if (needToGoDeeper) {
+            
+            NSDictionary *objectToSend = [self unsyncedObjectForObject:object inSyncArray:syncArrayCopy];
 
-    return (needToGoDeeper) ? [self unsyncedObjectForObject:object inSyncArray:syncArrayCopy] : object;
+            if (!objectToSend) {
+                
+                
+                
+            }
+            
+            return objectToSend;
+            
+        } else {
+            
+            return object;
+            
+        }
+        
+    }
     
 }
 
