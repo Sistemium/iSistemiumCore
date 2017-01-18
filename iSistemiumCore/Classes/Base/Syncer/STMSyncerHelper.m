@@ -94,7 +94,7 @@
     NSLogMethodName;
     
     if (self.unsyncedSubscriptionBlock) {
-        [self handleUnsyncedObjects];
+        [self startHandleUnsyncedObjects];
     }
     
 }
@@ -215,7 +215,7 @@
 
 #pragma mark - handle unsynced objects
 
-- (void)handleUnsyncedObjects {
+- (void)startHandleUnsyncedObjects {
     
     self.unsyncedObjects = [self findUnsyncedObjects];
     
