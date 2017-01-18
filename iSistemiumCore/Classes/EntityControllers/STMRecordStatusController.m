@@ -40,13 +40,7 @@
     
     if (!recordStatus) {
         
-        NSError* error;
-        
-        recordStatus = [[self persistenceDelegate] mergeSync:@"STMRecordStatus" attributes:@{@"objectXid":objectId,@"name":entityName} options:nil error:&error];
-        
-        if (error){
-            return nil;
-        }
+        recordStatus = @{@"objectXid":objectId,@"name":entityName};
         
     }
     
