@@ -208,8 +208,16 @@
     
 }
 
-- (BOOL)setSynced:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+- (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+    
+    if (!success) {
+        self.failToSyncObjects[itemData[@"id"]] = itemData;
+    }
+
+    [self sendNextUnsyncedObject];
+    
     return YES;
+    
 }
 
 
