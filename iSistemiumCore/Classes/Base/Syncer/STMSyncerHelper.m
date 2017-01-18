@@ -17,7 +17,7 @@
 
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *unsyncedObjects;
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
-@property (nonatomic, strong) NSMutableDictionary *failToSyncObjectsIds;
+@property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
 @property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
 
@@ -60,12 +60,12 @@
     
 }
 
-- (NSMutableDictionary *)doNotSyncObjectIds {
+- (NSMutableDictionary *)failToSyncObjects {
     
-    if (!_failToSyncObjectsIds) {
-        _failToSyncObjectsIds = @{}.mutableCopy;
+    if (!_failToSyncObjects) {
+        _failToSyncObjects = @{}.mutableCopy;
     }
-    return _failToSyncObjectsIds;
+    return _failToSyncObjects;
     
 }
 
