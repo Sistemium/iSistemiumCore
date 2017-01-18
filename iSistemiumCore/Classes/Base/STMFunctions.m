@@ -41,7 +41,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (STMDateFormatter *)dateFormatterWithMilliseconds {
     
-    @synchronized (sharedDateFormatterWithMilliseconds) {
+//    @synchronized (sharedDateFormatterWithMilliseconds) {
     
         if (sharedDateFormatterWithMilliseconds) return sharedDateFormatterWithMilliseconds;
     
@@ -53,13 +53,13 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         sharedDateFormatterWithMilliseconds = dateFormatterWithMilliseconds;
         
         return sharedDateFormatterWithMilliseconds;
-    }
+//    }
     
 }
 
 + (STMDateFormatter *)dateFormatterWithoutTime {
     
-    @synchronized (sharedDateFormatterWithoutTime) {
+//    @synchronized (sharedDateFormatterWithoutTime) {
     
         if (sharedDateFormatterWithoutTime) return sharedDateFormatterWithoutTime;
 
@@ -73,7 +73,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
         return sharedDateFormatterWithoutTime;
         
-    }
+//    }
     
 }
 
@@ -626,6 +626,21 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 
 #pragma mark - some other usefull methods
+
++ (NSString *)entityToTableName:(NSString *)entity{
+    if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
+        return [entity substringFromIndex:3];
+    }
+    return entity ;
+}
+
++ (id)popArray:(NSMutableArray *)array {
+    @synchronized (array) {
+        id result = array.lastObject;
+        if (result) [array removeLastObject];
+        return result;
+    }
+}
 
 + (NSString *)pluralTypeForCount:(NSUInteger)count {
     

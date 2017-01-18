@@ -132,58 +132,57 @@
 
 #pragma mark - Private methods
 
+- (NSDictionary *) mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inSTMFmdb:(STMFmdb *)db{
+    
+    [db startTransaction];
+    
+    NSString *now = [STMFunctions stringFromNow];
+    NSMutableDictionary *savingAttributes = attributes.mutableCopy;
+    BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
+    
+    if (options[@"lts"]) {
+        [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+        [savingAttributes removeObjectForKey:@"deviceTs"];
+    } else {
+        [savingAttributes setValue:now forKey:@"deviceTs"];
+        [savingAttributes removeObjectForKey:@"lts"];
+    }
+    
+    savingAttributes[@"deviceAts"] = now;
+    
+    if(!returnSaved){
+        [db mergeInto:entityName
+           dictionary:savingAttributes
+                error:error];
+        return nil;
+    } else {
+        return [db mergeIntoAndResponse:entityName
+                             dictionary:savingAttributes
+                                  error:error];
+    }
+    
+}
+
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
+    if ([entityName isEqualToString:@"STMRecordStatus"]) {
+        
+        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
+            
+            [self destroyWithoutSave:attributes[@"name"] id:attributes[@"objectXid"] options:nil error:error];
+            
+        }
+        
+        if (![attributes[@"isTemporary"] isEqual:[NSNull null]] && [attributes[@"isTemporary"] boolValue]) return nil;
+    }
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
-        [[STMFmdb sharedInstance] startTransaction];
-        
-        NSString *now = [STMFunctions stringFromNow];
-        NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-        BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
-        
-        if (options[@"lts"]) {
-            [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
-            [savingAttributes removeObjectForKey:@"deviceTs"];
-        } else {
-            [savingAttributes setValue:now forKey:@"deviceTs"];
-            [savingAttributes removeObjectForKey:@"lts"];
-        }
-        
-        [savingAttributes setValue:now forKey:@"deviceAts"];
-        
-        if ([entityName isEqualToString:@"STMRecordStatus"]) {
-            if (![savingAttributes[@"isRemoved"] isEqual:[NSNull null]] ? [savingAttributes[@"isRemoved"] boolValue]: false) {
-                
-                [self destroyWithoutSave:savingAttributes[@"name"] id:savingAttributes[@"objectXid"] options:nil error:error];
-                
-            }
-            
-            if (![savingAttributes[@"isTemporary"] isEqual:[NSNull null]] ? [savingAttributes[@"isTemporary"] boolValue]: false) {
-                [self destroyWithoutSave:@"STMRecordStatus" id:savingAttributes[@"id"] options:nil error:error];
-                return nil;
-            }
-        }else if (savingAttributes[@"id"] && ![savingAttributes[@"id"] isEqual:[NSNull null]]) {
-            NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:attributes[@"id"]];
-            
-            if (!recordStatus){
-                recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":savingAttributes[@"id"],@"name":entityName} options:nil error:error];
-            }
-            
-            if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
-                
-                [self destroyWithoutSave:recordStatus[@"name"] id:recordStatus[@"objectXid"] options:nil error:error];
-                return nil;
-                
-            }
-        }
-        
-        if(!returnSaved){
-            [[STMFmdb sharedInstance] mergeInto:entityName dictionary:savingAttributes error:error];
-            return nil;
-        }else{
-            return [[STMFmdb sharedInstance] mergeIntoAndResponse:entityName dictionary:savingAttributes error:error];
-        }
+        return [self mergeWithoutSave:entityName
+                           attributes:attributes
+                              options:options
+                                error:error
+                            inSTMFmdb:STMFmdb.sharedInstance];
         
     } else {
         
@@ -206,20 +205,6 @@
 }
 
 - (BOOL)destroyWithoutSave:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
-    
-    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:identifier];
-    
-    if (!recordStatus){
-        recordStatus = [self mergeWithoutSave:@"STMRecordStatus" attributes:@{@"objectXid":identifier,@"name":entityName} options:nil error:error];
-    }
-    
-    [recordStatus setValue:@YES forKey:@"isRemoved"];
-    
-    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
-    
-    if (error){
-        return NO;
-    }
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
@@ -365,6 +350,16 @@
 - (BOOL)destroySync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     [self destroyWithoutSave:entityName id:identifier options:options error:error];
+    
+    if (error){
+        return NO;
+    }
+    
+    NSDictionary *recordStatus = @{@"objectXid":identifier, @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
+    
+    [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+    
+//    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
     
     if (error){
     #warning possible danger, will rollback changes from other threads
