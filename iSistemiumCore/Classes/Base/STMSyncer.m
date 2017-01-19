@@ -715,37 +715,8 @@
                 NSString *eTag = clientEntity.eTag;
                 eTag = eTag ? eTag : @"*";
                 
-                __block BOOL blockIsComplete = NO;
-                
-                [self.socketTransport findAllFromResource:resource
-                                                 withETag:eTag
-                                               fetchLimit:self.fetchLimit
-                                                  timeout:[self timeout]
-                                                   params:nil
-                                        completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                                             
-                                            if (blockIsComplete) {
-                                                NSLog(@"completionHandler for %@ already complete", entityName);
-                                                return;
-                                            }
-
-                                            blockIsComplete = YES;
-                                             
-                                            if (success) {
-
-                                                [self socketReceiveJSDataAck:data];
-                                                 
-                                            } else {
-                                                 
-                                                if (self.entityCount > 0) {
-                                                    [self entityCountDecreaseWithError:error.localizedDescription];
-                                                } else {
-                                                    [self receivingDidFinishWithError:error.localizedDescription];
-                                                }
-                                                 
-                                            }
-                                             
-                                        }];
+                [self receiveDataFromResource:resource
+                                         eTag:eTag];
                 
             } else {
                 
@@ -762,6 +733,42 @@
         }
         
     }
+    
+}
+
+- (void)receiveDataFromResource:(NSString *)resource eTag:(NSString *)eTag {
+    
+    __block BOOL blockIsComplete = NO;
+    
+    [self.socketTransport findAllFromResource:resource
+                                     withETag:eTag
+                                   fetchLimit:self.fetchLimit
+                                      timeout:[self timeout]
+                                       params:nil
+                            completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+                                
+                                if (blockIsComplete) {
+                                    NSLog(@"completionHandler for %@ %@ already complete", resource, eTag);
+                                    return;
+                                }
+                                
+                                blockIsComplete = YES;
+                                
+                                if (success) {
+                                    
+                                    [self socketReceiveJSDataAck:data];
+                                    
+                                } else {
+                                    
+                                    if (self.entityCount > 0) {
+                                        [self entityCountDecreaseWithError:error.localizedDescription];
+                                    } else {
+                                        [self receivingDidFinishWithError:error.localizedDescription];
+                                    }
+                                    
+                                }
+                                
+                            }];
     
 }
 
