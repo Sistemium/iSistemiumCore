@@ -642,6 +642,38 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     }
 }
 
++ (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array {
+    
+    NSUInteger indexOfObject = [array indexOfObject:object];
+    
+    if (indexOfObject != 0) {
+        
+        if (indexOfObject != NSNotFound) {
+            [array removeObject:object];
+        }
+        
+        [array insertObject:object atIndex:0];
+        
+    }
+
+}
+
++ (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array {
+    
+    NSUInteger indexOfObject = [array indexOfObject:object];
+
+    if (indexOfObject != array.count) {
+        
+        if (indexOfObject != NSNotFound) {
+            [array removeObject:object];
+        }
+
+        [array insertObject:object atIndex:array.count];
+        
+    }
+
+}
+
 + (NSString *)pluralTypeForCount:(NSUInteger)count {
     
     NSString *result;
