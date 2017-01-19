@@ -312,9 +312,6 @@ FMDatabasePool *pool;
     return pk;
 }
 
-<<<<<<< HEAD
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
-=======
 - (NSUInteger) count:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate {
     
     __block NSUInteger rez;
@@ -334,8 +331,7 @@ FMDatabasePool *pool;
     return rez;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
->>>>>>> persisting
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
     
     __block NSArray* results;
     

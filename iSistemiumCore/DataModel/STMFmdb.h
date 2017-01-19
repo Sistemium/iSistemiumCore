@@ -11,26 +11,34 @@
 
 + (STMFmdb * _Nonnull) sharedInstance;
 
-<<<<<<< HEAD
-- (NSArray * _Nonnull) getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset;
-=======
-- (NSUInteger) count:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate;
+- (NSUInteger)count:(NSString * _Nonnull)name
+       withPredicate:(NSPredicate * _Nonnull)predicate;
 
-- (NSArray * _Nonnull) getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset;
->>>>>>> persisting
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name
+                              withPredicate:(NSPredicate * _Nonnull)predicate
+                                    orderBy:(NSString * _Nullable)orderBy
+                                 fetchLimit:(NSUInteger)fetchLimit
+                                fetchOffset:(NSUInteger)fetchOffset;
 
-- (BOOL) mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error;
+- (BOOL)mergeInto:(NSString * _Nonnull)tablename
+       dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
+            error:(NSError *_Nonnull * _Nonnull)error;
 
-- (NSDictionary * _Nullable) mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error;
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename
+                                      dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
+                                           error:(NSError *_Nonnull * _Nonnull)error;
 
-- (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error;
+- (BOOL)destroy:(NSString * _Nonnull)tablename
+     identifier:(NSString*  _Nonnull)idendifier
+          error:(NSError *_Nonnull * _Nonnull)error;
 
-- (BOOL) hasTable:(NSString * _Nonnull)name;
+- (BOOL)hasTable:(NSString * _Nonnull)name;
 
-- (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj;
+- (NSArray * _Nonnull)allKeysForObject:(NSString * _Nonnull)obj;
 
-- (BOOL) commit;
-- (BOOL) startTransaction;
-- (BOOL) rollback;
+- (BOOL)commit;
+- (BOOL)startTransaction;
+- (BOOL)rollback;
+
 
 @end
