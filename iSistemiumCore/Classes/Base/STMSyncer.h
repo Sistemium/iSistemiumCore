@@ -21,6 +21,9 @@
 
 - (void)socketReceiveAuthorization;
 
+- (void)prepareToDestroy;
+
+
 // old
 
 @property (nonatomic) STMSyncerState syncerState;
@@ -28,7 +31,6 @@
 
 //- (NSTimeInterval)timeout;
 
-- (void)prepareToDestroy;
 - (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
 - (void)upload;

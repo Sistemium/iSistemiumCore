@@ -94,7 +94,6 @@
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
 - (void)didReceiveRemoteNotification;
-- (void)didEnterBackground;
 
 
 @end
@@ -123,6 +122,77 @@
 
 - (void)customInit {
     NSLog(@"syncer init");
+}
+
+
+#pragma mark - observers
+
+- (void)addObservers {
+    
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    
+    [nc addObserver:self
+           selector:@selector(sessionStatusChanged:)
+               name:NOTIFICATION_SESSION_STATUS_CHANGED
+             object:self.session];
+    
+    [nc addObserver:self
+           selector:@selector(syncerSettingsChanged)
+               name:@"syncerSettingsChanged"
+             object:self.session];
+    
+    [nc addObserver:self
+           selector:@selector(appDidBecomeActive)
+               name:UIApplicationDidBecomeActiveNotification
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(appDidEnterBackground)
+               name:UIApplicationDidEnterBackgroundNotification
+             object:nil];
+    
+}
+
+- (void)removeObservers {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)sessionStatusChanged:(NSNotification *)notification {
+    
+    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
+        
+        STMCoreSession *session = (STMCoreSession *)notification.object;
+        
+        if (session == self.session) {
+            
+            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
+                [self stopSyncer];
+            } else if (session.status == STMSessionRunning) {
+                [self startSyncer];
+            }
+            
+        }
+        
+    }
+    
+}
+
+- (void)syncerSettingsChanged {
+    [self flushSettings];
+}
+
+- (void)appDidBecomeActive {
+    
+#ifdef DEBUG
+    [self setSyncerState:STMSyncerSendData];
+#else
+    [self setSyncerState:STMSyncerSendDataOnce];
+#endif
+    
+}
+
+- (void)appDidEnterBackground {
+    [self setSyncerState:STMSyncerSendDataOnce];
 }
 
 
@@ -393,6 +463,48 @@
         
     }
     
+}
+
+
+#pragma mark - stop syncer methods
+
+- (void)stopSyncer {
+    
+    if (self.isRunning) {
+        
+        [STMSocketController closeSocket];
+        
+        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
+        self.syncing = NO;
+        self.syncerState = STMSyncerIdle;
+        [self releaseTimer];
+        [self flushSettings];
+        self.isRunning = NO;
+        
+    }
+    
+}
+
+- (void)prepareToDestroy {
+    
+    [self removeObservers];
+    [self stopSyncer];
+    
+}
+
+- (void)flushSettings {
+    
+    self.settings = nil;
+    
+    self.fetchLimit = 0;
+    self.entityResource = nil;
+    self.socketUrlString = nil;
+    self.xmlNamespace = nil;
+    self.httpTimeoutForeground = 0;
+    self.httpTimeoutBackground = 0;
+    self.syncInterval = 0;
+    self.uploadLogType = nil;
+
 }
 
 
@@ -1483,23 +1595,6 @@
 
 #pragma mark - syncer methods
 
-- (void)stopSyncer {
-    
-    if (self.isRunning) {
-        
-        [STMSocketController closeSocket];
-        
-        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-        self.syncing = NO;
-        self.syncerState = STMSyncerIdle;
-        [self releaseTimer];
-        self.settings = nil;
-        self.isRunning = NO;
-        
-    }
-
-}
-
 - (void)upload {
     [self setSyncerState:STMSyncerSendDataOnce];
 }
@@ -1571,24 +1666,6 @@
     [self upload];
 }
 
-- (void)didEnterBackground {
-    [self setSyncerState:STMSyncerSendDataOnce];
-}
-
-- (void)appDidBecomeActive {
-    
-#ifdef DEBUG
-    [self setSyncerState:STMSyncerSendData];
-#else
-    [self setSyncerState:STMSyncerSendDataOnce];
-#endif
-
-}
-
-- (void)documentSavedSuccessfully:(NSNotification *)notification {
-    
-}
-
 - (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
     
     if ([(notification.userInfo)[@"syncer"] isEqualToString:@"upload"]) {
@@ -1597,90 +1674,6 @@
     
 }
 
-- (void)addObservers {
-    
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self.session];
-    
-    [nc addObserver:self
-           selector:@selector(syncerSettingsChanged)
-               name:@"syncerSettingsChanged"
-             object:self.session];
-    
-    [nc addObserver:self
-           selector:@selector(appDidBecomeActive)
-               name:UIApplicationDidBecomeActiveNotification
-             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(didEnterBackground)
-               name:UIApplicationDidEnterBackgroundNotification
-             object:nil];
- 
-    [nc addObserver:self
-           selector:@selector(documentSavedSuccessfully:)
-               name:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
-             object:nil];
-
-}
-
-- (void)removeObservers {
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-}
-
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
-        
-        STMCoreSession *session = (STMCoreSession *)notification.object;
-    
-        if (session == self.session) {
-            
-            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
-                [self stopSyncer];
-            } else if (session.status == STMSessionRunning) {
-                [self startSyncer];
-            }
-
-        }
-        
-    }
-    
-}
-
-- (void)syncerSettingsChanged {
-    
-    [self flushSettings];
-    
-}
-
-- (void)flushSettings {
-    
-    self.settings = nil;
-
-    self.fetchLimit = 0;
-    self.entityResource = nil;
-    self.socketUrlString = nil;
-    self.xmlNamespace = nil;
-    self.httpTimeoutForeground = 0;
-    self.httpTimeoutBackground = 0;
-    self.syncInterval = 0;
-    self.uploadLogType = nil;
-
-}
-
-- (void)prepareToDestroy {
-    
-    [self removeObservers];
-    [self stopSyncer];
-    
-}
 
 
 #pragma mark - syncing
