@@ -2679,9 +2679,22 @@
 
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
+#warning temporary disable count via persistenceDelegate
+// old implementation
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
         NSError *error;
+        NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request error:&error];
         
-        return [[self persistenceDelegate] countSync:entityName predicate:nil options:nil error:&error];
+        return result;
+
+// new implementation
+//        NSError *error;
+//        
+//        return [[self persistenceDelegate] countSync:entityName
+//                                           predicate:nil
+//                                             options:nil
+//                                               error:&error];
         
     } else {
         
@@ -2701,7 +2714,8 @@
         
         if (request) {
 
-        NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request error:nil];
+        NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request
+                                                                                 error:nil];
         
         resultCount += result;
 
