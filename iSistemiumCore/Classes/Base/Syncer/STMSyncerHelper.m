@@ -19,7 +19,7 @@
 @property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
-@property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
+@property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
 @property (nonatomic) BOOL isHandlingUnsyncedObjects;
 
 

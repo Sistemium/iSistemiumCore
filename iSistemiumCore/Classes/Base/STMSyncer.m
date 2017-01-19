@@ -66,7 +66,7 @@
 @property (atomic) NSUInteger fantomsCount;
 
 @property (nonatomic, strong) NSString *subscriptionId;
-@property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entity, NSDictionary *itemData, NSString *itemVersion);
+@property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
 
 // old
 
@@ -1228,13 +1228,13 @@
 
 #pragma mark - unsynced subscription
 
-- (void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))unsyncedSubscriptionHandler {
+- (void (^)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion))unsyncedSubscriptionHandler {
     
     if (!_unsyncedSubscriptionHandler) {
         
         __weak STMSyncer *weakSelf = self;
         
-        _unsyncedSubscriptionHandler = ^(NSString *entity, NSDictionary *itemData, NSString *itemVersion) {
+        _unsyncedSubscriptionHandler = ^(NSString *entityName, NSDictionary *itemData, NSString *itemVersion) {
             
             NSLog(@"entity %@, item %@", entity, itemData[@"id"]);
             
