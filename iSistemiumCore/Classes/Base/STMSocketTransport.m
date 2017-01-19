@@ -333,7 +333,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
     [self logSendEvent:event withValue:value];
     
-    if (self.socket.status == SocketIOClientStatusConnected) {
+    if (self.isReady) {
         
         if (event == STMSocketEventJSData) {
             
