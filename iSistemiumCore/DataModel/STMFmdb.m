@@ -312,7 +312,30 @@ FMDatabasePool *pool;
     return pk;
 }
 
+<<<<<<< HEAD
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
+=======
+- (NSUInteger) count:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate {
+    
+    __block NSUInteger rez;
+    
+    [pool inDatabase:^(FMDatabase *db) {
+        
+        NSString* query = [NSString stringWithFormat:@"SELECT count(*) FROM %@", [self entityToTableName:name]];
+        
+        FMResultSet *s = [db executeQuery:query];
+        
+        while ([s next]) {
+            rez = (NSUInteger)[s.resultDictionary[@"count(*)"] integerValue];
+        }
+        
+    }];
+    
+    return rez;
+}
+
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+>>>>>>> persisting
     
     __block NSArray* results;
     

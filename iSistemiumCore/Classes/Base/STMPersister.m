@@ -236,6 +236,21 @@
 
 #pragma mark - STMPersistingSync
 
+- (NSUInteger)countSync:(NSString *)entityName
+              predicate:(NSPredicate *)predicate
+                options:(NSDictionary *)options
+                  error:(NSError **)error {
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+#warning predicates not supported yet
+        // TODO: make generic predicate to SQL method with predicate filtering
+        return [[STMFmdb sharedInstance] count:entityName withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
+    } else {
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        return [[self document].managedObjectContext countForFetchRequest:request error:error];
+    }
+    
+}
+
 - (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSPredicate* predicate;
