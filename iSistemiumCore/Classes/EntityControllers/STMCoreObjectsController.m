@@ -1527,6 +1527,8 @@
 
 #pragma mark - resolving fantoms
 
+/* comment out fantom resolving due to implemeting it in new syncer
+
 + (BOOL)isDefantomizingProcessRunning {
     return [self sharedController].isDefantomizingProcessRunning;
 }
@@ -1736,6 +1738,8 @@
     [objController.fantomsPendingArray removeAllObjects];
 
 }
+
+*/
 
 #warning need to do with persister
 + (NSFetchRequest *)isFantomFetchRequestForEntityName:(NSString *)entityName {

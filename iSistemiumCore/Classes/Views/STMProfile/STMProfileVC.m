@@ -326,7 +326,7 @@
         
     } else {
         
-        if (syncer.syncerState == STMSyncerIdle && ![STMCoreObjectsController isDefantomizingProcessRunning]) {
+        if (syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
             
             [self.syncImageView setTintColor:color];
             

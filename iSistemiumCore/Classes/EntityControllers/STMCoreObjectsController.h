@@ -109,11 +109,11 @@
                                   withNulls:(BOOL)withNulls
                              withBinaryData:(BOOL)withBinaryData;
 
-+ (void)resolveFantoms;
-+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic
-                  successfully:(BOOL)successfully;
-+ (void)stopDefantomizing;
-+ (BOOL)isDefantomizingProcessRunning;
+//+ (void)resolveFantoms;
+//+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic
+//                  successfully:(BOOL)successfully;
+//+ (void)stopDefantomizing;
+//+ (BOOL)isDefantomizingProcessRunning;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 

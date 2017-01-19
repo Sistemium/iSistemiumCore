@@ -1714,7 +1714,7 @@
             } else {
                 
                 self.syncerState = STMSyncerIdle;
-                [STMCoreObjectsController resolveFantoms];
+//                [STMCoreObjectsController resolveFantoms];
                 
             }
             
