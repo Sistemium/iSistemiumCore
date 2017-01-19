@@ -46,44 +46,44 @@
 @property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
-@property (nonatomic, strong) NSMutableArray *fantomsArray;
-@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+//@property (nonatomic, strong) NSMutableArray *fantomsArray;
+//@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
 @property (nonatomic, strong) NSMutableArray *updateRequests;
 @property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
-@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
+//@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
 
 @end
 
 
 @implementation STMCoreObjectsController
 
-- (NSMutableArray *)fantomsPendingArray {
-    
-    if (!_fantomsPendingArray) {
-        _fantomsPendingArray = @[].mutableCopy;
-    }
-    return _fantomsPendingArray;
-    
-}
-
-- (NSMutableArray *)fantomsArray {
-    
-    if (!_fantomsArray) {
-        _fantomsArray = @[].mutableCopy;
-    }
-    return _fantomsArray;
-    
-}
-
-- (NSMutableArray *)notFoundFantomsArray {
-    
-    if (!_notFoundFantomsArray) {
-        _notFoundFantomsArray = @[].mutableCopy;
-    }
-    return _notFoundFantomsArray;
-    
-}
+//- (NSMutableArray *)fantomsPendingArray {
+//    
+//    if (!_fantomsPendingArray) {
+//        _fantomsPendingArray = @[].mutableCopy;
+//    }
+//    return _fantomsPendingArray;
+//    
+//}
+//
+//- (NSMutableArray *)fantomsArray {
+//    
+//    if (!_fantomsArray) {
+//        _fantomsArray = @[].mutableCopy;
+//    }
+//    return _fantomsArray;
+//    
+//}
+//
+//- (NSMutableArray *)notFoundFantomsArray {
+//    
+//    if (!_notFoundFantomsArray) {
+//        _notFoundFantomsArray = @[].mutableCopy;
+//    }
+//    return _notFoundFantomsArray;
+//    
+//}
 
 - (NSMutableArray *)flushDeclinedObjectsArray {
     
