@@ -28,10 +28,10 @@ FMDatabasePool *pool;
     
     if (self) {
         
-        NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
         NSDictionary <NSString *, NSEntityDescription *> *entities = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName;
+        NSArray *entityNames = entities.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSArray *ignoredEntities = @[@"STMSetting", @"STMEntity"];
+
         NSArray *ignoredAttributes = @[@"xid", @"id"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
@@ -59,7 +59,10 @@ FMDatabasePool *pool;
             
             for (NSString* entityName in entityNames){
                 
-                if ([ignoredEntities containsObject:entityName] || entities[entityName].abstract){
+                NSString *storeOption = [entities[entityName] userInfo][@"STORE"];
+                
+                if ((storeOption && ![storeOption isEqualToString:@"FMDB"]) || entities[entityName].abstract){
+                    NSLog(@"STMFmdb ignore entity: %@", entityName);
                     continue;
                 }
                 
