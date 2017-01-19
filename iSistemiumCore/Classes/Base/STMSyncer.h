@@ -23,6 +23,11 @@
 
 - (void)prepareToDestroy;
 
+- (void)upload;
+- (void)fullSync;
+- (void)receiveEntities:(NSArray *)entitiesNames;
+- (void)sendObjects:(NSDictionary *)parameters;
+
 
 // old
 
@@ -32,11 +37,6 @@
 //- (NSTimeInterval)timeout;
 
 - (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
-
-- (void)upload;
-- (void)fullSync;
-- (void)receiveEntities:(NSArray *)entitiesNames;
-- (void)sendObjects:(NSDictionary *)parameters;
 
 - (void)nothingToSend;
 - (void)bunchOfObjectsSended;

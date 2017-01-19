@@ -564,6 +564,76 @@
 }
 
 
+#pragma mark - remote control methods
+
+- (void)upload {
+    [self setSyncerState:STMSyncerSendDataOnce];
+}
+
+- (void)fullSync {
+    [self setSyncerState:STMSyncerSendData];
+}
+
+- (void)receiveEntities:(NSArray *)entitiesNames {
+    
+    if ([entitiesNames isKindOfClass:[NSArray class]]) {
+        
+        NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+        NSMutableArray *existingNames = [@[] mutableCopy];
+        
+        for (NSString *entityName in entitiesNames) {
+            
+            NSString *name = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+            
+            if ([localDataModelEntityNames containsObject:name]) {
+                [existingNames addObject:name];
+            }
+            
+        }
+        
+        if (existingNames.count > 0) {
+            
+            self.receivingEntitiesNames = existingNames;
+            [self setSyncerState:STMSyncerReceiveData];
+            
+        }
+        
+    } else {
+        
+        NSString *logMessage = @"receiveEntities: argument is not an array";
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        
+    }
+    
+}
+
+- (void)sendObjects:(NSDictionary *)parameters {
+    
+    NSError *error;
+    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
+    
+    if (error) {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription type:@"error"];
+        
+    } else {
+        
+        if (jsonArray) {
+            
+            NSData *JSONData = [NSJSONSerialization dataWithJSONObject:@{@"data": jsonArray}
+                                                               options:0
+                                                                 error:nil];
+            //            [self startConnectionForSendData:JSONData];
+            
+#warning should send it via socket
+            
+        }
+        
+    }
+    
+}
+
+
 #pragma mark - recieve data
 
 - (void)receiveData {
@@ -1589,76 +1659,6 @@
         _temporaryETag = [NSMutableDictionary dictionary];
     }
     return _temporaryETag;
-    
-}
-
-
-#pragma mark - syncer methods
-
-- (void)upload {
-    [self setSyncerState:STMSyncerSendDataOnce];
-}
-
-- (void)fullSync {
-    [self setSyncerState:STMSyncerSendData];
-}
-
-- (void)receiveEntities:(NSArray *)entitiesNames {
-    
-    if ([entitiesNames isKindOfClass:[NSArray class]]) {
-
-        NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
-        NSMutableArray *existingNames = [@[] mutableCopy];
-        
-        for (NSString *entityName in entitiesNames) {
-            
-            NSString *name = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-            
-            if ([localDataModelEntityNames containsObject:name]) {
-                [existingNames addObject:name];
-            }
-            
-        }
-        
-        if (existingNames.count > 0) {
-            
-            self.receivingEntitiesNames = existingNames;
-            [self setSyncerState:STMSyncerReceiveData];
-            
-        }
-        
-    } else {
-        
-        NSString *logMessage = @"receiveEntities: argument is not an array";
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-        
-    }
-    
-}
-
-- (void)sendObjects:(NSDictionary *)parameters {
-    
-    NSError *error;
-    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
-    
-    if (error) {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription type:@"error"];
-        
-    } else {
-        
-        if (jsonArray) {
-
-            NSData *JSONData = [NSJSONSerialization dataWithJSONObject:@{@"data": jsonArray}
-                                                               options:0
-                                                                 error:nil];
-//            [self startConnectionForSendData:JSONData];
-            
-#warning should send it via socket
-            
-        }
-        
-    }
     
 }
 
