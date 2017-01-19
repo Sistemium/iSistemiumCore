@@ -347,7 +347,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
                 [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
 
-                    [self cancelCheckFindTimeoutWithContext:context];
+                    [self cancelCheckRequestTimeoutWithContext:context];
                     completionHandler(YES, data, nil);
 
                 });
@@ -614,7 +614,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
                               @"timeout"             : @(timeout),
                               @"completionHandler"   : completionHandler};
     
-    [self performSelector:@selector(checkFindTimeout:)
+    [self performSelector:@selector(checkRequestTimeout:)
                withObject:context
                afterDelay:timeout];
     
@@ -646,7 +646,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
                               @"timeout"             : @(timeout),
                               @"completionHandler"   : completionHandler};
     
-    [self performSelector:@selector(checkFindTimeout:)
+    [self performSelector:@selector(checkRequestTimeout:)
                withObject:context
                afterDelay:timeout];
     
@@ -657,7 +657,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 #pragma mark check timeouts
 
-- (void)checkFindTimeout:(NSDictionary *)context {
+- (void)checkRequestTimeout:(NSDictionary *)context {
     
     NSTimeInterval timeout = [context[@"timeout"] doubleValue];
     NSDate *startTime = context[@"startTime"];
@@ -678,10 +678,10 @@ static NSString *kSocketDestroyMethod = @"destroy";
     
 }
 
-- (void)cancelCheckFindTimeoutWithContext:(NSDictionary *)context {
+- (void)cancelCheckRequestTimeoutWithContext:(NSDictionary *)context {
     
     [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                       selector:@selector(checkFindTimeout:)
+                                                       selector:@selector(checkRequestTimeout:)
                                                          object:context];
     
 }
