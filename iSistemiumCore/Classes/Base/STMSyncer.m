@@ -764,7 +764,7 @@
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
     }
     
-    __block STMEntity *entity = [STMEntityController stcEntities][entityName];
+    STMEntity *entity = [STMEntityController stcEntities][entityName];
     
     if (!entity.url) {
         
