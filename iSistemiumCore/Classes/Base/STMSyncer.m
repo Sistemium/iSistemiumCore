@@ -1616,7 +1616,7 @@
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
                 self.syncing = YES;
-//                [self checkNews];
+                [self receiveData];
                 self.syncerState = STMSyncerIdle;
 
                 break;
