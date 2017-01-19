@@ -107,9 +107,17 @@ FMDatabasePool *pool;
                     if ([columnName isEqualToString:@"deviceCts"]) {
                         sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
                     }
+                    
                     if ([columnName isEqualToString:@"lts"]) {
                         sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT('')"];
                     }
+                    
+                    NSString* unique = [atribute.userInfo valueForKey:@"UNIQUE"];
+                    
+                    if (unique) {
+                        sql_stmt = [sql_stmt stringByAppendingFormat:@" UNIQUE ON CONFLICT %@", unique];
+                    }
+                    
                 }
                 
                 NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
