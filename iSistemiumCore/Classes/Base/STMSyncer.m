@@ -93,7 +93,7 @@
 
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
-- (void)didReceiveRemoteNotification;
+//- (void)didReceiveRemoteNotification;
 
 
 @end
@@ -1662,17 +1662,17 @@
     
 }
 
-- (void)didReceiveRemoteNotification {
-    [self upload];
-}
-
-- (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
-    
-    if ([(notification.userInfo)[@"syncer"] isEqualToString:@"upload"]) {
-        [self setSyncerState:STMSyncerSendDataOnce];
-    }
-    
-}
+//- (void)didReceiveRemoteNotification {
+//    [self upload];
+//}
+//
+//- (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
+//    
+//    if ([(notification.userInfo)[@"syncer"] isEqualToString:@"upload"]) {
+//        [self setSyncerState:STMSyncerSendDataOnce];
+//    }
+//    
+//}
 
 
 
