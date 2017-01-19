@@ -845,7 +845,7 @@
 
     [self cancelCheckReceiveTimeout];
 //    NSLog(@"receiveJSDataEventAckWithData", )
-    [[self syncer] socketReceiveJSDataAck:data];
+//    [[self syncer] socketReceiveJSDataAck:data];
     
 }
 
