@@ -37,6 +37,11 @@ completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))
              options:(NSDictionary *)options
    completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
 
+- (void)destroyAllAsync:(NSString *)entityName
+           predicate:(NSPredicate *)predicate
+             options:(NSDictionary *)options
+   completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
+
 @optional
 
 - (void)createAsync:(NSString *)entityName

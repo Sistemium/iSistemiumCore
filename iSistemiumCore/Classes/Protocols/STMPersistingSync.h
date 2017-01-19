@@ -37,6 +37,11 @@
               options:(NSDictionary *)options
                 error:(NSError **)error;
 
+- (BOOL)destroyAllSync:(NSString *)entityName
+          predicate:(NSPredicate *)predicate
+            options:(NSDictionary *)options
+              error:(NSError **)error;
+
 @optional
 
 - (NSDictionary *)createSync:(NSString *)entityName

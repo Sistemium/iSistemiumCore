@@ -34,6 +34,10 @@
                      id:(NSString *)identifier
                 options:(NSDictionary *)options;
 
+- (AnyPromise *)destroyAll:(NSString *)entityName
+                 predicate:(NSPredicate *)predicate
+                   options:(NSDictionary *)options;
+
 @optional
 
 - (AnyPromise *)create:(NSString *)entityName

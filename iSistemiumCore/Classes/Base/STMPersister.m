@@ -169,7 +169,15 @@
         
         if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
             
-            [self destroyWithoutSave:attributes[@"name"] id:attributes[@"objectXid"] options:nil error:error];
+            NSPredicate* predicate;
+            
+            if ([[STMFmdb sharedInstance] hasTable:attributes[@"name"]]){
+                predicate = [NSPredicate predicateWithFormat:@"id = %@",attributes[@"objectXid"]];
+            }else{
+                predicate = [NSPredicate predicateWithFormat:@"xid = %@",attributes[@"objectXid"]];
+            }
+            
+            [self destroyWithoutSave:attributes[@"name"] predicate:predicate options:@{@"createRecordStatuses":@NO} error:error];
             
         }
         
@@ -204,21 +212,41 @@
     }
 }
 
-- (BOOL)destroyWithoutSave:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+- (BOOL)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    NSArray* objects = @[];
+    
+    if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
+        objects = [self findAllSync:entityName predicate:predicate options:options error:error];
+    }
+    
+    NSString* idKey;
+    
+    BOOL result = YES;
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
-        return [[STMFmdb sharedInstance] destroy:entityName identifier:identifier error:error];
+        idKey = @"id";
+        
+        result = [[STMFmdb sharedInstance] destroy:entityName predicate:predicate error:error];
         
     }else{
         
-        NSData* xidData = [STMFunctions xidDataFromXidString:identifier];
+        idKey = @"xid";
         
-        [STMCoreObjectsController removeObjectForXid:xidData entityName:entityName];
-        
-        return YES;
+        [STMCoreObjectsController removeObjectForPredicate:predicate entityName:entityName];
 
     }
+    
+    for (NSDictionary* object in objects){
+        
+        NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
+        
+        [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+        
+    }
+    
+    return result;
     
 }
 
@@ -364,20 +392,24 @@
 
 - (BOOL)destroySync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    [self destroyWithoutSave:entityName id:identifier options:options error:error];
+    NSPredicate* predicate;
     
-    if (error){
-        return NO;
+    if([[STMFmdb sharedInstance] hasTable:entityName]){
+        predicate = [NSPredicate predicateWithFormat:@"id = %@",identifier];
+    }else{
+        predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifier];
     }
     
-    NSDictionary *recordStatus = @{@"objectXid":identifier, @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
+    return [self destroyAllSync:entityName predicate:predicate options:options error:error];
     
-    [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+}
+
+- (BOOL)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-//    [self mergeSync:entityName attributes:recordStatus options:nil error:error];
+    [self destroyWithoutSave:entityName predicate:predicate options:options error:error];
     
     if (error){
-    #warning possible danger, will rollback changes from other threads
+        #warning possible danger, will rollback changes from other threads
         [[STMFmdb sharedInstance] rollback];
         return NO;
     }
@@ -388,6 +420,7 @@
         [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return YES;
     }
+    
 }
 
 #pragma mark - STMPersistingAsync
@@ -504,6 +537,30 @@
     }
 }
 
+- (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options
+   completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
+    
+    __block BOOL success = YES;
+    __block NSError* error = nil;
+    
+    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            success = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+            if(error){
+                success = NO;
+            }
+            completionHandler(success,error);
+        });
+    }else{
+        success = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+        if(error){
+            success = NO;
+        }
+        completionHandler(success,error);
+    }
+    
+}
+
 #pragma mark - STMPersistingPromised
 
 - (AnyPromise *)find:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options{
@@ -564,6 +621,20 @@
             }
         }];
     }];
+}
+
+- (AnyPromise *)destroyAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
+
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        [self destroyAllAsync:entityName predicate:predicate options:options completionHandler:^(BOOL success, NSError *error){
+            if (success){
+                resolve([NSNumber numberWithBool:success]);
+            }else{
+                resolve(error);
+            }
+        }];
+    }];
+    
 }
 
 @end
