@@ -43,9 +43,9 @@
 //- (void)postObjectsSendedNotification;
 //- (void)sendFinishedWithError:(NSString *)errorString;
 
-- (NSArray *)unsyncedObjects;
-- (NSUInteger)numbersOfAllUnsyncedObjects;
-- (NSUInteger)numberOfCurrentlyUnsyncedObjects;
+//- (NSArray *)unsyncedObjects;
+//- (NSUInteger)numbersOfAllUnsyncedObjects;
+//- (NSUInteger)numberOfCurrentlyUnsyncedObjects;
 
 - (void)socketReceiveJSDataAck:(NSArray *)data;
 //- (void)socketReceiveTimeout;

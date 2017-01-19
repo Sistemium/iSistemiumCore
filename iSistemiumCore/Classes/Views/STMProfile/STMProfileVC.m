@@ -175,22 +175,24 @@
 }
 
 - (void)updateUploadSyncProgressBar {
-    
-    STMSyncer *syncer = [self syncer];
-    
-    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
-        
-        float allUnsyncedObjectsCount = (float)[syncer numbersOfAllUnsyncedObjects];
-        float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
-        
-        if (allUnsyncedObjectsCount > 0) {
-            
-            self.progressBar.hidden = NO;
-            self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
-            
-        }
 
-    }
+#warning should be implemented later if needed
+    
+//    STMSyncer *syncer = [self syncer];
+//    
+//    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
+//        
+//        float allUnsyncedObjectsCount = (float)[syncer numbersOfAllUnsyncedObjects];
+//        float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
+//        
+//        if (allUnsyncedObjectsCount > 0) {
+//            
+//            self.progressBar.hidden = NO;
+//            self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
+//            
+//        }
+//
+//    }
     
 }
 
@@ -248,7 +250,8 @@
         switch (syncer.syncerState) {
             case STMSyncerIdle: {
 
-                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
+                imageName = @"Download From Cloud-100";
+//                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
                 break;
                 
             }
@@ -313,7 +316,7 @@
     [self removeGestureRecognizersFromCloudImages];
     
     STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfAllUnsyncedObjects] > 0);
+    BOOL hasObjectsToUpload = NO;// ([syncer numbersOfAllUnsyncedObjects] > 0);
     UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
     SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
     

@@ -1717,17 +1717,17 @@
 //    
 //}
 
-- (NSArray *)unsyncedObjects {
-    return [STMSocketController unsyncedObjects];
-}
-
-- (NSUInteger)numbersOfAllUnsyncedObjects {
-    return [self unsyncedObjects].count;
-}
-
-- (NSUInteger)numberOfCurrentlyUnsyncedObjects {
-    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
-}
+//- (NSArray *)unsyncedObjects {
+//    return [STMSocketController unsyncedObjects];
+//}
+//
+//- (NSUInteger)numbersOfAllUnsyncedObjects {
+//    return [self unsyncedObjects].count;
+//}
+//
+//- (NSUInteger)numberOfCurrentlyUnsyncedObjects {
+//    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
+//}
 
 #pragma mark - receive
 /*
