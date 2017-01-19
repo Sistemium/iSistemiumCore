@@ -315,6 +315,9 @@
     return ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
 }
 
+- (BOOL)transportIsReady {
+    return self.socketTransport.isReady;
+}
 
 #pragma mark - start syncer methods
 

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+
 #import "STMSessionManagement.h"
 #import "STMRequestAuthenticatable.h"
 
@@ -18,6 +19,7 @@
 @property (nonatomic, strong) id <STMSession> session;
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
+@property (nonatomic) BOOL transportIsReady;
 
 - (void)socketReceiveAuthorization;
 - (void)socketLostConnection;
