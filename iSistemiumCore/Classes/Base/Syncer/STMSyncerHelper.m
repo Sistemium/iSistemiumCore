@@ -213,7 +213,7 @@
     if (!success) {
         
         self.failToSyncObjects[itemData[@"id"]] = itemData;
-        NSLog(@"failToSync %@", itemData);
+        NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
         
     }
 
@@ -251,6 +251,8 @@
     if (objectToSend) {
         
         [self.unsyncedObjects removeObject:objectToSend];
+        
+        NSLog(@"object to send: %@ %@", objectToSend[@"entityName"], objectToSend[@"id"]);
         
         if (self.unsyncedSubscriptionBlock) {
             self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, nil);
@@ -391,6 +393,8 @@
 
 - (NSDictionary *)unsyncedObjectForObject:(NSDictionary *)object inSyncArray:(NSArray <NSDictionary *> *)syncArray error:(NSError *__autoreleasing *)error {
     
+    NSLog(@"check %@ %@", object[@"entityName"], object[@"id"]);
+    
     NSMutableArray *syncArrayCopy = syncArray.mutableCopy;
     [syncArrayCopy removeObject:object];
     
@@ -459,6 +463,8 @@
         
         if (needToGoDeeper) {
             
+            NSLog(@"-- needToGoDeeper --");
+            
             NSError *localError = nil;
             NSDictionary *objectToSend = [self unsyncedObjectForObject:object
                                                            inSyncArray:syncArrayCopy
@@ -474,7 +480,10 @@
             return nil;
             
         } else {
+            
+            NSLog(@"sync ok for %@ %@", object[@"entityName"], object[@"id"]);
             return object;
+            
         }
         
     }
@@ -497,7 +506,7 @@
 
 - (void)declineFromSyncObject:(NSDictionary *)object error:(NSError **)error {
     
-    NSLog(@"declineFromSync %@", object);
+    NSLog(@"declineFromSync %@ %@", object[@"entityName"], object[@"id"]);
     
     self.failToSyncObjects[object[@"id"]] = object;
     [self.unsyncedObjects removeObject:object];
