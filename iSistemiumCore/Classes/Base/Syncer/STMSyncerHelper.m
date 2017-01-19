@@ -291,6 +291,7 @@
     
     for (NSString *entityName in uploadableEntitiesNames) {
         
+#warning don't forget to remove it
         if ([entityName isEqualToString:@"STMLogMessage"]) {
             continue;
         }
