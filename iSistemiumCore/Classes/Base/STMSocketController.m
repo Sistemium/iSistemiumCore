@@ -1433,7 +1433,7 @@
 - (NSTimeInterval)sendTimeout {
     
     if (!_sendTimeout) {
-        _sendTimeout = [[STMSocketController syncer] timeout];
+//        _sendTimeout = [[STMSocketController syncer] timeout];
     }
     return _sendTimeout;
     
