@@ -12,7 +12,6 @@
 @interface STMRecordStatusController : STMCoreController
 
 + (NSDictionary *)existingRecordStatusForXid:(NSString *)objectXid;
-+ (NSDictionary *)recordStatusForObject:(NSDictionary *)object withEntityName:(NSString*)entityName;
 + (NSArray *)recordStatusesForXids:(NSArray *)xids;
 
 

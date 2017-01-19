@@ -32,22 +32,6 @@
     
 }
 
-+ (NSDictionary *)recordStatusForObject:(NSDictionary *)object withEntityName:(NSString*)entityName{
-    
-    NSString *objectId = object[@"id"];
-    
-    NSDictionary *recordStatus = [self existingRecordStatusForXid:objectId];
-    
-    if (!recordStatus) {
-        
-        recordStatus = @{@"objectXid":objectId,@"name":entityName};
-        
-    }
-    
-    return recordStatus;
-    
-}
-
 + (NSArray *)recordStatusesForXids:(NSArray *)xids {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectXid IN %@", xids];
@@ -58,6 +42,5 @@
     return recordStatuses;
     
 }
-
 
 @end
