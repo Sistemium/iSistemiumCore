@@ -34,5 +34,10 @@
                  timeout:(NSTimeInterval)timeout
        completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
+- (void)updateResource:(NSString *)resource
+                object:(NSDictionary *)object
+               timeout:(NSTimeInterval)timeout
+     completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
+
 
 @end

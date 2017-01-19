@@ -655,7 +655,41 @@ static NSString *kSocketDestroyMethod = @"destroy";
 }
 
 
-#pragma mark check timeouts
+#pragma mark - sending data
+#pragma mark update
+
+- (void)updateResource:(NSString *)resource object:(NSDictionary *)object timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+    
+    if (!self.isReady) {
+        
+        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
+        
+        [self completeHandler:completionHandler
+             withErrorMessage:errorMessage];
+        
+        return;
+        
+    }
+    
+    NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
+                            @"resource" : resource,
+                            @"id"       : object[@"id"],
+                            @"attrs"    : object};
+    
+    NSDictionary *context = @{@"startTime"           : [NSDate date],
+                              @"timeout"             : @(timeout),
+                              @"completionHandler"   : completionHandler};
+    
+    [self performSelector:@selector(checkRequestTimeout:)
+               withObject:context
+               afterDelay:timeout];
+    
+    [self sendEvent:STMSocketEventJSData withValue:value context:context completionHandler:completionHandler];
+    
+}
+
+
+#pragma mark - check timeouts
 
 - (void)checkRequestTimeout:(NSDictionary *)context {
     
@@ -673,7 +707,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
         
         [self completeHandler:completionHandler
              withErrorMessage:errorMessage];
-                
+        
     }
     
 }
@@ -694,7 +728,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
                         withMessage:errorMessage];
     
     completionHandler(NO, nil, error);
-
+    
 }
 
 
