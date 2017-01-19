@@ -787,6 +787,7 @@
     }
     
     NSString *resource = entity.url;
+//    NSString *resource = [entity resource]; ???
     
     __block BOOL blockIsComplete = NO;
     
@@ -1236,12 +1237,42 @@
         
         _unsyncedSubscriptionHandler = ^(NSString *entityName, NSDictionary *itemData, NSString *itemVersion) {
             
-            NSLog(@"entity %@, item %@", entity, itemData[@"id"]);
+            STMEntity *entity = [STMEntityController stcEntities][entityName];
+            NSString *resource = entity.url;
+//            NSString *resource = [entity resource]; ???
+
+            if (!resource) {
+                
+                NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
+                NSLog(@"%@", errorMessage);
+
+                [weakSelf.dataSyncingDelegate setSynced:NO
+                                                 entity:entityName
+                                               itemData:itemData
+                                            itemVersion:itemVersion];
+
+                return;
+                
+            }
             
-            [weakSelf.dataSyncingDelegate setSynced:YES
-                                             entity:entity
-                                           itemData:itemData
-                                        itemVersion:itemVersion];
+
+            [weakSelf.socketTransport updateResource:resource
+                                              object:itemData
+                                             timeout:[weakSelf timeout]
+                                   completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+            
+                NSLog(@"entityName %@, item %@", entityName, itemData[@"id"]);
+            
+                if (error) {
+                    NSLog(@"updateResource error: %@", error.localizedDescription);
+                }
+                                       
+                [weakSelf.dataSyncingDelegate setSynced:success
+                                                 entity:entityName
+                                               itemData:itemData
+                                            itemVersion:itemVersion];
+                
+            }];
             
         };
         
