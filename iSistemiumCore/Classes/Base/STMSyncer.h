@@ -23,7 +23,6 @@
 
 // old
 
-@property (nonatomic, strong) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic) STMSyncerState syncerState;
 @property (nonatomic) STMSyncerState timeoutErrorSyncerState;
 
