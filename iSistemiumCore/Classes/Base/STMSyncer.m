@@ -1679,43 +1679,43 @@
 #pragma mark - syncing
 #pragma mark - send
 
-- (void)nothingToSend {
-    
-    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send"];
-
-    self.syncing = NO;
-    
-    if (self.timerTicked) {
-        
-        self.timerTicked = NO;
-        self.receivingEntitiesNames = nil;
-        self.syncerState = STMSyncerReceiveData;
-        
-    } else {
-        
-        if (self.syncerState == STMSyncerSendData) {
-            
-            self.receivingEntitiesNames = nil;
-            self.syncerState = STMSyncerReceiveData;
-            
-        } else {
-            
-            if (self.receivingEntitiesNames) {
-                
-                self.syncerState = STMSyncerReceiveData;
-                
-            } else {
-                
-                self.syncerState = STMSyncerIdle;
-//                [STMCoreObjectsController resolveFantoms];
-                
-            }
-            
-        }
-    
-    }
-    
-}
+//- (void)nothingToSend {
+//    
+//    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send"];
+//
+//    self.syncing = NO;
+//    
+//    if (self.timerTicked) {
+//        
+//        self.timerTicked = NO;
+//        self.receivingEntitiesNames = nil;
+//        self.syncerState = STMSyncerReceiveData;
+//        
+//    } else {
+//        
+//        if (self.syncerState == STMSyncerSendData) {
+//            
+//            self.receivingEntitiesNames = nil;
+//            self.syncerState = STMSyncerReceiveData;
+//            
+//        } else {
+//            
+//            if (self.receivingEntitiesNames) {
+//                
+//                self.syncerState = STMSyncerReceiveData;
+//                
+//            } else {
+//                
+//                self.syncerState = STMSyncerIdle;
+////                [STMCoreObjectsController resolveFantoms];
+//                
+//            }
+//            
+//        }
+//    
+//    }
+//    
+//}
 
 - (NSArray *)unsyncedObjects {
     return [STMSocketController unsyncedObjects];
@@ -1730,7 +1730,7 @@
 }
 
 #pragma mark - receive
-
+/*
 - (void)checkNews {
     
     [self receiveData]; return; // check news is temporary disabled
@@ -1786,10 +1786,10 @@
         [self receiveData];
         
     }
-    
+
     
 }
-
+*/
 - (void)notAuthorized {
     
     self.fetchResult = UIBackgroundFetchResultFailed;
@@ -1948,24 +1948,24 @@
 
 #pragma mark - some sync methods
 
-- (void)sendFinishedWithError:(NSString *)errorString {
-    
-    if (errorString) {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
-                                                 numType:STMLogMessageTypeImportant];
-        
-        self.syncing = NO;
-        if (self.fetchCompletionHandler) self.fetchResult = UIBackgroundFetchResultFailed;
-        self.syncerState = (self.receivingEntitiesNames) ? STMSyncerReceiveData : STMSyncerIdle;
-        
-    } else {
-        
-        [self sendFinished:self];
-        
-    }
-    
-}
+//- (void)sendFinishedWithError:(NSString *)errorString {
+//    
+//    if (errorString) {
+//        
+//        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
+//                                                 numType:STMLogMessageTypeImportant];
+//        
+//        self.syncing = NO;
+//        if (self.fetchCompletionHandler) self.fetchResult = UIBackgroundFetchResultFailed;
+//        self.syncerState = (self.receivingEntitiesNames) ? STMSyncerReceiveData : STMSyncerIdle;
+//        
+//    } else {
+//        
+//        [self sendFinished:self];
+//        
+//    }
+//    
+//}
 
 - (void)sendFinished:(id)sender {
     
@@ -1975,25 +1975,25 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:@"sendFinished" object:self];
         
-        [self nothingToSend];
+//        [self nothingToSend];
         
     }];
 
 }
 
-- (void)bunchOfObjectsSended {
-    
-    [self saveSendDate];
-    [self postObjectsSendedNotification];
-    
-}
+//- (void)bunchOfObjectsSended {
+//    
+//    [self saveSendDate];
+//    [self postObjectsSendedNotification];
+//    
+//}
 
-- (void)postObjectsSendedNotification {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-                                                        object:self];
-
-}
+//- (void)postObjectsSendedNotification {
+//    
+//    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+//                                                        object:self];
+//
+//}
 
 - (void)saveSendDate {
     

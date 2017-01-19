@@ -38,10 +38,10 @@
 
 - (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
-- (void)nothingToSend;
-- (void)bunchOfObjectsSended;
-- (void)postObjectsSendedNotification;
-- (void)sendFinishedWithError:(NSString *)errorString;
+//- (void)nothingToSend;
+//- (void)bunchOfObjectsSended;
+//- (void)postObjectsSendedNotification;
+//- (void)sendFinishedWithError:(NSString *)errorString;
 
 - (NSArray *)unsyncedObjects;
 - (NSUInteger)numbersOfAllUnsyncedObjects;

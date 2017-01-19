@@ -260,7 +260,7 @@
     if (![self haveToSyncObjects]) {
         
         if ([sender isEqual:[self syncer]]) {
-            [[self syncer] nothingToSend];
+//            [[self syncer] nothingToSend];
         }
         
     }
@@ -525,7 +525,7 @@
 
 + (void)sendFinishedWithError:(NSString *)errorString abortSync:(NSNumber *)abortSync {
     
-    [[self syncer] postObjectsSendedNotification];
+//    [[self syncer] postObjectsSendedNotification];
     
     if (errorString && abortSync.boolValue) {
         
@@ -535,7 +535,7 @@
         
         if ([self haveToSyncObjects]) {
             
-            [[self syncer] bunchOfObjectsSended];
+//            [[self syncer] bunchOfObjectsSended];
             
         } else {
             
@@ -624,7 +624,7 @@
     return nil;
     // Log
     // ----------
-    
+    /*
 #ifdef DEBUG
     
     if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
@@ -723,7 +723,7 @@
     }
     
     return [AnyPromise promiseWithValue:error];
-    
+    */
 }
 
 + (void)checkReachabilityAndSocketStatus:(SocketIOClient *)socket {
@@ -1357,7 +1357,7 @@
         self.waitDocumentSavingToSendingCleanup = NO;
         
         self.isSendingData = NO;
-        [[STMSocketController syncer] sendFinishedWithError:self.sendingCleanupError];
+//        [[STMSocketController syncer] sendFinishedWithError:self.sendingCleanupError];
         self.sendingCleanupError = nil;
         self.unsyncedObjectsArray = nil;
         self.syncDateDictionary = nil;
@@ -1690,7 +1690,7 @@
 - (void)startSocket {
     
     return;
-    
+    /*
     STMLogger *logger = [STMLogger sharedLogger];
 
     STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
@@ -1753,7 +1753,7 @@
         }
         
     }
-
+     */
 }
 
 - (void)closeSocket {
@@ -1807,7 +1807,7 @@
 - (void)reconnectSocket {
 
     return;
-    
+    /*
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
@@ -1828,7 +1828,7 @@
         [STMSocketController startSocket];
 
     }
-    
+    */
 }
 
 - (NSString *)socketUrl {
