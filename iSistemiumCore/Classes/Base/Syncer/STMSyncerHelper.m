@@ -422,7 +422,28 @@
         if (!relObject) {
             continue;
         }
-        
+
+/* move object to the head to avoid repeating checking chain of objects:
+
+ instead of:
+ check STMVisitAnswer -> check STMVisit -> check STMOutlet -> check STMPartner -> send STMPartner
+ check STMVisitAnswer -> check STMVisit -> check STMOutlet -> send STMOutlet
+ check STMVisitAnswer -> check STMVisit -> send STMVisit
+ check STMVisitAnswer -> send STMVisitAnswer
+ 
+ it will be like this:
+ check STMVisitAnswer -> check STMVisit -> check STMOutlet -> check STMPartner -> send STMPartner
+ check STMOutlet -> send STMOutlet
+ check STMVisit -> send STMVisit
+ check STMVisitAnswer -> send STMVisitAnswer
+ 
+ use moveObjectToTheHeadOfUnsyncedObjectsArray if using syncArray.firstObject in findObjectToSendFromSyncArray:
+ use moveObjectToTheTailOfUnsyncedObjectsArray if using syncArray.lastObject in findObjectToSendFromSyncArray:
+ 
+*/
+        [self moveObjectToTheHeadOfUnsyncedObjectsArray:object];
+//        [self moveObjectToTheTailOfUnsyncedObjectsArray:object];
+
         object = relObject;
         needToGoDeeper = YES;
         break;
@@ -457,6 +478,20 @@
         }
         
     }
+    
+}
+
+- (void)moveObjectToTheHeadOfUnsyncedObjectsArray:(NSDictionary *)object {
+    
+    [STMFunctions moveObject:object
+            toTheHeadOfArray:self.unsyncedObjects];
+
+}
+
+- (void)moveObjectToTheTailOfUnsyncedObjectsArray:(NSDictionary *)object {
+    
+    [STMFunctions moveObject:object
+            toTheTailOfArray:self.unsyncedObjects];
     
 }
 
