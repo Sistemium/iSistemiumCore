@@ -15,7 +15,6 @@
 #import "STMSyncer.h"
 #import "STMEntityController.h"
 #import "STMCorePicturesController.h"
-#import "STMSocketController.h"
 
 #import "STMCoreAuthController.h"
 #import "STMCoreRootTBC.h"
@@ -24,6 +23,8 @@
 #import "STMFunctions.h"
 
 #import <Reachability/Reachability.h>
+
+#import "iSistemiumCore-Swift.h"
 
 
 @interface STMProfileVC () <UIAlertViewDelegate, UIActionSheetDelegate>
@@ -56,6 +57,7 @@
 @property (nonatomic) float totalEntityCount;
 @property (nonatomic) int previousNumberOfObjects;
 
+@property (nonatomic, strong) STMSyncer *syncer;
 @property (nonatomic, strong) Reachability *internetReachability;
 
 @property (nonatomic) BOOL downloadAlertWasShown;
@@ -241,13 +243,11 @@
 
 - (void)setImageForSyncImageView {
     
-    STMSyncer *syncer = [self syncer];
-    
     NSString *imageName = nil;
     
-    if ([STMSocketController socketIsAvailable]) {
+    if (self.syncer.transportIsReady) {
         
-        switch (syncer.syncerState) {
+        switch (self.syncer.syncerState) {
             case STMSyncerIdle: {
 
                 imageName = @"Download From Cloud-100";
@@ -315,22 +315,21 @@
     
     [self removeGestureRecognizersFromCloudImages];
     
-    STMSyncer *syncer = [self syncer];
     BOOL hasObjectsToUpload = NO;// ([syncer numbersOfAllUnsyncedObjects] > 0);
     UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
     SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
     
     NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
     
-    if (networkStatus == NotReachable || ![STMSocketController socketIsAvailable]) {
+    if (networkStatus == NotReachable || !self.syncer.transportIsReady) {
         
         color = [color colorWithAlphaComponent:0.3];
         [self.syncImageView setTintColor:color];
         
     } else {
         
-        if (syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
-            
+//        if (self.syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
+        
             [self.syncImageView setTintColor:color];
             
             UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
@@ -345,11 +344,11 @@
                 
             }
             
-        } else {
-            
-            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
-            
-        }
+//        } else {
+//            
+//            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
+//            
+//        }
         
     }
     
@@ -375,7 +374,7 @@
         
         if (longPressGesture.state == UIGestureRecognizerStateBegan) {
             
-            [self syncer].syncerState = STMSyncerSendData;
+            self.syncer.syncerState = STMSyncerSendData;
             
         }
         
@@ -384,13 +383,13 @@
 }
 
 - (void)uploadCloudTapped {
-    [self syncer].syncerState = STMSyncerSendDataOnce;
+    self.syncer.syncerState = STMSyncerSendDataOnce;
 }
 
 - (void)downloadCloudTapped {
     
 //    [[self syncer] afterSendFurcation];
-    [self syncer].syncerState = STMSyncerReceiveData;
+    self.syncer.syncerState = STMSyncerReceiveData;
     
 }
 
@@ -461,7 +460,7 @@
 
 - (void)hideNumberOfObjects {
     
-    if ([[[STMCoreSessionManager sharedManager].currentSession syncer] syncerState] != STMSyncerReceiveData) {
+    if (self.syncer.syncerState != STMSyncerReceiveData) {
         
         self.previousNumberOfObjects = 0;
         self.numberOfObjectLabel.text = @"";
@@ -523,7 +522,7 @@
 
 - (void)updateNonloadedPicturesInfo {
 
-    self.nonloadedPicturesButton.enabled = ([self syncer].syncerState == STMSyncerIdle);
+    self.nonloadedPicturesButton.enabled = (self.syncer.syncerState == STMSyncerIdle);
     
     NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
@@ -841,7 +840,7 @@
     self.nameLabel.text = [STMCoreAuthController authController].userName;
     self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
 
-    BOOL syncerIsIdle = ([[STMCoreSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
+    BOOL syncerIsIdle = (self.syncer.syncerState == STMSyncerIdle);
     self.progressBar.hidden = syncerIsIdle;
     [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     
@@ -1099,42 +1098,40 @@
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
-    STMSyncer *syncer = [self syncer];
-    
     [nc addObserver:self
            selector:@selector(syncerStatusChanged:)
                name:NOTIFICATION_SYNCER_STATUS_CHANGED
-             object:syncer];
+             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:@"sendFinished"
-             object:syncer];
+             object:self.syncer];
 
     [nc addObserver:self
            selector:@selector(updateUploadSyncProgressBar)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-             object:syncer];
+             object:self.syncer];
 
     [nc addObserver:self
            selector:@selector(entityCountdownChange:)
                name:@"entityCountdownChange"
-             object:syncer];
+             object:self.syncer];
 
     [nc addObserver:self
            selector:@selector(syncerNewsHaveObjects:)
                name:@"syncerNewsHaveObjects"
-             object:syncer];
+             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
                name:@"entitiesReceivingDidFinish"
-             object:syncer];
+             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(getBunchOfObjects:)
                name:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-             object:syncer];
+             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(syncerDidChangeContent:)
