@@ -29,6 +29,7 @@ FMDatabasePool *pool;
     if (self) {
         
         NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
+        NSDictionary <NSString *, NSEntityDescription *> *entities = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSArray *ignoredEntities = @[@"STMSetting", @"STMEntity"];
         NSArray *ignoredAttributes = @[@"xid", @"id"];
@@ -58,7 +59,7 @@ FMDatabasePool *pool;
             
             for (NSString* entityName in entityNames){
                 
-                if ([ignoredEntities containsObject:entityName]){
+                if ([ignoredEntities containsObject:entityName] || entities[entityName].abstract){
                     continue;
                 }
                 
