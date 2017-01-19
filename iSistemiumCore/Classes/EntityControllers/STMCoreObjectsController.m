@@ -910,6 +910,25 @@
     
 }
 
++ (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
+    
+    if ([[self localDataModelEntityNames] containsObject:entityName]) {
+        
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+        request.predicate = predicate;
+        
+        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+        
+        if (fetchResult.firstObject) return fetchResult.firstObject;
+        
+    }
+    
+    return nil;
+    
+}
+
+
 + (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
@@ -1270,8 +1289,18 @@
     [self removeObject:object inContext:nil];
 }
 
++ (void)removeObjects:(NSArray*)objects {
+    for (id object in objects){
+        [self removeObject:object inContext:nil];
+    }
+}
+
 + (void)removeObjectForXid:(NSData *)xidData entityName:(NSString *)name{
     [STMCoreObjectsController removeObject:[STMCoreObjectsController objectForXid:xidData entityName:name]];
+}
+
++ (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
+    [STMCoreObjectsController removeObjects:[STMCoreObjectsController objectsForPredicate:predicate entityName:name]];
 }
 
 + (void)removeObject:(NSManagedObject *)object inContext:(NSManagedObjectContext *)context {
