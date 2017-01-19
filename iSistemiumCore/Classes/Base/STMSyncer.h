@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 
 - (void)socketReceiveAuthorization;
+- (void)socketLostConnection;
 
 - (void)prepareToDestroy;
 
@@ -49,8 +50,6 @@
 
 //- (void)socketReceiveJSDataAck:(NSArray *)data;
 //- (void)socketReceiveTimeout;
-
-- (void)socketLostConnection;
 
 
 @end
