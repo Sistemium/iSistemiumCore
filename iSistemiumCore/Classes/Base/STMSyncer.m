@@ -1210,7 +1210,9 @@
 
 - (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
     
-    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    [self.socketTransport socketSendEvent:STMSocketEventInfo
+                                withValue:errorString];
+
     [self entityCountDecreaseWithError:errorString];
     
 }
@@ -1858,7 +1860,8 @@
 - (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
     
     NSLog(@"%@", errorString);
-    [STMSocketController sendEvent:STMSocketEventInfo withValue:errorString];
+    [self.socketTransport socketSendEvent:STMSocketEventInfo
+                                withValue:errorString];
 
     NSString *xid = [response valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];

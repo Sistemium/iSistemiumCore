@@ -25,7 +25,7 @@
 
 #import "STMCoreAppDelegate.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 
 
 @interface STMCoreRootTBC () <UITabBarControllerDelegate, UIAlertViewDelegate>
@@ -679,7 +679,9 @@
 - (void)lastSelectedVC:(UIViewController *)vc {
     
     NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@ %@", vc.title, vc];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    
+    [self.session.syncer sendEventViaSocket:STMSocketEventStatusChange
+                                  withValue:logMessage];
 
     NSString *className = NSStringFromClass([vc class]);
     self.lastSelectedTab = @{@(self.selectedIndex) : @{className : vc.title}};
