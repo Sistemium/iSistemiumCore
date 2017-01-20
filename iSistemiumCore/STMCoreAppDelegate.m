@@ -20,10 +20,11 @@
 
 #import "STMAuthNC.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 #import "STMSoundController.h"
 
 #import <AVFoundation/AVFoundation.h>
+#import "iSistemiumCore-Swift.h"
 
 
 @implementation STMCoreAppDelegate
@@ -170,7 +171,8 @@
 //    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
 //                                             numType:STMLogMessageTypeImportant];
     
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+#warning STMSocketController
+//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
     
     [STMSoundController startBackgroundPlay];
     
@@ -192,7 +194,8 @@
     
     [self backgroundTask:bgTask startedInApplication:application];
     
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+#warning STMSocketController
+//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
     [STMGarbageCollector removeOutOfDateImages];
 //    [self showTestLocalNotification];
@@ -205,17 +208,19 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+#warning STMSocketController
+//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
     logMessage = @"cancel scheduled socket close if have one";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-    [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
-                                                        selector:@selector(closeSocketInBackground)
-                                                          object:nil];
-    
-    [STMSocketController checkSocket];
+#warning STMSocketController
+//    [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
+//                                                        selector:@selector(closeSocketInBackground)
+//                                                          object:nil];
+//
+//    [STMSocketController checkSocket];
     
 }
 
@@ -232,8 +237,9 @@
     if (session.status == STMSessionRunning) {
         [STMMessageController showMessageVCsIfNeeded];
     }
-    
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+
+#warning STMSocketController
+//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
 
     [STMSoundController stopBackgroundPlay];
 
@@ -284,17 +290,18 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
-    
-    if ([STMSocketController socketIsAvailable]) {
-        
-        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData
-                                             fetchCompletionHandler:completionHandler];
-        
-    } else {
-        
-        [STMSocketController checkSocket];
-        
-    }
+
+#warning STMSocketController
+//    if ([STMSocketController socketIsAvailable]) {
+//        
+//        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData
+//                                             fetchCompletionHandler:completionHandler];
+//        
+//    } else {
+//        
+//        [STMSocketController checkSocket];
+//        
+//    }
     
 }
 
@@ -366,9 +373,10 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
 
-        [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
-                                                   withObject:nil
-                                                   afterDelay:delayInterval];
+#warning STMSocketController
+//        [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
+//                                                   withObject:nil
+//                                                   afterDelay:delayInterval];
 
     }
     

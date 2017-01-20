@@ -31,7 +31,7 @@
 
 #import "STMCoreDataModel.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 
 #define SEND_DATA_CONNECTION @"SEND_DATA"
 
@@ -539,7 +539,7 @@
     
     if (self.isRunning) {
         
-        [STMSocketController closeSocket];
+//        [STMSocketController closeSocket];
         
         [self.session.logger saveLogMessageWithText:@"Syncer stop"];
 //        self.syncing = NO;
@@ -885,7 +885,7 @@
     if ([entityName isEqualToString:@"STMEntity"]) {
         
         [STMEntityController flushSelf];
-        [STMSocketController reloadResultsControllers];
+//        [STMSocketController reloadResultsControllers];
         
         self.stcEntities = nil;
         
@@ -1868,9 +1868,9 @@
 
     BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
     
-    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-                                             errorString:errorString
-                                               abortSync:abortSync];
+//    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+//                                             errorString:errorString
+//                                               abortSync:abortSync];
     
 }
 
@@ -1922,13 +1922,13 @@
 #pragma mark - sync object
 
 - (void)syncObject:(NSDictionary *)objectDictionary {
-    
+/*
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *xid = [objectDictionary valueForKey:@"id"];
     NSData *xidData = [STMFunctions xidDataFromXidString:xid];
     
-    NSDate *syncDate = [STMSocketController syncDateForSyncedObjectXid:xidData];
+//    NSDate *syncDate = [STMSocketController syncDateForSyncedObjectXid:xidData];
 
     if (!syncDate) {
 
@@ -1969,7 +1969,7 @@
             object.lts = syncDate;
         }
         
-        [STMSocketController successfullySyncObjectWithXid:xidData];
+//        [STMSocketController successfullySyncObjectWithXid:xidData];
         
         NSString *entityName = object.entity.name;
         
@@ -1977,7 +1977,7 @@
         [logger saveLogMessageWithText:logMessage];
         
     }];
-
+*/
 }
 
 

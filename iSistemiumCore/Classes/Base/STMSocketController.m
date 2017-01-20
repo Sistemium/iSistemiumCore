@@ -7,26 +7,26 @@
 //
 
 #import "STMSocketController.h"
-#import "STMCoreAuthController.h"
-#import "STMClientDataController.h"
-#import "STMCoreObjectsController.h"
-#import "STMRemoteController.h"
-#import "STMEntityController.h"
+//#import "STMCoreAuthController.h"
+//#import "STMClientDataController.h"
+//#import "STMCoreObjectsController.h"
+//#import "STMRemoteController.h"
+//#import "STMEntityController.h"
+//
+//#import "STMCoreSessionManager.h"
+//
+//#import "STMCoreRootTBC.h"
+//
+//#import "STMFunctions.h"
+//
+//#import <Reachability/Reachability.h>
+//
+//
+//#define SOCKET_URL @"https://socket.sistemium.com/socket.io-client"
+//#define CHECK_AUTHORIZATION_DELAY 15
+//
 
-#import "STMCoreSessionManager.h"
-
-#import "STMCoreRootTBC.h"
-
-#import "STMFunctions.h"
-
-#import <Reachability/Reachability.h>
-
-
-#define SOCKET_URL @"https://socket.sistemium.com/socket.io-client"
-#define CHECK_AUTHORIZATION_DELAY 15
-
-
-@interface STMSocketController() <NSFetchedResultsControllerDelegate>
+@interface STMSocketController()/* <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
@@ -723,7 +723,7 @@
     }
     
     return [AnyPromise promiseWithValue:error];
-    */
+    *//*
 }
 
 + (void)checkReachabilityAndSocketStatus:(SocketIOClient *)socket {
@@ -884,8 +884,8 @@
 + (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
 	
     NSDictionary *params = @{@"deviceUUID"  : [STMClientDataController deviceUUIDString]/*,
-                             @"agentBuild"  : BUILD_VERSION*/};
-    
+                             @"agentBuild"  : BUILD_VERSION*/ //};
+/*
     [self startReceiveDataFromResource:[self newsResourceString]
                               withETag:nil
                             fetchLimit:fetchLimit
@@ -1689,7 +1689,7 @@
 
 - (void)startSocket {
     
-    return;
+    return; */
     /*
     STMLogger *logger = [STMLogger sharedLogger];
 
@@ -1753,7 +1753,7 @@
         }
         
     }
-     */
+     *//*
 }
 
 - (void)closeSocket {
@@ -1806,7 +1806,7 @@
 
 - (void)reconnectSocket {
 
-    return;
+    return;*/
     /*
     STMLogger *logger = [STMLogger sharedLogger];
     
@@ -1828,7 +1828,7 @@
         [STMSocketController startSocket];
 
     }
-    */
+    *//*
 }
 
 - (NSString *)socketUrl {
@@ -1894,6 +1894,6 @@
                afterDelay:CHECK_AUTHORIZATION_DELAY];
 
 }
-
+*/
 
 @end
