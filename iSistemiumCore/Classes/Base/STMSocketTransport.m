@@ -309,6 +309,15 @@
 
 #pragma mark - send events
 
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+    [self socketSendEvent:event
+                withValue:value
+                  timeout:0
+        completionHandler:nil];
+    
+}
+
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     [self logSendEvent:event withValue:value];
@@ -321,8 +330,14 @@
                 
 //                NSLog(@"STMSocketEventJSData value: %@", value);
 
-                NSDictionary *context = [self scheduleTimeoutCheck:timeout
-                                             withCompletionHandler:completionHandler];
+                NSDictionary *context = nil;
+                
+                if (timeout && completionHandler) {
+
+                    context = [self scheduleTimeoutCheck:timeout
+                                   withCompletionHandler:completionHandler];
+
+                }
                 
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
 
@@ -330,8 +345,13 @@
 
                 [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
 
-                    [self cancelCheckRequestTimeoutWithContext:context];
-                    completionHandler(YES, data, nil);
+                    if (context) {
+                        [self cancelCheckRequestTimeoutWithContext:context];
+                    }
+                    
+                    if (completionHandler) {
+                        completionHandler(YES, data, nil);
+                    }
 
                 });
                 
