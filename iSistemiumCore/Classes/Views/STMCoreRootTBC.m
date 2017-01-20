@@ -993,7 +993,7 @@
         
     } else if (alertView.tag == 2) {
 
-        if (buttonIndex == 1) [self.session.syncer setSyncerState:self.session.syncer.timeoutErrorSyncerState];
+//        if (buttonIndex == 1) [self.session.syncer setSyncerState:self.session.syncer.timeoutErrorSyncerState];
     
     }
     

@@ -34,8 +34,8 @@
 
 // old
 
-@property (nonatomic) STMSyncerState syncerState;
-@property (nonatomic) STMSyncerState timeoutErrorSyncerState;
+//@property (nonatomic) STMSyncerState syncerState;
+//@property (nonatomic) STMSyncerState timeoutErrorSyncerState;
 
 //- (NSTimeInterval)timeout;
 
