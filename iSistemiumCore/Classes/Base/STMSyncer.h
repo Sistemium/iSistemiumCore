@@ -45,6 +45,9 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 - (void)receiveEntities:(NSArray *)entitiesNames;
 - (void)sendObjects:(NSDictionary *)parameters;
 
+- (void)sendEventViaSocket:(STMSocketEvent)event
+                 withValue:(id)value;
+
 
 // old
 

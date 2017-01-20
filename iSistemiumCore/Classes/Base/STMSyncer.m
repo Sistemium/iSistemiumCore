@@ -700,6 +700,9 @@
     
 }
 
+- (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value {
+    [self.socketTransport socketSendEvent:event withValue:value];
+}
 
 #pragma mark - recieve data
 
