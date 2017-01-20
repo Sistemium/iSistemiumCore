@@ -308,20 +308,8 @@
             
             if (result.count > 0) {
             
-                NSMutableArray *finalArray = @[].mutableCopy;
-                
-                [result enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                   
-                    NSMutableDictionary *object = obj.mutableCopy;
-                    object[@"entityName"] = entityName;
-                    
-                    [finalArray addObject:object];
-                    
-                }];
-                
-                NSLog(@"%@ unsynced %@", @(finalArray.count), entityName);
-                
-                [unsyncedObjects addObjectsFromArray:finalArray];
+                NSLog(@"%@ unsynced %@", @(result.count), entityName);
+                [unsyncedObjects addObjectsFromArray:result];
 
             }
             
@@ -394,23 +382,25 @@
 
 - (NSDictionary *)unsyncedObjectForObject:(NSDictionary *)object inSyncArray:(NSArray <NSDictionary *> *)syncArray error:(NSError *__autoreleasing *)error {
     
-    NSLog(@"check %@ %@", object[@"entityName"], object[@"id"]);
+//    NSLog(@"check %@ %@", object[@"entityName"], object[@"id"]);
     
     NSMutableArray *syncArrayCopy = syncArray.mutableCopy;
     [syncArrayCopy removeObject:object];
     
-    NSString *entityName = object[@"entityName"];
-    NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
+    NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
     
     BOOL needToGoDeeper = NO;
     BOOL declineFromSync = NO;
     
-    for (NSString *relName in relationships.allKeys) {
+    for (NSString *relObjectKey in relKeys) {
         
-        NSString *relObjectKey = [relName stringByAppendingString:RELATIONSHIP_SUFFIX];
-        NSString *relObjectId = object[relObjectKey];
+        id relObjectId = object[relObjectKey];
         
-        if (!relObjectId) {
+        if (!relObjectId || [relObjectId isKindOfClass:[NSNull class]]) {
+            continue;
+        }
+        
+        if ([relObjectId isKindOfClass:[NSString class]] && [relObjectId isEqualToString:@""]) {
             continue;
         }
         
@@ -482,7 +472,7 @@
             
         } else {
             
-            NSLog(@"sync ok for %@ %@", object[@"entityName"], object[@"id"]);
+//            NSLog(@"sync ok for %@ %@", object[@"entityName"], object[@"id"]);
             return object;
             
         }
@@ -507,7 +497,7 @@
 
 - (void)declineFromSyncObject:(NSDictionary *)object error:(NSError **)error {
     
-    NSLog(@"declineFromSync %@ %@", object[@"entityName"], object[@"id"]);
+//    NSLog(@"declineFromSync %@ %@", object[@"entityName"], object[@"id"]);
     
     self.failToSyncObjects[object[@"id"]] = object;
     [self.unsyncedObjects removeObject:object];
