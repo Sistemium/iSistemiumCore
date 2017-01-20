@@ -33,14 +33,14 @@
                      error:(NSError **)error;
 
 - (BOOL)destroySync:(NSString *)entityName
-                   id:(NSString *)identifier
-              options:(NSDictionary *)options
-                error:(NSError **)error;
-
-- (BOOL)destroyAllSync:(NSString *)entityName
-          predicate:(NSPredicate *)predicate
+                 id:(NSString *)identifier
             options:(NSDictionary *)options
               error:(NSError **)error;
+
+- (BOOL)destroyAllSync:(NSString *)entityName
+             predicate:(NSPredicate *)predicate
+               options:(NSDictionary *)options
+                 error:(NSError **)error;
 
 @optional
 
