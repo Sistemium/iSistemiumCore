@@ -170,10 +170,26 @@
     
 }
 
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic {
+- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic deleteObject:(BOOL)deleteObject {
     
-    @synchronized (self.notFoundFantomsArray) {
-        [self.notFoundFantomsArray addObject:fantomDic];
+    if (deleteObject) {
+        
+        NSString *entityName = fantomDic[@"entityName"];
+        NSString *objId = fantomDic[@"id"];
+        
+        NSLog(@"delete fantom %@ %@", entityName, objId);
+
+        [self.persistenceDelegate destroySync:entityName
+                                           id:objId
+                                      options:nil
+                                        error:nil];
+        
+    } else {
+    
+        @synchronized (self.failToResolveFantomsArray) {
+            [self.failToResolveFantomsArray addObject:fantomDic];
+        }
+
     }
     
 }

@@ -20,7 +20,10 @@
 @property (nonatomic, weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>persistenceDelegate;
 
 - (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler;
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic;
+
+- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic
+                      deleteObject:(BOOL)deleteObject;
+
 - (void)defantomizingFinished;
 
 

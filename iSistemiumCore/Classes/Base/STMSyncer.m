@@ -1015,15 +1015,21 @@
 }
 
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
+    [self defantomizingObject:fantomDic error:errorString deleteObject:NO];
+}
+
+- (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString deleteObject:(BOOL)deleteObject {
     
     NSLog(@"defantomize error: %@", errorString);
     
-    [self.syncerHelper defantomizeErrorWithObject:fantomDic];
+    [self.syncerHelper defantomizeErrorWithObject:fantomDic
+                                     deleteObject:deleteObject];
     [self fantomsCountDecrease];
     
     return;
     
 }
+
 
 - (void)fantomsCountDecrease {
 
@@ -1350,13 +1356,16 @@
     if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
         
     }
-
+    
     BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
     
     if (defantomizing) {
-        
+
+        BOOL deleteObject = (errorCode.integerValue == 403 || errorCode.integerValue == 404);
+
         [self defantomizingObject:context[@"object"]
-                            error:errorString];
+                            error:errorString
+                     deleteObject:deleteObject];
         
     } else {
         NSLog(@"find error: %@", errorString);
