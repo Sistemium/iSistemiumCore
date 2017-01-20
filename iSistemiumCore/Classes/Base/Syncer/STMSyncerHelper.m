@@ -16,7 +16,7 @@
 @interface STMSyncerHelper()
 
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *unsyncedObjects;
-@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+@property (nonatomic, strong) NSMutableArray *failToResolveFantomsArray;
 @property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
 @property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
@@ -52,12 +52,12 @@
     
 }
 
-- (NSMutableArray *)notFoundFantomsArray {
+- (NSMutableArray *)failToResolveFantomsArray {
     
-    if (!_notFoundFantomsArray) {
-        _notFoundFantomsArray = @[].mutableCopy;
+    if (!_failToResolveFantomsArray) {
+        _failToResolveFantomsArray = @[].mutableCopy;
     }
-    return _notFoundFantomsArray;
+    return _failToResolveFantomsArray;
     
 }
 
@@ -125,8 +125,8 @@
                                                          options:@{@"fantoms":@YES}
                                                            error:&error];
         
-        NSArray *notFoundFantomsIds = [self.notFoundFantomsArray valueForKeyPath:@"id"];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", notFoundFantomsIds];
+        NSArray *failToResolveFantomsIds = [self.failToResolveFantomsArray valueForKeyPath:@"id"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
         
         results = [results filteredArrayUsingPredicate:predicate];
 
@@ -186,7 +186,7 @@
                                                         object:self
                                                       userInfo:nil];
     
-    self.notFoundFantomsArray = nil;
+    self.failToResolveFantomsArray = nil;
 
 }
 
