@@ -11,6 +11,20 @@
 #import "STMSessionManagement.h"
 #import "STMRequestAuthenticatable.h"
 
+typedef NS_ENUM(NSInteger, STMSocketEvent) {
+    STMSocketEventConnect,
+    STMSocketEventDisconnect,
+    STMSocketEventError,
+    STMSocketEventReconnect,
+    STMSocketEventReconnectAttempt,
+    STMSocketEventStatusChange,
+    STMSocketEventInfo,
+    STMSocketEventAuthorization,
+    STMSocketEventRemoteCommands,
+    STMSocketEventData,
+    STMSocketEventJSData
+};
+
 
 @interface STMSyncer : NSObject <STMSyncer>
 

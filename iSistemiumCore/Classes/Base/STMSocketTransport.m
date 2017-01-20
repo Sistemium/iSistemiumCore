@@ -14,20 +14,6 @@
 #import "STMCoreRootTBC.h"
 
 
-typedef NS_ENUM(NSInteger, STMSocketEvent) {
-    STMSocketEventConnect,
-    STMSocketEventDisconnect,
-    STMSocketEventError,
-    STMSocketEventReconnect,
-    STMSocketEventReconnectAttempt,
-    STMSocketEventStatusChange,
-    STMSocketEventInfo,
-    STMSocketEventAuthorization,
-    STMSocketEventRemoteCommands,
-    STMSocketEventData,
-    STMSocketEventJSData
-};
-
 static NSString *kSocketFindAllMethod = @"findAll";
 static NSString *kSocketFindMethod = @"find";
 static NSString *kSocketUpdateMethod = @"update";
