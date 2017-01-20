@@ -316,6 +316,16 @@
     
 }
 
+- (void)setEntityCount:(NSUInteger)entityCount {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"entityCountdownChange"
+                                                        object:self
+                                                      userInfo:@{@"countdownValue": @((int)entityCount)}];
+    
+    _entityCount = entityCount;
+    
+}
+
 - (void)turnOffNetworkActivityIndicator {
     
     if (!self.isUsingNetwork) {
@@ -342,6 +352,33 @@
         _temporaryETag = [NSMutableDictionary dictionary];
     }
     return _temporaryETag;
+    
+}
+
+- (NSMutableArray *)entitySyncNames {
+    
+    if (!_entitySyncNames) {
+        _entitySyncNames = [NSMutableArray array];
+    }
+    return _entitySyncNames;
+    
+}
+
+- (NSString *)entityResource {
+
+    if (!_entityResource) {
+        _entityResource = self.settings[@"entityResource"];
+    }
+    return _entityResource;
+    
+}
+
+- (NSString *)socketUrlString {
+
+    if (!_socketUrlString) {
+        _socketUrlString = self.settings[@"socketUrl"];
+    }
+    return _socketUrlString;
     
 }
 
@@ -1528,27 +1565,6 @@
 
 #pragma mark - variables setters & getters
 
-- (NSMutableArray *)entitySyncNames {
-    if (!_entitySyncNames) {
-        _entitySyncNames = [NSMutableArray array];
-    }
-    return _entitySyncNames;
-}
-
-- (NSString *)entityResource {
-    if (!_entityResource) {
-        _entityResource = self.settings[@"entityResource"];
-    }
-    return _entityResource;
-}
-
-- (NSString *)socketUrlString {
-    if (!_socketUrlString) {
-        _socketUrlString = self.settings[@"socketUrl"];
-    }
-    return _socketUrlString;
-}
-
 //- (NSString *)xmlNamespace {
 //    if (!_xmlNamespace) {
 //        _xmlNamespace = self.settings[@"xmlNamespace"];
@@ -1654,27 +1670,17 @@
 
 }
 
-- (void)sendingRoute {
-
-    if ([STMSocketController socketIsAvailable]) {
-        
-        [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-        
-    } else {
-
-    }
-
-}
-
-- (void)setEntityCount:(NSUInteger)entityCount {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"entityCountdownChange"
-                                                        object:self
-                                                      userInfo:@{@"countdownValue": @((int)entityCount)}];
-    
-    _entityCount = entityCount;
-    
-}
+//- (void)sendingRoute {
+//
+//    if ([STMSocketController socketIsAvailable]) {
+//        
+//        [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+//        
+//    } else {
+//
+//    }
+//
+//}
 
 //- (NSMutableDictionary *)responses {
 //    
@@ -1699,8 +1705,8 @@
 
 
 
-#pragma mark - syncing
-#pragma mark - send
+//#pragma mark - syncing
+//#pragma mark - send
 
 //- (void)nothingToSend {
 //    
@@ -1752,7 +1758,7 @@
 //    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
 //}
 
-#pragma mark - receive
+//#pragma mark - receive
 /*
 - (void)checkNews {
     
@@ -1813,13 +1819,13 @@
     
 }
 */
-- (void)notAuthorized {
-    
-    self.fetchResult = UIBackgroundFetchResultFailed;
-    [self stopSyncer];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"notAuthorized" object:self];
-    
-}
+//- (void)notAuthorized {
+//    
+//    self.fetchResult = UIBackgroundFetchResultFailed;
+//    [self stopSyncer];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:@"notAuthorized" object:self];
+//    
+//}
 
 
 #pragma mark - socket receive ack handler
@@ -1862,42 +1868,42 @@
     
 }
 
-- (void)parseNewsData:(NSArray *)newsData {
-    
-    if (newsData.count > 0) {
-        
-        NSArray *entitiesNames = [newsData valueForKeyPath:@"@unionOfObjects.name"];
-        NSArray *objectsCount = [newsData valueForKeyPath:@"@unionOfObjects.cnt"];
-        
-        NSDictionary *news = [NSDictionary dictionaryWithObjects:objectsCount forKeys:entitiesNames];
-        
-        for (NSString *entityName in entitiesNames) {
-            NSLog(@"    news: STM%@ — %@ objects", entityName, news[entityName]);
-        }
-        
-        NSMutableArray *tempArray = [NSMutableArray array];
-        
-        for (NSString *entityName in entitiesNames) {
-            [tempArray addObject:[ISISTEMIUM_PREFIX stringByAppendingString:entityName]];
-        }
-        
-        self.entitySyncNames = tempArray;
-        self.entityCount = tempArray.count;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
-                                                            object:self
-                                                          userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
-        
-        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-
-    } else {
-        
-        NSLog(@"empty news data received");
-        [self receivingDidFinish];
-        
-    }
-    
-}
+//- (void)parseNewsData:(NSArray *)newsData {
+//    
+//    if (newsData.count > 0) {
+//        
+//        NSArray *entitiesNames = [newsData valueForKeyPath:@"@unionOfObjects.name"];
+//        NSArray *objectsCount = [newsData valueForKeyPath:@"@unionOfObjects.cnt"];
+//        
+//        NSDictionary *news = [NSDictionary dictionaryWithObjects:objectsCount forKeys:entitiesNames];
+//        
+//        for (NSString *entityName in entitiesNames) {
+//            NSLog(@"    news: STM%@ — %@ objects", entityName, news[entityName]);
+//        }
+//        
+//        NSMutableArray *tempArray = [NSMutableArray array];
+//        
+//        for (NSString *entityName in entitiesNames) {
+//            [tempArray addObject:[ISISTEMIUM_PREFIX stringByAppendingString:entityName]];
+//        }
+//        
+//        self.entitySyncNames = tempArray;
+//        self.entityCount = tempArray.count;
+//        
+//        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
+//                                                            object:self
+//                                                          userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
+//        
+//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+//
+//    } else {
+//        
+//        NSLog(@"empty news data received");
+//        [self receivingDidFinish];
+//        
+//    }
+//    
+//}
 
 - (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
 
