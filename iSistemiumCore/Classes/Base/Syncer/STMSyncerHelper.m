@@ -324,8 +324,23 @@
             
             if (result.count > 0) {
             
-                NSLog(@"%@ unsynced %@", @(result.count), entityName);
-                [unsyncedObjects addObjectsFromArray:result];
+                NSMutableArray *finalArray = @[].mutableCopy;
+                
+                [result enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    
+                    NSMutableDictionary *object = obj.mutableCopy;
+                    object[@"entityName"] = entityName;
+                    
+                    [finalArray addObject:object];
+                    
+                }];
+                
+                NSLog(@"%@ unsynced %@", @(finalArray.count), entityName);
+                
+                [unsyncedObjects addObjectsFromArray:finalArray];
+
+//                NSLog(@"%@ unsynced %@", @(result.count), entityName);
+//                [unsyncedObjects addObjectsFromArray:result];
 
             }
             
@@ -402,6 +417,11 @@
     
     NSMutableArray *syncArrayCopy = syncArray.mutableCopy;
     [syncArrayCopy removeObject:object];
+    
+//    NSString *entityName = object[@"entityName"];
+//    NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
+//
+//    NSArray *relKeys = relationships.allKeys;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
     

@@ -1462,7 +1462,7 @@
                                              timeout:[weakSelf timeout]
                                    completionHandler:^(BOOL success, NSArray *data, NSError *error) {
             
-                NSLog(@"entityName %@, item %@", entityName, itemData[@"id"]);
+                NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
             
                 if (error) {
                     NSLog(@"updateResource error: %@", error.localizedDescription);
