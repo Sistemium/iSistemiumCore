@@ -53,6 +53,8 @@
 
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketUrlString;
+@property (nonatomic) NSTimeInterval httpTimeoutForeground;
+@property (nonatomic) NSTimeInterval httpTimeoutBackground;
 
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isReceivingData;
@@ -61,6 +63,7 @@
 
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
+@property (nonatomic, strong) NSMutableDictionary *temporaryETag;
 
 @property (nonatomic) NSUInteger entityCount;
 @property (atomic) NSUInteger fantomsCount;
@@ -70,23 +73,20 @@
 
 // old
 
-@property (nonatomic, strong) NSString *xmlNamespace;
-@property (nonatomic) NSTimeInterval httpTimeoutForeground;
-@property (nonatomic) NSTimeInterval httpTimeoutBackground;
-@property (nonatomic, strong) NSString *uploadLogType;
+//@property (nonatomic, strong) NSString *xmlNamespace;
+//@property (nonatomic, strong) NSString *uploadLogType;
 
-@property (nonatomic) BOOL timerTicked;
+//@property (nonatomic) BOOL timerTicked;
 
-@property (nonatomic) BOOL syncing;
-@property (nonatomic) BOOL checkSending;
-@property (nonatomic) BOOL sendOnce;
-@property (nonatomic) BOOL fullSyncWasDone;
-@property (nonatomic) BOOL isFirstSyncCycleIteration;
-@property (nonatomic) BOOL errorOccured;
+//@property (nonatomic) BOOL syncing;
+//@property (nonatomic) BOOL checkSending;
+//@property (nonatomic) BOOL sendOnce;
+//@property (nonatomic) BOOL fullSyncWasDone;
+//@property (nonatomic) BOOL isFirstSyncCycleIteration;
+//@property (nonatomic) BOOL errorOccured;
 
-@property (nonatomic, strong) NSMutableDictionary *responses;
-@property (nonatomic, strong) NSMutableDictionary *temporaryETag;
-@property (nonatomic, strong) NSMutableArray *sendedEntities;
+//@property (nonatomic, strong) NSMutableDictionary *responses;
+//@property (nonatomic, strong) NSMutableArray *sendedEntities;
 
 
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
@@ -257,6 +257,23 @@
     
 }
 
+- (NSTimeInterval)httpTimeoutForeground {
+    
+    if (!_httpTimeoutForeground) {
+        _httpTimeoutForeground = [self.settings[@"http.timeout.foreground"] doubleValue];
+    }
+    return _httpTimeoutForeground;
+    
+}
+
+- (NSTimeInterval)httpTimeoutBackground {
+    
+    if (!_httpTimeoutBackground) {
+        _httpTimeoutBackground = [self.settings[@"http.timeout.background"] doubleValue];
+    }
+    return _httpTimeoutBackground;
+    
+}
 
 - (NSMutableDictionary *)stcEntities {
     
@@ -318,6 +335,16 @@
 - (BOOL)transportIsReady {
     return self.socketTransport.isReady;
 }
+
+- (NSMutableDictionary *)temporaryETag {
+    
+    if (!_temporaryETag) {
+        _temporaryETag = [NSMutableDictionary dictionary];
+    }
+    return _temporaryETag;
+    
+}
+
 
 #pragma mark - start syncer methods
 
@@ -478,7 +505,7 @@
         [STMSocketController closeSocket];
         
         [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-        self.syncing = NO;
+//        self.syncing = NO;
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
@@ -502,11 +529,11 @@
     self.fetchLimit = 0;
     self.entityResource = nil;
     self.socketUrlString = nil;
-    self.xmlNamespace = nil;
+//    self.xmlNamespace = nil;
     self.httpTimeoutForeground = 0;
     self.httpTimeoutBackground = 0;
     self.syncInterval = 0;
-    self.uploadLogType = nil;
+//    self.uploadLogType = nil;
 
 }
 
@@ -1522,42 +1549,28 @@
     return _socketUrlString;
 }
 
-- (NSString *)xmlNamespace {
-    if (!_xmlNamespace) {
-        _xmlNamespace = self.settings[@"xmlNamespace"];
-    }
-    return _xmlNamespace;
-}
+//- (NSString *)xmlNamespace {
+//    if (!_xmlNamespace) {
+//        _xmlNamespace = self.settings[@"xmlNamespace"];
+//    }
+//    return _xmlNamespace;
+//}
 
-- (NSTimeInterval)httpTimeoutForeground {
-    if (!_httpTimeoutForeground) {
-        _httpTimeoutForeground = [self.settings[@"http.timeout.foreground"] doubleValue];
-    }
-    return _httpTimeoutForeground;
-}
+//- (NSString *)uploadLogType {
+//    if (!_uploadLogType) {
+//        _uploadLogType = self.settings[@"uploadLog.type"];
+//    }
+//    return _uploadLogType;
+//}
 
-- (NSTimeInterval)httpTimeoutBackground {
-    if (!_httpTimeoutBackground) {
-        _httpTimeoutBackground = [self.settings[@"http.timeout.background"] doubleValue];
-    }
-    return _httpTimeoutBackground;
-}
-
-- (NSString *)uploadLogType {
-    if (!_uploadLogType) {
-        _uploadLogType = self.settings[@"uploadLog.type"];
-    }
-    return _uploadLogType;
-}
-
-- (NSMutableArray *)sendedEntities {
-    
-    if (!_sendedEntities) {
-        _sendedEntities = [NSMutableArray array];
-    }
-    return _sendedEntities;
-    
-}
+//- (NSMutableArray *)sendedEntities {
+//    
+//    if (!_sendedEntities) {
+//        _sendedEntities = [NSMutableArray array];
+//    }
+//    return _sendedEntities;
+//    
+//}
 
 - (STMSyncerState)syncerState {
     
@@ -1580,7 +1593,7 @@
 
 - (void)setSyncerState:(STMSyncerState)syncerState {
     
-    if (self.isRunning && !self.syncing && syncerState != _syncerState) {
+    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
 
         STMSyncerState previousState = _syncerState;
         
@@ -1598,9 +1611,9 @@
             case STMSyncerIdle: {
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                self.syncing = NO;
-                self.sendOnce = NO;
-                self.checkSending = NO;
+//                self.syncing = NO;
+//                self.sendOnce = NO;
+//                self.checkSending = NO;
                 
                 self.entitySyncNames = nil;
                 if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
@@ -1614,7 +1627,7 @@
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
                 [STMClientDataController checkClientData];
-                self.syncing = YES;
+//                self.syncing = YES;
 
 //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
                 self.syncerState = STMSyncerIdle;
@@ -1624,7 +1637,7 @@
             case STMSyncerReceiveData: {
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                self.syncing = YES;
+//                self.syncing = YES;
                 [self receiveData];
                 self.syncerState = STMSyncerIdle;
 
@@ -1663,23 +1676,14 @@
     
 }
 
-- (NSMutableDictionary *)responses {
-    
-    if (!_responses) {
-        _responses = [NSMutableDictionary dictionary];
-    }
-    return _responses;
-    
-}
-
-- (NSMutableDictionary *)temporaryETag {
-    
-    if (!_temporaryETag) {
-        _temporaryETag = [NSMutableDictionary dictionary];
-    }
-    return _temporaryETag;
-    
-}
+//- (NSMutableDictionary *)responses {
+//    
+//    if (!_responses) {
+//        _responses = [NSMutableDictionary dictionary];
+//    }
+//    return _responses;
+//    
+//}
 
 //- (void)didReceiveRemoteNotification {
 //    [self upload];
