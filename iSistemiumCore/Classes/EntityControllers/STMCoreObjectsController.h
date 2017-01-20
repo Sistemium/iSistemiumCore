@@ -59,6 +59,7 @@
 
 + (void)removeObject:(STMDatum *)object;
 + (void)removeObjectForXid:(NSData *)xidData entityName:(NSString *)name;
++ (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name;
 
 + (void)dataLoadingFinished;
 

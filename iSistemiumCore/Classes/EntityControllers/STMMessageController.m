@@ -321,7 +321,11 @@
     
     NSDictionary *object = [STMCoreObjectsController dictionaryForJSWithObject:message];
     
-    NSDictionary *recordStatus = [STMRecordStatusController recordStatusForObject:object withEntityName:@"STMMessage"];
+    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:object[@"id"]];
+    
+    if (!recordStatus){
+        recordStatus = @{@"objectXid":object[@"id"],@"name":@"STMMessage"};
+    }
     
     if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {
         

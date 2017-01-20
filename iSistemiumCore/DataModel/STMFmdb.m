@@ -28,9 +28,10 @@ FMDatabasePool *pool;
     
     if (self) {
         
-        NSArray *entityNames = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName.allKeys;
+        NSDictionary <NSString *, NSEntityDescription *> *entities = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName;
+        NSArray *entityNames = entities.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSArray *ignoredEntities = @[@"STMSetting", @"STMEntity"];
+
         NSArray *ignoredAttributes = @[@"xid", @"id"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
@@ -58,7 +59,10 @@ FMDatabasePool *pool;
             
             for (NSString* entityName in entityNames){
                 
-                if ([ignoredEntities containsObject:entityName]){
+                NSString *storeOption = [entities[entityName] userInfo][@"STORE"];
+                
+                if ((storeOption && ![storeOption isEqualToString:@"FMDB"]) || entities[entityName].abstract){
+                    NSLog(@"STMFmdb ignore entity: %@", entityName);
                     continue;
                 }
                 
@@ -106,9 +110,17 @@ FMDatabasePool *pool;
                     if ([columnName isEqualToString:@"deviceCts"]) {
                         sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
                     }
+                    
                     if ([columnName isEqualToString:@"lts"]) {
                         sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT('')"];
                     }
+                    
+                    NSString* unique = [atribute.userInfo valueForKey:@"UNIQUE"];
+                    
+                    if (unique) {
+                        sql_stmt = [sql_stmt stringByAppendingFormat:@" UNIQUE ON CONFLICT %@", unique];
+                    }
+                    
                 }
                 
                 NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
@@ -349,16 +361,21 @@ FMDatabasePool *pool;
     return results;
 }
 
-- (BOOL)destroy:(NSString * _Nonnull)tablename identifier:(NSString*  _Nonnull)idendifier error:(NSError *_Nonnull * _Nonnull)error{
+- (BOOL)destroy:(NSString * _Nonnull)tablename predicate:(NSPredicate* _Nonnull)predicate error:(NSError *_Nonnull * _Nonnull)error{
+    
+    NSString *where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
+    if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
+        where = @"";
+    }else{
+        where = [@" WHERE " stringByAppendingString:where];
+    }
     
     __block BOOL result = YES;
     
-    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@ WHERE id=?", [self entityToTableName:tablename]];
-    
-    NSArray* values = @[idendifier];
+    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [self entityToTableName:tablename],where];
     
     [queue inDatabase:^(FMDatabase *db) {
-        if(![db executeUpdate:destroySQL values:values error:error]){
+        if(![db executeUpdate:destroySQL values:nil error:error]){
             result = NO;
         }
     }];
