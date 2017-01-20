@@ -13,6 +13,11 @@
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
 
+static NSString *kSocketFindAllMethod = @"findAll";
+static NSString *kSocketFindMethod = @"find";
+static NSString *kSocketUpdateMethod = @"update";
+static NSString *kSocketDestroyMethod = @"destroy";
+
 
 @interface STMSocketTransport : NSObject
 

@@ -14,12 +14,6 @@
 #import "STMCoreRootTBC.h"
 
 
-static NSString *kSocketFindAllMethod = @"findAll";
-static NSString *kSocketFindMethod = @"find";
-static NSString *kSocketUpdateMethod = @"update";
-static NSString *kSocketDestroyMethod = @"destroy";
-
-
 @interface STMSocketTransport()
 
 @property (nonatomic, weak) STMSyncer *syncer;
