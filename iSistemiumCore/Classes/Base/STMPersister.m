@@ -309,6 +309,8 @@
     }
     NSString *orderBy = options[@"sortBy"];
     
+    BOOL asc = options[@"ASC"] ? [options[@"ASC"] boolValue] : YES;
+    
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
     
@@ -327,13 +329,14 @@
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
+                                                    ascending:asc
                                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
                                                    fetchOffset:options[@"offset"] ? &offset : nil];
 
     } else {
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
-                                                                     ascending:YES
+                                                                     ascending:asc
                                                                     fetchLimit:pageSize
                                                                    fetchOffset:offset
                                                                    withFantoms:NO

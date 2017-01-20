@@ -247,6 +247,7 @@ FMDatabasePool *pool;
         NSArray *results = [self getDataWithEntityName:tablename
                                          withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
                                                orderBy:nil
+                                             ascending:NO
                                             fetchLimit:nil
                                            fetchOffset:nil
                                                     db:db];
@@ -343,7 +344,7 @@ FMDatabasePool *pool;
     return rez;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
     
     __block NSArray* results;
     
@@ -352,6 +353,7 @@ FMDatabasePool *pool;
         results = [self getDataWithEntityName:name
                                 withPredicate:predicate
                                       orderBy:orderBy
+                                    ascending:ascending
                                    fetchLimit:fetchLimit
                                   fetchOffset:fetchOffset
                                            db:db];
@@ -383,12 +385,12 @@ FMDatabasePool *pool;
     return result;
 }
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
     
     NSString* options = @"";
     
     if (orderBy) {
-        NSString *order = [NSString stringWithFormat:@" ORDER BY %@", orderBy];
+        NSString *order = [NSString stringWithFormat:@" ORDER BY %@ %@", orderBy, ascending ? @"ASC" : @"DESC"];
         options = [options stringByAppendingString:order];
     }
     
