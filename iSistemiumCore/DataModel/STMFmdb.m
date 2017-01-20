@@ -31,7 +31,7 @@ FMDatabasePool *pool;
         NSDictionary <NSString *, NSEntityDescription *> *entities = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName;
         NSArray *entityNames = entities.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-
+        
         NSArray *ignoredAttributes = @[@"xid", @"id"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
@@ -320,7 +320,7 @@ FMDatabasePool *pool;
             return nil;
         }
     }
-
+    
     return pk;
 }
 
@@ -348,14 +348,14 @@ FMDatabasePool *pool;
     __block NSArray* results;
     
     [pool inDatabase:^(FMDatabase *db) {
-    
+        
         results = [self getDataWithEntityName:name
                                 withPredicate:predicate
                                       orderBy:orderBy
                                    fetchLimit:fetchLimit
                                   fetchOffset:fetchOffset
                                            db:db];
-    
+        
     }];
     
     return results;
@@ -407,7 +407,7 @@ FMDatabasePool *pool;
     NSString* where = @"";
     
     if (predicate){
-        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate entityName:name];
+        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
         if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
             where = @"";
         }else{
@@ -423,7 +423,6 @@ FMDatabasePool *pool;
                                              withString:name];
     
     NSMutableArray *rez = @[].mutableCopy;
-
     NSString* query = [NSString stringWithFormat:@"SELECT * FROM %@%@%@", name, where, options];
     
     FMResultSet *s = [db executeQuery:query];
@@ -434,7 +433,6 @@ FMDatabasePool *pool;
     
     // there will be memory warnings loading catalogue on an old device if no copy
     return rez.copy;
-
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
@@ -469,7 +467,7 @@ FMDatabasePool *pool;
     }];
     return result;
 }
-     
+
 - (BOOL) rollback {
     __block BOOL result = YES;
     [queue inDatabase:^(FMDatabase *db){

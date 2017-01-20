@@ -286,10 +286,10 @@ static STMPredicateToSQL *sharedInstance;
     return retStr;
 }
 
-- (NSString *)SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate entityName:(NSString *)entityName {
+- (NSString *) SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate{
     
-    NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:predicate.leftExpression];
-    NSString *rightSQLExpression = [self SQLExpressionForNSExpression:predicate.rightExpression];
+    NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
+    NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
     
     if (predicate.rightExpression.expressionType == NSConstantValueExpressionType) {
         if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
@@ -298,6 +298,7 @@ static STMPredicateToSQL *sharedInstance;
         if (![rightSQLExpression isEqual: @"NULL"]){
             rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
         }
+        
     }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
@@ -309,7 +310,7 @@ static STMPredicateToSQL *sharedInstance;
             mtables[i] = @"id";
         }
     }
-             
+    
     tables = mtables.copy;
     
     if (tables.count > 1){
@@ -353,8 +354,8 @@ static STMPredicateToSQL *sharedInstance;
         }
         case NSBetweenPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
-                                                       [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
-                                                       [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]] ;
+                    [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
+                    [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]] ;
         }
         case NSLikePredicateOperatorType:
         case NSContainsPredicateOperatorType: {
@@ -375,11 +376,11 @@ static STMPredicateToSQL *sharedInstance;
     return nil;
 }
 
-- (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate entityName:(NSString *)entityName {
+- (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate{
     NSMutableArray *subs = [NSMutableArray array];
     
     for (NSPredicate *sub in [predicate subpredicates]) {
-        [subs addObject:[self SQLFilterForPredicate:sub entityName:entityName]];
+        [subs addObject:[self SQLFilterForPredicate:sub]];
     }
     
     if (subs.count == 1){
@@ -409,13 +410,13 @@ static STMPredicateToSQL *sharedInstance;
     return [NSString stringWithFormat:@"(%@)", [subs componentsJoinedByString:conjunction]];
 }
 
-- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate{
     if ([predicate respondsToSelector:@selector(compoundPredicateType)]){
-        return [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate entityName:entityName];
+        return [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate];
     }
     else {
         if ([predicate respondsToSelector:@selector(predicateOperatorType)]){
-            return [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate entityName:entityName];
+            return [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate];
         }
         else {
             NSLog(@"SQLFilterForPredicate predicate is not of a convertible class");

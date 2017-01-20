@@ -10,6 +10,6 @@
 @interface STMPredicateToSQL : NSObject
 
 + (STMPredicateToSQL *) sharedInstance;
-- (NSString *) SQLFilterForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName;
+- (NSString *) SQLFilterForPredicate:(NSPredicate *)predicate;
 
 @end
