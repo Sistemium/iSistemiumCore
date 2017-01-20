@@ -171,10 +171,17 @@
             
             NSPredicate* predicate;
             
-            if ([[STMFmdb sharedInstance] hasTable:attributes[@"name"]]){
-                predicate = [NSPredicate predicateWithFormat:@"id = %@",attributes[@"objectXid"]];
-            }else{
-                predicate = [NSPredicate predicateWithFormat:@"xid = %@",attributes[@"objectXid"]];
+            NSString *objectXid = attributes[@"objectXid"];
+            
+            if ([[STMFmdb sharedInstance] hasTable:attributes[@"name"]]) {
+                
+                predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
+                
+            } else {
+                
+                NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
+                predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
+                
             }
             
             [self destroyWithoutSave:attributes[@"name"] predicate:predicate options:@{@"createRecordStatuses":@NO} error:error];
@@ -283,10 +290,15 @@
     
     NSPredicate* predicate;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
-        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",identifier];
-    }else{
-        predicate = [NSPredicate predicateWithFormat:@"xid == %@",identifier];
+    if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+        
+        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@", identifier];
+        
+    } else {
+        
+        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+        predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
+        
     }
     
     NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
@@ -397,10 +409,15 @@
     
     NSPredicate* predicate;
     
-    if([[STMFmdb sharedInstance] hasTable:entityName]){
-        predicate = [NSPredicate predicateWithFormat:@"id = %@",identifier];
-    }else{
-        predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifier];
+    if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+        
+        predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
+        
+    } else {
+        
+        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+        predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
+        
     }
     
     return [self destroyAllSync:entityName predicate:predicate options:options error:error];
