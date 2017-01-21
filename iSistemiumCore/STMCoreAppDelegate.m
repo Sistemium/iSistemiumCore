@@ -171,8 +171,8 @@
 //    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
 //                                             numType:STMLogMessageTypeImportant];
     
-#warning STMSocketController
-//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
     
     [STMSoundController startBackgroundPlay];
     
@@ -194,8 +194,8 @@
     
     [self backgroundTask:bgTask startedInApplication:application];
     
-#warning STMSocketController
-//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     [STMGarbageCollector removeOutOfDateImages];
 //    [self showTestLocalNotification];
@@ -208,8 +208,8 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-#warning STMSocketController
-//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     logMessage = @"cancel scheduled socket close if have one";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
@@ -238,8 +238,8 @@
         [STMMessageController showMessageVCsIfNeeded];
     }
 
-#warning STMSocketController
-//    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     [STMSoundController stopBackgroundPlay];
 
@@ -416,7 +416,7 @@
     if (userInfo[@"syncer"]) {
         
         if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
-            [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+            [[self syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
                 
                 if (!handlerCompleted) {
 
@@ -439,7 +439,7 @@
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+        [[self syncer] setSyncerState:STMSyncerSendData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
             
             if (!handlerCompleted) {
                 
@@ -595,6 +595,10 @@
         
     }
     
+}
+
+- (STMSyncer *)syncer {
+    return [self sessionManager].currentSession.syncer;
 }
 
 
