@@ -94,6 +94,20 @@
     
 }
 
+- (void)closeSocketInBackground {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"close socket in background"
+                           numType:STMLogMessageTypeInfo];
+    
+//    self.wasClosedInBackground = YES;
+//    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
+    
+    [self closeSocket];
+    
+}
+
 - (void)reconnectSocket {
     
     [self closeSocket];
@@ -105,6 +119,23 @@
     
     self.socket = nil;
     self.isAuthorized = NO;
+    
+}
+
+- (void)checkSocket {
+    
+    if (!self.isReady) {
+        [self reconnectSocket];
+    }
+    
+//    if (self.wasClosedInBackground) {
+//        
+//        self.wasClosedInBackground = NO;
+//        [self startSocket];
+//        
+//    } else if (![STMSocketController socketIsAvailable]) {
+//        [self reconnectSocket];
+//    }
     
 }
 
@@ -373,7 +404,9 @@
         [STMCoreObjectsController error:&error
                             withMessage:errorMessage];
         
-        completionHandler(NO, nil, error);
+        if (completionHandler) {
+            completionHandler(NO, nil, error);
+        }
         
     }
 

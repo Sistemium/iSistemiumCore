@@ -215,12 +215,10 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-#warning STMSocketController
-//    [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
-//                                                        selector:@selector(closeSocketInBackground)
-//                                                          object:nil];
-//
-//    [STMSocketController checkSocket];
+    [STMSyncer cancelPreviousPerformRequestsWithTarget:[self syncer]
+                                              selector:@selector(closeSocketInBackground)
+                                                object:nil];
+    [[self syncer] checkSocket];
     
 }
 
@@ -291,17 +289,16 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
 
-#warning STMSocketController
-//    if ([STMSocketController socketIsAvailable]) {
-//        
-//        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData
-//                                             fetchCompletionHandler:completionHandler];
-//        
-//    } else {
-//        
-//        [STMSocketController checkSocket];
-//        
-//    }
+    if ([self syncer].transportIsReady) {
+        
+        [[self syncer] setSyncerState:STMSyncerSendData
+               fetchCompletionHandler:completionHandler];
+        
+    } else {
+        
+        [[self syncer] checkSocket];
+        
+    }
     
 }
 
@@ -373,10 +370,9 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
 
-#warning STMSocketController
-//        [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
-//                                                   withObject:nil
-//                                                   afterDelay:delayInterval];
+        [[self syncer] performSelector:@selector(closeSocketInBackground)
+                            withObject:nil
+                            afterDelay:delayInterval];
 
     }
     

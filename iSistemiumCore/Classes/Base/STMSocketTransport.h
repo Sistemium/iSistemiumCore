@@ -27,6 +27,9 @@ static NSString *kSocketDestroyMethod = @"destroy";
           andEntityResource:(NSString *)entityResource
                   forSyncer:(STMSyncer *)syncer;
 
+- (void)closeSocketInBackground;
+- (void)checkSocket;
+
 - (void)socketSendEvent:(STMSocketEvent)event
               withValue:(id)value;
 

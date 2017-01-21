@@ -532,6 +532,14 @@
     
 }
 
+- (void)checkSocket {
+    [self.socketTransport checkSocket];
+}
+
+- (void)closeSocketInBackground {
+    [self.socketTransport closeSocketInBackground];
+}
+
 
 #pragma mark - stop syncer methods
 

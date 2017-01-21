@@ -37,6 +37,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 - (void)socketReceiveAuthorization;
 - (void)socketLostConnection;
+- (void)checkSocket;
+- (void)closeSocketInBackground;
 
 - (void)prepareToDestroy;
 
@@ -56,6 +58,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 //- (NSTimeInterval)timeout;
 
+#warning - have to do something with setSyncerState: method
 - (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
 //- (void)nothingToSend;
