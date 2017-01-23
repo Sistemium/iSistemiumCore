@@ -41,7 +41,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 - (void)findFromResource:(NSString *)resource
-                objectId:(NSString *)objectId
+              identifier:(NSString *)identifier
                  timeout:(NSTimeInterval)timeout
        completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 

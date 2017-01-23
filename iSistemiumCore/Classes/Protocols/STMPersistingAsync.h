@@ -13,7 +13,7 @@
 @required
 
 - (void)findAsync:(NSString *)entityName
-               id:(NSString *)identifier
+       identifier:(NSString *)identifier
           options:(NSDictionary *)options
 completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler;
 
@@ -33,7 +33,7 @@ completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))
      completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler;
 
 - (void)destroyAsync:(NSString *)entityName
-                  id:(NSString *)identifier
+          identifier:(NSString *)identifier
              options:(NSDictionary *)options
    completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
 

@@ -274,7 +274,10 @@
             NSString *xidString = objectData[@"id"];
             NSError *error = nil;
             
-            NSDictionary *object = [STMCoreObjectsController.persistenceDelegate findSync:entityName id:xidString options:nil error:&error];
+            NSDictionary *object = [STMCoreObjectsController.persistenceDelegate findSync:entityName
+                                                                               identifier:xidString
+                                                                                  options:nil
+                                                                                    error:&error];
             // TODO: check errors
             [result addObject:object];
 
@@ -1955,7 +1958,7 @@
 
     }
     
-    return [[self persistenceDelegate] destroy:entityName id:xidString options:nil].then(^(NSNumber *result){
+    return [[self persistenceDelegate] destroy:entityName identifier:xidString options:nil].then(^(NSNumber *result){
         return @[@{@"objectXid":xidString}];
     });
     
@@ -2366,7 +2369,10 @@
         
         if (xidString) {
             
-            NSDictionary* object = [[self persistenceDelegate] findSync:entityName id:xidString options:nil error:error];
+            NSDictionary* object = [[self persistenceDelegate] findSync:entityName
+                                                             identifier:xidString
+                                                                options:nil
+                                                                  error:error];
             
             if (object) {
 

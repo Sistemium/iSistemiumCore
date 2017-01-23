@@ -13,7 +13,7 @@
 @required
 
 - (NSDictionary *)findSync:(NSString *)entityName
-                        id:(NSString *)identifier
+                identifier:(NSString *)identifier
                    options:(NSDictionary *)options
                      error:(NSError **)error;
 
@@ -33,7 +33,7 @@
                      error:(NSError **)error;
 
 - (BOOL)destroySync:(NSString *)entityName
-                 id:(NSString *)identifier
+         identifier:(NSString *)identifier
             options:(NSDictionary *)options
               error:(NSError **)error;
 

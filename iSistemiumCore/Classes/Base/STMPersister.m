@@ -286,7 +286,7 @@
     
 }
 
-- (NSDictionary *)findSync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+- (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSPredicate* predicate;
     
@@ -407,7 +407,7 @@
     return nil;
 }
 
-- (BOOL)destroySync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+- (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSPredicate* predicate;
     
@@ -447,7 +447,7 @@
 
 #pragma mark - STMPersistingAsync
 
-- (void)findAsync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
+- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler{
     
     __block NSDictionary* result;
     __block BOOL success = YES;
@@ -455,14 +455,14 @@
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            result = [self findSync:entityName id:identifier options:options error:&error];
+            result = [self findSync:entityName identifier:identifier options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,result,error);
         });
     } else {
-        result = [self findSync:entityName id:identifier options:options error:&error];
+        result = [self findSync:entityName identifier:identifier options:options error:&error];
         if(error){
             success = NO;
         }
@@ -539,19 +539,19 @@
     }
 }
 
-- (void)destroyAsync:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
+- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
     __block BOOL success = YES;
     __block NSError* error = nil;
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            success = [self destroySync:entityName id:identifier options:options error:&error];
+            success = [self destroySync:entityName identifier:identifier options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,error);
         });
     }else{
-        success = [self destroySync:entityName id:identifier options:options error:&error];
+        success = [self destroySync:entityName identifier:identifier options:options error:&error];
         if(error){
             success = NO;
         }
@@ -585,9 +585,9 @@
 
 #pragma mark - STMPersistingPromised
 
-- (AnyPromise *)find:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options{
+- (AnyPromise *)find:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options{
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self findAsync:entityName id:identifier options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error){
+        [self findAsync:entityName identifier:identifier options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error){
             if (success){
                 resolve(result);
             }else{
@@ -633,9 +633,9 @@
     }];
 }
 
-- (AnyPromise *)destroy:(NSString *)entityName id:(NSString *)identifier options:(NSDictionary *)options{
+- (AnyPromise *)destroy:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options{
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self destroyAsync:entityName id:identifier options:options completionHandler:^(BOOL success, NSError *error){
+        [self destroyAsync:entityName identifier:identifier options:options completionHandler:^(BOOL success, NSError *error){
             if (success){
                 resolve([NSNumber numberWithBool:success]);
             }else{

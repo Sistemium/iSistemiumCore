@@ -180,7 +180,7 @@
         NSLog(@"delete fantom %@ %@", entityName, objId);
 
         [self.persistenceDelegate destroySync:entityName
-                                           id:objId
+                                   identifier:objId
                                       options:nil
                                         error:nil];
         

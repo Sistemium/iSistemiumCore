@@ -1059,7 +1059,7 @@
     __block BOOL blockIsComplete = NO;
     
     [self.socketTransport findFromResource:resource
-                                  objectId:fantomId
+                                identifier:fantomId
                                    timeout:[self timeout]
                          completionHandler:^(BOOL success, NSArray *data, NSError *error) {
                              

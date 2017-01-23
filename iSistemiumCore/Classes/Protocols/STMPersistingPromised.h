@@ -15,7 +15,7 @@
 @required
 
 - (AnyPromise *)find:(NSString *)entityName
-                  id:(NSString *)identifier
+          identifier:(NSString *)identifier
              options:(NSDictionary *)options;
 
 - (AnyPromise *)findAll:(NSString *)entityName
@@ -31,7 +31,7 @@
                   options:(NSDictionary *)options;
 
 - (AnyPromise *)destroy:(NSString *)entityName
-                     id:(NSString *)identifier
+             identifier:(NSString *)identifier
                 options:(NSDictionary *)options;
 
 - (AnyPromise *)destroyAll:(NSString *)entityName
