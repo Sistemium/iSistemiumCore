@@ -22,7 +22,12 @@
     
     Class locationClass = [currentSession locationClass];
     
-    STMCoreLocation *locationObject = (STMCoreLocation *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass(locationClass) isFantom:NO];
+    STMCoreLocation *locationObject = (STMCoreLocation *)[currentSession.persistenceDelegate newObjectForEntityName:NSStringFromClass(locationClass)];
+    
+#warning maybe newObjectForEntityName should return (STMDatum *)
+    locationObject.isFantom = @(NO);
+    locationObject.xid = [STMFunctions xidDataFromXidString:[[[NSUUID alloc] init] UUIDString]];
+
     locationObject.latitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.latitude).decimalValue];
     locationObject.longitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.longitude).decimalValue];
     locationObject.horizontalAccuracy = [NSDecimalNumber decimalNumberWithDecimal:@(location.horizontalAccuracy).decimalValue];

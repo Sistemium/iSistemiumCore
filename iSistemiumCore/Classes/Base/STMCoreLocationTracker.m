@@ -17,6 +17,9 @@
 
 #define ACTUAL_LOCATION_CHECK_TIME_INTERVAL 5.0
 
+#warning hardcoded "STMLocation"
+#define STMLOCATION_CONCRETE_ENTITY @"STMLocation"
+
 #warning - it seems this class use almost none of the parent class methods after implemetation of new "desiredAccuracy zero-rule"
 
 
@@ -266,13 +269,20 @@
 - (STMCoreLocation *)lastLocationObject {
     
     if (!_lastLocationObject) {
-
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCoreLocation class])];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-        NSError *error;
-        NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:&error];
         
-        _lastLocationObject = result.lastObject;
+        NSError *error;
+        NSDictionary *options = @{
+            @"sortBy": @"timestamp DESC",
+            @"pageSize": @"1"
+        };
+        
+        NSDictionary *location = [[self.session.persistenceDelegate findAllSync:STMLOCATION_CONCRETE_ENTITY predicate:nil options:options error:&error] lastObject];
+        
+        if (location) {
+            _lastLocationObject = (STMCoreLocation *)[self.session.persistenceDelegate newObjectForEntityName:@"STMCoreLocation"];
+            
+            [STMCoreObjectsController setObjectData:location toObject:_lastLocationObject];
+        }
 
     }
     return _lastLocationObject;
@@ -827,9 +837,12 @@
 
         id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
         NSNumber *requestId = checkinRequest[@"requestId"];
-
-        [checkinDelegate getCheckinLocation:checkinLocationDic
-                               forRequestId:requestId];
+        
+        [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:checkinLocationDic options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            //TODO: check if success
+            [checkinDelegate getCheckinLocation:result
+                                   forRequestId:requestId];
+        }];
 
     }
     

@@ -497,9 +497,14 @@
 
     for (NSString *key in objectData.allKeys) {
         
-        if ([ownObjectKeys containsObject:key]) {
+        id value = objectData[key];
+        
+        if ([key isEqualToString:@"id"] && value) {
+            if ([(NSString*)value length] == 36) {
+                [object setValue:[STMFunctions xidDataFromXidString:value] forKey:@"xid"];
+            }
+        } else if ([ownObjectKeys containsObject:key]) {
             
-            id value = objectData[key];
             NSDictionary *entityAttributes = entity.attributesByName;
             
             value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
@@ -517,7 +522,7 @@
             
                 if ([ownObjectRelationships objectForKey:localKey]) {
                     
-                    NSString *destinationObjectXid = [objectData[key] isKindOfClass:[NSNull class]] ? nil : objectData[key];
+                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
 
                     NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
 
