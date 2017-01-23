@@ -65,7 +65,7 @@
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
 @property (nonatomic, strong) NSMutableDictionary *temporaryETag;
 
-@property (nonatomic) NSUInteger entityCount;
+@property (atomic) NSUInteger entityCount;
 @property (atomic) NSUInteger fantomsCount;
 
 @property (nonatomic, strong) NSString *subscriptionId;
