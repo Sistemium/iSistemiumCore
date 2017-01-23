@@ -1192,7 +1192,7 @@
 
 }
 
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(BOOL)cascade{
++ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
     
     if (!entityName) {
         return nil;
@@ -1215,7 +1215,7 @@
         
         if (!isToMany || relationship.isToMany == isToMany.boolValue) {
                 
-            if ((cascade && relationship.deleteRule == NSCascadeDeleteRule) || (!cascade && relationship.deleteRule != NSCascadeDeleteRule)){
+            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
                 objectRelationships[relationshipName] = relationship;
             }
         

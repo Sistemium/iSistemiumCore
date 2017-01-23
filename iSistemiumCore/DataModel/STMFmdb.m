@@ -179,7 +179,7 @@ FMDatabasePool *pool;
                     
                 }
                 
-                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:true];
+                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
                 
                 for (NSString* relationKey in cascadeRelations.allKeys){
                     
