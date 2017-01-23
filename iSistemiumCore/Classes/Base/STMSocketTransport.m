@@ -195,10 +195,16 @@
                 break;
             }
 
-            case STMSocketEventDisconnect:
-            case STMSocketEventError:
-            case STMSocketEventReconnect:
+            case STMSocketEventDisconnect: {
+                [self disconnectEventHandleWithData:data ack:ack];
+                break;
+            }
+            case STMSocketEventReconnect: {
+                [self reconnectEventHandleWithData:data ack:ack];
+                break;
+            }
             case STMSocketEventReconnectAttempt:
+            case STMSocketEventError:
             case STMSocketEventStatusChange:
             case STMSocketEventInfo:
             case STMSocketEventAuthorization:
@@ -242,6 +248,13 @@
 
 }
 
+- (void)disconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    [self.owner socketLostConnection];
+}
+
+- (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    [self.owner socketLostConnection];
+}
 
 #pragma mark - ack handlers
 
