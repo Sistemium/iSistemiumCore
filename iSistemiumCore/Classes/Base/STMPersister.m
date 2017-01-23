@@ -507,14 +507,14 @@
             if(error){
                 success = NO;
             }
-            completionHandler(success,result,error);
+            if (completionHandler) completionHandler(success,result,error);
         });
     } else {
         result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         if(error){
             success = NO;
         }
-        completionHandler(success,result,error);
+        if (completionHandler) completionHandler(success,result,error);
     }
 }
 
