@@ -83,7 +83,7 @@
 }
 
 - (STMSyncer *)syncer {
-    return [[STMCoreSessionManager sharedManager].currentSession syncer];
+    return (STMSyncer *)[STMCoreSessionManager sharedManager].currentSession.syncer;
 }
 
 - (STMCoreSettingsController *)settingsController {

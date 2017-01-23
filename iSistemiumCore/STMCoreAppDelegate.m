@@ -594,7 +594,7 @@
 }
 
 - (STMSyncer *)syncer {
-    return [self sessionManager].currentSession.syncer;
+    return (STMSyncer *)[self sessionManager].currentSession.syncer;
 }
 
 
