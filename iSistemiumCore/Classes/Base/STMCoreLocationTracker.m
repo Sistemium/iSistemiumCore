@@ -1081,9 +1081,7 @@
     
     NSLog(@"location %@", self.lastLocation);
     
-    [self.document saveDocument:^(BOOL success) {
-//        [[self.session syncer] setSyncerState:STMSyncerSendDataOnce];
-    }];
+    [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:[STMCoreObjectsController dictionaryForJSWithObject:locationObject] options:nil completionHandler:nil];
     
 }
 
@@ -1100,8 +1098,7 @@
             NSLog(@"UPDATE LAST SEEN TIMESTAMP FOR LOCATION: %@", self.lastLocation);
             self.lastLocationObject.lastSeenAt = [NSDate date];
             
-            [self.document saveDocument:^(BOOL success) {
-            }];
+            [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:[STMCoreObjectsController dictionaryForJSWithObject:self.lastLocationObject] options:nil completionHandler:nil];
 
         }
 
