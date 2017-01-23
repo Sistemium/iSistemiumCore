@@ -182,9 +182,9 @@
 
 + (NSArray *)entitiesWithLifeTime {
     
-    NSArray *stcEntitiesArray = [self stcEntitiesArray];
+    NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
-    NSArray *result = [stcEntitiesArray filteredArrayUsingPredicate:predicate];
+    NSArray *result = [[self persistenceDelegate] findAllSync:@"STMEntity" predicate:predicate options:nil error:&error];
     
     return result;
     
