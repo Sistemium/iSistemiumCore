@@ -12,6 +12,7 @@
 
 #import "STMClientDataController.h"
 #import "STMCoreRootTBC.h"
+#import "STMRemoteController.h"
 
 
 @interface STMSocketTransport()
@@ -195,16 +196,22 @@
                 [self disconnectEventHandleWithData:data ack:ack];
                 break;
             }
+
             case STMSocketEventReconnect: {
                 [self reconnectEventHandleWithData:data ack:ack];
                 break;
             }
+
+            case STMSocketEventRemoteCommands: {
+                [self remoteCommandsEventHandleWithData:data ack:ack];
+                break;
+            }
+                
             case STMSocketEventReconnectAttempt:
             case STMSocketEventError:
             case STMSocketEventStatusChange:
             case STMSocketEventInfo:
             case STMSocketEventAuthorization:
-            case STMSocketEventRemoteCommands:
             case STMSocketEventData:
             case STMSocketEventJSData:
             default:
@@ -251,6 +258,15 @@
 - (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     [self.owner socketLostConnection];
 }
+
+- (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+        
+    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
+        [STMRemoteController receiveRemoteCommands:data.firstObject];
+    }
+
+}
+
 
 #pragma mark - ack handlers
 
