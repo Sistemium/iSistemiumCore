@@ -150,6 +150,10 @@
     
     savingAttributes[@"deviceAts"] = now;
     
+    if (!savingAttributes[@"deviceCts"] || [savingAttributes[@"deviceCts"] isEqual:[NSNull null]]) {
+        savingAttributes[@"deviceCts"] = now;
+    }
+    
     if(!returnSaved){
         [db mergeInto:entityName
            dictionary:savingAttributes
