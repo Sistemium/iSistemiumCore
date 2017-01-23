@@ -1677,15 +1677,16 @@
         switch (_syncerState) {
             case STMSyncerIdle: {
                 
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 //                self.syncing = NO;
 //                self.sendOnce = NO;
 //                self.checkSending = NO;
                 
-                self.entitySyncNames = nil;
-                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
-                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
-                self.fetchCompletionHandler = nil;
+//                self.entitySyncNames = nil;
+                
+//                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
+//                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
+//                self.fetchCompletionHandler = nil;
 
                 break;
             }
