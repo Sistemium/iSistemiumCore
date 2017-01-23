@@ -446,6 +446,48 @@
 }
 
 
+#pragma mark - stop syncer methods
+
+- (void)stopSyncer {
+    
+    if (self.isRunning) {
+        
+        //        [STMSocketController closeSocket];
+        
+        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
+        //        self.syncing = NO;
+        self.syncerState = STMSyncerIdle;
+        [self releaseTimer];
+        [self flushSettings];
+        self.isRunning = NO;
+        
+    }
+    
+}
+
+- (void)prepareToDestroy {
+    
+    [self removeObservers];
+    [self stopSyncer];
+    
+}
+
+- (void)flushSettings {
+    
+    self.settings = nil;
+    
+    self.fetchLimit = 0;
+    self.entityResource = nil;
+    self.socketUrlString = nil;
+    //    self.xmlNamespace = nil;
+    self.httpTimeoutForeground = 0;
+    self.httpTimeoutBackground = 0;
+    self.syncInterval = 0;
+    //    self.uploadLogType = nil;
+    
+}
+
+
 #pragma mark - STMSocketTransportOwner protocol
 
 - (void)socketReceiveAuthorization {
@@ -453,8 +495,8 @@
     NSLogMethodName;
     
     [self initTimer];
-    
-    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
+
+    [self subscribeToUnsyncedObjects];
     
 }
 
@@ -464,14 +506,7 @@
     
     [self releaseTimer];
     
-    if ([self.dataSyncingDelegate unSubscribe:self.subscriptionId]) {
-        
-        NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
-        self.subscriptionId = nil;
-        
-    } else {
-        NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
-    }
+    [self unsubscribeFromUnsyncedObjects];
 
 }
 
@@ -541,48 +576,6 @@
 
 - (void)closeSocketInBackground {
     [self.socketTransport closeSocketInBackground];
-}
-
-
-#pragma mark - stop syncer methods
-
-- (void)stopSyncer {
-    
-    if (self.isRunning) {
-        
-//        [STMSocketController closeSocket];
-        
-        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-//        self.syncing = NO;
-        self.syncerState = STMSyncerIdle;
-        [self releaseTimer];
-        [self flushSettings];
-        self.isRunning = NO;
-        
-    }
-    
-}
-
-- (void)prepareToDestroy {
-    
-    [self removeObservers];
-    [self stopSyncer];
-    
-}
-
-- (void)flushSettings {
-    
-    self.settings = nil;
-    
-    self.fetchLimit = 0;
-    self.entityResource = nil;
-    self.socketUrlString = nil;
-//    self.xmlNamespace = nil;
-    self.httpTimeoutForeground = 0;
-    self.httpTimeoutBackground = 0;
-    self.syncInterval = 0;
-//    self.uploadLogType = nil;
-
 }
 
 
@@ -1510,6 +1503,14 @@
 
 #pragma mark - unsynced subscription
 
+- (void)subscribeToUnsyncedObjects {
+    
+    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
+
+    NSLogMethodName;
+    
+}
+
 - (void (^)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion))unsyncedSubscriptionHandler {
     
     if (!_unsyncedSubscriptionHandler) {
@@ -1562,6 +1563,18 @@
     
 }
 
+- (void)unsubscribeFromUnsyncedObjects {
+
+    if ([self.dataSyncingDelegate unSubscribe:self.subscriptionId]) {
+        
+        NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
+        self.subscriptionId = nil;
+        
+    } else {
+        NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
+    }
+
+}
 
 
 // ----------------------
