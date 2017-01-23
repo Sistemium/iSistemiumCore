@@ -411,7 +411,7 @@
                     
                     self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
                                                          andEntityResource:self.entityResource
-                                                                 forSyncer:self];
+                                                                     owner:self];
                     
                     if (!self.socketTransport) {
                         
@@ -444,6 +444,9 @@
     }
     
 }
+
+
+#pragma mark - STMSocketTransportOwner protocol
 
 - (void)socketReceiveAuthorization {
     

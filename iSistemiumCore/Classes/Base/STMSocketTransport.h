@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMSyncer.h"
+#import "STMSocketTransportOwner.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
@@ -25,7 +25,7 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 + (instancetype)initWithUrl:(NSString *)socketUrlString
           andEntityResource:(NSString *)entityResource
-                  forSyncer:(STMSyncer *)syncer;
+                      owner:(id <STMSocketTransportOwner>)owner;
 
 - (void)closeSocketInBackground;
 - (void)checkSocket;

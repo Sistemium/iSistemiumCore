@@ -10,23 +10,10 @@
 
 #import "STMSessionManagement.h"
 #import "STMRequestAuthenticatable.h"
-
-typedef NS_ENUM(NSInteger, STMSocketEvent) {
-    STMSocketEventConnect,
-    STMSocketEventDisconnect,
-    STMSocketEventError,
-    STMSocketEventReconnect,
-    STMSocketEventReconnectAttempt,
-    STMSocketEventStatusChange,
-    STMSocketEventInfo,
-    STMSocketEventAuthorization,
-    STMSocketEventRemoteCommands,
-    STMSocketEventData,
-    STMSocketEventJSData
-};
+#import "STMSocketTransportOwner.h"
 
 
-@interface STMSyncer : NSObject <STMSyncer>
+@interface STMSyncer : NSObject <STMSyncer, STMSocketTransportOwner>
 
 // new
 
@@ -35,8 +22,8 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic) BOOL transportIsReady;
 
-- (void)socketReceiveAuthorization;
-- (void)socketLostConnection;
+//- (void)socketReceiveAuthorization;
+//- (void)socketLostConnection;
 - (void)checkSocket;
 - (void)closeSocketInBackground;
 

@@ -16,7 +16,8 @@
 
 @interface STMSocketTransport()
 
-@property (nonatomic, weak) STMSyncer *syncer;
+//@property (nonatomic, weak) STMSyncer *syncer;
+@property (nonatomic, weak) id <STMSocketTransportOwner> owner;
 @property (nonatomic, weak) STMLogger *logger;
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
@@ -32,11 +33,11 @@
 
 @implementation STMSocketTransport
 
-+ (instancetype)initWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource forSyncer:(STMSyncer *)syncer {
++ (instancetype)initWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketTransportOwner>)owner {
     
     STMLogger *logger = [STMLogger sharedLogger];
 
-    if (!socketUrlString || !entityResource || !syncer) {
+    if (!socketUrlString || !entityResource || !owner) {
         
         NSString *logMessage = [NSString stringWithFormat:@"have not enough parameters to init socket transport"];
         [logger saveLogMessageWithText:logMessage
@@ -50,7 +51,7 @@
     
     socketTransport.socketUrl = socketUrlString;
     socketTransport.entityResource = entityResource;
-    socketTransport.syncer = syncer;
+    socketTransport.owner = owner;
     socketTransport.logger = [STMLogger sharedLogger];
     
     [socketTransport startSocket];
@@ -297,7 +298,7 @@
             
             self.isAuthorized = YES;
 
-            [self.syncer socketReceiveAuthorization];
+            [self.owner socketReceiveAuthorization];
             
             [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
                                                                 object:self];
@@ -612,7 +613,7 @@
 //        
 //    }
     
-    [self.syncer socketLostConnection];
+    [self.owner socketLostConnection];
     
 }
 
