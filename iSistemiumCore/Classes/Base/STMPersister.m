@@ -271,6 +271,7 @@
 #pragma mark - STMModelling
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
+#warning need to check if entity is stored in CoreData and use document's context
     return [[NSManagedObject alloc] initWithEntity:self.document.managedObjectModel.entitiesByName[entityName] insertIntoManagedObjectContext:nil];
 }
 
