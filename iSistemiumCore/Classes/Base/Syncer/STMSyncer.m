@@ -8,8 +8,6 @@
 
 #import <AdSupport/AdSupport.h>
 
-// new
-
 #import "STMSyncer.h"
 #import "STMDocument.h"
 
@@ -24,22 +22,7 @@
 #import "STMCoreAuthController.h"
 
 
-//old
-
-#import "STMFunctions.h"
-#import "STMCorePicturesController.h"
-
-#import "STMCoreDataModel.h"
-
-//#import "STMSocketController.h"
-
-#define SEND_DATA_CONNECTION @"SEND_DATA"
-
-
 @interface STMSyncer()
-
-
-// new
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>persistenceDelegate;
@@ -71,29 +54,11 @@
 @property (nonatomic, strong) NSString *subscriptionId;
 @property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
 
+
+
 // old
-
-//@property (nonatomic, strong) NSString *xmlNamespace;
-//@property (nonatomic, strong) NSString *uploadLogType;
-
-//@property (nonatomic) BOOL timerTicked;
-
-//@property (nonatomic) BOOL syncing;
-//@property (nonatomic) BOOL checkSending;
-//@property (nonatomic) BOOL sendOnce;
-//@property (nonatomic) BOOL fullSyncWasDone;
-//@property (nonatomic) BOOL isFirstSyncCycleIteration;
-//@property (nonatomic) BOOL errorOccured;
-
-//@property (nonatomic, strong) NSMutableDictionary *responses;
-//@property (nonatomic, strong) NSMutableArray *sendedEntities;
-
-
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
-
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
-
-//- (void)didReceiveRemoteNotification;
 
 
 @end
@@ -104,9 +69,6 @@
 @synthesize syncInterval = _syncInterval;
 @synthesize syncerState = _syncerState;
 
-
-#pragma mark - NEW IMPLEMENTATION
-#pragma mark
 
 - (instancetype)init {
     
@@ -1603,41 +1565,9 @@
 // | OLD IMPLEMENTATION |
 // ----------------------
 
-
-
 #pragma mark - OLD IMPLEMENTATION
 
-//- (void)socketReceiveTimeout {
-//
-//    (self.entityCount > 0) ? [self entityCountDecrease] : [self receivingDidFinishWithError:@"socket receive objects timeout"];
-////    [STMCoreObjectsController stopDefantomizing];
-//
-//}
-
 #pragma mark - variables setters & getters
-
-//- (NSString *)xmlNamespace {
-//    if (!_xmlNamespace) {
-//        _xmlNamespace = self.settings[@"xmlNamespace"];
-//    }
-//    return _xmlNamespace;
-//}
-
-//- (NSString *)uploadLogType {
-//    if (!_uploadLogType) {
-//        _uploadLogType = self.settings[@"uploadLog.type"];
-//    }
-//    return _uploadLogType;
-//}
-
-//- (NSMutableArray *)sendedEntities {
-//    
-//    if (!_sendedEntities) {
-//        _sendedEntities = [NSMutableArray array];
-//    }
-//    return _sendedEntities;
-//    
-//}
 
 - (STMSyncerState)syncerState {
     
@@ -1725,164 +1655,6 @@
 
 }
 
-//- (void)sendingRoute {
-//
-//    if ([STMSocketController socketIsAvailable]) {
-//        
-//        [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-//        
-//    } else {
-//
-//    }
-//
-//}
-
-//- (NSMutableDictionary *)responses {
-//    
-//    if (!_responses) {
-//        _responses = [NSMutableDictionary dictionary];
-//    }
-//    return _responses;
-//    
-//}
-
-//- (void)didReceiveRemoteNotification {
-//    [self upload];
-//}
-//
-//- (void)syncerDidReceiveRemoteNotification:(NSNotification *)notification {
-//    
-//    if ([(notification.userInfo)[@"syncer"] isEqualToString:@"upload"]) {
-//        [self setSyncerState:STMSyncerSendDataOnce];
-//    }
-//    
-//}
-
-
-
-//#pragma mark - syncing
-//#pragma mark - send
-
-//- (void)nothingToSend {
-//    
-//    [self.session.logger saveLogMessageWithText:@"Syncer nothing to send"];
-//
-//    self.syncing = NO;
-//    
-//    if (self.timerTicked) {
-//        
-//        self.timerTicked = NO;
-//        self.receivingEntitiesNames = nil;
-//        self.syncerState = STMSyncerReceiveData;
-//        
-//    } else {
-//        
-//        if (self.syncerState == STMSyncerSendData) {
-//            
-//            self.receivingEntitiesNames = nil;
-//            self.syncerState = STMSyncerReceiveData;
-//            
-//        } else {
-//            
-//            if (self.receivingEntitiesNames) {
-//                
-//                self.syncerState = STMSyncerReceiveData;
-//                
-//            } else {
-//                
-//                self.syncerState = STMSyncerIdle;
-////                [STMCoreObjectsController resolveFantoms];
-//                
-//            }
-//            
-//        }
-//    
-//    }
-//    
-//}
-
-//- (NSArray *)unsyncedObjects {
-//    return [STMSocketController unsyncedObjects];
-//}
-//
-//- (NSUInteger)numbersOfAllUnsyncedObjects {
-//    return [self unsyncedObjects].count;
-//}
-//
-//- (NSUInteger)numberOfCurrentlyUnsyncedObjects {
-//    return [STMSocketController numberOfCurrentlyUnsyncedObjects];
-//}
-
-//#pragma mark - receive
-/*
-- (void)checkNews {
-    
-    [self receiveData]; return; // check news is temporary disabled
-
-    if (self.fullSyncWasDone && !self.receivingEntitiesNames) {
-        
-        self.errorOccured = NO;
-        
-        [STMSocketController checkNewsWithFetchLimit:self.fetchLimit andTimeout:[self timeout]];
-        
-#warning do not forget to check self.fetchResult usage
-        
-//            if (!connectionError) {
-//                
-//                NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-//                
-//                NSInteger statusCode = httpResponse.statusCode;
-//                NSString *stringForStatusCode = [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
-//                
-//                switch (statusCode) {
-//                        
-//                    case 200:
-//                        self.fetchResult = UIBackgroundFetchResultNewData;
-//                        [self parseNewsData:data];
-//                        break;
-//                        
-//                    case 204:
-//                        NSLog(@"    news: 204 %@", stringForStatusCode);
-//                        self.fetchResult = UIBackgroundFetchResultNoData;
-//                        [self receivingDidFinish];
-//                        break;
-//                        
-//                    default:
-//                        NSLog(@"    news statusCode: %d %@", statusCode, stringForStatusCode);
-//                        self.fetchResult = UIBackgroundFetchResultFailed;
-//                        [self receivingDidFinish];
-//                        break;
-//                        
-//                }
-//                
-//            } else {
-//                
-//                NSLog(@"connectionError %@", connectionError.localizedDescription);
-//                self.errorOccured = YES;
-//                self.fetchResult = UIBackgroundFetchResultFailed;
-//
-//                [self receivingDidFinish];
-//                
-//            }
-        
-    } else {
-        
-        [self receiveData];
-        
-    }
-
-    
-}
-*/
-//- (void)notAuthorized {
-//    
-//    self.fetchResult = UIBackgroundFetchResultFailed;
-//    [self stopSyncer];
-//    [[NSNotificationCenter defaultCenter] postNotificationName:@"notAuthorized" object:self];
-//    
-//}
-
-
 #pragma mark - socket receive ack handler
 
 - (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
@@ -1923,43 +1695,6 @@
 //                                               abortSync:abortSync];
     
 }
-
-//- (void)parseNewsData:(NSArray *)newsData {
-//    
-//    if (newsData.count > 0) {
-//        
-//        NSArray *entitiesNames = [newsData valueForKeyPath:@"@unionOfObjects.name"];
-//        NSArray *objectsCount = [newsData valueForKeyPath:@"@unionOfObjects.cnt"];
-//        
-//        NSDictionary *news = [NSDictionary dictionaryWithObjects:objectsCount forKeys:entitiesNames];
-//        
-//        for (NSString *entityName in entitiesNames) {
-//            NSLog(@"    news: STM%@ — %@ objects", entityName, news[entityName]);
-//        }
-//        
-//        NSMutableArray *tempArray = [NSMutableArray array];
-//        
-//        for (NSString *entityName in entitiesNames) {
-//            [tempArray addObject:[ISISTEMIUM_PREFIX stringByAppendingString:entityName]];
-//        }
-//        
-//        self.entitySyncNames = tempArray;
-//        self.entityCount = tempArray.count;
-//        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"syncerNewsHaveObjects"
-//                                                            object:self
-//                                                          userInfo:@{@"totalNumberOfObjects": [objectsCount valueForKeyPath:@"@sum.integerValue"]}];
-//        
-//        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-//
-//    } else {
-//        
-//        NSLog(@"empty news data received");
-//        [self receivingDidFinish];
-//        
-//    }
-//    
-//}
 
 - (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
 
