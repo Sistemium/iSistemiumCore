@@ -13,7 +13,9 @@
 #import "STMPersistingPromised.h"
 #import "STMDocument.h"
 
-@interface STMPersister : NSObject <STMPersistingSync, STMPersistingAsync, STMPersistingPromised>
+#import "STMModelling.h"
+
+@interface STMPersister : NSObject <STMPersistingSync, STMPersistingAsync, STMPersistingPromised, STMModelling>
 
 @property (nonatomic, strong) STMDocument *document; // have to hide it from public (now it needs for session)
 

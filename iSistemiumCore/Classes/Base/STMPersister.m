@@ -271,6 +271,10 @@
 
 #pragma mark - STMPersistingSync
 
+- (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
+    return [[NSManagedObject alloc] initWithEntity:self.document.managedObjectModel.entitiesByName[entityName] insertIntoManagedObjectContext:nil];
+}
+
 - (NSUInteger)countSync:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options

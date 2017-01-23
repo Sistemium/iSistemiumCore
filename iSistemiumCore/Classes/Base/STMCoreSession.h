@@ -15,7 +15,7 @@
 #import "STMCoreLocationTracker.h"
 #import "STMCoreBatteryTracker.h"
 #import "STMSyncer.h"
-
+#import "STMModelling.h"
 
 @interface STMCoreSession : NSObject <STMSession>
 
@@ -25,7 +25,7 @@
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
-@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync,STMModelling> * persistenceDelegate;
 
 @property (nonatomic, strong) STMLogger *logger;
 @property (nonatomic, strong) id <STMSessionManager> manager;
