@@ -16,16 +16,12 @@
 
 @interface STMSocketTransport()
 
-//@property (nonatomic, weak) STMSyncer *syncer;
 @property (nonatomic, weak) id <STMSocketTransportOwner> owner;
 @property (nonatomic, weak) STMLogger *logger;
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isAuthorized;
-
-//@property (nonatomic) NSTimeInterval findAllTimeout;
-//@property (nonatomic, strong) NSDate *findAllStartTime;
 
 
 @end
