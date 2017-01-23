@@ -624,7 +624,7 @@
     return nil;
     // Log
     // ----------
-    /*
+    
 #ifdef DEBUG
     
     if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
@@ -723,7 +723,7 @@
     }
     
     return [AnyPromise promiseWithValue:error];
-    *//*
+
 }
 
 + (void)checkReachabilityAndSocketStatus:(SocketIOClient *)socket {
@@ -883,9 +883,9 @@
 
 + (void)checkNewsWithFetchLimit:(NSInteger)fetchLimit andTimeout:(NSTimeInterval)timeout {
 	
-    NSDictionary *params = @{@"deviceUUID"  : [STMClientDataController deviceUUIDString]/*,
-                             @"agentBuild"  : BUILD_VERSION*/ //};
-/*
+    NSDictionary *params = @{@"deviceUUID"  : [STMClientDataController deviceUUIDString]};//,
+//                             @"agentBuild"  : BUILD_VERSION};
+
     [self startReceiveDataFromResource:[self newsResourceString]
                               withETag:nil
                             fetchLimit:fetchLimit
@@ -1689,8 +1689,8 @@
 
 - (void)startSocket {
     
-    return; */
-    /*
+    return;
+
     STMLogger *logger = [STMLogger sharedLogger];
 
     STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
@@ -1753,7 +1753,7 @@
         }
         
     }
-     *//*
+
 }
 
 - (void)closeSocket {
@@ -1806,8 +1806,8 @@
 
 - (void)reconnectSocket {
 
-    return;*/
-    /*
+    return;
+
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"reconnectSocket %@ %@", self.socket, self.socket.sid];
@@ -1828,7 +1828,7 @@
         [STMSocketController startSocket];
 
     }
-    *//*
+
 }
 
 - (NSString *)socketUrl {
