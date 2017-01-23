@@ -223,6 +223,7 @@
     
     NSArray* objects = @[];
     
+    // TODO: expendable fetch on one object destroy
     if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
