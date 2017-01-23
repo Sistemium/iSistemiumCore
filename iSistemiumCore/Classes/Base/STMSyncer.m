@@ -507,6 +507,17 @@
     [self releaseTimer];
     
     [self unsubscribeFromUnsyncedObjects];
+    
+    if (self.isReceivingData) {
+        
+        [self entityCountDecreaseWithError:@"socketLostConnection"
+                           finishReceiving:YES];
+        
+    }
+    
+    if (self.isDefantomizing) {
+        [self stopDefantomizing];
+    }
 
 }
 
@@ -713,7 +724,7 @@
 - (void)receiveData {
     
     if (!self.isReceivingData) {
-     
+        
         self.isReceivingData = YES;
         
         if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
@@ -851,6 +862,10 @@
 }
 
 - (void)entityCountDecreaseWithError:(NSString *)errorMessage {
+    [self entityCountDecreaseWithError:errorMessage finishReceiving:NO];
+}
+
+- (void)entityCountDecreaseWithError:(NSString *)errorMessage finishReceiving:(BOOL)finishReceiving {
     
     if (errorMessage) {
         
@@ -860,7 +875,7 @@
         
     }
     
-    if (--self.entityCount) {
+    if (!finishReceiving && --self.entityCount) {
         
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
         
@@ -881,7 +896,7 @@
         [self receivingDidFinish];
         
     }
-
+    
 }
 
 - (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
@@ -1008,10 +1023,7 @@
             }
             
         } else {
-            
-            self.isDefantomizing = NO;
-            [self.syncerHelper defantomizingFinished];
-            
+            [self stopDefantomizing];
         }
         
     }];
@@ -1019,6 +1031,10 @@
 }
 
 - (void)defantomizeObject:(NSDictionary *)fantomDic {
+    
+    if (!self.isDefantomizing) {
+        return;
+    }
     
     NSString *entityName = fantomDic[@"entityName"];
     NSString *fantomId = fantomDic[@"id"];
@@ -1101,7 +1117,6 @@
     
 }
 
-
 - (void)fantomsCountDecrease {
 
     if (!--self.fantomsCount) {
@@ -1120,6 +1135,13 @@
         }];
         
     }
+
+}
+
+- (void)stopDefantomizing {
+    
+    self.isDefantomizing = NO;
+    [self.syncerHelper defantomizingFinished];
 
 }
 
