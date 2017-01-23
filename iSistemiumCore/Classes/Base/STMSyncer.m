@@ -1695,8 +1695,11 @@
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
                 [STMClientDataController checkClientData];
 //                self.syncing = YES;
-
 //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                                    object:self];
+
                 self.syncerState = STMSyncerIdle;
                 
                 break;
