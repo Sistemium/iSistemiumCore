@@ -872,23 +872,6 @@
     
 }
 
-#warning replace with predicate
-+ (BOOL)isWaitingToSyncForObject:(NSDictionary *)object entityName:(NSString*)entityName {
-    
-    if (entityName) {
-        
-        BOOL isInSyncList = [[STMEntityController uploadableEntitiesNames] containsObject:(NSString * _Nonnull)entityName];
-        
-        NSDate *lts = [object valueForKey:@"lts"];
-        NSDate *deviceTs = [object valueForKey:@"deviceTs"];
-        
-        return (isInSyncList && lts && [lts compare:deviceTs] == NSOrderedAscending);
-        
-    } else {
-        return NO;
-    }
-    
-}
 
 #pragma mark - getting specified objects
 
@@ -1335,6 +1318,16 @@
     
 }
 
+#warning should use some syncer method
++ (NSPredicate *)notUnsyncedPredicateForEntityName:(NSString*)entityName {
+    
+    BOOL isInSyncList = [STMEntityController.uploadableEntitiesNames containsObject:entityName];
+    
+    if (!isInSyncList) return nil;
+    
+    return [NSCompoundPredicate notPredicateWithSubpredicate:[NSPredicate predicateWithFormat:@"lts < deviceTs"]];
+}
+
 + (void)checkObjectsForFlushing {
     
     NSLogMethodName;
@@ -1371,8 +1364,6 @@
         
     }
     
-    NSMutableDictionary* flushingObjectsByEntityName = @{}.mutableCopy;
-
     for (NSString *entityName in entityDic.allKeys) {
         
         double lifeTime = [entityDic[entityName][@"lifeTime"] doubleValue];
@@ -1382,50 +1373,21 @@
         NSArray *availableDateKeys = [self attributesForEntityName:entityName withType:NSDateAttributeType];
         dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
         
-        NSDictionary* options = @{@"pageSize":@FLUSH_LIMIT,@"sortBy":dateField};
-        
         NSError *error;
         
-        NSString *predicateString = [dateField stringByAppendingString:@" < %@"];
-        NSPredicate *datePredicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
-
-        NSArray *result = [[self persistenceDelegate] findAllSync:entityName predicate:datePredicate options:options error:&error];
-
-        NSMutableArray* objects = @[].mutableCopy;
+        NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
+        NSPredicate *notUnsyncedPredicate = [self notUnsyncedPredicateForEntityName:entityName];
         
-        for (NSDictionary *object in result) {
-            if (![self isWaitingToSyncForObject:object entityName:entityName]){
-                [objects addObject:object];
-            }
-        }
-
-        if (objects.count > 0){
-            [flushingObjectsByEntityName setValue:objects forKey:entityName];
-        }
-
-    }
-    
-    if (flushingObjectsByEntityName.allKeys.count > 0){
-        sc.isInFlushingProcess = YES;
+        NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
+                                                                     subpredicates:@[datePredicate, notUnsyncedPredicate]];
         
-        int flushingCount = 0;
+        [self.persistenceDelegate destroyAllSync:entityName
+                                    predicate:predicate
+                                      options:@{@"createRecordStatuses":@NO}
+                                        error:&error];
         
-        for (NSString* entityName in flushingObjectsByEntityName.allKeys){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF IN %@", flushingObjectsByEntityName[entityName]];
-            [[self persistenceDelegate] destroyAll:flushingObjectsByEntityName[entityName]
-                                         predicate:predicate options:@{@"createRecordStatuses":@NO}].catch(^(NSError *error){
-                NSLog(@"Error deleting: %@", error);
-            });
-            flushingCount += [flushingObjectsByEntityName[entityName] count];
-        }
-        
-        NSTimeInterval flushingTime = [[NSDate date] timeIntervalSinceDate:startFlushing];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingCount, flushingTime];
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
-    }else{
-        NSLog(@"No objects for flushing");
+        if (error) NSLog(@"Error deleting: %@", error);
+       
     }
     
 }
