@@ -87,6 +87,17 @@
     NSLog(@"syncer init");
 }
 
+- (void)notificationToInitSendDataProcess {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                            object:self];
+        
+    });
+    
+}
+
 
 #pragma mark - observers
 
