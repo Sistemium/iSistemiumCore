@@ -213,7 +213,9 @@
     
     self.unsyncedSubscriptionBlock = completionHandler;
     
-    return nil; // have to return subscriptionId if it will be needed
+    NSString *subscriptionId = [NSUUID UUID].UUIDString;
+    
+    return subscriptionId;
 
 }
 

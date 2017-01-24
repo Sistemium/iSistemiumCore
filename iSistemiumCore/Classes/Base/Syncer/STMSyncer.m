@@ -1651,7 +1651,7 @@
     
     self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
 
-    NSLogMethodName;
+    NSLog(@"subscribeToUnsyncedObjects with subscriptionId: %@", self.subscriptionId);
     
 }
 
