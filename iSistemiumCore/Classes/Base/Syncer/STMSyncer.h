@@ -34,8 +34,4 @@
                  withValue:(id)value;
 
 
-#warning - have to do something with setSyncerState: method
-- (void)setSyncerState:(STMSyncerState)syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
-
-
 @end
