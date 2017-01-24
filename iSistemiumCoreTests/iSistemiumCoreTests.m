@@ -46,7 +46,7 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
     
     predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
     
-    STMAssertSQLFilter(predicate, @"(id NOT IN ('xid','xid'))");
+    STMAssertSQLFilter(predicate, @"NOT (id IN ('xid','xid'))");
     
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", nil];
     
@@ -59,7 +59,11 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
     predicate = [NSPredicate predicateWithFormat:@"deviceTs > lts"];
     
     STMAssertSQLFilter(predicate, @"(deviceTs > lts)");
+
+    predicate = [NSCompoundPredicate notPredicateWithSubpredicate:predicate];
     
+    STMAssertSQLFilter(predicate, @"NOT (deviceTs > lts)");
+
     
 }
 

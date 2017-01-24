@@ -400,7 +400,7 @@ static STMPredicateToSQL *sharedInstance;
     
     if (subs.count == 1){
         if ([(NSCompoundPredicate *)predicate compoundPredicateType] == NSNotPredicateType){
-            return [subs[0] stringByReplacingOccurrencesOfString:@"IN" withString:@"NOT IN"];
+            return [NSString stringWithFormat:@"NOT %@", subs[0]];
         }
         return subs[0];
     }
