@@ -29,9 +29,9 @@
                                       dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
                                            error:(NSError *_Nonnull * _Nonnull)error;
 
-- (BOOL)destroy:(NSString * _Nonnull)tablename
-      predicate:(NSPredicate* _Nonnull)predicate
-          error:(NSError *_Nonnull * _Nonnull)error;
+- (NSUInteger)destroy:(NSString * _Nonnull)tablename
+            predicate:(NSPredicate* _Nonnull)predicate
+                error:(NSError *_Nonnull * _Nonnull)error;
 
 - (BOOL)hasTable:(NSString * _Nonnull)name;
 

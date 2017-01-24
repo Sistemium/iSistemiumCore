@@ -363,22 +363,23 @@ FMDatabasePool *pool;
     return results;
 }
 
-- (BOOL)destroy:(NSString * _Nonnull)tablename predicate:(NSPredicate* _Nonnull)predicate error:(NSError *_Nonnull * _Nonnull)error{
+- (NSUInteger)destroy:(NSString * _Nonnull)tablename predicate:(NSPredicate* _Nonnull)predicate error:(NSError *_Nonnull * _Nonnull)error{
     
     NSString *where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
+    
     if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
         where = @"";
     }else{
         where = [@" WHERE " stringByAppendingString:where];
     }
     
-    __block BOOL result = YES;
+    __block NSUInteger result = 0;
     
     NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [self entityToTableName:tablename],where];
     
     [queue inDatabase:^(FMDatabase *db) {
-        if(![db executeUpdate:destroySQL values:nil error:error]){
-            result = NO;
+        if([db executeUpdate:destroySQL values:nil error:error]){
+            result = [db changes];
         }
     }];
     

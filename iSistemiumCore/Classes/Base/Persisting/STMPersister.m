@@ -223,7 +223,7 @@
     }
 }
 
-- (BOOL)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+- (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSArray* objects = @[];
     
@@ -234,7 +234,7 @@
     
     NSString* idKey;
     
-    BOOL result = YES;
+    NSUInteger result = 0;
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         
@@ -245,7 +245,7 @@
     }else{
         
         idKey = @"xid";
-        
+        // TODO: return deleted count from CoreData
         [STMCoreObjectsController removeObjectForPredicate:predicate entityName:entityName];
 
     }
@@ -436,25 +436,33 @@
         
     }
     
-    return [self destroyAllSync:entityName predicate:predicate options:options error:error];
+    NSUInteger deletedCount = [self destroyAllSync:entityName
+                                         predicate:predicate
+                                           options:options
+                                             error:error];
+    
+    return deletedCount > 0;
     
 }
 
-- (BOOL)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+- (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    [self destroyWithoutSave:entityName predicate:predicate options:options error:error];
+    NSUInteger count = [self destroyWithoutSave:entityName
+                                      predicate:predicate
+                                        options:options
+                                          error:error];
     
     if (*error){
         #warning possible danger, will rollback changes from other threads
         [[STMFmdb sharedInstance] rollback];
-        return NO;
+        return 0;
     }
     
     if ([self saveWithEntityName:entityName]){
-        return YES;
+        return count;
     } else {
         [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
-        return YES;
+        return count;
     }
     
 }
@@ -581,14 +589,14 @@
     
     if ([[STMFmdb sharedInstance] hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            success = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+            [self destroyAllSync:entityName predicate:predicate options:options error:&error];
             if(error){
                 success = NO;
             }
             completionHandler(success,error);
         });
     }else{
-        success = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+        [self destroyAllSync:entityName predicate:predicate options:options error:&error];
         if(error){
             success = NO;
         }
