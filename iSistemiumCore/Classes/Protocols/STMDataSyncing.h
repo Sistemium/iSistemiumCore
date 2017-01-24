@@ -19,5 +19,7 @@
          itemData:(NSDictionary *)itemData
       itemVersion:(NSString *)itemVersion;
 
+- (NSUInteger)numberOfUnsyncedObjects;
+
 
 @end

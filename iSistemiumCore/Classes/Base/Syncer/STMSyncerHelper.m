@@ -239,6 +239,10 @@
     
 }
 
+- (NSUInteger)numberOfUnsyncedObjects {
+    return self.unsyncedObjects.count;
+}
+
 
 #pragma mark - handle unsynced objects
 
