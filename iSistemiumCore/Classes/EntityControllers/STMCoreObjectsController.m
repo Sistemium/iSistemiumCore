@@ -46,9 +46,14 @@
 @property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
+<<<<<<< HEAD
 //@property (nonatomic, strong) NSMutableArray *fantomsArray;
 //@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
+=======
+@property (nonatomic, strong) NSMutableArray *fantomsArray;
+@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
+>>>>>>> origin/lifeTime
 @property (nonatomic, strong) NSMutableArray *updateRequests;
 @property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
 //@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
@@ -84,15 +89,6 @@
 //    return _notFoundFantomsArray;
 //    
 //}
-
-- (NSMutableArray *)flushDeclinedObjectsArray {
-    
-    if (!_flushDeclinedObjectsArray) {
-        _flushDeclinedObjectsArray = @[].mutableCopy;
-    }
-    return _flushDeclinedObjectsArray;
-    
-}
 
 - (NSMutableArray *)updateRequests {
     
@@ -883,6 +879,23 @@
     
 }
 
+#warning replace with predicate
++ (BOOL)isWaitingToSyncForObject:(NSDictionary *)object entityName:(NSString*)entityName {
+    
+    if (entityName) {
+        
+        BOOL isInSyncList = [[STMEntityController uploadableEntitiesNames] containsObject:(NSString * _Nonnull)entityName];
+        
+        NSDate *lts = [object valueForKey:@"lts"];
+        NSDate *deviceTs = [object valueForKey:@"deviceTs"];
+        
+        return (isInSyncList && lts && [lts compare:deviceTs] == NSOrderedAscending);
+        
+    } else {
+        return NO;
+    }
+    
+}
 
 #pragma mark - getting specified objects
 
@@ -1200,7 +1213,7 @@
 
 }
 
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(BOOL)cascade{
++ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
     
     if (!entityName) {
         return nil;
@@ -1223,7 +1236,7 @@
         
         if (!isToMany || relationship.isToMany == isToMany.boolValue) {
                 
-            if ((cascade && relationship.deleteRule == NSCascadeDeleteRule) || (!cascade && relationship.deleteRule != NSCascadeDeleteRule)){
+            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
                 objectRelationships[relationshipName] = relationship;
             }
         
@@ -1350,25 +1363,23 @@
 
     NSMutableDictionary *entityDic = [NSMutableDictionary dictionary];
     
-    for (STMEntity *entity in entitiesWithLifeTime) {
+    for (NSDictionary *entity in entitiesWithLifeTime) {
         
-        if (entity.name) {
+        if (entity[@"name"] && ![entity[@"name"] isEqual:[NSNull null]]) {
             
-            NSString *capFirstLetter = [[entity.name substringToIndex:1] capitalizedString];
-            NSString *capEntityName = [entity.name stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
+            NSString *capFirstLetter = [[entity[@"name"] substringToIndex:1] capitalizedString];
+            NSString *capEntityName = [entity[@"name"] stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
             NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
          
-            entityDic[entityName] = @{@"lifeTime": entity.lifeTime,
-                                      @"lifeTimeDateField": entity.lifeTimeDateField ? entity.lifeTimeDateField : @"deviceCts"};
+            entityDic[entityName] = @{@"lifeTime": entity[@"lifeTime"],
+                                      @"lifeTimeDateField": entity[@"lifeTimeDateField"] ? entity[@"lifeTimeDateField"] : @"deviceCts"};
             
         }
         
     }
     
-    NSManagedObjectContext *context = [self document].managedObjectContext;
-    
-    NSMutableSet *flushingSet = [NSMutableSet set];
-    
+    NSMutableDictionary* flushingObjectsByEntityName = @{}.mutableCopy;
+
     for (NSString *entityName in entityDic.allKeys) {
         
         double lifeTime = [entityDic[entityName][@"lifeTime"] doubleValue];
@@ -1378,103 +1389,53 @@
         NSArray *availableDateKeys = [self attributesForEntityName:entityName withType:NSDateAttributeType];
         dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
         
-        NSError *error;
+        NSDictionary* options = @{@"pageSize":@FLUSH_LIMIT,@"sortBy":dateField};
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:dateField ascending:YES selector:@selector(compare:)]];
-        request.fetchLimit = FLUSH_LIMIT;
+        NSError *error;
         
         NSString *predicateString = [dateField stringByAppendingString:@" < %@"];
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:predicateString, terminatorDate];
-        
-        NSPredicate *declinedPredicate = [NSPredicate predicateWithFormat:@"NOT (self IN %@)", sc.flushDeclinedObjectsArray];
-        
-        request.predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[declinedPredicate, datePredicate]];
 
-        NSArray *fetchResult = [context executeFetchRequest:request error:&error];
+        NSArray *result = [[self persistenceDelegate] findAllSync:entityName predicate:datePredicate options:options error:&error];
+
+        NSMutableArray* objects = @[].mutableCopy;
         
-        for (STMDatum *object in fetchResult) [self checkObject:object forAddingToFlushingSet:flushingSet];
+        for (NSDictionary *object in result) {
+            if (![self isWaitingToSyncForObject:object entityName:entityName]){
+                [objects addObject:object];
+            }
+        }
+
+        if (objects.count > 0){
+            [flushingObjectsByEntityName setValue:objects forKey:entityName];
+        }
 
     }
-
-    if (flushingSet.count > 0) {
-
-        for (NSManagedObject *object in flushingSet) {
-            [self removeObject:object inContext:context];
+    
+    if (flushingObjectsByEntityName.allKeys.count > 0){
+        sc.isInFlushingProcess = YES;
+        
+        int flushingCount = 0;
+        
+        for (NSString* entityName in flushingObjectsByEntityName.allKeys){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF IN %@", flushingObjectsByEntityName[entityName]];
+            [[self persistenceDelegate] destroyAll:flushingObjectsByEntityName[entityName]
+                                         predicate:predicate options:@{@"createRecordStatuses":@NO}].catch(^(NSError *error){
+                NSLog(@"Error deleting: %@", error);
+            });
+            flushingCount += [flushingObjectsByEntityName[entityName] count];
         }
         
         NSTimeInterval flushingTime = [[NSDate date] timeIntervalSinceDate:startFlushing];
         
-        NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingSet.count, flushingTime];
+        NSString *logMessage = [NSString stringWithFormat:@"flush %lu objects with expired lifetime, %f seconds", (unsigned long)flushingCount, flushingTime];
+        
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
-        
-        sc.isInFlushingProcess = YES;
-
-        [[self document] saveDocument:^(BOOL success) {
-
-        }];
-        
-        
-    } else {
-        
+    }else{
         NSLog(@"No objects for flushing");
-        sc.flushDeclinedObjectsArray = nil;
-        
     }
     
 }
-
-+ (void)checkObject:(STMDatum *)object forAddingToFlushingSet:(NSMutableSet *)flushingSet {
-    
-    if (![self isWaitingToSyncForObject:object]) {
-        
-        STMCoreObjectsController *sc = [self sharedController];
-
-        BOOL okToFlush = YES;
-        
-        NSDictionary *relsByName = object.entity.relationshipsByName;
-        
-        for (NSString *relKey in relsByName.allKeys) {
-            
-            NSRelationshipDescription *relationship = relsByName[relKey];
-            
-            if (relationship.inverseRelationship.isToMany) continue;
-
-            id objectPropertyValue = [object valueForKey:relKey];
-            
-            if (!objectPropertyValue) continue;
-
-            if ([objectPropertyValue respondsToSelector:@selector(count)]) {
-                
-                okToFlush = ([objectPropertyValue count] == 0);
-                
-                if (!okToFlush) {
-                    
-                    NSLog(@"%@ %@ have %@ %@, flush declined", object.entity.name, object.xid, @([objectPropertyValue count]), relKey);
-                    [sc.flushDeclinedObjectsArray addObject:object];
-                    
-                    break;
-                    
-                }
-                
-            } else {
-                
-                okToFlush = NO;
-                NSLog(@"%@ %@ have %@, flush declined", object.entity.name, object.xid, relKey);
-                [sc.flushDeclinedObjectsArray addObject:object];
-                
-                break;
-                
-            }
-            
-        }
-        
-        if (okToFlush) [flushingSet addObject:object];
-        
-    }
-
-}
-
 
 #pragma mark - finish of recieving objects
 

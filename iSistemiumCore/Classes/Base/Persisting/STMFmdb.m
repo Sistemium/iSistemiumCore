@@ -179,7 +179,7 @@ FMDatabasePool *pool;
                     
                 }
                 
-                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:true];
+                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
                 
                 for (NSString* relationKey in cascadeRelations.allKeys){
                     
@@ -247,8 +247,14 @@ FMDatabasePool *pool;
         NSArray *results = [self getDataWithEntityName:tablename
                                          withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
                                                orderBy:nil
+<<<<<<< HEAD:iSistemiumCore/Classes/Base/Persisting/STMFmdb.m
                                             fetchLimit:0
                                            fetchOffset:0
+=======
+                                             ascending:NO
+                                            fetchLimit:nil
+                                           fetchOffset:nil
+>>>>>>> origin/lifeTime:iSistemiumCore/DataModel/STMFmdb.m
                                                     db:db];
         
         response = [results firstObject];
@@ -343,7 +349,11 @@ FMDatabasePool *pool;
     return rez;
 }
 
+<<<<<<< HEAD:iSistemiumCore/Classes/Base/Persisting/STMFmdb.m
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
+=======
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset{
+>>>>>>> origin/lifeTime:iSistemiumCore/DataModel/STMFmdb.m
     
     __block NSArray* results;
     
@@ -352,6 +362,7 @@ FMDatabasePool *pool;
         results = [self getDataWithEntityName:name
                                 withPredicate:predicate
                                       orderBy:orderBy
+                                    ascending:ascending
                                    fetchLimit:fetchLimit
                                   fetchOffset:fetchOffset
                                            db:db];
@@ -383,12 +394,16 @@ FMDatabasePool *pool;
     return result;
 }
 
+<<<<<<< HEAD:iSistemiumCore/Classes/Base/Persisting/STMFmdb.m
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset db:(FMDatabase *)db{
+=======
+- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger * _Nullable)fetchLimit fetchOffset:(NSUInteger * _Nullable)fetchOffset db:(FMDatabase *)db{
+>>>>>>> origin/lifeTime:iSistemiumCore/DataModel/STMFmdb.m
     
     NSString* options = @"";
     
     if (orderBy) {
-        NSString *order = [NSString stringWithFormat:@" ORDER BY %@", orderBy];
+        NSString *order = [NSString stringWithFormat:@" ORDER BY %@ %@", orderBy, ascending ? @"ASC" : @"DESC"];
         options = [options stringByAppendingString:order];
     }
     

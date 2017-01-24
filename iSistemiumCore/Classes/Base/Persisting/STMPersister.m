@@ -227,6 +227,7 @@
     
     NSArray* objects = @[];
     
+    // TODO: expendable fetch on one object destroy
     if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
@@ -332,6 +333,8 @@
     }
     NSString *orderBy = options[@"sortBy"];
     
+    BOOL asc = options[@"ASC"] ? [options[@"ASC"] boolValue] : YES;
+    
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
     
@@ -351,14 +354,20 @@
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
+<<<<<<< HEAD:iSistemiumCore/Classes/Base/Persisting/STMPersister.m
                                                     fetchLimit:pageSize
                                                    fetchOffset:offset];
+=======
+                                                    ascending:asc
+                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                                   fetchOffset:options[@"offset"] ? &offset : nil];
+>>>>>>> origin/lifeTime:iSistemiumCore/Classes/Base/STMPersister.m
 
     } else {
         
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
                                                                        orderBy:orderBy
-                                                                     ascending:YES
+                                                                     ascending:asc
                                                                     fetchLimit:pageSize
                                                                    fetchOffset:offset
                                                                    withFantoms:YES

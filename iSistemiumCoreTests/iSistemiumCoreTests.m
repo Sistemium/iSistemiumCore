@@ -44,6 +44,10 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
     
     STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
     
+    predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
+    
+    STMAssertSQLFilter(predicate, @"(id NOT IN ('xid','xid'))");
+    
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", nil];
     
     STMAssertSQLFilter(predicate, @"(type IN (NULL))");

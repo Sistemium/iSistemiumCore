@@ -112,7 +112,8 @@ static STMPredicateToSQL *sharedInstance;
     if (isTable) {
         return [obj stringByAppendingString:RELATIONSHIP_SUFFIX];
     }
-    return obj ;
+    obj = [self replaceKeyWords:obj];
+    return obj;
 }
 
 - (NSString *)SQLExpressionForLeftKeyPath:(NSString *)keyPath{
@@ -127,7 +128,7 @@ static STMPredicateToSQL *sharedInstance;
     }
     
     if (retStr != nil) {
-        return [self FKToTablename:retStr];
+        return retStr;
     }
     return [self FKToTablename:keyPath];
 }
@@ -155,7 +156,12 @@ static STMPredicateToSQL *sharedInstance;
     return nil;
 }
 
-
+- (NSString *) replaceKeyWords:(NSString*)keyword{
+    if ([keyword isEqualToString:@"xid"] || [keyword isEqualToString:@"SELF"]){
+        return @"id";
+    }
+    return keyword;
+}
 
 -(NSString *)SQLExpressionForLeftNSExpression:(NSExpression *)expression{
     NSString *retStr = nil;
@@ -195,6 +201,7 @@ static STMPredicateToSQL *sharedInstance;
             break;
         }
         case NSEvaluatedObjectExpressionType: {
+            retStr = [self replaceKeyWords:[expression description]];
             break;
         }
         case NSBlockExpressionType: {
@@ -223,6 +230,20 @@ static STMPredicateToSQL *sharedInstance;
     if ([val isKindOfClass:[NSData class]]){
         return [[STMFunctions UUIDStringFromUUIDData:val] lowercaseString];
     }
+    if ([val isKindOfClass:[NSArray class]]){
+        NSMutableArray* array = @[].mutableCopy;
+        for (NSDictionary* obj in val){
+            if ([obj isKindOfClass:[NSDictionary class]] && obj[@"id"]){
+                [array addObject:obj[@"id"]];
+            }else{
+                [array addObject:obj];
+            }
+        }
+        
+        NSString* rez = [array componentsJoinedByString:@"','"];
+        
+        return rez;
+    }
     else {
         if ([val respondsToSelector:@selector(intValue)]){
             return [val stringValue];
@@ -232,6 +253,7 @@ static STMPredicateToSQL *sharedInstance;
         }
     }
     return nil;
+
 }
 
 
@@ -242,6 +264,9 @@ static STMPredicateToSQL *sharedInstance;
     switch ([expression expressionType]){
         case NSConstantValueExpressionType: {
             retStr = [self SQLConstantForValue:[expression constantValue]];
+            if (![retStr isEqual: @"NULL"]){
+                retStr = [NSString stringWithFormat:@"'%@'",retStr];
+            }
             break;
         }
         case NSVariableExpressionType: {
@@ -290,16 +315,6 @@ static STMPredicateToSQL *sharedInstance;
     
     NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
-    
-    if (predicate.rightExpression.expressionType == NSConstantValueExpressionType) {
-        if ([predicate.rightExpression.constantValue respondsToSelector:@selector(componentsJoinedByString:)]) {
-            rightSQLExpression = [predicate.rightExpression.constantValue componentsJoinedByString:@"','"];
-        }
-        if (![rightSQLExpression isEqual: @"NULL"]){
-            rightSQLExpression = [NSString stringWithFormat:@"'%@'",rightSQLExpression];
-        }
-        
-    }
     
     NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
     
@@ -384,6 +399,9 @@ static STMPredicateToSQL *sharedInstance;
     }
     
     if (subs.count == 1){
+        if ([(NSCompoundPredicate *)predicate compoundPredicateType] == NSNotPredicateType){
+            return [subs[0] stringByReplacingOccurrencesOfString:@"IN" withString:@"NOT IN"];
+        }
         return subs[0];
     }
     
@@ -398,7 +416,7 @@ static STMPredicateToSQL *sharedInstance;
             break;
         }
         case NSNotPredicateType: {
-            conjunction = @" NOT ";
+            conjunction = @" ";
             break;
         }
         default: {
