@@ -400,6 +400,7 @@
                 
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
 
+#warning why here we need Mutable?
                 NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
 
                 [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
@@ -407,7 +408,7 @@
                     if (context) {
                         [self cancelCheckRequestTimeoutWithContext:context];
                     }
-                    
+#warning need to check if response data is an error
                     if (completionHandler) {
                         completionHandler(YES, data, nil);
                     }
