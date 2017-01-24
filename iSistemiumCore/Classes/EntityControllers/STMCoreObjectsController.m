@@ -1384,12 +1384,16 @@
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
         
-        [self.persistenceDelegate destroyAllSync:entityName
-                                    predicate:predicate
-                                      options:@{@"createRecordStatuses":@NO}
-                                        error:&error];
+        NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
+                                                                 predicate:predicate
+                                                                   options:@{@"createRecordStatuses":@NO}
+                                                                     error:&error];
         
-        if (error) NSLog(@"Error deleting: %@", error);
+        if (error) {
+            NSLog(@"Error deleting: %@", error);
+        } else {
+            NSLog(@"Flushed %d of %@", deletedCount, entityName);
+        }
        
     }
     
