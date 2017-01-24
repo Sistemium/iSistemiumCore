@@ -383,7 +383,8 @@
         
     }
     
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts"]];
+#warning predicates could be different if object in CoreData or STMFMDB
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
     
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
 
