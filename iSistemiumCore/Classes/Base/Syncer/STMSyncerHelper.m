@@ -162,10 +162,11 @@
                                                             object:self
                                                           userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
 
-        completionHandler(fantomsArray);
         
-    } else {
-        completionHandler(nil);
+    }
+    
+    if (completionHandler) {
+        completionHandler(fantomsArray.count ? fantomsArray : nil);
     }
     
 }
