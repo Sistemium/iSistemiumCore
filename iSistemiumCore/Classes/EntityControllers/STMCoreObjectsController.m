@@ -1325,7 +1325,12 @@
     
     if (!isInSyncList) return nil;
     
-    return [NSCompoundPredicate notPredicateWithSubpredicate:[NSPredicate predicateWithFormat:@"lts < deviceTs"]];
+    NSPredicate *predicate1 = [NSCompoundPredicate notPredicateWithSubpredicate:[NSPredicate predicateWithFormat:@"lts < deviceTs"]];
+    
+    NSPredicate *predicate2 = [NSPredicate predicateWithFormat:@"deviceTs == nil"];
+    
+    return [[NSCompoundPredicate alloc] initWithType:NSOrPredicateType
+                                       subpredicates:@[predicate1, predicate2]];
 }
 
 + (void)checkObjectsForFlushing {
