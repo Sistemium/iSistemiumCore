@@ -1063,8 +1063,6 @@
 
 - (void)receivingDidFinishWithError:(NSString *)errorString {
     
-    self.isReceivingData = NO;
-    
     if (errorString) {
         
         NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
@@ -1075,18 +1073,31 @@
         
 #warning - do it only if have no error or always?
         [self saveReceiveDate];
-        [STMCoreObjectsController dataLoadingFinished];
-        [self startDefantomization];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                                object:self];
-
-        });
         
     }
     
+    if (self.receivingEntitiesNames) {
+        
+        [self receiveData];
+        
+    } else {
+
+        [self notificationToInitSendDataProcess];
+        [self startDefantomization];
+        
+        [STMCoreObjectsController dataLoadingFinished];
+        
+        if (self.fetchCompletionHandler) {
+            
+            self.fetchCompletionHandler(self.fetchResult);
+            self.fetchCompletionHandler = nil;
+            
+        }
+        
+        self.isReceivingData = NO;
+
+    }
+
 }
 
 - (void)saveReceiveDate {
