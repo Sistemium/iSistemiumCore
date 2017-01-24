@@ -766,9 +766,9 @@
     
     if (elapsedTime >= timeout) {
         
-        NSString *errorMessage = @"socket receive objects timeout";
-        [self sendEvent:STMSocketEventInfo
-              withValue:errorMessage];
+        NSString *errorMessage = @"requestTimeout";
+//        [self sendEvent:STMSocketEventInfo
+//              withValue:errorMessage];
         
         void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = context[@"completionHandler"];
         
