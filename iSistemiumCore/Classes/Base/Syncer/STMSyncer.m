@@ -280,9 +280,13 @@
 
 - (void)setEntityCount:(NSUInteger)entityCount {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"entityCountdownChange"
-                                                        object:self
-                                                      userInfo:@{@"countdownValue": @((int)entityCount)}];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"entityCountdownChange"
+                                                            object:self
+                                                          userInfo:@{@"countdownValue": @((int)entityCount)}];
+
+    });
     
     _entityCount = entityCount;
     
@@ -366,8 +370,12 @@
                 
                 [self addObservers];
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
-                                                                    object:self];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
+                                                                        object:self];
+
+                });
                 
                 if (self.socketUrlString) {
                     
@@ -883,8 +891,12 @@
         self.entitySyncNames = entitiesNames;
         self.entityCount = entitiesNames.count;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish"
-                                                            object:self];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish"
+                                                                object:self];
+
+        });
         
         [self.document saveDocument:^(BOOL success) {}];
         
@@ -934,8 +946,12 @@
         [STMCoreObjectsController dataLoadingFinished];
         [self startDefantomization];
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                            object:self];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                                object:self];
+
+        });
         
     }
     
@@ -1090,10 +1106,11 @@
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
                                                                 object:self
                                                               userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
 
+            
         }];
         
     }
@@ -1348,10 +1365,10 @@
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-                                                            object:self
-                                                          userInfo:@{@"count"         :@(result.count),
-                                                                     @"entityName"    :entityName}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+                                                                object:self
+                                                              userInfo:@{@"count"         :@(result.count),
+                                                                         @"entityName"    :entityName}];
         
     }];
 
@@ -1595,11 +1612,17 @@
         STMSyncerState previousState = _syncerState;
         
         _syncerState = syncerState;
-        
+
         NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                                            object:self
-                                                          userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
+                                                                object:self
+                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
+
+        });
+
         
         NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
         NSLog(@"%@", logMessage);
@@ -1628,8 +1651,13 @@
 //                self.syncing = YES;
 //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
 
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                                    object:self];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                                        object:self];
+
+                });
+
 
                 self.syncerState = STMSyncerIdle;
                 
@@ -1793,7 +1821,12 @@
         
         [self saveSendDate];
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"sendFinished" object:self];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"sendFinished"
+                                                                object:self];
+
+        });
         
 //        [self nothingToSend];
         
