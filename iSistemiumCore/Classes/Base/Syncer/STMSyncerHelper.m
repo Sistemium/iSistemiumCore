@@ -241,6 +241,13 @@
         self.failToSyncObjects[itemData[@"id"]] = itemData;
         NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
         
+    } else {
+        if (itemVersion) {
+            NSError *error;
+            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{@"lts": itemVersion} error:&error];
+        } else {
+            NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
+        }
     }
 
     [self sendNextUnsyncedObject];
@@ -285,7 +292,7 @@
         NSLog(@"object to send: %@ %@", objectToSend[@"entityName"], objectToSend[@"id"]);
         
         if (self.unsyncedSubscriptionBlock) {
-            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, nil);
+            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, objectToSend[@"deviceTs"]);
         }
         
     } else {
