@@ -158,10 +158,13 @@
         
         NSLog(@"DEFANTOMIZING_START");
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                            object:self
-                                                          userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
+        dispatch_async(dispatch_get_main_queue(), ^{
 
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                                object:self
+                                                              userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
+
+        });
         
     }
     
@@ -199,9 +202,13 @@
     
     NSLog(@"DEFANTOMIZING_FINISHED");
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                        object:self
-                                                      userInfo:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+    
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                            object:self
+                                                          userInfo:nil];
+
+    });
     
     self.failToResolveFantomsArray = nil;
 
