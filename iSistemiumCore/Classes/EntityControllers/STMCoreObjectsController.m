@@ -46,14 +46,7 @@
 @property (nonatomic) BOOL isDefantomizingProcessRunning;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> *entitiesToSubscribe;
-<<<<<<< HEAD
-//@property (nonatomic, strong) NSMutableArray *fantomsArray;
-//@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
 @property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
-=======
-@property (nonatomic, strong) NSMutableArray *fantomsArray;
-@property (nonatomic, strong) NSMutableArray *notFoundFantomsArray;
->>>>>>> origin/lifeTime
 @property (nonatomic, strong) NSMutableArray *updateRequests;
 @property (nonatomic, strong) NSMutableArray <STMDatum *> *subscribedObjects;
 //@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;

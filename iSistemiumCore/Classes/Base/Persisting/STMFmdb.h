@@ -17,8 +17,9 @@
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name
                               withPredicate:(NSPredicate * _Nonnull)predicate
                                     orderBy:(NSString * _Nullable)orderBy
-                                 fetchLimit:(NSUInteger)fetchLimit
-                                fetchOffset:(NSUInteger)fetchOffset;
+                                  ascending:(BOOL)ascending
+                                 fetchLimit:(NSUInteger * _Nullable)fetchLimit
+                                fetchOffset:(NSUInteger * _Nullable)fetchOffset;
 
 - (BOOL)mergeInto:(NSString * _Nonnull)tablename
        dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary

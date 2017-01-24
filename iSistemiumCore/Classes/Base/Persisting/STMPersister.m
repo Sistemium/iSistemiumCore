@@ -354,15 +354,9 @@
         return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
-<<<<<<< HEAD:iSistemiumCore/Classes/Base/Persisting/STMPersister.m
-                                                    fetchLimit:pageSize
-                                                   fetchOffset:offset];
-=======
                                                     ascending:asc
                                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
                                                    fetchOffset:options[@"offset"] ? &offset : nil];
->>>>>>> origin/lifeTime:iSistemiumCore/Classes/Base/STMPersister.m
-
     } else {
         
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
