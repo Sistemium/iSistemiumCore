@@ -42,6 +42,7 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isReceivingData;
 @property (nonatomic) BOOL isDefantomizing;
+@property (nonatomic) BOOL isSendingData;
 @property (nonatomic) BOOL isUsingNetwork;
 
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
@@ -278,6 +279,21 @@
     
 }
 
+- (void)setIsSendingData:(BOOL)isSendingData {
+    
+    if (_isSendingData != isSendingData) {
+        
+        _isSendingData = isSendingData;
+        
+        if (isSendingData) {
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        } else {
+            [self turnOffNetworkActivityIndicator];
+        }
+        
+    }
+}
+
 - (void)setEntityCount:(NSUInteger)entityCount {
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -301,7 +317,7 @@
 }
 
 - (BOOL)isUsingNetwork {
-    return self.isReceivingData || self.isDefantomizing;
+    return self.isReceivingData || self.isDefantomizing || self.isSendingData;
 }
 
 - (NSTimeInterval)timeout {
@@ -1538,6 +1554,7 @@
                 
             }
             
+            weakSelf.isSendingData = YES;
 
             [weakSelf.socketTransport updateResource:resource
                                               object:itemData
@@ -1546,6 +1563,10 @@
             
                 NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
             
+                if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+                    weakSelf.isSendingData = NO;
+                }
+                                       
                 if (error) {
                     NSLog(@"updateResource error: %@", error.localizedDescription);
                 }
