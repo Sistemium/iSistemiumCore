@@ -115,6 +115,8 @@
 
 - (void)flushSocket {
     
+    [self.socket removeAllHandlers];
+
     self.socket = nil;
     self.isAuthorized = NO;
     
