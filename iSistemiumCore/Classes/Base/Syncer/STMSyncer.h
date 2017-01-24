@@ -21,6 +21,8 @@
 @property (nonatomic) BOOL transportIsReady;
 
 - (void)checkSocket;
+- (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
+
 - (void)closeSocketInBackground;
 
 - (void)prepareToDestroy;

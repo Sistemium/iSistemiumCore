@@ -662,6 +662,14 @@
     [self.socketTransport checkSocket];
 }
 
+- (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    [self.socketTransport checkSocket];
+
+}
+
 - (void)closeSocketInBackground {
     [self.socketTransport closeSocketInBackground];
 }
