@@ -17,7 +17,7 @@
 
 @interface STMSyncerHelper : NSObject <STMDataSyncing>
 
-@property (nonatomic, weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync> persistenceDelegate;
 
 - (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler;
 

@@ -42,6 +42,7 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isReceivingData;
 @property (nonatomic) BOOL isDefantomizing;
+@property (nonatomic) BOOL isSendingData;
 @property (nonatomic) BOOL isUsingNetwork;
 
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
@@ -84,6 +85,17 @@
 
 - (void)customInit {
     NSLog(@"syncer init");
+}
+
+- (void)notificationToInitSendDataProcess {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
+                                                            object:self];
+        
+    });
+    
 }
 
 
@@ -159,6 +171,86 @@
 
 
 #pragma mark - variables setters & getters
+
+- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    self.syncerState = syncerState;
+    
+}
+
+- (void)setSyncerState:(STMSyncerState)syncerState {
+    
+    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
+        
+        STMSyncerState previousState = _syncerState;
+        
+        _syncerState = syncerState;
+        
+        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
+                                                                object:self
+                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
+            
+        });
+        
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
+        NSLog(@"%@", logMessage);
+        
+        switch (_syncerState) {
+            case STMSyncerIdle: {
+                
+                //                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+                //                self.syncing = NO;
+                //                self.sendOnce = NO;
+                //                self.checkSending = NO;
+                
+                //                self.entitySyncNames = nil;
+                
+                //                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
+                //                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
+                //                self.fetchCompletionHandler = nil;
+                
+                break;
+            }
+            case STMSyncerSendData:
+            case STMSyncerSendDataOnce: {
+                
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                [STMClientDataController checkClientData];
+                //                self.syncing = YES;
+                //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+                
+                [self notificationToInitSendDataProcess];
+                
+                self.syncerState = STMSyncerIdle;
+                
+                break;
+            }
+            case STMSyncerReceiveData: {
+                
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                //                self.syncing = YES;
+                [self receiveData];
+                self.syncerState = STMSyncerIdle;
+                
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        
+    }
+    
+    return;
+    
+}
 
 - (void)setSession:(id <STMSession>)session {
     
@@ -278,6 +370,21 @@
     
 }
 
+- (void)setIsSendingData:(BOOL)isSendingData {
+    
+    if (_isSendingData != isSendingData) {
+        
+        _isSendingData = isSendingData;
+        
+        if (isSendingData) {
+            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        } else {
+            [self turnOffNetworkActivityIndicator];
+        }
+        
+    }
+}
+
 - (void)setEntityCount:(NSUInteger)entityCount {
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -295,13 +402,24 @@
 - (void)turnOffNetworkActivityIndicator {
     
     if (!self.isUsingNetwork) {
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        [self checkAppState];
+        
     }
 
 }
 
+- (void)checkAppState {
+    
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        [self closeSocketInBackground];
+    }
+    
+}
+
 - (BOOL)isUsingNetwork {
-    return self.isReceivingData || self.isDefantomizing;
+    return self.isReceivingData || self.isDefantomizing || self.isSendingData;
 }
 
 - (NSTimeInterval)timeout {
@@ -555,8 +673,22 @@
     [self.socketTransport checkSocket];
 }
 
+- (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    [self.socketTransport checkSocket];
+
+}
+
 - (void)closeSocketInBackground {
+    
+    [STMSyncer cancelPreviousPerformRequestsWithTarget:self
+                                              selector:@selector(closeSocketInBackground)
+                                                object:nil];
+
     [self.socketTransport closeSocketInBackground];
+    
 }
 
 
@@ -931,8 +1063,6 @@
 
 - (void)receivingDidFinishWithError:(NSString *)errorString {
     
-    self.isReceivingData = NO;
-    
     if (errorString) {
         
         NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
@@ -943,18 +1073,31 @@
         
 #warning - do it only if have no error or always?
         [self saveReceiveDate];
-        [STMCoreObjectsController dataLoadingFinished];
-        [self startDefantomization];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                                object:self];
-
-        });
         
     }
     
+    if (self.receivingEntitiesNames) {
+        
+        [self receiveData];
+        
+    } else {
+
+        [self notificationToInitSendDataProcess];
+        [self startDefantomization];
+        
+        [STMCoreObjectsController dataLoadingFinished];
+        
+        if (self.fetchCompletionHandler) {
+            
+            self.fetchCompletionHandler(self.fetchResult);
+            self.fetchCompletionHandler = nil;
+            
+        }
+        
+        self.isReceivingData = NO;
+
+    }
+
 }
 
 - (void)saveReceiveDate {
@@ -1508,7 +1651,7 @@
     
     self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
 
-    NSLogMethodName;
+    NSLog(@"subscribeToUnsyncedObjects with subscriptionId: %@", self.subscriptionId);
     
 }
 
@@ -1538,6 +1681,7 @@
                 
             }
             
+            weakSelf.isSendingData = YES;
 
             [weakSelf.socketTransport updateResource:resource
                                               object:itemData
@@ -1546,6 +1690,10 @@
             
                 NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
             
+                if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+                    weakSelf.isSendingData = NO;
+                }
+                                       
                 if (error) {
                     NSLog(@"updateResource error: %@", error.localizedDescription);
                 }
@@ -1583,105 +1731,6 @@
 // ----------------------
 
 #pragma mark - OLD IMPLEMENTATION
-
-#pragma mark - variables setters & getters
-
-- (STMSyncerState)syncerState {
-    
-    if (!_syncerState) {
-        _syncerState = STMSyncerIdle;
-    }
-    
-    return _syncerState;
-    
-}
-
-- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    self.syncerState = syncerState;
-    
-}
-
-
-- (void)setSyncerState:(STMSyncerState)syncerState {
-    
-    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
-
-        STMSyncerState previousState = _syncerState;
-        
-        _syncerState = syncerState;
-
-        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                                                object:self
-                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
-
-        });
-
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-        NSLog(@"%@", logMessage);
-
-        switch (_syncerState) {
-            case STMSyncerIdle: {
-                
-//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-//                self.syncing = NO;
-//                self.sendOnce = NO;
-//                self.checkSending = NO;
-                
-//                self.entitySyncNames = nil;
-                
-//                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
-//                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
-//                self.fetchCompletionHandler = nil;
-
-                break;
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [STMClientDataController checkClientData];
-//                self.syncing = YES;
-//                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                                        object:self];
-
-                });
-
-
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            case STMSyncerReceiveData: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-//                self.syncing = YES;
-                [self receiveData];
-                self.syncerState = STMSyncerIdle;
-
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        
-    }
-    
-    return;
-
-}
 
 #pragma mark - socket receive ack handler
 

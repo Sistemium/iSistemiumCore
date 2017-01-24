@@ -158,14 +158,18 @@
         
         NSLog(@"DEFANTOMIZING_START");
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                            object:self
-                                                          userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
+        dispatch_async(dispatch_get_main_queue(), ^{
 
-        completionHandler(fantomsArray);
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
+                                                                object:self
+                                                              userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
+
+        });
         
-    } else {
-        completionHandler(nil);
+    }
+    
+    if (completionHandler) {
+        completionHandler(fantomsArray.count ? fantomsArray : nil);
     }
     
 }
@@ -198,9 +202,13 @@
     
     NSLog(@"DEFANTOMIZING_FINISHED");
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                        object:self
-                                                      userInfo:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+    
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
+                                                            object:self
+                                                          userInfo:nil];
+
+    });
     
     self.failToResolveFantomsArray = nil;
 
@@ -213,7 +221,9 @@
     
     self.unsyncedSubscriptionBlock = completionHandler;
     
-    return nil; // have to return subscriptionId if it will be needed
+    NSString *subscriptionId = [NSUUID UUID].UUIDString;
+    
+    return subscriptionId;
 
 }
 
@@ -237,6 +247,10 @@
     
     return YES;
     
+}
+
+- (NSUInteger)numberOfUnsyncedObjects {
+    return self.unsyncedObjects.count;
 }
 
 
