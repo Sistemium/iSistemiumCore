@@ -402,9 +402,20 @@
 - (void)turnOffNetworkActivityIndicator {
     
     if (!self.isUsingNetwork) {
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        [self checkAppState];
+        
     }
 
+}
+
+- (void)checkAppState {
+    
+    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        [self closeSocketInBackground];
+    }
+    
 }
 
 - (BOOL)isUsingNetwork {
