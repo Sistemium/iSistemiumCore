@@ -682,7 +682,13 @@
 }
 
 - (void)closeSocketInBackground {
+    
+    [STMSyncer cancelPreviousPerformRequestsWithTarget:self
+                                              selector:@selector(closeSocketInBackground)
+                                                object:nil];
+
     [self.socketTransport closeSocketInBackground];
+    
 }
 
 
