@@ -150,6 +150,10 @@
     
     savingAttributes[@"deviceAts"] = now;
     
+    if (!savingAttributes[@"deviceCts"] || [savingAttributes[@"deviceCts"] isEqual:[NSNull null]]) {
+        savingAttributes[@"deviceCts"] = now;
+    }
+    
     if(!returnSaved){
         [db mergeInto:entityName
            dictionary:savingAttributes
@@ -266,6 +270,13 @@
         return YES;
     }
     
+}
+
+#pragma mark - STMModelling
+
+- (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
+#warning need to check if entity is stored in CoreData and use document's context
+    return [[NSManagedObject alloc] initWithEntity:self.document.managedObjectModel.entitiesByName[entityName] insertIntoManagedObjectContext:nil];
 }
 
 
@@ -505,14 +516,14 @@
             if(error){
                 success = NO;
             }
-            completionHandler(success,result,error);
+            if (completionHandler) completionHandler(success,result,error);
         });
     } else {
         result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         if(error){
             success = NO;
         }
-        completionHandler(success,result,error);
+        if (completionHandler) completionHandler(success,result,error);
     }
 }
 
