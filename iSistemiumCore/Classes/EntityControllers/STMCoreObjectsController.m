@@ -1377,9 +1377,12 @@
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
         NSPredicate *notUnsyncedPredicate = [self notUnsyncedPredicateForEntityName:entityName];
+        NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
+        
+        if (notUnsyncedPredicate) [subpredicates addObject:notUnsyncedPredicate];
         
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
-                                                                     subpredicates:@[datePredicate, notUnsyncedPredicate]];
+                                                                     subpredicates:subpredicates];
         
         [self.persistenceDelegate destroyAllSync:entityName
                                     predicate:predicate
