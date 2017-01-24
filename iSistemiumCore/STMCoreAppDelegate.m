@@ -290,13 +290,13 @@
                                                         object:application];
 
     if ([self syncer].transportIsReady) {
-        
-        [[self syncer] setSyncerState:STMSyncerSendData
+
+        [[self syncer] setSyncerState:STMSyncerReceiveData
                fetchCompletionHandler:completionHandler];
-        
+
     } else {
         
-        [[self syncer] checkSocket];
+        [[self syncer] checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
         
     }
     
@@ -411,6 +411,7 @@
 
     if (userInfo[@"syncer"]) {
         
+#warning - is it used? may be rm it and use remoteCommends instead
         if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
             [[self syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
                 
@@ -435,7 +436,7 @@
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[self syncer] setSyncerState:STMSyncerSendData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+        [[self syncer] setSyncerState:STMSyncerReceiveData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
             
             if (!handlerCompleted) {
                 
@@ -460,6 +461,7 @@
     
     @try {
         
+        NSLog(@"result %@", @(result));
         handler(result);
         
     } @catch (NSException *exception) {
