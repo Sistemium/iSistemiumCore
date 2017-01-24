@@ -162,18 +162,19 @@
 }
 
 - (void)hideProgressBar {
-    
-    self.progressBar.hidden = YES;
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        self.progressBar.hidden = YES;
+        [UIApplication sharedApplication].idleTimerDisabled = NO;
+    });
 }
 
 - (void)updateSyncInfo {
-    
-    [self updateSyncDatesLabels];
-    [self updateCloudImages];
-    [self updateNonloadedPicturesInfo];
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateSyncDatesLabels];
+        [self updateCloudImages];
+        [self updateNonloadedPicturesInfo];
+    });
 }
 
 - (void)updateUploadSyncProgressBar {
@@ -235,10 +236,10 @@
 #pragma mark - cloud images for sync button
 
 - (void)updateCloudImages {
-    
-    [self setImageForSyncImageView];
-    [self setColorForSyncImageView];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self setImageForSyncImageView];
+        [self setColorForSyncImageView];
+    });
 }
 
 - (void)setImageForSyncImageView {
@@ -290,8 +291,9 @@
         
     }
     
-    self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    });
 }
 
 - (void)startSyncSpinnerInView:(UIView *)view {
@@ -305,10 +307,10 @@
 }
 
 - (void)stopSyncSpinner {
-    
-    [self.syncSpinner removeFromSuperview];
-    self.syncSpinner = nil;
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.syncSpinner removeFromSuperview];
+        self.syncSpinner = nil;
+    });
 }
 
 - (void)setColorForSyncImageView {
@@ -460,13 +462,14 @@
 
 - (void)hideNumberOfObjects {
     
-    if (self.syncer.syncerState != STMSyncerReceiveData) {
-        
-        self.previousNumberOfObjects = 0;
-        self.numberOfObjectLabel.text = @"";
-        
-    }
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.syncer.syncerState != STMSyncerReceiveData) {
+            
+            self.previousNumberOfObjects = 0;
+            self.numberOfObjectLabel.text = @"";
+            
+        }
+    });
 }
 
 - (void)showUpdateButton {
