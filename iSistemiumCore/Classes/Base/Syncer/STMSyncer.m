@@ -1664,8 +1664,8 @@
         _unsyncedSubscriptionHandler = ^(NSString *entityName, NSDictionary *itemData, NSString *itemVersion) {
             
             STMEntity *entity = [STMEntityController stcEntities][entityName];
-            NSString *resource = entity.url;
-//            NSString *resource = [entity resource]; ???
+//            NSString *resource = entity.url;
+            NSString *resource = [entity resource];
 
             if (!resource) {
                 

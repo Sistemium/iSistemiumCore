@@ -328,11 +328,6 @@
     
     for (NSString *entityName in uploadableEntitiesNames) {
         
-#warning don't forget to remove it
-        if ([entityName isEqualToString:@"STMLogMessage"]) {
-            continue;
-        }
-        
         if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
             
             NSError *error = nil;
@@ -384,15 +379,7 @@
         
         NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
         
-//        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
-        
-        NSMutableArray *syncTypesSubpredicates = @[].mutableCopy;
-        
-        for (NSString *type in logMessageSyncTypes) {
-            [syncTypesSubpredicates addObject:[NSPredicate predicateWithFormat:@"type == %@", type]];
-        }
-        
-        [subpredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:syncTypesSubpredicates]];
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
         
     }
     
