@@ -172,6 +172,86 @@
 
 #pragma mark - variables setters & getters
 
+- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    self.syncerState = syncerState;
+    
+}
+
+- (void)setSyncerState:(STMSyncerState)syncerState {
+    
+    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
+        
+        STMSyncerState previousState = _syncerState;
+        
+        _syncerState = syncerState;
+        
+        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
+                                                                object:self
+                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
+            
+        });
+        
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
+        NSLog(@"%@", logMessage);
+        
+        switch (_syncerState) {
+            case STMSyncerIdle: {
+                
+                //                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+                //                self.syncing = NO;
+                //                self.sendOnce = NO;
+                //                self.checkSending = NO;
+                
+                //                self.entitySyncNames = nil;
+                
+                //                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
+                //                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
+                //                self.fetchCompletionHandler = nil;
+                
+                break;
+            }
+            case STMSyncerSendData:
+            case STMSyncerSendDataOnce: {
+                
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                [STMClientDataController checkClientData];
+                //                self.syncing = YES;
+                //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
+                
+                [self notificationToInitSendDataProcess];
+                
+                self.syncerState = STMSyncerIdle;
+                
+                break;
+            }
+            case STMSyncerReceiveData: {
+                
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                //                self.syncing = YES;
+                [self receiveData];
+                self.syncerState = STMSyncerIdle;
+                
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        
+    }
+    
+    return;
+    
+}
+
 - (void)setSession:(id <STMSession>)session {
     
     if (session != _session) {
@@ -1615,105 +1695,6 @@
 // ----------------------
 
 #pragma mark - OLD IMPLEMENTATION
-
-#pragma mark - variables setters & getters
-
-- (STMSyncerState)syncerState {
-    
-    if (!_syncerState) {
-        _syncerState = STMSyncerIdle;
-    }
-    
-    return _syncerState;
-    
-}
-
-- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    self.syncerState = syncerState;
-    
-}
-
-
-- (void)setSyncerState:(STMSyncerState)syncerState {
-    
-    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
-
-        STMSyncerState previousState = _syncerState;
-        
-        _syncerState = syncerState;
-
-        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                                                object:self
-                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
-
-        });
-
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-        NSLog(@"%@", logMessage);
-
-        switch (_syncerState) {
-            case STMSyncerIdle: {
-                
-//                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-//                self.syncing = NO;
-//                self.sendOnce = NO;
-//                self.checkSending = NO;
-                
-//                self.entitySyncNames = nil;
-                
-//                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
-//                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
-//                self.fetchCompletionHandler = nil;
-
-                break;
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [STMClientDataController checkClientData];
-//                self.syncing = YES;
-//                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                                        object:self];
-
-                });
-
-
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            case STMSyncerReceiveData: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-//                self.syncing = YES;
-                [self receiveData];
-                self.syncerState = STMSyncerIdle;
-
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        
-    }
-    
-    return;
-
-}
 
 #pragma mark - socket receive ack handler
 
