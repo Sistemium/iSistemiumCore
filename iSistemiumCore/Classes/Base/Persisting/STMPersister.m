@@ -444,7 +444,7 @@
     
     [self destroyWithoutSave:entityName predicate:predicate options:options error:error];
     
-    if (error){
+    if (*error){
         #warning possible danger, will rollback changes from other threads
         [[STMFmdb sharedInstance] rollback];
         return NO;
