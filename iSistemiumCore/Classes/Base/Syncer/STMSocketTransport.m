@@ -399,11 +399,8 @@
                 }
                 
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-
-#warning why here we need Mutable?
-                NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
-
-                [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
+                
+                [self.socket emitWithAck:eventStringValue with:@[value]](0, ^(NSArray *data) {
 
                     if (context) {
                         [self cancelCheckRequestTimeoutWithContext:context];
