@@ -1840,47 +1840,29 @@
 //}
 
 
-#pragma mark - some sync methods
+#pragma mark - send objects sync methods
 
-//- (void)sendFinishedWithError:(NSString *)errorString {
-//    
-//    if (errorString) {
-//        
-//        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
-//                                                 numType:STMLogMessageTypeImportant];
-//        
-//        self.syncing = NO;
-//        if (self.fetchCompletionHandler) self.fetchResult = UIBackgroundFetchResultFailed;
-//        self.syncerState = (self.receivingEntitiesNames) ? STMSyncerReceiveData : STMSyncerIdle;
-//        
-//    } else {
-//        
-//        [self sendFinished:self];
-//        
-//    }
-//    
-//}
-
-- (void)sendFinished:(id)sender {
+- (void)sendFinishedWithError:(NSString *)errorString {
     
-    [self.document saveDocument:^(BOOL success) {
+    if (errorString) {
         
+        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
+                                                 numType:STMLogMessageTypeImportant];
+        
+    } else {
+
         [self saveSendDate];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [[NSNotificationCenter defaultCenter] postNotificationName:@"sendFinished"
                                                                 object:self];
-
+            
         });
-        
-//        [self nothingToSend];
-        
-    }];
+
+    }
 
 }
-
-
 
 - (void)saveSendDate {
     
