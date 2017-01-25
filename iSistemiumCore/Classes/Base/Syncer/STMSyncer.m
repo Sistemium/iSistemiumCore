@@ -1688,7 +1688,10 @@
                 NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
             
                 if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+                    
                     weakSelf.isSendingData = NO;
+                    [weakSelf sendFinishedWithError:nil];
+                    
                 }
                                        
                 if (error) {
