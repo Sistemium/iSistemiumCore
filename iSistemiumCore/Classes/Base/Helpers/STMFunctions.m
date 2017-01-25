@@ -627,6 +627,18 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
++ (NSDictionary*)mapDisctionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
+    
+    NSMutableDictionary *result = NSMutableDictionary.alloc.init;
+    
+    for(id key in dictionary) {
+        result[key] = mapperBlock(dictionary[key], key);
+    }
+    
+    return result;
+}
+
+
 + (NSString *)entityToTableName:(NSString *)entity{
     if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
         return [entity substringFromIndex:3];

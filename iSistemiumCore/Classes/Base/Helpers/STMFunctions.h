@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array;
 + (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array;
 
++ (NSDictionary*)mapDisctionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock;
 
 NS_ASSUME_NONNULL_END
 
