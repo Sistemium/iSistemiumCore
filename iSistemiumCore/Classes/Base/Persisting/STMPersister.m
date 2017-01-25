@@ -313,7 +313,7 @@
     return self.allEntityKeys[entityName][@"fields"];
 }
 
-- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
     
     if (!entityName) {
         return nil;
@@ -341,14 +341,14 @@
     
 }
 
-- (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName{
+- (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName{
     
     return [self objectRelationshipsForEntityName:entityName isToMany:@NO];
 }
 
-- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany{
+- (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany{
     
-    NSDictionary <NSString*,NSRelationshipDescription*> * relationships = [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:nil];
+    NSDictionary *relationships = [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:nil];
     
     return [STMFunctions mapDisctionary:relationships withBlock:^id _Nonnull(NSRelationshipDescription *value, NSString *key) {
         return value.destinationEntity.name;
