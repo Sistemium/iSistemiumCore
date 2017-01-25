@@ -17,7 +17,7 @@
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedSettingsResultController;
-
+@property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
 
 @end
 
@@ -219,6 +219,8 @@
 - (void)setSession:(id<STMSession>)session {
     
     _session = session;
+    
+    self.persistenceDelegate = session.persistenceDelegate;
 
     NSError *error;
     if (![self.fetchedSettingsResultController performFetch:&error]) {
@@ -318,9 +320,10 @@
         
         predicate = [NSPredicate predicateWithFormat:@"SELF != %@", setting];
         result = [result filteredArrayUsingPredicate:predicate];
+        NSError *error;
         
         for (STMSetting *settingObject in result) {
-            [STMCoreObjectsController removeObject:settingObject];
+            [self.persistenceDelegate destroySync:@"STMSetting" identifier:[STMFunctions hexStringFromData:settingObject.xid] options:nil error:&error];
         }
         
     }

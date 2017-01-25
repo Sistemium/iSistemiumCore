@@ -257,8 +257,8 @@
         
         idKey = @"xid";
         // TODO: return deleted count from CoreData
-        [STMCoreObjectsController removeObjectForPredicate:predicate
-                                                entityName:entityName];
+        [self removeObjectForPredicate:predicate
+                            entityName:entityName];
 
     }
     
@@ -276,17 +276,41 @@
     
 }
 
+
 - (BOOL)saveWithEntityName:(NSString *)entityName{
     
     if ([self.fmdb hasTable:entityName]){
         return [self.fmdb commit];
     } else {
-        [[self document] saveDocument:^(BOOL success){}];
+        [self.document saveDocument:^(BOOL success){}];
         return YES;
     }
     
 }
 
+
+#pragma mark - Private CoreData helpers
+
+- (void)removeObjects:(NSArray*)objects {
+    for (id object in objects){
+        [self.document.managedObjectContext deleteObject:object];
+    }
+}
+
+- (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
+    [self removeObjects:[self objectsForPredicate:predicate entityName:name]];
+}
+
+- (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+
+//    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+    request.predicate = predicate;
+    
+    return [self.document.managedObjectContext executeFetchRequest:request error:nil];
+
+}
 
 #pragma mark - STMPersistingSync
 

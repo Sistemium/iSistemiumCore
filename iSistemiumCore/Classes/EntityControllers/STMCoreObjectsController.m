@@ -385,15 +385,6 @@
                 
             }
             
-        } else {
-            
-            if (object) {
-                
-                NSLog(@"object %@ with xid %@ have recordStatus.isRemoved == YES", entityName, xidString);
-                [self removeIsRemovedRecordStatusAffectedObject:object];
-                
-            }
-            
         }
         
         completionHandler(YES);
@@ -701,24 +692,7 @@
 
 + (void)postprocessingForObject:(NSManagedObject *)object {
 
-    if ([object isKindOfClass:[STMMessage class]]) {
-        
-        //        [[NSNotificationCenter defaultCenter] postNotificationName:@"gotNewMessage" object:nil];
-        
-    } else if ([object isKindOfClass:[STMRecordStatus class]]) {
-        
-        STMRecordStatus *recordStatus = (STMRecordStatus *)object;
-        
-        if (recordStatus.isRemoved.boolValue) {
-
-            STMDatum *affectedObject = [self objectForXid:recordStatus.objectXid];
-            if (affectedObject) [self removeIsRemovedRecordStatusAffectedObject:affectedObject];
-
-        }
-        
-        if (recordStatus.isTemporary.boolValue) [self removeObject:recordStatus];
-        
-    } else if ([object isKindOfClass:[STMSetting class]]) {
+    if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;
         
@@ -730,17 +704,6 @@
 
 }
 
-+ (void)removeIsRemovedRecordStatusAffectedObject:(STMDatum *)affectedObject {
-    
-    NSLog(@"object %@ with xid %@ will removed (have recordStatus.isRemoved)", affectedObject.entity.name, affectedObject.xid);
-    
-    [self removeObject:affectedObject];
-    
-    if ([affectedObject isKindOfClass:[STMClientEntity class]]) {
-        [[self syncer] receiveEntities:@[[(STMClientEntity *)affectedObject name]]];
-    }
-
-}
 
 
 #pragma mark - recieved relationships management
@@ -896,23 +859,7 @@
     
 }
 
-+ (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
-    
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = predicate;
-        
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        
-        if (fetchResult.firstObject) return fetchResult.firstObject;
-        
-    }
-    
-    return nil;
-    
-}
+
 
 
 + (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
@@ -1113,42 +1060,6 @@
 }
 
 #pragma mark - flushing
-
-+ (void)removeObject:(STMDatum *)object {
-    [self removeObject:object inContext:nil];
-}
-
-+ (void)removeObjects:(NSArray*)objects {
-    for (id object in objects){
-        [self removeObject:object inContext:nil];
-    }
-}
-
-+ (void)removeObjectForXid:(NSData *)xidData entityName:(NSString *)name{
-    [STMCoreObjectsController removeObject:[STMCoreObjectsController objectForXid:xidData entityName:name]];
-}
-
-+ (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
-    [STMCoreObjectsController removeObjects:[STMCoreObjectsController objectsForPredicate:predicate entityName:name]];
-}
-
-+ (void)removeObject:(NSManagedObject *)object inContext:(NSManagedObjectContext *)context {
-    
-    if (object) {
-        
-        if (!context) context = [self document].managedObjectContext;
-        
-        [context performBlock:^{
-            
-            [context deleteObject:object];
-            
-            
-            
-        }];
-
-    }
-    
-}
 
 #warning should use some syncer method
 + (NSPredicate *)notUnsyncedPredicateForEntityName:(NSString*)entityName {

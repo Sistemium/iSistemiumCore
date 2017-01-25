@@ -978,11 +978,9 @@
     
     [self removeImageFilesForPicture:picture];
     
-    [STMCoreObjectsController removeObject:picture];
-
-    [[self document] saveDocument:^(BOOL success) {
-        
-    }];
+    NSError *error;
+    
+    [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
     
 }
 

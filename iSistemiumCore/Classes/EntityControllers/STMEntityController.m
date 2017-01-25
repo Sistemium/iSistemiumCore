@@ -316,11 +316,11 @@
         NSMutableArray *mutableResult = result.mutableCopy;
         [mutableResult removeObject:actualEntity];
         
-        for (STMEntity *entity in mutableResult) {
-            [STMCoreObjectsController removeObject:entity];
-        }
+        NSError *error;
         
-        [[self document] saveDocument:^(BOOL success) {}];
+        for (STMEntity *entity in mutableResult) {
+            [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:entity.xid] options:nil error:&error];
+        }
 
     }
     
