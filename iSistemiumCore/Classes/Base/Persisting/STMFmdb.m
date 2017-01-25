@@ -12,7 +12,6 @@
 #import "STMFmdb.h"
 #import "STMFunctions.h"
 #import "FMDB.h"
-#import "STMCoreObjectsController.h"
 #import "STMPredicateToSQL.h"
 
 @interface STMFmdb()
@@ -77,7 +76,7 @@
                 NSMutableArray *columns = @[].mutableCopy;
                 NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
                 
-                NSDictionary *tableColumns = [STMCoreObjectsController allObjectsWithTypeForEntityName:entityName];
+                NSDictionary *tableColumns = [modelling fieldsForEntityName:entityName];
                 
                 for (NSString* columnName in tableColumns.allKeys){
                     
@@ -130,14 +129,14 @@
                     
                 }
                 
-                NSDictionary *relationships = [STMCoreObjectsController toOneRelationshipsForEntityName:entityName];
+                NSDictionary *relationships = [modelling toOneRelationshipsForEntityName:entityName];
                 
                 for (NSString* entityKey in relationships.allKeys){
                     
                     sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     
                     NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
-                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    NSString *fkTable = [self entityToTableName:relationships[entityKey]];
                     
                     NSString *cascadeAction = @"SET NULL";
                     NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable, cascadeAction];
@@ -167,14 +166,14 @@
                 NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
                 
                 
-                for (NSString* entityKey in [STMCoreObjectsController toOneRelationshipsForEntityName:entityName].allKeys){
+                for (NSString* entityKey in [modelling toOneRelationshipsForEntityName:entityName].allKeys){
                     NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
                     
                     NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
                     res = [database executeStatements:createIndexSQL];
                     NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
                     
-                    NSString *fkTable = [self entityToTableName:[STMCoreObjectsController toOneRelationshipsForEntityName:entityName][entityKey]];
+                    NSString *fkTable = [self entityToTableName:[modelling toOneRelationshipsForEntityName:entityName][entityKey]];
                     
                     sql_stmt = [NSString stringWithFormat:createFantomTriggerFormat, tableName, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
                     res = [database executeStatements:sql_stmt];
@@ -186,7 +185,7 @@
                     
                 }
                 
-                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [STMCoreObjectsController objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
+                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [modelling objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
                 
                 for (NSString* relationKey in cascadeRelations.allKeys){
                     

@@ -46,12 +46,9 @@
 
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
-+ (NSArray *)coreEntityRelationships;
+
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
-+ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName;
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
-+ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
 + (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters

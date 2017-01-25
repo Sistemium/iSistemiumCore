@@ -34,7 +34,6 @@
 @interface STMCoreObjectsController()
 
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
-@property (nonatomic, strong) NSMutableDictionary *allEntityKeys;
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToOneRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToManyRelationships;
@@ -115,15 +114,6 @@
         _entitiesOwnKeys = [@{} mutableCopy];
     }
     return _entitiesOwnKeys;
-    
-}
-
-- (NSMutableDictionary *)allEntityKeys {
-    
-    if (!_allEntityKeys) {
-        _allEntityKeys = [@{} mutableCopy];
-    }
-    return _allEntityKeys;
     
 }
 
@@ -486,7 +476,7 @@
     NSString *entityName = entity.name;
 	
     NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
-    NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
+    NSDictionary *ownObjectRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
 
     for (NSString *key in objectData.allKeys) {
         
@@ -633,7 +623,7 @@
 
 + (void)processingOfRelationshipsForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName andValues:(NSDictionary *)properties {
     
-    NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
+    NSDictionary *ownObjectRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
     
     for (NSString *relationship in ownObjectRelationships.allKeys) {
         
@@ -1073,154 +1063,16 @@
     
 }
 
-+ (NSDictionary *)allObjectsWithTypeForEntityName:(NSString *)entityName {
-    
-    NSMutableDictionary *allEntityKeys = [self sharedController].allEntityKeys;
-    NSDictionary *objectKeys = allEntityKeys[entityName];
-    
-    if (!objectKeys) {
-        
-        STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
-                                                          inManagedObjectContext:[self document].managedObjectContext];
-        
-        allEntityKeys[entityName] = objectEntity.attributesByName;
-        
-        objectKeys = allEntityKeys[entityName];
-    }
-    
-    return objectKeys;
-    
-}
-
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName {
     
-    if (!entityName) {
-        return nil;
-    }
-
-    NSMutableDictionary *entitiesOwnRelationships = [self sharedController].entitiesOwnRelationships;
-    NSDictionary *objectRelationships = entitiesOwnRelationships[entityName];
+    return [self.persistenceDelegate objectRelationshipsForEntityName:entityName isToMany:nil];
     
-    if (!objectRelationships) {
-
-        objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:nil];
-        entitiesOwnRelationships[entityName] = objectRelationships;
-        
-    }
-    
-    return objectRelationships;
-    
-}
-
-+ (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName {
-    
-    if (!entityName) {
-        return nil;
-    }
-
-    NSMutableDictionary *entitiesToOneRelationships = [self sharedController].entitiesToOneRelationships;
-    NSDictionary *objectRelationships = entitiesToOneRelationships[entityName];
-    
-    if (!objectRelationships && entityName) {
-
-        objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(NO)];
-        entitiesToOneRelationships[entityName] = objectRelationships;
-        
-    }
-
-    return objectRelationships;
-
 }
 
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
     
-    if (!entityName) {
-        return nil;
-    }
+    return [self.persistenceDelegate objectRelationshipsForEntityName:entityName isToMany:@YES];
 
-    NSMutableDictionary *entitiesToManyRelationships = [self sharedController].entitiesToManyRelationships;
-    NSDictionary *objectRelationships = entitiesToManyRelationships[entityName];
-    
-    if (!objectRelationships) {
-        
-        objectRelationships = [self objectRelationshipsForEntityName:entityName isToMany:@(YES)];
-        entitiesToManyRelationships[entityName] = objectRelationships;
-        
-    }
-    
-    return objectRelationships;
-
-}
-
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany {
-    
-    if (!entityName) {
-        return nil;
-    }
-
-    STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
-                                                      inManagedObjectContext:[self document].managedObjectContext];
-    
-    NSSet *coreRelationshipNames = [NSSet setWithArray:[self coreEntityRelationships]];
-    
-    NSMutableSet *objectRelationshipNames = [NSMutableSet setWithArray:objectEntity.relationshipsByName.allKeys];
-    
-    [objectRelationshipNames minusSet:coreRelationshipNames];
-    
-    NSMutableDictionary *objectRelationships = [NSMutableDictionary dictionary];
-    
-    for (NSString *relationshipName in objectRelationshipNames) {
-        
-        NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
-        
-        if (isToMany) {
-            
-            if (relationship.isToMany == isToMany.boolValue) {
-                objectRelationships[relationshipName] = relationship.destinationEntity.name;
-            }
-            
-        } else {
-            objectRelationships[relationshipName] = relationship.destinationEntity.name;
-        }
-    }
-    
-    return objectRelationships;
-
-}
-
-+ (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
-    
-    if (!entityName) {
-        return nil;
-    }
-    
-    STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
-                                                      inManagedObjectContext:[self document].managedObjectContext];
-    
-    NSSet *coreRelationshipNames = [NSSet setWithArray:[self coreEntityRelationships]];
-    
-    NSMutableSet *objectRelationshipNames = [NSMutableSet setWithArray:objectEntity.relationshipsByName.allKeys];
-    
-    [objectRelationshipNames minusSet:coreRelationshipNames];
-    
-    NSMutableDictionary *objectRelationships = [NSMutableDictionary dictionary];
-    
-    for (NSString *relationshipName in objectRelationshipNames) {
-        
-        NSRelationshipDescription *relationship = objectEntity.relationshipsByName[relationshipName];
-        
-        if (!isToMany || relationship.isToMany == isToMany.boolValue) {
-                
-            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
-                objectRelationships[relationshipName] = relationship;
-            }
-        
-        }
-        
-    }
-    
-    return objectRelationships;
-    
 }
 
 + (NSArray <NSString *> *)localDataModelEntityNames {
@@ -1259,25 +1111,6 @@
     return _coreEntityKeys;
     
 }
-
-+ (NSArray *)coreEntityRelationships {
-    return [self sharedController].coreEntityRelationships;
-}
-
-- (NSArray *)coreEntityRelationships {
-    
-    if (!_coreEntityRelationships) {
-        
-        STMEntityDescription *coreEntity = [STMEntityDescription entityForName:NSStringFromClass([STMDatum class])
-                                                        inManagedObjectContext:[STMCoreObjectsController document].managedObjectContext];
-        
-        _coreEntityRelationships = coreEntity.relationshipsByName.allKeys;
-        
-    }
-    return _coreEntityRelationships;
-    
-}
-
 
 #pragma mark - flushing
 
@@ -2030,7 +1863,7 @@
         
     }
     
-    NSDictionary *ownRelationships = [self toOneRelationshipsForEntityName:entityName];
+    NSDictionary *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
     
     for (NSString *key in ownRelationships.allKeys) {
         
@@ -2113,7 +1946,7 @@
         
     }
     
-    NSDictionary *ownRelationships = [self toOneRelationshipsForEntityName:entityName];
+    NSDictionary *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
     
     for (NSString *key in ownRelationships.allKeys) {
     
@@ -2342,7 +2175,7 @@
     NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
 
-    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+    NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName].allKeys;
     
     [objectsDics enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
@@ -2475,7 +2308,7 @@
     if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
     
     NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
-    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
+    NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:object.entity.name].allKeys;
     
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
     
@@ -2574,7 +2407,7 @@
             NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
             ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[@"xid", @"deviceTs", @"deviceCts"]];
 
-            NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+            NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName].allKeys;
 
             NSMutableArray *propertiesToFetch = ownKeys.mutableCopy;
             
