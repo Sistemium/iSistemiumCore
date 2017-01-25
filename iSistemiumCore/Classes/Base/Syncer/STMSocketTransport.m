@@ -406,6 +406,8 @@
                         [self cancelCheckRequestTimeoutWithContext:context];
                     }
 #warning need to check if response data is an error
+                    // here we always have a data and never have an error
+                    // checking for the data have an error inside it performs by corresponding completionHandler block
                     if (completionHandler) {
                         completionHandler(YES, data, nil);
                     }
