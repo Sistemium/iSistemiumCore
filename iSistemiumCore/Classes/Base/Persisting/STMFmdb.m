@@ -8,7 +8,6 @@
 
 //Note: The calls to FMDatabaseQueue's methods are blocking. So even though you are passing along blocks, they will not be run on another thread.
 
-#import <Foundation/Foundation.h>
 #import "STMFmdb.h"
 #import "STMFunctions.h"
 #import "FMDB.h"
