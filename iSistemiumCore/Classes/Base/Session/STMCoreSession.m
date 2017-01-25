@@ -10,7 +10,7 @@
 
 #import "STMCoreDataModel.h"
 #import "STMCoreAuthController.h"
-#import "STMPersister.h"
+#import "STMPersister+Async.h"
 
 @interface STMCoreSession()
 
