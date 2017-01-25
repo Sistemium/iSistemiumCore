@@ -34,7 +34,7 @@
     
     persister.session = session;
     
-    NSString *dataModelName = [session.startSettings valueForKey:@"dataModelName"];
+    NSString *dataModelName = session.startSettings[@"dataModelName"];
     
     if (!dataModelName) {
         dataModelName = [[STMCoreAuthController authController] dataModelName];
@@ -45,9 +45,8 @@
                                            dataModelName:dataModelName];
 
     persister.document = document;
-    persister.managedObjectModel = document.myManagedObjectModel;
     
-    [persister initModelling];
+    [persister initModelling:document.myManagedObjectModel];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
     
@@ -215,13 +214,15 @@
         if (options[@"roleName"]){
             [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error inserting %@", entityName]];
+                    [STMCoreObjectsController error:error
+                                        withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
                 }
             }];
-        }else{
+        } else {
             [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Relationship error %@", entityName]];
+                    [STMCoreObjectsController error:error
+                                        withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
                 }
             }];
         }
@@ -236,7 +237,10 @@
     
     // TODO: expendable fetch on one object destroy
     if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
-        objects = [self findAllSync:entityName predicate:predicate options:options error:error];
+        objects = [self findAllSync:entityName
+                          predicate:predicate
+                            options:options
+                              error:error];
     }
     
     NSString* idKey;
@@ -247,13 +251,16 @@
         
         idKey = @"id";
         
-        result = [self.fmdb destroy:entityName predicate:predicate error:error];
+        result = [self.fmdb destroy:entityName
+                          predicate:predicate
+                              error:error];
         
     }else{
         
         idKey = @"xid";
         // TODO: return deleted count from CoreData
-        [STMCoreObjectsController removeObjectForPredicate:predicate entityName:entityName];
+        [STMCoreObjectsController removeObjectForPredicate:predicate
+                                                entityName:entityName];
 
     }
     
@@ -261,7 +268,9 @@
         
         NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
         
-        [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+        [self mergeWithoutSave:@"STMRecordStatus"
+                    attributes:recordStatus
+                       options:nil error:error];
         
     }
     
@@ -282,14 +291,15 @@
 
 #pragma mark - STMModelling
 
-- (void)initModelling {
+- (void)initModelling:(NSManagedObjectModel *)model {
     
+    self.managedObjectModel = model;
     NSMutableDictionary *cache = @{}.mutableCopy;
     
     for (NSString *entityKey in self.entitiesByName) {
         NSEntityDescription *entity = self.entitiesByName[entityKey];
         cache[entityKey] = @{@"fields": entity.attributesByName,
-                                  @"relationships": entity.relationshipsByName};
+                             @"relationships": entity.relationshipsByName};
     }
     
     self.allEntitiesCache = cache.copy;
@@ -297,7 +307,8 @@
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
 #warning need to check if entity is stored in CoreData and use document's context
-    return [[NSManagedObject alloc] initWithEntity:self.document.managedObjectModel.entitiesByName[entityName] insertIntoManagedObjectContext:nil];
+    return [[NSManagedObject alloc] initWithEntity:self.entitiesByName[entityName]
+                    insertIntoManagedObjectContext:nil];
 }
 
 
