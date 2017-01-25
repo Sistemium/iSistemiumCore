@@ -55,11 +55,15 @@
     
     if (entity.abstract) return STMStorageTypeAbstract;
     
-    if (storeOption && ![storeOption isEqualToString:@"FMDB"]){
+    if (!storeOption || [storeOption isEqualToString:@"FMDB"]){
+        return STMStorageTypeFMDB;
+    }
+    
+    if ([storeOption isEqualToString:@"CoreData"]) {
         return STMStorageTypeCoreData;
     }
     
-    return STMStorageTypeFMDB;
+    return STMStorageTypeNone;
     
 }
 
