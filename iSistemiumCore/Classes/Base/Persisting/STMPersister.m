@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
+
 #import "STMPersister.h"
 
 #import "STMConstants.h"
@@ -19,6 +21,7 @@
 
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
+@property (nonatomic, weak) NSManagedObjectModel *managedObjectModel;
 
 @end
 
@@ -42,6 +45,7 @@
                                            dataModelName:dataModelName];
 
     persister.document = document;
+    persister.managedObjectModel = document.myManagedObjectModel;
     
     [persister initModelling];
     
@@ -306,7 +310,7 @@
 }
 
 - (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName {
-    return self.document.myManagedObjectModel.entitiesByName;
+    return self.managedObjectModel.entitiesByName;
 }
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName {
