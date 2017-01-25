@@ -8,7 +8,9 @@
 
 typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeFMDB,
-    STMStorageTypeCoreData
+    STMStorageTypeCoreData,
+    STMStorageTypeAbstract,
+    STMStorageTypeNone
 };
 
 #import <Foundation/Foundation.h>
