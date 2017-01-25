@@ -1876,7 +1876,18 @@
     
 }
 
+
+//- (void)bunchOfObjectsSended {
 //    
+//    [self saveSendDate];
+//    [self postObjectsSendedNotification];
+//    
+//}
+
+//- (void)postObjectsSendedNotification {
+//    
+//    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+//                                                        object:self];
 //
 //}
 
