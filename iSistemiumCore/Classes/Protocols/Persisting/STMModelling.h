@@ -24,4 +24,12 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 
 - (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName;
 
+- (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
+
+- (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName;
+
+- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade;
+
+- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
+
 @end

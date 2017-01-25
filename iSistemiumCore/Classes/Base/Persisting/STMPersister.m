@@ -18,6 +18,7 @@
 @interface STMPersister()
 
 @property (nonatomic, weak) id <STMSession> session;
+@property (nonatomic, strong) NSMutableDictionary *allEntityKeys;
 
 @end
 
@@ -41,6 +42,8 @@
                                            dataModelName:dataModelName];
 
     persister.document = document;
+    
+    [persister initModelling];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
     
@@ -275,6 +278,19 @@
 
 #pragma mark - STMModelling
 
+- (void)initModelling {
+    
+    NSMutableDictionary *entityKeys = @{}.mutableCopy;
+    
+    for (NSString *entityKey in self.entitiesByName) {
+        NSEntityDescription *entity = self.entitiesByName[entityKey];
+        entityKeys[entityKey] = @{@"fields": entity.attributesByName,
+                                  @"relationships": entity.relationshipsByName};
+    }
+    
+    self.allEntityKeys = entityKeys.copy;
+}
+
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
 #warning need to check if entity is stored in CoreData and use document's context
     return [[NSManagedObject alloc] initWithEntity:self.document.managedObjectModel.entitiesByName[entityName] insertIntoManagedObjectContext:nil];
@@ -291,6 +307,53 @@
 
 - (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName {
     return self.document.myManagedObjectModel.entitiesByName;
+}
+
+- (NSDictionary *)fieldsForEntityName:(NSString *)entityName {
+    return self.allEntityKeys[entityName][@"fields"];
+}
+
+- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
+    
+    if (!entityName) {
+        return nil;
+    }
+    
+    NSDictionary *allRelationships = self.allEntityKeys[entityName][@"relationships"];
+    
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    
+    for (NSString *relationshipName in allRelationships) {
+        
+        NSRelationshipDescription *relationship = allRelationships[relationshipName];
+        
+        if (!isToMany || relationship.isToMany == isToMany.boolValue) {
+            
+            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
+                result[relationshipName] = relationship;
+            }
+            
+        }
+        
+    }
+    
+    return result;
+    
+}
+
+- (NSDictionary *)toOneRelationshipsForEntityName:(NSString *)entityName{
+    
+    return [self objectRelationshipsForEntityName:entityName isToMany:@NO];
+}
+
+- (NSDictionary *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany{
+    
+    NSDictionary <NSString*,NSRelationshipDescription*> * relationships = [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:nil];
+    
+    return [STMFunctions mapDisctionary:relationships withBlock:^id _Nonnull(NSRelationshipDescription *value, NSString *key) {
+        return value.destinationEntity.name;
+    }];
+    
 }
 
 
