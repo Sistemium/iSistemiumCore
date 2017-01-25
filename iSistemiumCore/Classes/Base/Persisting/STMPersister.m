@@ -12,13 +12,13 @@
 #import "STMConstants.h"
 #import "STMCoreAuthController.h"
 
-#import "STMFmdb.h"
 #import "STMCoreObjectsController.h"
 #import "STMRecordStatusController.h"
 
 @interface STMPersister()
 
 @property (nonatomic, weak) id <STMSession> session;
+
 @end
 
 
@@ -41,6 +41,8 @@
                                            dataModelName:dataModelName];
 
     persister.document = document;
+    
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
     
     return persister;
     
@@ -175,7 +177,7 @@
             
             NSString *objectXid = attributes[@"objectXid"];
             
-            if ([[STMFmdb sharedInstance] hasTable:attributes[@"name"]]) {
+            if ([self.fmdb hasTable:attributes[@"name"]]) {
                 
                 predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
                 
@@ -193,13 +195,13 @@
         if (![attributes[@"isTemporary"] isEqual:[NSNull null]] && [attributes[@"isTemporary"] boolValue]) return nil;
     }
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         
         return [self mergeWithoutSave:entityName
                            attributes:attributes
                               options:options
                                 error:error
-                            inSTMFmdb:STMFmdb.sharedInstance];
+                            inSTMFmdb:self.fmdb];
         
     } else {
         
@@ -234,11 +236,11 @@
     
     NSUInteger result = 0;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         
         idKey = @"id";
         
-        result = [[STMFmdb sharedInstance] destroy:entityName predicate:predicate error:error];
+        result = [self.fmdb destroy:entityName predicate:predicate error:error];
         
     }else{
         
@@ -262,8 +264,8 @@
 
 - (BOOL)saveWithEntityName:(NSString *)entityName{
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
-        return [[STMFmdb sharedInstance] commit];
+    if ([self.fmdb hasTable:entityName]){
+        return [self.fmdb commit];
     } else {
         [[self document] saveDocument:^(BOOL success){}];
         return YES;
@@ -279,16 +281,29 @@
 }
 
 
+- (STMStorageType)storageForEntityName:(NSString *)entityName {
+    if ([self.fmdb hasTable:entityName]) {
+        return STMStorageTypeFMDB;
+    } else {
+        return STMStorageTypeCoreData;
+    }
+}
+
+- (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName {
+    return self.document.myManagedObjectModel.entitiesByName;
+}
+
+
 #pragma mark - STMPersistingSync
 
 - (NSUInteger)countSync:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options
                   error:(NSError **)error {
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
 #warning predicates not supported yet
         // TODO: make generic predicate to SQL method with predicate filtering
-        return [[STMFmdb sharedInstance] count:entityName withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
+        return [self.fmdb count:entityName withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
     } else {
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
         return [[self document].managedObjectContext countForFetchRequest:request error:error];
@@ -300,7 +315,7 @@
     
     NSPredicate* predicate;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+    if ([self.fmdb hasTable:entityName]) {
         
         predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@", identifier];
         
@@ -347,9 +362,9 @@
     
     if (!orderBy) orderBy = @"id";
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
 
-        return [[STMFmdb sharedInstance] getDataWithEntityName:entityName
+        return [self.fmdb getDataWithEntityName:entityName
                                                  withPredicate:predicateWithFantoms
                                                        orderBy:orderBy
                                                     ascending:asc
@@ -407,7 +422,7 @@
         
         if (*error){
             #warning possible danger, will rollback changes from other threads
-            [[STMFmdb sharedInstance] rollback];
+            [self.fmdb rollback];
             return nil;
         }
     }
@@ -423,7 +438,7 @@
     
     NSPredicate* predicate;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+    if ([self.fmdb hasTable:entityName]) {
         
         predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
         
@@ -452,7 +467,7 @@
     
     if (*error){
         #warning possible danger, will rollback changes from other threads
-        [[STMFmdb sharedInstance] rollback];
+        [self.fmdb rollback];
         return 0;
     }
     

@@ -12,8 +12,11 @@
 #import "STMDocument.h"
 
 #import "STMModelling.h"
+#import "STMFmdb.h"
 
 @interface STMPersister : NSObject <STMPersistingSync, STMModelling>
+
+@property (nonatomic, strong) STMFmdb *fmdb;
 
 @property (nonatomic, strong) STMDocument *document; // have to hide it from public (now it needs for session)
 

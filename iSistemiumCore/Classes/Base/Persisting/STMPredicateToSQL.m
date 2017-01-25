@@ -15,15 +15,6 @@
 
 static NSString *SQLNullValueString = @"NULL";
 
-static STMPredicateToSQL *sharedInstance;
-
-+ (STMPredicateToSQL *) sharedInstance{
-    return sharedInstance;
-}
-
-+ (void) initialize{
-    sharedInstance = [STMPredicateToSQL new];
-}
 
 - (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath{
     NSString     *retStr = nil;
@@ -92,27 +83,40 @@ static STMPredicateToSQL *sharedInstance;
 
 
 - (NSString *)DatabaseKeyfor:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:obj]];
+    
+    NSString *table = [STMFunctions uppercaseFirst:obj];
+    BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
+    
     if (isTable) {
         return [STMFunctions uppercaseFirst:obj];
     }
-    return obj ;
+    
+    return obj;
 }
 
 - (NSString *)ToManyKeyToTablename:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]]];
+    
+    NSString *table = [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
+    BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
+    
     if (isTable) {
-        return [STMFunctions uppercaseFirst:[obj substringToIndex:[obj length] - 1]];
+        return [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
     }
-    return obj ;
+    
+    return obj;
 }
 
 - (NSString *)FKToTablename:(NSString *)obj{
-    bool isTable = [[STMFmdb sharedInstance] hasTable:[STMFunctions uppercaseFirst:obj]];
+    
+    NSString *table = [STMFunctions uppercaseFirst:obj];
+    BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
+    
     if (isTable) {
         return [obj stringByAppendingString:RELATIONSHIP_SUFFIX];
     }
+    
     obj = [self replaceKeyWords:obj];
+    
     return obj;
 }
 

@@ -6,10 +6,11 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
+#import "STMModelling.h"
+
 @interface STMFmdb : NSObject
 
-
-+ (STMFmdb * _Nonnull) sharedInstance;
+- (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling;
 
 - (NSUInteger)count:(NSString * _Nonnull)name
        withPredicate:(NSPredicate * _Nonnull)predicate;

@@ -15,20 +15,27 @@
 #import "STMCoreObjectsController.h"
 #import "STMPredicateToSQL.h"
 
+@interface STMFmdb()
+
+@property (nonatomic, strong) FMDatabaseQueue *queue;
+@property (nonatomic, strong) FMDatabasePool *pool;
+@property (nonatomic, strong) NSDictionary *columnsByTable;
+@property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
+
+@end
+
 @implementation STMFmdb
 
-NSDictionary* columnsByTable;
-FMDatabaseQueue *queue;
-FMDatabasePool *pool;
 
-
-- (instancetype)init {
+- (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling {
     
     self = [super init];
+    self.predicateToSQL = [[STMPredicateToSQL alloc] init];
+    self.predicateToSQL.modellingDelegate = modelling;
     
     if (self) {
         
-        NSDictionary <NSString *, NSEntityDescription *> *entities = STMCoreObjectsController.document.myManagedObjectModel.entitiesByName;
+        NSDictionary <NSString *, NSEntityDescription *> *entities = modelling.entitiesByName;
         NSArray *entityNames = entities.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         
@@ -36,12 +43,12 @@ FMDatabasePool *pool;
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         
-        queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-        pool = [FMDatabasePool databasePoolWithPath:dbPath];
+        self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+        self.pool = [FMDatabasePool databasePoolWithPath:dbPath];
         
         NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
         
-        [queue inDatabase:^(FMDatabase *database){
+        [self.queue inDatabase:^(FMDatabase *database){
             
             NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
             NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
@@ -207,7 +214,7 @@ FMDatabasePool *pool;
                 
             }
             
-            columnsByTable = columnsDictionary.copy;
+            self.columnsByTable = columnsDictionary.copy;
             
         }];
     }
@@ -221,24 +228,12 @@ FMDatabasePool *pool;
     return entity ;
 }
 
-+ (STMFmdb *)sharedInstance {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedInstance = nil;
-    
-    dispatch_once(&pred, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    
-    return _sharedInstance;
-    
-}
 
 - (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
     
     __block NSDictionary *response;
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         
         NSString *pk = [self mergeInto:tablename dictionary:dictionary error:error db:db];
         
@@ -264,7 +259,7 @@ FMDatabasePool *pool;
     
     __block BOOL result;
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         result = !![self mergeInto:tablename
                         dictionary:dictionary
                              error:error
@@ -278,7 +273,7 @@ FMDatabasePool *pool;
     
     tablename = [self entityToTableName:tablename];
     
-    NSArray *columns = columnsByTable[tablename];
+    NSArray *columns = self.columnsByTable[tablename];
     NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
     
     NSMutableArray* keys = @[].mutableCopy;
@@ -329,7 +324,7 @@ FMDatabasePool *pool;
     
     __block NSUInteger rez;
     
-    [pool inDatabase:^(FMDatabase *db) {
+    [self.pool inDatabase:^(FMDatabase *db) {
         
         NSString* query = [NSString stringWithFormat:@"SELECT count(*) FROM %@", [self entityToTableName:name]];
         
@@ -348,7 +343,7 @@ FMDatabasePool *pool;
     
     __block NSArray* results;
     
-    [pool inDatabase:^(FMDatabase *db) {
+    [self.pool inDatabase:^(FMDatabase *db) {
         
         results = [self getDataWithEntityName:name
                                 withPredicate:predicate
@@ -365,7 +360,7 @@ FMDatabasePool *pool;
 
 - (NSUInteger)destroy:(NSString * _Nonnull)tablename predicate:(NSPredicate* _Nonnull)predicate error:(NSError *_Nonnull * _Nonnull)error{
     
-    NSString *where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
+    NSString *where = [self.predicateToSQL SQLFilterForPredicate:predicate];
     
     if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
         where = @"";
@@ -377,7 +372,7 @@ FMDatabasePool *pool;
     
     NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [self entityToTableName:tablename],where];
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         if([db executeUpdate:destroySQL values:nil error:error]){
             result = [db changes];
         }
@@ -410,7 +405,7 @@ FMDatabasePool *pool;
     NSString* where = @"";
     
     if (predicate){
-        where = [[STMPredicateToSQL sharedInstance] SQLFilterForPredicate:predicate];
+        where = [self.predicateToSQL SQLFilterForPredicate:predicate];
         if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
             where = @"";
         }else{
@@ -440,7 +435,7 @@ FMDatabasePool *pool;
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
     name = [self entityToTableName:name];
-    if ([columnsByTable.allKeys containsObject:name]){
+    if ([self.columnsByTable.allKeys containsObject:name]){
         return true;
     }
     return false;
@@ -448,12 +443,12 @@ FMDatabasePool *pool;
 
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj {
     obj = [self entityToTableName:obj];
-    return columnsByTable[obj];
+    return self.columnsByTable[obj];
 }
 
 - (BOOL) commit {
     __block BOOL result = YES;
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         if ([db inTransaction]){
             result = [db commit];
         }
@@ -463,7 +458,7 @@ FMDatabasePool *pool;
 
 - (BOOL) startTransaction {
     __block BOOL result = YES;
-    [queue inDatabase:^(FMDatabase *db){
+    [self.queue inDatabase:^(FMDatabase *db){
         if (![db inTransaction]){
             result = [db beginTransaction];
         }
@@ -473,7 +468,7 @@ FMDatabasePool *pool;
 
 - (BOOL) rollback {
     __block BOOL result = YES;
-    [queue inDatabase:^(FMDatabase *db){
+    [self.queue inDatabase:^(FMDatabase *db){
         [db rollback];
     }];
     return result;

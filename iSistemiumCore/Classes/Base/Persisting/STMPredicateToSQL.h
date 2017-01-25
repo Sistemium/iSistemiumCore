@@ -6,10 +6,12 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
+#import "STMModelling.h"
 
 @interface STMPredicateToSQL : NSObject
 
-+ (STMPredicateToSQL *) sharedInstance;
+@property (nonatomic, weak) id <STMModelling> modellingDelegate;
+
 - (NSString *) SQLFilterForPredicate:(NSPredicate *)predicate;
 
 @end
