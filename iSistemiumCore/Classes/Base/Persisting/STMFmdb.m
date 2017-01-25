@@ -65,9 +65,7 @@
             
             for (NSString* entityName in entityNames){
                 
-                NSString *storeOption = [entities[entityName] userInfo][@"STORE"];
-                
-                if ((storeOption && ![storeOption isEqualToString:@"FMDB"]) || entities[entityName].abstract){
+                if ([modelling storageForEntityName:entityName] != STMStorageTypeFMDB){
                     NSLog(@"STMFmdb ignore entity: %@", entityName);
                     continue;
                 }
