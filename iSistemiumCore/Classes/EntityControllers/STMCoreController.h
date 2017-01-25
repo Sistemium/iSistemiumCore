@@ -22,6 +22,7 @@
 #import "STMPersistingPromised.h"
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
+#import "STMModelling.h"
 
 
 @interface STMCoreController : NSObject
@@ -31,7 +32,7 @@
 #warning have to remove document property after full implementation of persister
 + (STMDocument *)document;
 
-+ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *) persistenceDelegate;
++ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync,STMModelling> *) persistenceDelegate;
 + (STMSyncer *)syncer;
 
 @end

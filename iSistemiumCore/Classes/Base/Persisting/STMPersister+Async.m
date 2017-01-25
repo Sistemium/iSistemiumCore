@@ -19,7 +19,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self findSync:entityName identifier:identifier options:options error:&error];
             if(error){
@@ -42,7 +42,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self findAllSync:entityName predicate:predicate options:options error:&error];
             if(error){
@@ -65,7 +65,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeSync:entityName attributes:attributes options:options error:&error];
             if(error){
@@ -88,7 +88,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
             if(error){
@@ -108,7 +108,7 @@
 - (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
     __block BOOL success = YES;
     __block NSError* error = nil;
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             success = [self destroySync:entityName identifier:identifier options:options error:&error];
             if(error){
@@ -131,7 +131,7 @@
     __block BOOL success = YES;
     __block NSError* error = nil;
     
-    if ([[STMFmdb sharedInstance] hasTable:entityName]){
+    if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [self destroyAllSync:entityName predicate:predicate options:options error:&error];
             if(error){

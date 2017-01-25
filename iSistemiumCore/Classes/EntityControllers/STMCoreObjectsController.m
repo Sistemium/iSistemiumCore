@@ -26,7 +26,6 @@
 
 //#import "iSistemiumCore-Swift.h"
 #import "STMPredicateToSQL.h"
-#import "STMFmdb.h"
 
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
@@ -1457,7 +1456,7 @@
     
     for (NSString *entityName in entityNames) {
 
-        if ([[STMFmdb sharedInstance] hasTable:entityName]) {
+        if ([self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB) {
             
             NSError *error = nil;
             NSArray *result = [[self persistenceDelegate] findAllSync:entityName
