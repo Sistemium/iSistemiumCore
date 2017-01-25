@@ -18,7 +18,7 @@
 @interface STMPersister()
 
 @property (nonatomic, weak) id <STMSession> session;
-@property (nonatomic, strong) NSMutableDictionary *allEntityKeys;
+@property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
 
 @end
 
@@ -280,15 +280,15 @@
 
 - (void)initModelling {
     
-    NSMutableDictionary *entityKeys = @{}.mutableCopy;
+    NSMutableDictionary *cache = @{}.mutableCopy;
     
     for (NSString *entityKey in self.entitiesByName) {
         NSEntityDescription *entity = self.entitiesByName[entityKey];
-        entityKeys[entityKey] = @{@"fields": entity.attributesByName,
+        cache[entityKey] = @{@"fields": entity.attributesByName,
                                   @"relationships": entity.relationshipsByName};
     }
     
-    self.allEntityKeys = entityKeys.copy;
+    self.allEntitiesCache = cache.copy;
 }
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
@@ -310,7 +310,7 @@
 }
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName {
-    return self.allEntityKeys[entityName][@"fields"];
+    return self.allEntitiesCache[entityName][@"fields"];
 }
 
 - (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
@@ -319,7 +319,7 @@
         return nil;
     }
     
-    NSDictionary *allRelationships = self.allEntityKeys[entityName][@"relationships"];
+    NSDictionary *allRelationships = self.allEntitiesCache[entityName][@"relationships"];
     
     NSMutableDictionary *result = [NSMutableDictionary dictionary];
     
