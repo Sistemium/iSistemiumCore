@@ -6,10 +6,22 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+typedef NS_ENUM(NSInteger, STMStorageType) {
+    STMStorageTypeFMDB,
+    STMStorageTypeCoreData
+};
+
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
+
 @protocol STMModelling
 
 @required
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName;
+
+- (STMStorageType)storageForEntityName:(NSString *)entityName;
+
+- (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName;
 
 @end
