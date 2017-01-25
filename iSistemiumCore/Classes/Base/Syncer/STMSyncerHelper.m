@@ -288,11 +288,13 @@
     if (objectToSend) {
         
         [self.unsyncedObjects removeObject:objectToSend];
+        NSString *entityName = objectToSend[@"entityName"];
         
-        NSLog(@"object to send: %@ %@", objectToSend[@"entityName"], objectToSend[@"id"]);
+        NSLog(@"object to send: %@ %@", entityName, objectToSend[@"id"]);
         
         if (self.unsyncedSubscriptionBlock) {
-            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, objectToSend[@"deviceTs"]);
+            NSString *objectVersion = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
+            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, objectVersion);
         }
         
     } else {
