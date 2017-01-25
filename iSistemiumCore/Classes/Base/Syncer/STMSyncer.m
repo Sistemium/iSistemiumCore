@@ -1285,9 +1285,9 @@
                                    errorString:errorMessage
                                           context:context];
         
-        [self socketReceiveJSDataUpdateAckErrorCode:nil
-                                     andErrorString:errorMessage
-                                       withResponse:nil];
+//        [self socketReceiveJSDataUpdateAckErrorCode:nil
+//                                     andErrorString:errorMessage
+//                                       withResponse:nil];
         return;
         
     }
@@ -1316,11 +1316,11 @@
         
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
         
-        [self receiveUpdateAck:data
-                  withResponse:response
-                      resource:resource
-                    entityName:entityName
-                     errorCode:errorCode];
+//        [self receiveUpdateAck:data
+//                  withResponse:response
+//                      resource:resource
+//                    entityName:entityName
+//                     errorCode:errorCode];
         
     }
     
@@ -1731,56 +1731,56 @@
 
 #pragma mark - socket receive ack handler
 
-- (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
-    
-    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-    
-    if (errorCode) {
-        
-        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorCode];
-        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponse:response]; return;
-        
-    }
+//- (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
+//    
+//    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+//    
+//    if (errorCode) {
+//        
+//        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorCode];
+//        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponse:response]; return;
+//        
+//    }
+//
+//    if (!responseData) {
+//        
+//        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
+//        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponse:response]; return;
+//        
+//    }
+//    
+//    [self parseUpdateAckResponseData:responseData];
+//
+//}
+//
+//- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
+//    
+//    NSLog(@"%@", errorString);
+//    [self.socketTransport socketSendEvent:STMSocketEventInfo
+//                                withValue:errorString];
+//
+//    NSString *xid = [response valueForKey:@"id"];
+//    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
+//
+//    BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
+//    
+////    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
+////                                             errorString:errorString
+////                                               abortSync:abortSync];
+//    
+//}
 
-    if (!responseData) {
-        
-        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
-        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponse:response]; return;
-        
-    }
-    
-    [self parseUpdateAckResponseData:responseData];
-
-}
-
-- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
-    
-    NSLog(@"%@", errorString);
-    [self.socketTransport socketSendEvent:STMSocketEventInfo
-                                withValue:errorString];
-
-    NSString *xid = [response valueForKey:@"id"];
-    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-
-    BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
-    
-//    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-//                                             errorString:errorString
-//                                               abortSync:abortSync];
-    
-}
-
-- (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
-
-//    NSLog(@"update responseData %@", responseData);
-    [self syncObject:responseData];
-    
-}
+//- (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
+//
+////    NSLog(@"update responseData %@", responseData);
+//    [self syncObject:responseData];
+//    
+//}
 
 
 #pragma mark - sync object
 
-- (void)syncObject:(NSDictionary *)objectDictionary {
+//- (void)syncObject:(NSDictionary *)objectDictionary {
 /*
     STMLogger *logger = [STMLogger sharedLogger];
     
@@ -1837,7 +1837,7 @@
         
     }];
 */
-}
+//}
 
 
 #pragma mark - some sync methods
