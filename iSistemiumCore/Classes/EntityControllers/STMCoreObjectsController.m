@@ -1459,13 +1459,12 @@
         if ([self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB) {
             
             NSError *error = nil;
-            NSArray *result = [[self persistenceDelegate] findAllSync:entityName
+            NSUInteger count = [[self persistenceDelegate] countSync:entityName
                                                             predicate:nil
-                                                              options:@{@"fantoms": @NO}
+                                                              options:nil
                                                                 error:&error];
             
-            NSUInteger count = result.count;
-            result = [[self persistenceDelegate] findAllSync:entityName
+            NSArray *result = [[self persistenceDelegate] findAllSync:entityName
                                                    predicate:nil
                                                      options:@{@"fantoms": @YES}
                                                        error:&error];
