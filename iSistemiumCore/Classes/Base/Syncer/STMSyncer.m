@@ -55,9 +55,6 @@
 @property (nonatomic, strong) NSString *subscriptionId;
 @property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
 
-
-
-// old
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
@@ -1883,19 +1880,7 @@
 
 }
 
-//- (void)bunchOfObjectsSended {
-//    
-//    [self saveSendDate];
-//    [self postObjectsSendedNotification];
-//    
-//}
 
-//- (void)postObjectsSendedNotification {
-//    
-//    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-//                                                        object:self];
-//
-//}
 
 - (void)saveSendDate {
     
@@ -1909,10 +1894,7 @@
     
 }
 
-//- (void)socketLostConnection {
 //    
-//    self.syncing = NO;
-//    self.syncerState = STMSyncerIdle;
 //
 //}
 
