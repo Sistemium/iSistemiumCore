@@ -11,10 +11,10 @@
 #import "STMPersistingSync.h"
 #import "STMDocument.h"
 
-#import "STMModelling.h"
+#import "STMModeller.h"
 #import "STMFmdb.h"
 
-@interface STMPersister : NSObject <STMPersistingSync, STMModelling>
+@interface STMPersister : STMModeller <STMPersistingSync>
 
 @property (nonatomic, strong) STMFmdb *fmdb;
 
