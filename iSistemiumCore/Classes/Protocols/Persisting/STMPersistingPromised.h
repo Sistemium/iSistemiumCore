@@ -10,7 +10,7 @@
 
 @import PromiseKit;
 
-@protocol STMPersistingPromised <NSObject>
+@protocol STMPersistingPromised
 
 @required
 

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol STMPersistingAsync <NSObject>
+@protocol STMPersistingAsync
 
 @required
 

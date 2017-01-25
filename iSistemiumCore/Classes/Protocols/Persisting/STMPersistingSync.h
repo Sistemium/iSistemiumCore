@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol STMPersistingSync <NSObject>
+@protocol STMPersistingSync
 
 @required
 
