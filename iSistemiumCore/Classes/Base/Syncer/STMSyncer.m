@@ -616,9 +616,7 @@
         
         STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
         
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
+        stcEntityName = [STMFunctions removePrefixFromEntityName:stcEntityName];
         
         entity.name = stcEntityName;
         entity.url = self.entityResource;
@@ -655,9 +653,7 @@
         
         NSString *stcEntityName = NSStringFromClass([STMEntity class]);
         
-        if ([stcEntityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            stcEntityName = [stcEntityName substringFromIndex:[ISISTEMIUM_PREFIX length]];
-        }
+        stcEntityName = [STMFunctions removePrefixFromEntityName:stcEntityName];
         
         STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:stcEntityName];
         clientEntity.eTag = nil;
@@ -764,7 +760,7 @@
         
         for (NSString *entityName in entitiesNames) {
             
-            NSString *name = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+            NSString *name = [STMFunctions addPrefixToEntityName:entityName];
             
             if ([localDataModelEntityNames containsObject:name]) {
                 [existingNames addObject:name];
@@ -1157,9 +1153,7 @@
     NSString *entityName = fantomDic[@"entityName"];
     NSString *fantomId = fantomDic[@"id"];
     
-    if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
-        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-    }
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
     
     STMEntity *entity = [STMEntityController stcEntities][entityName];
     

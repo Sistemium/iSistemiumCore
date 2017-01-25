@@ -1558,7 +1558,7 @@
 
     if (vcArray.count > 0) {
         
-        entityName = ([entityName hasPrefix:ISISTEMIUM_PREFIX]) ? [entityName substringFromIndex:ISISTEMIUM_PREFIX.length] : entityName;
+        entityName = [STMFunctions removePrefixFromEntityName:entityName];
 
         NSMutableArray *resultArray = @[].mutableCopy;
 

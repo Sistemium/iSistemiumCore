@@ -264,7 +264,7 @@
     
     for (NSDictionary* object in objects){
         
-        NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions entityToTableName:entityName], @"isRemoved": @YES};
+        NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions removePrefixFromEntityName:entityName], @"isRemoved": @YES};
         
         [self mergeWithoutSave:@"STMRecordStatus"
                     attributes:recordStatus
@@ -298,10 +298,13 @@
 }
 
 - (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
+    name = [STMFunctions addPrefixToEntityName:name];
     [self removeObjects:[self objectsForPredicate:predicate entityName:name]];
 }
 
 - (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
+    
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
 

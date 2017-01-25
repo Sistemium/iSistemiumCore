@@ -43,9 +43,7 @@
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName {
     
-    if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
-        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-    }
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
     
     NSEntityDescription *entity = self.entitiesByName[entityName];
     

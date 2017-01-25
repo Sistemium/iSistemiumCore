@@ -69,7 +69,7 @@
                     continue;
                 }
                 
-                NSString *tableName = [self entityToTableName:entityName];
+                NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
                 NSMutableArray *columns = @[].mutableCopy;
                 NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
                 
@@ -133,7 +133,8 @@
                     sql_stmt = [sql_stmt stringByAppendingString:@", "];
                     
                     NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
-                    NSString *fkTable = [self entityToTableName:relationships[entityKey]];
+                
+                    NSString *fkTable = [STMFunctions removePrefixFromEntityName:relationships[entityKey]];
                     
                     NSString *cascadeAction = @"SET NULL";
                     NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable, cascadeAction];
@@ -143,7 +144,7 @@
                 }
                 
                 sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
-                columnsDictionary[[self entityToTableName:entityName]] = columns.copy;
+                columnsDictionary[[STMFunctions removePrefixFromEntityName:entityName]] = columns.copy;
                 
                 BOOL res = [database executeStatements:sql_stmt];
                 NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
@@ -170,7 +171,7 @@
                     res = [database executeStatements:createIndexSQL];
                     NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
                     
-                    NSString *fkTable = [self entityToTableName:[modelling toOneRelationshipsForEntityName:entityName][entityKey]];
+                    NSString *fkTable = [STMFunctions removePrefixFromEntityName:[modelling toOneRelationshipsForEntityName:entityName][entityKey]];
                     
                     sql_stmt = [NSString stringWithFormat:createFantomTriggerFormat, tableName, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
                     res = [database executeStatements:sql_stmt];
@@ -187,7 +188,7 @@
                 for (NSString* relationKey in cascadeRelations.allKeys){
                     
                     NSRelationshipDescription *relation = cascadeRelations[relationKey];
-                    NSString *childTableName = [self entityToTableName:relation.destinationEntity.name];
+                    NSString *childTableName = [STMFunctions removePrefixFromEntityName:relation.destinationEntity.name];
                     NSString *fkColumn = [relation.inverseRelationship.name stringByAppendingString:@"Id"];
                     
                     sql_stmt = [NSString stringWithFormat:createCascadeTriggerFormat, tableName, relationKey,tableName, relationKey,tableName, childTableName, fkColumn];
@@ -216,14 +217,6 @@
     }
     return self;
 }
-
-- (NSString *)entityToTableName:(NSString *)entity{
-    if ([entity hasPrefix:@"STM"]){
-        return [entity substringFromIndex:3];
-    }
-    return entity ;
-}
-
 
 - (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
     
@@ -267,7 +260,7 @@
 
 - (NSString *) mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error db:(FMDatabase *)db{
     
-    tablename = [self entityToTableName:tablename];
+    tablename = [STMFunctions removePrefixFromEntityName:tablename];
     
     NSArray *columns = self.columnsByTable[tablename];
     NSString *pk = dictionary [@"id"] ? dictionary [@"id"] : [[[NSUUID alloc] init].UUIDString lowercaseString];
@@ -322,7 +315,7 @@
     
     [self.pool inDatabase:^(FMDatabase *db) {
         
-        NSString* query = [NSString stringWithFormat:@"SELECT count(*) FROM %@", [self entityToTableName:name]];
+        NSString* query = [NSString stringWithFormat:@"SELECT count(*) FROM %@", [STMFunctions removePrefixFromEntityName:name]];
         
         FMResultSet *s = [db executeQuery:query];
         
@@ -366,7 +359,7 @@
     
     __block NSUInteger result = 0;
     
-    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [self entityToTableName:tablename],where];
+    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [STMFunctions removePrefixFromEntityName:tablename],where];
     
     [self.queue inDatabase:^(FMDatabase *db) {
         if([db executeUpdate:destroySQL values:nil error:error]){
@@ -396,7 +389,7 @@
         options = [options stringByAppendingString:offset];
     }
     
-    name = [self entityToTableName:name];
+    name = [STMFunctions removePrefixFromEntityName:name];
     
     NSString* where = @"";
     
@@ -430,7 +423,7 @@
 }
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
-    name = [self entityToTableName:name];
+    name = [STMFunctions removePrefixFromEntityName:name];
     if ([self.columnsByTable.allKeys containsObject:name]){
         return true;
     }
@@ -438,7 +431,7 @@
 }
 
 - (NSArray * _Nonnull) allKeysForObject:(NSString * _Nonnull)obj {
-    obj = [self entityToTableName:obj];
+    obj = [STMFunctions removePrefixFromEntityName:obj];
     return self.columnsByTable[obj];
 }
 

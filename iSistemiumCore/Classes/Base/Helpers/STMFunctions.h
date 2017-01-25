@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)hexStringFromData:(NSData *)data;
 + (NSString *)base64HexStringFromData:(NSData *)data;
 
-+ (NSString *)entityToTableName:(NSString *)entity;
 + (NSString *)pluralTypeForCount:(NSUInteger)count;
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size;
@@ -47,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDate *)dateFromString:(NSString *)string;
 + (NSString *)stringFromDate:(NSDate *)date;
 + (NSString *)stringFromNow;
+
++ (NSString *)addPrefixToEntityName:(NSString*)entityName;
++ (NSString *)removePrefixFromEntityName:(NSString*)entityName;
 
 + (NSDateFormatter *)dateNumbersFormatter;
 + (NSDateFormatter *)dateNumbersFormatterTwo;

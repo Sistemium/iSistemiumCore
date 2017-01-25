@@ -1028,7 +1028,7 @@
         NSDictionary *parameters = message.body;
         
         NSString *entityName = parameters[@"entityName"];
-        self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+        self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
         
         if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:self.photoEntityName]) {
         

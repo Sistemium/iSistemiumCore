@@ -97,6 +97,20 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
++(NSString *)addPrefixToEntityName:(NSString*)entityName{
+    if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
+        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+    }
+    return entityName;
+}
+
++ (NSString *)removePrefixFromEntityName:(NSString *)entity{
+    if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
+        return [entity substringFromIndex:ISISTEMIUM_PREFIX.length];
+    }
+    return entity ;
+}
+
 + (NSDateFormatter *)dateNumbersFormatter {
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -636,14 +650,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     }
     
     return result;
-}
-
-
-+ (NSString *)entityToTableName:(NSString *)entity{
-    if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
-        return [entity substringFromIndex:3];
-    }
-    return entity ;
 }
 
 + (id)popArray:(NSMutableArray *)array {
