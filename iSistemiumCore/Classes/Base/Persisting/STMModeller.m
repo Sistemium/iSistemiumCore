@@ -18,7 +18,7 @@
 
 @implementation STMModeller
 
-- (void)initWithModel:(NSManagedObjectModel *)model{
+- (instancetype)initWithModel:(NSManagedObjectModel *)model{
     
     self.managedObjectModel = model;
     NSMutableDictionary *cache = @{}.mutableCopy;
@@ -30,6 +30,7 @@
     }
     
     self.allEntitiesCache = cache.copy;
+    return self;
 }
 
 #pragma mark - STMModelling

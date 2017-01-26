@@ -7,12 +7,16 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <CoreData/CoreData.h>
 #import "STMPredicateToSQL.h"
+#import "STMModeller.h"
 
 #define STMAssertSQLFilter(predicate, expectation, ...) \
-XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:predicate], expectation, __VA_ARGS__)
+XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], expectation, __VA_ARGS__)
 
 @interface iSistemiumCoreTests : XCTestCase
+
+@property (nonatomic,strong) STMPredicateToSQL *predicateToSQL;
 
 @end
 
@@ -20,6 +24,11 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
 
 - (void)setUp {
     [super setUp];
+    if (!self.predicateToSQL) {
+        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
+        self.predicateToSQL = [[STMPredicateToSQL alloc] init];
+        self.predicateToSQL.modellingDelegate = [[STMModeller alloc] initWithModel:model];
+    }
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
