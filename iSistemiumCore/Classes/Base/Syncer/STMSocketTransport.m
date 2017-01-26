@@ -247,9 +247,9 @@
     STMSocketEvent eventNum = STMSocketEventAuthorization;
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
     
-    [self.socket emitWithAck:event with:@[dataDic]](0, ^(NSArray *data) {
+    [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:0 callback:^(NSArray *data) {
         [self receiveAckWithData:data forEventNum:eventNum];
-    });
+    }];
 
 }
 
@@ -400,7 +400,7 @@
                 
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
                 
-                [self.socket emitWithAck:eventStringValue with:@[value]](0, ^(NSArray *data) {
+                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:0 callback:^(NSArray *data) {
 
                     if (context) {
                         [self cancelCheckRequestTimeoutWithContext:context];
@@ -412,7 +412,7 @@
                         completionHandler(YES, data, nil);
                     }
 
-                });
+                }];
                 
             } else {
                 
