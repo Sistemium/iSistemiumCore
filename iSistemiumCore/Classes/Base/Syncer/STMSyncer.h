@@ -11,14 +11,22 @@
 #import "STMSessionManagement.h"
 #import "STMRequestAuthenticatable.h"
 #import "STMSocketTransportOwner.h"
+#import "STMDataSyncing.h"
+#import "STMSyncerHelper.h"
 
 
 @interface STMSyncer : NSObject <STMSyncer, STMSocketTransportOwner>
 
 @property (nonatomic, strong) id <STMSession> session;
+
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync> persistenceDelegate;
+@property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
+@property (nonatomic, strong) STMSyncerHelper *syncerHelper;
+
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic) BOOL transportIsReady;
+
 
 - (void)checkSocket;
 - (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;

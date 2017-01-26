@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMSocketTransportOwner.h"
+#import "STMPersistingAsync.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
@@ -36,18 +37,11 @@ static NSString *kSocketDestroyMethod = @"destroy";
 - (void)findAllFromResource:(NSString *)resourceString
                    withETag:(NSString *)eTag
                  fetchLimit:(NSInteger)fetchLimit
-                    timeout:(NSTimeInterval)timeout
                      params:(NSDictionary *)params
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
-- (void)findFromResource:(NSString *)resource
-              identifier:(NSString *)identifier
-                 timeout:(NSTimeInterval)timeout
-       completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
-
 - (void)updateResource:(NSString *)resource
                 object:(NSDictionary *)object
-               timeout:(NSTimeInterval)timeout
      completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 

@@ -1030,7 +1030,9 @@
         NSString *entityName = parameters[@"entityName"];
         self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
         
-        if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:self.photoEntityName]) {
+        BOOL hasTable = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate isConcreteEntityName:self.photoEntityName];
+        
+        if (hasTable) {
         
             self.waitingPhoto = YES;
 

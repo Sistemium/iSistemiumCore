@@ -7,15 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-
-#import "STMPersister.h"
 
 #import "STMConstants.h"
-#import "STMCoreAuthController.h"
 
+#import "STMPersister.h"
+#import "STMPersister+CoreData.h"
+
+#import "STMCoreAuthController.h"
 #import "STMCoreObjectsController.h"
-#import "STMRecordStatusController.h"
 
 @interface STMPersister()
 
@@ -28,26 +27,22 @@
 
 + (instancetype)initWithSession:(id <STMSession>)session {
     
-    STMPersister *persister = [[STMPersister alloc] init];
-    
-    persister.session = session;
-    
     NSString *dataModelName = session.startSettings[@"dataModelName"];
     
     if (!dataModelName) {
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
     
-    STMDocument *document = [STMDocument documentWithUID:session.uid
-                                                  iSisDB:session.iSisDB
-                                           dataModelName:dataModelName];
-
-    persister.document = document;
+    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:dataModelName];
     
-    [persister initWithModel:document.myManagedObjectModel];
+    persister.session = session;
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
-    
+
+    persister.document = [STMDocument documentWithUID:session.uid
+                                               iSisDB:session.iSisDB
+                                        dataModelName:dataModelName];
+
     return persister;
     
 }
@@ -180,19 +175,28 @@
             NSPredicate* predicate;
             
             NSString *objectXid = attributes[@"objectXid"];
+            NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
             
-            if ([self.fmdb hasTable:attributes[@"name"]]) {
-                
-                predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
-                
-            } else {
-                
-                NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
-                predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
-                
+            switch ([self storageForEntityName:entityNameToDestroy]) {
+                case STMStorageTypeFMDB:
+                    predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
+                    break;
+                    
+                case STMStorageTypeCoreData: {
+                    NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
+                    predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
+                    break;
+                }
+                default: {
+                    
+                }
             }
-            
-            [self destroyWithoutSave:attributes[@"name"] predicate:predicate options:@{@"createRecordStatuses":@NO} error:error];
+
+            if (predicate) {
+                [self destroyWithoutSave:attributes[@"name"]
+                               predicate:predicate options:@{@"createRecordStatuses":@NO}
+                                   error:error];
+            }
             
         }
         
@@ -212,14 +216,14 @@
         if (options[@"roleName"]){
             [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error
+                    [STMFunctions error:error
                                         withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
                 }
             }];
         } else {
             [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error
+                    [STMFunctions error:error
                                         withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
                 }
             }];
@@ -288,33 +292,6 @@
     
 }
 
-
-#pragma mark - Private CoreData helpers
-
-- (void)removeObjects:(NSArray*)objects {
-    for (id object in objects){
-        [self.document.managedObjectContext deleteObject:object];
-    }
-}
-
-- (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
-    name = [STMFunctions addPrefixToEntityName:name];
-    [self removeObjects:[self objectsForPredicate:predicate entityName:name]];
-}
-
-- (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
-    
-    entityName = [STMFunctions addPrefixToEntityName:entityName];
-    
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-
-//    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = predicate;
-    
-    return [self.document.managedObjectContext executeFetchRequest:request error:nil];
-
-}
-
 #pragma mark - STMPersistingSync
 
 - (NSUInteger)countSync:(NSString *)entityName
@@ -367,7 +344,7 @@
     }
     NSString *orderBy = options[@"sortBy"];
     
-    BOOL asc = options[@"ASC"] ? [options[@"ASC"] boolValue] : YES;
+    BOOL asc = options[@"order"] ? [[options[@"order"] lowercaseString] isEqualToString:@"asc"] : YES;
     
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
@@ -394,15 +371,15 @@
     } else {
         
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
-                                                                       orderBy:orderBy
-                                                                     ascending:asc
-                                                                    fetchLimit:pageSize
-                                                                   fetchOffset:offset
-                                                                   withFantoms:YES
-                                                                     predicate:predicateWithFantoms
-                                                                    resultType:NSDictionaryResultType
-                                                        inManagedObjectContext:[self document].managedObjectContext
-                                                                         error:error];
+                                                   orderBy:orderBy
+                                                 ascending:asc
+                                                fetchLimit:pageSize
+                                               fetchOffset:offset
+                                               withFantoms:YES
+                                                 predicate:predicateWithFantoms
+                                                resultType:NSDictionaryResultType
+                                    inManagedObjectContext:[self document].managedObjectContext
+                                                     error:error];
         
         return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
                                                         entityName:entityName];
@@ -416,12 +393,12 @@
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     
     if (*error){
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
         return nil;
     }
     
     if (![self saveWithEntityName:entityName]){
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
     }
     
@@ -450,7 +427,7 @@
     if ([self saveWithEntityName:entityName]){
         return result;
     } else {
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     return nil;
 }
@@ -495,7 +472,7 @@
     if ([self saveWithEntityName:entityName]){
         return count;
     } else {
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return count;
     }
     
