@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMSocketTransportOwner.h"
+#import "STMPersistingAsync.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;

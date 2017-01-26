@@ -713,6 +713,9 @@
 
 #pragma mark - sending data
 #pragma mark update
+#pragma mark - STMPersistingAsync
+
+- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
 
 - (void)updateResource:(NSString *)resource object:(NSDictionary *)object timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
@@ -736,6 +739,26 @@
                 withValue:value
                   timeout:timeout
         completionHandler:completionHandler];
+    
+}
+
+- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler {
+    
+}
+
+- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
+    
+}
+
+- (void)mergeManyAsync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler {
+    
+}
+
+- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler {
+    
+}
+
+- (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler {
     
 }
 
