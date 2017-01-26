@@ -180,19 +180,28 @@
             NSPredicate* predicate;
             
             NSString *objectXid = attributes[@"objectXid"];
+            NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
             
-            if ([self.fmdb hasTable:attributes[@"name"]]) {
-                
-                predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
-                
-            } else {
-                
-                NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
-                predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
-                
+            switch ([self storageForEntityName:entityNameToDestroy]) {
+                case STMStorageTypeFMDB:
+                    predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
+                    break;
+                    
+                case STMStorageTypeCoreData: {
+                    NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
+                    predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
+                    break;
+                }
+                default: {
+                    
+                }
             }
-            
-            [self destroyWithoutSave:attributes[@"name"] predicate:predicate options:@{@"createRecordStatuses":@NO} error:error];
+
+            if (predicate) {
+                [self destroyWithoutSave:attributes[@"name"]
+                               predicate:predicate options:@{@"createRecordStatuses":@NO}
+                                   error:error];
+            }
             
         }
         
