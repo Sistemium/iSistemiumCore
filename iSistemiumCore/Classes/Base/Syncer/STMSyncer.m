@@ -844,6 +844,8 @@
 
 - (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
     
+    NSLog(@"checkConditionForReceivingEntityWithName: %@", entityName);
+    
     if (!self.socketTransport.isReady) {
         
         [self receivingDidFinishWithError:@"socket transport is not ready"];
