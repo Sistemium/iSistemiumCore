@@ -11,6 +11,8 @@
 #import "STMCoreDataModel.h"
 #import "STMCoreAuthController.h"
 #import "STMPersister+Async.h"
+#import "STMSyncerHelper.h"
+
 
 @interface STMCoreSession()
 
@@ -206,6 +208,10 @@
         self.batteryTracker.session = self;
         self.status = STMSessionRunning;
 
+        self.syncer.syncerHelper = [[STMSyncerHelper alloc] init];
+        self.syncer.syncerHelper.persistenceDelegate = self.persistenceDelegate;
+        self.syncer.dataSyncingDelegate = self.syncer.syncerHelper;
+        self.syncer.persistenceDelegate = self.persistenceDelegate;
         self.syncer.session = self;
 
     }
