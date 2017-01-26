@@ -717,40 +717,21 @@
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
 
-    NSError *error = nil;
+    NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
+                                                       identifier:identifier];
 
-    if (!self.isReady) {
-        
-        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
+    if (errorMessage) {
+    
+        NSError *error = nil;
         [STMCoreObjectsController error:&error
                             withMessage:errorMessage];
+        completionHandler(NO, nil, error);
+
+        return;
         
     }
     
     STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    if (!error && !entity.url) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-        [STMCoreObjectsController error:&error
-                            withMessage:errorMessage];
-        
-    }
-    
-    if (!error && !identifier) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"no identifier for findAsync: %@", entityName];
-        [STMCoreObjectsController error:&error
-                            withMessage:errorMessage];
-        
-    }
-    
-    if (error) {
-        
-        completionHandler(NO, nil, error);
-        return;
-        
-    }
     
     NSString *resource = [entity resource];
 
@@ -783,6 +764,26 @@
         }
         
     }];
+    
+}
+
+- (NSString *)preFindAsyncCheckForEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+    
+    if (!self.isReady) {
+        return @"socket is not ready (not connected or not authorize)";
+    }
+    
+    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    
+    if (![entity resource]) {
+        return [NSString stringWithFormat:@"no resource for entity %@", entityName];
+    }
+    
+    if (!identifier) {
+        return [NSString stringWithFormat:@"no identifier for findAsync: %@", entityName];
+    }
+
+    return nil;
     
 }
 
