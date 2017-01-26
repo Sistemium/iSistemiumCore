@@ -7,15 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-
-#import "STMPersister.h"
 
 #import "STMConstants.h"
-#import "STMCoreAuthController.h"
 
+#import "STMPersister.h"
+#import "STMPersister+CoreData.h"
+
+#import "STMCoreAuthController.h"
 #import "STMCoreObjectsController.h"
-#import "STMRecordStatusController.h"
 
 @interface STMPersister()
 
@@ -293,33 +292,6 @@
     
 }
 
-
-#pragma mark - Private CoreData helpers
-
-- (void)removeObjects:(NSArray*)objects {
-    for (id object in objects){
-        [self.document.managedObjectContext deleteObject:object];
-    }
-}
-
-- (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
-    name = [STMFunctions addPrefixToEntityName:name];
-    [self removeObjects:[self objectsForPredicate:predicate entityName:name]];
-}
-
-- (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
-    
-    entityName = [STMFunctions addPrefixToEntityName:entityName];
-    
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-
-//    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = predicate;
-    
-    return [self.document.managedObjectContext executeFetchRequest:request error:nil];
-
-}
-
 #pragma mark - STMPersistingSync
 
 - (NSUInteger)countSync:(NSString *)entityName
@@ -372,7 +344,7 @@
     }
     NSString *orderBy = options[@"sortBy"];
     
-    BOOL asc = options[@"ASC"] ? [options[@"ASC"] boolValue] : YES;
+    BOOL asc = options[@"order"] ? [[options[@"order"] lowercaseString] isEqualToString:@"asc"] : YES;
     
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
@@ -399,15 +371,15 @@
     } else {
         
         NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
-                                                                       orderBy:orderBy
-                                                                     ascending:asc
-                                                                    fetchLimit:pageSize
-                                                                   fetchOffset:offset
-                                                                   withFantoms:YES
-                                                                     predicate:predicateWithFantoms
-                                                                    resultType:NSDictionaryResultType
-                                                        inManagedObjectContext:[self document].managedObjectContext
-                                                                         error:error];
+                                                   orderBy:orderBy
+                                                 ascending:asc
+                                                fetchLimit:pageSize
+                                               fetchOffset:offset
+                                               withFantoms:YES
+                                                 predicate:predicateWithFantoms
+                                                resultType:NSDictionaryResultType
+                                    inManagedObjectContext:[self document].managedObjectContext
+                                                     error:error];
         
         return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
                                                         entityName:entityName];
