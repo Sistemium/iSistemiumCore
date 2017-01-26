@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Crashlytics
 
 @objc class STMGarbageCollector:NSObject{
     

@@ -9,7 +9,6 @@
 #import "STMCoreController.h"
 
 #import <CoreData/CoreData.h>
-#import <Crashlytics/Crashlytics.h>
 #import <WebKit/WebKit.h>
 
 #import "STMEntitiesSubscribable.h"
