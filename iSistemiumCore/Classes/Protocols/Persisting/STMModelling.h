@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName;
 
+- (BOOL)isConcreteEntityName:(NSString *)entityName;
+
 - (NSDictionary <NSString *, NSEntityDescription *> *)entitiesByName;
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
