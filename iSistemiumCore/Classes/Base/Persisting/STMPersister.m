@@ -221,14 +221,14 @@
         if (options[@"roleName"]){
             [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error
+                    [STMFunctions error:error
                                         withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
                 }
             }];
         } else {
             [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
                 if (!sucess) {
-                    [STMCoreObjectsController error:error
+                    [STMFunctions error:error
                                         withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
                 }
             }];
@@ -425,12 +425,12 @@
     NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
     
     if (*error){
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
         return nil;
     }
     
     if (![self saveWithEntityName:entityName]){
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
     }
     
@@ -459,7 +459,7 @@
     if ([self saveWithEntityName:entityName]){
         return result;
     } else {
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     return nil;
 }
@@ -504,7 +504,7 @@
     if ([self saveWithEntityName:entityName]){
         return count;
     } else {
-        [STMCoreObjectsController error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return count;
     }
     
