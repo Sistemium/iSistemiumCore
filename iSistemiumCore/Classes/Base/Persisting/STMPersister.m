@@ -28,26 +28,22 @@
 
 + (instancetype)initWithSession:(id <STMSession>)session {
     
-    STMPersister *persister = [[STMPersister alloc] init];
-    
-    persister.session = session;
-    
     NSString *dataModelName = session.startSettings[@"dataModelName"];
     
     if (!dataModelName) {
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
     
-    STMDocument *document = [STMDocument documentWithUID:session.uid
-                                                  iSisDB:session.iSisDB
-                                           dataModelName:dataModelName];
-
-    persister.document = document;
+    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:dataModelName];
     
-    [persister initWithModel:document.myManagedObjectModel];
+    persister.session = session;
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
-    
+
+    persister.document = [STMDocument documentWithUID:session.uid
+                                               iSisDB:session.iSisDB
+                                        dataModelName:dataModelName];
+
     return persister;
     
 }

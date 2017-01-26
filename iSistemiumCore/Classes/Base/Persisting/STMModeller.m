@@ -18,7 +18,30 @@
 
 @implementation STMModeller
 
++ (NSManagedObjectModel *)modelWithName:(NSString *)modelName {
+    NSString *path = [[NSBundle mainBundle] pathForResource:modelName ofType:@"momd"];
+    
+    if (!path) path = [[NSBundle mainBundle] pathForResource:modelName ofType:@"mom"];
+    
+    if (path) {
+        
+        NSURL *url = [NSURL fileURLWithPath:path];
+        
+        return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        
+    }
+        
+    NSLog(@"there is no path for data model with name %@", modelName);
+    return nil;
+}
+
+- (instancetype)initWithModelName:(NSString *)modelName {
+    return [self initWithModel:[self.class modelWithName:modelName]];
+}
+
 - (instancetype)initWithModel:(NSManagedObjectModel *)model{
+    
+    self = [super init];
     
     self.managedObjectModel = model;
     NSMutableDictionary *cache = @{}.mutableCopy;
@@ -63,6 +86,14 @@
     }
     
     return STMStorageTypeNone;
+    
+}
+
+- (BOOL)isConcreteEntityName:(NSString *)entityName {
+    
+    STMStorageType type = [self storageForEntityName:entityName];
+    
+    return !(type == STMStorageTypeNone || type == STMStorageTypeAbstract);
     
 }
 
