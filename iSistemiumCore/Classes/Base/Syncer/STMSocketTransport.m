@@ -685,39 +685,10 @@
 }
 
 
-#pragma mark find
-
-- (void)findFromResource:(NSString *)resource identifier:(NSString *)identifier timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    if (!self.isReady) {
-        
-        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
-        
-        [self completeHandler:completionHandler
-             withErrorMessage:errorMessage];
-        
-        return;
-        
-    }
-
-    NSDictionary *value = @{@"method"   : kSocketFindMethod,
-                            @"resource" : resource,
-                            @"id"       : identifier};
-    
-    [self socketSendEvent:STMSocketEventJSData
-                withValue:value
-        completionHandler:completionHandler];
-    
-}
-
-
 #pragma mark - sending data
 #pragma mark update
-#pragma mark - STMPersistingAsync
 
-- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
-
-- (void)updateResource:(NSString *)resource object:(NSDictionary *)object timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)updateResource:(NSString *)resource object:(NSDictionary *)object completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     if (!self.isReady) {
         
@@ -737,8 +708,81 @@
     
     [self socketSendEvent:STMSocketEventJSData
                 withValue:value
-                  timeout:timeout
         completionHandler:completionHandler];
+    
+}
+
+
+#pragma mark - STMPersistingAsync
+
+- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
+
+    NSError *error = nil;
+
+    if (!self.isReady) {
+        
+        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
+        [STMCoreObjectsController error:&error
+                            withMessage:errorMessage];
+        
+    }
+    
+    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    
+    if (!error && !entity.url) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
+        [STMCoreObjectsController error:&error
+                            withMessage:errorMessage];
+        
+    }
+    
+    if (!error && !identifier) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"no identifier for findAsync: %@", entityName];
+        [STMCoreObjectsController error:&error
+                            withMessage:errorMessage];
+        
+    }
+    
+    if (error) {
+        
+        completionHandler(NO, nil, error);
+        return;
+        
+    }
+    
+    NSString *resource = [entity resource];
+
+    NSDictionary *value = @{@"method"   : kSocketFindMethod,
+                            @"resource" : resource,
+                            @"id"       : identifier};
+    
+    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+        
+        if (success) {
+        
+            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+            
+            if (response) {
+                
+                completionHandler(YES, response, nil);
+                return;
+                
+            }
+                
+            NSError *localError = nil;
+            NSString *errorMessage = @"ERROR: response contain no dictionary";
+            [STMCoreObjectsController error:&localError
+                                withMessage:errorMessage];
+            
+            completionHandler(NO, nil, localError);
+
+        } else {
+            completionHandler(NO, nil, error);
+        }
+        
+    }];
     
 }
 

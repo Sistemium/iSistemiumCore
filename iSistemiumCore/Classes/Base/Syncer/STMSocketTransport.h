@@ -40,11 +40,6 @@ static NSString *kSocketDestroyMethod = @"destroy";
                      params:(NSDictionary *)params
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
-- (void)findFromResource:(NSString *)resource
-              identifier:(NSString *)identifier
-                 timeout:(NSTimeInterval)timeout
-       completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
-
 - (void)updateResource:(NSString *)resource
                 object:(NSDictionary *)object
      completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
