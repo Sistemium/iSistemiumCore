@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 
 @protocol STMSocketTransportOwner <NSObject>
 
+- (NSTimeInterval)timeout;
 - (void)socketReceiveAuthorization;
 - (void)socketLostConnection;
 

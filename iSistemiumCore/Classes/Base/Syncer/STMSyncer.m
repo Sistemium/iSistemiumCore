@@ -914,7 +914,6 @@
     [self.socketTransport findAllFromResource:resource
                                      withETag:eTag
                                    fetchLimit:self.fetchLimit
-                                      timeout:[self timeout]
                                        params:nil
                             completionHandler:^(BOOL success, NSArray *data, NSError *error) {
                                 
@@ -1667,7 +1666,6 @@
 
             [weakSelf.socketTransport updateResource:resource
                                               object:itemData
-                                             timeout:[weakSelf timeout]
                                    completionHandler:^(BOOL success, NSArray *data, NSError *error) {
             
                 NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);

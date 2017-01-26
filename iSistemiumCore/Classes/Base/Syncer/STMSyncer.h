@@ -27,6 +27,7 @@
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic) BOOL transportIsReady;
 
+
 - (void)checkSocket;
 - (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 

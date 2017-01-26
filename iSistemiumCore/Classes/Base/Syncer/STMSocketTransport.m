@@ -23,6 +23,7 @@
 @property (nonatomic, strong) NSString *socketUrl;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic) BOOL isAuthorized;
+@property (nonatomic) NSTimeInterval timeout;
 
 
 @end
@@ -55,6 +56,10 @@
     
     return socketTransport;
     
+}
+
+- (NSTimeInterval)timeout {
+    return [self.owner timeout];
 }
 
 - (BOOL)isReady {
@@ -372,12 +377,11 @@
     
     [self socketSendEvent:event
                 withValue:value
-                  timeout:0
         completionHandler:nil];
     
 }
 
-- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value timeout:(NSTimeInterval)timeout completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     [self logSendEvent:event withValue:value];
     
@@ -391,9 +395,9 @@
 
                 NSDictionary *context = nil;
                 
-                if (timeout && completionHandler) {
+                if (self.timeout && completionHandler) {
 
-                    context = [self scheduleTimeoutCheck:timeout
+                    context = [self scheduleTimeoutCheck:self.timeout
                                    withCompletionHandler:completionHandler];
 
                 }
@@ -648,7 +652,7 @@
 #pragma mark - receiving data
 #pragma mark findAll
 
-- (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit timeout:(NSTimeInterval)timeout params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+- (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
     
     if (!self.isReady) {
         
@@ -676,7 +680,6 @@
     
     [self socketSendEvent:STMSocketEventJSData
                 withValue:value
-                  timeout:timeout
         completionHandler:completionHandler];
     
 }
@@ -703,7 +706,6 @@
     
     [self socketSendEvent:STMSocketEventJSData
                 withValue:value
-                  timeout:timeout
         completionHandler:completionHandler];
     
 }

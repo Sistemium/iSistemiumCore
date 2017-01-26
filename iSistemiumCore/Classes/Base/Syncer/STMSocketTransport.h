@@ -36,7 +36,6 @@ static NSString *kSocketDestroyMethod = @"destroy";
 - (void)findAllFromResource:(NSString *)resourceString
                    withETag:(NSString *)eTag
                  fetchLimit:(NSInteger)fetchLimit
-                    timeout:(NSTimeInterval)timeout
                      params:(NSDictionary *)params
           completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
@@ -47,7 +46,6 @@ static NSString *kSocketDestroyMethod = @"destroy";
 
 - (void)updateResource:(NSString *)resource
                 object:(NSDictionary *)object
-               timeout:(NSTimeInterval)timeout
      completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
 
 
