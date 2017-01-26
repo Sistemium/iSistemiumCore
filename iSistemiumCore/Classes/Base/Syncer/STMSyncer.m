@@ -1145,31 +1145,6 @@
     
     entityName = [STMFunctions addPrefixToEntityName:entityName];
     
-//    STMEntity *entity = [STMEntityController stcEntities][entityName];
-//    
-//    if (!entity.url) {
-//        
-//        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-//        [self defantomizingObject:fantomDic
-//                            error:errorMessage];
-//        
-//        return;
-//        
-//    }
-//    
-//    if (!fantomId) {
-//        
-//        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
-//        [self defantomizingObject:fantomDic
-//                            error:errorMessage];
-//        
-//        return;
-//        
-//    }
-//    
-////    NSString *resource = entity.url;
-//    NSString *resource = [entity resource];
-    
     __block BOOL blockIsComplete = NO;
     
     [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
@@ -1197,34 +1172,6 @@
         }
         
     }];
-//    
-//    [self.socketTransport findFromResource:resource
-//                                identifier:fantomId
-//                         completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-//                             
-//                             if (blockIsComplete) {
-//                                 NSLog(@"completionHandler for %@ already complete", entityName);
-//                                 return;
-//                             }
-//                             
-//                             blockIsComplete = YES;
-//                             
-//                             if (success) {
-//                                 
-//                                 NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
-//                                                           @"object": fantomDic};
-//                                 
-//                                 [self socketReceiveJSDataAck:data
-//                                                      context:context];
-//                                 
-//                             } else {
-//                                 
-//                                 [self defantomizingObject:fantomDic
-//                                                     error:error.localizedDescription];
-//                                 
-//                             }
-//                             
-//                         }];
 
 }
 
@@ -1304,13 +1251,6 @@
         NSString *errorMessage = @"ERROR: response contain no dictionary";
         [self socketReceiveJSDataFindAllAckError:errorMessage];
         
-        [self socketReceiveJSDataFindAckWithErrorCode:nil
-                                   errorString:errorMessage
-                                          context:context];
-        
-//        [self socketReceiveJSDataUpdateAckErrorCode:nil
-//                                     andErrorString:errorMessage
-//                                       withResponse:nil];
         return;
         
     }
@@ -1327,23 +1267,6 @@
                        resource:resource
                      entityName:entityName
                       errorCode:errorCode];
-        
-    } else if ([methodName isEqualToString:kSocketFindMethod]) {
-        
-//        [self receiveFindAck:data
-//                withResponse:response
-//                    resource:resource
-//                  entityName:entityName
-//                   errorCode:errorCode
-//                     context:context];
-        
-    } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
-        
-//        [self receiveUpdateAck:data
-//                  withResponse:response
-//                      resource:resource
-//                    entityName:entityName
-//                     errorCode:errorCode];
         
     }
     
