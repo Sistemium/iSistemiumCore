@@ -1177,8 +1177,8 @@
         
     }
     
-    NSString *resource = entity.url;
-//    NSString *resource = [entity resource]; ???
+//    NSString *resource = entity.url;
+    NSString *resource = [entity resource];
     
     __block BOOL blockIsComplete = NO;
     
