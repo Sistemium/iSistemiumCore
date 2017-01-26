@@ -23,7 +23,7 @@
 @interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) STMSocketTransport *socketTransport;
+@property (nonatomic, strong) STMSocketTransport <STMPersistingAsync> *socketTransport;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
@@ -1145,61 +1145,86 @@
     
     entityName = [STMFunctions addPrefixToEntityName:entityName];
     
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    if (!entity.url) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-        [self defantomizingObject:fantomDic
-                            error:errorMessage];
-        
-        return;
-        
-    }
-    
-    if (!fantomId) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
-        [self defantomizingObject:fantomDic
-                            error:errorMessage];
-        
-        return;
-        
-    }
-    
-//    NSString *resource = entity.url;
-    NSString *resource = [entity resource];
+//    STMEntity *entity = [STMEntityController stcEntities][entityName];
+//    
+//    if (!entity.url) {
+//        
+//        NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
+//        [self defantomizingObject:fantomDic
+//                            error:errorMessage];
+//        
+//        return;
+//        
+//    }
+//    
+//    if (!fantomId) {
+//        
+//        NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", fantomDic];
+//        [self defantomizingObject:fantomDic
+//                            error:errorMessage];
+//        
+//        return;
+//        
+//    }
+//    
+////    NSString *resource = entity.url;
+//    NSString *resource = [entity resource];
     
     __block BOOL blockIsComplete = NO;
     
-    [self.socketTransport findFromResource:resource
-                                identifier:fantomId
-                                   timeout:[self timeout]
-                         completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                             
-                             if (blockIsComplete) {
-                                 NSLog(@"completionHandler for %@ already complete", entityName);
-                                 return;
-                             }
-                             
-                             blockIsComplete = YES;
-                             
-                             if (success) {
-                                 
-                                 NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
-                                                           @"object": fantomDic};
-                                 
-                                 [self socketReceiveJSDataAck:data
-                                                      context:context];
-                                 
-                             } else {
-                                 
-                                 [self defantomizingObject:fantomDic
-                                                     error:error.localizedDescription];
-                                 
-                             }
-                             
-                         }];
+    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+
+        if (blockIsComplete) {
+            NSLog(@"completionHandler for %@ already complete", entityName);
+            return;
+        }
+        
+        blockIsComplete = YES;
+
+        if (success) {
+            
+            NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
+                                      @"object": fantomDic};
+            
+            [self socketReceiveFindResult:result
+                                  context:context];
+            
+        } else {
+            
+            [self defantomizingObject:fantomDic
+                                error:error.localizedDescription];
+
+        }
+        
+    }];
+//    
+//    [self.socketTransport findFromResource:resource
+//                                identifier:fantomId
+//                         completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+//                             
+//                             if (blockIsComplete) {
+//                                 NSLog(@"completionHandler for %@ already complete", entityName);
+//                                 return;
+//                             }
+//                             
+//                             blockIsComplete = YES;
+//                             
+//                             if (success) {
+//                                 
+//                                 NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
+//                                                           @"object": fantomDic};
+//                                 
+//                                 [self socketReceiveJSDataAck:data
+//                                                      context:context];
+//                                 
+//                             } else {
+//                                 
+//                                 [self defantomizingObject:fantomDic
+//                                                     error:error.localizedDescription];
+//                                 
+//                             }
+//                             
+//                         }];
 
 }
 
@@ -1251,6 +1276,20 @@
 
 #pragma mark - socket ack handlers
 
+- (void)socketReceiveFindResult:(NSDictionary *)result context:(NSDictionary *)context {
+    
+    NSString *resource = result[@"resource"];
+    NSString *entityName = [STMEntityController entityNameForURLString:resource];
+    NSNumber *errorCode = result[@"error"];
+    
+    [self receiveFindAckWithResponse:result
+                            resource:resource
+                          entityName:entityName
+                           errorCode:errorCode
+                             context:context];
+
+}
+
 - (void)socketReceiveJSDataAck:(NSArray *)data {
     [self socketReceiveJSDataAck:data context:nil];
 }
@@ -1291,12 +1330,12 @@
         
     } else if ([methodName isEqualToString:kSocketFindMethod]) {
         
-        [self receiveFindAck:data
-                withResponse:response
-                    resource:resource
-                  entityName:entityName
-                   errorCode:errorCode
-                     context:context];
+//        [self receiveFindAck:data
+//                withResponse:response
+//                    resource:resource
+//                  entityName:entityName
+//                   errorCode:errorCode
+//                     context:context];
         
     } else if ([methodName isEqualToString:kSocketUpdateMethod]) {
         
@@ -1505,7 +1544,7 @@
 
 #pragma mark find ack handler
 
-- (void)receiveFindAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode context:(NSDictionary *)context {
+- (void)receiveFindAckWithResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode context:(NSDictionary *)context {
     
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
