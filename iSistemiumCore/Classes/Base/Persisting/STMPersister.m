@@ -370,7 +370,7 @@
                                                    fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         
-        NSArray* objectsArray = [STMCoreObjectsController objectsForEntityName:entityName
+        NSArray* objectsArray = [self objectsForEntityName:entityName
                                                    orderBy:orderBy
                                                  ascending:asc
                                                 fetchLimit:pageSize

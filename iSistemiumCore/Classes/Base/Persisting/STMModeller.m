@@ -9,6 +9,8 @@
 #import "STMModeller.h"
 #import "STMFunctions.h"
 #import "STMConstants.h"
+#import "STMDatum.h"
+#import "STMCoreObjectsController.h"
 
 @interface STMModeller()
 
@@ -148,5 +150,53 @@
     
 }
 
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    
+    NSEntityDescription *entity = object.entity;
+    NSString *entityName = entity.name;
+    
+    NSArray *ownObjectKeys = [self fieldsForEntityName:entityName].allKeys;
+    NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
+    
+    for (NSString *key in objectData.allKeys) {
+        
+        id value = objectData[key];
+        
+        if ([key isEqualToString:@"id"] && value) {
+            if ([(NSString*)value length] == 36) {
+                [object setValue:[STMFunctions xidDataFromXidString:value] forKey:@"xid"];
+            }
+        } else if ([ownObjectKeys containsObject:key]) {
+            
+            NSDictionary *entityAttributes = entity.attributesByName;
+            
+            value = (![value isKindOfClass:[NSNull class]]) ? [STMFunctions typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+            
+            [object setValue:value forKey:key];
+            
+        } else {
+            
+            if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
+                
+                NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
+                NSString *localKey = [key substringToIndex:toIndex];
+                
+                if ([ownObjectRelationships objectForKey:localKey]) {
+                    
+                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                    
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    
+                    [object setValue:destinationObject forKey:localKey];
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
+    
+}
 
 @end

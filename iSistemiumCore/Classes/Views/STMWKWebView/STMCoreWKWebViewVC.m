@@ -1452,8 +1452,8 @@ int counter = 0;
                                                                             photoData:UIImageJPEGRepresentation(image, jpgQuality)];
     
     if (photoObject) {
-    
-        [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
+        
+        [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
         
         NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
                                                                                  withNulls:YES

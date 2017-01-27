@@ -62,27 +62,6 @@
 + (STMDatum *)objectForXid:(NSData *)xidData
                 entityName:(NSString *)entityName;
 
-+ (NSArray *)objectsForEntityName:(NSString *)entityName;
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName
-                          orderBy:(NSString *)orderBy
-                        ascending:(BOOL)ascending
-                       fetchLimit:(NSUInteger)fetchLimit
-                      withFantoms:(BOOL)withFantoms
-           inManagedObjectContext:(NSManagedObjectContext *)context
-                            error:(NSError **)error;
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName
-                          orderBy:(NSString *)orderBy
-                        ascending:(BOOL)ascending
-                       fetchLimit:(NSUInteger)fetchLimit
-                      fetchOffset:(NSUInteger)fetchOffset
-                      withFantoms:(BOOL)withFantoms
-                        predicate:(NSPredicate *)predicate
-                       resultType:(NSFetchRequestResultType)resultType
-           inManagedObjectContext:(NSManagedObjectContext *)context
-                            error:(NSError **)error;
-
 + (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
                      toEntities:(NSArray *)entities
                           error:(NSError **)error;
@@ -109,5 +88,7 @@
 //+ (BOOL)isDefantomizingProcessRunning;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
+
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid;
 
 @end
