@@ -11,5 +11,7 @@
 
 @interface STMFmdb (Private)
 
+- (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute;
+- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling inDatabase:(FMDatabase *)database;
 
 @end

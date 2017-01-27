@@ -24,7 +24,6 @@
 
 @implementation STMFmdb
 
-
 - (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling {
     
     self = [super init];
@@ -33,189 +32,21 @@
     
     if (self) {
         
-        NSDictionary <NSString *, NSEntityDescription *> *entities = modelling.entitiesByName;
-        NSArray *entityNames = entities.allKeys;
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         
-        NSArray *ignoredAttributes = @[@"xid", @"id"];
         NSString *documentDirectory = [paths objectAtIndex:0];
         NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
         
         self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
         self.pool = [FMDatabasePool databasePoolWithPath:dbPath];
-        
-        NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
-        
+
         [self.queue inDatabase:^(FMDatabase *database){
-            
-            NSString *createIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
-            NSString *fkColFormat = @"%@ TEXT REFERENCES %@(id) ON DELETE %@";
-            NSString *createTableFormat = @"CREATE TABLE IF NOT EXISTS %@ (id TEXT PRIMARY KEY";
-            NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
-            
-            NSString *createFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@ BEFORE INSERT ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
-            NSString *updateFantomTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_fantom_%@_update BEFORE UPDATE OF %@ ON %@ FOR EACH ROW WHEN NEW.%@ is not null BEGIN INSERT INTO %@ (id, isFantom, lts, deviceTs) SELECT NEW.%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %@ WHERE id = NEW.%@); END";
-            NSString *fantomIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_isFantom on %@ (isFantom);";
-            
-            NSString *createCascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
-            
-            NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
-            
-            
-            for (NSString* entityName in entityNames){
-                
-                if ([modelling storageForEntityName:entityName] != STMStorageTypeFMDB){
-                    NSLog(@"STMFmdb ignore entity: %@", entityName);
-                    continue;
-                }
-                
-                NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-                NSMutableArray *columns = @[].mutableCopy;
-                NSString *sql_stmt = [NSString stringWithFormat:createTableFormat, tableName];
-                
-                NSDictionary *tableColumns = [modelling fieldsForEntityName:entityName];
-                
-                for (NSString* columnName in tableColumns.allKeys){
-                    
-                    if ([ignoredAttributes containsObject:columnName]) continue;
-                    
-                    sql_stmt = [sql_stmt stringByAppendingString:@", "];
-                    
-                    [columns addObject:columnName];
-                    sql_stmt = [sql_stmt stringByAppendingString:columnName];
-                    
-                    NSAttributeDescription* atribute = tableColumns[columnName];
-                    
-                    switch (atribute.attributeType) {
-                        case NSStringAttributeType:
-                        case NSDateAttributeType:
-                        case NSUndefinedAttributeType:
-                        case NSBinaryDataAttributeType:
-                        case NSTransformableAttributeType:
-                            sql_stmt = [sql_stmt stringByAppendingString:@" TEXT"];
-                            break;
-                        case NSInteger64AttributeType:
-                        case NSBooleanAttributeType:
-                        case NSObjectIDAttributeType:
-                        case NSInteger16AttributeType:
-                        case NSInteger32AttributeType:
-                            sql_stmt = [sql_stmt stringByAppendingString:@" INTEGER"];
-                            break;
-                        case NSDecimalAttributeType:
-                        case NSFloatAttributeType:
-                        case NSDoubleAttributeType:
-                            sql_stmt = [sql_stmt stringByAppendingString:@" NUMERIC"];
-                            break;
-                        default:
-                            break;
-                    }
-                    
-                    if ([columnName isEqualToString:@"deviceCts"]) {
-                        sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
-                    }
-                    
-                    if ([columnName isEqualToString:@"lts"]) {
-                        sql_stmt = [sql_stmt stringByAppendingString:@" DEFAULT('')"];
-                    }
-                    
-                    NSString* unique = [atribute.userInfo valueForKey:@"UNIQUE"];
-                    
-                    if (unique) {
-                        sql_stmt = [sql_stmt stringByAppendingFormat:@" UNIQUE ON CONFLICT %@", unique];
-                    }
-                    
-                }
-                
-                NSDictionary *relationships = [modelling toOneRelationshipsForEntityName:entityName];
-                
-                for (NSString* entityKey in relationships.allKeys){
-                    
-                    sql_stmt = [sql_stmt stringByAppendingString:@", "];
-                    
-                    NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
-                
-                    NSString *fkTable = [STMFunctions removePrefixFromEntityName:relationships[entityKey]];
-                    
-                    NSString *cascadeAction = @"SET NULL";
-                    NSString *fkSQL = [NSString stringWithFormat:fkColFormat, fkColumn, fkTable, cascadeAction];
-                    
-                    [columns addObject:fkColumn];
-                    sql_stmt = [sql_stmt stringByAppendingString:fkSQL];
-                }
-                
-                sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
-                columnsDictionary[[STMFunctions removePrefixFromEntityName:entityName]] = columns.copy;
-                
-                BOOL res = [database executeStatements:sql_stmt];
-                NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
-                
-                sql_stmt = [NSString stringWithFormat:fantomIndexFormat, tableName, tableName];
-                res = [database executeStatements:sql_stmt];
-                NSLog(@"%@ (%@)",sql_stmt, res ? @"YES" : @"NO");
-                
-                sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName];
-                
-                res = [database executeStatements:sql_stmt];
-                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-                
-                sql_stmt = [NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName];
-                
-                res = [database executeStatements:sql_stmt];
-                NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-                
-                
-                for (NSString* entityKey in [modelling toOneRelationshipsForEntityName:entityName].allKeys){
-                    NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
-                    
-                    NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
-                    res = [database executeStatements:createIndexSQL];
-                    NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
-                    
-                    NSString *fkTable = [STMFunctions removePrefixFromEntityName:[modelling toOneRelationshipsForEntityName:entityName][entityKey]];
-                    
-                    sql_stmt = [NSString stringWithFormat:createFantomTriggerFormat, tableName, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
-                    res = [database executeStatements:sql_stmt];
-                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-                    
-                    sql_stmt = [NSString stringWithFormat:updateFantomTriggerFormat, tableName, fkColumn, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
-                    res = [database executeStatements:sql_stmt];
-                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-                    
-                }
-                
-                NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [modelling objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
-                
-                for (NSString* relationKey in cascadeRelations.allKeys){
-                    
-                    NSRelationshipDescription *relation = cascadeRelations[relationKey];
-                    NSString *childTableName = [STMFunctions removePrefixFromEntityName:relation.destinationEntity.name];
-                    NSString *fkColumn = [relation.inverseRelationship.name stringByAppendingString:@"Id"];
-                    
-                    sql_stmt = [NSString stringWithFormat:createCascadeTriggerFormat, tableName, relationKey,tableName, relationKey,tableName, childTableName, fkColumn];
-                    res = [database executeStatements:sql_stmt];
-                    NSLog(@"%@ (%@)", sql_stmt, res ? @"YES" : @"NO");
-                    
-                }
-                
-                for (NSString* columnName in tableColumns.allKeys){
-                    
-                    NSAttributeDescription* atribute = tableColumns[columnName];
-                    
-                    if (!atribute.indexed || [ignoredAttributes containsObject:columnName]) continue;
-                    
-                    NSString *createIndexSQL = [NSString stringWithFormat:createIndexFormat, tableName, atribute.name, tableName, atribute.name];
-                    res = [database executeStatements:createIndexSQL];
-                    NSLog(@"%@ (%@)", createIndexSQL, res ? @"YES" : @"NO");
-                    
-                }
-                
-            }
-            
-            self.columnsByTable = columnsDictionary.copy;
-            
+            self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
         }];
     }
+    
     return self;
+    
 }
 
 - (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
