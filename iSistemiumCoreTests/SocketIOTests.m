@@ -9,6 +9,8 @@
 #import <XCTest/XCTest.h>
 @import SocketIO;
 
+#import "STMFunctions.h"
+
 #define TEST_SOCKETIO_URL @"https://socket2.sistemium.com/socket.io-client"
 #define TEST_SOCKETIO_RESOURCE @"dr50/Setting"
 #define TEST_SOCKETIO_TIMEOUT 5
@@ -114,6 +116,45 @@
     }];
     
 }
+
+- (void)testEmitInfoDuringReconnect {
+    
+    [self keyValueObservingExpectationForObject:self keyPath:@"isConnected" expectedValue:@YES];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT handler:^(NSError * _Nullable error) {
+        
+        XCTAssertNil(error);
+        
+        XCTestExpectation *expectTimeout = [self expectationWithDescription:@"Emit 'info' to a disconnected socket that will be reconnected after"];
+        
+        NSDictionary *info = @{@"emittedAt": [STMFunctions stringFromNow]};
+        
+        [self.socket reconnect];
+        
+        XCTAssertEqual(self.socket.status, SocketIOClientStatusConnecting, @"Socket should be connecting");
+        
+        OnAckCallback *infoAck = [self.socket emitWithAck:@"info" with:@[info]];
+        
+        // Started writting this test i expected that socket engine keeps emits in a queue and emits them after reconnect, but it's not
+        
+        [infoAck timingOutAfter:TEST_SOCKETIO_TIMEOUT callback:^(NSArray * _Nonnull result) {
+            NSLog(@"SocketIOTests testEmitOnReconnectedSocket result: %@", result);
+            
+            XCTAssertEqualObjects(result.firstObject, @"NO ACK", "Timed out ack result should be 'NO ACK'");
+            
+            [expectTimeout fulfill];
+        }];
+        
+        [self.socket once:@"connect" callback:^(NSArray *data, SocketAckEmitter *ack) {
+            XCTAssertNotNil(data);
+        }];
+        
+        [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT*2 handler:nil];
+        
+    }];
+    
+}
+
 
 - (void)setupSocket {
     
