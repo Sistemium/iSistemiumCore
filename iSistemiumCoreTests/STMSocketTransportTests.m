@@ -20,7 +20,6 @@
 
 @property (nonatomic,strong) STMSocketTransport *transport;
 @property (nonatomic) BOOL isReady;
-@property (nonatomic, strong) NSArray *findAllResult;
 
 @end
 
