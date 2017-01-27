@@ -36,8 +36,6 @@
 
 - (BOOL)hasTable:(NSString * _Nonnull)name;
 
-- (NSArray * _Nonnull)allKeysForObject:(NSString * _Nonnull)obj;
-
 - (BOOL)commit;
 - (BOOL)startTransaction;
 - (BOOL)rollback;
