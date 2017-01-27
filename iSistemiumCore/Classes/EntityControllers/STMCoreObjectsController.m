@@ -411,7 +411,7 @@
         
         id value = properties[key];
         
-        value = (![value isKindOfClass:[NSNull class]]) ? [self typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+        value = (![value isKindOfClass:[NSNull class]]) ? [STMFunctions typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
 
         if (value) {
 
@@ -1382,7 +1382,7 @@
         
     } else {
         
-        [self error:error withMessage:errorMessage];
+        [STMFunctions error:error withMessage:errorMessage];
 
     }
     
@@ -1452,7 +1452,7 @@
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:&error withMessage:@"message.body is not a NSDictionary class"];
+        [STMFunctions error:&error withMessage:@"message.body is not a NSDictionary class"];
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
         }];
@@ -1465,7 +1465,7 @@
     
     if (![[self localDataModelEntityNames] containsObject:entityName]) {
         
-        [self error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        [STMFunctions error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
@@ -1477,7 +1477,7 @@
     
     if (!xidString) {
         
-        [self error:&error withMessage:@"empty xid"];
+        [STMFunctions error:&error withMessage:@"empty xid"];
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
@@ -1501,7 +1501,7 @@
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:&resultError withMessage:@"message.body is not a NSDictionary class"];
+        [STMFunctions error:&resultError withMessage:@"message.body is not a NSDictionary class"];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -1512,7 +1512,7 @@
     
     if (![[self localDataModelEntityNames] containsObject:entityName]) {
         
-        [self error:&resultError withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        [STMFunctions error:&resultError withMessage:[entityName stringByAppendingString:@": not found in data model"]];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -1524,7 +1524,7 @@
         
         if (![parametersData isKindOfClass:[NSDictionary class]]) {
             
-            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
+            [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -1538,7 +1538,7 @@
         
         if (![parametersData isKindOfClass:[NSArray <NSDictionary *> class]]) {
             
-            [self error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
+            [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -1546,7 +1546,7 @@
         
     } else {
 
-        [self error:&resultError withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
+        [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
         completionHandler(NO, nil, resultError);
         return;
 
@@ -1725,7 +1725,7 @@
     
     if (errorMessage) {
         
-        [self error:error withMessage:errorMessage];
+        [STMFunctions error:error withMessage:errorMessage];
         return nil;
         
     } else {
@@ -1826,7 +1826,7 @@
 
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [self error:&error withMessage:@"message.body is not a NSDictionary class"];
+        [STMFunctions error:&error withMessage:@"message.body is not a NSDictionary class"];
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
         }];
@@ -1870,7 +1870,7 @@
 
 }
 
-#warning needs to be replaced with STMFunction
+#warning needs to be removed
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     return [STMFunctions error:error withMessage:errorMessage];
@@ -1915,7 +1915,7 @@
         errorMessage = [entityName stringByAppendingString:@": not found in data model"];
     }
 
-    if (errorMessage) [self error:error withMessage:errorMessage];
+    if (errorMessage) [STMFunctions error:error withMessage:errorMessage];
 
     return nil;
 
