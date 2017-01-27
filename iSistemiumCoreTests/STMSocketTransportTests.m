@@ -44,7 +44,7 @@
     
     [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
     
-    [self waitForExpectationsWithTimeout:15 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError *error) {
         
         if (error) {
             return NSLog(@"testSocketConnection error: %@", error);
