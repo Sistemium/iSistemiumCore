@@ -31,7 +31,7 @@
     
     if (!self.transport) {
         self.transport = [STMSocketTransport initWithUrl:TEST_SOCKET_URL
-                                       andEntityResource:@"dr50/Entity"
+                                       andEntityResource:TEST_SOCKET_RESOURCE
                                                    owner:self];
     }
 }
@@ -47,7 +47,7 @@
     [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError *error) {
         
         if (error) {
-            return NSLog(@"testSocketConnection error: %@", error);
+            return NSLog(@"STMSocketTransportTests testSocketConnection error: %@", error);
         }
         
         [self findAllTest];
@@ -81,7 +81,7 @@
                           
                           XCTAssertTrue([[resultData class] isSubclassOfClass:NSArray.class], @"findAll result.data should be an array");
                           
-                          NSLog(@"findAll result: %@", result);
+                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
                           
                           [expectFindAll fulfill];
                           
@@ -101,7 +101,7 @@
                           
                           XCTAssertEqualObjects(result[@"error"], @404, @"findAllTest should be 404");
                           
-                          NSLog(@"findAll result: %@", result);
+                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
                           
                           [expectFindAllError fulfill];
                           
@@ -117,13 +117,13 @@
 
 - (void)socketReceiveAuthorization {
     
-    NSLog(@"SocketIOTests socketReceiveAuthorization");
+    NSLog(@"STMSocketTransportTests socketReceiveAuthorization");
     self.isReady = YES;
     
 }
 
 - (void)socketLostConnection {
-    NSLog(@"SocketIOTests socketLostConnection");
+    NSLog(@"STMSocketTransportTests socketLostConnection");
 }
 
 - (NSTimeInterval)timeout {
