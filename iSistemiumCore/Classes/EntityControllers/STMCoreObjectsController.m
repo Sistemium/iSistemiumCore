@@ -24,6 +24,8 @@
 
 #import "STMCoreNS.h"
 
+#import "STMModeller+Private.h"
+
 //#import "iSistemiumCore-Swift.h"
 #import "STMPredicateToSQL.h"
 
@@ -411,7 +413,7 @@
         
         id value = properties[key];
         
-        value = (![value isKindOfClass:[NSNull class]]) ? [STMFunctions typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+        value = (![value isKindOfClass:[NSNull class]]) ? [STMModeller typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
 
         if (value) {
 
@@ -874,6 +876,7 @@
 
 }
 
+#warning needs to be replaced with isConcrete from modeling
 + (NSArray <NSString *> *)localDataModelEntityNames {
     return [self sharedController].localDataModelEntityNames;
 }

@@ -12,6 +12,8 @@
 #import "STMDatum.h"
 #import "STMCoreObjectsController.h"
 
+#import "STMModeller+Private.h"
+
 @interface STMModeller()
 
 @property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
@@ -170,7 +172,7 @@
             
             NSDictionary *entityAttributes = entity.attributesByName;
             
-            value = (![value isKindOfClass:[NSNull class]]) ? [STMFunctions typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+            value = (![value isKindOfClass:[NSNull class]]) ? [STMModeller typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
             
             [object setValue:value forKey:key];
             
@@ -198,5 +200,6 @@
     }
     
 }
+
 
 @end
