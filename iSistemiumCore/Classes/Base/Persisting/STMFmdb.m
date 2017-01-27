@@ -27,23 +27,19 @@
 - (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling {
     
     self = [super init];
-    self.predicateToSQL = [[STMPredicateToSQL alloc] init];
-    self.predicateToSQL.modellingDelegate = modelling;
     
-    if (self) {
-        
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        
-        NSString *documentDirectory = [paths objectAtIndex:0];
-        NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
-        
-        self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-        self.pool = [FMDatabasePool databasePoolWithPath:dbPath];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentDirectory = [paths objectAtIndex:0];
+#warning database name should be with user id and iSisDB
+    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
+    
+    self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
+    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    self.pool = [FMDatabasePool databasePoolWithPath:dbPath];
 
-        [self.queue inDatabase:^(FMDatabase *database){
-            self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
-        }];
-    }
+    [self.queue inDatabase:^(FMDatabase *database){
+        self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
+    }];
     
     return self;
     
