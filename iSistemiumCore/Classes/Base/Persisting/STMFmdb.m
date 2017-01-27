@@ -8,7 +8,7 @@
 
 //Note: The calls to FMDatabaseQueue's methods are blocking. So even though you are passing along blocks, they will not be run on another thread.
 
-#import "STMFmdb.h"
+#import "STMFmdb+Private.h"
 #import "STMFunctions.h"
 #import "FMDB.h"
 #import "STMPredicateToSQL.h"
