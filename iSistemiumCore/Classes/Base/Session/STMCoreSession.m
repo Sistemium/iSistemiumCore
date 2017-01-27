@@ -147,7 +147,7 @@
         
         self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
         self.trackers = [NSMutableDictionary dictionary];
-        self.syncer = [[STMSyncer alloc] init];
+        if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
         
         [self checkTrackersToStart];
         
@@ -163,6 +163,9 @@
     
 }
 
+- (BOOL)isRunningTests {
+    return [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"] != nil;
+}
 
 #pragma mark - properties classes definition (may override in subclasses)
 
