@@ -2227,161 +2227,6 @@
 
 #pragma mark - fetching objects
 
-+ (NSArray *)objectsForEntityName:(NSString *)entityName {
-
-    return [self objectsForEntityName:entityName
-                              orderBy:@"id"
-                            ascending:YES
-                           fetchLimit:0
-                          withFantoms:NO
-               inManagedObjectContext:[self document].managedObjectContext
-                                error:nil];
-    
-}
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:0
-                          withFantoms:withFantoms
-               inManagedObjectContext:context
-                                error:error];
-
-}
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-               inManagedObjectContext:context
-                                error:error];
-
-}
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-                           resultType:NSManagedObjectResultType
-               inManagedObjectContext:context
-                                error:error];
-
-}
-
-+ (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-
-    NSString *errorMessage = nil;
-    
-    context = (context) ? context : [self document].managedObjectContext;
-    
-    if (context.hasChanges && fetchOffset > 0) {
-        
-        [[self document] saveDocument:^(BOOL success) {
-            
-        }];
-        
-    }
-    
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-        STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        
-        request.fetchLimit = fetchLimit;
-        request.fetchOffset = fetchOffset;
-        request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
-        request.resultType = resultType;
-        
-        if (resultType == NSDictionaryResultType) {
-
-            NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
-            ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[@"xid", @"deviceTs", @"deviceCts"]];
-
-            NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName].allKeys;
-
-            NSMutableArray *propertiesToFetch = ownKeys.mutableCopy;
-            
-            [ownRelationships enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                [propertiesToFetch addObject:[NSString stringWithFormat:@"%@.xid", obj]];
-            }];
-            
-            request.propertiesToFetch = propertiesToFetch;
-            
-        }
-        
-        NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
-        BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
-        
-        SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
-        
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
-                                                                         ascending:ascending
-                                                                          selector:sortSelector];
-        
-        BOOL afterRequestSort = NO;
-        
-        if ([entity.propertiesByName objectForKey:orderBy]) {
-            
-            request.sortDescriptors = @[sortDescriptor];
-            
-        } else if ([NSClassFromString(entity.managedObjectClassName) instancesRespondToSelector:NSSelectorFromString(orderBy)]) {
-            
-            afterRequestSort = YES;
-            
-        } else {
-            
-            errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
-            
-            sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
-                                                           ascending:ascending
-                                                            selector:@selector(compare:)];
-            request.sortDescriptors = @[sortDescriptor];
-            
-        }
-        
-        NSError *fetchError;
-        NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
-                                                                              error:&fetchError];
-        
-        if (result) {
-            
-            if (afterRequestSort) {
-                result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
-            }
-            
-            return result;
-            
-        } else {
-            errorMessage = fetchError.localizedDescription;
-        }
-        
-        
-    } else {
-        
-        errorMessage = [NSString stringWithFormat:@"%@: not found in data model", entityName];
-        
-    }
-    
-    if (errorMessage) [self error:error withMessage:errorMessage];
-    
-    return nil;
-
-}
-
 + (NSUInteger)numberOfObjectsForEntityNameInCoreData:(NSString *)entityName {
 
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
@@ -2444,36 +2289,13 @@
     if ([parameters isKindOfClass:[NSDictionary class]] && parameters[@"entityName"] && [parameters[@"entityName"] isKindOfClass:[NSString class]]) {
         
         NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:(NSString * _Nonnull)parameters[@"entityName"]];
-        NSUInteger size = [parameters[@"size"] integerValue];
-        NSString *orderBy = parameters[@"orderBy"];
-        BOOL ascending = [[parameters[@"order"] lowercaseString] isEqualToString:@"asc"];
         
         BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
         if (sessionIsRunning && self.document) {
             
-            NSError *fetchError;
-            NSArray *objects = [self objectsForEntityName:entityName
-                                                  orderBy:orderBy
-                                                ascending:ascending
-                                               fetchLimit:size
-                                              withFantoms:YES
-                                   inManagedObjectContext:[self document].managedObjectContext
-                                                    error:&fetchError];
+            return [self.persistenceDelegate findAllSync:entityName predicate:nil options:parameters error:error];
             
-            if (fetchError) {
-
-                errorMessage = fetchError.localizedDescription;
-                
-            } else {
-                
-                NSMutableArray *jsonObjectsArray = [NSMutableArray array];
-                
-                for (STMDatum *object in objects)
-                    [jsonObjectsArray addObject:[STMCoreObjectsController dictionaryForJSWithObject:object]];
-                
-                return jsonObjectsArray;
-
-            }
+            
             
         } else {
             
