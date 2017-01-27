@@ -461,55 +461,6 @@
     
 }
 
-+ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    
-    NSEntityDescription *entity = object.entity;
-    NSString *entityName = entity.name;
-	
-    NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
-    NSDictionary *ownObjectRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
-
-    for (NSString *key in objectData.allKeys) {
-        
-        id value = objectData[key];
-        
-        if ([key isEqualToString:@"id"] && value) {
-            if ([(NSString*)value length] == 36) {
-                [object setValue:[STMFunctions xidDataFromXidString:value] forKey:@"xid"];
-            }
-        } else if ([ownObjectKeys containsObject:key]) {
-            
-            NSDictionary *entityAttributes = entity.attributesByName;
-            
-            value = (![value isKindOfClass:[NSNull class]]) ? [STMCoreObjectsController typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
-            
-            [object setValue:value forKey:key];
-            
-        } else {
-        
-            if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
-                
-                NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
-                NSString *localKey = [key substringToIndex:toIndex];
-            
-                if ([ownObjectRelationships objectForKey:localKey]) {
-                    
-                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
-
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
-
-                    [object setValue:destinationObject forKey:localKey];
-                    
-                }
-
-            }
-            
-        }
-        
-    }
-
-}
-
 + (void)processingOfRelationshipsForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName andValues:(NSDictionary *)properties {
     
     NSDictionary *ownObjectRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
@@ -602,7 +553,10 @@
 
 }
 
-
+#warning needs to be removed
++ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    [self.persistenceDelegate setObjectData:objectData toObject:object];
+}
 
 #pragma mark - recieved relationships management
 

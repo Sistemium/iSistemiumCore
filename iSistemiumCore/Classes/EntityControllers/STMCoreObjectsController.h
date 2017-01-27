@@ -90,4 +90,6 @@
 
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid;
+
 @end

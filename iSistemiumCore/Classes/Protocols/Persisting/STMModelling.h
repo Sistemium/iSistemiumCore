@@ -14,7 +14,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 };
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "STMDatum.h"
 
 @protocol STMModelling
 
@@ -35,5 +35,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 - (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName;
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
+
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object;
 
 @end
