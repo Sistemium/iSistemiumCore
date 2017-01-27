@@ -145,8 +145,11 @@
             [expectTimeout fulfill];
         }];
         
+        XCTestExpectation *expectReconnect = [self expectationWithDescription:@"Wait for reconnecting is done"];
+        
         [self.socket once:@"connect" callback:^(NSArray *data, SocketAckEmitter *ack) {
             XCTAssertNotNil(data);
+            [expectReconnect fulfill];
         }];
         
         [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT*2 handler:nil];
