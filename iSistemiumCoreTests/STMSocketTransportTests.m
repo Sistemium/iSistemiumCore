@@ -81,7 +81,7 @@
                           
                           XCTAssertTrue([[resultData class] isSubclassOfClass:NSArray.class], @"findAll result.data should be an array");
                           
-                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
+//                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
                           
                           [expectFindAll fulfill];
                           
