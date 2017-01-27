@@ -33,7 +33,47 @@
 
 - (void)testConnection {
     [self keyValueObservingExpectationForObject:self keyPath:@"isConnected" expectedValue:@YES];
-    [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT handler:^(NSError *error) {}];
+    [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT handler:^(NSError *error) {
+    
+        XCTAssertNil(error);
+        if (error) return;
+        
+        [self disconnectTest];
+        [self timeOutTest];
+    
+    }];
+}
+
+- (void)disconnectTest {
+    [self.socket disconnect];
+    XCTAssertEqual(self.socket.status, SocketIOClientStatusDisconnected, @"Socket should be disconnected");
+}
+
+
+- (void)timeOutTest {
+    
+    OnAckCallback *infoAck = [self.socket emitWithAck:@"info" with:@[@{@"key": @"value"}]];
+    
+    XCTAssertEqual(self.socket.status, SocketIOClientStatusDisconnected, @"Socket should be disconnected");
+    
+    XCTestExpectation *expectTimeout = [self expectationWithDescription:@"Emit info to disconnected socket"];
+    
+    NSDate *startedAt = [NSDate date];
+    
+    [infoAck timingOutAfter:TEST_SOCKETIO_TIMEOUT callback:^(NSArray * _Nonnull result) {
+        NSLog(@"SocketIOTests infoAck result: %@", result);
+        
+        XCTAssertEqualObjects(result.firstObject, @"NO ACK", "Timed out ack result should be 'NO ACK'");
+        
+        XCTAssertEqualWithAccuracy([startedAt timeIntervalSinceNow], -TEST_SOCKETIO_TIMEOUT, 1);
+        
+        [expectTimeout fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKETIO_TIMEOUT*2 handler:^(NSError * _Nullable error) {
+        
+    }];
+    
 }
 
 - (void)setupSocket {
