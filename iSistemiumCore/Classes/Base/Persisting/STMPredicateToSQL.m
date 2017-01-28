@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "STMPredicateToSQL.h"
-#import "STMFmdb.h"
 #import "STMFunctions.h"
 
 @implementation STMPredicateToSQL
