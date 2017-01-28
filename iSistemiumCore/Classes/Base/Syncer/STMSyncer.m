@@ -877,7 +877,7 @@
         
         if (entity.roleName || [localDataModelEntityNames containsObject:entityName]) {
             
-            NSString *resource = entity.url;
+            NSString *resource = [entity resource];
             
             if (resource) {
                 
