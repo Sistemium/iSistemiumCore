@@ -600,7 +600,7 @@
 
 #pragma mark - STMPersistingWithHeadersAsync
 
-- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
+- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
 
     NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
                                                        identifier:identifier];
@@ -674,7 +674,7 @@
     
 }
 
-- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
+- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
     
     NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
     
@@ -777,7 +777,7 @@
     
 }
 
-- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
+- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
 
     if (!self.isReady) {
         

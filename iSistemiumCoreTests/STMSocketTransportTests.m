@@ -65,7 +65,7 @@
     NSDictionary *options = @{@"pageSize"   : @(1),
                               @"offset"     : @"*"};
 
-    [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+    [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
         
         XCTAssertNotNil(result);
         XCTAssertNotNil(headers);
@@ -102,7 +102,7 @@
 //                          
 //                      }];
     
-    [self.transport findAllAsync:[TEST_SOCKET_ENTITY_NAME stringByAppendingString:@"noSuchCollection"] predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+    [self.transport findAllAsync:[TEST_SOCKET_ENTITY_NAME stringByAppendingString:@"noSuchCollection"] predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
         
         XCTAssertNil(result);
         XCTAssertNil(headers);

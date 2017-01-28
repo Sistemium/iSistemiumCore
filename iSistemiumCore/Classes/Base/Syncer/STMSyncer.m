@@ -915,7 +915,7 @@
     NSDictionary *options = @{@"pageSize"   : @(self.fetchLimit),
                               @"offset"     : eTag};
 
-    [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+    [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
         
         if (blockIsComplete) {
             NSLog(@"completionHandler for %@ %@ already complete", entityName, eTag);
@@ -1150,7 +1150,7 @@
     
     __block BOOL blockIsComplete = NO;
     
-    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandler:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
 
         if (blockIsComplete) {
             NSLog(@"completionHandler for %@ already complete", entityName);
@@ -1582,7 +1582,7 @@
     
     self.isSendingData = YES;
     
-    [self.socketTransport mergeAsync:entityName attributes:itemData options:nil completionHandler:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+    [self.socketTransport mergeAsync:entityName attributes:itemData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
         NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
         
