@@ -23,7 +23,7 @@
 @interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) STMSocketTransport <STMPersistingAsync> *socketTransport;
+@property (nonatomic, strong) STMSocketTransport <STMPersistingWithHeadersAsync> *socketTransport;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
@@ -885,9 +885,9 @@
                 
                 NSString *eTag = clientEntity.eTag;
                 eTag = eTag ? eTag : @"*";
-                
-                [self receiveDataFromResource:resource
-                                         eTag:eTag];
+
+                [self receiveDataForEntityName:entityName
+                                          eTag:eTag];
                 
             } else {
                 
@@ -907,38 +907,40 @@
     
 }
 
-- (void)receiveDataFromResource:(NSString *)resource eTag:(NSString *)eTag {
+- (void)receiveDataForEntityName:(NSString *)entityName eTag:(NSString * _Nonnull)eTag {
     
     __block BOOL blockIsComplete = NO;
     
-    [self.socketTransport findAllFromResource:resource
-                                     withETag:eTag
-                                   fetchLimit:self.fetchLimit
-                                       params:nil
-                            completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                                
-                                if (blockIsComplete) {
-                                    NSLog(@"completionHandler for %@ %@ already complete", resource, eTag);
-                                    return;
-                                }
-                                
-                                blockIsComplete = YES;
-                                
-                                if (success) {
-                                    
-                                    [self socketReceiveJSDataAck:data];
-                                    
-                                } else {
-                                    
-                                    if (self.entityCount > 0) {
-                                        [self entityCountDecreaseWithError:error.localizedDescription];
-                                    } else {
-                                        [self receivingDidFinishWithError:error.localizedDescription];
-                                    }
-                                    
-                                }
-                                
-                            }];
+    NSDictionary *options = @{@"pageSize"   : @(self.fetchLimit),
+                              @"offset"     : eTag};
+
+    [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+        
+        if (blockIsComplete) {
+            NSLog(@"completionHandler for %@ %@ already complete", entityName, eTag);
+            return;
+        }
+        
+        blockIsComplete = YES;
+
+        if (success) {
+            
+            [self parseFindAllAckResponseData:result
+                                   entityName:entityName
+                                      headers:headers];
+            
+        } else {
+            
+            if (self.entityCount > 0) {
+                [self entityCountDecreaseWithError:error.localizedDescription];
+            } else {
+                [self receivingDidFinishWithError:error.localizedDescription];
+            }
+            
+        }
+
+        
+    }];
     
 }
 
@@ -1147,7 +1149,7 @@
     
     __block BOOL blockIsComplete = NO;
     
-    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandler:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
 
         if (blockIsComplete) {
             NSLog(@"completionHandler for %@ already complete", entityName);
@@ -1255,49 +1257,10 @@
         
     }
     
-    NSString *resource = response[@"resource"];
-    NSString *entityName = [STMEntityController entityNameForURLString:resource];
-    NSNumber *errorCode = response[@"error"];
-    NSString *methodName = response[@"method"];
-    
-    if ([methodName isEqualToString:kSocketFindAllMethod]) {
-        
-        [self receiveFindAllAck:data
-                   withResponse:response
-                       resource:resource
-                     entityName:entityName
-                      errorCode:errorCode];
-        
-    }
-    
 }
 
 
 #pragma mark findAll ack handler
-
-- (void)receiveFindAllAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
-    
-    if (errorCode) {
-        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]]; return;
-    }
-    
-    if (!resource) {
-        [self socketReceiveJSDataFindAllAckError:@"ERROR: have no resource string in response"]; return;
-    }
-    
-    NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-    
-    if (!responseData) {
-        [self socketReceiveJSDataFindAllAckError:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]]; return;
-    }
-    
-    [self parseFindAllAckData:data
-                 responseData:responseData
-                     resource:resource
-                   entityName:entityName
-                     response:response];
-    
-}
 
 - (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
     
@@ -1308,14 +1271,14 @@
     
 }
 
-- (void)parseFindAllAckData:(NSArray *)data responseData:(NSArray *)responseData resource:(NSString *)resource entityName:(NSString *)entityName response:(NSDictionary *)response {
+- (void)parseFindAllAckResponseData:(NSArray *)responseData entityName:(NSString *)entityName headers:(NSDictionary *)headers {
     
     if (entityName) {
         
         if (responseData.count > 0) {
             
-            NSString *offset = response[@"offset"];
-            NSUInteger pageSize = [response[@"pageSize"] integerValue];
+            NSString *offset = headers[@"offset"];
+            NSUInteger pageSize = [headers[@"pageSize"] integerValue];
             
             if (offset) {
                 
@@ -1343,7 +1306,7 @@
         
     } else {
         
-        NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", data];
+        NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", entityName];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
         
