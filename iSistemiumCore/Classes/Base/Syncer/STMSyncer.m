@@ -19,8 +19,10 @@
 #import "STMClientDataController.h"
 #import "STMCoreAuthController.h"
 
+#import "STMDataSyncingSubscriber.h"
 
-@interface STMSyncer()
+
+@interface STMSyncer() <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) STMSocketTransport <STMPersistingWithHeadersAsync> *socketTransport;
@@ -48,7 +50,6 @@
 @property (atomic) NSUInteger fantomsCount;
 
 @property (nonatomic, strong) NSString *subscriptionId;
-@property (nonatomic, strong) void (^unsyncedSubscriptionHandler)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
 
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
@@ -1555,68 +1556,9 @@
 
 - (void)subscribeToUnsyncedObjects {
     
-    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsyncedWithCompletionHandler:self.unsyncedSubscriptionHandler];
+    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsynced:self];
 
     NSLog(@"subscribeToUnsyncedObjects with subscriptionId: %@", self.subscriptionId);
-    
-}
-
-- (void (^)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion))unsyncedSubscriptionHandler {
-    
-    if (!_unsyncedSubscriptionHandler) {
-        
-        __weak STMSyncer *weakSelf = self;
-        
-        _unsyncedSubscriptionHandler = ^(NSString *entityName, NSDictionary *itemData, NSString *itemVersion) {
-            
-            STMEntity *entity = [STMEntityController stcEntities][entityName];
-//            NSString *resource = entity.url;
-            NSString *resource = [entity resource];
-
-            if (!resource) {
-                
-                NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-                NSLog(@"%@", errorMessage);
-
-                [weakSelf.dataSyncingDelegate setSynced:NO
-                                                 entity:entityName
-                                               itemData:itemData
-                                            itemVersion:itemVersion];
-
-                return;
-                
-            }
-            
-            weakSelf.isSendingData = YES;
-
-            [weakSelf.socketTransport updateResource:resource
-                                              object:itemData
-                                   completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-            
-                NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
-            
-                if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
-                    
-                    weakSelf.isSendingData = NO;
-                    [weakSelf sendFinishedWithError:nil];
-                    
-                }
-                                       
-                if (error) {
-                    NSLog(@"updateResource error: %@", error.localizedDescription);
-                }
-                                       
-                [weakSelf.dataSyncingDelegate setSynced:success
-                                                 entity:entityName
-                                               itemData:itemData
-                                            itemVersion:itemVersion];
-                
-            }];
-            
-        };
-        
-    }
-    return _unsyncedSubscriptionHandler;
     
 }
 
@@ -1630,6 +1572,37 @@
     } else {
         NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
     }
+
+}
+
+
+#pragma mark - STMDataSyncingSubscriber
+
+- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+    
+    self.isSendingData = YES;
+    
+    [self.socketTransport mergeAsync:entityName attributes:itemData options:nil completionHandler:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+        
+        NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
+        
+        if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+            
+            self.isSendingData = NO;
+            [self sendFinishedWithError:nil];
+            
+        }
+        
+        if (error) {
+            NSLog(@"updateResource error: %@", error.localizedDescription);
+        }
+        
+        [self.dataSyncingDelegate setSynced:success
+                                     entity:entityName
+                                   itemData:result
+                                itemVersion:itemVersion];
+        
+    }];
 
 }
 
