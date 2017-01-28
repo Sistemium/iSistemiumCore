@@ -72,6 +72,10 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     predicate = [NSCompoundPredicate notPredicateWithSubpredicate:predicate];
     
     STMAssertSQLFilter(predicate, @"NOT (deviceTs > lts)");
+    
+    predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
+    
+    STMAssertSQLFilter(predicate, @"(exists ( select * from outlet where partnerId = 'xid' and id = outletId ))");
 
     
 }
