@@ -19,7 +19,7 @@
 @property (nonatomic, strong) NSMutableArray *failToResolveFantomsArray;
 @property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
-@property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
+@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriber;
 @property (nonatomic) BOOL isHandlingUnsyncedObjects;
 
 
@@ -93,7 +93,7 @@
     
     NSLogMethodName;
     
-    if (self.unsyncedSubscriptionBlock) {
+    if (self.subscriber) {
         [self startHandleUnsyncedObjects];
     }
     
@@ -217,10 +217,9 @@
 
 #pragma mark - STMDataSyncing
 
-- (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))completionHandler {
+- (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber {
     
-    self.unsyncedSubscriptionBlock = completionHandler;
-    
+    self.subscriber = subscriber;
     NSString *subscriptionId = [NSUUID UUID].UUIDString;
     
     return subscriptionId;
@@ -229,7 +228,7 @@
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId {
     
-    self.unsyncedSubscriptionBlock = nil;
+    self.subscriber = nil;
     return YES;
     
 }
@@ -292,9 +291,15 @@
         
         NSLog(@"object to send: %@ %@", entityName, objectToSend[@"id"]);
         
-        if (self.unsyncedSubscriptionBlock) {
-            NSString *objectVersion = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
-            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, objectVersion);
+        if (self.subscriber) {
+            
+            BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
+            NSString *objectVersion = isFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
+            
+            [self.subscriber haveUnsyncedObjectWithEntityName:entityName
+                                                     itemData:objectToSend
+                                                  itemVersion:objectVersion];
+            
         }
         
     } else {
