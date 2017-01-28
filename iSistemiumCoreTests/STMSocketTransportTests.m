@@ -13,6 +13,7 @@
 #import "STMSocketTransportOwner.h"
 
 #define TEST_SOCKET_URL @"https://socket2.sistemium.com/socket.io-client"
+#define TEST_SOCKET_ENTITY_NAME @"STMSetting"
 #define TEST_SOCKET_RESOURCE @"dr50/Setting"
 #define TEST_SOCKET_TIMEOUT 5
 
@@ -61,51 +62,78 @@
     XCTestExpectation *expectFindAll = [self expectationWithDescription:@"Successful findAll"];
     XCTestExpectation *expectFindAllError = [self expectationWithDescription:@"Errored findAll"];
     
-    [self.transport findAllFromResource:TEST_SOCKET_RESOURCE
-                               withETag:@"*"
-                             fetchLimit:1
-                                 params:nil
-                      completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                          
-                          XCTAssertNotNil(data);
-                          XCTAssertNil(error);
-                          XCTAssertTrue(success);
-                          
-                          id result = [data firstObject];
-                          
-                          XCTAssertNotNil(result, @"findAllTest result is empty");
-                          
-                          XCTAssertTrue([[result class] isSubclassOfClass:NSDictionary.class], @"findAll result firstObject should be a dictionary");
-                          
-                          id resultData = result[@"data"];
-                          
-                          XCTAssertTrue([[resultData class] isSubclassOfClass:NSArray.class], @"findAll result.data should be an array");
-                          
-//                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
-                          
-                          [expectFindAll fulfill];
-                          
-                      }];
+    NSDictionary *options = @{@"pageSize"   : @(1),
+                              @"offset"     : @"*"};
+
+    [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+        
+        XCTAssertNotNil(result);
+        XCTAssertNotNil(headers);
+        XCTAssertNil(error);
+        XCTAssertTrue(success);
+                
+        [expectFindAll fulfill];
+
+    }];
     
-    [self.transport findAllFromResource:[TEST_SOCKET_RESOURCE stringByAppendingString:@"noSuchCollection"]
-                               withETag:@"*"
-                             fetchLimit:1
-                                 params:nil
-                      completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-                          
-                          XCTAssertNotNil(data);
-                          XCTAssertNil(error);
-                          XCTAssertTrue(success);
-                          
-                          id result = [data firstObject];
-                          
-                          XCTAssertEqualObjects(result[@"error"], @404, @"findAllTest should be 404");
-                          
-                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
-                          
-                          [expectFindAllError fulfill];
-                          
-                      }];
+//    [self.transport findAllFromResource:TEST_SOCKET_RESOURCE
+//                               withETag:@"*"
+//                             fetchLimit:1
+//                                 params:nil
+//                      completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+//                          
+//                          XCTAssertNotNil(data);
+//                          XCTAssertNil(error);
+//                          XCTAssertTrue(success);
+//                          
+//                          id result = [data firstObject];
+//                          
+//                          XCTAssertNotNil(result, @"findAllTest result is empty");
+//                          
+//                          XCTAssertTrue([[result class] isSubclassOfClass:NSDictionary.class], @"findAll result firstObject should be a dictionary");
+//                          
+//                          id resultData = result[@"data"];
+//                          
+//                          XCTAssertTrue([[resultData class] isSubclassOfClass:NSArray.class], @"findAll result.data should be an array");
+//                          
+////                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
+//                          
+//                          [expectFindAll fulfill];
+//                          
+//                      }];
+    
+    [self.transport findAllAsync:[TEST_SOCKET_ENTITY_NAME stringByAppendingString:@"noSuchCollection"] predicate:nil options:options completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+        
+        XCTAssertNil(result);
+        XCTAssertNil(headers);
+        XCTAssertNotNil(error);
+        XCTAssertFalse(success);
+
+        NSLog(@"error: %@", error.localizedDescription);
+        
+        [expectFindAllError fulfill];
+        
+    }];
+
+//    [self.transport findAllFromResource:[TEST_SOCKET_RESOURCE stringByAppendingString:@"noSuchCollection"]
+//                               withETag:@"*"
+//                             fetchLimit:1
+//                                 params:nil
+//                      completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+//                          
+//                          XCTAssertNotNil(data);
+//                          XCTAssertNil(error);
+//                          XCTAssertTrue(success);
+//                          
+//                          id result = [data firstObject];
+//                          
+//                          XCTAssertEqualObjects(result[@"error"], @404, @"findAllTest should be 404");
+//                          
+//                          NSLog(@"STMSocketTransportTests findAll result: %@", result);
+//                          
+//                          [expectFindAllError fulfill];
+//                          
+//                      }];
     
     [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError *error) {}];
     
