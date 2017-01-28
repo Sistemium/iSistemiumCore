@@ -127,8 +127,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 
-+ (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
-
 NS_ASSUME_NONNULL_END
 
 

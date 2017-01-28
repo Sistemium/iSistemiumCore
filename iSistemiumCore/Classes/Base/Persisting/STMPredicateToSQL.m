@@ -15,6 +15,14 @@
 
 static NSString *SQLNullValueString = @"NULL";
 
++ (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling {
+    
+    STMPredicateToSQL *instance = [[STMPredicateToSQL alloc] init];
+    
+    instance.modellingDelegate = modelling;
+    
+    return instance;
+}
 
 - (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath{
     NSString     *retStr = nil;

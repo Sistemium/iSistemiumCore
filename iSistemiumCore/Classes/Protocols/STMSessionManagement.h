@@ -92,6 +92,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 - (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
 
+- (BOOL)isRunningTests;
 
 @end
 

@@ -17,10 +17,8 @@
 @interface STMPersister : STMModeller <STMPersistingSync>
 
 @property (nonatomic, strong) STMFmdb *fmdb;
-
-@property (nonatomic, strong) STMDocument *document; // have to hide it from public (now it needs for session)
+@property (nonatomic, strong) STMDocument *document;
 
 + (instancetype)initWithSession:(id <STMSession>)session;
-
 
 @end

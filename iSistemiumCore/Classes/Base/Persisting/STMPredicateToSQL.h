@@ -14,4 +14,6 @@
 
 - (NSString *) SQLFilterForPredicate:(NSPredicate *)predicate;
 
++ (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling;
+
 @end
