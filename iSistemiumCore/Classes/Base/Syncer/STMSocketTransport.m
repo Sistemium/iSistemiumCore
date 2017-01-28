@@ -391,31 +391,23 @@
             
             if ([value isKindOfClass:[NSDictionary class]]) {
                 
-//                NSLog(@"STMSocketEventJSData value: %@", value);
-
-                NSDictionary *context = nil;
-                
-                if (self.timeout && completionHandler) {
-
-                    context = [self scheduleTimeoutCheck:self.timeout
-                                   withCompletionHandler:completionHandler];
-
-                }
-                
                 NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
                 
-                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:0 callback:^(NSArray *data) {
+                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
 
-                    if (context) {
-                        [self cancelCheckRequestTimeoutWithContext:context];
-                    }
-#warning need to check if response data is an error
-                    // here we always have a data and never have an error
-                    // checking for the data have an error inside it performs by corresponding completionHandler block
-                    if (completionHandler) {
+                    if ([data.firstObject isEqualToString:@"NO ACK"]) {
+
+                        NSError *error = nil;
+                        [STMCoreObjectsController error:&error withMessage:@"ack timeout"];
+                        
+                        completionHandler(NO, nil, error);
+                        
+                    } else {
+                    
                         completionHandler(YES, data, nil);
-                    }
 
+                    }
+                    
                 }];
                 
             } else {
@@ -864,60 +856,6 @@
     
     completionHandler(NO, nil, nil, localError);
 
-}
-
-
-#pragma mark - check timeouts
-
-- (NSDictionary *)scheduleTimeoutCheck:(NSTimeInterval)timeout withCompletionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    NSDictionary *context = @{@"startTime"           : [NSDate date],
-                              @"timeout"             : @(timeout),
-                              @"completionHandler"   : completionHandler};
-    
-//    NSLog(@"scheduleTimeoutCheck: %@", context);
-
-    [self performSelector:@selector(checkRequestTimeout:)
-               withObject:context
-               afterDelay:timeout];
-
-    return context;
-    
-}
-
-- (void)checkRequestTimeout:(NSDictionary *)context {
-    
-//    NSLog(@"checkRequestTimeout: %@", context);
-
-    NSTimeInterval timeout = [context[@"timeout"] doubleValue];
-    NSDate *startTime = context[@"startTime"];
-    NSTimeInterval elapsedTime = -startTime.timeIntervalSinceNow;
-    
-    if (elapsedTime >= timeout) {
-        
-        NSString *errorMessage = @"requestTimeout";
-        
-        void (^completionHandler)(BOOL success, NSArray *data, NSError *error) = context[@"completionHandler"];
-        
-        NSError *error = nil;
-        
-        [STMCoreObjectsController error:&error
-                            withMessage:errorMessage];
-        
-        completionHandler(NO, nil, error);
-        
-    }
-    
-}
-
-- (void)cancelCheckRequestTimeoutWithContext:(NSDictionary *)context {
-    
-//    NSLog(@"cancelCheckRequestTimeoutWithContext: %@", context);
-
-    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                       selector:@selector(checkRequestTimeout:)
-                                                         object:context];
-    
 }
 
 
