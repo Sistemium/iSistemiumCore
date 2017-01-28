@@ -80,41 +80,64 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
     
-    // create the entity
-    NSEntityDescription *entity = [[NSEntityDescription alloc] init];
-    [entity setName:@"Outlet"];
-//    [entity setManagedObjectClassName:@"STMOutlet"];
+    NSArray *partnerProperties = @[
+        [self attributeWithName:@"name"
+                           type:NSStringAttributeType],
+        [self attributeWithName:@"ts"
+                           type:NSDateAttributeType],
+        [self attributeWithName:@"size"
+                           type:NSInteger32AttributeType]
+    ];
     
-    // create the attributes
-    NSMutableArray *properties = [NSMutableArray array];
+    NSEntityDescription *partner = [self entityWithName:@"Partner"
+                                            properties:partnerProperties];
     
-    NSAttributeDescription *nameAttribute = [[NSAttributeDescription alloc] init];
+    NSArray *outletProperties = @[
+        [self attributeWithName:@"name"
+                          type:NSStringAttributeType],
+        [self attributeWithName:@"ts"
+                          type:NSDateAttributeType],
+        [self attributeWithName:@"size"
+                          type:NSInteger32AttributeType]
+    ];
     
-    nameAttribute.name = @"name";
-    nameAttribute.attributeType = NSStringAttributeType;
+    NSEntityDescription *outlet = [self entityWithName:@"Outlet"
+                                            properties:outletProperties];
     
-    [properties addObject:nameAttribute];
+    NSRelationshipDescription *outletPartner = [[NSRelationshipDescription alloc] init];
     
+    outletPartner.name = @"partner";
+    outletPartner.maxCount = 1;
+    outletPartner.destinationEntity = partner;
     
-    NSAttributeDescription *tsAttribute = [[NSAttributeDescription alloc] init];
+    NSRelationshipDescription *partnerOutlets = [[NSRelationshipDescription alloc] init];
     
-    tsAttribute.name = @"ts";
-    tsAttribute.attributeType = NSDateAttributeType;
+    partnerOutlets.name = @"Outlets";
+    partnerOutlets.destinationEntity = outlet;
+    partnerOutlets.inverseRelationship = outletPartner;
     
-    [properties addObject:tsAttribute];
+    outletPartner.inverseRelationship = partnerOutlets;
     
-    NSAttributeDescription *sizeAttribute = [[NSAttributeDescription alloc] init];
-    sizeAttribute.name = @"size";
-    sizeAttribute.attributeType = NSInteger32AttributeType;
-    [properties addObject:sizeAttribute];
+    outlet.properties = [outlet.properties arrayByAddingObject:outletPartner];
+    partner.properties = [partner.properties arrayByAddingObject:partnerOutlets];
     
-    // add attributes to entity
-    [entity setProperties:properties];
-    
-    // add entity to model
-    [model setEntities:[NSArray arrayWithObject:entity]];
+    [model setEntities:@[outlet, partner]];
     
     return model;
+}
+
+- (NSAttributeDescription *)attributeWithName:(NSString *)name type:(NSAttributeType)type {
+    NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
+    attribute.name = name;
+    attribute.attributeType = type;
+    return attribute;
+}
+
+- (NSEntityDescription *)entityWithName:(NSString *)name properties:(NSArray *)properties {
+    NSEntityDescription *entity = [[NSEntityDescription alloc] init];
+    entity.name = name;
+    entity.properties = properties;
+    return entity;
 }
 
 
