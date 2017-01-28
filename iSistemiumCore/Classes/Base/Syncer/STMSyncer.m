@@ -1599,7 +1599,7 @@
         
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
-                                   itemData:result
+                                   itemData:itemData
                                 itemVersion:itemVersion];
         
     }];
