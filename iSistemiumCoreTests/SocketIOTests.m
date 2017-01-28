@@ -13,7 +13,7 @@
 
 #define TEST_SOCKETIO_URL @"https://socket2.sistemium.com/socket.io-client"
 #define TEST_SOCKETIO_RESOURCE @"dr50/Setting"
-#define TEST_SOCKETIO_TIMEOUT 5
+#define TEST_SOCKETIO_TIMEOUT 2
 
 @interface SocketIOTests : XCTestCase
 
