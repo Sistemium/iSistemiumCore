@@ -34,9 +34,5 @@ static NSString *kSocketDestroyMethod = @"destroy";
 - (void)socketSendEvent:(STMSocketEvent)event
               withValue:(id)value;
 
-- (void)updateResource:(NSString *)resource
-                object:(NSDictionary *)object
-     completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
-
 
 @end
