@@ -25,7 +25,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
 - (void)setUp {
     [super setUp];
     if (!self.predicateToSQL) {
-        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
+        NSManagedObjectModel *model = [self sampleModel];
         self.predicateToSQL = [[STMPredicateToSQL alloc] init];
         self.predicateToSQL.modellingDelegate = [[STMModeller alloc] initWithModel:model];
     }
@@ -75,5 +75,47 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
 
     
 }
+
+- (NSManagedObjectModel *) sampleModel {
+    
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
+    
+    // create the entity
+    NSEntityDescription *entity = [[NSEntityDescription alloc] init];
+    [entity setName:@"Outlet"];
+//    [entity setManagedObjectClassName:@"STMOutlet"];
+    
+    // create the attributes
+    NSMutableArray *properties = [NSMutableArray array];
+    
+    NSAttributeDescription *nameAttribute = [[NSAttributeDescription alloc] init];
+    
+    nameAttribute.name = @"name";
+    nameAttribute.attributeType = NSStringAttributeType;
+    
+    [properties addObject:nameAttribute];
+    
+    
+    NSAttributeDescription *tsAttribute = [[NSAttributeDescription alloc] init];
+    
+    tsAttribute.name = @"ts";
+    tsAttribute.attributeType = NSDateAttributeType;
+    
+    [properties addObject:tsAttribute];
+    
+    NSAttributeDescription *sizeAttribute = [[NSAttributeDescription alloc] init];
+    sizeAttribute.name = @"size";
+    sizeAttribute.attributeType = NSInteger32AttributeType;
+    [properties addObject:sizeAttribute];
+    
+    // add attributes to entity
+    [entity setProperties:properties];
+    
+    // add entity to model
+    [model setEntities:[NSArray arrayWithObject:entity]];
+    
+    return model;
+}
+
 
 @end
