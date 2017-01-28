@@ -75,7 +75,6 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
     
     STMAssertSQLFilter(predicate, @"(exists ( select * from outlet where partnerId = 'xid' and id = outletId ))");
-
     
 }
 

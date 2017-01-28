@@ -25,6 +25,8 @@
 
 @implementation STMPersister
 
+@synthesize subscriptions = _subscriptions;
+
 + (instancetype)initWithSession:(id <STMSession>)session {
     
     NSString *dataModelName = session.startSettings[@"dataModelName"];
@@ -127,6 +129,13 @@
 
     }
 
+}
+
+- (NSMutableDictionary *)subscriptions {
+    if (!_subscriptions) {
+        _subscriptions = [NSMutableDictionary dictionary];
+    }
+    return _subscriptions;
 }
 
 #pragma mark - Private methods

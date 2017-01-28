@@ -18,6 +18,7 @@
 
 @property (nonatomic, strong) STMFmdb *fmdb;
 @property (nonatomic, strong) STMDocument *document;
+@property (nonatomic, strong, readonly) NSMutableDictionary *subscriptions;
 
 + (instancetype)initWithSession:(id <STMSession>)session;
 
