@@ -350,7 +350,7 @@
     
     NSString *appState = [STMFunctions appStateString];
     
-    [self sendEvent:STMSocketEventStatusChange withValue:appState];
+    [self socketSendEvent:STMSocketEventStatusChange withValue:appState];
     
     if ([appState isEqualToString:@"UIApplicationStateActive"]) {
         
@@ -362,7 +362,7 @@
             
             NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
             
-            [self sendEvent:STMSocketEventStatusChange withValue:value];
+            [self socketSendEvent:STMSocketEventStatusChange withValue:value];
             
         }
         
@@ -395,7 +395,7 @@
                 
                 [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
 
-                    if ([data.firstObject isEqualToString:@"NO ACK"]) {
+                    if ([data.firstObject isEqual:@"NO ACK"]) {
 
                         NSError *error = nil;
                         [STMCoreObjectsController error:&error withMessage:@"ack timeout"];
@@ -415,7 +415,28 @@
             }
             
         } else {
+         
+            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
             
+            if (value && primaryKey) {
+                
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+                
+                if (dataDic) {
+                    
+                    [self.socket emit:eventStringValue
+                                 with:@[dataDic]];
+                    
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
+                }
+                
+            }
+
         }
         
     } else {
@@ -432,70 +453,6 @@
             completionHandler(NO, nil, error);
         }
         
-    }
-
-}
-
-- (void)sendEvent:(STMSocketEvent)event withValue:(id)value {
-    
-    [self logSendEvent:event withValue:value];
-    
-    if (self.socket.status == SocketIOClientStatusConnected) {
-        
-        if (event == STMSocketEventJSData) {
-            
-            if ([value isKindOfClass:[NSDictionary class]]) {
-            
-                NSLog(@"STMSocketEventJSData value: %@", value);
-                
-//                NSString *method = value[@"method"];
-//    
-//                if ([method isEqualToString:@"update"]) {
-//    
-//                    [self sharedInstance].isSendingData = YES;
-//                    [self sharedInstance].sendingDate = [NSDate date];
-//    
-//                }
-//    
-//                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-//    
-//                NSMutableDictionary *dataDic = [(NSDictionary *)value mutableCopy];
-//    
-//                [self.socket emitWithAck:eventStringValue with:@[dataDic]](0, ^(NSArray *data) {
-//                    [self receiveJSDataEventAckWithData:data];
-//                });
-
-            } else {
-                
-            }
-            
-        } else {
-            
-            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
-            
-            if (value && primaryKey) {
-                
-                NSDictionary *dataDic = @{primaryKey : value};
-                
-                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-                
-                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-
-                if (dataDic) {
-                    
-                    [self.socket emit:eventStringValue
-                                 with:@[dataDic]];
-                    
-                } else {
-                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
-                }
-                
-            }
-            
-        }
-        
-    } else {
-        [self socketLostConnection:@"socket sendEvent"];
     }
 
 }
