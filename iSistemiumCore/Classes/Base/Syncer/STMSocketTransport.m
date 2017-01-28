@@ -713,9 +713,9 @@
 }
 
 
-#pragma mark - STMPersistingAsync
+#pragma mark - STMPersistingWithHeadersAsync
 
-- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
+- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
 
     NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
                                                        identifier:identifier];
@@ -723,9 +723,8 @@
     if (errorMessage) {
     
         NSError *error = nil;
-        [STMCoreObjectsController error:&error
-                            withMessage:errorMessage];
-        completionHandler(NO, nil, error);
+        [STMFunctions error:&error withMessage:errorMessage];
+        completionHandler(NO, nil, nil, error);
 
         return;
         
@@ -747,20 +746,19 @@
             
             if (response) {
                 
-                completionHandler(YES, response, nil);
+                completionHandler(YES, response, nil, nil);
                 return;
                 
             }
                 
             NSError *localError = nil;
             NSString *errorMessage = @"ERROR: response contain no dictionary";
-            [STMCoreObjectsController error:&localError
-                                withMessage:errorMessage];
+            [STMFunctions error:&localError withMessage:errorMessage];
             
-            completionHandler(NO, nil, localError);
+            completionHandler(NO, nil, nil, localError);
 
         } else {
-            completionHandler(NO, nil, error);
+            completionHandler(NO, nil, nil, error);
         }
         
     }];
@@ -787,23 +785,105 @@
     
 }
 
-- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler {
+- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
+    
+    NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
+    
+    if (errorMessage) {
+        
+        NSError *error = nil;
+        [STMFunctions error:&error withMessage:errorMessage];
+        completionHandler(NO, nil, nil, error);
+        
+        return;
+        
+    }
+
+    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    
+    NSString *resource = [entity resource];
+
+    NSDictionary *value = @{@"method"   : kSocketFindAllMethod,
+                            @"resource" : resource,
+                            @"options"  : options
+                            };
+    
+    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+        
+        if (success) {
+            
+            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
+
+            NSError *localError = nil;
+            NSString *errorMessage = nil;
+
+            if (!response) {
+                
+                errorMessage = @"ERROR: response contain no dictionary";
+                [STMFunctions error:&localError withMessage:errorMessage];
+                
+                completionHandler(NO, nil, nil, localError);
+                return;
+
+            }
+
+            NSNumber *errorCode = response[@"error"];
+            
+            if (errorCode) {
+
+                errorMessage = [NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode];
+                [STMFunctions error:&localError withMessage:errorMessage];
+                
+                completionHandler(NO, nil, nil, localError);
+                return;
+
+            }
+            
+            NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
+            
+            if (!responseData) {
+
+                errorMessage = [NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName];
+                [STMFunctions error:&localError withMessage:errorMessage];
+                
+                completionHandler(NO, nil, nil, localError);
+                return;
+
+            }
+            
+            NSMutableDictionary *headers = @{}.mutableCopy;
+            
+            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            
+                if (![key isEqualToString:@"data"]) {
+                    headers[key] = obj;
+                }
+                
+            }];
+            
+            completionHandler(YES, responseData, headers, nil);
+            return;
+
+            
+        } else {
+            completionHandler(NO, nil, nil, error);
+        }
+
+    }];
     
 }
 
-- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSError *error))completionHandler {
+- (NSString *)preFindAllAsyncCheckForEntityName:(NSString *)entityName {
+    
+    if (!self.isReady) {
+        return @"socket is not ready (not connected or not authorize)";
+    }
+
+    return nil;
     
 }
 
-- (void)mergeManyAsync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSError *error))completionHandler {
-    
-}
-
-- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler {
-    
-}
-
-- (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler {
+- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
     
 }
 

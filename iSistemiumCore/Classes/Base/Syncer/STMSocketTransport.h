@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMSocketTransportOwner.h"
-#import "STMPersistingAsync.h"
+#import "STMPersistingWithHeadersAsync.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
@@ -20,7 +20,7 @@ static NSString *kSocketUpdateMethod = @"update";
 static NSString *kSocketDestroyMethod = @"destroy";
 
 
-@interface STMSocketTransport : NSObject
+@interface STMSocketTransport : NSObject <STMPersistingWithHeadersAsync>
 
 @property (nonatomic) BOOL isReady;
 
