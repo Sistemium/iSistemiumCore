@@ -657,7 +657,11 @@
     }
     
     STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
+
+    if (!entity) {
+        return [NSString stringWithFormat:@"have no such entity %@", entityName];
+    }
+
     if (![entity resource]) {
         return [NSString stringWithFormat:@"no resource for entity %@", entityName];
     }
@@ -672,18 +676,17 @@
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
     
-    if (!self.isReady) {
+    NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
+    
+    if (errorMessage) {
         
-        NSError *error = nil;
-        [STMFunctions error:&error withMessage:@"socket is not ready (not connected or not authorize)"];
-        completionHandler(NO, nil, nil, error);
-        
+        [self completeFindAllAsyncHandler:completionHandler
+                         withErrorMessage:errorMessage];
         return;
-
+        
     }
     
     STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
     NSString *resource = [entity resource];
 
     NSDictionary *value = @{@"method"   : kSocketFindAllMethod,
@@ -742,6 +745,26 @@
         }
 
     }];
+    
+}
+
+- (NSString *)preFindAllAsyncCheckForEntityName:(NSString *)entityName {
+    
+    if (!self.isReady) {
+        return @"socket is not ready (not connected or not authorize)";
+    }
+    
+    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    
+    if (!entity) {
+        return [NSString stringWithFormat:@"have no such entity %@", entityName];
+    }
+    
+    if (![entity resource]) {
+        return [NSString stringWithFormat:@"no resource for entity %@", entityName];
+    }
+    
+    return nil;
     
 }
 
