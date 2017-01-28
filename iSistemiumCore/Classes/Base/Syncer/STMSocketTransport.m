@@ -648,43 +648,6 @@
     
 }
 
-
-#pragma mark - receiving data
-#pragma mark findAll
-
-- (void)findAllFromResource:(NSString *)resourceString withETag:(NSString *)eTag fetchLimit:(NSInteger)fetchLimit params:(NSDictionary *)params completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    if (!self.isReady) {
-        
-        NSString *errorMessage = @"socket is not ready (not connected or not authorize)";
-        
-        [self completeHandler:completionHandler
-             withErrorMessage:errorMessage];
-        
-        return;
-        
-    }
-    
-    NSMutableDictionary *value = @{@"method"   : kSocketFindAllMethod,
-                                   @"resource" : resourceString
-                                   }.mutableCopy;
-    
-    NSMutableDictionary *options = @{@"pageSize" : @(fetchLimit)}.mutableCopy;
-    if (eTag) options[@"offset"] = eTag;
-    
-    [options setValue:@"500" forKey:@"pageSize"];
-    
-    value[@"options"] = options;
-    
-    if (params) value[@"params"] = params;
-    
-    [self socketSendEvent:STMSocketEventJSData
-                withValue:value
-        completionHandler:completionHandler];
-    
-}
-
-
 #pragma mark - sending data
 #pragma mark update
 

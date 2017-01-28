@@ -34,12 +34,6 @@ static NSString *kSocketDestroyMethod = @"destroy";
 - (void)socketSendEvent:(STMSocketEvent)event
               withValue:(id)value;
 
-- (void)findAllFromResource:(NSString *)resourceString
-                   withETag:(NSString *)eTag
-                 fetchLimit:(NSInteger)fetchLimit
-                     params:(NSDictionary *)params
-          completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
-
 - (void)updateResource:(NSString *)resource
                 object:(NSDictionary *)object
      completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
