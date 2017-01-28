@@ -26,8 +26,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     [super setUp];
     if (!self.predicateToSQL) {
         NSManagedObjectModel *model = [self sampleModel];
-        self.predicateToSQL = [[STMPredicateToSQL alloc] init];
-        self.predicateToSQL.modellingDelegate = [[STMModeller alloc] initWithModel:model];
+        self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:[STMModeller modellerWithModel:model]];
     }
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
