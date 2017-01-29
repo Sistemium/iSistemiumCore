@@ -330,9 +330,15 @@
         _isReceivingData = isReceivingData;
 
         if (isReceivingData) {
+            
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+            [self receiveStarted];
+            
         } else {
+            
             [self turnOffNetworkActivityIndicator];
+            [self receiveFinished];
+            
         }
         
     }
@@ -833,6 +839,28 @@
         }
         
     }
+
+}
+
+- (void)receiveStarted {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+       
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_RECEIVE_STARTED
+                                                            object:self];
+
+    });
+    
+}
+
+- (void)receiveFinished {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_RECEIVE_FINISHED
+                                                            object:self];
+        
+    });
 
 }
 
