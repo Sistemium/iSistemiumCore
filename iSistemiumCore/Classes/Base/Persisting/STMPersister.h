@@ -6,8 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMSessionManagement.h"
-
+#import "STMPersistingObserving.h"
 #import "STMPersistingSync.h"
 #import "STMDocument.h"
 
@@ -31,7 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
 
-+ (instancetype)initWithSession:(id <STMSession>)session;
++ (instancetype)persisterWithModelName:(NSString *)modelName
+                                   uid:(NSString *)uid
+                                iSisDB:(NSString *)iSisDB;
 
 @end
 

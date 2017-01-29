@@ -19,8 +19,6 @@
 
 @interface STMPersister()
 
-@property (nonatomic, weak) id <STMSession> session;
-
 @end
 
 @implementation STMPersistingObservingSubscription
@@ -31,23 +29,14 @@
 
 @synthesize subscriptions = _subscriptions;
 
-+ (instancetype)initWithSession:(id <STMSession>)session {
-    
-    NSString *dataModelName = session.startSettings[@"dataModelName"];
-    
-    if (!dataModelName) {
-        dataModelName = [[STMCoreAuthController authController] dataModelName];
-    }
-    
-    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:dataModelName];
-    
-    persister.session = session;
++ (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB{
+
+    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
-
-    persister.document = [STMDocument documentWithUID:session.uid
-                                               iSisDB:session.iSisDB
-                                        dataModelName:dataModelName];
+    persister.document = [STMDocument documentWithUID:uid
+                                               iSisDB:iSisDB
+                                        dataModelName:modelName];
 
     return persister;
     
@@ -56,84 +45,11 @@
 - (instancetype)init {
     
     self = [super init];
-    if (self) {
-        [self addObservers];
-    }
+    
     return self;
     
 }
 
-#pragma mark - observers
-
-- (void)addObservers {
-    
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self.session];
-
-    [nc addObserver:self
-           selector:@selector(documentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(documentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:nil];
-
-}
-
-- (void)removeObservers {
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-}
-
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object conformsToProtocol:@protocol(STMSession)]) {
-        
-        id <STMSession>session = (id <STMSession>)notification.object;
-        
-        if (session == self.session) {
-            
-            if (session.status == STMSessionRemoving) {
-                
-                [self removeObservers];
-                self.session = nil;
-                
-            }
-            
-        }
-        
-    }
-
-}
-
-- (void)documentReady:(NSNotification *)notification {
-    
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
-        
-        [self.session persisterCompleteInitializationWithSuccess:YES];
-        // here we can remove document observers
-        
-    }
-
-}
-
-- (void)documentNotReady:(NSNotification *)notification {
-
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
-        
-        [self.session persisterCompleteInitializationWithSuccess:NO];
-        // here we can remove document observers
-
-    }
-
-}
 
 - (NSMutableDictionary *)subscriptions {
     if (!_subscriptions) {
