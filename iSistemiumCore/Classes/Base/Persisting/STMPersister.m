@@ -150,7 +150,7 @@
     
     NSString *now = [STMFunctions stringFromNow];
     NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    BOOL returnSaved = !([options[@"returnSaved"] isEqual:@NO] || options[STMPersistingOptionLts]);
+    BOOL returnSaved = !([options[STMPersistingOptionReturnSaved] isEqual:@NO] || options[STMPersistingOptionLts]) || [options[STMPersistingOptionReturnSaved] isEqual:@YES];
     
     if (options[STMPersistingOptionLts]) {
         [savingAttributes setValue:options[STMPersistingOptionLts] forKey:STMPersistingOptionLts];
