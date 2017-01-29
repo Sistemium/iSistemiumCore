@@ -11,6 +11,7 @@
 #import "STMPersistingSync.h"
 #import "STMCoreSessionManager.h"
 #import "STMConstants.h"
+#import "STMFunctions.h"
 
 #define PersistingObservingTestsTimeOut 10
 #define PersistingObservingTestEntity @"STMLogMessage"
@@ -78,8 +79,11 @@
                           XCTAssertEqual(data.count, 1);
                           
                           NSError *error;
-                          NSDictionary *toUploadItem = [data firstObject];
+                          NSMutableDictionary *toUploadItem = [[data firstObject] mutableCopy];
                           NSString *itemVersion = toUploadItem[@"deviceTs"];
+                          
+                          toUploadItem[@"ts"] = [STMFunctions stringFromNow];
+                          toUploadItem[@"text"] = @"Modify some of the item fields as if it was updated by server";
                           
                           [self.persister mergeSync:PersistingObservingTestEntity
                                          attributes:toUploadItem
