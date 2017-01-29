@@ -305,14 +305,47 @@
 
 + (void)startCheckingPicturesPaths {
     
-//    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMCorePicture class])];
-//    
-//    if (result.count > 0) {
-//
-//        NSLogMethodName;
-//
-//        for (STMCorePicture *picture in result) {
-//            
+    NSMutableArray *result = @[].mutableCopy;
+    
+    NSArray *objects = [self.persistenceDelegate findAllSync:@"STMArticlePicture" predicate:nil options:nil error:nil];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [result addObject:managedObject];
+    }
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMOutletPhoto" predicate:nil options:nil error:nil]];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [result addObject:managedObject];
+    }
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMVisitPhoto" predicate:nil options:nil error:nil]];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [result addObject:managedObject];
+    }
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMMessagePicture" predicate:nil options:nil error:nil]]
+    ;
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [result addObject:managedObject];
+    }
+    
+    if (result.count > 0) {
+
+        NSLogMethodName;
+
+        for (STMCorePicture *picture in result) {
+            
 //            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
 //                
 //                NSString* thumbnailHref = picture.thumbnailHref;
@@ -322,34 +355,34 @@
 //                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
 //                continue;
 //            }
-//            
-//            NSArray *pathComponents = [picture.imagePath pathComponents];
-//            
-//            if (pathComponents.count == 0) {
-//                
-//                if (picture.href) {
-//                    
-//                    [self hrefProcessingForObject:picture];
-//                    
-//                } else {
-//                    
-//                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-//                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-//                    [self deletePicture:picture];
-//                    
-//                }
-//                
-//            } else {
-//                
-//                if (pathComponents.count > 1) {
-//                    [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
-//                }
-//                
-//            }
-//            
-//        }
-//
-//    }
+            
+            NSArray *pathComponents = [picture.imagePath pathComponents];
+            
+            if (pathComponents.count == 0) {
+                
+                if (picture.href) {
+                    
+                    [self hrefProcessingForObject:picture];
+                    
+                } else {
+                    
+                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
+                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+                    [self deletePicture:picture];
+                    
+                }
+                
+            } else {
+                
+                if (pathComponents.count > 1) {
+                    [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
+                }
+                
+            }
+            
+        }
+
+    }
     
 }
 
@@ -582,7 +615,7 @@
                 } else {
                     
                     if ([[pc instantLoadPicturesEntityNames] containsObject:NSStringFromClass([object class])]) {
-                        [self downloadConnectionForObjectID:object.objectID];
+                        [self downloadConnectionForObject:object];
                     }
 
                 }
@@ -760,7 +793,7 @@
         
         if (object) {
             
-            [self downloadConnectionForObjectID:object.objectID];
+            [self downloadConnectionForObject:object];
             
         } else {
             
@@ -780,87 +813,81 @@
 
 }
 
-+ (void)downloadConnectionForObjectID:(NSManagedObjectID *)objectID {
-    [[self sharedController] downloadConnectionForObjectID:objectID];
-}
-
-- (void)downloadConnectionForObjectID:(NSManagedObjectID *)objectID {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        NSError *error = nil;
-        
-        NSManagedObject *object = [[STMCorePicturesController document].managedObjectContext existingObjectWithID:objectID
-                                                                                                            error:&error];
-        
-        if (object) {
-            [self downloadConnectionForObject:object];
-        } else {
-            NSLog(@"existingObjectWithID %@ error: %@", objectID, error.localizedDescription);
-        }
-        
-    });
-
-}
-
 + (void)downloadConnectionForObject:(NSManagedObject *)object {
     [[self sharedController] downloadConnectionForObject:object];
 }
 
 - (void)downloadConnectionForObject:(NSManagedObject *)object {
     
-    __block NSString *href = nil;
-    
-    href = [object valueForKey:@"href"];
-    
-    if (href) {
+    dispatch_async(dispatch_get_main_queue(), ^{
         
-        if ([object valueForKey:@"imagePath"]) {
-
-            [self didProcessHref:href];
+        NSError *error = nil;
+        
+        if (object) {
+            
+            __block NSString *href = nil;
+            
+            href = [object valueForKey:@"href"];
+            
+            if (href) {
+                
+                if ([object valueForKey:@"imagePath"]) {
+                    
+                    [self didProcessHref:href];
+                    
+                } else {
+                    
+                    self.waitingForDownloadPicture = YES;
+                    
+                    NSURL *url = [NSURL URLWithString:href];
+                    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+                    
+                    //        NSLog(@"start loading %@", url.lastPathComponent);
+                    
+                    [NSURLConnection sendAsynchronousRequest:request
+                                                       queue:[NSOperationQueue mainQueue]
+                                           completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+                                               
+                                               self.waitingForDownloadPicture = NO;
+                                               
+                                               if (connectionError) {
+                                                   
+                                                   NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
+                                                   
+                                                   [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                                                                                       object:object
+                                                                                                     userInfo:@{@"error" : connectionError.description}];
+                                                   
+                                                   [self didProcessHref:href];
+                                                   
+                                               } else {
+                                                   
+                                                   //                NSLog(@"%@ load successefully", href);
+                                                   
+                                                   [self didProcessHref:href];
+                                                   
+                                                   if ([object isKindOfClass:[STMCorePicture class]]) {
+                                                       [[self class] setImagesFromData:data forPicture:(STMCorePicture *)object andUpload:NO];
+                                                       
+                                                       NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
+                                                       
+                                                       [STMCoreController.persistenceDelegate merge:object.entity.name attributes:dictObject options:nil];
+                                                       
+                                                   }
+                                                   
+                                               }
+                                               
+                                           }];
+                    
+                }
+                
+            }
             
         } else {
-        
-            self.waitingForDownloadPicture = YES;
-            
-            NSURL *url = [NSURL URLWithString:href];
-            NSURLRequest *request = [NSURLRequest requestWithURL:url];
-            
-            //        NSLog(@"start loading %@", url.lastPathComponent);
-            
-            [NSURLConnection sendAsynchronousRequest:request
-                                               queue:[NSOperationQueue mainQueue]
-                                   completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-
-                self.waitingForDownloadPicture = NO;
-                                       
-                if (connectionError) {
-                   
-                    NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                                                        object:object
-                                                                      userInfo:@{@"error" : connectionError.description}];
-                    
-                    [self didProcessHref:href];
-
-                } else {
-                   
-                   //                NSLog(@"%@ load successefully", href);
-                   
-                    [self didProcessHref:href];
-
-                    if ([object isKindOfClass:[STMCorePicture class]]) {
-                       [[self class] setImagesFromData:data forPicture:(STMCorePicture *)object andUpload:NO];
-                    }
-                   
-                }
-
-            }];
-            
+            NSLog(@"existingObjectWithID %@ error: %@", object, error.localizedDescription);
         }
         
-    }
+    });
     
 }
 

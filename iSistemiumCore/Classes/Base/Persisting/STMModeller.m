@@ -189,7 +189,11 @@
                     
                     NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
                     
-                    [object setValue:destinationObject forKey:localKey];
+                    if (object.managedObjectContext == destinationObject.managedObjectContext){
+                    
+                        [object setValue:destinationObject forKey:localKey];
+                        
+                    };
                     
                 }
                 

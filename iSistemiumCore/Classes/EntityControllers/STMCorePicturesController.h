@@ -25,7 +25,6 @@
 
 + (void)hrefProcessingForObject:(NSManagedObject *)object;
 + (void)downloadConnectionForObject:(NSManagedObject *)object;
-+ (void)downloadConnectionForObjectID:(NSManagedObjectID *)objectID;
 
 + (void)setImagesFromData:(NSData *)data forPicture:(STMCorePicture *)picture andUpload:(BOOL)shouldUpload;
 + (BOOL)saveImageFile:(NSString *)fileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data;

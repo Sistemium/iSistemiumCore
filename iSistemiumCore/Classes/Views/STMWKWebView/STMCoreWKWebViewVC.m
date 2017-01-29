@@ -916,7 +916,7 @@
         
         NSManagedObjectID *pictureID = picture.objectID;
         
-        [STMCorePicturesController downloadConnectionForObjectID:pictureID];
+        [STMCorePicturesController downloadConnectionForObject:picture];
         
     } else {
 

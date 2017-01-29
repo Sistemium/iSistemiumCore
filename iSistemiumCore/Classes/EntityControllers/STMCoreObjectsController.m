@@ -1007,6 +1007,7 @@
 + (void)dataLoadingFinished {
     
     [STMCorePicturesController checkPhotos];
+    [STMCorePicturesController sharedController].downloadingPictures = YES;
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG
