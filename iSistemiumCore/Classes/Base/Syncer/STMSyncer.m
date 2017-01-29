@@ -1597,9 +1597,13 @@
             NSLog(@"updateResource error: %@", error.localizedDescription);
         }
         
+        NSDictionary *resultData = result[@"data"];
+        
+        success &= resultData != nil;
+        
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
-                                   itemData:itemData
+                                   itemData:resultData
                                 itemVersion:itemVersion];
         
     }];
