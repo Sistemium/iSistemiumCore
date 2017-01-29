@@ -8,9 +8,7 @@
 
 #import "STMCoreSession.h"
 
-#import "STMCoreDataModel.h"
 #import "STMSyncerHelper.h"
-
 #import "STMCoreSession+Persistable.h"
 
 @interface STMCoreSession()
