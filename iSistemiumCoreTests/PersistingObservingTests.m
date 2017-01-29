@@ -31,22 +31,25 @@
     
     XCTAssertNotNil(STMCoreSessionManager.sharedManager);
     
-    [self keyValueObservingExpectationForObject:STMCoreSessionManager.sharedManager
-                                        keyPath:@"currentSessionUID"
-                                        handler:^BOOL(STMCoreSessionManager *sharedManager, NSDictionary * _Nonnull change)
+    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession != nil"];
+    
+    [self expectationForPredicate:waitForSession
+              evaluatedWithObject:STMCoreSessionManager.sharedManager
+                          handler:^BOOL
      {
          
-         id <STMPersistingObserving> persister = [sharedManager.currentSession persistenceDelegate];
+         id <STMPersistingObserving> persister = [STMCoreSessionManager.sharedManager.currentSession persistenceDelegate];
          
          STMPersistingObservingSubscriptionID subscription;
          
          subscription = [persister observeEntity:@"STMLogMessage"
-                                            predicate:nil
-                                             callback:^(NSArray *data) {
-                                                 
-                                             }];
+                                       predicate:nil
+                                        callback:^(NSArray *data) {
+                                            
+                                        }];
          
          XCTAssertNotNil(subscription);
+         
          XCTAssertTrue([persister cancelSubscription:subscription]);
          
          return YES;
