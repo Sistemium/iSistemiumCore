@@ -463,14 +463,15 @@
         }
     }
     
-    if ([self saveWithEntityName:entityName]){
-        return result;
-    } else {
+    if (![self saveWithEntityName:entityName]){
         [STMFunctions error:error
-                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+                withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     
-    return nil;
+    [self notifyObservingEntityName:entityName
+                     ofUpdatedArray:result];
+    
+    return result;
     
 }
 

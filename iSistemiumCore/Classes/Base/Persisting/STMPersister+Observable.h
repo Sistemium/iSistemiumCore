@@ -12,6 +12,9 @@
 @interface STMPersister (Observable) <STMPersistingObserving>
 
 - (void)notifyObservingEntityName:(NSString *)entityName
-                        ofUpdated:(NSDictionary *)attributes;
+                        ofUpdated:(NSDictionary *)item;
+
+- (void)notifyObservingEntityName:(NSString *)entityName
+                   ofUpdatedArray:(NSArray *)items;
 
 @end

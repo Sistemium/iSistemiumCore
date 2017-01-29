@@ -40,7 +40,14 @@
 }
 
 - (void)notifyObservingEntityName:(NSString *)entityName
-                        ofUpdated:(NSDictionary *)attributes {
+                        ofUpdated:(NSDictionary *)item {
+    
+    [self notifyObservingEntityName:entityName
+                     ofUpdatedArray:[NSArray arrayWithObject:item]];
+}
+
+- (void)notifyObservingEntityName:(NSString *)entityName
+                   ofUpdatedArray:(NSArray *)items {
     
     // TODO: maybe we need to cache subscriptions by entityName
     for (STMPersistingObservingSubscriptionID key in self.subscriptions) {
@@ -50,10 +57,12 @@
         if (![subscription.entityName isEqualToString:entityName]) continue;
         
         if (subscription.predicate) {
-            if (![subscription.predicate evaluateWithObject:attributes]) continue;
+            items = [items filteredArrayUsingPredicate:subscription.predicate];
         }
         
-        subscription.callback([NSArray arrayWithObject:attributes]);
+        if (!items.count) continue;
+        
+        subscription.callback(items);
         
     }
     
