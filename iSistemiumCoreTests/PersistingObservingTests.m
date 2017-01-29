@@ -100,7 +100,7 @@
     
     NSUInteger count = [persister destroySync:PersistingObservingTestEntity
                                    identifier:item[@"id"]
-                                      options:@{@"createRecordStatuses": @NO}
+                                      options:@{STMPersistingOptionRecordstatuses: @NO}
                                         error:&error];
     XCTAssertNil(error);
     XCTAssertEqual(count, 1);
@@ -138,7 +138,7 @@
     for (NSDictionary *item in items) {
         [self.persister destroySync:PersistingObservingTestEntity
                          identifier:item[@"id"]
-                            options:@{@"createRecordStatuses": @NO}
+                            options:@{STMPersistingOptionRecordstatuses: @NO}
                               error:&error];
         XCTAssertNil(error);
     }

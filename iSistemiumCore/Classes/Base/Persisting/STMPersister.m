@@ -208,7 +208,7 @@
             if (predicate) {
                 [self destroyWithoutSave:attributes[@"name"]
                                predicate:predicate
-                                 options:@{@"createRecordStatuses":@NO}
+                                 options:@{STMPersistingOptionRecordstatuses:@NO}
                                    error:error];
             }
             
@@ -257,7 +257,7 @@
     NSArray* objects = @[];
     
     // TODO: expendable fetch on one object destroy
-    if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
+    if (!options[STMPersistingOptionRecordstatuses] || [options[STMPersistingOptionRecordstatuses] boolValue]){
         objects = [self findAllSync:entityName
                           predicate:predicate
                             options:options
@@ -376,7 +376,7 @@
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
     
-    BOOL isFantom = [options[@"fantoms"] boolValue];
+    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
     [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
     
     if (predicate) {

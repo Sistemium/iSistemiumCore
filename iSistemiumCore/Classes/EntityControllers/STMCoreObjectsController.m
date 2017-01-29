@@ -989,7 +989,7 @@
         
         NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
                                                                  predicate:predicate
-                                                                   options:@{@"createRecordStatuses":@NO}
+                                                                   options:@{STMPersistingOptionRecordstatuses:@NO}
                                                                      error:&error];
         
         if (error) {
@@ -1065,7 +1065,7 @@
             
             NSArray *result = [[self persistenceDelegate] findAllSync:entityName
                                                    predicate:nil
-                                                     options:@{@"fantoms": @YES}
+                                                     options:@{STMPersistingOptionFantoms: @YES}
                                                        error:&error];
             count += result.count;
             fantomsCount += result.count;
@@ -1104,7 +1104,7 @@
     for (NSString *entityName in entityNamesWithResolveFantoms) {
         
         NSError *error;
-        NSArray *results = [self.persistenceDelegate findAllSync:entityName predicate:nil options:@{@"fantoms":@YES} error:&error];
+        NSArray *results = [self.persistenceDelegate findAllSync:entityName predicate:nil options:@{STMPersistingOptionFantoms:@YES} error:&error];
         
         if (results.count > 0) {
             

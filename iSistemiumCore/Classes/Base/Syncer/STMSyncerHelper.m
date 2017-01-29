@@ -122,7 +122,7 @@
         NSError *error = nil;
         NSArray *results = [self.persistenceDelegate findAllSync:entityName
                                                        predicate:nil
-                                                         options:@{@"fantoms":@YES}
+                                                         options:@{STMPersistingOptionFantoms:@YES}
                                                            error:&error];
         
         NSArray *failToResolveFantomsIds = [self.failToResolveFantomsArray valueForKeyPath:@"id"];

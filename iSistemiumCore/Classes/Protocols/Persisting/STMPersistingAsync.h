@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMPersisting.h"
 
 typedef void (^STMPersistingAsyncArrayResultCallback)(BOOL success, NSArray *result, NSError *error);
 typedef void (^STMPersistingAsyncDictionaryResultCallback)(BOOL success, NSDictionary *result, NSError *error);
