@@ -1607,7 +1607,7 @@
 
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSLog(@"NOTIFICATION_SYNCER_SEND_STARTED");
+//        NSLog(@"NOTIFICATION_SYNCER_SEND_STARTED");
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_STARTED
                                                             object:self];
         
@@ -1621,7 +1621,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSLog(@"NOTIFICATION_SYNCER_SEND_FINISHED");
+//        NSLog(@"NOTIFICATION_SYNCER_SEND_FINISHED");
         [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_FINISHED
                                                             object:self];
         
@@ -1650,7 +1650,6 @@
 
 - (void)postObjectsSendedNotification {
 
-    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
                                                         object:self];
 
@@ -1740,6 +1739,7 @@
         [logger saveLogMessageWithText:logMessage];
         
         return;
+        //    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
 
     }
     
