@@ -64,36 +64,38 @@
     
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[self.typePredicate, ltsPredicate]];
     
-    STMPersistingObservingSubscriptionID subscriptionId;
-    
-    subscriptionId = [self.persister observeEntity:PersistingObservingTestEntity
-                                         predicate:predicate
-                                          callback:^(NSArray *data)
-                      {
-                          
-                          // This should be not called twice
-                          // Called twice means merging with lts doesn't set item uploaded
-                          
-                          [subscriptionExpectation fulfill];
-
-                          XCTAssertEqual(data.count, 1);
-                          
-                          NSError *error;
-                          NSMutableDictionary *toUploadItem = [[data firstObject] mutableCopy];
-                          NSString *itemVersion = toUploadItem[@"deviceTs"];
-                          
-                          toUploadItem[@"ts"] = [STMFunctions stringFromNow];
-                          toUploadItem[@"text"] = @"Modify some of the item fields as if it was updated by server";
-                          
-                          [self.persister mergeSync:PersistingObservingTestEntity
-                                         attributes:toUploadItem
-                                            options:@{STMPersistingOptionLts:itemVersion,
-                                                      STMPersistingOptionReturnSaved:@YES}
-                                              error:&error];
-                          
-                          XCTAssertNil(error);
-                          
-                      }];
+    STMPersistingObservingSubscriptionID subscriptionId =
+    [self.persister observeEntity:PersistingObservingTestEntity
+                        predicate:predicate
+                         callback:^(NSArray *data)
+     {
+         
+         // This should be not called twice
+         // Called twice means merging with lts doesn't set item uploaded
+         
+         [subscriptionExpectation fulfill];
+         
+         XCTAssertEqual(data.count, 1);
+         
+         NSError *error;
+         NSMutableDictionary *toUploadItem = [[data firstObject] mutableCopy];
+         NSString *itemVersion = toUploadItem[@"deviceTs"];
+         
+         toUploadItem[@"ts"] = [STMFunctions stringFromNow];
+         toUploadItem[@"text"] = @"Modify some of the item fields as if it was updated by server";
+         
+         [self.persister mergeSync:PersistingObservingTestEntity
+                        attributes:toUploadItem
+                           options:@{
+                                     // Comment out the next line to see test failed
+                                     STMPersistingOptionLts:itemVersion,
+                                     STMPersistingOptionReturnSaved:@YES
+                                     }
+                             error:&error];
+         
+         XCTAssertNil(error);
+         
+     }];
     
     NSError *error;
     
