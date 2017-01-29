@@ -675,6 +675,15 @@
     
 }
 
+- (void)completeFindAsyncHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler withErrorMessage:(NSString *)errorMessage {
+    
+    NSError *localError = nil;
+    [STMFunctions error:&localError withMessage:errorMessage];
+    
+    completionHandler(NO, nil, nil, localError);
+    
+}
+
 #pragma mark findAll
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
