@@ -26,6 +26,8 @@
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic) BOOL transportIsReady;
+@property (nonatomic) BOOL isReceivingData;
+@property (nonatomic) BOOL isSendingData;
 
 
 - (void)checkSocket;

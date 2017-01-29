@@ -37,9 +37,7 @@
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
 
 @property (nonatomic) BOOL isRunning;
-@property (nonatomic) BOOL isReceivingData;
 @property (nonatomic) BOOL isDefantomizing;
-@property (nonatomic) BOOL isSendingData;
 @property (nonatomic) BOOL isUsingNetwork;
 
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
