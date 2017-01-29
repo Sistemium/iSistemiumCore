@@ -9,11 +9,9 @@
 #import "STMCoreSession.h"
 
 #import "STMCoreDataModel.h"
-#import "STMCoreAuthController.h"
-#import "STMPersister+Async.h"
 #import "STMSyncerHelper.h"
-#import "STMPersister+Observable.h"
 
+#import "STMCoreSession+Persistable.h"
 
 @interface STMCoreSession()
 
@@ -36,13 +34,7 @@
         
         [session addObservers];
         
-        STMPersister *persister = [STMPersister initWithSession:session];
-        
-        session.persistenceDelegate = persister;
-#warning need to remove direct links to document after full persisting concept realization
-        session.document = persister.document;
-
-        return session;
+        return [session initPersistable];
         
     } else {
         
