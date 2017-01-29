@@ -51,32 +51,18 @@
 
     self.logger.session = nil;
     
-    if (self.document.documentState == UIDocumentStateNormal) {
+    [self removePersistable:^(BOOL success) {
         
-        [self.document saveDocument:^(BOOL success) {
+        if (!success) {
+            NSLog(@"Can not stop session with uid %@", self.uid);
+            return;
+        }
             
-            if (success) {
+        self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionStopped;
                 
-                self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionStopped;
-                
-                if (self.status == STMSessionRemoving) {
-
-                    self.document = nil;
-                    self.persistenceDelegate = nil;
-
-                }
-                
-                [self.manager sessionStopped:self];
-                
-            } else {
-                
-                NSLog(@"Can not stop session with uid %@", self.uid);
-                
-            }
-            
-        }];
+        [self.manager sessionStopped:self];
         
-    }
+    }];
     
 }
 
@@ -86,6 +72,7 @@
         
         [self removeObservers];
         
+        // TODO: move to +Persistable
         if (self.document.documentState != UIDocumentStateClosed) {
             
             [self.document closeWithCompletionHandler:^(BOOL success) {
@@ -130,30 +117,6 @@
 
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-}
-
-- (void)persisterCompleteInitializationWithSuccess:(BOOL)success {
-    
-    if (success) {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
-        
-        self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
-        self.trackers = [NSMutableDictionary dictionary];
-        if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
-        
-        [self checkTrackersToStart];
-        
-        self.logger = [STMLogger sharedLogger];
-        self.logger.session = self;
-        self.settingsController.session = self;
-
-    } else {
-        
-        NSLog(@"persister is not ready, have to do something with it");
-
-    }
-    
 }
 
 - (BOOL)isRunningTests {

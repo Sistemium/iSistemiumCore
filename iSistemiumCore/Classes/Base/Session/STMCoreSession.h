@@ -49,7 +49,8 @@
 - (void)stopSession;
 - (void)dismissSession;
 
-- (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
+- (Class)settingsControllerClass;
+- (void)checkTrackersToStart;
 
 - (Class)locationClass;
 

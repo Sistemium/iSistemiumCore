@@ -36,6 +36,52 @@
     return self;
 }
 
+- (void)removePersistable:(void (^)(BOOL success))completionHandler {
+    
+    [self removePersistenceObservers];
+    
+    if (self.document.documentState == UIDocumentStateNormal) {
+        
+        [self.document saveDocument:^(BOOL success) {
+            
+            if (completionHandler) completionHandler(success);
+            
+            if (self.status == STMSessionRemoving) {
+                self.document = nil;
+                self.persistenceDelegate = nil;
+            }
+            
+        }];
+        
+    }
+}
+
+#pragma mark Private methods
+
+- (void)persisterCompleteInitializationWithSuccess:(BOOL)success {
+    
+    if (success) {
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
+        
+        self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+        self.trackers = [NSMutableDictionary dictionary];
+        if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
+        
+        [self checkTrackersToStart];
+        
+        self.logger = [STMLogger sharedLogger];
+        self.logger.session = self;
+        self.settingsController.session = self;
+        
+    } else {
+        
+        NSLog(@"persister is not ready, have to do something with it");
+        
+    }
+    
+}
+
 
 #pragma mark - observers
 
@@ -69,8 +115,7 @@
 - (void)myStatusChanged:(NSNotification *)notification {
     
     if (self.status == STMSessionRemoving) {
-        [self removePersistenceObservers];
-        self.persistenceDelegate = nil;
+        [self removePersistable:nil];
     }
     
 }
