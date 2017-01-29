@@ -1164,8 +1164,9 @@
             NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
                                       @"object": fantomDic};
             
-            [self socketReceiveFindResult:result
-                                  context:context];
+            [self receiveFindAckWithResponse:result
+                                  entityName:entityName
+                                     context:context];
             
         } else {
             
@@ -1225,21 +1226,6 @@
 
 
 #pragma mark - socket ack handlers
-
-- (void)socketReceiveFindResult:(NSDictionary *)result context:(NSDictionary *)context {
-    
-    NSString *resource = result[@"resource"];
-    NSString *entityName = [STMEntityController entityNameForURLString:resource];
-    NSNumber *errorCode = result[@"error"];
-    
-    [self receiveFindAckWithResponse:result
-                            resource:resource
-                          entityName:entityName
-                           errorCode:errorCode
-                             context:context];
-
-}
-
 
 #pragma mark findAll ack handler
 
@@ -1402,8 +1388,11 @@
 
 #pragma mark find ack handler
 
-- (void)receiveFindAckWithResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode context:(NSDictionary *)context {
+- (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName context:(NSDictionary *)context {
     
+    NSString *resource = response[@"resource"];
+    NSNumber *errorCode = response[@"error"];
+
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
     if (errorCode) {
