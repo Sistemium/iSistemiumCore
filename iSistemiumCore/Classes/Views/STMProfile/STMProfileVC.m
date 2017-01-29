@@ -171,11 +171,15 @@
 }
 
 - (void)updateSyncInfo {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
+        
         [self updateSyncDatesLabels];
         [self updateCloudImages];
         [self updateNonloadedPicturesInfo];
+        
     });
+    
 }
 
 - (void)updateUploadSyncProgressBar {
@@ -254,47 +258,8 @@
     if (self.syncer.transportIsReady) {
 
         imageName = @"Download From Cloud-100";
-
-        (self.syncer.isSendingData) ? [self startSendSpinner] : [self stopSendSpinner];
-
-        (self.syncer.isReceivingData) ? [self startReceiveSpinner] : [self stopReceiveSpinner];
+        [self checkSpinnerStates];
         
-//        switch (self.syncer.syncerState) {
-//            case STMSyncerIdle: {
-//
-////                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
-//                break;
-//                
-//            }
-//            case STMSyncerSendData:
-//            case STMSyncerSendDataOnce: {
-//
-//                if (!self.syncSpinner) {
-//                    [self startSyncSpinnerInView:self.uploadImageView];
-//                }
-//                
-//                imageName = @"Upload To Cloud-100";
-//                break;
-//                
-//            }
-//            case STMSyncerReceiveData: {
-//
-//                if (!self.syncSpinner) {
-//                    [self startSyncSpinnerInView:self.downloadImageView];
-//                }
-//                
-//                imageName = @"Download From Cloud-100";
-//                break;
-//                
-//            }
-//            default: {
-//                
-//                imageName = @"Download From Cloud-100";
-//                break;
-//                
-//            }
-//        }
-
     } else {
         
         imageName = @"No connection Cloud-100";
@@ -304,6 +269,13 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
+}
+
+- (void)checkSpinnerStates {
+    
+    (self.syncer.isSendingData) ? [self startSendSpinner] : [self stopSendSpinner];
+    (self.syncer.isReceivingData) ? [self startReceiveSpinner] : [self stopReceiveSpinner];
+
 }
 
 - (void)startSendSpinner {
@@ -1151,12 +1123,22 @@
     
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
-               name:@"sendFinished"
+               name:NOTIFICATION_SYNCER_SEND_STARTED
              object:self.syncer];
 
     [nc addObserver:self
            selector:@selector(updateUploadSyncProgressBar)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+             object:self.syncer];
+    
+    [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_SEND_FINISHED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(getBunchOfObjects:)
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
              object:self.syncer];
 
     [nc addObserver:self
@@ -1172,11 +1154,6 @@
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
                name:@"entitiesReceivingDidFinish"
-             object:self.syncer];
-    
-    [nc addObserver:self
-           selector:@selector(getBunchOfObjects:)
-               name:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
              object:self.syncer];
     
 //    [nc addObserver:self

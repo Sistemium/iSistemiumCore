@@ -58,8 +58,10 @@
 // Notification's names
 
 #define NOTIFICATION_SYNCER_INIT_SUCCESSFULLY @"Syncer init successfully"
-#define NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS @"syncerGetBunchOfObjects"
+#define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED @"bunchOfObjectsReceived"
 #define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED @"bunchOfObjectsSended"
+#define NOTIFICATION_SYNCER_SEND_STARTED @"sendStarted"
+#define NOTIFICATION_SYNCER_SEND_FINISHED @"sendFinished"
 //#define NOTIFICATION_SYNCER_DID_CHANGE_CONTENT @"syncerDidChangeContent"
 #define NOTIFICATION_SYNCER_STATUS_CHANGED @"syncStatusChanged"
 

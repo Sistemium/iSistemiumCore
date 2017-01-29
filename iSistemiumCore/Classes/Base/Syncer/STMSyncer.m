@@ -362,9 +362,15 @@
         _isSendingData = isSendingData;
         
         if (isSendingData) {
+            
             [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+            [self sendStarted];
+            
         } else {
+            
             [self turnOffNetworkActivityIndicator];
+            [self sendFinished];
+
         }
         
     }
@@ -1370,7 +1376,7 @@
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
                                                                 object:self
                                                               userInfo:@{@"count"         :@(result.count),
                                                                          @"entityName"    :entityName}];
@@ -1545,10 +1551,7 @@
         NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
         
         if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
-            
             self.isSendingData = NO;
-            [self sendFinishedWithError:nil];
-            
         }
         
         if (error) {
@@ -1559,12 +1562,69 @@
         
         success &= resultData != nil;
         
+        if (success) {
+            [self bunchOfObjectsSended];
+        }
+        
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
                                    itemData:resultData
                                 itemVersion:itemVersion];
         
     }];
+
+}
+
+- (void)sendStarted {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSLog(@"NOTIFICATION_SYNCER_SEND_STARTED");
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_STARTED
+                                                            object:self];
+        
+    });
+
+}
+
+- (void)sendFinished {
+    
+    [self saveSendDate];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSLog(@"NOTIFICATION_SYNCER_SEND_FINISHED");
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_FINISHED
+                                                            object:self];
+        
+    });
+    
+}
+
+- (void)saveSendDate {
+    
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+    
+    NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
+    NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [defaults setObject:sendDateString forKey:key];
+    [defaults synchronize];
+    
+}
+
+- (void)bunchOfObjectsSended {
+
+    [self saveSendDate];
+    [self postObjectsSendedNotification];
+
+}
+
+- (void)postObjectsSendedNotification {
+
+    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
+    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+                                                        object:self];
 
 }
 
@@ -1683,58 +1743,6 @@
         
     }];
 */
-//}
-
-
-#pragma mark - send objects sync methods
-
-- (void)sendFinishedWithError:(NSString *)errorString {
-    
-    if (errorString) {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:errorString
-                                                 numType:STMLogMessageTypeImportant];
-        
-    } else {
-
-        [self saveSendDate];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"sendFinished"
-                                                                object:self];
-            
-        });
-
-    }
-
-}
-
-- (void)saveSendDate {
-    
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
-    NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
-    NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [defaults setObject:sendDateString forKey:key];
-    [defaults synchronize];
-    
-}
-
-
-//- (void)bunchOfObjectsSended {
-//    
-//    [self saveSendDate];
-//    [self postObjectsSendedNotification];
-//    
-//}
-
-//- (void)postObjectsSendedNotification {
-//    
-//    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-//                                                        object:self];
-//
 //}
 
 
