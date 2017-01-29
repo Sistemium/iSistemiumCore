@@ -1240,37 +1240,8 @@
 
 }
 
-- (void)socketReceiveJSDataAck:(NSArray *)data {
-    [self socketReceiveJSDataAck:data context:nil];
-}
-
-- (void)socketReceiveJSDataAck:(NSArray *)data context:(NSDictionary *)context {
-    
-    NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-    
-    if (!response) {
-        
-        // don't know which method cause an error, send error to all of them
-        NSString *errorMessage = @"ERROR: response contain no dictionary";
-        [self socketReceiveJSDataFindAllAckError:errorMessage];
-        
-        return;
-        
-    }
-    
-}
-
 
 #pragma mark findAll ack handler
-
-- (void)socketReceiveJSDataFindAllAckError:(NSString *)errorString {
-    
-    [self.socketTransport socketSendEvent:STMSocketEventInfo
-                                withValue:errorString];
-
-    [self entityCountDecreaseWithError:errorString];
-    
-}
 
 - (void)parseFindAllAckResponseData:(NSArray *)responseData entityName:(NSString *)entityName headers:(NSDictionary *)headers {
     
