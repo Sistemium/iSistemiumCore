@@ -40,6 +40,8 @@
     
     [self removePersistenceObservers];
     
+    // TODO: do document closing in STMPersister
+    
     if (self.document.documentState == UIDocumentStateNormal) {
         
         [self.document saveDocument:^(BOOL success) {
