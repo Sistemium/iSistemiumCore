@@ -69,8 +69,12 @@
                                          predicate:predicate
                                           callback:^(NSArray *data)
                       {
-//                          NSLog(@"testObserveEntity called back with: %@", data);
                           
+                          // This should be not called twice
+                          // Called twice means merging with lts doesn't set item uploaded
+                          
+                          [subscriptionExpectation fulfill];
+
                           XCTAssertEqual(data.count, 1);
                           
                           NSError *error;
@@ -79,12 +83,11 @@
                           
                           [self.persister mergeSync:PersistingObservingTestEntity
                                          attributes:toUploadItem
-                                            options:@{STMPersistingOptionLts:itemVersion}
+                                            options:@{STMPersistingOptionLts:itemVersion,
+                                                      STMPersistingOptionReturnSaved:@YES}
                                               error:&error];
                           
                           XCTAssertNil(error);
-                          
-                          [subscriptionExpectation fulfill];
                           
                       }];
     
@@ -106,14 +109,17 @@
                                  handler:^(NSError * _Nullable error)
      {
          XCTAssertNil(error);
+         
          NSUInteger count =
          [self.persister destroySync:PersistingObservingTestEntity
                           identifier:pk
                              options:@{STMPersistingOptionRecordstatuses: @NO}
                                error:&error];
+         
          XCTAssertNil(error);
          XCTAssertEqual(count, 1);
          XCTAssertTrue([self.persister cancelSubscription:subscriptionId]);
+         
      }];
     
 }
