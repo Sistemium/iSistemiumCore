@@ -73,12 +73,18 @@
                           
                           XCTAssertEqual(data.count, 1);
                           
+                          NSError *error;
                           NSDictionary *toUploadItem = [data firstObject];
+                          NSString *itemVersion = toUploadItem[@"deviceTs"];
                           
                           [self.persister mergeSync:PersistingObservingTestEntity
                                          attributes:toUploadItem
-                                            options:@{STMPersistingOptionLts
+                                            options:@{STMPersistingOptionLts:itemVersion}
                                               error:&error];
+                          
+                          XCTAssertNil(error);
+                          
+                          [subscriptionExpectation fulfill];
                           
                       }];
     
