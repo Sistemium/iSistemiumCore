@@ -187,7 +187,12 @@
 
 - (void)testObserveMergeMany {
 
-    XCTestExpectation *subscriptionExpectation = [self expectationWithDescription:@"Waiting for callBack"];
+    XCTestExpectation *subscriptionExpectation =
+    [self expectationWithDescription:@"Waiting for callBack with one object after merging two items with subscription with predicate"];
+    
+    XCTestExpectation *subscriptionExpectation2 =
+    [self expectationWithDescription:@"Second expectation is the same two items merging but fulfilled with a subscription with inverted predicate"];
+    
     NSArray *testData = @[@{@"type": self.testType}, @{@"type": @"error"}];
     
     __block STMPersistingObservingSubscriptionID subscriptionId;
@@ -198,6 +203,18 @@
                                               XCTAssertEqual(data.count, 1);
                                               [subscriptionExpectation fulfill];
                                           }];
+    
+    __block STMPersistingObservingSubscriptionID subscriptionId2;
+    
+    NSPredicate *notMatchingPredicate =
+    [NSCompoundPredicate notPredicateWithSubpredicate:self.typePredicate];
+    
+    subscriptionId2 = [self.persister observeEntity:PersistingObservingTestEntity
+                                          predicate:notMatchingPredicate
+                                           callback:^(NSArray * _Nullable data) {
+                                               XCTAssertEqual(data.count, 1);
+                                               [subscriptionExpectation2 fulfill];
+                                           }];
     
     NSError *error;
     NSArray *items = [self.persister mergeManySync:PersistingObservingTestEntity
