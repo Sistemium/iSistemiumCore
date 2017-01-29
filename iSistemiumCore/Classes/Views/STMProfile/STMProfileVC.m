@@ -495,9 +495,9 @@
     
 }
 
-- (void)syncerDidChangeContent:(NSNotification *)notification {
-    [self updateCloudImages];
-}
+//- (void)syncerDidChangeContent:(NSNotification *)notification {
+//    [self updateCloudImages];
+//}
 
 - (void)socketAuthorizationSuccess {
     [self updateCloudImages];
@@ -1179,10 +1179,10 @@
                name:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
              object:self.syncer];
     
-    [nc addObserver:self
-           selector:@selector(syncerDidChangeContent:)
-               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
-             object:nil];
+//    [nc addObserver:self
+//           selector:@selector(syncerDidChangeContent:)
+//               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
+//             object:nil];
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)
