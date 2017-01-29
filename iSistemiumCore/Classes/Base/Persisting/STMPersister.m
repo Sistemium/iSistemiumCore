@@ -146,7 +146,7 @@
     
     NSString *now = [STMFunctions stringFromNow];
     NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
+    BOOL returnSaved = !([options[@"returnSaved"] isEqual:@NO] || options[@"lts"]);
     
     if (options[@"lts"]) {
         [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
@@ -179,7 +179,7 @@
     
     if ([entityName isEqualToString:@"STMRecordStatus"]) {
         
-        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
+        if (![attributes[@"isRemoved"] isEqual:NSNull.null] ? [attributes[@"isRemoved"] boolValue] : false) {
             
             NSPredicate* predicate;
             
@@ -203,13 +203,14 @@
 
             if (predicate) {
                 [self destroyWithoutSave:attributes[@"name"]
-                               predicate:predicate options:@{@"createRecordStatuses":@NO}
+                               predicate:predicate
+                                 options:@{@"createRecordStatuses":@NO}
                                    error:error];
             }
             
         }
         
-        if (![attributes[@"isTemporary"] isEqual:[NSNull null]] && [attributes[@"isTemporary"] boolValue]) return nil;
+        if (![attributes[@"isTemporary"] isEqual:NSNull.null] && [attributes[@"isTemporary"] boolValue]) return nil;
     }
     
     if ([self.fmdb hasTable:entityName]){
@@ -223,19 +224,24 @@
     } else {
         
         if (options[@"roleName"]){
-            [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
-                if (!sucess) {
-                    [STMFunctions error:error
-                                        withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
-                }
-            }];
+            [STMCoreObjectsController setRelationshipFromDictionary:attributes
+                                              withCompletionHandler:^(BOOL sucess)
+             {
+                 if (!sucess) {
+                     [STMFunctions error:error
+                             withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
+                 }
+             }];
         } else {
-            [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-                if (!sucess) {
-                    [STMFunctions error:error
-                                        withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
-                }
-            }];
+            [STMCoreObjectsController insertObjectFromDictionary:attributes
+                                                  withEntityName:entityName
+                                           withCompletionHandler:^(BOOL sucess)
+             {
+                 if (!sucess) {
+                     [STMFunctions error:error
+                             withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
+                 }
+             }];
         }
         
         return attributes;
@@ -277,7 +283,10 @@
     
     for (NSDictionary* object in objects){
         
-        NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions removePrefixFromEntityName:entityName], @"isRemoved": @YES};
+        NSDictionary *recordStatus = @{
+                                       @"objectXid":object[idKey],
+                                       @"name":[STMFunctions removePrefixFromEntityName:entityName],
+                                       @"isRemoved": @YES};
         
         [self mergeWithoutSave:@"STMRecordStatus"
                     attributes:recordStatus
@@ -310,10 +319,12 @@
     if ([self.fmdb hasTable:entityName]){
 #warning predicates not supported yet
         // TODO: make generic predicate to SQL method with predicate filtering
-        return [self.fmdb count:entityName withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
+        return [self.fmdb count:entityName
+                  withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
     } else {
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        return [[self document].managedObjectContext countForFetchRequest:request error:error];
+        return [[self document].managedObjectContext countForFetchRequest:request
+                                                                    error:error];
     }
     
 }
@@ -333,7 +344,10 @@
         
     }
     
-    NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
+    NSArray *results = [self findAllSync:entityName
+                               predicate:predicate
+                                 options:options
+                                   error:error];
     
     if (results.count) {
         return results.firstObject;
@@ -370,13 +384,13 @@
     if (!orderBy) orderBy = @"id";
     
     if ([self.fmdb hasTable:entityName]){
-
+        
         return [self.fmdb getDataWithEntityName:entityName
-                                                 withPredicate:predicateWithFantoms
-                                                       orderBy:orderBy
-                                                    ascending:asc
-                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
-                                                   fetchOffset:options[@"offset"] ? &offset : nil];
+                                  withPredicate:predicateWithFantoms
+                                        orderBy:orderBy
+                                      ascending:asc
+                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                    fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         
         NSArray* objectsArray = [self objectsForEntityName:entityName
@@ -399,15 +413,19 @@
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
+    NSDictionary* result = [self mergeWithoutSave:entityName
+                                       attributes:attributes
+                                          options:options error:error];
     
     if (*error){
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
         return nil;
     }
     
     if (![self saveWithEntityName:entityName]){
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
     }
     
@@ -421,7 +439,10 @@
     
     for (NSDictionary* dictionary in attributeArray){
         
-        NSDictionary* dict = [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        NSDictionary* dict = [self mergeWithoutSave:entityName
+                                         attributes:dictionary
+                                            options:options
+                                              error:error];
         
         if (dict){
             [result addObject:dict];
@@ -436,7 +457,8 @@
     if ([self saveWithEntityName:entityName]){
         return result;
     } else {
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     return nil;
 }
@@ -481,7 +503,8 @@
     if ([self saveWithEntityName:entityName]){
         return count;
     } else {
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return count;
     }
     
