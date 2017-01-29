@@ -8,6 +8,7 @@
 
 #import "STMFmdb+Private.h"
 #import "STMFunctions.h"
+#import "STMPersisting.h"
 
 #define ExecDDL(ddlString) [self executeDDL:ddlString inDatabase:database]
 
