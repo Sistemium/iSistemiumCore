@@ -16,4 +16,6 @@
 - (instancetype)initWithModelName:(NSString *)modelName;
 - (instancetype)initWithModel:(NSManagedObjectModel *)model;
 
++ (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
+
 @end

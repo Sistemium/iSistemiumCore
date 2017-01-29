@@ -23,16 +23,16 @@
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
 #import "STMModelling.h"
+#import "STMPersistingObserving.h"
 
 
 @interface STMCoreController : NSObject
 
 + (STMCoreSession *)session;
 
-#warning have to remove document property after full implementation of persister
 + (STMDocument *)document;
 
-+ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync,STMModelling> *) persistenceDelegate;
++ (NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> *) persistenceDelegate;
 + (STMSyncer *)syncer;
 
 @end

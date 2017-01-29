@@ -12,36 +12,31 @@
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
+#import "STMPersister+Observable.h"
 
 #import "STMCoreAuthController.h"
 #import "STMCoreObjectsController.h"
 
 @interface STMPersister()
 
-@property (nonatomic, weak) id <STMSession> session;
+@end
+
+@implementation STMPersistingObservingSubscription
 
 @end
 
-
 @implementation STMPersister
 
-+ (instancetype)initWithSession:(id <STMSession>)session {
-    
-    NSString *dataModelName = session.startSettings[@"dataModelName"];
-    
-    if (!dataModelName) {
-        dataModelName = [[STMCoreAuthController authController] dataModelName];
-    }
-    
-    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:dataModelName];
-    
-    persister.session = session;
+@synthesize subscriptions = _subscriptions;
+
++ (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB{
+
+    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
-
-    persister.document = [STMDocument documentWithUID:session.uid
-                                               iSisDB:session.iSisDB
-                                        dataModelName:dataModelName];
+    persister.document = [STMDocument documentWithUID:uid
+                                               iSisDB:iSisDB
+                                        dataModelName:modelName];
 
     return persister;
     
@@ -50,83 +45,17 @@
 - (instancetype)init {
     
     self = [super init];
-    if (self) {
-        [self addObservers];
-    }
+    
     return self;
     
 }
 
-#pragma mark - observers
 
-- (void)addObservers {
-    
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self.session];
-
-    [nc addObserver:self
-           selector:@selector(documentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(documentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:nil];
-
-}
-
-- (void)removeObservers {
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-}
-
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object conformsToProtocol:@protocol(STMSession)]) {
-        
-        id <STMSession>session = (id <STMSession>)notification.object;
-        
-        if (session == self.session) {
-            
-            if (session.status == STMSessionRemoving) {
-                
-                [self removeObservers];
-                self.session = nil;
-                
-            }
-            
-        }
-        
+- (NSMutableDictionary *)subscriptions {
+    if (!_subscriptions) {
+        _subscriptions = [NSMutableDictionary dictionary];
     }
-
-}
-
-- (void)documentReady:(NSNotification *)notification {
-    
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
-        
-        [self.session persisterCompleteInitializationWithSuccess:YES];
-        // here we can remove document observers
-        
-    }
-
-}
-
-- (void)documentNotReady:(NSNotification *)notification {
-
-    if ([[notification.userInfo valueForKey:@"uid"] isEqualToString:self.session.uid]) {
-        
-        [self.session persisterCompleteInitializationWithSuccess:NO];
-        // here we can remove document observers
-
-    }
-
+    return _subscriptions;
 }
 
 #pragma mark - Private methods
@@ -137,14 +66,14 @@
     
     NSString *now = [STMFunctions stringFromNow];
     NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    BOOL returnSaved = !([options[@"returnSaved"]  isEqual: @NO] || options[@"lts"]);
+    BOOL returnSaved = !([options[STMPersistingOptionReturnSaved] isEqual:@NO] || options[STMPersistingOptionLts]) || [options[STMPersistingOptionReturnSaved] isEqual:@YES];
     
-    if (options[@"lts"]) {
-        [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+    if (options[STMPersistingOptionLts]) {
+        [savingAttributes setValue:options[STMPersistingOptionLts] forKey:STMPersistingOptionLts];
         [savingAttributes removeObjectForKey:@"deviceTs"];
     } else {
         [savingAttributes setValue:now forKey:@"deviceTs"];
-        [savingAttributes removeObjectForKey:@"lts"];
+        [savingAttributes removeObjectForKey:STMPersistingOptionLts];
     }
     
     savingAttributes[@"deviceAts"] = now;
@@ -170,7 +99,7 @@
     
     if ([entityName isEqualToString:@"STMRecordStatus"]) {
         
-        if (![attributes[@"isRemoved"] isEqual:[NSNull null]] ? [attributes[@"isRemoved"] boolValue]: false) {
+        if (![attributes[@"isRemoved"] isEqual:NSNull.null] ? [attributes[@"isRemoved"] boolValue] : false) {
             
             NSPredicate* predicate;
             
@@ -194,13 +123,14 @@
 
             if (predicate) {
                 [self destroyWithoutSave:attributes[@"name"]
-                               predicate:predicate options:@{@"createRecordStatuses":@NO}
+                               predicate:predicate
+                                 options:@{STMPersistingOptionRecordstatuses:@NO}
                                    error:error];
             }
             
         }
         
-        if (![attributes[@"isTemporary"] isEqual:[NSNull null]] && [attributes[@"isTemporary"] boolValue]) return nil;
+        if (![attributes[@"isTemporary"] isEqual:NSNull.null] && [attributes[@"isTemporary"] boolValue]) return nil;
     }
     
     if ([self.fmdb hasTable:entityName]){
@@ -214,19 +144,24 @@
     } else {
         
         if (options[@"roleName"]){
-            [STMCoreObjectsController setRelationshipFromDictionary:attributes withCompletionHandler:^(BOOL sucess){
-                if (!sucess) {
-                    [STMFunctions error:error
-                                        withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
-                }
-            }];
+            [STMCoreObjectsController setRelationshipFromDictionary:attributes
+                                              withCompletionHandler:^(BOOL sucess)
+             {
+                 if (!sucess) {
+                     [STMFunctions error:error
+                             withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
+                 }
+             }];
         } else {
-            [STMCoreObjectsController  insertObjectFromDictionary:attributes withEntityName:entityName withCompletionHandler:^(BOOL sucess){
-                if (!sucess) {
-                    [STMFunctions error:error
-                                        withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
-                }
-            }];
+            [STMCoreObjectsController insertObjectFromDictionary:attributes
+                                                  withEntityName:entityName
+                                           withCompletionHandler:^(BOOL sucess)
+             {
+                 if (!sucess) {
+                     [STMFunctions error:error
+                             withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
+                 }
+             }];
         }
         
         return attributes;
@@ -238,7 +173,7 @@
     NSArray* objects = @[];
     
     // TODO: expendable fetch on one object destroy
-    if (!options[@"createRecordStatuses"] || [options[@"createRecordStatuses"] boolValue]){
+    if (!options[STMPersistingOptionRecordstatuses] || [options[STMPersistingOptionRecordstatuses] boolValue]){
         objects = [self findAllSync:entityName
                           predicate:predicate
                             options:options
@@ -268,7 +203,10 @@
     
     for (NSDictionary* object in objects){
         
-        NSDictionary *recordStatus = @{@"objectXid":object[idKey], @"name":[STMFunctions removePrefixFromEntityName:entityName], @"isRemoved": @YES};
+        NSDictionary *recordStatus = @{
+                                       @"objectXid":object[idKey],
+                                       @"name":[STMFunctions removePrefixFromEntityName:entityName],
+                                       @"isRemoved": @YES};
         
         [self mergeWithoutSave:@"STMRecordStatus"
                     attributes:recordStatus
@@ -301,10 +239,12 @@
     if ([self.fmdb hasTable:entityName]){
 #warning predicates not supported yet
         // TODO: make generic predicate to SQL method with predicate filtering
-        return [self.fmdb count:entityName withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
+        return [self.fmdb count:entityName
+                  withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
     } else {
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        return [[self document].managedObjectContext countForFetchRequest:request error:error];
+        return [[self document].managedObjectContext countForFetchRequest:request
+                                                                    error:error];
     }
     
 }
@@ -324,7 +264,10 @@
         
     }
     
-    NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
+    NSArray *results = [self findAllSync:entityName
+                               predicate:predicate
+                                 options:options
+                                   error:error];
     
     if (results.count) {
         return results.firstObject;
@@ -349,7 +292,7 @@
     // TODO: maybe could be simplified
     NSMutableArray *predicates = [[NSMutableArray alloc] init];
     
-    BOOL isFantom = [options[@"fantoms"] boolValue];
+    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
     [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
     
     if (predicate) {
@@ -361,13 +304,13 @@
     if (!orderBy) orderBy = @"id";
     
     if ([self.fmdb hasTable:entityName]){
-
+        
         return [self.fmdb getDataWithEntityName:entityName
-                                                 withPredicate:predicateWithFantoms
-                                                       orderBy:orderBy
-                                                    ascending:asc
-                                                    fetchLimit:options[@"pageSize"] ? &pageSize : nil
-                                                   fetchOffset:options[@"offset"] ? &offset : nil];
+                                  withPredicate:predicateWithFantoms
+                                        orderBy:orderBy
+                                      ascending:asc
+                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                    fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         
         NSArray* objectsArray = [self objectsForEntityName:entityName
@@ -390,17 +333,25 @@
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSDictionary* result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error];
+    NSDictionary* result = [self mergeWithoutSave:entityName
+                                       attributes:attributes
+                                          options:options
+                                            error:error];
     
     if (*error){
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
         return nil;
     }
     
     if (![self saveWithEntityName:entityName]){
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
     }
+    
+    [self notifyObservingEntityName:entityName
+                          ofUpdated:result];
     
     return result;
 
@@ -412,7 +363,10 @@
     
     for (NSDictionary* dictionary in attributeArray){
         
-        NSDictionary* dict = [self mergeWithoutSave:entityName attributes:dictionary options:options error:error];
+        NSDictionary* dict = [self mergeWithoutSave:entityName
+                                         attributes:dictionary
+                                            options:options
+                                              error:error];
         
         if (dict){
             [result addObject:dict];
@@ -424,12 +378,17 @@
             return nil;
         }
     }
-    if ([self saveWithEntityName:entityName]){
-        return result;
-    } else {
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+    
+    if (![self saveWithEntityName:entityName]){
+        [STMFunctions error:error
+                withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
     }
-    return nil;
+    
+    [self notifyObservingEntityName:entityName
+                     ofUpdatedArray:result];
+    
+    return result;
+    
 }
 
 - (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
@@ -472,7 +431,8 @@
     if ([self saveWithEntityName:entityName]){
         return count;
     } else {
-        [STMFunctions error:error withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
+        [STMFunctions error:error
+                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return count;
     }
     

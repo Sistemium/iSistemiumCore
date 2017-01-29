@@ -22,6 +22,11 @@
 
 @implementation STMModeller
 
++ (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
+    return [[STMModeller alloc] initWithModel:model];
+}
+
+
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName {
     NSString *path = [[NSBundle mainBundle] pathForResource:modelName ofType:@"momd"];
     

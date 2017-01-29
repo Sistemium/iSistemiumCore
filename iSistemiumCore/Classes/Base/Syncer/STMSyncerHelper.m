@@ -19,7 +19,7 @@
 @property (nonatomic, strong) NSMutableArray *failToResolveFantomsArray;
 @property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
-@property (nonatomic, strong) void (^unsyncedSubscriptionBlock)(NSString *entityName, NSDictionary *itemData, NSString *itemVersion);
+@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriber;
 @property (nonatomic) BOOL isHandlingUnsyncedObjects;
 
 
@@ -93,7 +93,7 @@
     
     NSLogMethodName;
     
-    if (self.unsyncedSubscriptionBlock) {
+    if (self.subscriber) {
         [self startHandleUnsyncedObjects];
     }
     
@@ -122,7 +122,7 @@
         NSError *error = nil;
         NSArray *results = [self.persistenceDelegate findAllSync:entityName
                                                        predicate:nil
-                                                         options:@{@"fantoms":@YES}
+                                                         options:@{STMPersistingOptionFantoms:@YES}
                                                            error:&error];
         
         NSArray *failToResolveFantomsIds = [self.failToResolveFantomsArray valueForKeyPath:@"id"];
@@ -217,10 +217,9 @@
 
 #pragma mark - STMDataSyncing
 
-- (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))completionHandler {
+- (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber {
     
-    self.unsyncedSubscriptionBlock = completionHandler;
-    
+    self.subscriber = subscriber;
     NSString *subscriptionId = [NSUUID UUID].UUIDString;
     
     return subscriptionId;
@@ -229,7 +228,7 @@
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId {
     
-    self.unsyncedSubscriptionBlock = nil;
+    self.subscriber = nil;
     return YES;
     
 }
@@ -238,13 +237,15 @@
     
     if (!success) {
         
-        self.failToSyncObjects[itemData[@"id"]] = itemData;
+        if (itemData && itemData[@"id"]) {
+            self.failToSyncObjects[itemData[@"id"]] = itemData;
+        }
         NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
         
     } else {
         if (itemVersion) {
             NSError *error;
-            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{@"lts": itemVersion} error:&error];
+            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{STMPersistingOptionLts: itemVersion} error:&error];
         } else {
             NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
         }
@@ -292,9 +293,15 @@
         
         NSLog(@"object to send: %@ %@", entityName, objectToSend[@"id"]);
         
-        if (self.unsyncedSubscriptionBlock) {
-            NSString *objectVersion = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
-            self.unsyncedSubscriptionBlock(objectToSend[@"entityName"], objectToSend, objectVersion);
+        if (self.subscriber) {
+            
+            BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
+            NSString *objectVersion = isFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
+            
+            [self.subscriber haveUnsyncedObjectWithEntityName:entityName
+                                                     itemData:objectToSend
+                                                  itemVersion:objectVersion];
+            
         }
         
     } else {

@@ -8,6 +8,7 @@
 
 #import "STMFmdb+Private.h"
 #import "STMFunctions.h"
+#import "STMPersisting.h"
 
 #define ExecDDL(ddlString) [self executeDDL:ddlString inDatabase:database]
 
@@ -96,7 +97,7 @@
                 [columnDefinition addObject:@"DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
             }
             
-            if ([columnName isEqualToString:@"lts"]) {
+            if ([columnName isEqualToString:STMPersistingOptionLts]) {
                 [columnDefinition addObject:@"DEFAULT('')"];
             }
             

@@ -63,7 +63,8 @@
 @property (nonatomic) BOOL downloadAlertWasShown;
 @property (nonatomic) BOOL newsReceiving;
 
-@property (nonatomic, strong) STMSpinnerView *syncSpinner;
+@property (nonatomic, strong) STMSpinnerView *sendSpinner;
+@property (nonatomic, strong) STMSpinnerView *receiveSpinner;
 
 @property (nonatomic, strong) UIAlertView *locationDisabledAlert;
 @property (nonatomic) BOOL locationDisabledAlertIsShown;
@@ -120,46 +121,46 @@
     
 }
 
-- (void)syncerStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMSyncer class]]) {
-        
-        STMSyncer *syncer = notification.object;
-        
-        STMSyncerState fromState = [notification.userInfo[@"from"] intValue];
-        
-        if (syncer.syncerState == STMSyncerIdle) {
-
-            self.progressBar.progress = 1.0;
-            [self performSelector:@selector(hideProgressBar)
-                       withObject:nil
-                       afterDelay:0];
-            
-            if (!self.downloadAlertWasShown) [self showDownloadAlert];
-            
-        } else {
-            
-            self.progressBar.hidden = NO;
-            [UIApplication sharedApplication].idleTimerDisabled = YES;
-            self.totalEntityCount = 1;
-            
-        }
-        
-        if (fromState == STMSyncerReceiveData) {
-            
-            [self performSelector:@selector(hideNumberOfObjects)
-                       withObject:nil
-                       afterDelay:5];
-            
-        }
-        
-    }
-    
-    [self stopSyncSpinner];
-
-    [self updateSyncInfo];
-    
-}
+//- (void)syncerStatusChanged:(NSNotification *)notification {
+//    
+//    if ([notification.object isKindOfClass:[STMSyncer class]]) {
+//        
+//        STMSyncer *syncer = notification.object;
+//        
+//        STMSyncerState fromState = [notification.userInfo[@"from"] intValue];
+//        
+//        if (syncer.syncerState == STMSyncerIdle) {
+//
+//            self.progressBar.progress = 1.0;
+//            [self performSelector:@selector(hideProgressBar)
+//                       withObject:nil
+//                       afterDelay:0];
+//            
+//            if (!self.downloadAlertWasShown) [self showDownloadAlert];
+//            
+//        } else {
+//            
+//            self.progressBar.hidden = NO;
+//            [UIApplication sharedApplication].idleTimerDisabled = YES;
+//            self.totalEntityCount = 1;
+//            
+//        }
+//        
+//        if (fromState == STMSyncerReceiveData) {
+//            
+//            [self performSelector:@selector(hideNumberOfObjects)
+//                       withObject:nil
+//                       afterDelay:5];
+//            
+//        }
+//        
+//    }
+//    
+////    [self stopSyncSpinner];
+//
+//    [self updateSyncInfo];
+//    
+//}
 
 - (void)hideProgressBar {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -170,11 +171,15 @@
 }
 
 - (void)updateSyncInfo {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
+        
         [self updateSyncDatesLabels];
         [self updateCloudImages];
         [self updateNonloadedPicturesInfo];
+        
     });
+    
 }
 
 - (void)updateUploadSyncProgressBar {
@@ -236,10 +241,14 @@
 #pragma mark - cloud images for sync button
 
 - (void)updateCloudImages {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
+        
         [self setImageForSyncImageView];
         [self setColorForSyncImageView];
+        
     });
+    
 }
 
 - (void)setImageForSyncImageView {
@@ -247,44 +256,10 @@
     NSString *imageName = nil;
     
     if (self.syncer.transportIsReady) {
+
+        imageName = @"Download From Cloud-100";
+        [self checkSpinnerStates];
         
-        switch (self.syncer.syncerState) {
-            case STMSyncerIdle: {
-
-                imageName = @"Download From Cloud-100";
-//                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
-                break;
-                
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-
-                if (!self.syncSpinner) {
-                    [self startSyncSpinnerInView:self.uploadImageView];
-                }
-                
-                imageName = @"Upload To Cloud-100";
-                break;
-                
-            }
-            case STMSyncerReceiveData: {
-
-                if (!self.syncSpinner) {
-                    [self startSyncSpinnerInView:self.downloadImageView];
-                }
-                
-                imageName = @"Download From Cloud-100";
-                break;
-                
-            }
-            default: {
-                
-                imageName = @"Download From Cloud-100";
-                break;
-                
-            }
-        }
-
     } else {
         
         imageName = @"No connection Cloud-100";
@@ -296,21 +271,69 @@
     });
 }
 
-- (void)startSyncSpinnerInView:(UIView *)view {
+- (void)checkSpinnerStates {
     
-    self.syncSpinner = [STMSpinnerView spinnerViewWithFrame:view.bounds
-                                         indicatorStyle:UIActivityIndicatorViewStyleGray
-                                        backgroundColor:[UIColor whiteColor]
-                                                   alfa:1];
-    [view addSubview:self.syncSpinner];
+    (self.syncer.isSendingData) ? [self startSendSpinner] : [self stopSendSpinner];
+    (self.syncer.isReceivingData) ? [self startReceiveSpinner] : [self stopReceiveSpinner];
 
 }
 
-- (void)stopSyncSpinner {
+- (void)startSendSpinner {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.syncSpinner removeFromSuperview];
-        self.syncSpinner = nil;
+        
+        if (!self.sendSpinner) {
+            
+            self.sendSpinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds
+                                                     indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                    backgroundColor:[UIColor whiteColor]
+                                                               alfa:1];
+            [self.uploadImageView addSubview:self.sendSpinner];
+            
+        }
+
     });
+
+}
+
+- (void)startReceiveSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        if (!self.receiveSpinner) {
+            
+            self.receiveSpinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds
+                                                        indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                       backgroundColor:[UIColor whiteColor]
+                                                                  alfa:1];
+            [self.downloadImageView addSubview:self.receiveSpinner];
+
+        }
+        
+    });
+    
+}
+
+- (void)stopSendSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.sendSpinner removeFromSuperview];
+        self.sendSpinner = nil;
+        
+    });
+    
+}
+
+- (void)stopReceiveSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.receiveSpinner removeFromSuperview];
+        self.receiveSpinner = nil;
+        
+    });
+    
 }
 
 - (void)setColorForSyncImageView {
@@ -452,9 +475,9 @@
     
 }
 
-- (void)syncerDidChangeContent:(NSNotification *)notification {
-    [self updateCloudImages];
-}
+//- (void)syncerDidChangeContent:(NSNotification *)notification {
+//    [self updateCloudImages];
+//}
 
 - (void)socketAuthorizationSuccess {
     [self updateCloudImages];
@@ -1101,19 +1124,39 @@
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
-    [nc addObserver:self
-           selector:@selector(syncerStatusChanged:)
-               name:NOTIFICATION_SYNCER_STATUS_CHANGED
-             object:self.syncer];
+//    [nc addObserver:self
+//           selector:@selector(syncerStatusChanged:)
+//               name:NOTIFICATION_SYNCER_STATUS_CHANGED
+//             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
-               name:@"sendFinished"
+               name:NOTIFICATION_SYNCER_SEND_STARTED
              object:self.syncer];
 
     [nc addObserver:self
            selector:@selector(updateUploadSyncProgressBar)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+             object:self.syncer];
+    
+    [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_SEND_FINISHED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_RECEIVE_STARTED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(getBunchOfObjects:)
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_RECEIVE_FINISHED
              object:self.syncer];
 
     [nc addObserver:self
@@ -1131,15 +1174,10 @@
                name:@"entitiesReceivingDidFinish"
              object:self.syncer];
     
-    [nc addObserver:self
-           selector:@selector(getBunchOfObjects:)
-               name:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-             object:self.syncer];
-    
-    [nc addObserver:self
-           selector:@selector(syncerDidChangeContent:)
-               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
-             object:nil];
+//    [nc addObserver:self
+//           selector:@selector(syncerDidChangeContent:)
+//               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
+//             object:nil];
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)

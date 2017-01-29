@@ -8,9 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+#import "STMDataSyncingSubscriber.h"
+
+
 @protocol STMDataSyncing <NSObject>
 
-- (NSString *)subscribeUnsyncedWithCompletionHandler:(void (^)(NSString *entity, NSDictionary *itemData, NSString *itemVersion))completionHandler;
+- (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber;
 
 - (BOOL)unSubscribe:(NSString *)subscriptionId;
 
