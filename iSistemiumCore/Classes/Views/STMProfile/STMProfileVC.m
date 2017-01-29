@@ -63,7 +63,8 @@
 @property (nonatomic) BOOL downloadAlertWasShown;
 @property (nonatomic) BOOL newsReceiving;
 
-@property (nonatomic, strong) STMSpinnerView *syncSpinner;
+@property (nonatomic, strong) STMSpinnerView *sendSpinner;
+@property (nonatomic, strong) STMSpinnerView *receiveSpinner;
 
 @property (nonatomic, strong) UIAlertView *locationDisabledAlert;
 @property (nonatomic) BOOL locationDisabledAlertIsShown;
@@ -155,7 +156,7 @@
         
     }
     
-    [self stopSyncSpinner];
+//    [self stopSyncSpinner];
 
     [self updateSyncInfo];
     
@@ -236,10 +237,14 @@
 #pragma mark - cloud images for sync button
 
 - (void)updateCloudImages {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
+        
         [self setImageForSyncImageView];
         [self setColorForSyncImageView];
+        
     });
+    
 }
 
 - (void)setImageForSyncImageView {
@@ -247,43 +252,48 @@
     NSString *imageName = nil;
     
     if (self.syncer.transportIsReady) {
+
+        imageName = @"Download From Cloud-100";
+
+        (self.syncer.isSendingData) ? [self startSendSpinner] : [self stopSendSpinner];
+
+        (self.syncer.isReceivingData) ? [self startReceiveSpinner] : [self stopReceiveSpinner];
         
-        switch (self.syncer.syncerState) {
-            case STMSyncerIdle: {
-
-                imageName = @"Download From Cloud-100";
-//                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
-                break;
-                
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-
-                if (!self.syncSpinner) {
-                    [self startSyncSpinnerInView:self.uploadImageView];
-                }
-                
-                imageName = @"Upload To Cloud-100";
-                break;
-                
-            }
-            case STMSyncerReceiveData: {
-
-                if (!self.syncSpinner) {
-                    [self startSyncSpinnerInView:self.downloadImageView];
-                }
-                
-                imageName = @"Download From Cloud-100";
-                break;
-                
-            }
-            default: {
-                
-                imageName = @"Download From Cloud-100";
-                break;
-                
-            }
-        }
+//        switch (self.syncer.syncerState) {
+//            case STMSyncerIdle: {
+//
+////                imageName = ([syncer numbersOfAllUnsyncedObjects] > 0) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
+//                break;
+//                
+//            }
+//            case STMSyncerSendData:
+//            case STMSyncerSendDataOnce: {
+//
+//                if (!self.syncSpinner) {
+//                    [self startSyncSpinnerInView:self.uploadImageView];
+//                }
+//                
+//                imageName = @"Upload To Cloud-100";
+//                break;
+//                
+//            }
+//            case STMSyncerReceiveData: {
+//
+//                if (!self.syncSpinner) {
+//                    [self startSyncSpinnerInView:self.downloadImageView];
+//                }
+//                
+//                imageName = @"Download From Cloud-100";
+//                break;
+//                
+//            }
+//            default: {
+//                
+//                imageName = @"Download From Cloud-100";
+//                break;
+//                
+//            }
+//        }
 
     } else {
         
@@ -296,21 +306,54 @@
     });
 }
 
-- (void)startSyncSpinnerInView:(UIView *)view {
+- (void)startSendSpinner {
     
-    self.syncSpinner = [STMSpinnerView spinnerViewWithFrame:view.bounds
-                                         indicatorStyle:UIActivityIndicatorViewStyleGray
-                                        backgroundColor:[UIColor whiteColor]
-                                                   alfa:1];
-    [view addSubview:self.syncSpinner];
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        self.sendSpinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds
+                                                 indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                backgroundColor:[UIColor whiteColor]
+                                                           alfa:1];
+        [self.uploadImageView addSubview:self.sendSpinner];
+
+    });
 
 }
 
-- (void)stopSyncSpinner {
+- (void)startReceiveSpinner {
+    
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.syncSpinner removeFromSuperview];
-        self.syncSpinner = nil;
+
+        self.receiveSpinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds
+                                                    indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                   backgroundColor:[UIColor whiteColor]
+                                                              alfa:1];
+        [self.downloadImageView addSubview:self.receiveSpinner];
+
     });
+    
+}
+
+- (void)stopSendSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.sendSpinner removeFromSuperview];
+        self.sendSpinner = nil;
+        
+    });
+    
+}
+
+- (void)stopReceiveSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.receiveSpinner removeFromSuperview];
+        self.receiveSpinner = nil;
+        
+    });
+    
 }
 
 - (void)setColorForSyncImageView {
