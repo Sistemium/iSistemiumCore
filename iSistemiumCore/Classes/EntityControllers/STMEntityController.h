@@ -17,7 +17,7 @@
 
 + (void)checkEntitiesForDuplicates;
 
-+ (NSSet *)entityNamesWithResolveFantoms;
++ (NSArray *)entityNamesWithResolveFantoms;
 
 + (NSSet *)entityNamesWithLifeTime;
 + (NSArray *)entitiesWithLifeTime;

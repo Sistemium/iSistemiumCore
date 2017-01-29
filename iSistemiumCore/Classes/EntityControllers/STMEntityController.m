@@ -130,7 +130,7 @@
             return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
         }];
         
-        _uploadableEntitiesNames = filteredKeys.allObjects;
+        _uploadableEntitiesNames = [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
 
     }
     return _uploadableEntitiesNames;
@@ -156,7 +156,7 @@
     return [self sharedInstance].uploadableEntitiesNames;
 }
 
-+ (NSSet *)entityNamesWithResolveFantoms {
++ (NSArray *)entityNamesWithResolveFantoms {
     
     NSMutableDictionary *stcEntities = [[self stcEntities] mutableCopy];
 
@@ -164,7 +164,7 @@
         return ([[obj valueForKey:@"isResolveFantoms"] boolValue] && [obj valueForKey:@"url"] != nil);
     }];
     
-    return filteredKeys;
+    return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
     
 }
 
@@ -182,9 +182,9 @@
 
 + (NSArray *)entitiesWithLifeTime {
     
-    NSArray *stcEntitiesArray = [self stcEntitiesArray];
+    NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
-    NSArray *result = [stcEntitiesArray filteredArrayUsingPredicate:predicate];
+    NSArray *result = [[self persistenceDelegate] findAllSync:@"STMEntity" predicate:predicate options:nil error:&error];
     
     return result;
     
@@ -316,11 +316,11 @@
         NSMutableArray *mutableResult = result.mutableCopy;
         [mutableResult removeObject:actualEntity];
         
-        for (STMEntity *entity in mutableResult) {
-            [STMCoreObjectsController removeObject:entity];
-        }
+        NSError *error;
         
-        [[self document] saveDocument:^(BOOL success) {}];
+        for (STMEntity *entity in mutableResult) {
+            [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:entity.xid] options:nil error:&error];
+        }
 
     }
     

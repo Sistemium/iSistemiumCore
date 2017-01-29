@@ -305,51 +305,51 @@
 
 + (void)startCheckingPicturesPaths {
     
-    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMCorePicture class])];
-    
-    if (result.count > 0) {
-
-        NSLogMethodName;
-
-        for (STMCorePicture *picture in result) {
-            
-            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
-                
-                NSString* thumbnailHref = picture.thumbnailHref;
-                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-                
-                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-                continue;
-            }
-            
-            NSArray *pathComponents = [picture.imagePath pathComponents];
-            
-            if (pathComponents.count == 0) {
-                
-                if (picture.href) {
-                    
-                    [self hrefProcessingForObject:picture];
-                    
-                } else {
-                    
-                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-                    [self deletePicture:picture];
-                    
-                }
-                
-            } else {
-                
-                if (pathComponents.count > 1) {
-                    [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
-                }
-                
-            }
-            
-        }
-
-    }
+//    NSArray *result = [STMCoreObjectsController objectsForEntityName:NSStringFromClass([STMCorePicture class])];
+//    
+//    if (result.count > 0) {
+//
+//        NSLogMethodName;
+//
+//        for (STMCorePicture *picture in result) {
+//            
+//            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+//                
+//                NSString* thumbnailHref = picture.thumbnailHref;
+//                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+//                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+//                
+//                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+//                continue;
+//            }
+//            
+//            NSArray *pathComponents = [picture.imagePath pathComponents];
+//            
+//            if (pathComponents.count == 0) {
+//                
+//                if (picture.href) {
+//                    
+//                    [self hrefProcessingForObject:picture];
+//                    
+//                } else {
+//                    
+//                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
+//                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+//                    [self deletePicture:picture];
+//                    
+//                }
+//                
+//            } else {
+//                
+//                if (pathComponents.count > 1) {
+//                    [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
+//                }
+//                
+//            }
+//            
+//        }
+//
+//    }
     
 }
 
@@ -978,11 +978,9 @@
     
     [self removeImageFilesForPicture:picture];
     
-    [STMCoreObjectsController removeObject:picture];
-
-    [[self document] saveDocument:^(BOOL success) {
-        
-    }];
+    NSError *error;
+    
+    [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
     
 }
 

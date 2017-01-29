@@ -25,7 +25,7 @@
 
 #import "STMCoreAppDelegate.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 
 
 @interface STMCoreRootTBC () <UITabBarControllerDelegate, UIAlertViewDelegate>
@@ -679,7 +679,9 @@
 - (void)lastSelectedVC:(UIViewController *)vc {
     
     NSString *logMessage = [NSString stringWithFormat:@"didSelectViewController: %@ %@", vc.title, vc];
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    
+    [self.session.syncer sendEventViaSocket:STMSocketEventStatusChange
+                                  withValue:logMessage];
 
     NSString *className = NSStringFromClass([vc class]);
     self.lastSelectedTab = @{@(self.selectedIndex) : @{className : vc.title}};
@@ -993,7 +995,7 @@
         
     } else if (alertView.tag == 2) {
 
-        if (buttonIndex == 1) [self.session.syncer setSyncerState:self.session.syncer.timeoutErrorSyncerState];
+//        if (buttonIndex == 1) [self.session.syncer setSyncerState:self.session.syncer.timeoutErrorSyncerState];
     
     }
     
@@ -1161,7 +1163,7 @@
     
     [nc addObserver:self
            selector:@selector(syncerInitSuccessfully)
-               name:@"Syncer init successfully"
+               name:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
              object:self.session.syncer];
     
 //    [nc addObserver:self

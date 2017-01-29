@@ -1028,9 +1028,11 @@
         NSDictionary *parameters = message.body;
         
         NSString *entityName = parameters[@"entityName"];
-        self.photoEntityName = [entityName hasPrefix:ISISTEMIUM_PREFIX] ? entityName : [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
+        self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
         
-        if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:self.photoEntityName]) {
+        BOOL hasTable = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate isConcreteEntityName:self.photoEntityName];
+        
+        if (hasTable) {
         
             self.waitingPhoto = YES;
 
@@ -1450,8 +1452,8 @@ int counter = 0;
                                                                             photoData:UIImageJPEGRepresentation(image, jpgQuality)];
     
     if (photoObject) {
-    
-        [STMCoreObjectsController setObjectData:self.photoData toObject:photoObject];
+        
+        [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
         
         NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
                                                                                  withNulls:YES

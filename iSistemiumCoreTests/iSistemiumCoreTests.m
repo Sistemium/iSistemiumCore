@@ -7,12 +7,16 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <CoreData/CoreData.h>
 #import "STMPredicateToSQL.h"
+#import "STMModeller.h"
 
 #define STMAssertSQLFilter(predicate, expectation, ...) \
-XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:predicate], expectation, __VA_ARGS__)
+XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], expectation, __VA_ARGS__)
 
 @interface iSistemiumCoreTests : XCTestCase
+
+@property (nonatomic,strong) STMPredicateToSQL *predicateToSQL;
 
 @end
 
@@ -20,6 +24,10 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
 
 - (void)setUp {
     [super setUp];
+    if (!self.predicateToSQL) {
+        NSManagedObjectModel *model = [self sampleModel];
+        self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:[STMModeller modellerWithModel:model]];
+    }
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
@@ -44,6 +52,10 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
     
     STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
     
+    predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
+    
+    STMAssertSQLFilter(predicate, @"NOT (id IN ('xid','xid'))");
+    
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", nil];
     
     STMAssertSQLFilter(predicate, @"(type IN (NULL))");
@@ -55,8 +67,80 @@ XCTAssertEqualObjects([STMPredicateToSQL.sharedInstance SQLFilterForPredicate:pr
     predicate = [NSPredicate predicateWithFormat:@"deviceTs > lts"];
     
     STMAssertSQLFilter(predicate, @"(deviceTs > lts)");
+
+    predicate = [NSCompoundPredicate notPredicateWithSubpredicate:predicate];
     
+    STMAssertSQLFilter(predicate, @"NOT (deviceTs > lts)");
+    
+    predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
+    
+    STMAssertSQLFilter(predicate, @"(exists ( select * from outlet where partnerId = 'xid' and id = outletId ))");
     
 }
+
+- (NSManagedObjectModel *) sampleModel {
+    
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
+    
+    NSArray *partnerProperties = @[
+        [self attributeWithName:@"name"
+                           type:NSStringAttributeType],
+        [self attributeWithName:@"ts"
+                           type:NSDateAttributeType],
+        [self attributeWithName:@"size"
+                           type:NSInteger32AttributeType]
+    ];
+    
+    NSEntityDescription *partner = [self entityWithName:@"Partner"
+                                            properties:partnerProperties];
+    
+    NSArray *outletProperties = @[
+        [self attributeWithName:@"name"
+                          type:NSStringAttributeType],
+        [self attributeWithName:@"ts"
+                          type:NSDateAttributeType],
+        [self attributeWithName:@"size"
+                          type:NSInteger32AttributeType]
+    ];
+    
+    NSEntityDescription *outlet = [self entityWithName:@"Outlet"
+                                            properties:outletProperties];
+    
+    NSRelationshipDescription *outletPartner = [[NSRelationshipDescription alloc] init];
+    
+    outletPartner.name = @"partner";
+    outletPartner.maxCount = 1;
+    outletPartner.destinationEntity = partner;
+    
+    NSRelationshipDescription *partnerOutlets = [[NSRelationshipDescription alloc] init];
+    
+    partnerOutlets.name = @"Outlets";
+    partnerOutlets.destinationEntity = outlet;
+    partnerOutlets.inverseRelationship = outletPartner;
+    
+    outletPartner.inverseRelationship = partnerOutlets;
+    
+    outlet.properties = [outlet.properties arrayByAddingObject:outletPartner];
+    partner.properties = [partner.properties arrayByAddingObject:partnerOutlets];
+    
+    [model setEntities:@[outlet, partner]];
+    
+    return model;
+}
+
+- (NSAttributeDescription *)attributeWithName:(NSString *)name type:(NSAttributeType)type {
+    NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
+    attribute.name = name;
+    attribute.attributeType = type;
+    return attribute;
+}
+
+- (NSEntityDescription *)entityWithName:(NSString *)name properties:(NSArray *)properties {
+    NSEntityDescription *entity = [[NSEntityDescription alloc] init];
+    entity.name = name;
+    entity.properties = properties;
+    return entity;
+}
+
 
 @end

@@ -20,10 +20,11 @@
 
 #import "STMAuthNC.h"
 
-#import "STMSocketController.h"
+//#import "STMSocketController.h"
 #import "STMSoundController.h"
 
 #import <AVFoundation/AVFoundation.h>
+#import "iSistemiumCore-Swift.h"
 
 
 @implementation STMCoreAppDelegate
@@ -170,7 +171,8 @@
 //    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
 //                                             numType:STMLogMessageTypeImportant];
     
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
     
     [STMSoundController startBackgroundPlay];
     
@@ -192,7 +194,8 @@
     
     [self backgroundTask:bgTask startedInApplication:application];
     
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     [STMGarbageCollector removeOutOfDateImages];
 //    [self showTestLocalNotification];
@@ -205,17 +208,17 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     logMessage = @"cancel scheduled socket close if have one";
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                              numType:STMLogMessageTypeInfo];
 
-    [STMSocketController cancelPreviousPerformRequestsWithTarget:[STMSocketController sharedInstance]
-                                                        selector:@selector(closeSocketInBackground)
-                                                          object:nil];
-    
-    [STMSocketController checkSocket];
+    [STMSyncer cancelPreviousPerformRequestsWithTarget:[self syncer]
+                                              selector:@selector(closeSocketInBackground)
+                                                object:nil];
+    [[self syncer] checkSocket];
     
 }
 
@@ -232,8 +235,9 @@
     if (session.status == STMSessionRunning) {
         [STMMessageController showMessageVCsIfNeeded];
     }
-    
-    [STMSocketController sendEvent:STMSocketEventStatusChange withValue:logMessage];
+
+    [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
+                            withValue:logMessage];
 
     [STMSoundController stopBackgroundPlay];
 
@@ -284,15 +288,15 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
-    
-    if ([STMSocketController socketIsAvailable]) {
-        
-        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData
-                                             fetchCompletionHandler:completionHandler];
-        
+
+    if ([self syncer].transportIsReady) {
+
+        [[self syncer] setSyncerState:STMSyncerReceiveData
+               fetchCompletionHandler:completionHandler];
+
     } else {
         
-        [STMSocketController checkSocket];
+        [[self syncer] checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
         
     }
     
@@ -366,9 +370,9 @@
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
 
-        [[STMSocketController sharedInstance] performSelector:@selector(closeSocketInBackground)
-                                                   withObject:nil
-                                                   afterDelay:delayInterval];
+        [[self syncer] performSelector:@selector(closeSocketInBackground)
+                            withObject:nil
+                            afterDelay:delayInterval];
 
     }
     
@@ -407,8 +411,9 @@
 
     if (userInfo[@"syncer"]) {
         
+#warning - is it used? may be rm it and use remoteCommends instead
         if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
-            [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+            [[self syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
                 
                 if (!handlerCompleted) {
 
@@ -431,7 +436,7 @@
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[self sessionManager].currentSession.syncer setSyncerState:STMSyncerSendData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
+        [[self syncer] setSyncerState:STMSyncerReceiveData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
             
             if (!handlerCompleted) {
                 
@@ -456,6 +461,7 @@
     
     @try {
         
+        NSLog(@"result %@", @(result));
         handler(result);
         
     } @catch (NSException *exception) {
@@ -587,6 +593,10 @@
         
     }
     
+}
+
+- (STMSyncer *)syncer {
+    return (STMSyncer *)[self sessionManager].currentSession.syncer;
 }
 
 
