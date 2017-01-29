@@ -608,10 +608,8 @@
 
     if (errorMessage) {
     
-        NSError *error = nil;
-        [STMFunctions error:&error withMessage:errorMessage];
-        completionHandler(NO, nil, nil, error);
-
+        [self completeFindAsyncHandler:completionHandler
+                      withErrorMessage:errorMessage];
         return;
         
     }
@@ -630,18 +628,23 @@
         
             NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
             
-            if (response) {
+            if (!response) {
                 
-                completionHandler(YES, response, nil, nil);
+                [self completeFindAsyncHandler:completionHandler
+                              withErrorMessage:@"ERROR: response contain no dictionary"];
                 return;
-                
+
             }
-                
-            NSError *localError = nil;
-            NSString *errorMessage = @"ERROR: response contain no dictionary";
-            [STMFunctions error:&localError withMessage:errorMessage];
             
-            completionHandler(NO, nil, nil, localError);
+            if (response[@"error"]) {
+                
+                [self completeFindAsyncHandler:completionHandler
+                              withErrorMessage:[NSString stringWithFormat:@"response got error: %@", response[@"error"]]];
+                return;
+
+            }
+            
+            completionHandler(YES, response, nil, nil);
 
         } else {
             completionHandler(NO, nil, nil, error);
