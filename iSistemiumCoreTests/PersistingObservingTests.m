@@ -13,6 +13,7 @@
 #import "STMConstants.h"
 
 #define PersistingObservingTestsTimeOut 10
+#define PersistingObservingTestEntity @"STMLogMessage"
 
 @interface PersistingObservingTests : XCTestCase
 
@@ -47,7 +48,7 @@
          
          STMPersistingObservingSubscriptionID subscriptionId;
          
-         subscriptionId = [persister observeEntity:@"STMLogMessage"
+         subscriptionId = [persister observeEntity:PersistingObservingTestEntity
                                        predicate:nil
                                         callback:^(NSArray *data) {
                                             NSLog(@"testObserveEntity called back with: %@", data);
@@ -58,13 +59,22 @@
          
          NSError *error;
          
-         [persister mergeSync:@"STMLogMessage"
-                   attributes:@{@"type": @"debug"}
-                      options:nil
-                        error:&error];
+         NSDictionary *item = [persister mergeSync:PersistingObservingTestEntity
+                                        attributes:@{@"type": @"debug"}
+                                           options:nil
+                                             error:&error];
 
+         XCTAssertNil(error);
+         
          XCTAssertTrue([persister cancelSubscription:subscriptionId]);
          XCTAssertFalse([persister cancelSubscription:subscriptionId]);
+         
+         NSUInteger count = [persister destroySync:PersistingObservingTestEntity
+                                        identifier:item[@"id"]
+                                           options:@{@"createRecordStatuses": @NO}
+                                             error:&error];
+         XCTAssertNil(error);
+         XCTAssertEqual(count, 1);
 
          return YES;
          
