@@ -48,8 +48,12 @@
          
          STMPersistingObservingSubscriptionID subscriptionId;
          
+         NSString *testType = @"debug";
+         
+         NSPredicate *matchingPredicate = [NSPredicate predicateWithFormat:@"type == %@", testType];
+         
          subscriptionId = [persister observeEntity:PersistingObservingTestEntity
-                                       predicate:nil
+                                       predicate:matchingPredicate
                                         callback:^(NSArray *data) {
                                             NSLog(@"testObserveEntity called back with: %@", data);
                                             [subscriptionExpectation fulfill];
@@ -57,10 +61,20 @@
          
          XCTAssertNotNil(subscriptionId);
          
+         STMPersistingObservingSubscriptionID subscriptionNotCalledBackId;
+         
+         NSPredicate *notMatchingPredicate = [NSCompoundPredicate notPredicateWithSubpredicate:matchingPredicate];
+         
+         subscriptionNotCalledBackId = [persister observeEntity:PersistingObservingTestEntity
+                                                      predicate:notMatchingPredicate
+                                                       callback:^(NSArray * _Nullable data) {
+                                                           XCTFail(@"Subscriptions with 'notMatchingPredicate' should not be called back");
+                                                       }];
+         
          NSError *error;
          
          NSDictionary *item = [persister mergeSync:PersistingObservingTestEntity
-                                        attributes:@{@"type": @"debug"}
+                                        attributes:@{@"type": testType}
                                            options:nil
                                              error:&error];
 
@@ -76,6 +90,8 @@
          XCTAssertNil(error);
          XCTAssertEqual(count, 1);
 
+         XCTAssertTrue([persister cancelSubscription:subscriptionNotCalledBackId]);
+         
          return YES;
          
      }];
