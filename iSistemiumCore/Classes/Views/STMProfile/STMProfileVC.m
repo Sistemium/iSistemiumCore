@@ -281,12 +281,16 @@
 - (void)startSendSpinner {
     
     dispatch_async(dispatch_get_main_queue(), ^{
-
-        self.sendSpinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds
-                                                 indicatorStyle:UIActivityIndicatorViewStyleGray
-                                                backgroundColor:[UIColor whiteColor]
-                                                           alfa:1];
-        [self.uploadImageView addSubview:self.sendSpinner];
+        
+        if (!self.sendSpinner) {
+            
+            self.sendSpinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds
+                                                     indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                    backgroundColor:[UIColor whiteColor]
+                                                               alfa:1];
+            [self.uploadImageView addSubview:self.sendSpinner];
+            
+        }
 
     });
 
@@ -295,13 +299,17 @@
 - (void)startReceiveSpinner {
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        
+        if (!self.receiveSpinner) {
+            
+            self.receiveSpinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds
+                                                        indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                       backgroundColor:[UIColor whiteColor]
+                                                                  alfa:1];
+            [self.downloadImageView addSubview:self.receiveSpinner];
 
-        self.receiveSpinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds
-                                                    indicatorStyle:UIActivityIndicatorViewStyleGray
-                                                   backgroundColor:[UIColor whiteColor]
-                                                              alfa:1];
-        [self.downloadImageView addSubview:self.receiveSpinner];
-
+        }
+        
     });
     
 }
@@ -1137,8 +1145,18 @@
              object:self.syncer];
 
     [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_RECEIVE_STARTED
+             object:self.syncer];
+
+    [nc addObserver:self
            selector:@selector(getBunchOfObjects:)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(updateSyncInfo)
+               name:NOTIFICATION_SYNCER_RECEIVE_FINISHED
              object:self.syncer];
 
     [nc addObserver:self
