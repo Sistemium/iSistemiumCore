@@ -62,7 +62,7 @@
 
 - (void)persisterCompleteInitializationWithSuccess:(BOOL)success {
     
-    if (success) {
+    if (!success) {
         NSLog(@"persister is not ready, have to do something with it");
         return;
     }
