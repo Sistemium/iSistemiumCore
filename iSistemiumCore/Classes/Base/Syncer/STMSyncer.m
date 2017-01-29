@@ -1310,7 +1310,7 @@
     
     if (entity) {
         
-        NSMutableDictionary *options = @{@"lts": [STMFunctions stringFromNow]}.mutableCopy;
+        NSMutableDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]}.mutableCopy;
 
         NSString *roleName = entity.roleName;
         
@@ -1515,7 +1515,7 @@
         
     }
     
-    NSDictionary *options = @{@"lts": [STMFunctions stringFromNow]};
+    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
     
     [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
 

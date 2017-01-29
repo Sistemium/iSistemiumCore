@@ -96,7 +96,7 @@
                 [columnDefinition addObject:@"DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))"];
             }
             
-            if ([columnName isEqualToString:@"lts"]) {
+            if ([columnName isEqualToString:STMPersistingOptionLts]) {
                 [columnDefinition addObject:@"DEFAULT('')"];
             }
             

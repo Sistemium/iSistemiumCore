@@ -11,5 +11,6 @@
 
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"
+#define STMPersistingOptionLts @"lts"
 
 #endif /* STMPersisting_h */

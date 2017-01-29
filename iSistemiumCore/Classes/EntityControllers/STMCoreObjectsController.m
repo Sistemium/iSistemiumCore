@@ -320,9 +320,9 @@
     NSDictionary *options;
     
     if (roleName){
-        options = @{@"lts": STMFunctions.stringFromNow,@"roleName":roleName};
+        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow,@"roleName":roleName};
     }else{
-        options = @{@"lts": STMFunctions.stringFromNow};
+        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow};
     }
     
     [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
@@ -447,7 +447,7 @@
     
     [self processingOfRelationshipsForObject:object withEntityName:entityName andValues:properties];
     
-    [object setValue:[NSDate date] forKey:@"lts"];
+    [object setValue:[NSDate date] forKey:STMPersistingOptionLts];
 
     [self postprocessingForObject:object];
     
@@ -667,7 +667,7 @@
         
         BOOL isInSyncList = [[STMEntityController uploadableEntitiesNames] containsObject:(NSString * _Nonnull)object.entity.name];
         
-        NSDate *lts = [object valueForKey:@"lts"];
+        NSDate *lts = [object valueForKey:STMPersistingOptionLts];
         NSDate *deviceTs = [object valueForKey:@"deviceTs"];
         
         return (isInSyncList && lts && [lts compare:deviceTs] == NSOrderedAscending);

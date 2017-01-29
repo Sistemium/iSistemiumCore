@@ -245,7 +245,7 @@
     } else {
         if (itemVersion) {
             NSError *error;
-            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{@"lts": itemVersion} error:&error];
+            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{STMPersistingOptionLts: itemVersion} error:&error];
         } else {
             NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
         }

@@ -150,14 +150,14 @@
     
     NSString *now = [STMFunctions stringFromNow];
     NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    BOOL returnSaved = !([options[@"returnSaved"] isEqual:@NO] || options[@"lts"]);
+    BOOL returnSaved = !([options[@"returnSaved"] isEqual:@NO] || options[STMPersistingOptionLts]);
     
-    if (options[@"lts"]) {
-        [savingAttributes setValue:options[@"lts"] forKey:@"lts"];
+    if (options[STMPersistingOptionLts]) {
+        [savingAttributes setValue:options[STMPersistingOptionLts] forKey:STMPersistingOptionLts];
         [savingAttributes removeObjectForKey:@"deviceTs"];
     } else {
         [savingAttributes setValue:now forKey:@"deviceTs"];
-        [savingAttributes removeObjectForKey:@"lts"];
+        [savingAttributes removeObjectForKey:STMPersistingOptionLts];
     }
     
     savingAttributes[@"deviceAts"] = now;
