@@ -236,6 +236,7 @@
     [self waitForExpectationsWithTimeout:PersistingObservingTestsTimeOut
                                  handler:^(NSError * _Nullable error) {
                                      XCTAssertTrue([self.persister cancelSubscription:subscriptionId]);
+                                     XCTAssertTrue([self.persister cancelSubscription:subscriptionId2]);
                                  }];
 }
 
