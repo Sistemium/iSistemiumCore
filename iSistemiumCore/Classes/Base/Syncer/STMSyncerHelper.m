@@ -237,7 +237,9 @@
     
     if (!success) {
         
-        self.failToSyncObjects[itemData[@"id"]] = itemData;
+        if (itemData && itemData[@"id"]) {
+            self.failToSyncObjects[itemData[@"id"]] = itemData;
+        }
         NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
         
     } else {
