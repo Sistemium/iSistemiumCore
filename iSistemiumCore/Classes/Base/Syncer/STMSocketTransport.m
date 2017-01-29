@@ -599,6 +599,7 @@
 
 
 #pragma mark - STMPersistingWithHeadersAsync
+#pragma mark find
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
 
@@ -673,6 +674,8 @@
     return nil;
     
 }
+
+#pragma mark findAll
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
     
@@ -776,6 +779,8 @@
     completionHandler(NO, nil, nil, localError);
     
 }
+
+#pragma mark merge
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
 
