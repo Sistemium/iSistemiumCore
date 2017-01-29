@@ -25,7 +25,8 @@
     STMPersister *persister =
     [STMPersister persisterWithModelName:dataModelName
                                      uid:self.uid
-                                  iSisDB:self.iSisDB];
+                                  iSisDB:self.iSisDB
+                       completionHandler:nil];
     
     self.persistenceDelegate = persister;
     #warning need to remove direct links to document after full persisting concept realization
@@ -34,6 +35,51 @@
     [self addPersistenceObservers];
     
     return self;
+}
+
+- (void)removePersistable:(void (^)(BOOL success))completionHandler {
+    
+    [self removePersistenceObservers];
+    
+    // TODO: do document closing in STMPersister
+    
+    if (self.document.documentState == UIDocumentStateNormal) {
+        
+        [self.document saveDocument:^(BOOL success) {
+            
+            if (completionHandler) completionHandler(success);
+            
+            if (self.status == STMSessionRemoving) {
+                self.document = nil;
+                self.persistenceDelegate = nil;
+            }
+            
+        }];
+        
+    }
+}
+
+#pragma mark Private methods
+
+- (void)persisterCompleteInitializationWithSuccess:(BOOL)success {
+    
+    if (!success) {
+        NSLog(@"persister is not ready, have to do something with it");
+        return;
+    }
+
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
+    
+    self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+    self.trackers = [NSMutableDictionary dictionary];
+    if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
+    
+    [self checkTrackersToStart];
+    
+    self.logger = [STMLogger sharedLogger];
+    self.logger.session = self;
+    self.settingsController.session = self;
+
 }
 
 
@@ -69,8 +115,7 @@
 - (void)myStatusChanged:(NSNotification *)notification {
     
     if (self.status == STMSessionRemoving) {
-        [self removePersistenceObservers];
-        self.persistenceDelegate = nil;
+        [self removePersistable:nil];
     }
     
 }

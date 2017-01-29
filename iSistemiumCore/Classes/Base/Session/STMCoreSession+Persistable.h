@@ -11,5 +11,6 @@
 @interface STMCoreSession (Persistable)
 
 - (instancetype)initPersistable;
+- (void)removePersistable:(void (^)(BOOL success))completionHandler;
 
 @end

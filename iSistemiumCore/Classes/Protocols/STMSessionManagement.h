@@ -91,8 +91,6 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
                       trackers:(NSArray *)trackers
                  startSettings:(NSDictionary *)startSettings;
 
-- (void)persisterCompleteInitializationWithSuccess:(BOOL)success;
-
 - (BOOL)isRunningTests;
 
 @end

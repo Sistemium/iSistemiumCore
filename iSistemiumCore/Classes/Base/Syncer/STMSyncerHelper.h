@@ -15,17 +15,10 @@
 #import "STMPersistingSync.h"
 #import "STMModelling.h"
 
-
 @interface STMSyncerHelper : NSObject <STMDataSyncing>
 
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling> persistenceDelegate;
 
-- (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler;
-
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic
-                      deleteObject:(BOOL)deleteObject;
-
-- (void)defantomizingFinished;
-
+@property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
 
 @end

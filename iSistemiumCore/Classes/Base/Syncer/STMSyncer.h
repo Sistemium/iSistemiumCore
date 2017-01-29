@@ -12,7 +12,7 @@
 #import "STMRequestAuthenticatable.h"
 #import "STMSocketTransportOwner.h"
 #import "STMDataSyncing.h"
-#import "STMSyncerHelper.h"
+#import "STMDefantomizing.h"
 
 
 @interface STMSyncer : NSObject <STMSyncer, STMSocketTransportOwner>
@@ -21,7 +21,7 @@
 
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync> persistenceDelegate;
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
-@property (nonatomic, strong) STMSyncerHelper *syncerHelper;
+@property (nonatomic, strong) id <STMDefantomizing> syncerHelper;
 
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
