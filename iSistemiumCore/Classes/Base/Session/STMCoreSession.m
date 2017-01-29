@@ -12,7 +12,7 @@
 #import "STMCoreAuthController.h"
 #import "STMPersister+Async.h"
 #import "STMSyncerHelper.h"
-#import "STMPersistingObserving.h"
+#import "STMPersister+Observable.h"
 
 
 @interface STMCoreSession()
