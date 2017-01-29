@@ -25,7 +25,7 @@
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
-@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync,STMModelling> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> * persistenceDelegate;
 
 @property (nonatomic, strong) STMLogger *logger;
 @property (nonatomic, strong) id <STMSessionManager> manager;
