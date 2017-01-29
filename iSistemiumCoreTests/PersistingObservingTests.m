@@ -55,6 +55,63 @@
     [super tearDown];
 }
 
+- (void)testObserveLts {
+
+    XCTestExpectation *subscriptionExpectation = [self expectationWithDescription:@"Check subscriptions while creating a LogMessage then updating it with lts"];
+    
+    NSPredicate *ltsPredicate = [NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[self.typePredicate, ltsPredicate]];
+    
+    STMPersistingObservingSubscriptionID subscriptionId;
+    
+    subscriptionId = [self.persister observeEntity:PersistingObservingTestEntity
+                                         predicate:predicate
+                                          callback:^(NSArray *data)
+                      {
+//                          NSLog(@"testObserveEntity called back with: %@", data);
+                          
+                          XCTAssertEqual(data.count, 1);
+                          
+                          NSDictionary *toUploadItem = [data firstObject];
+                          
+                          [self.persister mergeSync:PersistingObservingTestEntity
+                                         attributes:toUploadItem
+                                            options:@{STMPersistingOptionLts
+                                              error:&error];
+                          
+                      }];
+    
+    NSError *error;
+    
+    NSDictionary *item =
+    [self.persister mergeSync:PersistingObservingTestEntity
+                   attributes:@{@"type": self.testType}
+                      options:nil
+                        error:&error];
+    
+    XCTAssertNil(error);
+    
+    __block NSString *pk = item[@"id"];
+    
+    XCTAssertNotNil(pk);
+    
+    [self waitForExpectationsWithTimeout:PersistingObservingTestsTimeOut
+                                 handler:^(NSError * _Nullable error)
+     {
+         XCTAssertNil(error);
+         NSUInteger count =
+         [self.persister destroySync:PersistingObservingTestEntity
+                          identifier:pk
+                             options:@{STMPersistingOptionRecordstatuses: @NO}
+                               error:&error];
+         XCTAssertNil(error);
+         XCTAssertEqual(count, 1);
+         XCTAssertTrue([self.persister cancelSubscription:subscriptionId]);
+     }];
+    
+}
+
 - (void)testObserveEntity {
     
     XCTestExpectation *subscriptionExpectation = [self expectationWithDescription:@"Waiting for LogMessage"];
