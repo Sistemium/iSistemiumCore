@@ -14,18 +14,10 @@
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
 #import "STMModelling.h"
+#import "STMDefantomizing.h"
 
-
-@interface STMSyncerHelper : NSObject <STMDataSyncing>
+@interface STMSyncerHelper : NSObject <STMDataSyncing, STMDefantomizing>
 
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling> persistenceDelegate;
-
-- (void)findFantomsWithCompletionHandler:(void (^)(NSArray <NSDictionary *> *fantomsArray))completionHandler;
-
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic
-                      deleteObject:(BOOL)deleteObject;
-
-- (void)defantomizingFinished;
-
 
 @end
