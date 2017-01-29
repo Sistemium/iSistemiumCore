@@ -415,7 +415,8 @@
     
     NSDictionary* result = [self mergeWithoutSave:entityName
                                        attributes:attributes
-                                          options:options error:error];
+                                          options:options
+                                            error:error];
     
     if (*error){
         [STMFunctions error:error
@@ -454,13 +455,16 @@
             return nil;
         }
     }
+    
     if ([self saveWithEntityName:entityName]){
         return result;
     } else {
         [STMFunctions error:error
                 withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
     }
+    
     return nil;
+    
 }
 
 - (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
