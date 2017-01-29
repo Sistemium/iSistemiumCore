@@ -11,6 +11,7 @@
 
 @interface STMPersister (Observable) <STMPersistingObserving>
 
-@property (nonatomic, strong, readonly) NSMutableDictionary *subscriptions;
+- (void)notifyObservingEntityName:(NSString *)entityName
+                        ofUpdated:(NSDictionary *)attributes;
 
 @end

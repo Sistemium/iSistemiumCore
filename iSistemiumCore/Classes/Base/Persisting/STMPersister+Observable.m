@@ -12,13 +12,17 @@
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate
-                                             callback:(void (^)(NSArray * data))callback {
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
     
     STMPersistingObservingSubscriptionID subscriptionId = NSUUID.UUID.UUIDString;
     
-    self.subscriptions[subscriptionId] = @{
-                                           @"callback": callback
-                                           };
+    STMPersistingObservingSubscription *subscription = [[STMPersistingObservingSubscription alloc] init];
+    
+    subscription.entityName = entityName;
+    subscription.predicate = predicate;
+    subscription.callback = callback;
+    
+    self.subscriptions[subscriptionId] = subscription;
     
     return subscriptionId;
     
@@ -33,6 +37,26 @@
     }
     
     return result;
+}
+
+- (void)notifyObservingEntityName:(NSString *)entityName
+                        ofUpdated:(NSDictionary *)attributes {
+    
+    // TODO: maybe we need to cache subscriptions by entityName
+    for (STMPersistingObservingSubscriptionID key in self.subscriptions) {
+        
+        STMPersistingObservingSubscription *subscription = self.subscriptions[key];
+        
+        if (![subscription.entityName isEqualToString:entityName]) continue;
+        
+        if (subscription.predicate) {
+            if (![subscription.predicate evaluateWithObject:attributes]) continue;
+        }
+        
+        subscription.callback([NSArray arrayWithObject:attributes]);
+        
+    }
+    
 }
 
 @end

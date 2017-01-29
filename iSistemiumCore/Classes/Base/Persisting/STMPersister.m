@@ -12,6 +12,7 @@
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
+#import "STMPersister+Observable.h"
 
 #import "STMCoreAuthController.h"
 #import "STMCoreObjectsController.h"
@@ -22,6 +23,9 @@
 
 @end
 
+@implementation STMPersistingObservingSubscription
+
+@end
 
 @implementation STMPersister
 
@@ -429,6 +433,9 @@
                 withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
     }
+    
+    [self notifyObservingEntityName:entityName
+                          ofUpdated:result];
     
     return result;
 

@@ -11,12 +11,14 @@
 
 #define STMPersistingObservingSubscriptionID NSString *
 
+typedef void (^STMPersistingObservingSubscriptionCallback)(NSArray * _Nullable data);
+
 @protocol STMPersistingObserving
 
-- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
-                                            predicate:(NSPredicate *)predicate
-                                             callback:(void (^)(NSArray *data))callback;
+- (STMPersistingObservingSubscriptionID _Nonnull)observeEntity:(NSString * _Nonnull)entityName
+                                                     predicate:(NSPredicate * _Nullable)predicate
+                                                      callback:(STMPersistingObservingSubscriptionCallback _Nonnull)callback;
 
-- (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId;
+- (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID _Nonnull)subscriptionId;
 
 @end
