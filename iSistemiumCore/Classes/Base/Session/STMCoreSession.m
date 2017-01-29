@@ -10,7 +10,7 @@
 
 #import "STMSyncerHelper.h"
 #import "STMCoreSession+Persistable.h"
-#import "STMSyncerHelper.h"
+#import "STMSyncerHelper+Defantomizing.h"
 
 @interface STMCoreSession()
 
