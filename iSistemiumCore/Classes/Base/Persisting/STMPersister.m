@@ -29,7 +29,7 @@
 
 @synthesize subscriptions = _subscriptions;
 
-+ (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB{
++ (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
 
     STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
     
@@ -37,6 +37,9 @@
     persister.document = [STMDocument documentWithUID:uid
                                                iSisDB:iSisDB
                                         dataModelName:modelName];
+    
+    // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
+    if (completionHandler) completionHandler(YES);
 
     return persister;
     

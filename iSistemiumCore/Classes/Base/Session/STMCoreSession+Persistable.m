@@ -25,7 +25,8 @@
     STMPersister *persister =
     [STMPersister persisterWithModelName:dataModelName
                                      uid:self.uid
-                                  iSisDB:self.iSisDB];
+                                  iSisDB:self.iSisDB
+                       completionHandler:nil];
     
     self.persistenceDelegate = persister;
     #warning need to remove direct links to document after full persisting concept realization

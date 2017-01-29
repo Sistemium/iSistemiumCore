@@ -32,7 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)persisterWithModelName:(NSString *)modelName
                                    uid:(NSString *)uid
-                                iSisDB:(NSString *)iSisDB;
+                                iSisDB:(NSString *)iSisDB
+                     completionHandler:(void (^ _Nullable)(BOOL success))completionHandler;
 
 @end
 
