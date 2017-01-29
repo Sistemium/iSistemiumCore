@@ -1650,128 +1650,15 @@
 
 - (void)postObjectsSendedNotification {
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-                                                        object:self];
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        //    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+                                                            object:self];
+
+    });
 
 }
-
-
-// ----------------------
-// | OLD IMPLEMENTATION |
-// ----------------------
-
-#pragma mark - OLD IMPLEMENTATION
-
-#pragma mark - socket receive ack handler
-
-//- (void)receiveUpdateAck:(NSArray *)data withResponse:(NSDictionary *)response resource:(NSString *)resource entityName:(NSString *)entityName errorCode:(NSNumber *)errorCode {
-//    
-//    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-//    
-//    if (errorCode) {
-//        
-//        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: %@", resource, errorCode];
-//        [self socketReceiveJSDataUpdateAckErrorCode:errorCode andErrorString:errorString withResponse:response]; return;
-//        
-//    }
-//
-//    if (!responseData) {
-//        
-//        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: update response data is not a dictionary", resource];
-//        [self socketReceiveJSDataUpdateAckErrorCode:nil andErrorString:errorString withResponse:response]; return;
-//        
-//    }
-//    
-//    [self parseUpdateAckResponseData:responseData];
-//
-//}
-//
-//- (void)socketReceiveJSDataUpdateAckErrorCode:(NSNumber *)errorCode andErrorString:(NSString *)errorString withResponse:(NSDictionary *)response {
-//    
-//    NSLog(@"%@", errorString);
-//    [self.socketTransport socketSendEvent:STMSocketEventInfo
-//                                withValue:errorString];
-//
-//    NSString *xid = [response valueForKey:@"id"];
-//    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-//
-//    BOOL abortSync = (errorCode.integerValue <= 399 || errorCode.integerValue >= 500);
-//    
-////    [STMSocketController unsuccessfullySyncObjectWithXid:xidData
-////                                             errorString:errorString
-////                                               abortSync:abortSync];
-//    
-//}
-
-//- (void)parseUpdateAckResponseData:(NSDictionary *)responseData {
-//
-////    NSLog(@"update responseData %@", responseData);
-//    [self syncObject:responseData];
-//    
-//}
-
-
-#pragma mark - sync object
-
-//- (void)syncObject:(NSDictionary *)objectDictionary {
-/*
-    STMLogger *logger = [STMLogger sharedLogger];
-    
-    NSString *xid = [objectDictionary valueForKey:@"id"];
-    NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-    
-//    NSDate *syncDate = [STMSocketController syncDateForSyncedObjectXid:xidData];
-
-    if (!syncDate) {
-
-        NSString *logMessage = [NSString stringWithFormat:@"Sync: object with xid %@ have no syncDate", xid];
-        [logger saveLogMessageWithText:logMessage];
-        
-        return;
-        
-    }
-    
-    NSManagedObject *syncedObject = [STMCoreObjectsController objectForXid:xidData];
-    
-    if (!syncedObject) {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Sync: no object with xid: %@", xid];
-        [logger saveLogMessageWithText:logMessage];
-        
-        return;
-        //    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
-
-    }
-    
-    if (![syncedObject isKindOfClass:[STMDatum class]]) {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Sync: syncedObject %@ is not STMDatum class", xid];
-        [logger saveLogMessageWithText:logMessage];
-        
-        return;
-        
-    }
-
-    STMDatum *object = (STMDatum *)syncedObject;
-    
-    [object.managedObjectContext performBlockAndWait:^{
-        
-        if ([object isKindOfClass:[STMRecordStatus class]] && [[(STMRecordStatus *)object valueForKey:@"isRemoved"] boolValue]) {
-            [STMCoreObjectsController removeObject:object];
-        } else {
-            object.lts = syncDate;
-        }
-        
-//        [STMSocketController successfullySyncObjectWithXid:xidData];
-        
-        NSString *entityName = object.entity.name;
-        
-        NSString *logMessage = [NSString stringWithFormat:@"successefully sync %@ with xid %@", entityName, xid];
-        [logger saveLogMessageWithText:logMessage];
-        
-    }];
-*/
-//}
 
 
 @end
