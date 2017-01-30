@@ -402,6 +402,7 @@
 }
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
+#warning moved to Persister+CoreData
     
     NSSet *ownObjectKeys = [self ownObjectKeysForEntityName:entityName];
     ownObjectKeys = [ownObjectKeys setByAddingObject:@"deviceCts"];
@@ -464,6 +465,7 @@
 }
 
 + (void)processingOfRelationshipsForObject:(NSManagedObject *)object withEntityName:(NSString *)entityName andValues:(NSDictionary *)properties {
+#warning moved to Persister+CoreData
     
     NSDictionary *ownObjectRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName];
     
@@ -542,7 +544,8 @@
 }
 
 + (void)postprocessingForObject:(NSManagedObject *)object {
-
+#warning moved to Persister+CoreData
+    
     if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;
@@ -694,7 +697,7 @@
 }
 
 + (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
-    
+#warning moved to Persister+CoreData 
     if ([[self localDataModelEntityNames] containsObject:entityName]) {
         
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
@@ -1638,7 +1641,8 @@
             
             NSString *destinationEntityName = ownRelationships[key];
             
-            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:xidString];
+            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName
+                                                                          andXidString:xidString];
             
             if (![[object valueForKey:key] isEqual:destinationObject]) {
                 
@@ -2020,31 +2024,6 @@
 
 }
 
-#warning - replace it with arrayForJSWithObjectsDics ?
-+ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
-
-    NSMutableArray *dataArray = @[].mutableCopy;
-    
-    [objects enumerateObjectsUsingBlock:^(STMDatum * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-
-        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:obj];
-        [dataArray addObject:propertiesDictionary];
-
-    }];
-    
-//    for (STMDatum *object in objects) {
-//        
-//        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:object];
-//        [dataArray addObject:propertiesDictionary];
-//        
-//    }
-    
-//    NSLog(@"find prepare objects array %@", @([NSDate timeIntervalSinceReferenceDate]));
-
-    return dataArray;
-    
-}
-
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
     return [self dictionaryForJSWithObject:object withNulls:YES];
 }
@@ -2067,7 +2046,7 @@
     NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
     NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:object.entity.name].allKeys;
     
-    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
+    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
     
     [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
     [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];

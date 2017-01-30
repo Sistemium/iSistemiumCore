@@ -16,7 +16,9 @@
 #import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
 #import "STMRecordStatusController.h"
-
+#import "STMModeller+Private.h"
+#import "STMCorePicturesController.h"
+#import "STMClientDataController.h"
 
 @implementation STMPersister (CoreData)
 
@@ -39,7 +41,9 @@
     } else {
         
         NSDictionary *object = [self insertObjectFromDictionary:attributes
-                                                 withEntityName:entityName];
+                                                 withEntityName:entityName
+                                                        options:options
+                                ];
         
         if (object) {
             return object;
@@ -61,9 +65,12 @@
     }
 }
 
-- (void)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
+- (NSUInteger)removeObjectForPredicate:(NSPredicate*)predicate entityName:(NSString *)name{
     name = [STMFunctions addPrefixToEntityName:name];
-    [self removeObjects:[self objectsForPredicate:predicate entityName:name]];
+    NSArray *objects = [self objectsForPredicate:predicate entityName:name];
+    NSUInteger result = objects.count;
+    [self removeObjects:objects];
+    return result;
 }
 
 - (NSArray *)objectsForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
@@ -74,8 +81,9 @@
     
     //    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = predicate;
-    
-    return [self.document.managedObjectContext executeFetchRequest:request error:nil];
+    NSError *error;
+    NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:&error];
+    return result;
     
 }
 
@@ -226,7 +234,218 @@
     
 }
 
-- (NSDictionary *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
++ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
+    
+    NSMutableArray *dataArray = @[].mutableCopy;
+    
+    [objects enumerateObjectsUsingBlock:^(STMDatum * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSDictionary *propertiesDictionary = [STMCoreObjectsController dictionaryForJSWithObject:obj];
+        [dataArray addObject:propertiesDictionary];
+        
+    }];
+    
+    return dataArray;
+    
+}
+
+- (void)processingOfObject:(NSManagedObject *)object
+            withEntityName:(NSString *)entityName
+            fillWithValues:(NSDictionary *)properties
+                   options:(NSDictionary *)options
+{
+    
+    NSSet *fields =
+    [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
+    //[self fieldsForEntityName:entityName];
+    
+    STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
+    NSDictionary *entityAttributes = currentEntity.attributesByName;
+    
+    for (NSString *key in fields) {
+        
+        id value = properties[key];
+        
+        value = (![value isKindOfClass:[NSNull class]]) ?
+        [STMModeller typeConversionForValue:value
+                                        key:key
+                           entityAttributes:entityAttributes] : nil;
+        
+        if (value) {
+            
+            [object setValue:value forKey:key];
+            
+        } else {
+            
+            if (![object isKindOfClass:[STMCorePicture class]] && ![key isEqualToString:@"deviceAts"]) {
+                [object setValue:nil forKey:key];
+            }
+            
+        }
+        
+    }
+    
+    if ([object isKindOfClass:[STMCorePicture class]]){
+        
+        STMCorePicture *picture = (STMCorePicture *)object;
+        
+        if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+            
+            NSString* thumbnailHref = picture.thumbnailHref;
+            NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+            NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+            
+            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+            
+        }
+        
+    }
+    
+    [self processingOfRelationshipsForObject:object withEntityName:entityName andValues:properties];
+    
+    if (options[STMPersistingOptionLts]) {
+        [object setValue:[STMFunctions dateFromString:options[STMPersistingOptionLts]]
+                  forKey:STMPersistingOptionLts];
+    }
+    
+    [self postprocessingForObject:object];
+    
+#warning Don't know if it's needed now
+//    STMCoreObjectsController *coc = [self sharedController];
+//    
+//    if ([coc.entitiesToSubscribe objectForKey:entityName]) {
+//        
+//        if (object && [object isKindOfClass:[STMDatum class]]) {
+//            [coc.subscribedObjects addObject:(STMDatum *)object];
+//        }
+//        
+//    }
+    
+}
+
+- (void)postprocessingForObject:(NSManagedObject *)object {
+#warning This is to specific. Need to remove this dependency on STMClientDataController
+    if ([object isKindOfClass:[STMSetting class]]) {
+        
+        STMSetting *setting = (STMSetting *)object;
+        
+        if ([setting.group isEqualToString:@"appSettings"]) {
+            [STMClientDataController checkAppVersion];
+        }
+        
+    }
+    
+}
+
+- (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+    request.predicate = [NSPredicate predicateWithFormat:@"xid == %@", xidData];
+    
+    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+    
+    if (fetchResult.firstObject) return fetchResult.firstObject;
+    
+    return nil;
+    
+}
+
+- (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
+    
+    STMDatum *object = [self objectForXid:xidData entityName:entityName];
+    
+    if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
+    
+    return object;
+    
+}
+
+- (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
+    
+    return [self objectFindOrCreateForEntityName:entityName
+                                          andXid:[STMFunctions xidDataFromXidString:xid]];
+    
+}
+
+- (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
+    
+    STMDatum *object = [STMEntityDescription insertNewObjectForEntityForName:entityName
+                                                      inManagedObjectContext:self.document.managedObjectContext];
+    
+    object.isFantom = @(NO);
+    
+    if (xidData) object.xid = xidData;
+    
+    return object;
+    
+}
+
+- (void)processingOfRelationshipsForObject:(NSManagedObject *)object
+                            withEntityName:(NSString *)entityName
+                                 andValues:(NSDictionary *)properties
+{
+    
+    NSDictionary *ownObjectRelationships = [self toOneRelationshipsForEntityName:entityName];
+    
+    for (NSString *relationship in ownObjectRelationships.allKeys) {
+        
+        NSString *relationshipId = [relationship stringByAppendingString:RELATIONSHIP_SUFFIX];
+        
+        NSString *destinationObjectXid = [properties[relationshipId] isKindOfClass:[NSNull class]] ? nil : properties[relationshipId];
+        
+        if (destinationObjectXid) {
+            
+            STMDatum *destinationObject = [self.class objectFindOrCreateForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
+            
+            if (![[object valueForKey:relationship] isEqual:destinationObject]) {
+                
+//                BOOL waitingForSync = [destinationObject isWaitingToSync];
+                
+                [object setValue:destinationObject forKey:relationship];
+#warning what is this for?
+//                if (!waitingForSync) {
+//                    
+//                    [destinationObject addObserver:[self sharedController]
+//                                        forKeyPath:@"deviceTs"
+//                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
+//                                           context:nil];
+//                    
+//                }
+                
+            }
+            
+        } else {
+            
+            NSManagedObject *destinationObject = [object valueForKey:relationship];
+            
+            if (destinationObject) {
+#warning what is this for?
+//                BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
+                
+                [object setValue:nil forKey:relationship];
+                
+//                if (!waitingForSync) {
+//                
+//                    [destinationObject addObserver:[self sharedController]
+//                                        forKeyPath:@"deviceTs"
+//                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
+//                                           context:nil];
+//                    
+//                }
+                
+            }
+            
+        }
+        
+    }
+    
+}
+
+- (NSDictionary *)insertObjectFromDictionary:(NSDictionary *)dictionary
+                              withEntityName:(NSString *)entityName
+                                     options:(NSDictionary *)options
+{
     
     NSArray *dataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
     
@@ -248,23 +467,21 @@
             
         }
         
-        if (!object && xidData) object = [STMCoreObjectsController objectFindOrCreateForEntityName:entityName 
-                                                                                            andXid:xidData];
+        if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName
+                                                                        andXid:xidData];
         
-        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidString];
+        if (!object) object = [STMCoreObjectsController newObjectForEntityName:entityName];
         
-        if (!(![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false)) {
+        // TODO: check if lts is equal to deviceTs
+        if (![object isWaitingToSync] || options[STMPersistingOptionLts]) {
             
-            if (!object) object = [STMCoreObjectsController newObjectForEntityName:entityName];
+            [object setValue:@NO forKey:@"isFantom"];
             
-            if (![object isWaitingToSync]) {
-                
-                [object setValue:@NO forKey:@"isFantom"];
-                [STMCoreObjectsController processingOfObject:object
-                                              withEntityName:entityName
-                                              fillWithValues:dictionary];
-                
-            }
+            [self processingOfObject:object
+                      withEntityName:entityName
+                      fillWithValues:dictionary
+                             options:options
+             ];
             
         }
         

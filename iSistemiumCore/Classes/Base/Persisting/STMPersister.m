@@ -184,9 +184,9 @@
         
         case STMStorageTypeCoreData:
             idKey = @"xid";
-            // TODO: return deleted count from CoreData
-            [self removeObjectForPredicate:predicate
-                                entityName:entityName];
+            
+            result = [self removeObjectForPredicate:predicate
+                                         entityName:entityName];
             break;
             
         default: break;
@@ -215,8 +215,9 @@
     if ([self.fmdb hasTable:entityName]){
         return [self.fmdb commit];
     } else {
-        [self.document saveDocument:^(BOOL success){}];
-        return YES;
+        NSError *error;
+        [self.document.managedObjectContext save:&error];
+        return !error;
     }
     
 }
@@ -386,15 +387,16 @@
     
     NSPredicate* predicate;
     
-    if ([self.fmdb hasTable:entityName]) {
-        
-        predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
-        
-    } else {
-        
-        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-        predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
-        
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
+            break;
+        case STMStorageTypeCoreData: {
+            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+            predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
+        }
+        default:
+            break;
     }
     
     NSUInteger deletedCount = [self destroyAllSync:entityName

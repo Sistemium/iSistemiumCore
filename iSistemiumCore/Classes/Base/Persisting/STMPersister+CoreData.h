@@ -10,9 +10,11 @@
 
 @interface STMPersister (CoreData)
 
++ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects;
+
 - (void)removeObjects:(NSArray*)objects;
 
-- (void)removeObjectForPredicate:(NSPredicate*)predicate
+- (NSUInteger)removeObjectForPredicate:(NSPredicate*)predicate
                       entityName:(NSString *)name;
 
 - (NSDictionary *)mergeWithoutSave:entityName
