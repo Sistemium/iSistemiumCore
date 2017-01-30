@@ -335,29 +335,17 @@
 
 + (void)insertObjectsFromArray:(NSArray *)array withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    __block BOOL result = YES;
+    BOOL result = YES;
     
     for (NSDictionary *datum in array) {
         
-        [self insertObjectFromDictionary:datum withEntityName:entityName withCompletionHandler:^(BOOL success) {
-            
-            result &= success;
-            
-        }];
+        if (![self insertObjectFromDictionary:datum withEntityName:entityName]) {
+            result = NO;
+        }
         
     }
     
     completionHandler(result);
-    
-}
-
-+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    STMDatum *object = [self insertObjectFromDictionary:dictionary withEntityName:entityName];
-    
-    BOOL success = object ? YES : NO;
-    
-    completionHandler(success);
     
 }
 
@@ -575,25 +563,17 @@
 
 + (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
     
-    __block BOOL result = YES;
+    BOOL result = YES;
     
     for (NSDictionary *datum in array) {
         
-        [self setRelationshipFromDictionary:datum withCompletionHandler:^(BOOL success) {
-            
-            result &= success;
-            
-        }];
+        if (![self setRelationshipFromDictionary:datum]) {
+            result = NO;
+        }
         
     }
 
     completionHandler(result);
-    
-}
-
-+ (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
-
-    BOOL success = [self setRelationshipFromDictionary:dictionary];
     
 }
 

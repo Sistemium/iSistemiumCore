@@ -34,10 +34,6 @@
 + (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary
                           withEntityName:(NSString *)entityName;
 
-+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary
-                    withEntityName:(NSString *)entityName
-             withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
 
@@ -45,9 +41,6 @@
             withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
-
-+ (void)setRelationshipFromDictionary:(NSDictionary *)dictionary
-                withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
