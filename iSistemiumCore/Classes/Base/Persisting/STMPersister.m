@@ -145,6 +145,7 @@
                                     error:error
                                 inSTMFmdb:self.fmdb];
         case STMStorageTypeCoreData:
+            
             return [self mergeWithoutSave:entityName
                                attributes:attributes
                                   options:options
@@ -324,11 +325,29 @@
     
 }
 
-- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+- (NSDictionary *)fixMergeOptions:(NSDictionary *)options
+                       entityName:(NSString *)entityName{
+    
+    if ([self storageForEntityName:entityName options:options] == STMStorageTypeCoreData && options[STMPersistingOptionLts]) {
+        NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
+        // Add 1ms because there are nanoseconds in deviceTs
+        options = [STMFunctions setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
+                                  forKey:STMPersistingOptionLts
+                            inDictionary:options];
+    }
+    
+    return options;
+    
+}
+
+- (NSDictionary *)mergeSync:(NSString *)entityName
+                 attributes:(NSDictionary *)attributes
+                    options:(NSDictionary *)options
+                      error:(NSError **)error{
     
     NSDictionary* result = [self mergeWithoutSave:entityName
                                        attributes:attributes
-                                          options:options
+                                          options:[self fixMergeOptions:options entityName:entityName]
                                             error:error];
     
     if (*error){
@@ -358,7 +377,7 @@
         
         NSDictionary* dict = [self mergeWithoutSave:entityName
                                          attributes:dictionary
-                                            options:options
+                                            options:[self fixMergeOptions:options entityName:entityName]
                                               error:error];
         
         if (dict){
