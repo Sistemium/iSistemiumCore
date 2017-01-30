@@ -100,7 +100,17 @@
     
     XCTAssertNotNil(testObject);
     
+    NSMutableDictionary *alteredTestObject = testObject.mutableCopy;
+    alteredTestObject[@"eTag"] = [STMFunctions stringFromNow];
     
+    NSError *error;
+
+    testObject = [self.persister mergeSync:LtsCoreDataTestEntity
+                                attributes:alteredTestObject
+                                   options:@{STMPersistingOptionReturnSaved: @YES}
+                                     error:&error];
+    
+    // have to check lts here somehow
     
 }
 
