@@ -25,25 +25,26 @@
                              error:(NSError **)error
             inManagedObjectContext:(NSManagedObjectContext *)context {
     
-    if (options[@"roleName"]){
+    if (options[@"roleName"]) {
+        
         [STMCoreObjectsController setRelationshipFromDictionary:attributes
-                                          withCompletionHandler:^(BOOL sucess)
-         {
-             if (!sucess) {
-                 [STMFunctions error:error
-                         withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
-             }
-         }];
-    } else {
-        [STMCoreObjectsController insertObjectFromDictionary:attributes
-                                              withEntityName:entityName
-                                       withCompletionHandler:^(BOOL sucess)
-         {
+                                          withCompletionHandler:^(BOOL sucess) {
              if (!sucess) {
                  [STMFunctions error:error
                          withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
              }
          }];
+        
+    } else {
+        
+        id object = [STMCoreObjectsController insertObjectFromDictionary:attributes
+                                                          withEntityName:entityName];
+
+        if (!object) {
+            [STMFunctions error:error
+                    withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
+        }
+        
     }
     
     return attributes;

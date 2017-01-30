@@ -352,6 +352,17 @@
 }
 
 + (void)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName withCompletionHandler:(void (^)(BOOL success))completionHandler {
+    
+    STMDatum *object = [self insertObjectFromDictionary:dictionary withEntityName:entityName];
+    
+    BOOL success = object ? YES : NO;
+    
+    completionHandler(success);
+    
+}
+
++ (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
+    
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
     if ([dataModelEntityNames containsObject:entityName]) {
@@ -389,16 +400,16 @@
             
         }
         
-        completionHandler(YES);
+        return object;
         
     } else {
         
         NSLog(@"dataModel have no object's entity with name %@", entityName);
         
-        completionHandler(NO);
+        return nil;
         
     }
-    
+
 }
 
 + (void)processingOfObject:(NSManagedObject *)object withEntityName:(NSString *)entityName fillWithValues:(NSDictionary *)properties {
