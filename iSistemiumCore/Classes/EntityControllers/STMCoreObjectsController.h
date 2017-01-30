@@ -31,9 +31,6 @@
                 withEntityName:(NSString *)entityName
          withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary
-                          withEntityName:(NSString *)entityName;
-
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
 
