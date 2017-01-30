@@ -53,6 +53,17 @@
 
 #pragma mark - Private methods
 
+- (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {
+    
+    STMStorageType storeTo = [self storageForEntityName:entityName];
+    
+    if (options[STMPersistingOptionForceStorage]) {
+        storeTo = [options[STMPersistingOptionForceStorage] integerValue];
+    }
+    
+    return storeTo;
+}
+
 - (NSDictionary *) mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inSTMFmdb:(STMFmdb *)db{
     
     [db startTransaction];

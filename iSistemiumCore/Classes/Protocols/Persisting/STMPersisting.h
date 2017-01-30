@@ -13,5 +13,6 @@
 #define STMPersistingOptionFantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"
 #define STMPersistingOptionReturnSaved @"returnSaved"
+#define STMPersistingOptionForceStorage @"forceStorage"
 
 #endif /* STMPersisting_h */
