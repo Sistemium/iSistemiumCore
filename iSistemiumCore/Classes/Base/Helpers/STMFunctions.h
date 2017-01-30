@@ -126,6 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary*)mapDisctionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
++ (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
 NS_ASSUME_NONNULL_END
 

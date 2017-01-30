@@ -1244,4 +1244,10 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary {
+    NSMutableDictionary *result = dictionary.mutableCopy;
+    result[key] = value;
+    return result.copy;
+}
+
 @end
