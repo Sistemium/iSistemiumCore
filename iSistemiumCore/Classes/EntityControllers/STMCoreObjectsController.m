@@ -349,6 +349,7 @@
     
 }
 
+#warning - this method already in STMPersister+CoreData, have to remove it asap
 + (NSDictionary *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
