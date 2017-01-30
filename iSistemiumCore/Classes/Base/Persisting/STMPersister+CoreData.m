@@ -304,7 +304,9 @@
     [self processingOfRelationshipsForObject:object withEntityName:entityName andValues:properties];
     
     if (options[STMPersistingOptionLts]) {
-        [object setValue:[STMFunctions dateFromString:options[STMPersistingOptionLts]]
+        NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
+        // Add 1ms because there are nanoseconds in deviceTs 
+        [object setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
                   forKey:STMPersistingOptionLts];
     }
     
