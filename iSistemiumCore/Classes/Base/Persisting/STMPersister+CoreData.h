@@ -15,6 +15,12 @@
 - (void)removeObjectForPredicate:(NSPredicate*)predicate
                       entityName:(NSString *)name;
 
+- (NSDictionary *)mergeWithoutSave:entityName
+                        attributes:(NSDictionary *)attributes
+                           options:(NSDictionary *)options
+                             error:(NSError **)error
+            inManagedObjectContext:(NSManagedObjectContext *)context;
+
 - (NSArray *)objectsForPredicate:(NSPredicate *)predicate
                       entityName:(NSString *)entityName;
 

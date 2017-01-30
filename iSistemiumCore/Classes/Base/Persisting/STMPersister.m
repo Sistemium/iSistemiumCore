@@ -137,39 +137,24 @@
         if (![attributes[@"isTemporary"] isEqual:NSNull.null] && [attributes[@"isTemporary"] boolValue]) return nil;
     }
     
-    if ([self.fmdb hasTable:entityName]){
-        
-        return [self mergeWithoutSave:entityName
-                           attributes:attributes
-                              options:options
-                                error:error
-                            inSTMFmdb:self.fmdb];
-        
-    } else {
-        
-        if (options[@"roleName"]){
-            [STMCoreObjectsController setRelationshipFromDictionary:attributes
-                                              withCompletionHandler:^(BOOL sucess)
-             {
-                 if (!sucess) {
-                     [STMFunctions error:error
-                             withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
-                 }
-             }];
-        } else {
-            [STMCoreObjectsController insertObjectFromDictionary:attributes
-                                                  withEntityName:entityName
-                                           withCompletionHandler:^(BOOL sucess)
-             {
-                 if (!sucess) {
-                     [STMFunctions error:error
-                             withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
-                 }
-             }];
-        }
-        
-        return attributes;
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            return [self mergeWithoutSave:entityName
+                               attributes:attributes
+                                  options:options
+                                    error:error
+                                inSTMFmdb:self.fmdb];
+        case STMStorageTypeCoreData:
+            return [self mergeWithoutSave:entityName
+                               attributes:attributes
+                                  options:options
+                                    error:error
+                   inManagedObjectContext:self.document.managedObjectContext];
+        default:
+            // TODO: set the error
+            return nil;
     }
+    
 }
 
 - (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
@@ -188,21 +173,23 @@
     
     NSUInteger result = 0;
     
-    if ([self.fmdb hasTable:entityName]){
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            idKey = @"id";
+            
+            result = [self.fmdb destroy:entityName
+                              predicate:predicate
+                                  error:error];
+            break;
         
-        idKey = @"id";
-        
-        result = [self.fmdb destroy:entityName
-                          predicate:predicate
-                              error:error];
-        
-    }else{
-        
-        idKey = @"xid";
-        // TODO: return deleted count from CoreData
-        [self removeObjectForPredicate:predicate
-                            entityName:entityName];
-
+        case STMStorageTypeCoreData:
+            idKey = @"xid";
+            // TODO: return deleted count from CoreData
+            [self removeObjectForPredicate:predicate
+                                entityName:entityName];
+            break;
+            
+        default: break;
     }
     
     for (NSDictionary* object in objects){

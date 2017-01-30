@@ -13,10 +13,43 @@
 
 #import "STMEntityDescription.h"
 #import "STMPredicate.h"
+#import "STMCoreObjectsController.h"
 
 @implementation STMPersister (CoreData)
 
 #pragma mark - Private CoreData helpers
+
+- (NSDictionary *)mergeWithoutSave:entityName
+                        attributes:(NSDictionary *)attributes
+                           options:(NSDictionary *)options
+                             error:(NSError **)error
+            inManagedObjectContext:(NSManagedObjectContext *)context {
+    
+    if (options[@"roleName"]){
+        [STMCoreObjectsController setRelationshipFromDictionary:attributes
+                                          withCompletionHandler:^(BOOL sucess)
+         {
+             if (!sucess) {
+                 [STMFunctions error:error
+                         withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
+             }
+         }];
+    } else {
+        [STMCoreObjectsController insertObjectFromDictionary:attributes
+                                              withEntityName:entityName
+                                       withCompletionHandler:^(BOOL sucess)
+         {
+             if (!sucess) {
+                 [STMFunctions error:error
+                         withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
+             }
+         }];
+    }
+    
+    return attributes;
+
+}
+
 
 - (void)removeObjects:(NSArray*)objects {
     for (id object in objects){
