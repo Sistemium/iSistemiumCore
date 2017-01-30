@@ -22,6 +22,21 @@
 
 @implementation STMPersister (CoreData)
 
+#pragma mark methods to remove from STMCoreObjectsController
+
+- (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
+    return [STMCoreObjectsController setRelationshipFromDictionary:dictionary];
+}
+
++ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
+    return [STMCoreObjectsController dictionaryForJSWithObject:object];
+}
+
+- (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
+    return [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
+}
+
+
 #pragma mark - Private CoreData helpers
 
 - (NSDictionary *)mergeWithoutSave:entityName
@@ -32,7 +47,7 @@
     
     if (options[@"roleName"]) {
         
-        BOOL success = [STMCoreObjectsController setRelationshipFromDictionary:attributes];
+        BOOL success = [self setRelationshipFromDictionary:attributes];
         if (!success) {
             [STMFunctions error:error
                     withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
@@ -240,7 +255,7 @@
     
     [objects enumerateObjectsUsingBlock:^(STMDatum * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
-        NSDictionary *propertiesDictionary = [STMCoreObjectsController dictionaryForJSWithObject:obj];
+        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:obj];
         [dataArray addObject:propertiesDictionary];
         
     }];
@@ -256,7 +271,7 @@
 {
     
     NSSet *fields =
-    [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
+    [self ownObjectKeysForEntityName:entityName];
     //[self fieldsForEntityName:entityName];
     
     STMEntityDescription *currentEntity = (STMEntityDescription *)[object entity];
@@ -448,53 +463,47 @@
                                      options:(NSDictionary *)options
 {
     
-    NSArray *dataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
-        
-        NSString *xidString = dictionary[@"id"];
-        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
-        
-        STMDatum *object = nil;
-        
-        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-            
-            object = [[[self.class session] settingsController] settingForDictionary:dictionary];
-            
-        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-            
-            NSString *internalName = dictionary[@"name"];
-            object = [STMEntityController entityWithName:internalName];
-            
-        }
-        
-        if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName
-                                                                        andXid:xidData];
-        
-        if (!object) object = [STMCoreObjectsController newObjectForEntityName:entityName];
-        
-        // TODO: check if lts is equal to deviceTs
-        if (![object isWaitingToSync] || options[STMPersistingOptionLts]) {
-            
-            [object setValue:@NO forKey:@"isFantom"];
-            
-            [self processingOfObject:object
-                      withEntityName:entityName
-                      fillWithValues:dictionary
-                             options:options
-             ];
-            
-        }
-        
-        return [STMCoreObjectsController dictionaryForJSWithObject:object];
-        
-    } else {
-        
+    if (![self isConcreteEntityName:entityName]) {
         NSLog(@"dataModel have no object's entity with name %@", entityName);
-        
         return nil;
+    }
+    
+    NSString *xidString = dictionary[@"id"];
+    NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+    
+    STMDatum *object = nil;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+        
+        object = [[[self.class session] settingsController] settingForDictionary:dictionary];
+        
+    } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+        
+        NSString *internalName = dictionary[@"name"];
+        object = [STMEntityController entityWithName:internalName];
         
     }
+    
+    if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName
+                                                                    andXid:xidData];
+    
+    if (!object) object = [self newObjectForEntityName:entityName
+                                                andXid:nil];
+    
+    // TODO: check if lts is equal to deviceTs
+    if (![object isWaitingToSync] || options[STMPersistingOptionLts]) {
+        
+        [object setValue:@NO forKey:@"isFantom"];
+        
+        [self processingOfObject:object
+                  withEntityName:entityName
+                  fillWithValues:dictionary
+                         options:options
+         ];
+        
+    }
+    
+    return [self.class dictionaryForJSWithObject:object];
     
 }
 

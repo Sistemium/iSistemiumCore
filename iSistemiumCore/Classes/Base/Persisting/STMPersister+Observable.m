@@ -41,7 +41,6 @@
 
 - (void)notifyObservingEntityName:(NSString *)entityName
                         ofUpdated:(NSDictionary *)item {
-#warning CoreData observing is not working yet
     if (!item) return;
     [self notifyObservingEntityName:entityName
                      ofUpdatedArray:[NSArray arrayWithObject:item]];

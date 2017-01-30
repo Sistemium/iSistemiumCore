@@ -9,13 +9,12 @@
 #import <Foundation/Foundation.h>
 
 #import "STMConstants.h"
+#import "STMFunctions.h"
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
 #import "STMPersister+Observable.h"
 
-#import "STMCoreAuthController.h"
-#import "STMCoreObjectsController.h"
 
 @interface STMPersister()
 
@@ -318,8 +317,6 @@
                                                      error:error];
         
         return [self.class arrayForJSWithObjects:objectsArray];
-//        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
-//                                                        entityName:entityName];
         
     }
     
