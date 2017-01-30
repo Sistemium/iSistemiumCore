@@ -66,12 +66,19 @@
 
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic) BOOL waitingPhoto;
-
+@property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
 @end
 
 
 @implementation STMCoreWKWebViewVC
+
+- (id <STMScriptMessaging>)scriptMessageHandler {
+    if (!_scriptMessageHandler) {
+        _scriptMessageHandler = [[STMScriptMessageHandler alloc] init];
+    }
+    return _scriptMessageHandler;
+}
 
 - (BOOL)isInActiveTab {
     return [self.tabBarController.selectedViewController isEqual:self.navigationController];
@@ -411,7 +418,7 @@
         [self.webView removeFromSuperview];
         self.webView = nil;
         
-        [STMCoreObjectsController unsubscribeViewController:self];
+        [self.scriptMessageHandler unsubscribeViewController:self];
         
     }
     
@@ -770,22 +777,22 @@
         
     } else if ([@[WK_MESSAGE_FIND, WK_MESSAGE_FIND_ALL] containsObject:message.name]) {
         
-        [STMScriptMessageHandler webViewVC:self
+        [self.scriptMessageHandler webViewVC:self
                         receiveFindMessage:message];
         
     } else if ([@[WK_MESSAGE_UPDATE, WK_MESSAGE_UPDATE_ALL] containsObject:message.name]) {
         
-        [STMScriptMessageHandler webViewVC:self
+        [self.scriptMessageHandler webViewVC:self
                       receiveUpdateMessage:message];
         
     } else if ([message.name isEqualToString:WK_MESSAGE_SUBSCRIBE]) {
         
-        [STMScriptMessageHandler webViewVC:self
+        [self.scriptMessageHandler webViewVC:self
                    receiveSubscribeMessage:message];
         
     } else if ([message.name isEqualToString:WK_MESSAGE_DESTROY]) {
         
-        [STMScriptMessageHandler webViewVC:self
+        [self.scriptMessageHandler webViewVC:self
                      receiveDestroyMessage:message];
         
     }

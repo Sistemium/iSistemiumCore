@@ -10,17 +10,15 @@
 #import <WebKit/WebKit.h>
 
 #import "STMCoreWKWebViewVC.h"
+#import "STMScriptMessaging.h"
 
+typedef NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> STMScriptMessageHandlerSubscriptionsType;
 
-@interface STMScriptMessageHandler : NSObject
+@interface STMScriptMessageHandler : NSObject <STMScriptMessaging>
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveFindMessage:(WKScriptMessage *)message;
+@property (nonatomic, strong) STMScriptMessageHandlerSubscriptionsType *entitiesToSubscribe;
+@property (nonatomic, weak) id <STMPersistingPromised, STMModelling, STMPersistingSync> persistenceDelegate;
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveUpdateMessage:(WKScriptMessage *)message;
-
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveSubscribeMessage:(WKScriptMessage *)message;
-
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveDestroyMessage:(WKScriptMessage *)message;
-
+@property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
 
 @end

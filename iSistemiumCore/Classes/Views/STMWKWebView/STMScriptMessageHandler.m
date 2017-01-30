@@ -6,18 +6,39 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMScriptMessageHandler.h"
-
-#import "STMCoreObjectsController.h"
-
+#import "STMScriptMessageHandler+Private.h"
+#import "STMSessionManager.h"
 
 @implementation STMScriptMessageHandler
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveFindMessage:(WKScriptMessage *)message {
+- (STMScriptMessageHandlerSubscriptionsType *)entitiesToSubscribe {
+    if (!_entitiesToSubscribe) {
+        _entitiesToSubscribe = @{}.mutableCopy;
+    }
+    return _entitiesToSubscribe;
+}
+
+-(id <STMPersistingPromised>)persistenceDelegate {
+    if (!_persistenceDelegate) {
+        _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
+    }
+    return _persistenceDelegate;
+}
+
+- (NSMutableArray <NSDictionary *> *)subscribedObjects {
+    
+    if (!_subscribedObjects) {
+        _subscribedObjects = @[].mutableCopy;
+    }
+    return _subscribedObjects;
+    
+}
+
+- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveFindMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
-    [STMCoreObjectsController arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
+    [self arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
         
         [webViewVC callbackWithData:result
                          parameters:parameters];
@@ -31,11 +52,11 @@
 
 }
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveUpdateMessage:(WKScriptMessage *)message {
+- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveUpdateMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
-    [STMCoreObjectsController updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
+    [self updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
         
         if (success) {
             [webViewVC callbackWithData:updatedObjects parameters:parameters];
@@ -47,7 +68,7 @@
 
 }
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveSubscribeMessage:(WKScriptMessage *)message {
+- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveSubscribeMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
@@ -61,7 +82,7 @@
         
         NSError *error = nil;
         
-        if ([STMCoreObjectsController subscribeViewController:webViewVC toEntities:entities error:&error]) {
+        if ([self subscribeViewController:webViewVC toEntities:entities error:&error]) {
             
             [webViewVC callbackWithData:@[@"subscribe to entities success"]
                              parameters:parameters
@@ -83,11 +104,11 @@
     
 }
 
-+ (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveDestroyMessage:(WKScriptMessage *)message {
+- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveDestroyMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
-    [STMCoreObjectsController destroyObjectFromScriptMessage:message].then(^(NSArray *result){
+    [self destroyObjectFromScriptMessage:message].then(^(NSArray *result){
         
         [webViewVC callbackWithData:result parameters:parameters];
         
@@ -99,5 +120,11 @@
 
 }
 
+- (void)unsubscribeViewController:(UIViewController *)vc {
+
+    NSLog(@"unsubscribeViewController: %@", vc);
+    [self flushSubscribedViewController:vc];
+    
+}
 
 @end
