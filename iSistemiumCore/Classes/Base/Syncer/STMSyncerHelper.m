@@ -10,7 +10,6 @@
 
 #import "STMConstants.h"
 #import "STMEntityController.h"
-#import "STMCoreObjectsController.h"
 
 
 @interface STMSyncerHelper()
@@ -213,7 +212,7 @@
     
     for (NSString *entityName in uploadableEntitiesNames) {
         
-        if ([[STMCoreObjectsController localDataModelEntityNames] containsObject:entityName]) {
+        if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
             
             NSError *error = nil;
             NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
@@ -293,8 +292,9 @@
     
     if (localError) {
 
-        [STMCoreObjectsController error:error
-                            withMessage:nil];
+        [STMFunctions error:error
+                withMessage:nil];
+        
         return nil;
         
     } else {
@@ -432,8 +432,8 @@
     self.failToSyncObjects[object[@"id"]] = object;
     [self.unsyncedObjects removeObject:object];
     
-    [STMCoreObjectsController error:error
-                        withMessage:nil];
+    [STMFunctions error:error
+            withMessage:nil];
 
 }
 

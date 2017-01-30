@@ -1230,7 +1230,7 @@ vm_size_t freeMemory(void) {
     return result;
 }
 
-+ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
++ (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
