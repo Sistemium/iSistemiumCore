@@ -43,6 +43,9 @@
 
 + (void)setRelationshipsFromArray:(NSArray *)array
             withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
++ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
+
 + (void)setRelationshipFromDictionary:(NSDictionary *)dictionary
                 withCompletionHandler:(void (^)(BOOL success))completionHandler;
 

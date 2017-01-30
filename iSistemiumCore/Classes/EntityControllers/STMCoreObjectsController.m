@@ -592,13 +592,19 @@
 }
 
 + (void)setRelationshipFromDictionary:(NSDictionary *)dictionary withCompletionHandler:(void (^)(BOOL success))completionHandler {
+
+    BOOL success = [self setRelationshipFromDictionary:dictionary];
+    
+}
+
++ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
     
     NSString *name = dictionary[@"name"];
     NSArray *nameExplode = [name componentsSeparatedByString:@"."];
     NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
-
+    
     NSDictionary *serverDataModel = [[STMEntityController stcEntities] copy];
-
+    
     if ([[serverDataModel allKeys] containsObject:entityName]) {
         
         STMEntity *entityModel = serverDataModel[entityName];
@@ -621,7 +627,7 @@
             NSLog(@"Not ok relationship dictionary %@", dictionary);
             
         }
-
+        
         if (ok) {
             
             NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
@@ -630,12 +636,12 @@
             NSSet *destinationSet = [ownerObject valueForKey:roleName];
             
             if ([destinationSet containsObject:destinationObject]) {
-
+                
                 NSLog(@"already have relationship %@ %@ — %@ %@", roleOwnerEntityName, ownerXid, destinationEntityName, destinationXid);
                 
                 
             } else {
-
+                
                 BOOL ownerIsWaitingForSync = [self isWaitingToSyncForObject:ownerObject];
                 BOOL destinationIsWaitingForSync = [self isWaitingToSyncForObject:destinationObject];
                 
@@ -643,7 +649,7 @@
                 NSDate *destinationDeviceTs = [destinationObject valueForKey:@"deviceTs"];
                 
                 [[ownerObject mutableSetValueForKey:roleName] addObject:destinationObject];
-
+                
                 if (!ownerIsWaitingForSync) {
                     [ownerObject setValue:ownerDeviceTs forKey:@"deviceTs"];
                 }
@@ -657,16 +663,16 @@
             
         }
         
-        completionHandler(YES);
+        return YES;
         
     } else {
         
         NSLog(@"dataModel have no relationship's entity with name %@", entityName);
-
-        completionHandler(NO);
+        
+        return NO;
         
     }
-    
+
 }
 
 

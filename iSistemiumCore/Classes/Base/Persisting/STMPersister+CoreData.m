@@ -27,19 +27,16 @@
     
     if (options[@"roleName"]) {
         
-        [STMCoreObjectsController setRelationshipFromDictionary:attributes
-                                          withCompletionHandler:^(BOOL sucess) {
-             if (!sucess) {
-                 [STMFunctions error:error
-                         withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
-             }
-         }];
+        BOOL success = [STMCoreObjectsController setRelationshipFromDictionary:attributes];
+        if (!success) {
+            [STMFunctions error:error
+                    withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
+        }
         
     } else {
         
         id object = [STMCoreObjectsController insertObjectFromDictionary:attributes
                                                           withEntityName:entityName];
-
         if (!object) {
             [STMFunctions error:error
                     withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
