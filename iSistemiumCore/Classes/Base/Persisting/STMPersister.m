@@ -312,12 +312,13 @@
                                                fetchOffset:offset
                                                withFantoms:YES
                                                  predicate:predicateWithFantoms
-                                                resultType:NSDictionaryResultType
+                                                resultType:NSManagedObjectResultType
                                     inManagedObjectContext:[self document].managedObjectContext
                                                      error:error];
         
-        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
-                                                        entityName:entityName];
+        return [self.class arrayForJSWithObjects:objectsArray];
+//        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
+//                                                        entityName:entityName];
         
     }
     
