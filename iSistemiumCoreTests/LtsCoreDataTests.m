@@ -14,7 +14,7 @@
 
 
 #define LtsCoreDataTestEntity @"STMClientEntity"
-#define LtsCoreDataTestEntityNameValue @"Debug"
+#define LtsCoreDataTestEntityNameValue @"Debug2"
 #define LtsCoreDataTestsTimeOut 10
 
 
@@ -77,50 +77,29 @@
     
     NSLog(@"testObject %@", testObject);
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for Document save"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", LtsCoreDataTestEntityNameValue];
     
-    [self.document saveDocument:^(BOOL success) {
-        NSArray *clientEntities = [self.persister findAllSync:LtsCoreDataTestEntity
-                                                    predicate:[NSPredicate predicateWithFormat:@"name == %@", LtsCoreDataTestEntityNameValue]
-                                                      options:nil
-                                                        error:nil];
-        
-        NSLog(@"clientEntities %@", clientEntities);
-        
-        XCTAssertEqual(clientEntities.count, 1);
-        
-        [expectation fulfill];
-        
-    }];
+    NSArray *clientEntities = [self.persister findAllSync:LtsCoreDataTestEntity
+                                                predicate:predicate
+                                                  options:nil
+                                                    error:nil];
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
-    
-    return nil;
+    NSLog(@"clientEntities %@", clientEntities);
+
+    return testObject;
 
 }
 
 - (void)testMergeSyncInCoreData {
-    [self objectForTest];
-}
-
-- (void)testLtsInCoreData {
     
-    NSDictionary *testObject = [self objectForTest];
-    
-    XCTAssertNotNil(testObject);
-    
-    NSMutableDictionary *alteredTestObject = testObject.mutableCopy;
-    alteredTestObject[@"eTag"] = [STMFunctions stringFromNow];
-    
+    NSDictionary *object = [self objectForTest];
     NSError *error;
-
-    testObject = [self.persister mergeSync:LtsCoreDataTestEntity
-                                attributes:alteredTestObject
-                                   options:@{STMPersistingOptionReturnSaved: @YES}
-                                     error:&error];
-    
-    // have to check lts here somehow
-    
+    NSUInteger result = [self.persister destroySync:LtsCoreDataTestEntity
+                                         identifier:object[@"id"]
+                                            options:@{STMPersistingOptionRecordstatuses:@NO}
+                                              error:&error];
+    XCTAssertEqual(result, 1);
+    XCTAssertNil(error);
 }
 
 
