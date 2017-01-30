@@ -1,5 +1,5 @@
 //
-//  LtsCoreData.m
+//  LtsCoreDataTests.m
 //  iSisSales
 //
 //  Created by Maxim Grigoriev on 30/01/2017.
@@ -31,9 +31,9 @@
 - (void)setUp {
     
     [super setUp];
-
+    
     if (self.persister) return;
-        
+    
     STMCoreSessionManager *manager = STMCoreSessionManager.sharedManager;
     
     XCTAssertNotNil(manager);
@@ -46,10 +46,10 @@
                               self.persister = [manager.currentSession persistenceDelegate];
                               return YES;
                           }];
-
+    
     [self waitForExpectationsWithTimeout:LtsCoreDataTestsTimeOut
                                  handler:nil];
-
+    
 }
 
 - (void)tearDown {
@@ -61,9 +61,9 @@
     
     NSError *error;
     NSMutableDictionary *objProperty = @{}.mutableCopy;
-//    NSString *itemVersion = toUploadItem[@"deviceTs"];
+    //    NSString *itemVersion = toUploadItem[@"deviceTs"];
     
-//    toUploadItem[@"ts"] = [STMFunctions stringFromNow];
+    //    toUploadItem[@"ts"] = [STMFunctions stringFromNow];
     objProperty[@"name"] = LtsCoreDataTestEntityNameValue;
     
     NSDictionary *testObject = [self.persister mergeSync:LtsCoreDataTestEntity
@@ -72,7 +72,7 @@
                                                    error:&error];
     
     XCTAssertNil(error);
-
+    
     NSLog(@"testObject %@", testObject);
     
     NSArray *clientEntities = [self.persister findAllSync:LtsCoreDataTestEntity
