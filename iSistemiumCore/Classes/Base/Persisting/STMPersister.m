@@ -27,8 +27,6 @@
 
 @implementation STMPersister
 
-@synthesize subscriptions = _subscriptions;
-
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
 
     STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
@@ -48,17 +46,9 @@
 - (instancetype)init {
     
     self = [super init];
-    
+    _subscriptions = [NSMutableDictionary dictionary];
     return self;
     
-}
-
-
-- (NSMutableDictionary *)subscriptions {
-    if (!_subscriptions) {
-        _subscriptions = [NSMutableDictionary dictionary];
-    }
-    return _subscriptions;
 }
 
 #pragma mark - Private methods
