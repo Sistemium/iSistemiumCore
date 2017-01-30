@@ -38,12 +38,15 @@
         
     } else {
         
-        id object = [self insertObjectFromDictionary:attributes
-                                      withEntityName:entityName];
-        if (!object) {
-            [STMFunctions error:error
-                    withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
+        NSDictionary *object = [self insertObjectFromDictionary:attributes
+                                                 withEntityName:entityName];
+        
+        if (object) {
+            return object;
         }
+        
+        [STMFunctions error:error
+                withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
         
     }
     
@@ -223,7 +226,7 @@
     
 }
 
-- (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
+- (NSDictionary *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
     
     NSArray *dataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
     
@@ -265,7 +268,7 @@
             
         }
         
-        return object;
+        return [STMCoreObjectsController dictionaryForJSWithObject:object];
         
     } else {
         
