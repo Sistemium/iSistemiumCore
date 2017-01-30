@@ -18,7 +18,7 @@
 #define LtsCoreDataTestsTimeOut 10
 
 
-@interface LtsCoreData : XCTestCase
+@interface LtsCoreDataTests : XCTestCase
 
 @property (nonatomic, strong) id <STMPersistingSync> persister;
 
@@ -26,7 +26,7 @@
 @end
 
 
-@implementation LtsCoreData
+@implementation LtsCoreDataTests
 
 - (void)setUp {
     
@@ -57,7 +57,7 @@
     [super tearDown];
 }
 
-- (void)testMergeSyncInCoreData {
+- (NSDictionary *)objectForTest {
     
     NSError *error;
     NSMutableDictionary *objProperty = @{}.mutableCopy;
@@ -83,6 +83,24 @@
     NSLog(@"clientEntities %@", clientEntities);
     
     XCTAssertEqual(clientEntities.count, 1);
+    
+    testObject = clientEntities.firstObject;
+    
+    return testObject;
+
+}
+
+- (void)testMergeSyncInCoreData {
+    [self objectForTest];
+}
+
+- (void)testLtsInCoreData {
+    
+    NSDictionary *testObject = [self objectForTest];
+    
+    XCTAssertNotNil(testObject);
+    
+    
     
 }
 
