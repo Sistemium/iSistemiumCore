@@ -11,8 +11,6 @@
 #import <CoreData/CoreData.h>
 #import <WebKit/WebKit.h>
 
-#import "STMEntitiesSubscribable.h"
-
 @import PromiseKit;
 
 
@@ -27,9 +25,6 @@
                   andRoleName:(NSString *)roleName
         withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (void)insertObjectsFromArray:(NSArray *)array
-                withEntityName:(NSString *)entityName
-         withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
@@ -58,17 +53,6 @@
 + (STMDatum *)objectForXid:(NSData *)xidData
                 entityName:(NSString *)entityName;
 
-+ (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
-                     toEntities:(NSArray *)entities
-                          error:(NSError **)error;
-+ (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc;
-
-+ (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage;
-+ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage;
-
-+ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
-                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
-
 + (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
@@ -86,10 +70,6 @@
                                  andXidString:(NSString *)xid;
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName;
-
-+ (void)processingOfObject:(NSManagedObject *)object
-            withEntityName:(NSString *)entityName
-            fillWithValues:(NSDictionary *)properties;
 
 
 @end

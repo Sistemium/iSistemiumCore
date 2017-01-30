@@ -326,7 +326,7 @@
     
     [self postprocessingForObject:object];
     
-#warning Don't know if it's needed now
+#warning To implement in STMScriptMessageHandler with PersistingObserving
 //    STMCoreObjectsController *coc = [self sharedController];
 //    
 //    if ([coc.entitiesToSubscribe objectForKey:entityName]) {
