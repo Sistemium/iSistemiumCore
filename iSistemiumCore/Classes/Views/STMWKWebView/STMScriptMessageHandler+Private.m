@@ -21,7 +21,9 @@
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [STMFunctions error:&error withMessage:@"message.body is not a NSDictionary class"];
+        [STMFunctions error:&error
+                withMessage:@"message.body is not a NSDictionary class"];
+        
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
         }];
@@ -31,12 +33,15 @@
     NSDictionary *parameters = scriptMessage.body;
     
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
-        result = [self findObjectInCacheWithParameters:parameters error:&error];
+        
+        result = [self findObjectWithParameters:parameters
+                                          error:&error];
         if (error) {
             return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
                 resolve(error);
             }];
-        };
+        }
+        
         if (result) {
             return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
                 resolve(result);
@@ -48,8 +53,6 @@
     
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
     
-    //    NSLog(@"find predicate created %@", @([NSDate timeIntervalSinceReferenceDate]));
-    
     if (error) {
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
             resolve(error);
@@ -59,9 +62,14 @@
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     NSDictionary *options = parameters[@"options"];
     
-    NSPredicate *predicate = [STMScriptMessagesController predicateForScriptMessage:scriptMessage error:&error];
+    NSPredicate *predicate = [STMScriptMessagesController
+                              predicateForScriptMessage:scriptMessage
+                              error:&error];
     
-    return [[self persistenceDelegate] findAll:entityName predicate:predicate options:options];
+    return [self.persistenceDelegate
+            findAll:entityName
+            predicate:predicate
+            options:options];
     
 }
 
@@ -75,7 +83,8 @@
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         
-        [STMFunctions error:&resultError withMessage:@"message.body is not a NSDictionary class"];
+        [STMFunctions error:&resultError
+                withMessage:@"message.body is not a NSDictionary class"];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -86,7 +95,8 @@
     
     if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
         
-        [STMFunctions error:&resultError withMessage:[entityName stringByAppendingString:@": not found in data model"]];
+        [STMFunctions error:&resultError
+                withMessage:[entityName stringByAppendingString:@": not found in data model"]];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -98,7 +108,8 @@
         
         if (![parametersData isKindOfClass:[NSDictionary class]]) {
             
-            [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
+            [STMFunctions error:&resultError
+                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -112,7 +123,8 @@
         
         if (![parametersData isKindOfClass:[NSArray <NSDictionary *> class]]) {
             
-            [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
+            [STMFunctions error:&resultError
+                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -120,7 +132,8 @@
         
     } else {
         
-        [STMFunctions error:&resultError withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
+        [STMFunctions error:&resultError
+                withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -137,7 +150,11 @@
     
     NSError *localError = nil;
     
-    NSArray *results = [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:nil error:&localError];
+    NSArray *results = [self.persistenceDelegate
+                        mergeManySync:entityName
+                        attributeArray:data
+                        options:nil
+                        error:&localError];
     
     if (localError) {
         
@@ -152,51 +169,54 @@
     
 }
 
-#pragma mark Private
 
-- (NSArray *)findObjectInCacheWithParameters:(NSDictionary *)parameters error:(NSError **)error {
+#pragma mark - destroy objects from WKWebView
+
+- (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage{
     
-    NSString *errorMessage = nil;
+    NSError* error;
+    
+    if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
+        
+        [STMFunctions error:&error withMessage:@"message.body is not a NSDictionary class"];
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
+        
+    }
+    
+    NSDictionary *parameters = scriptMessage.body;
     
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
-    if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
+    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
         
-        NSString *xidString = parameters[@"id"];
+        [STMFunctions error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
         
-        if (xidString) {
-            
-            NSDictionary* object = [[self persistenceDelegate] findSync:entityName
-                                                             identifier:xidString
-                                                                options:nil
-                                                                  error:error];
-            
-            if (object) {
-                
-                if (object[@"isFantom"] != [NSNull null] && [object[@"isFantom"] boolValue]) {
-                    errorMessage = [NSString stringWithFormat:@"object with xid %@ and entity name %@ is fantom", xidString, entityName];
-                } else {
-#warning - replace it with arrayForJSWithObjectsDics ?
-                    return @[object];
-                }
-                
-            } else {
-                errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xidString, entityName];
-            }
-            
-        } else {
-            errorMessage = @"empty xid";
-        }
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
         
-    } else {
-        errorMessage = [entityName stringByAppendingString:@": not found in data model"];
     }
     
-    if (errorMessage) [STMFunctions error:error withMessage:errorMessage];
+    NSString *xidString = parameters[@"id"];
     
-    return nil;
+    if (!xidString) {
+        
+        [STMFunctions error:&error withMessage:@"empty xid"];
+        
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+            resolve(error);
+        }];
+        
+    }
+    
+    return [[self persistenceDelegate] destroy:entityName identifier:xidString options:nil].then(^(NSNumber *result){
+        return @[@{@"objectXid":xidString}];
+    });
     
 }
+
 
 #pragma mark - subscribe entities from WKWebView
 
@@ -298,53 +318,6 @@
     
 }
 
-#pragma mark - destroy objects from WKWebView
-
-- (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage{
-    
-    NSError* error;
-    
-    if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
-        
-        [STMFunctions error:&error withMessage:@"message.body is not a NSDictionary class"];
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(error);
-        }];
-        
-    }
-    
-    NSDictionary *parameters = scriptMessage.body;
-    
-    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
-    
-    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
-        
-        [STMFunctions error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
-        
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(error);
-        }];
-        
-    }
-    
-    NSString *xidString = parameters[@"id"];
-    
-    if (!xidString) {
-        
-        [STMFunctions error:&error withMessage:@"empty xid"];
-        
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(error);
-        }];
-        
-    }
-    
-    return [[self persistenceDelegate] destroy:entityName identifier:xidString options:nil].then(^(NSNumber *result){
-        return @[@{@"objectXid":xidString}];
-    });
-    
-}
-
 - (void) flushSubscribedViewController:(id)vc {
     for (NSString *entityName in self.entitiesToSubscribe.allKeys) {
         
@@ -357,5 +330,49 @@
     }
     
 }
+
+
+#pragma mark - Private helpers
+
+- (NSArray *)findObjectWithParameters:(NSDictionary *)parameters error:(NSError **)error {
+    
+    NSString *errorMessage = nil;
+    
+    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    
+    if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
+        
+        NSString *xidString = parameters[@"id"];
+        
+        if (xidString) {
+            
+            NSDictionary* object = [self.persistenceDelegate findSync:entityName
+                                                           identifier:xidString
+                                                              options:nil
+                                                                error:error];
+            
+            if (object) {
+                return @[object];
+            }
+            
+            errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xidString, entityName];
+            
+        } else {
+            errorMessage = @"empty xid";
+        }
+        
+    } else {
+        errorMessage = [entityName stringByAppendingString:@": not found in data model"];
+    }
+    
+    if (errorMessage) {
+        [STMFunctions error:error
+                withMessage:errorMessage];
+    }
+    
+    return nil;
+    
+}
+
 
 @end
