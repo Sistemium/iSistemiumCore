@@ -64,8 +64,5 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
-- (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary
-                          withEntityName:(NSString *)entityName;
-
 
 @end
