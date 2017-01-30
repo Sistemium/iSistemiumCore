@@ -21,6 +21,7 @@
 @interface LtsCoreDataTests : XCTestCase
 
 @property (nonatomic, strong) id <STMPersistingSync> persister;
+@property (nonatomic, weak) STMDocument *document;
 
 
 @end
@@ -44,6 +45,7 @@
               evaluatedWithObject:manager
                           handler:^BOOL{
                               self.persister = [manager.currentSession persistenceDelegate];
+                              self.document = [manager.currentSession document];
                               return YES;
                           }];
     
@@ -75,18 +77,25 @@
     
     NSLog(@"testObject %@", testObject);
     
-    NSArray *clientEntities = [self.persister findAllSync:LtsCoreDataTestEntity
-                                                predicate:[NSPredicate predicateWithFormat:@"name == %@", LtsCoreDataTestEntityNameValue]
-                                                  options:nil
-                                                    error:nil];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for Document save"];
     
-    NSLog(@"clientEntities %@", clientEntities);
+    [self.document saveDocument:^(BOOL success) {
+        NSArray *clientEntities = [self.persister findAllSync:LtsCoreDataTestEntity
+                                                    predicate:[NSPredicate predicateWithFormat:@"name == %@", LtsCoreDataTestEntityNameValue]
+                                                      options:nil
+                                                        error:nil];
+        
+        NSLog(@"clientEntities %@", clientEntities);
+        
+        XCTAssertEqual(clientEntities.count, 1);
+        
+        [expectation fulfill];
+        
+    }];
     
-    XCTAssertEqual(clientEntities.count, 1);
+    [self waitForExpectationsWithTimeout:10 handler:nil];
     
-    testObject = clientEntities.firstObject;
-    
-    return testObject;
+    return nil;
 
 }
 
