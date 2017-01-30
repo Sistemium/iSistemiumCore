@@ -784,32 +784,6 @@
     
 }
 
-- (void)sendObjects:(NSDictionary *)parameters {
-    
-    NSError *error;
-    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
-    
-    if (error) {
-        
-        [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription type:@"error"];
-        
-    } else {
-        
-        if (jsonArray) {
-            
-            NSData *JSONData = [NSJSONSerialization dataWithJSONObject:@{@"data": jsonArray}
-                                                               options:0
-                                                                 error:nil];
-            //            [self startConnectionForSendData:JSONData];
-            
-#warning should send it via socket
-            
-        }
-        
-    }
-    
-}
-
 - (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value {
     [self.socketTransport socketSendEvent:event withValue:value];
 }
