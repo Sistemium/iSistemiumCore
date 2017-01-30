@@ -39,7 +39,7 @@
     
     XCTAssertNotNil(manager);
     
-    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession != nil"];
+    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession.logger != nil"];
     
     [self expectationForPredicate:waitForSession
               evaluatedWithObject:manager
