@@ -349,7 +349,7 @@
     
 }
 
-+ (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
++ (NSDictionary *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
     
     NSArray *dataModelEntityNames = [self localDataModelEntityNames];
     
@@ -388,7 +388,7 @@
             
         }
         
-        return object;
+        return [self dictionaryForJSWithObject:object];
         
     } else {
         

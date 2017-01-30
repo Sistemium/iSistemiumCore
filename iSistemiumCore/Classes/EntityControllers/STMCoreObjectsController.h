@@ -80,14 +80,19 @@
                                   withNulls:(BOOL)withNulls
                              withBinaryData:(BOOL)withBinaryData;
 
-//+ (void)resolveFantoms;
-//+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic
-//                  successfully:(BOOL)successfully;
-//+ (void)stopDefantomizing;
-//+ (BOOL)isDefantomizingProcessRunning;
-
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid;
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName
+                                       andXid:(NSData *)xidData;
+
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName
+                                 andXidString:(NSString *)xid;
+
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName;
+
++ (void)processingOfObject:(NSManagedObject *)object
+            withEntityName:(NSString *)entityName
+            fillWithValues:(NSDictionary *)properties;
+
 
 @end

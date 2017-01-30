@@ -14,6 +14,9 @@
 #import "STMEntityDescription.h"
 #import "STMPredicate.h"
 #import "STMCoreObjectsController.h"
+#import "STMEntityController.h"
+#import "STMRecordStatusController.h"
+
 
 @implementation STMPersister (CoreData)
 
@@ -35,8 +38,8 @@
         
     } else {
         
-        id object = [STMCoreObjectsController insertObjectFromDictionary:attributes
-                                                          withEntityName:entityName];
+        id object = [self insertObjectFromDictionary:attributes
+                                      withEntityName:entityName];
         if (!object) {
             [STMFunctions error:error
                     withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
@@ -219,5 +222,60 @@
     return nil;
     
 }
+
+- (STMDatum *)insertObjectFromDictionary:(NSDictionary *)dictionary withEntityName:(NSString *)entityName {
+    
+    NSArray *dataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+    
+    if ([dataModelEntityNames containsObject:entityName]) {
+        
+        NSString *xidString = dictionary[@"id"];
+        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
+        
+        STMDatum *object = nil;
+        
+        if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+            
+            object = [[[self.class session] settingsController] settingForDictionary:dictionary];
+            
+        } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+            
+            NSString *internalName = dictionary[@"name"];
+            object = [STMEntityController entityWithName:internalName];
+            
+        }
+        
+        if (!object && xidData) object = [STMCoreObjectsController objectFindOrCreateForEntityName:entityName 
+                                                                                            andXid:xidData];
+        
+        NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xidString];
+        
+        if (!(![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false)) {
+            
+            if (!object) object = [STMCoreObjectsController newObjectForEntityName:entityName];
+            
+            if (![object isWaitingToSync]) {
+                
+                [object setValue:@NO forKey:@"isFantom"];
+                [STMCoreObjectsController processingOfObject:object
+                                              withEntityName:entityName
+                                              fillWithValues:dictionary];
+                
+            }
+            
+        }
+        
+        return object;
+        
+    } else {
+        
+        NSLog(@"dataModel have no object's entity with name %@", entityName);
+        
+        return nil;
+        
+    }
+    
+}
+
 
 @end
