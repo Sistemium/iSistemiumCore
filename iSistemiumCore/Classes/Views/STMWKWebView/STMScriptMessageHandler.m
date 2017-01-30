@@ -11,21 +11,21 @@
 
 @implementation STMScriptMessageHandler
 
-- (STMScriptMessageHandlerSubscriptionsType *)entitiesToSubscribe {
+- (NSMutableDictionary *)entitiesToSubscribe {
     if (!_entitiesToSubscribe) {
         _entitiesToSubscribe = @{}.mutableCopy;
     }
     return _entitiesToSubscribe;
 }
 
--(id <STMPersistingPromised>)persistenceDelegate {
+-(id)persistenceDelegate {
     if (!_persistenceDelegate) {
         _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
     }
     return _persistenceDelegate;
 }
 
-- (NSMutableArray <NSDictionary *> *)subscribedObjects {
+- (NSMutableArray *)subscribedObjects {
     
     if (!_subscribedObjects) {
         _subscribedObjects = @[].mutableCopy;
