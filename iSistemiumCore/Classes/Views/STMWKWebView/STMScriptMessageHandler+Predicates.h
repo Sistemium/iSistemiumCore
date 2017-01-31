@@ -6,14 +6,14 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMCoreController.h"
+#import "STMScriptMessageHandler.h"
 
 #import <WebKit/WebKit.h>
 
 
-@interface STMScriptMessagesController : STMCoreController
+@interface STMScriptMessageHandler (Predicates)
 
-+ (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage
+- (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage
                                      error:(NSError **)error;
 
 

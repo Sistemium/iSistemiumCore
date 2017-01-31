@@ -63,7 +63,7 @@
                             ISISTEMIUM_PREFIX, parameters[@"entity"]];
     NSDictionary *options = parameters[@"options"];
     
-    NSPredicate *predicate = [STMScriptMessagesController
+    NSPredicate *predicate = [self
                               predicateForScriptMessage:scriptMessage
                               error:&error];
     
