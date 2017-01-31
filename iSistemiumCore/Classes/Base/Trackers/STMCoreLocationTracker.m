@@ -274,7 +274,7 @@
         NSDictionary *options = @{
             @"sortBy": @"timestamp",
             @"ASC": @NO,
-            @"pageSize": @"1"
+            STMPersistingOptionPageSize: @"1"
         };
         
         NSDictionary *location = [[self.session.persistenceDelegate findAllSync:STMLOCATION_CONCRETE_ENTITY predicate:nil options:options error:&error] lastObject];

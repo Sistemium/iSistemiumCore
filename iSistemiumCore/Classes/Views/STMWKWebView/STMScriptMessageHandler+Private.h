@@ -17,10 +17,10 @@
 
 - (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage;
 
-- (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
-                     toEntities:(NSArray *)entities
-                          error:(NSError **)error;
+- (BOOL)subscribeToEntities:(NSArray <NSString *> *)entities
+               callbackName:(NSString *)callbackName
+                      error:(NSError **)error;
 
-- (void) flushSubscribedViewController:(id)vc;
+- (void) flushSubscribedViewController;
 
 @end

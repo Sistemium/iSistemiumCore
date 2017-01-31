@@ -19,7 +19,7 @@
 
 @property (nonatomic, strong) id <STMSession> session;
 
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) id <STMDefantomizing> syncerHelper;
 

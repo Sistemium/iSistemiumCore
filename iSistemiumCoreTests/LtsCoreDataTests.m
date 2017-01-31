@@ -6,56 +6,24 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <XCTest/XCTest.h>
-
-#import "STMPersistingSync.h"
-#import "STMCoreSessionManager.h"
-#import "STMFunctions.h"
-
+#import "STMPersistingTests.h"
 
 #define LtsCoreDataTestEntity @"STMClientEntity"
 #define LtsCoreDataTestEntityNameValue @"Debug2"
 #define LtsCoreDataTestsTimeOut 10
 
 
-@interface LtsCoreDataTests : XCTestCase
-
-@property (nonatomic, strong) id <STMPersistingSync> persister;
-@property (nonatomic, weak) STMDocument *document;
-
-
+@interface LtsCoreDataTests : STMPersistingTests
 @end
 
 
 @implementation LtsCoreDataTests
 
 - (void)setUp {
-    
     [super setUp];
-    
-    if (self.persister) return;
-    
-    STMCoreSessionManager *manager = STMCoreSessionManager.sharedManager;
-    
-    XCTAssertNotNil(manager);
-    
-    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession.logger != nil"];
-    
-    [self expectationForPredicate:waitForSession
-              evaluatedWithObject:manager
-                          handler:^BOOL{
-                              self.persister = [manager.currentSession persistenceDelegate];
-                              self.document = [manager.currentSession document];
-                              return YES;
-                          }];
-    
-    [self waitForExpectationsWithTimeout:LtsCoreDataTestsTimeOut
-                                 handler:nil];
-    
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
@@ -63,9 +31,7 @@
     
     NSError *error;
     NSMutableDictionary *objProperty = @{}.mutableCopy;
-    //    NSString *itemVersion = toUploadItem[@"deviceTs"];
-    
-    //    toUploadItem[@"ts"] = [STMFunctions stringFromNow];
+
     objProperty[@"name"] = LtsCoreDataTestEntityNameValue;
     
     NSDictionary *testObject = [self.persister mergeSync:LtsCoreDataTestEntity

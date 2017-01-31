@@ -580,8 +580,6 @@
     NSLogMethodName;
     
     [self initTimer];
-
-    [self subscribeToUnsyncedObjects];
     
 }
 
@@ -918,7 +916,7 @@
     
     __block BOOL blockIsComplete = NO;
     
-    NSDictionary *options = @{@"pageSize"   : @(self.fetchLimit),
+    NSDictionary *options = @{STMPersistingOptionPageSize: @(self.fetchLimit),
                               @"offset"     : eTag};
 
     [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
@@ -998,7 +996,7 @@
     if ([entityName isEqualToString:@"STMEntity"]) {
         
         [STMEntityController flushSelf];
-//        [STMSocketController reloadResultsControllers];
+        [self subscribeToUnsyncedObjects];
         
         self.stcEntities = nil;
         
@@ -1242,7 +1240,7 @@
         if (responseData.count > 0) {
             
             NSString *offset = headers[@"offset"];
-            NSUInteger pageSize = [headers[@"pageSize"] integerValue];
+            NSUInteger pageSize = [headers[STMPersistingOptionPageSize] integerValue];
             
             if (offset) {
                 
@@ -1521,6 +1519,8 @@
 #pragma mark - unsynced subscription
 
 - (void)subscribeToUnsyncedObjects {
+    
+    [self unsubscribeFromUnsyncedObjects];
     
     self.subscriptionId = [self.dataSyncingDelegate subscribeUnsynced:self];
 

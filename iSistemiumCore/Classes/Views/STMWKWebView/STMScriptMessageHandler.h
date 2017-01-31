@@ -12,13 +12,22 @@
 #import "STMCoreWKWebViewVC.h"
 #import "STMScriptMessaging.h"
 
-typedef NSMutableDictionary <NSString *, NSArray <UIViewController <STMEntitiesSubscribable> *> *> STMScriptMessageHandlerSubscriptionsType;
+@interface STMScriptMessagingSubscription : NSObject
+
+@property (nonatomic, strong) NSString *callbackName;
+@property (nonatomic, strong) NSMutableSet <NSString *> *entityNames;
+
+@end
 
 @interface STMScriptMessageHandler : NSObject <STMScriptMessaging>
 
-@property (nonatomic, strong) STMScriptMessageHandlerSubscriptionsType *entitiesToSubscribe;
-@property (nonatomic, weak) id <STMPersistingPromised, STMModelling, STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMScriptMessagingOwner> owner;
 
+// TODO: create subsription id and store subscriptions by id and add a cancelSubscription:subscriptionId method
+@property (nonatomic, strong) NSMutableDictionary <NSString *, STMScriptMessagingSubscription *> *subscriptions;
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
+
+@property (nonatomic, weak) id <STMModelling> modellingDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMModelling, STMPersistingSync> persistenceDelegate;
 
 @end

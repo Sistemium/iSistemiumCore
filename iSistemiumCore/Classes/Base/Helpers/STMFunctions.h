@@ -124,6 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array;
 
 + (NSDictionary*)mapDisctionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock;
++ (NSArray *)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage;
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;

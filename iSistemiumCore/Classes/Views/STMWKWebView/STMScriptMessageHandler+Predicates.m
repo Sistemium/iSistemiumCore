@@ -6,11 +6,11 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMScriptMessagesController.h"
+#import "STMScriptMessageHandler+Predicates.h"
 
-@implementation STMScriptMessagesController
+@implementation STMScriptMessageHandler (Predicates)
 
-+ (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
+- (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
 
@@ -78,22 +78,25 @@
 
 }
 
-+ (Class)filterClass {
+
+#pragma mark - Private helpers
+
+- (Class)filterClass {
     return [NSDictionary <NSString *, __kindof NSObject *> class];
 }
 
-+ (Class)whereFilterClass {
+- (Class)whereFilterClass {
     return [NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> class];
 }
 
-+ (NSArray <NSString *> *)comparisonOperators {
+- (NSArray <NSString *> *)comparisonOperators {
     return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like", @"likei"];
 }
 
 
-+ (NSPredicate *)predicateForEntityName:(NSString *)entityName
-                                 filter:(NSDictionary <NSString *, __kindof NSObject *> *)filter
-                            whereFilter:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)whereFilter
+- (NSPredicate *)predicateForEntityName:(NSString *)entityName
+                                 filter:(STMScriptMessagingFilterDictionary *)filter
+                            whereFilter:(STMScriptMessagingWhereFilterDictionary *)whereFilter
                                   error:(NSError **)error {
     
     NSMutableDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *filterDictionary = whereFilter ? whereFilter.mutableCopy : @{}.mutableCopy;
@@ -127,10 +130,10 @@
     
 }
 
-+ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForEntityName:(NSString *)entityName filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary {
+- (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForEntityName:(NSString *)entityName filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary {
     
     
-    NSEntityDescription *entityDescription = self.persistenceDelegate.entitiesByName[entityName];
+    NSEntityDescription *entityDescription = self.modellingDelegate.entitiesByName[entityName];
     
     NSDictionary <NSString *, __kindof NSPropertyDescription *> *properties = entityDescription.propertiesByName;
     NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;
@@ -153,7 +156,7 @@
     
 }
 
-+ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForFilterKey:(NSString *)key
+- (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForFilterKey:(NSString *)key
                                                                              filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
                                                                                 relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
                                                                                    attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
@@ -213,7 +216,7 @@
     
 }
 
-+ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForArguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
+- (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForArguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
                                                                                      localKey:(NSString *)localKey
                                                                                   isAttribute:(BOOL)isAttribute
                                                                                isRelationship:(BOOL)isRelationship
@@ -246,7 +249,7 @@
     
 }
 
-+ (NSDictionary <NSString *, __kindof NSObject *> *)subpredicateDicForParams:(NSString *)compOp
+- (NSDictionary <NSString *, __kindof NSObject *> *)subpredicateDicForParams:(NSString *)compOp
                                                                                arguments:(NSDictionary <NSString *, __kindof NSObject *> *)arguments
                                                                                 localKey:(NSString *)localKey
                                                                              isAttribute:(BOOL)isAttribute
@@ -345,7 +348,7 @@
     
 }
 
-+ (id)normalizeValue:(id)value className:(NSString *)className {
+- (id)normalizeValue:(id)value className:(NSString *)className {
     
     if (!value) return nil;
     
@@ -371,7 +374,7 @@
     
 }
 
-+ (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)anyConditionForKey:(NSString *)key
+- (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)anyConditionForKey:(NSString *)key
                                                                   filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary
                                                                      relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
                                                                         entityName:(NSString *)entityName {
@@ -410,7 +413,7 @@
     
 }
 
-+ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
+- (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     

@@ -8,6 +8,8 @@
 
 #import <CoreData/CoreData.h>
 
+#import "STMCoreSessionManager.h"
+
 #import "STMPersister+CoreData.h"
 #import "STMFunctions.h"
 
@@ -475,7 +477,9 @@
     
     if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
         
-        object = [[[self.class session] settingsController] settingForDictionary:dictionary];
+        STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+            
+        object = [session.settingsController settingForDictionary:dictionary];
         
     } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
         

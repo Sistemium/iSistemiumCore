@@ -245,17 +245,22 @@
     
     NSPredicate* predicate;
     
-    if ([self.fmdb hasTable:entityName]) {
-        
-        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@", identifier];
-        
-    } else {
-        
-        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-        predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
-        
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",
+                         identifier];
+            break;
+        case STMStorageTypeCoreData:{
+            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+            predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
+            break;
+        }
+        default:
+            [STMFunctions error:error
+                    withMessage:[NSString stringWithFormat:@"Unknown entity '%@'", entityName]];
+            return nil;
     }
-    
+
     NSArray *results = [self findAllSync:entityName
                                predicate:predicate
                                  options:options
@@ -263,15 +268,15 @@
     
     if (results.count) {
         return results.firstObject;
-    } else {
-        return nil;
     }
+    
+    return nil;
     
 }
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    NSUInteger pageSize = [options[@"pageSize"] integerValue];
+    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
     NSUInteger offset = [options[@"startPage"] integerValue];
     if (offset) {
         offset -= 1;
@@ -301,7 +306,7 @@
                                   withPredicate:predicateWithFantoms
                                         orderBy:orderBy
                                       ascending:asc
-                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                     fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
                                     fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         
