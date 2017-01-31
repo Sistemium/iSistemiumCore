@@ -6,19 +6,13 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <XCTest/XCTest.h>
-#import "STMPersistingObserving.h"
-#import "STMPersistingSync.h"
-#import "STMCoreSessionManager.h"
-#import "STMConstants.h"
-#import "STMFunctions.h"
+#import "STMPersistingTests.h"
 
 #define PersistingObservingTestsTimeOut 10
 #define PersistingObservingTestEntity @"STMLogMessage"
 
-@interface PersistingObservingTests : XCTestCase
+@interface PersistingObservingTests : STMPersistingTests
 
-@property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync> persister;
 @property (nonatomic, strong) NSString *testType;
 @property (nonatomic, strong) NSPredicate *typePredicate;
 
@@ -27,28 +21,13 @@
 @implementation PersistingObservingTests
 
 - (void)setUp {
-    [super setUp];
     
     if (self.persister) return;
     
     self.testType = @"debug";
     self.typePredicate = [NSPredicate predicateWithFormat:@"type == %@", self.testType];
 
-    STMCoreSessionManager *manager = STMCoreSessionManager.sharedManager;
-    
-    XCTAssertNotNil(manager);
-    
-    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession.logger != nil"];
-    
-    [self expectationForPredicate:waitForSession
-              evaluatedWithObject:manager
-                          handler:^BOOL{
-                              self.persister = [manager.currentSession persistenceDelegate];
-                              return YES;
-                          }];
-    
-    [self waitForExpectationsWithTimeout:PersistingObservingTestsTimeOut
-                                 handler:nil];
+    [super setUp];
     
 }
 
