@@ -244,17 +244,22 @@
     
     NSPredicate* predicate;
     
-    if ([self.fmdb hasTable:entityName]) {
-        
-        predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@", identifier];
-        
-    } else {
-        
-        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-        predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
-        
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",
+                         identifier];
+            break;
+        case STMStorageTypeCoreData:{
+            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+            predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
+            break;
+        }
+        default:
+            [STMFunctions error:error
+                    withMessage:[NSString stringWithFormat:@"Unknown entity '%@'", entityName]];
+            return nil;
     }
-    
+
     NSArray *results = [self findAllSync:entityName
                                predicate:predicate
                                  options:options
@@ -262,9 +267,9 @@
     
     if (results.count) {
         return results.firstObject;
-    } else {
-        return nil;
     }
+    
+    return nil;
     
 }
 
