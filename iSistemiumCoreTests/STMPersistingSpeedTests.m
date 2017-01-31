@@ -29,7 +29,7 @@
     
     NSArray *sourceArray = [self.persister findAllSync:sourceEntityName
                                              predicate:nil
-                                               options:@{STMPersistingOptionPageSize:@10000}
+                                               options:@{STMPersistingOptionPageSize:@500}
                                                  error:&error];
     XCTAssertNil(error);
     XCTAssertNotEqual(sourceArray.count, 0, @"There should be some sourceArray data to test");
@@ -53,7 +53,7 @@
         }
     }];
     
-    NSLog(@"testFindSpeed took measureBlock run %f seconds", -[startedAt timeIntervalSinceNow]);
+    NSLog(@"testFindSpeed measured %lu finds per seconds", - (unsigned long) (10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]));
 }
 
 @end
