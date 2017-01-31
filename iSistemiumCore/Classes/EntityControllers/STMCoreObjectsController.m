@@ -15,8 +15,6 @@
 #import "STMClientDataController.h"
 #import "STMCorePicturesController.h"
 #import "STMRecordStatusController.h"
-//#import "STMSocketController.h"
-#import "STMScriptMessagesController.h"
 
 #import "STMConstants.h"
 
@@ -26,7 +24,6 @@
 
 #import "STMModeller+Private.h"
 
-//#import "iSistemiumCore-Swift.h"
 #import "STMPredicateToSQL.h"
 
 
