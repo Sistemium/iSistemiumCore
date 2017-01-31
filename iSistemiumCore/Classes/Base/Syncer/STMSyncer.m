@@ -916,7 +916,7 @@
     
     __block BOOL blockIsComplete = NO;
     
-    NSDictionary *options = @{@"pageSize"   : @(self.fetchLimit),
+    NSDictionary *options = @{STMPersistingOptionPageSize: @(self.fetchLimit),
                               @"offset"     : eTag};
 
     [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
@@ -1240,7 +1240,7 @@
         if (responseData.count > 0) {
             
             NSString *offset = headers[@"offset"];
-            NSUInteger pageSize = [headers[@"pageSize"] integerValue];
+            NSUInteger pageSize = [headers[STMPersistingOptionPageSize] integerValue];
             
             if (offset) {
                 

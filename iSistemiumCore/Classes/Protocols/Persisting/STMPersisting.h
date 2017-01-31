@@ -14,5 +14,6 @@
 #define STMPersistingOptionLts @"lts"
 #define STMPersistingOptionReturnSaved @"returnSaved"
 #define STMPersistingOptionForceStorage @"forceStorage"
+#define STMPersistingOptionPageSize @"pageSize"
 
 #endif /* STMPersisting_h */

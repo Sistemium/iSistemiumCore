@@ -270,7 +270,7 @@
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    NSUInteger pageSize = [options[@"pageSize"] integerValue];
+    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
     NSUInteger offset = [options[@"startPage"] integerValue];
     if (offset) {
         offset -= 1;
@@ -300,7 +300,7 @@
                                   withPredicate:predicateWithFantoms
                                         orderBy:orderBy
                                       ascending:asc
-                                     fetchLimit:options[@"pageSize"] ? &pageSize : nil
+                                     fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
                                     fetchOffset:options[@"offset"] ? &offset : nil];
     } else {
         

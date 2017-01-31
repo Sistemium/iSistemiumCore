@@ -56,7 +56,7 @@
         
         XCTestExpectation *expectFindAll = [self expectationWithDescription:@"Successful findAll"];
         
-        NSDictionary *options = @{@"pageSize"   : @(1),
+        NSDictionary *options = @{STMPersistingOptionPageSize: @(1),
                                   @"offset"     : @"*"};
         
         [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME
