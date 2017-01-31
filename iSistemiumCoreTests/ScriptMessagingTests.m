@@ -64,6 +64,39 @@
     
 }
 
+- (void)testWhereFilterANY {
+    
+    NSString *entityName = @"STMOutlet";
+    NSError *error;
+    
+    XCTAssertTrue([self.modeller isConcreteEntityName:entityName]);
+    
+    NSString *xid = @"7998f0143e83491fac972717e77fa0ff";
+    
+    STMScriptMessagingWhereFilterDictionary *whereFilter
+    =@{
+       @"ANY outletSalesmanContracts": @{
+               @"salesmanId": @{@"==": xid}
+               }
+       };
+    
+    NSPredicate *predicate =
+    [self.scriptMessenger predicateForEntityName:entityName
+                                          filter:nil
+                                     whereFilter:whereFilter
+                                           error:&error];
+    
+    XCTAssertNil(error);
+    
+    NSString *predicateString = [NSString stringWithFormat:@"%@", predicate];
+    
+    NSString *expectedString = @"ANY outletSalesmanContracts.salesman.xid == <7998f014 3e83491f ac972717 e77fa0ff>";
+    
+    XCTAssertEqualObjects(predicateString, expectedString);
+    
+    
+}
+
 
 #pragma mark - STMScriptMessagingOwner protocol
 
