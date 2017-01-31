@@ -75,7 +75,9 @@
 
 - (id <STMScriptMessaging>)scriptMessageHandler {
     if (!_scriptMessageHandler) {
-        _scriptMessageHandler = [[STMScriptMessageHandler alloc] initWithOwner:self];
+        STMScriptMessageHandler *scriptMessageHandler = [[STMScriptMessageHandler alloc] initWithOwner:self];
+        scriptMessageHandler.persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
+        _scriptMessageHandler = scriptMessageHandler;
     }
     return _scriptMessageHandler;
 }

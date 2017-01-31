@@ -7,20 +7,12 @@
 //
 
 #import "STMScriptMessageHandler+Private.h"
-#import "STMSessionManager.h"
 
 @implementation STMScriptMessagingSubscription
 
 @end
 
 @implementation STMScriptMessageHandler
-
--(id)persistenceDelegate {
-    if (!_persistenceDelegate) {
-        _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
-    }
-    return _persistenceDelegate;
-}
 
 - (instancetype)initWithOwner:(id <STMScriptMessagingOwner>)owner{
     id result = [self init];
