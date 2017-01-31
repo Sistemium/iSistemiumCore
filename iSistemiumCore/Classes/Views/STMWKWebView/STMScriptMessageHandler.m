@@ -9,20 +9,24 @@
 #import "STMScriptMessageHandler+Private.h"
 #import "STMSessionManager.h"
 
-@implementation STMScriptMessageHandler
+@implementation STMScriptMessagingSubscription
 
-- (NSMutableDictionary *)entitiesToSubscribe {
-    if (!_entitiesToSubscribe) {
-        _entitiesToSubscribe = @{}.mutableCopy;
-    }
-    return _entitiesToSubscribe;
-}
+@end
+
+@implementation STMScriptMessageHandler
 
 -(id)persistenceDelegate {
     if (!_persistenceDelegate) {
         _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
     }
     return _persistenceDelegate;
+}
+
+- (instancetype)initWithOwner:(id <STMScriptMessagingOwner>)owner{
+    id result = [self init];
+    self.owner = owner;
+    _subscriptions = [NSMutableDictionary dictionary];
+    return result;
 }
 
 - (NSMutableArray *)subscribedObjects {
@@ -34,96 +38,99 @@
     
 }
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveFindMessage:(WKScriptMessage *)message {
+- (void)receiveFindMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
     [self arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
         
-        [webViewVC callbackWithData:result
-                         parameters:parameters];
+        [self.owner callbackWithData:result
+                          parameters:parameters];
         
     }).catch(^(NSError *error){
         
-        [webViewVC callbackWithError:error.localizedDescription
-                          parameters:parameters];
+        [self.owner callbackWithError:error.localizedDescription
+                           parameters:parameters];
         
     });
-
+    
 }
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveUpdateMessage:(WKScriptMessage *)message {
+- (void)receiveUpdateMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
-    [self updateObjectsFromScriptMessage:message withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
+    [self updateObjectsFromScriptMessage:message
+                   withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
         
         if (success) {
-            [webViewVC callbackWithData:updatedObjects parameters:parameters];
+            [self.owner callbackWithData:updatedObjects
+                              parameters:parameters];
         } else {
-            [webViewVC callbackWithError:error.localizedDescription parameters:parameters];
+            [self.owner callbackWithError:error.localizedDescription
+                               parameters:parameters];
         }
         
     }];
-
+    
 }
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveSubscribeMessage:(WKScriptMessage *)message {
+- (void)receiveSubscribeMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
-    NSLog(@"%@", parameters);
+    NSLog(@"receiveSubscribeMessage: %@", parameters);
     
     if ([parameters[@"entities"] isKindOfClass:[NSArray class]]) {
         
-        webViewVC.subscribeDataCallbackJSFunction = parameters[@"dataCallback"];
-        
         NSArray *entities = parameters[@"entities"];
-        
+        NSString *dataCallback = parameters[@"dataCallback"];
         NSError *error = nil;
         
-        if ([self subscribeViewController:webViewVC toEntities:entities error:&error]) {
+        if ([self subscribeToEntities:entities callbackName:dataCallback error:&error]) {
             
-            [webViewVC callbackWithData:@[@"subscribe to entities success"]
-                             parameters:parameters
-                     jsCallbackFunction:parameters[@"callback"]];
+            [self.owner callbackWithData:@[@"subscribe to entities success"]
+                              parameters:parameters
+                      jsCallbackFunction:parameters[@"callback"]];
             
         } else {
             
-            [webViewVC callbackWithError:error.localizedDescription
-                         parameters:parameters];
+            [self.owner callbackWithError:error.localizedDescription
+                               parameters:parameters];
             
         }
         
     } else {
         
-        [webViewVC callbackWithError:@"message.parameters.entities is not a NSArray class"
-                     parameters:parameters];
+        [self.owner callbackWithError:@"message.parameters.entities is not a NSArray class"
+                           parameters:parameters];
         
     }
     
 }
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveDestroyMessage:(WKScriptMessage *)message {
+- (void)receiveDestroyMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     
     [self destroyObjectFromScriptMessage:message].then(^(NSArray *result){
         
-        [webViewVC callbackWithData:result parameters:parameters];
+        [self.owner callbackWithData:result
+                          parameters:parameters];
         
     }).catch(^(NSError *error){
         
-        [webViewVC callbackWithError:error.localizedDescription parameters:parameters];
+        [self.owner callbackWithError:error.localizedDescription
+                           parameters:parameters];
         
     });
-
+    
 }
 
-- (void)unsubscribeViewController:(UIViewController *)vc {
-
-    NSLog(@"unsubscribeViewController: %@", vc);
-    [self flushSubscribedViewController:vc];
+- (void)cancelSubscriptions {
+    
+    NSLog(@"unsubscribeViewController: %@", self.owner);
+    [self flushSubscribedViewController];
     
 }
 

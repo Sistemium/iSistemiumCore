@@ -7,17 +7,34 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <WebKit/WebKit.h>
+
+@protocol STMScriptMessagingOwner
+
+- (void)callbackWithError:(NSString *)errorDescription
+               parameters:(NSDictionary *)parameters;
+
+- (void)callbackWithData:(NSArray *)data
+              parameters:(NSDictionary *)parameters;
+
+- (void)callbackWithData:(id)data
+              parameters:(NSDictionary *)parameters
+      jsCallbackFunction:(NSString *)jsCallbackFunction;
+
+@end
 
 @protocol STMScriptMessaging
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveFindMessage:(WKScriptMessage *)message;
+- (id <STMScriptMessaging>)initWithOwner:(id <STMScriptMessagingOwner>)owner;
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveUpdateMessage:(WKScriptMessage *)message;
+- (void)receiveFindMessage:(WKScriptMessage *)message;
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveSubscribeMessage:(WKScriptMessage *)message;
+- (void)receiveUpdateMessage:(WKScriptMessage *)message;
 
-- (void)webViewVC:(STMCoreWKWebViewVC *)webViewVC receiveDestroyMessage:(WKScriptMessage *)message;
+- (void)receiveDestroyMessage:(WKScriptMessage *)message;
 
-- (void)unsubscribeViewController:(UIViewController*)vc;
+- (void)receiveSubscribeMessage:(WKScriptMessage *)message;
+
+- (void)cancelSubscriptions;
 
 @end

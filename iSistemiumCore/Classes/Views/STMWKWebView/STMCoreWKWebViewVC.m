@@ -75,7 +75,7 @@
 
 - (id <STMScriptMessaging>)scriptMessageHandler {
     if (!_scriptMessageHandler) {
-        _scriptMessageHandler = [[STMScriptMessageHandler alloc] init];
+        _scriptMessageHandler = [[STMScriptMessageHandler alloc] initWithOwner:self];
     }
     return _scriptMessageHandler;
 }
@@ -418,7 +418,7 @@
         [self.webView removeFromSuperview];
         self.webView = nil;
         
-        [self.scriptMessageHandler unsubscribeViewController:self];
+        [self.scriptMessageHandler cancelSubscriptions];
         
     }
     
@@ -777,23 +777,19 @@
         
     } else if ([@[WK_MESSAGE_FIND, WK_MESSAGE_FIND_ALL] containsObject:message.name]) {
         
-        [self.scriptMessageHandler webViewVC:self
-                        receiveFindMessage:message];
+        [self.scriptMessageHandler receiveFindMessage:message];
         
     } else if ([@[WK_MESSAGE_UPDATE, WK_MESSAGE_UPDATE_ALL] containsObject:message.name]) {
         
-        [self.scriptMessageHandler webViewVC:self
-                      receiveUpdateMessage:message];
+        [self.scriptMessageHandler receiveUpdateMessage:message];
         
     } else if ([message.name isEqualToString:WK_MESSAGE_SUBSCRIBE]) {
         
-        [self.scriptMessageHandler webViewVC:self
-                   receiveSubscribeMessage:message];
+        [self.scriptMessageHandler receiveSubscribeMessage:message];
         
     } else if ([message.name isEqualToString:WK_MESSAGE_DESTROY]) {
         
-        [self.scriptMessageHandler webViewVC:self
-                     receiveDestroyMessage:message];
+        [self.scriptMessageHandler receiveDestroyMessage:message];
         
     }
     
@@ -1521,30 +1517,6 @@ int counter = 0;
                 parameters:nil
         jsCallbackFunction:self.soundCallbackJSFunction];
     
-}
-
-
-#pragma mark - STMEntitiesSubscribable
-
-- (void)subscribedEntitiesObjectWasReceived:(NSDictionary *)objectDic {
-
-    NSArray *result = @[objectDic];
-    NSDictionary *parameters = @{@"reason": @"subscription"};
-    
-    [self callbackWithData:result
-                parameters:parameters
-        jsCallbackFunction:self.subscribeDataCallbackJSFunction];
-
-}
-
-- (void)subscribedObjectsArrayWasReceived:(NSArray *)objectsArray {
-
-    NSDictionary *parameters = @{@"reason": @"subscription"};
-    
-    [self callbackWithData:objectsArray
-                parameters:parameters
-        jsCallbackFunction:self.subscribeDataCallbackJSFunction];
-
 }
 
 

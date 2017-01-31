@@ -12,11 +12,9 @@
 #import "STMSoundCallbackable.h"
 #import "STMBarCodeScanner.h"
 #import "STMCheckinDelegate.h"
+#import "STMScriptMessaging.h"
 
-
-@interface STMCoreWKWebViewVC : UIViewController <STMEntitiesSubscribable, STMSoundCallbackable, STMCheckinDelegate>
-
-@property (nonatomic, strong) NSString *subscribeDataCallbackJSFunction;
+@interface STMCoreWKWebViewVC : UIViewController <STMSoundCallbackable, STMCheckinDelegate, STMScriptMessagingOwner>
 
 @property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
 @property (nonatomic) BOOL haveLocalHTML;
@@ -30,16 +28,5 @@
 
 - (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir;
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir;
-
-- (void)callbackWithData:(NSArray *)data
-              parameters:(NSDictionary *)parameters;
-
-- (void)callbackWithData:(id)data
-              parameters:(NSDictionary *)parameters
-      jsCallbackFunction:(NSString *)jsCallbackFunction;
-
-- (void)callbackWithError:(NSString *)errorDescription
-               parameters:(NSDictionary *)parameters;
-
 
 @end

@@ -59,7 +59,8 @@
         }];
     }
     
-    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    NSString *entityName = [NSString stringWithFormat:@"%@%@",
+                            ISISTEMIUM_PREFIX, parameters[@"entity"]];
     NSDictionary *options = parameters[@"options"];
     
     NSPredicate *predicate = [STMScriptMessagesController
@@ -81,7 +82,7 @@
     
     NSError *resultError = nil;
     
-    if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
+    if (![scriptMessage.body isKindOfClass:NSDictionary.class]) {
         
         [STMFunctions error:&resultError
                 withMessage:@"message.body is not a NSDictionary class"];
@@ -91,7 +92,8 @@
     }
     
     NSDictionary *parameters = scriptMessage.body;
-    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    NSString *entityName = [NSString stringWithFormat:@"%@%@",
+                            ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
     if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
         
@@ -106,10 +108,11 @@
     
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE]) {
         
-        if (![parametersData isKindOfClass:[NSDictionary class]]) {
+        if (![parametersData isKindOfClass:NSDictionary.class]) {
             
             [STMFunctions error:&resultError
-                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class", scriptMessage.name]];
+                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class",
+                                 scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -124,7 +127,8 @@
         if (![parametersData isKindOfClass:[NSArray <NSDictionary *> class]]) {
             
             [STMFunctions error:&resultError
-                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class", scriptMessage.name]];
+                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class",
+                                 scriptMessage.name]];
             completionHandler(NO, nil, resultError);
             return;
             
@@ -133,7 +137,8 @@
     } else {
         
         [STMFunctions error:&resultError
-                withMessage:[NSString stringWithFormat:@"unknown update message name: %@", scriptMessage.name]];
+                withMessage:[NSString stringWithFormat:@"unknown update message name: %@",
+                             scriptMessage.name]];
         completionHandler(NO, nil, resultError);
         return;
         
@@ -220,33 +225,30 @@
 
 #pragma mark - subscribe entities from WKWebView
 
-- (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc toEntities:(NSArray *)entities error:(NSError **)error {
+- (BOOL)subscribeToEntities:(NSArray <NSString *> *)entities callbackName:(NSString *)callbackName error:(NSError **)error {
     
     BOOL result = YES;
     NSString *errorMessage;
-    NSMutableArray *entitiesToSubscribe = @[].mutableCopy;
+    STMScriptMessagingSubscription *subscription = self.subscriptions[callbackName];
     
-    for (id item in entities) {
+    if (!subscription) {
+        subscription = [[STMScriptMessagingSubscription alloc] init];
+        subscription.entityNames = [NSMutableSet set];
+        subscription.callbackName = callbackName;
+    }
+    
+    for (NSString *item in entities) {
         
-        if ([item isKindOfClass:[NSString class]]) {
+        NSString *entityName = [STMFunctions addPrefixToEntityName:item];
+        
+        if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
             
-            NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, item];
-            
-            if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
-                
-                [entitiesToSubscribe addObject:entityName];
-                
-            } else {
-                
-                errorMessage = [NSString stringWithFormat:@"entity name %@ is not in local data model", entityName];
-                result = NO;
-                break;
-                
-            }
+            [subscription.entityNames addObject:entityName];
             
         } else {
             
-            errorMessage = [NSString stringWithFormat:@"entities array item %@ is not a NSString", item];
+            errorMessage = [NSString stringWithFormat:@"entity name %@ is not in local data model",
+                            entityName];
             result = NO;
             break;
             
@@ -256,29 +258,12 @@
     
     if (result) {
         
-        NSLog(@"subscribeViewController: %@ toEntities: %@", vc, entitiesToSubscribe);
-        
-        [self flushSubscribedViewController:vc];
-        
-        for (NSString *entityName in entitiesToSubscribe) {
-            
-            NSArray *vcArray = self.entitiesToSubscribe[entityName];
-            
-            if (vcArray) {
-                if (![vcArray containsObject:vc]) {
-                    vcArray = [vcArray arrayByAddingObject:vc];
-                }
-            } else {
-                vcArray = @[vc];
-            }
-            
-            self.entitiesToSubscribe[entityName] = vcArray;
-            
-        }
+        self.subscriptions[callbackName] = subscription;
         
     } else {
         
-        [STMFunctions error:error withMessage:errorMessage];
+        [STMFunctions error:error
+                withMessage:errorMessage];
         
     }
     
@@ -286,49 +271,33 @@
     
 }
 
-- (void)sendSubscribedBunchOfObjects:(NSArray *)objectArray entityName:(NSString *)entityName {
+- (void)sendSubscribedBunchOfObjects:(NSArray <NSDictionary *> *)objectsArray entityName:(NSString *)entityName {
     
-    NSArray <UIViewController <STMEntitiesSubscribable> *> *vcArray = self.entitiesToSubscribe[entityName];
+    NSSet *matchingCallbacks = [self.subscriptions keysOfEntriesPassingTest:^BOOL(NSString * _Nonnull key, STMScriptMessagingSubscription * _Nonnull subscription, BOOL * _Nonnull stop) {
+        return [subscription.entityNames containsObject:entityName];
+    }];
     
-    if (vcArray.count > 0) {
-        
-        entityName = [STMFunctions removePrefixFromEntityName:entityName];
-        
-        NSMutableArray *resultArray = @[].mutableCopy;
-        
-        for (STMDatum *object in objectArray) {
-            
-            if (object.id) {
-                
-                NSDictionary *subscribeDic = @{@"entity"    : entityName,
-                                               @"xid"       : [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid],
-                                               @"data"      : object};
-                
-                [resultArray addObject:subscribeDic];
-                
-            }
-            
-        }
-        
-        for (UIViewController <STMEntitiesSubscribable> *vc in vcArray) {
-            [vc subscribedObjectsArrayWasReceived:resultArray];
-        }
-        
+    if (!matchingCallbacks.count) return;
+    
+    entityName = [STMFunctions removePrefixFromEntityName:entityName];
+    
+    NSArray *resultArray = [STMFunctions mapArray:objectsArray
+                                        withBlock:^id (NSDictionary * object) {
+                                            return @{@"entity": entityName,
+                                                     @"xid": object[@"id"],
+                                                     @"data": object};
+                                        }];
+    
+    for (NSString *callback in matchingCallbacks) {
+        [self.owner callbackWithData:resultArray
+                          parameters:@{@"reason": @"subscription"}
+                  jsCallbackFunction:callback];
     }
     
 }
 
-- (void) flushSubscribedViewController:(id)vc {
-    for (NSString *entityName in self.entitiesToSubscribe.allKeys) {
-        
-        NSMutableArray *vcArray = self.entitiesToSubscribe[entityName].mutableCopy;
-        
-        [vcArray removeObject:vc];
-        
-        self.entitiesToSubscribe[entityName] = vcArray;
-        
-    }
-    
+- (void) flushSubscribedViewController {
+    [self.subscriptions removeAllObjects];
 }
 
 
@@ -338,7 +307,8 @@
     
     NSString *errorMessage = nil;
     
-    NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    NSString *entityName = [NSString stringWithFormat:@"%@%@",
+                            ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
     if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
         
@@ -355,7 +325,8 @@
                 return @[object];
             }
             
-            errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xidString, entityName];
+            errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@",
+                            xidString, entityName];
             
         } else {
             errorMessage = @"empty xid";
