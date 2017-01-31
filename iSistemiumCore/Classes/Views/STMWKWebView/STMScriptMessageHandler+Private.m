@@ -7,7 +7,7 @@
 //
 
 #import "STMScriptMessageHandler+Private.h"
-#import "STMScriptMessagesController.h"
+#import "STMScriptMessageHandler+Predicates.h"
 
 @implementation STMScriptMessageHandler (Private)
 

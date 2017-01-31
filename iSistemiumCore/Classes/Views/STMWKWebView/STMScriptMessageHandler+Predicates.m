@@ -6,7 +6,7 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMScriptMessagesController.h"
+#import "STMScriptMessageHandler+Predicates.h"
 
 @implementation STMScriptMessagesController
 
