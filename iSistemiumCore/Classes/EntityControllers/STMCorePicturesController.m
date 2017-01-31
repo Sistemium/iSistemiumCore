@@ -871,7 +871,11 @@
                                                        
                                                        NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
                                                        
-                                                       [STMCoreController.persistenceDelegate merge:object.entity.name attributes:dictObject options:nil];
+                                                       [STMCoreController.persistenceDelegate merge:object.entity.name attributes:dictObject options:nil].then(^(NSArray *result){
+                                                           NSLog(@"picture downloaded");
+                                                       }).catch(^(NSError *error){
+                                                           NSLog(@"Error:%@",error);
+                                                       });
                                                        
                                                    }
                                                    
