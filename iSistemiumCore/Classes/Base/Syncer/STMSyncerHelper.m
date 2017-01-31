@@ -95,6 +95,21 @@
 - (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber {
     
     self.subscriber = subscriber;
+    
+    for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
+     
+        NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+        
+        [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
+            
+            NSLog(@"observeEntity %@ data count %@", entityName, data.count);
+            
+            [self.subscriber notificationToInitSendDataProcess];
+            
+        }];
+
+    }
+    
     NSString *subscriptionId = [NSUUID UUID].UUIDString;
     
     return subscriptionId;
