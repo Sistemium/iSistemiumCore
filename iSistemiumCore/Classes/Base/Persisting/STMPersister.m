@@ -215,9 +215,8 @@
     if ([self.fmdb hasTable:entityName]){
         return [self.fmdb commit];
     } else {
-        NSError *error;
-        [self.document.managedObjectContext save:&error];
-        return !error;
+        [self.document saveDocument:^(BOOL success){}];
+        return YES;
     }
     
 }
