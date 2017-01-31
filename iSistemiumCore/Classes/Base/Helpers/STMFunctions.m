@@ -652,6 +652,16 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return result;
 }
 
++ (NSDictionary*)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock {
+    NSMutableArray *result = [NSMutableArray array];
+    
+    [array enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [result addObject:mapperBlock(obj)];
+    }];
+    
+    return result.copy;
+}
+
 + (id)popArray:(NSMutableArray *)array {
     @synchronized (array) {
         id result = array.lastObject;
