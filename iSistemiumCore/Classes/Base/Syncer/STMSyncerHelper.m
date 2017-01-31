@@ -102,7 +102,7 @@
         
         [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
             
-            NSLog(@"observeEntity %@ data count %ul", entityName, data.count);
+            NSLog(@"observeEntity %@ data count %u", entityName, data.count);
             
             [self.subscriber notificationToInitSendDataProcess];
             
