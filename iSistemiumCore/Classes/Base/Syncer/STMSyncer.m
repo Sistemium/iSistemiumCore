@@ -580,8 +580,6 @@
     NSLogMethodName;
     
     [self initTimer];
-
-    [self subscribeToUnsyncedObjects];
     
 }
 
@@ -998,7 +996,7 @@
     if ([entityName isEqualToString:@"STMEntity"]) {
         
         [STMEntityController flushSelf];
-//        [STMSocketController reloadResultsControllers];
+        [self subscribeToUnsyncedObjects];
         
         self.stcEntities = nil;
         
@@ -1521,6 +1519,8 @@
 #pragma mark - unsynced subscription
 
 - (void)subscribeToUnsyncedObjects {
+    
+    [self unsubscribeFromUnsyncedObjects];
     
     self.subscriptionId = [self.dataSyncingDelegate subscribeUnsynced:self];
 
