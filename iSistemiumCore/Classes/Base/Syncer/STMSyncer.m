@@ -969,6 +969,8 @@
     
     if (!finishReceiving && --self.entityCount) {
         
+        NSLog(@"remain %@ entities to receive", @(self.entityCount));
+        
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
         
         if (self.entitySyncNames.firstObject) {
@@ -984,7 +986,9 @@
         }
         
     } else {
-        
+
+        NSLog(@"remain %@ entities to receive", @(self.entityCount));
+
         [self receivingDidFinish];
         
     }
