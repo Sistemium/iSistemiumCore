@@ -95,8 +95,8 @@
 
 
 - (NSPredicate *)predicateForEntityName:(NSString *)entityName
-                                 filter:(NSDictionary <NSString *, __kindof NSObject *> *)filter
-                            whereFilter:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)whereFilter
+                                 filter:(STMScriptMessagingFilterDictionary *)filter
+                            whereFilter:(STMScriptMessagingWhereFilterDictionary *)whereFilter
                                   error:(NSError **)error {
     
     NSMutableDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *filterDictionary = whereFilter ? whereFilter.mutableCopy : @{}.mutableCopy;

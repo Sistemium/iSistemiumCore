@@ -7,14 +7,16 @@
 //
 
 #import "STMScriptMessageHandler.h"
-
 #import <WebKit/WebKit.h>
-
 
 @interface STMScriptMessageHandler (Predicates)
 
 - (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage
                                      error:(NSError **)error;
 
+- (NSPredicate *)predicateForEntityName:(NSString *)entityName
+                                 filter:(STMScriptMessagingFilterDictionary *)filter
+                            whereFilter:(STMScriptMessagingWhereFilterDictionary *)whereFilter
+                                  error:(NSError **)error;
 
 @end
