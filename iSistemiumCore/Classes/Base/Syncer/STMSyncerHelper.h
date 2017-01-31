@@ -13,12 +13,15 @@
 #import "STMPersistingPromised.h"
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
+#import "STMPersistingObserving.h"
 #import "STMModelling.h"
+
 
 @interface STMSyncerHelper : NSObject <STMDataSyncing>
 
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving, STMModelling> persistenceDelegate;
 
 @property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
+
 
 @end
