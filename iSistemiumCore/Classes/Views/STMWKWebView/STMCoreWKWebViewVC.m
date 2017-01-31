@@ -68,10 +68,22 @@ STMImagePickerOwnerProtocol>
 @property (nonatomic) BOOL waitingPhoto;
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
+@property (nonatomic, strong) NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> * persistenceDelegate;
+
 @end
 
 
 @implementation STMCoreWKWebViewVC
+
+- (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
+    
+    if (!_persistenceDelegate) {
+        _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
+    }
+    
+    return _persistenceDelegate;
+    
+}
 
 - (id <STMScriptMessaging>)scriptMessageHandler {
     if (!_scriptMessageHandler) {
@@ -824,19 +836,33 @@ STMImagePickerOwnerProtocol>
 - (void)handleGetPictureParameters:(NSDictionary *)parameters {
     
     NSString *getPictureXid = parameters[@"id"];
-    NSData *getPictureXidData = [STMFunctions xidDataFromXidString:getPictureXid];
-    if (getPictureXidData) self.getPictureMessageParameters[getPictureXidData] = parameters;
     
     NSString *callbackFunction = parameters[@"callback"];
-    if (getPictureXidData) self.getPictureCallbackJSFunctions[getPictureXidData] = callbackFunction;
+    if (getPictureXid) self.getPictureCallbackJSFunctions[getPictureXid] = callbackFunction;
     
     NSString *getPictureSize = parameters[@"size"];
     
-    STMDatum *object = [STMCoreObjectsController objectForXid:getPictureXidData];
+    NSDictionary *picture = [self.persistenceDelegate findSync:@"STMArticlePicture" identifier:getPictureXid options:nil error:nil];
+    STMCorePicture *object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
+    
+    if (!picture){
+        picture = [self.persistenceDelegate findSync:@"STMOutletPhoto" identifier:getPictureXid  options:nil error:nil];
+        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
+    }
+    
+    if (!picture){
+        picture = [self.persistenceDelegate findSync:@"STMVisitPhoto" identifier:getPictureXid  options:nil error:nil];
+        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
+    }
+    
+    if (!picture){
+        picture = [self.persistenceDelegate findSync:@"STMMessagePicture" identifier:getPictureXid  options:nil error:nil];
+        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
+    }
     
     if (!object) {
         
-        [self getPictureWithXid:getPictureXidData
+        [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"no object with xid %@", getPictureXid]];
         return;
         
@@ -844,62 +870,62 @@ STMImagePickerOwnerProtocol>
     
     if (![object isKindOfClass:[STMCorePicture class]]) {
         
-        [self getPictureWithXid:getPictureXidData
+        [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
         return;
         
     }
     
-    STMCorePicture *picture = (STMCorePicture *)object;
+    [self.persistenceDelegate setObjectData:picture toObject:object];
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-        if (picture.imageThumbnail) {
+        if (object.imageThumbnail) {
             
-            [self getPictureSendData:picture.imageThumbnail
+            [self getPictureSendData:object.imageThumbnail
                           parameters:parameters
                   jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:object];
         }
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
-        if (picture.resizedImagePath) {
+        if (object.resizedImagePath) {
             
-            [self getPicture:picture
-               withImagePath:picture.resizedImagePath
+            [self getPicture:object
+               withImagePath:object.resizedImagePath
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:object];
         }
         
     } else if ([getPictureSize isEqualToString:@"full"]) {
         
-        if (picture.imagePath) {
+        if (object.imagePath) {
             
-            [self getPicture:picture
-               withImagePath:picture.imagePath
+            [self getPicture:object
+               withImagePath:object.imagePath
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:object];
         }
         
     } else {
         
-        [self getPictureWithXid:getPictureXidData
+        [self getPictureWithXid:getPictureXid
                           error:@"size parameter is not correct"];
         
     }
     
 }
 
-- (void)getPictureWithXid:(NSData *)xid error:(NSString *)errorString {
+- (void)getPictureWithXid:(NSString *)xid error:(NSString *)errorString {
     
     NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
     
@@ -921,13 +947,13 @@ STMImagePickerOwnerProtocol>
         
         [self addObserversForPicture:picture];
         
-        NSManagedObjectID *pictureID = picture.objectID;
-        
-        [STMCorePicturesController downloadConnectionForObjectID:pictureID];
+        [STMCorePicturesController downloadConnectionForObject:picture];
         
     } else {
         
-        [self getPictureWithXid:picture.xid
+        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        
+        [self getPictureWithXid:getPictureXid
                           error:@"picture have not imagePath and href"];
         
     }
@@ -956,7 +982,9 @@ STMImagePickerOwnerProtocol>
     
     NSString *errorString = notification.userInfo[@"error"];
     
-    [self getPictureWithXid:picture.xid
+    NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+    
+    [self getPictureWithXid:getPictureXid
                       error:errorString];
     
 }
@@ -1001,8 +1029,8 @@ STMImagePickerOwnerProtocol>
               jsCallbackFunction:jsCallbackFunction];
         
     } else {
-        
-        [self getPictureWithXid:picture.xid
+        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
         
     }
@@ -1037,7 +1065,7 @@ STMImagePickerOwnerProtocol>
         NSString *entityName = parameters[@"entityName"];
         self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
         
-        BOOL hasTable = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate isConcreteEntityName:self.photoEntityName];
+        BOOL hasTable = [self.persistenceDelegate isConcreteEntityName:self.photoEntityName];
         
         if (hasTable) {
             
@@ -1460,7 +1488,7 @@ int counter = 0;
     
     if (photoObject) {
         
-        [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
+        [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
         
         NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
                                                                                  withNulls:YES
