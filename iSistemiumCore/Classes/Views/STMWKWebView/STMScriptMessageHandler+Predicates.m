@@ -133,7 +133,7 @@
 - (NSArray <NSDictionary <NSString *, __kindof NSObject *> *> *)subpredicatesDicsForEntityName:(NSString *)entityName filterDictionary:(NSDictionary <NSString *, NSDictionary <NSString *, __kindof NSObject *> *> *)filterDictionary {
     
     
-    NSEntityDescription *entityDescription = self.persistenceDelegate.entitiesByName[entityName];
+    NSEntityDescription *entityDescription = self.modellingDelegate.entitiesByName[entityName];
     
     NSDictionary <NSString *, __kindof NSPropertyDescription *> *properties = entityDescription.propertiesByName;
     NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;

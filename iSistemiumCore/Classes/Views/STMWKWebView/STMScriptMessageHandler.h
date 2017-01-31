@@ -27,6 +27,7 @@
 @property (nonatomic, strong) NSMutableDictionary <NSString *, STMScriptMessagingSubscription *> *subscriptions;
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
 
+@property (nonatomic, weak) id <STMModelling> modellingDelegate;
 @property (nonatomic, weak) id <STMPersistingPromised, STMModelling, STMPersistingSync> persistenceDelegate;
 
 @end

@@ -30,6 +30,13 @@
     
 }
 
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
+    
+    _persistenceDelegate = persistenceDelegate;
+    _modellingDelegate = persistenceDelegate;
+    
+}
+
 - (void)receiveFindMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
