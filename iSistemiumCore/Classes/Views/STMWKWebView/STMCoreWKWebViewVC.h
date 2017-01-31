@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "STMEntitiesSubscribable.h"
 #import "STMSoundCallbackable.h"
 #import "STMBarCodeScanner.h"
 #import "STMCheckinDelegate.h"
