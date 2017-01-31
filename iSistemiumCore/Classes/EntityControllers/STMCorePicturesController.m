@@ -346,15 +346,15 @@
 
         for (STMCorePicture *picture in result) {
             
-//            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
-//                
-//                NSString* thumbnailHref = picture.thumbnailHref;
-//                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-//                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-//                
-//                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-//                continue;
-//            }
+            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+                
+                NSString* thumbnailHref = picture.thumbnailHref;
+                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+                
+                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+                continue;
+            }
             
             NSArray *pathComponents = [picture.imagePath pathComponents];
             

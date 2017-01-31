@@ -183,7 +183,7 @@
             
         } else {
             
-            if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
+            if ([key hasSuffix:RELATIONSHIP_SUFFIX] && object.managedObjectContext != nil) {
                 
                 NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
                 NSString *localKey = [key substringToIndex:toIndex];
@@ -194,11 +194,7 @@
                     
                     NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
                     
-                    if (object.managedObjectContext == destinationObject.managedObjectContext){
-                    
-                        [object setValue:destinationObject forKey:localKey];
-                        
-                    };
+                    [object setValue:destinationObject forKey:localKey];
                     
                 }
                 
