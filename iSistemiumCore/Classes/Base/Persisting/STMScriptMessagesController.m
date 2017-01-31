@@ -8,9 +8,6 @@
 
 #import "STMScriptMessagesController.h"
 
-#import "STMCoreObjectsController.h"
-
-
 @implementation STMScriptMessagesController
 
 + (NSPredicate *)predicateForScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {

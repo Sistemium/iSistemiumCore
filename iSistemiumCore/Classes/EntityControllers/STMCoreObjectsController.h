@@ -11,8 +11,6 @@
 #import <CoreData/CoreData.h>
 #import <WebKit/WebKit.h>
 
-#import "STMEntitiesSubscribable.h"
-
 @import PromiseKit;
 
 
@@ -27,21 +25,14 @@
                   andRoleName:(NSString *)roleName
         withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
-+ (void)insertObjectsFromArray:(NSArray *)array
-                withEntityName:(NSString *)entityName
-         withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
-+ (void)insertObjectFromDictionary:(NSDictionary *)dictionary
-                    withEntityName:(NSString *)entityName
-             withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
 
 + (void)setRelationshipsFromArray:(NSArray *)array
             withCompletionHandler:(void (^)(BOOL success))completionHandler;
-+ (void)setRelationshipFromDictionary:(NSDictionary *)dictionary
-                withCompletionHandler:(void (^)(BOOL success))completionHandler;
+
++ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
 
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
@@ -62,17 +53,6 @@
 + (STMDatum *)objectForXid:(NSData *)xidData
                 entityName:(NSString *)entityName;
 
-+ (BOOL)subscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc
-                     toEntities:(NSArray *)entities
-                          error:(NSError **)error;
-+ (void)unsubscribeViewController:(UIViewController <STMEntitiesSubscribable> *)vc;
-
-+ (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage;
-+ (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage;
-
-+ (void)updateObjectsFromScriptMessage:(WKScriptMessage *)scriptMessage
-                 withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler;
-
 + (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
@@ -81,14 +61,15 @@
                                   withNulls:(BOOL)withNulls
                              withBinaryData:(BOOL)withBinaryData;
 
-//+ (void)resolveFantoms;
-//+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic
-//                  successfully:(BOOL)successfully;
-//+ (void)stopDefantomizing;
-//+ (BOOL)isDefantomizingProcessRunning;
-
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage;
 
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid;
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName
+                                       andXid:(NSData *)xidData;
+
++ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName
+                                 andXidString:(NSString *)xid;
+
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName;
+
 
 @end

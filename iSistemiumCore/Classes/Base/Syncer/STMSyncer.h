@@ -40,7 +40,6 @@
 - (void)upload;
 - (void)fullSync;
 - (void)receiveEntities:(NSArray *)entitiesNames;
-- (void)sendObjects:(NSDictionary *)parameters;
 
 - (void)sendEventViaSocket:(STMSocketEvent)event
                  withValue:(id)value;

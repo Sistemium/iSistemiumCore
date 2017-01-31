@@ -1230,7 +1230,7 @@ vm_size_t freeMemory(void) {
     return result;
 }
 
-+ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
++ (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage {
     
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
     
@@ -1242,6 +1242,12 @@ vm_size_t freeMemory(void) {
     
     return (error == nil);
     
+}
+
++ (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary {
+    NSMutableDictionary *result = dictionary.mutableCopy;
+    result[key] = value;
+    return result.copy;
 }
 
 @end

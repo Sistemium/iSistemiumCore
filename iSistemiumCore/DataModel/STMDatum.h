@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys withNulls:(BOOL)withNulls;
 
+- (BOOL)isWaitingToSync;
+
 
 @end
 

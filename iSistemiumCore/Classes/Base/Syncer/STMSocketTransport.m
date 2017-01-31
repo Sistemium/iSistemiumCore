@@ -398,7 +398,7 @@
                     if ([data.firstObject isEqual:@"NO ACK"]) {
 
                         NSError *error = nil;
-                        [STMCoreObjectsController error:&error withMessage:@"ack timeout"];
+                        [STMFunctions error:&error withMessage:@"ack timeout"];
                         
                         completionHandler(NO, nil, error);
                         
@@ -446,8 +446,8 @@
         [self socketLostConnection:errorMessage];
         
         NSError *error = nil;
-        [STMCoreObjectsController error:&error
-                            withMessage:errorMessage];
+        [STMFunctions error:&error
+                withMessage:errorMessage];
         
         if (completionHandler) {
             completionHandler(NO, nil, error);

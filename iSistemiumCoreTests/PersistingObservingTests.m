@@ -38,7 +38,7 @@
     
     XCTAssertNotNil(manager);
     
-    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession != nil"];
+    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"currentSession.logger != nil"];
     
     [self expectationForPredicate:waitForSession
               evaluatedWithObject:manager
@@ -56,7 +56,15 @@
     [super tearDown];
 }
 
-- (void)testObserveLts {
+- (void)testObserveLtsFmdb {
+    [self observeLtsTestStorageType:STMStorageTypeFMDB];
+}
+
+- (void)testObserveLtsCoreData {
+    [self observeLtsTestStorageType:STMStorageTypeCoreData];
+}
+
+- (void)observeLtsTestStorageType:(STMStorageType)storageType {
 
     XCTestExpectation *subscriptionExpectation = [self expectationWithDescription:@"Check subscriptions while creating a LogMessage then updating it with lts"];
     
@@ -73,13 +81,19 @@
          // This should be not called twice
          // Called twice means merging with lts doesn't set item uploaded
          
-         [subscriptionExpectation fulfill];
-         
          XCTAssertEqual(data.count, 1);
          
          NSError *error;
          NSMutableDictionary *toUploadItem = [[data firstObject] mutableCopy];
          NSString *itemVersion = toUploadItem[@"deviceTs"];
+         
+         if (storageType == STMStorageTypeCoreData) {
+             itemVersion = toUploadItem[@"ts"];
+         }
+         
+         XCTAssertNotNil(itemVersion);
+         
+         [subscriptionExpectation fulfill];
          
          toUploadItem[@"ts"] = [STMFunctions stringFromNow];
          toUploadItem[@"text"] = @"Modify some of the item fields as if it was updated by server";
@@ -89,7 +103,8 @@
                            options:@{
                                      // Comment out the next line to see test failed
                                      STMPersistingOptionLts:itemVersion,
-                                     STMPersistingOptionReturnSaved:@YES
+                                     STMPersistingOptionReturnSaved:@YES,
+                                     STMPersistingOptionForceStorage:@(storageType)
                                      }
                              error:&error];
          
@@ -102,7 +117,7 @@
     NSDictionary *item =
     [self.persister mergeSync:PersistingObservingTestEntity
                    attributes:@{@"type": self.testType}
-                      options:nil
+                      options:@{STMPersistingOptionForceStorage:@(storageType)}
                         error:&error];
     
     XCTAssertNil(error);
@@ -119,7 +134,8 @@
          NSUInteger count =
          [self.persister destroySync:PersistingObservingTestEntity
                           identifier:pk
-                             options:@{STMPersistingOptionRecordstatuses: @NO}
+                             options:@{STMPersistingOptionRecordstatuses: @NO,
+                                       STMPersistingOptionForceStorage:@(storageType)}
                                error:&error];
          
          XCTAssertNil(error);

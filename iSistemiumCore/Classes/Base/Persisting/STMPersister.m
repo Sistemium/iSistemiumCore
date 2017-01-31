@@ -9,13 +9,12 @@
 #import <Foundation/Foundation.h>
 
 #import "STMConstants.h"
+#import "STMFunctions.h"
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
 #import "STMPersister+Observable.h"
 
-#import "STMCoreAuthController.h"
-#import "STMCoreObjectsController.h"
 
 @interface STMPersister()
 
@@ -26,8 +25,6 @@
 @end
 
 @implementation STMPersister
-
-@synthesize subscriptions = _subscriptions;
 
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
 
@@ -48,20 +45,23 @@
 - (instancetype)init {
     
     self = [super init];
-    
+    _subscriptions = [NSMutableDictionary dictionary];
     return self;
     
 }
 
-
-- (NSMutableDictionary *)subscriptions {
-    if (!_subscriptions) {
-        _subscriptions = [NSMutableDictionary dictionary];
-    }
-    return _subscriptions;
-}
-
 #pragma mark - Private methods
+
+- (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {
+    
+    STMStorageType storeTo = [self storageForEntityName:entityName];
+    
+    if (options[STMPersistingOptionForceStorage]) {
+        storeTo = [options[STMPersistingOptionForceStorage] integerValue];
+    }
+    
+    return storeTo;
+}
 
 - (NSDictionary *) mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inSTMFmdb:(STMFmdb *)db{
     
@@ -136,39 +136,25 @@
         if (![attributes[@"isTemporary"] isEqual:NSNull.null] && [attributes[@"isTemporary"] boolValue]) return nil;
     }
     
-    if ([self.fmdb hasTable:entityName]){
-        
-        return [self mergeWithoutSave:entityName
-                           attributes:attributes
-                              options:options
-                                error:error
-                            inSTMFmdb:self.fmdb];
-        
-    } else {
-        
-        if (options[@"roleName"]){
-            [STMCoreObjectsController setRelationshipFromDictionary:attributes
-                                              withCompletionHandler:^(BOOL sucess)
-             {
-                 if (!sucess) {
-                     [STMFunctions error:error
-                             withMessage:[NSString stringWithFormat:@"Error inserting %@", entityName]];
-                 }
-             }];
-        } else {
-            [STMCoreObjectsController insertObjectFromDictionary:attributes
-                                                  withEntityName:entityName
-                                           withCompletionHandler:^(BOOL sucess)
-             {
-                 if (!sucess) {
-                     [STMFunctions error:error
-                             withMessage:[NSString stringWithFormat:@"Relationship error %@", entityName]];
-                 }
-             }];
-        }
-        
-        return attributes;
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            return [self mergeWithoutSave:entityName
+                               attributes:attributes
+                                  options:options
+                                    error:error
+                                inSTMFmdb:self.fmdb];
+        case STMStorageTypeCoreData:
+            
+            return [self mergeWithoutSave:entityName
+                               attributes:attributes
+                                  options:options
+                                    error:error
+                   inManagedObjectContext:self.document.managedObjectContext];
+        default:
+            // TODO: set the error
+            return nil;
     }
+    
 }
 
 - (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
@@ -187,21 +173,23 @@
     
     NSUInteger result = 0;
     
-    if ([self.fmdb hasTable:entityName]){
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            idKey = @"id";
+            
+            result = [self.fmdb destroy:entityName
+                              predicate:predicate
+                                  error:error];
+            break;
         
-        idKey = @"id";
-        
-        result = [self.fmdb destroy:entityName
-                          predicate:predicate
-                              error:error];
-        
-    }else{
-        
-        idKey = @"xid";
-        // TODO: return deleted count from CoreData
-        [self removeObjectForPredicate:predicate
-                            entityName:entityName];
-
+        case STMStorageTypeCoreData:
+            idKey = @"xid";
+            
+            result = [self removeObjectForPredicate:predicate
+                                         entityName:entityName];
+            break;
+            
+        default: break;
     }
     
     for (NSDictionary* object in objects){
@@ -227,8 +215,9 @@
     if ([self.fmdb hasTable:entityName]){
         return [self.fmdb commit];
     } else {
-        [self.document saveDocument:^(BOOL success){}];
-        return YES;
+        NSError *error;
+        [self.document.managedObjectContext save:&error];
+        return !error;
     }
     
 }
@@ -323,22 +312,39 @@
                                                fetchOffset:offset
                                                withFantoms:YES
                                                  predicate:predicateWithFantoms
-                                                resultType:NSDictionaryResultType
+                                                resultType:NSManagedObjectResultType
                                     inManagedObjectContext:[self document].managedObjectContext
                                                      error:error];
         
-        return [STMCoreObjectsController arrayForJSWithObjectsDics:objectsArray
-                                                        entityName:entityName];
+        return [self.class arrayForJSWithObjects:objectsArray];
         
     }
     
 }
 
-- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+- (NSDictionary *)fixMergeOptions:(NSDictionary *)options
+                       entityName:(NSString *)entityName{
+    
+    if ([self storageForEntityName:entityName options:options] == STMStorageTypeCoreData && options[STMPersistingOptionLts]) {
+        NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
+        // Add 1ms because there are nanoseconds in deviceTs
+        options = [STMFunctions setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
+                                  forKey:STMPersistingOptionLts
+                            inDictionary:options];
+    }
+    
+    return options;
+    
+}
+
+- (NSDictionary *)mergeSync:(NSString *)entityName
+                 attributes:(NSDictionary *)attributes
+                    options:(NSDictionary *)options
+                      error:(NSError **)error{
     
     NSDictionary* result = [self mergeWithoutSave:entityName
                                        attributes:attributes
-                                          options:options
+                                          options:[self fixMergeOptions:options entityName:entityName]
                                             error:error];
     
     if (*error){
@@ -368,7 +374,7 @@
         
         NSDictionary* dict = [self mergeWithoutSave:entityName
                                          attributes:dictionary
-                                            options:options
+                                            options:[self fixMergeOptions:options entityName:entityName]
                                               error:error];
         
         if (dict){
@@ -398,15 +404,16 @@
     
     NSPredicate* predicate;
     
-    if ([self.fmdb hasTable:entityName]) {
-        
-        predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
-        
-    } else {
-        
-        NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-        predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
-        
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
+            break;
+        case STMStorageTypeCoreData: {
+            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
+            predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
+        }
+        default:
+            break;
     }
     
     NSUInteger deletedCount = [self destroyAllSync:entityName

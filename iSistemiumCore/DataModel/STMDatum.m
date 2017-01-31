@@ -11,6 +11,7 @@
 #import "STMCoreDataModel.h"
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
+#import "STMEntityController.h"
 
 
 @implementation STMDatum
@@ -314,6 +315,23 @@
     
     return relationshipsDictionary;
 
+}
+
+- (BOOL)isWaitingToSync {
+    
+    if (self.entity.name) {
+        
+        BOOL isInSyncList = [[STMEntityController uploadableEntitiesNames] containsObject:(NSString * _Nonnull)self.entity.name];
+        
+        NSDate *lts = [self valueForKey:STMPersistingOptionLts];
+        NSDate *deviceTs = [self valueForKey:@"deviceTs"];
+        
+        return (isInSyncList && lts && [lts compare:deviceTs] == NSOrderedAscending);
+        
+    } else {
+        return NO;
+    }
+    
 }
 
 
