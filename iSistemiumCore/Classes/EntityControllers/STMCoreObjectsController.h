@@ -23,8 +23,6 @@
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
 
-+ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
-
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
 

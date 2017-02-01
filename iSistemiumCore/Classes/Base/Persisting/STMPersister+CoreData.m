@@ -26,10 +26,6 @@
 
 #pragma mark methods to remove from STMCoreObjectsController
 
-- (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
-    return [STMCoreObjectsController setRelationshipFromDictionary:dictionary];
-}
-
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
     return [STMCoreObjectsController dictionaryForJSWithObject:object];
 }
@@ -40,6 +36,80 @@
 
 
 #pragma mark - Private CoreData helpers
+
+- (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
+    
+    NSString *name = dictionary[@"name"];
+    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
+    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
+    
+    NSDictionary *serverDataModel = STMEntityController.stcEntities;
+    STMEntity *entityModel = serverDataModel[entityName];
+    
+    if (!entityModel) {
+        NSLog(@"dataModel have no relationship's entity with name %@", entityName);
+        return NO;
+    }
+    
+    NSString *roleOwner = entityModel.roleOwner;
+    NSString *roleOwnerEntityName = [STMFunctions addPrefixToEntityName:roleOwner];
+    NSString *roleName = entityModel.roleName;
+    NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+    NSString *destinationEntityName = ownerRelationships[roleName];
+    NSString *destination = [STMFunctions removePrefixFromEntityName:destinationEntityName];
+    NSDictionary *properties = dictionary[@"properties"];
+    NSDictionary *ownerData = properties[roleOwner];
+    NSDictionary *destinationData = properties[destination];
+    NSString *ownerXid = ownerData[@"xid"];
+    NSString *destinationXid = destinationData[@"xid"];
+    
+    BOOL ok = YES;
+    
+    if (!ownerXid || [ownerXid isEqualToString:@""] || !destinationXid || [destinationXid isEqualToString:@""]) {
+        
+        ok = NO;
+        NSLog(@"Not ok relationship dictionary %@", dictionary);
+        
+    }
+    
+    if (ok) {
+        
+        NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
+        NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
+        
+        NSSet *destinationSet = [ownerObject valueForKey:roleName];
+        
+        if ([destinationSet containsObject:destinationObject]) {
+            
+            NSLog(@"already have relationship %@ %@ — %@ %@", roleOwnerEntityName, ownerXid, destinationEntityName, destinationXid);
+            
+            
+        } else {
+            
+            BOOL ownerIsWaitingForSync = [STMCoreObjectsController isWaitingToSyncForObject:ownerObject];
+            BOOL destinationIsWaitingForSync = [STMCoreObjectsController isWaitingToSyncForObject:destinationObject];
+            
+            NSDate *ownerDeviceTs = [ownerObject valueForKey:@"deviceTs"];
+            NSDate *destinationDeviceTs = [destinationObject valueForKey:@"deviceTs"];
+            
+            [[ownerObject mutableSetValueForKey:roleName] addObject:destinationObject];
+            
+            if (!ownerIsWaitingForSync) {
+                [ownerObject setValue:ownerDeviceTs forKey:@"deviceTs"];
+            }
+            
+            if (!destinationIsWaitingForSync) {
+                [destinationObject setValue:destinationDeviceTs forKey:@"deviceTs"];
+            }
+            
+        }
+        
+        
+    }
+    
+    return YES;
+    
+}
 
 - (NSDictionary *)mergeWithoutSave:entityName
                         attributes:(NSDictionary *)attributes
