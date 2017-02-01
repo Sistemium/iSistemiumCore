@@ -123,7 +123,121 @@
 }
 
 - (void)sendNextUnsyncedObject {
-    [self finishHandleUnsyncedObjects];
+
+    NSDictionary *objectToSend = [self anyObjectToSend];
+    
+    if (objectToSend) {
+        
+        NSString *entityName = objectToSend[@"entityName"];
+        NSDictionary *object = objectToSend[@"object"];
+        
+        NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
+        
+        if (self.subscriberDelegate) {
+            
+            BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
+            NSString *objectVersion = isFMDB ? object[@"deviceTs"] : object[@"ts"];
+            
+            [self.subscriberDelegate haveUnsyncedObjectWithEntityName:entityName
+                                                             itemData:object
+                                                          itemVersion:objectVersion];
+            
+        }
+        
+    } else {
+        
+        [self finishHandleUnsyncedObjects];
+        
+    }
+
+}
+
+- (NSDictionary *)anyObjectToSend {
+   
+    NSDictionary *anyObjectToSend = nil;
+    
+    for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
+        
+        NSDictionary *unsyncedObject = [self anyUnsyncedObjectWithEntityName:uploadableEntityName];
+        
+        if (unsyncedObject) {
+            
+            NSDictionary *resultObject = @{@"entityName"  : uploadableEntityName,
+                                           @"object"      : unsyncedObject};
+            
+            NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
+            anyObjectToSend = (unsyncedParent) ? unsyncedParent : resultObject;
+            
+            break;
+            
+        }
+        
+    }
+    
+    return anyObjectToSend;
+    
+}
+
+- (NSDictionary *)anyUnsyncedObjectWithEntityName:(NSString *)entityName {
+    return [self unsyncedObjectWithEntityName:entityName identifier:nil];
+}
+
+- (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+
+    NSError *error = nil;
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
+    
+    if (identifier) {
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
+    }
+
+    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    NSArray *result = [self.persistenceDelegate findAllSync:entityName
+                                                  predicate:predicate
+                                                    options:@{STMPersistingOptionPageSize : @1}
+                                                      error:&error];
+    return result.firstObject;
+
+}
+
+- (NSDictionary *)anyUnsyncedParentForObject:(NSDictionary *)object {
+    
+    NSDictionary *anyUnsyncedParent = nil;
+    
+    NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
+
+    for (NSString *relKey in relKeys) {
+        
+        NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
+        NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
+        NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
+        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
+
+        NSString *parentId = object[relKey];
+        
+        NSDictionary *unsyncedParent = [self unsyncedObjectWithEntityName:entityName
+                                                               identifier:parentId];
+        
+        if (unsyncedParent) {
+            
+            NSDictionary *resultObject = @{@"entityName"  : entityName,
+                                           @"object"      : unsyncedParent};
+
+            NSDictionary *unsyncedGrandParent = [self anyUnsyncedParentForObject:unsyncedParent];
+            anyUnsyncedParent = (unsyncedGrandParent) ? unsyncedGrandParent : resultObject;
+            
+            break;
+            
+        }
+        
+    }
+    
+    return anyUnsyncedParent;
+    
 }
 
 - (void)finishHandleUnsyncedObjects {
