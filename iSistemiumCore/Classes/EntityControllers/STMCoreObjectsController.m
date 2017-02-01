@@ -628,6 +628,7 @@
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG
+    [self logTotalNumberOfObjectsInStorages];
 #else
 
 #endif
@@ -638,21 +639,51 @@
 
 }
 
++ (void)logTotalNumberOfObjectsInStorages {
     
-    NSUInteger totalCount = 0;
+    NSArray *entityNames = [self.persistenceDelegate entitiesByName].allKeys;
     
+    NSUInteger totalCountFMDB = 0;
+    NSUInteger totalCountCoreData = 0;
+    NSUInteger totalFantoms = 0;
     
     for (NSString *entityName in entityNames) {
         
+        if (![self.persistenceDelegate isConcreteEntityName:entityName]) continue;
         
+        NSError *error = nil;
         
+        NSUInteger countFMDB =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionForceStorageFMDB}
+                                      error:&error];
         
+        NSUInteger countCoreData =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionForceStorageCoreData}
+                                      error:&error];
         
+        NSUInteger countFantoms =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionFantoms:@YES}
+                                      error:&error];
         
+        NSLog(@"%@ count: %u + %u%@",
+              entityName, countFMDB, countCoreData,
+              countFantoms ? [NSString stringWithFormat:@" (+ %@ fantoms)", @(countFantoms)] : @""
+              );
         
+        totalCountFMDB += countFMDB;
+        totalCountCoreData += countCoreData;
+        totalFantoms += countFantoms;
         
     }
     
+    NSLog(@"Total count: %u + %u", totalCountFMDB, totalCountCoreData);
+    NSLog(@"Fantoms total count: %@", @(totalFantoms));
     
 }
 

@@ -7,12 +7,17 @@
 //
 
 #import "STMPersistingTests.h"
+#import "STMCoreObjectsController.h"
 
 @interface PersistingSyncTests : STMPersistingTests
 
 @end
 
 @implementation PersistingSyncTests
+
+- (void)testTotalNumberOfObjectsInStorages {
+    [STMCoreObjectsController logTotalNumberOfObjectsInStorages];
+}
 
 - (void)testCountSync {
     

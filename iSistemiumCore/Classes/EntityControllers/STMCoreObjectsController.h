@@ -72,5 +72,6 @@
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName;
 
++ (void)logTotalNumberOfObjectsInStorages;
 
 @end
