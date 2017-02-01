@@ -10,6 +10,7 @@
 
 #import "STMConstants.h"
 #import "STMEntityController.h"
+#import "STMUnsyncedDataHelper.h"
 
 
 @interface STMSyncerHelper()
@@ -19,6 +20,8 @@
 
 @property (nonatomic) BOOL isHandlingUnsyncedObjects;
 @property (nonatomic, strong) NSString *subscriptionId;
+
+@property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 
 
 @end
@@ -62,6 +65,18 @@
     
 }
 
+- (STMUnsyncedDataHelper *)unsyncedDataHelper {
+    
+    if (!_unsyncedDataHelper) {
+        
+        _unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+        _unsyncedDataHelper.persistenceDelegate = self.persistenceDelegate;
+        
+    }
+    return _unsyncedDataHelper;
+    
+}
+
 
 #pragma mark - observers
 
@@ -80,9 +95,11 @@
 #pragma mark - STMDataSyncing
 
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
-
+    
     _subscriberDelegate = subscriberDelegate;
 
+    self.unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
+    
     (_subscriberDelegate) ? [self subscribeUnsynced] : [self unsubscribeUnsynced];
     
 }
@@ -115,6 +132,11 @@
 }
 
 - (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+
+//    return [self.unsyncedDataHelper setSynced:success
+//                                       entity:entity
+//                                     itemData:itemData
+//                                  itemVersion:itemVersion];
     
     if (!success) {
         
@@ -139,7 +161,10 @@
 }
 
 - (NSUInteger)numberOfUnsyncedObjects {
+    
     return self.unsyncedObjects.count;
+//    return [self.unsyncedDataHelper numberOfUnsyncedObjects];
+    
 }
 
 
