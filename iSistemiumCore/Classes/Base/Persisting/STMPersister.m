@@ -241,13 +241,20 @@
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options
                   error:(NSError **)error {
-    if ([self.fmdb hasTable:entityName]){
-        return [self.fmdb count:entityName
-                  withPredicate:[self predicate:predicate withOptions:options]];
-    } else {
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        return [self.document.managedObjectContext countForFetchRequest:request
-                                                                  error:error];
+    
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            return [self.fmdb count:entityName
+                      withPredicate:[self predicate:predicate withOptions:options]];
+        case STMStorageTypeCoreData: {
+            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            return [self.document.managedObjectContext countForFetchRequest:request
+                                                                      error:error];
+        }
+        default:
+            [STMFunctions error:error
+                    withMessage:@"Unknown entity or invalid storage type"];
+            return 0;
     }
     
 }

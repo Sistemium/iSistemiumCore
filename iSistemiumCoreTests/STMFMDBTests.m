@@ -41,14 +41,6 @@
     
     XCTAssertTrue(count == 0);
     
-    NSError *error;
-    
-    count = [self.persister countSync:[STMFunctions addPrefixToEntityName:tableName]
-                            predicate:[NSPredicate predicateWithFormat:@"partnerId != nil"]
-                              options:nil
-                                error:&error];
-    XCTAssertTrue(count > 0);
-    
 }
 
 @end
