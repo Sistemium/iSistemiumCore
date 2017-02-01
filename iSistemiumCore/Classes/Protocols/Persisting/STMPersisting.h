@@ -9,6 +9,13 @@
 #ifndef STMPersisting_h
 #define STMPersisting_h
 
+typedef NS_ENUM(NSInteger, STMStorageType) {
+    STMStorageTypeFMDB,
+    STMStorageTypeCoreData,
+    STMStorageTypeAbstract,
+    STMStorageTypeNone
+};
+
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"
