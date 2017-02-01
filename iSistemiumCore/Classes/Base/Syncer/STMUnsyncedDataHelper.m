@@ -166,9 +166,21 @@
                                            @"object"      : unsyncedObject};
             
             NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
-            anyObjectToSend = (unsyncedParent) ? unsyncedParent : resultObject;
             
-            break;
+            if (unsyncedParent) {
+                
+                anyObjectToSend = unsyncedParent;
+                
+            } else {
+                
+                if (!self.failToSyncObjects[unsyncedObject[@"id"]]) {
+                    
+                    anyObjectToSend = resultObject;
+                    break;
+                    
+                }
+                
+            }
             
         }
         
@@ -192,6 +204,8 @@
     
     if (identifier) {
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
+    } else {
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"NOT (id IN %@)", self.failToSyncObjects.allKeys]];
     }
 
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
@@ -211,13 +225,20 @@
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
 
     for (NSString *relKey in relKeys) {
+
+        NSString *parentId = object[relKey];
         
+        if (self.failToSyncObjects[parentId]) {
+            
+            [self declineFromSync:object];
+            break;
+            
+        }
+
         NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
         NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
         NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
-
-        NSString *parentId = object[relKey];
         
         NSDictionary *unsyncedParent = [self unsyncedObjectWithEntityName:entityName
                                                                identifier:parentId];
@@ -228,9 +249,25 @@
                                            @"object"      : unsyncedParent};
 
             NSDictionary *unsyncedGrandParent = [self anyUnsyncedParentForObject:unsyncedParent];
-            anyUnsyncedParent = (unsyncedGrandParent) ? unsyncedGrandParent : resultObject;
             
-            break;
+            if (unsyncedGrandParent) {
+                
+                anyUnsyncedParent = unsyncedGrandParent;
+                
+            } else {
+                
+                if (!self.failToSyncObjects[unsyncedParent[@"id"]]) {
+                    
+                    anyUnsyncedParent = resultObject;
+                    break;
+                    
+                } else {
+                    
+                    // ?????
+                    
+                }
+                
+            }
             
         }
         
@@ -244,6 +281,14 @@
     
     self.isHandlingUnsyncedObjects = NO;
     self.failToSyncObjects = nil;
+    
+}
+
+- (void)declineFromSync:(NSDictionary *)object {
+    
+    //    NSLog(@"declineFromSync %@ %@", object[@"entityName"], object[@"id"]);
+    
+    self.failToSyncObjects[object[@"id"]] = object;
     
 }
 
