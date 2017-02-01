@@ -17,14 +17,16 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *unsyncedObjects;
 @property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
 
-@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriber;
 @property (nonatomic) BOOL isHandlingUnsyncedObjects;
+@property (nonatomic, strong) NSString *subscriptionId;
 
 
 @end
 
 
 @implementation STMSyncerHelper
+
+@synthesize subscriberDelegate = _subscriberDelegate;
 
 
 - (instancetype)init {
@@ -77,38 +79,39 @@
 
 #pragma mark - STMDataSyncing
 
-- (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber {
-    
-    self.subscriber = subscriber;
-    
-    for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
-     
-        NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
-        
-        [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
-            
-            NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-            [self startHandleUnsyncedObjects];
-            
-        }];
+- (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
 
-    }
-    
-    if (self.subscriber) {
-        [self startHandleUnsyncedObjects];
-    }
-    
-    NSString *subscriptionId = [NSUUID UUID].UUIDString;
-    
-    return subscriptionId;
+    _subscriberDelegate = subscriberDelegate;
 
+    (_subscriberDelegate) ? [self subscribeUnsynced] : [self unsubscribeUnsynced];
+    
 }
 
-- (BOOL)unSubscribe:(NSString *)subscriptionId {
+- (void)subscribeUnsynced {
+
+    if (self.subscriberDelegate) {
+
+        for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
+            
+            NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+            
+            self.subscriptionId = [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
+                
+                NSLog(@"observeEntity %@ data count %u", entityName, data.count);
+                [self startHandleUnsyncedObjects];
+                
+            }];
+            
+        }
+        
+        [self startHandleUnsyncedObjects];
+
+    }
     
-    self.subscriber = nil;
-    return YES;
-    
+}
+
+- (void)unsubscribeUnsynced {
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
 }
 
 - (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
@@ -171,14 +174,14 @@
         
         NSLog(@"object to send: %@ %@", entityName, objectToSend[@"id"]);
         
-        if (self.subscriber) {
+        if (self.subscriberDelegate) {
             
             BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
             NSString *objectVersion = isFMDB ? objectToSend[@"deviceTs"] : objectToSend[@"ts"];
             
-            [self.subscriber haveUnsyncedObjectWithEntityName:entityName
-                                                     itemData:objectToSend
-                                                  itemVersion:objectVersion];
+            [self.subscriberDelegate haveUnsyncedObjectWithEntityName:entityName
+                                                             itemData:objectToSend
+                                                          itemVersion:objectVersion];
             
         }
         

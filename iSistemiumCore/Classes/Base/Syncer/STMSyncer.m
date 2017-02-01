@@ -47,8 +47,6 @@
 @property (nonatomic) NSUInteger entityCount;
 @property (atomic) NSUInteger fantomsCount;
 
-@property (nonatomic, strong) NSString *subscriptionId;
-
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
@@ -1510,24 +1508,17 @@
 
 - (void)subscribeToUnsyncedObjects {
     
-    [self unsubscribeFromUnsyncedObjects];
-    
-    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsynced:self];
+    NSLogMethodName;
 
-    NSLog(@"subscribeToUnsyncedObjects with subscriptionId: %@", self.subscriptionId);
+    self.dataSyncingDelegate.subscriberDelegate = self;
     
 }
 
 - (void)unsubscribeFromUnsyncedObjects {
 
-    if ([self.dataSyncingDelegate unSubscribe:self.subscriptionId]) {
-        
-        NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
-        self.subscriptionId = nil;
-        
-    } else {
-        NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
-    }
+    NSLogMethodName;
+
+    self.dataSyncingDelegate.subscriberDelegate = nil;
 
 }
 
