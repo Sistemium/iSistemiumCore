@@ -20,17 +20,8 @@
 
 + (void)checkObjectsForFlushing;
 
-+ (void)processingOfDataArray:(NSArray *)array
-               withEntityName:(NSString *)entityName
-                  andRoleName:(NSString *)roleName
-        withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
-
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
-
-+ (void)setRelationshipsFromArray:(NSArray *)array
-            withCompletionHandler:(void (^)(BOOL success))completionHandler;
 
 + (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
 
@@ -73,5 +64,6 @@
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName;
 
 + (void)logTotalNumberOfObjectsInStorages;
++ (BOOL)isWaitingToSyncForObject:(NSManagedObject *)object;
 
 @end

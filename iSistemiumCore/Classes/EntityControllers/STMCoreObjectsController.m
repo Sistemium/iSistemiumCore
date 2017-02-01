@@ -24,8 +24,6 @@
 
 #import "STMModeller+Private.h"
 
-#import "STMPredicateToSQL.h"
-
 
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
 
@@ -40,25 +38,11 @@
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
-@property (nonatomic) BOOL isDefantomizingProcessRunning;
-
-@property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
-@property (nonatomic, strong) NSMutableArray *updateRequests;
-//@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
 
 @end
 
 
 @implementation STMCoreObjectsController
-
-- (NSMutableArray *)updateRequests {
-    
-    if (!_updateRequests) {
-        _updateRequests = @[].mutableCopy;
-    }
-    return _updateRequests;
-    
-}
 
 
 - (NSMutableDictionary *)entitiesOwnKeys {
@@ -135,25 +119,6 @@
 
 #pragma mark - recieved objects management
 
-+ (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-
-    NSDictionary *options;
-    
-    if (roleName){
-        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow,@"roleName":roleName};
-    }else{
-        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow};
-    }
-    
-    [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
-        completionHandler(YES);
-    }).catch(^(NSError *error){
-        completionHandler(NO);
-    });
-
-}
-
-
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     
     [object removeObserver:self forKeyPath:keyPath];
@@ -174,29 +139,6 @@
 
 }
 
-
-#warning deprecated - use STMFunctions method
-+ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    [self.persistenceDelegate setObjectData:objectData toObject:object];
-}
-
-#pragma mark - recieved relationships management
-
-+ (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    BOOL result = YES;
-    
-    for (NSDictionary *datum in array) {
-        
-        if (![self setRelationshipFromDictionary:datum]) {
-            result = NO;
-        }
-        
-    }
-
-    completionHandler(result);
-    
-}
 
 + (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
     
@@ -332,7 +274,10 @@
 }
 
 
-
+#warning Need to move it somewhere
++ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    [self.persistenceDelegate setObjectData:objectData toObject:object];
+}
 
 + (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
     
@@ -409,27 +354,6 @@
         
     }
     
-}
-
-+ (NSArray *)allObjectsFromContext:(NSManagedObjectContext *)context {
-    
-    if (!context) context = [self document].managedObjectContext;
-    
-    NSMutableArray *results = @[].mutableCopy;
-    
-    for (NSString *entityName in [self localDataModelEntityNames]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        
-        NSArray *fetchResult = [context executeFetchRequest:request error:nil];
-        
-        if (fetchResult) [results addObjectsFromArray:fetchResult];
-        
-    }
-
-    return results;
-
 }
 
 

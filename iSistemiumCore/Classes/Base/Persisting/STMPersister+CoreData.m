@@ -342,7 +342,7 @@
 }
 
 - (void)postprocessingForObject:(NSManagedObject *)object {
-#warning This is to specific. Need to remove this dependency on STMClientDataController
+#warning This is too specific. Need to remove this dependency on STMClientDataController
     if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;
