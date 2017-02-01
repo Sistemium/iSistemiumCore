@@ -91,7 +91,16 @@
     
     [self.pool inDatabase:^(FMDatabase *db) {
         
-        NSString* query = [NSString stringWithFormat:@"SELECT count(*) FROM %@", [STMFunctions removePrefixFromEntityName:name]];
+        NSString *where = [self.predicateToSQL SQLFilterForPredicate:predicate];
+        
+        if (where.length) {
+            where = [NSString stringWithFormat:@"WHERE %@", where];
+        } else {
+            where = @"";
+        }
+        
+        NSString *query = [NSString stringWithFormat:@"SELECT count(*) FROM %@ %@",
+                           [STMFunctions removePrefixFromEntityName:name], where];
         
         FMResultSet *s = [db executeQuery:query];
         

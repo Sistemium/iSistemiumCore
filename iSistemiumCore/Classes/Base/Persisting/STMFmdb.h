@@ -13,7 +13,7 @@
 - (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling;
 
 - (NSUInteger)count:(NSString * _Nonnull)name
-       withPredicate:(NSPredicate * _Nonnull)predicate;
+      withPredicate:(NSPredicate * _Nonnull)predicate;
 
 - (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name
                               withPredicate:(NSPredicate * _Nonnull)predicate

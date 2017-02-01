@@ -221,6 +221,20 @@
     
 }
 
+- (NSPredicate *)predicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options {
+    
+    NSMutableArray *predicates = NSMutableArray.array;
+    
+    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
+    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
+    
+    if (predicate) {
+        [predicates addObject:predicate];
+    }
+    
+    return [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+}
+
 #pragma mark - STMPersistingSync
 
 - (NSUInteger)countSync:(NSString *)entityName
@@ -228,14 +242,12 @@
                 options:(NSDictionary *)options
                   error:(NSError **)error {
     if ([self.fmdb hasTable:entityName]){
-#warning predicates not supported yet
-        // TODO: make generic predicate to SQL method with predicate filtering
         return [self.fmdb count:entityName
-                  withPredicate:[NSPredicate predicateWithFormat:@"isFantom == 0"]];
+                  withPredicate:[self predicate:predicate withOptions:options]];
     } else {
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        return [[self document].managedObjectContext countForFetchRequest:request
-                                                                    error:error];
+        return [self.document.managedObjectContext countForFetchRequest:request
+                                                                  error:error];
     }
     
 }
@@ -246,6 +258,7 @@
     
     switch ([self storageForEntityName:entityName options:options]) {
         case STMStorageTypeFMDB:
+            // TODO: isFantom = 0 should be only if no withFantoms / fantoms option
             predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",
                          identifier];
             break;
@@ -285,24 +298,15 @@
     
     BOOL asc = options[@"order"] ? [[options[@"order"] lowercaseString] isEqualToString:@"asc"] : YES;
     
-    // TODO: maybe could be simplified
-    NSMutableArray *predicates = [[NSMutableArray alloc] init];
-    
-    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
-    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
-    
-    if (predicate) {
-        [predicates addObject:predicate];
-    }
-    
-    NSCompoundPredicate *predicateWithFantoms = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
     
     if (!orderBy) orderBy = @"id";
+    
+    predicate = [self predicate:predicate withOptions:options];
     
     if ([self.fmdb hasTable:entityName]){
         
         return [self.fmdb getDataWithEntityName:entityName
-                                  withPredicate:predicateWithFantoms
+                                  withPredicate:predicate
                                         orderBy:orderBy
                                       ascending:asc
                                      fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
@@ -315,7 +319,7 @@
                                                 fetchLimit:pageSize
                                                fetchOffset:offset
                                                withFantoms:YES
-                                                 predicate:predicateWithFantoms
+                                                 predicate:predicate
                                                 resultType:NSManagedObjectResultType
                                     inManagedObjectContext:[self document].managedObjectContext
                                                      error:error];
