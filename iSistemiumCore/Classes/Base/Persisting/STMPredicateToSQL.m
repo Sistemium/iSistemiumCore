@@ -370,7 +370,10 @@ static NSString *SQLNullValueString = @"NULL";
                     rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ <> %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ %@ %@)",
+                    leftSQLExpression,
+                    [rightSQLExpression isEqual: @"NULL"] ? @"IS NOT" : @"=",
+                    rightSQLExpression];
         }
         case NSMatchesPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
