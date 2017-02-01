@@ -242,12 +242,21 @@
                 options:(NSDictionary *)options
                   error:(NSError **)error {
     
+    predicate = [self predicate:predicate withOptions:options];
+    
     switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            return [self.fmdb count:entityName
-                      withPredicate:[self predicate:predicate withOptions:options]];
+        case STMStorageTypeFMDB:{
+            
+            if (![self.fmdb hasTable:entityName]) {
+                [STMFunctions error:error
+                        withMessage:[NSString stringWithFormat:@"No table for entity %@", entityName]];
+                return 0;
+            }
+            return [self.fmdb count:entityName withPredicate:predicate];
+        }
         case STMStorageTypeCoreData: {
             NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            request.predicate = predicate;
             return [self.document.managedObjectContext countForFetchRequest:request
                                                                       error:error];
         }
