@@ -174,59 +174,6 @@
     
 }
 
-- (NSArray *)objectsForEntityName:(NSString *)entityName {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:@"id"
-                            ascending:YES
-                           fetchLimit:0
-                          withFantoms:NO
-               inManagedObjectContext:[self document].managedObjectContext
-                                error:nil];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:0
-                          withFantoms:withFantoms
-               inManagedObjectContext:context
-                                error:error];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-               inManagedObjectContext:context
-                                error:error];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-                           resultType:NSManagedObjectResultType
-               inManagedObjectContext:context
-                                error:error];
-    
-}
 
 - (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
     
