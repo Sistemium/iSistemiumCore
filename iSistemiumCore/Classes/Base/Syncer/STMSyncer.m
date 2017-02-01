@@ -78,17 +78,6 @@
     NSLog(@"syncer init");
 }
 
-- (void)notificationToInitSendDataProcess {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                            object:self];
-        
-    });
-    
-}
-
 
 #pragma mark - observers
 
@@ -216,8 +205,6 @@
                 [STMClientDataController checkClientData];
                 //                self.syncing = YES;
                 //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-                
-                [self notificationToInitSendDataProcess];
                 
                 self.syncerState = STMSyncerIdle;
                 
@@ -1076,7 +1063,6 @@
         
     } else {
 
-        [self notificationToInitSendDataProcess];
         [self startDefantomization];
         
         [STMCoreObjectsController dataLoadingFinished];

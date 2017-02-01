@@ -65,27 +65,12 @@
 
 - (void)addObservers {
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(persisterHaveUnsyncedObjects:)
-                                                 name:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                               object:nil];
-    
 }
 
 - (void)removeObservers {
     
 #warning - have to remove observers if helper dealloc/nullify
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-}
-
-- (void)persisterHaveUnsyncedObjects:(NSNotification *)notification {
-    
-    NSLogMethodName;
-    
-    if (self.subscriber) {
-        [self startHandleUnsyncedObjects];
-    }
     
 }
 
@@ -103,11 +88,14 @@
         [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
             
             NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-            
-            [self.subscriber notificationToInitSendDataProcess];
+            [self startHandleUnsyncedObjects];
             
         }];
 
+    }
+    
+    if (self.subscriber) {
+        [self startHandleUnsyncedObjects];
     }
     
     NSString *subscriptionId = [NSUUID UUID].UUIDString;
