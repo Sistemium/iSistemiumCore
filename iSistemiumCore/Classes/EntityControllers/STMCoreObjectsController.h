@@ -53,10 +53,11 @@
 + (STMDatum *)objectForXid:(NSData *)xidData
                 entityName:(NSString *)entityName;
 
-+ (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
+
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls;
+
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls
                              withBinaryData:(BOOL)withBinaryData;
