@@ -67,7 +67,7 @@
     
     XCTAssertTrue(count == 0, @"There should be no fantoms");
     
-    options = @{STMPersistingOptionForceStorage: @(STMStorageTypeCoreData)};
+    options = @{STMPersistingOptionForceStorageCoreData};
     
     count = [self.persister countSync:entityName
                             predicate:predicate

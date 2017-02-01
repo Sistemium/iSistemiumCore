@@ -23,4 +23,6 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionForceStorage @"forceStorage"
 #define STMPersistingOptionPageSize @"pageSize"
 
+#define STMPersistingOptionForceStorageCoreData STMPersistingOptionForceStorage:@(STMStorageTypeCoreData)
+
 #endif /* STMPersisting_h */
