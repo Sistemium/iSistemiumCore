@@ -7,32 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "STMSocketTransportOwner.h"
-#import "STMPersistingWithHeadersAsync.h"
+#import "STMSocketConnection.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
 
-static NSString *kSocketFindAllMethod = @"findAll";
-static NSString *kSocketFindMethod = @"find";
-static NSString *kSocketUpdateMethod = @"update";
-static NSString *kSocketDestroyMethod = @"destroy";
+@interface STMSocketTransport : NSObject <STMSocketConnection>
 
-
-@interface STMSocketTransport : NSObject <STMPersistingWithHeadersAsync>
-
-@property (nonatomic) BOOL isReady;
-
-+ (instancetype)initWithUrl:(NSString *)socketUrlString
-          andEntityResource:(NSString *)entityResource
-                      owner:(id <STMSocketTransportOwner>)owner;
-
-- (void)closeSocketInBackground;
-- (void)checkSocket;
-
-- (void)socketSendEvent:(STMSocketEvent)event
-              withValue:(id)value;
-
++ (instancetype)transportWithUrl:(NSString *)socketUrlString
+               andEntityResource:(NSString *)entityResource
+                           owner:(id <STMSocketConnectionOwner>)owner;
 
 @end
