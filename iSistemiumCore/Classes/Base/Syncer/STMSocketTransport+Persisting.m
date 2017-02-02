@@ -200,7 +200,7 @@
 - (NSString *)preFindAsyncCheckForEntityName:(NSString *)entityName identifier:(NSString *)identifier {
     
     if (!self.isReady) {
-        return @"socket is not ready (not connected or not authorize)";
+        return @"socket is not ready (not connected or not authorized)";
     }
     
     STMEntity *entity = [STMEntityController stcEntities][entityName];
