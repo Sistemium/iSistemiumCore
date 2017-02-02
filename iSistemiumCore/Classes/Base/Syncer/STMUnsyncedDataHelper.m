@@ -26,6 +26,14 @@
 
 @synthesize subscriberDelegate = _subscriberDelegate;
 
+
++ (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
+    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
+    unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
+    return unsyncedDataHelper;
+}
+
 - (NSMutableDictionary *)failToSyncObjects {
     
     if (!_failToSyncObjects) {
