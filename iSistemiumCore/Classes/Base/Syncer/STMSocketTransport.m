@@ -30,9 +30,6 @@
 
 @implementation STMSocketTransport
 
-@synthesize isReady = _isReady;
-@synthesize owner = _owner;
-
 + (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner {
     
     STMLogger *logger = [STMLogger sharedLogger];
@@ -62,10 +59,6 @@
 
 - (NSTimeInterval)timeout {
     return [self.owner timeout];
-}
-
-- (BOOL)isReady {
-    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
 }
 
 - (void)startSocket {
@@ -99,20 +92,6 @@
     
 }
 
-- (void)closeSocketInBackground {
-    
-    STMLogger *logger = [STMLogger sharedLogger];
-    
-    [logger saveLogMessageWithText:@"close socket in background"
-                           numType:STMLogMessageTypeInfo];
-    
-//    self.wasClosedInBackground = YES;
-//    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
-    
-    [self closeSocket];
-    
-}
-
 - (void)reconnectSocket {
     
     [self closeSocket];
@@ -126,23 +105,6 @@
 
     self.socket = nil;
     self.isAuthorized = NO;
-    
-}
-
-- (void)checkSocket {
-    
-    if (!self.isReady) {
-        [self reconnectSocket];
-    }
-    
-//    if (self.wasClosedInBackground) {
-//        
-//        self.wasClosedInBackground = NO;
-//        [self startSocket];
-//        
-//    } else if (![STMSocketController socketIsAvailable]) {
-//        [self reconnectSocket];
-//    }
     
 }
 
@@ -232,6 +194,131 @@
     
 }
 
+
+#pragma mark - STMSocketConnection protocol
+
+@synthesize isReady = _isReady;
+@synthesize owner = _owner;
+
+
+- (BOOL)isReady {
+    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
+}
+
+- (void)checkSocket {
+    
+    if (!self.isReady) {
+        [self reconnectSocket];
+    }
+    
+    //    if (self.wasClosedInBackground) {
+    //
+    //        self.wasClosedInBackground = NO;
+    //        [self startSocket];
+    //
+    //    } else if (![STMSocketController socketIsAvailable]) {
+    //        [self reconnectSocket];
+    //    }
+    
+}
+
+- (void)closeSocketInBackground {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"close socket in background"
+                           numType:STMLogMessageTypeInfo];
+    
+    //    self.wasClosedInBackground = YES;
+    //    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
+    
+    [self closeSocket];
+    
+}
+
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+    [self socketSendEvent:event
+                withValue:value
+        completionHandler:nil];
+    
+}
+
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+    
+    [self logSendEvent:event withValue:value];
+    
+    if (self.isReady) {
+        
+        if (event == STMSocketEventJSData) {
+            
+            if ([value isKindOfClass:[NSDictionary class]]) {
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+                
+                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+                    
+                    if ([data.firstObject isEqual:@"NO ACK"]) {
+                        
+                        NSError *error = nil;
+                        [STMFunctions error:&error withMessage:@"ack timeout"];
+                        
+                        completionHandler(NO, nil, error);
+                        
+                    } else {
+                        
+                        completionHandler(YES, data, nil);
+                        
+                    }
+                    
+                }];
+                
+            } else {
+                
+            }
+            
+        } else {
+            
+            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
+            
+            if (value && primaryKey) {
+                
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+                
+                if (dataDic) {
+                    
+                    [self.socket emit:eventStringValue
+                                 with:@[dataDic]];
+                    
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
+                }
+                
+            }
+            
+        }
+        
+    } else {
+        
+        NSString *errorMessage = @"socket not connected while sendEvent";
+        
+        [self socketLostConnection:errorMessage];
+        
+        NSError *error = nil;
+        [STMFunctions error:&error
+                withMessage:errorMessage];
+        
+        if (completionHandler) {
+            completionHandler(NO, nil, error);
+        }
+        
+    }
+    
+}
 
 #pragma mark - socket events handlers
 
@@ -373,91 +460,6 @@
 }
 
 
-#pragma mark - send events
-
-- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
-    
-    [self socketSendEvent:event
-                withValue:value
-        completionHandler:nil];
-    
-}
-
-- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    [self logSendEvent:event withValue:value];
-    
-    if (self.isReady) {
-        
-        if (event == STMSocketEventJSData) {
-            
-            if ([value isKindOfClass:[NSDictionary class]]) {
-                
-                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-                
-                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
-
-                    if ([data.firstObject isEqual:@"NO ACK"]) {
-
-                        NSError *error = nil;
-                        [STMFunctions error:&error withMessage:@"ack timeout"];
-                        
-                        completionHandler(NO, nil, error);
-                        
-                    } else {
-                    
-                        completionHandler(YES, data, nil);
-
-                    }
-                    
-                }];
-                
-            } else {
-                
-            }
-            
-        } else {
-         
-            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
-            
-            if (value && primaryKey) {
-                
-                NSDictionary *dataDic = @{primaryKey : value};
-                
-                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-                
-                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-                
-                if (dataDic) {
-                    
-                    [self.socket emit:eventStringValue
-                                 with:@[dataDic]];
-                    
-                } else {
-                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
-                }
-                
-            }
-
-        }
-        
-    } else {
-        
-        NSString *errorMessage = @"socket not connected while sendEvent";
-        
-        [self socketLostConnection:errorMessage];
-        
-        NSError *error = nil;
-        [STMFunctions error:&error
-                withMessage:errorMessage];
-        
-        if (completionHandler) {
-            completionHandler(NO, nil, error);
-        }
-        
-    }
-
-}
 
 - (void)logSendEvent:(STMSocketEvent)event withValue:(id)value {
     
