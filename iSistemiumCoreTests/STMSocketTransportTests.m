@@ -184,32 +184,27 @@
 
 - (void)testFindError {
     
-    [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
     
-    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError * _Nullable error) {
-        
-        XCTestExpectation *expectFindError = [self expectationWithDescription:@"Errored find"];
-        
-        [self.transport findAsync:TEST_SOCKET_ENTITY_NAME
-                       identifier:[[NSUUID alloc] UUIDString]
-                          options:@{}
-     completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+    XCTestExpectation *expectFindError = [self expectationWithDescription:@"Errored find"];
+    
+    [self.transport findAsync:TEST_SOCKET_ENTITY_NAME
+                   identifier:[[NSUUID alloc] UUIDString]
+                      options:@{}
+ completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+     
+         NSLog(@"STMSocketTransportTests find error: %@", error);
+         NSLog(@"STMSocketTransportTests find headers: %@", headers);
          
-             NSLog(@"STMSocketTransportTests find error: %@", error);
-             NSLog(@"STMSocketTransportTests find headers: %@", headers);
-             
-             XCTAssertNotNil(error);
-             XCTAssertNil(result);
-             XCTAssertFalse(success);
-             
-             [expectFindError fulfill];
-             
-         }];
-        
-        [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
-
-    }];
+         XCTAssertNotNil(error);
+         XCTAssertNil(result);
+         XCTAssertFalse(success);
+         
+         [expectFindError fulfill];
+         
+     }];
     
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
+
 }
 
 
