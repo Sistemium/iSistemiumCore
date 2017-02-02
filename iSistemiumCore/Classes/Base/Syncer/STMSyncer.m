@@ -1382,46 +1382,10 @@
 #pragma mark find ack handler
 
 - (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName context:(NSDictionary *)context {
-    
-    NSString *resource = response[@"resource"];
-    NSNumber *errorCode = response[@"error"];
-
+        
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
-    if (errorCode) {
-        
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:[NSString stringWithFormat:@"    %@ %@: ERROR: %@", entityName, xid, errorCode]
-                                              context:context];
-        
-        return;
-        
-    }
-    
-    if (!resource) {
-        
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:@"ERROR: have no resource string in response"
-                                              context:context];
-        return;
-        
-    }
-    
-    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-    
-    if (!responseData) {
-        
-        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:errorString
-                                              context:context];
-        return;
-        
-    }
-    
-    xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
-    
-    [self parseFindAckResponseData:responseData
+    [self parseFindAckResponseData:response
                     withEntityName:entityName
                                xid:xid
                            context:context];
