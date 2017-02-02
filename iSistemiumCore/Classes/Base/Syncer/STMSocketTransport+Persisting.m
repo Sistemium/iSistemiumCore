@@ -206,7 +206,28 @@
                 
             }
             
-            completionHandler(YES, response, nil, nil);
+            NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
+            
+            if (!responseData) {
+                
+                NSString *errorMessage = [NSString stringWithFormat:@"    %@: ERROR: find response data is not an dictionary", entityName];
+                
+                [self completeWithErrorMessage:errorMessage dictionaryHandler:completionHandler];
+                return;
+                
+            }
+            
+            NSMutableDictionary *headers = @{}.mutableCopy;
+            
+            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                
+                if (![key isEqualToString:@"data"]) {
+                    headers[key] = obj;
+                }
+                
+            }];
+            
+            completionHandler(YES, responseData, headers, nil);
             
         } else {
             completionHandler(NO, nil, nil, error);
