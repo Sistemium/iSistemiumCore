@@ -27,6 +27,7 @@
     
     if (!self.unsyncedDataHelper) {
         self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+        self.unsyncedDataHelper.persistenceDelegate = self.persister;
         self.unsyncedDataHelper.subscriberDelegate = self;
     }
 
@@ -38,6 +39,8 @@
 
 - (void)testSync {
 
+    XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync"];
     
     [STMLogger.sharedLogger saveLogMessageWithText:@"testMessage"
