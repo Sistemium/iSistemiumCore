@@ -9,14 +9,14 @@
 
 #import <XCTest/XCTest.h>
 
-#import "STMSocketTransport.h"
-#import "STMSocketTransportOwner.h"
+#import "STMSocketTransport+Persisting.h"
+#import "STMSocketConnectionOwner.h"
 
 #define TEST_SOCKET_URL @"https://socket2.sistemium.com/socket.io-client"
 #define TEST_SOCKET_ENTITY_NAME @"STMSetting"
 #define TEST_SOCKET_TIMEOUT 5
 
-@interface STMSocketTransportTests : XCTestCase <STMSocketTransportOwner>
+@interface STMSocketTransportTests : XCTestCase <STMSocketConnectionOwner>
 
 @property (nonatomic,strong) STMSocketTransport *transport;
 @property (nonatomic) BOOL isReady;
@@ -30,9 +30,9 @@
     [super setUp];
     
     if (!self.transport) {
-        self.transport = [STMSocketTransport initWithUrl:TEST_SOCKET_URL
-                                       andEntityResource:@"STMEntity"
-                                                   owner:self];
+        self.transport = [STMSocketTransport transportWithUrl:TEST_SOCKET_URL
+                                            andEntityResource:@"STMEntity"
+                                                        owner:self];
     }
 }
 
@@ -139,7 +139,7 @@
 }
 
 
-#pragma mark - STMSocketTransportOwner
+#pragma mark - STMSocketConnectionOwner
 
 - (void)socketReceiveAuthorization {
     
