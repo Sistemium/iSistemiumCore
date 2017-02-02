@@ -64,15 +64,10 @@
                 
             }
             
-            NSMutableDictionary *headers = @{}.mutableCopy;
-            
-            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                
-                if (![key isEqualToString:@"data"]) {
-                    headers[key] = obj;
-                }
-                
-            }];
+            NSDictionary *headers = [STMFunctions mapDictionary:response
+                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
+                                                          return [key isEqualToString:@"data"] ? nil : value;
+                                                      }];
             
             completionHandler(YES, responseData, headers, nil);
             
@@ -142,15 +137,10 @@
                 
             }
             
-            NSMutableDictionary *headers = @{}.mutableCopy;
-            
-            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                
-                if (![key isEqualToString:@"data"]) {
-                    headers[key] = obj;
-                }
-                
-            }];
+            NSDictionary *headers = [STMFunctions mapDictionary:response
+                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
+                                                          return [key isEqualToString:@"data"] ? nil : value;
+                                                      }];
             
             completionHandler(YES, responseData, headers, nil);
             
@@ -217,15 +207,10 @@
                 
             }
             
-            NSMutableDictionary *headers = @{}.mutableCopy;
-            
-            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                
-                if (![key isEqualToString:@"data"]) {
-                    headers[key] = obj;
-                }
-                
-            }];
+            NSDictionary *headers = [STMFunctions mapDictionary:response
+                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
+                                                          return [key isEqualToString:@"data"] ? nil : value;
+                                                      }];
             
             completionHandler(YES, responseData, headers, nil);
             
