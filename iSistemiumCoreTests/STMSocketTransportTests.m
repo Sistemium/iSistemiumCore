@@ -89,6 +89,39 @@
     completionHandlerWithHeaders:completionHandler];
     
 }
+
+- (void)testFindSuccess {
+    
+    XCTestExpectation *expectFind = [self expectationWithDescription:@"Successful find"];
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize: @(1)};
+    
+    [self findAllTestEntityWithOptions:options
+                     completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error)
+    {
+    
+        XCTAssertTrue(result.count == 1);
+        NSString *pk = result.firstObject[@"id"];
+        
+        [self.transport findAsync:TEST_SOCKET_ENTITY_NAME
+                       identifier:pk
+                          options:options
+     completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+         
+         XCTAssertNotNil(result);
+         XCTAssertNotNil(headers);
+         XCTAssertNil(error);
+         XCTAssertTrue(success);
+         
+         XCTAssertNotNil(result[@"name"]);
+         XCTAssertNotNil(result[@"group"]);
+         
+         [expectFind fulfill];
+         
+     }];
+        
+
+    
     }];
     
     [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
