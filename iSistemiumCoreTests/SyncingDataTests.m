@@ -12,6 +12,7 @@
 #import "STMLogger.h"
 
 #define SYNCING_DATA_TEST_ASYNC_DELAY PersistingTestsTimeOut / 5 * NSEC_PER_SEC
+#define SYNCING_DATA_TEST_DISPATCH_TIME dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY))
 
 @interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
 
@@ -95,7 +96,7 @@
     XCTAssertNotNil(itemVersion);
     XCTAssertNotNil(itemData);
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY)), dispatch_get_main_queue(), ^{
+    dispatch_after(SYNCING_DATA_TEST_DISPATCH_TIME, dispatch_get_main_queue(), ^{
     
         [self.unsyncedDataHelper setSynced:YES
                                     entity:entityName
