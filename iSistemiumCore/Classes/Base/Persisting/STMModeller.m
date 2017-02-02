@@ -151,7 +151,7 @@
     
     NSDictionary *relationships = [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:nil];
     
-    return [STMFunctions mapDisctionary:relationships withBlock:^id _Nonnull(NSRelationshipDescription *value, NSString *key) {
+    return [STMFunctions mapDictionary:relationships withBlock:^id _Nonnull(NSRelationshipDescription *value, NSString *key) {
         return value.destinationEntity.name;
     }];
     
