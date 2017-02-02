@@ -128,6 +128,37 @@
     
 }
 
+- (void)testMergeSuccess {
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Successful merge"];
+    NSDictionary *attributes = @{
+                                 @"type": @"debug",
+                                 @"id": NSUUID.UUID.UUIDString,
+                                 @"text": @"testMergeSuccess",
+                                 @"source": @"SocketTransportTests"
+                                 };
+    
+    [self.transport    mergeAsync:@"STMLogMessage"
+                       attributes:attributes
+                          options:nil
+     completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+          
+         XCTAssertNotNil(result);
+         XCTAssertNotNil(headers);
+         XCTAssertNil(error);
+         XCTAssertTrue(success);
+         
+         XCTAssertNotNil(result[@"type"]);
+         XCTAssertNotNil(result[@"text"]);
+         
+         NSLog(@"testMergeSuccess result: %@", result);
+         [expectation fulfill];
+          
+     }];
+
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
+    
+}
 
 - (void)testFindAllError {
     
