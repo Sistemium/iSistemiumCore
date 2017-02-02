@@ -15,7 +15,7 @@
 @interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
-
+@property (nonatomic, strong) XCTestExpectation *syncedExpectation;
 
 @end
 
@@ -25,8 +25,10 @@
     
     [super setUp];
     
-    self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-    self.unsyncedDataHelper.subscriberDelegate = self;
+    if (!self.unsyncedDataHelper) {
+        self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+        self.unsyncedDataHelper.subscriberDelegate = self;
+    }
 
 }
 
@@ -36,9 +38,12 @@
 
 - (void)testSync {
 
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"testMessage"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync"];
     
-    // ???
+    [STMLogger.sharedLogger saveLogMessageWithText:@"testMessage"
+                                              type:@"important"];
+    
+    self.syncedExpectation = expectation;
     
     [self waitForExpectationsWithTimeout:PersistingTestsTimeOut
                                  handler:nil];
@@ -48,14 +53,21 @@
 
 #pragma mark - STMDataSyncingSubscriber
 
-- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName
+                                itemData:(NSDictionary *)itemData
+                             itemVersion:(NSString *)itemVersion {
     
     NSLog(@"haveUnsyncedObject %@ %@", entityName, itemData[@"id"]);
+    
+    XCTAssertNotNil(itemVersion);
+    XCTAssertNotNil(itemData);
     
     [self.unsyncedDataHelper setSynced:YES
                                 entity:entityName
                               itemData:itemData
                            itemVersion:itemVersion];
+    
+    [self.syncedExpectation fulfill];
     
 }
 
