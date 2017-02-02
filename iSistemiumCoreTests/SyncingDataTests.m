@@ -28,6 +28,10 @@
     [super setUp];
     
     if (!self.unsyncedDataHelper) {
+        
+//        Uncomment to see test magically failed
+//        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister
+//                                                                                subscriber:self];
         self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
         self.unsyncedDataHelper.persistenceDelegate = self.persister;
         self.unsyncedDataHelper.subscriberDelegate = self;
@@ -59,6 +63,13 @@
              completionHandler:^(BOOL success, NSDictionary *logMessage, NSError *error) {
                  XCTAssertNotNil(logMessage);
              }];
+    
+//    NSError *error;
+//    
+//    [self.persister mergeSync:@"STMLogMessage"
+//                   attributes:attributes
+//                      options:nil
+//                        error:&error];
 
     
     
