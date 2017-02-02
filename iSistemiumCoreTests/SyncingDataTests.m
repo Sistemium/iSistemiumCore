@@ -6,34 +6,58 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <XCTest/XCTest.h>
+#import "STMPersistingTests.h"
 
-@interface SyncingDataTests : STMPersistingTests
+#import "STMUnsyncedDataHelper.h"
+#import "STMLogger.h"
+
+
+@interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
+
+@property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
+
 
 @end
 
 @implementation SyncingDataTests
 
 - (void)setUp {
+    
     [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+    
+    self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+    self.unsyncedDataHelper.subscriberDelegate = self;
+
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
+- (void)testSync {
+
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"testMessage"];
+    
+    // ???
+    
+    [self waitForExpectationsWithTimeout:PersistingTestsTimeOut
+                                 handler:nil];
+
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
+
+#pragma mark - STMDataSyncingSubscriber
+
+- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+    
+    NSLog(@"haveUnsyncedObject %@ %@", entityName, itemData[@"id"]);
+    
+    [self.unsyncedDataHelper setSynced:YES
+                                entity:entityName
+                              itemData:itemData
+                           itemVersion:itemVersion];
+    
 }
+
 
 @end
