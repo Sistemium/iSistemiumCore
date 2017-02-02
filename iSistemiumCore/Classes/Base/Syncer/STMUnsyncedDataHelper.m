@@ -218,9 +218,17 @@
     [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
     
     if (identifier) {
+        
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
+        
     } else {
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"NOT (id IN %@)", self.failToSyncObjects.allKeys]];
+        
+        if (self.failToSyncObjects.allKeys.count) {
+        
+            [subpredicates addObject:[NSPredicate predicateWithFormat:@"NOT (id IN %@)", self.failToSyncObjects.allKeys]];
+
+        }
+        
     }
 
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
