@@ -33,6 +33,7 @@
         self.transport = [STMSocketTransport transportWithUrl:TEST_SOCKET_URL
                                             andEntityResource:@"STMEntity"
                                                         owner:self];
+        [self waitConnection];
     }
 }
 
@@ -40,7 +41,7 @@
     [super tearDown];
 }
 
-- (void)testConnection {
+- (void)waitConnection {
     
     [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
     
@@ -50,61 +51,70 @@
 
 - (void)testFindAllSuccess {
     
-    [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
-
-    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError * _Nullable error) {
+    XCTestExpectation *expectFindAll = [self expectationWithDescription:@"Successful findAll"];
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize: @(1),
+                              @"offset"     : @"*"};
+    
+    [self findAllTestEntityWithOptions:options
+                     completionHandler:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
         
-        XCTestExpectation *expectFindAll = [self expectationWithDescription:@"Successful findAll"];
+        XCTAssertNotNil(result);
+        XCTAssertNotNil(headers);
+        XCTAssertNil(error);
+        XCTAssertTrue(success);
         
-        NSDictionary *options = @{STMPersistingOptionPageSize: @(1),
-                                  @"offset"     : @"*"};
+        XCTAssertEqual([result count], 1, @"Pagesize:1 result in one object array");
         
-        [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME
-                           predicate:nil
-                             options:options
-        completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
-            
-            XCTAssertNotNil(result);
-            XCTAssertNotNil(headers);
-            XCTAssertNil(error);
-            XCTAssertTrue(success);
-            
-            XCTAssertEqual([result count], 1, @"Pagesize:1 result in one object array");
-            
-            [expectFindAll fulfill];
-            
-        }];
+        XCTAssertTrue([result.firstObject isKindOfClass:NSDictionary.class]);
         
-        [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
-
+        XCTAssertNotNil(result.firstObject[@"name"]);
+        XCTAssertNotNil(result.firstObject[@"group"]);
+        
+        [expectFindAll fulfill];
+        
     }];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
+
     
 }
 
+- (void)findAllTestEntityWithOptions:(NSDictionary *)options
+                   completionHandler:(STMPersistingWithHeadersAsyncArrayResultCallback)completionHandler {
+    
+    [self.transport findAllAsync:TEST_SOCKET_ENTITY_NAME
+                       predicate:nil
+                         options:options
+    completionHandlerWithHeaders:completionHandler];
+    
+}
+    }];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
+    
+}
+
+
 - (void)testFindAllError {
     
-    [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
+   XCTestExpectation *expectFindAllError = [self expectationWithDescription:@"Errored findAll"];
     
-    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:^(NSError * _Nullable error) {
+    [self.transport findAllAsync:[TEST_SOCKET_ENTITY_NAME stringByAppendingString:@"noSuchCollection"] predicate:nil options:@{} completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
         
-        XCTestExpectation *expectFindAllError = [self expectationWithDescription:@"Errored findAll"];
+        XCTAssertNil(result);
+        XCTAssertNil(headers);
+        XCTAssertNotNil(error);
+        XCTAssertFalse(success);
         
-        [self.transport findAllAsync:[TEST_SOCKET_ENTITY_NAME stringByAppendingString:@"noSuchCollection"] predicate:nil options:@{} completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
-            
-            XCTAssertNil(result);
-            XCTAssertNil(headers);
-            XCTAssertNotNil(error);
-            XCTAssertFalse(success);
-            
-            NSLog(@"error: %@", error.localizedDescription);
-            
-            [expectFindAllError fulfill];
-            
-        }];
+        NSLog(@"error: %@", error.localizedDescription);
         
-        [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
-    
+        [expectFindAllError fulfill];
+        
     }];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
+
     
 }
 
