@@ -310,9 +310,9 @@
         offset -= 1;
         offset *= pageSize;
     }
-    NSString *orderBy = options[@"sortBy"];
+    NSString *orderBy = options[STMPersistingOptionOrder];
     
-    BOOL asc = options[@"order"] ? [[options[@"order"] lowercaseString] isEqualToString:@"asc"] : YES;
+    BOOL asc = options[STMPersistingOptionOrderDirection] ? [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"] : YES;
     
     
     if (!orderBy) orderBy = @"id";
