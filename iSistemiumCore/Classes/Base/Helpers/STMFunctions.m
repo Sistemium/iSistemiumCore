@@ -641,12 +641,14 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
-+ (NSDictionary*)mapDisctionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
++ (NSDictionary*)mapDictionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
     
     NSMutableDictionary *result = NSMutableDictionary.alloc.init;
     
     for(id key in dictionary) {
-        result[key] = mapperBlock(dictionary[key], key);
+        id mapped = mapperBlock(dictionary[key], key);
+        if (!mapped) continue;
+        result[key] = mapped;
     }
     
     return result;
@@ -656,7 +658,9 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     NSMutableArray *result = [NSMutableArray array];
     
     [array enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [result addObject:mapperBlock(obj)];
+        id mapped = mapperBlock(obj);
+        if (!mapped) return;
+        [result addObject:mapped];
     }];
     
     return result.copy;
