@@ -18,6 +18,7 @@
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 @property (nonatomic, strong) XCTestExpectation *syncedExpectation;
+@property (nonatomic, strong) NSString *pkToWait;
 
 @end
 
@@ -30,11 +31,11 @@
     if (!self.unsyncedDataHelper) {
         
 //        Uncomment to see test magically failed
-//        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister
-//                                                                                subscriber:self];
-        self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-        self.unsyncedDataHelper.persistenceDelegate = self.persister;
-        self.unsyncedDataHelper.subscriberDelegate = self;
+        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister
+                                                                                subscriber:self];
+//        self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+//        self.unsyncedDataHelper.persistenceDelegate = self.persister;
+//        self.unsyncedDataHelper.subscriberDelegate = self;
     }
 
 }
@@ -50,11 +51,13 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync"];
     
     self.syncedExpectation = expectation;
+    self.pkToWait = [NSUUID UUID].UUIDString;
     
     NSDictionary *attributes = @{
                                  @"text": @"testMessage",
                                  @"type": @"important",
-                                 @"source": @"SyncingDataTests"
+                                 @"source": @"SyncingDataTests",
+                                 @"ownerXid": self.pkToWait
                                  };
     
     [self.persister mergeAsync:@"STMLogMessage"
@@ -63,15 +66,15 @@
              completionHandler:^(BOOL success, NSDictionary *logMessage, NSError *error) {
                  XCTAssertNotNil(logMessage);
              }];
-    
+
 //    NSError *error;
 //    
-//    [self.persister mergeSync:@"STMLogMessage"
-//                   attributes:attributes
-//                      options:nil
-//                        error:&error];
-
-    
+//    NSDictionary *logMessage = [self.persister mergeSync:@"STMLogMessage"
+//                                              attributes:attributes
+//                                                 options:nil
+//                                                   error:&error];
+//
+//    XCTAssertNotNil(logMessage);
     
     NSDate *startedAt = [NSDate date];
     
@@ -114,7 +117,9 @@
                                   itemData:itemData
                                itemVersion:itemVersion];
         
-        [self.syncedExpectation fulfill];
+        if ([itemData[@"ownerXid"] isEqualToString:self.pkToWait]) {
+            [self.syncedExpectation fulfill];
+        }
         
     });
 
