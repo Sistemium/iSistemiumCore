@@ -21,11 +21,12 @@
 
 #import "STMDataSyncingSubscriber.h"
 
+#import "STMSocketTransport+Persisting.h"
 
 @interface STMSyncer() <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) STMSocketTransport <STMPersistingWithHeadersAsync> *socketTransport;
+@property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
@@ -479,9 +480,9 @@
                 
                 if (self.socketUrlString) {
                     
-                    self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
-                                                         andEntityResource:self.entityResource
-                                                                     owner:self];
+                    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
+                                                              andEntityResource:self.entityResource
+                                                                          owner:self];
                     
                     if (!self.socketTransport) {
                         
@@ -558,7 +559,7 @@
 }
 
 
-#pragma mark - STMSocketTransportOwner protocol
+#pragma mark - STMSocketConnectionOwner protocol
 
 - (void)socketReceiveAuthorization {
     

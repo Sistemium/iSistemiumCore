@@ -351,7 +351,7 @@
     
     if ([self storageForEntityName:entityName options:options] == STMStorageTypeCoreData && options[STMPersistingOptionLts]) {
         NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
-        // Add 1ms because there are nanoseconds in deviceTs
+        // Add 1ms because there are microseconds in deviceTs
         options = [STMFunctions setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
                                   forKey:STMPersistingOptionLts
                             inDictionary:options];
