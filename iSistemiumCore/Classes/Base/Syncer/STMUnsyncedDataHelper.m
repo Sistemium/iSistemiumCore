@@ -157,28 +157,41 @@
     NSDictionary *anyObjectToSend = nil;
     
     for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
+
+        anyObjectToSend = [self findUnsyncedObjectWithEntityName:uploadableEntityName];
         
-        NSDictionary *unsyncedObject = [self anyUnsyncedObjectWithEntityName:uploadableEntityName];
+        if (anyObjectToSend) break;
         
-        if (unsyncedObject) {
+    }
+    
+    return anyObjectToSend;
+    
+}
+
+- (NSDictionary *)findUnsyncedObjectWithEntityName:(NSString *)entityName {
+    
+    NSDictionary *unsyncedObject = [self anyUnsyncedObjectWithEntityName:entityName];
+    
+    if (unsyncedObject) {
+        
+        NSDictionary *resultObject = @{@"entityName"  : entityName,
+                                       @"object"      : unsyncedObject};
+        
+        NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
+        
+        if (unsyncedParent) {
             
-            NSDictionary *resultObject = @{@"entityName"  : uploadableEntityName,
-                                           @"object"      : unsyncedObject};
+            return unsyncedParent;
             
-            NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
+        } else {
             
-            if (unsyncedParent) {
+            if (!self.failToSyncObjects[unsyncedObject[@"id"]]) {
                 
-                anyObjectToSend = unsyncedParent;
+                return resultObject;
                 
             } else {
                 
-                if (!self.failToSyncObjects[unsyncedObject[@"id"]]) {
-                    
-                    anyObjectToSend = resultObject;
-                    break;
-                    
-                }
+                return [self findUnsyncedObjectWithEntityName:entityName];
                 
             }
             
@@ -186,8 +199,8 @@
         
     }
     
-    return anyObjectToSend;
-    
+    return nil;
+
 }
 
 - (NSDictionary *)anyUnsyncedObjectWithEntityName:(NSString *)entityName {
@@ -257,16 +270,17 @@
             } else {
                 
                 if (!self.failToSyncObjects[unsyncedParent[@"id"]]) {
-                    
+
                     anyUnsyncedParent = resultObject;
-                    break;
-                    
+
                 } else {
-                    
-                    // ?????
-                    
+
+                    [self declineFromSync:object];
+
                 }
-                
+
+                break;
+
             }
             
         }
