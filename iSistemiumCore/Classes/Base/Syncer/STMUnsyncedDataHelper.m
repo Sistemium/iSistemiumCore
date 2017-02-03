@@ -220,19 +220,17 @@
 
 - (NSDictionary *)findSyncableObjectWithEntityName:(NSString *)entityName {
     
-    NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName identifier:nil];
+    NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName];
     
     if (unsyncedObject) {
         
-        NSDictionary *resultObject = @{@"entityName"  : entityName,
-                                       @"object"      : unsyncedObject};
+        if (![self haveUnsyncedParentForObject:unsyncedObject]) {
         
-        NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
-        
-        if (unsyncedParent) {
-            return unsyncedParent;
-        } else {
+            NSDictionary *resultObject = @{@"entityName"  : entityName,
+                                           @"object"      : unsyncedObject};
+
             return resultObject;
+            
         }
         
     }
@@ -241,19 +239,13 @@
 
 }
 
-- (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+- (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName {
 
     NSError *error = nil;
     
     NSMutableArray *subpredicates = @[].mutableCopy;
     
     [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
-    
-    if (identifier) {
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
-        
-    }
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     
@@ -273,9 +265,9 @@
 
 }
 
-- (NSDictionary *)anyUnsyncedParentForObject:(NSDictionary *)object {
+- (BOOL)haveUnsyncedParentForObject:(NSDictionary *)object {
     
-    NSDictionary *anyUnsyncedParent = nil;
+    BOOL haveUnsyncedParent = NO;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
 
@@ -288,33 +280,38 @@
         NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
         
-        NSDictionary *unsyncedParent = [self unsyncedObjectWithEntityName:entityName
-                                                               identifier:parentId];
-        
-        if (unsyncedParent) {
-            
-            NSDictionary *resultObject = @{@"entityName"  : entityName,
-                                           @"object"      : unsyncedParent};
+        NSError *error = nil;
 
-            NSDictionary *unsyncedGrandParent = [self anyUnsyncedParentForObject:unsyncedParent];
-            
-            if (unsyncedGrandParent) {
-                
-                anyUnsyncedParent = unsyncedGrandParent;
-                
-            } else {
-                
-                anyUnsyncedParent = resultObject;
+        NSDictionary *parent = [self.persistenceDelegate findSync:entityName
+                                                       identifier:parentId
+                                                          options:nil
+                                                            error:&error];
 
+        if (parent) {
+            
+            if (!parent[@"lts"]) {
+                
+                haveUnsyncedParent = YES;
                 break;
 
             }
+            
+        } else {
+            
+            if (error) {
+                NSLog(@"error to find %@ %@: %@", entityName, parentId, error.localizedDescription);
+            } else {
+                // we have relation's id but have no both object with this id and error — something wrong with it
+            }
+            
+            haveUnsyncedParent = YES;
+            break;
             
         }
         
     }
     
-    return anyUnsyncedParent;
+    return haveUnsyncedParent;
     
 }
 
