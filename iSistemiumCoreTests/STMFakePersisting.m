@@ -13,9 +13,19 @@
 
 #define STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE [AnyPromise promiseWithValue:STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR]
 
-@interface STMFakePersisting ()
+#define STMFakePersistingEmptyResponsePromise() \
+if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
+    return [AnyPromise promiseWithValue:nil]; \
+}
 
-@property (nonatomic, strong) STMFakePersistingOptions options;
+#define STMFakePersistingEmptyResponse(returnValue) \
+if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
+    return returnValue; \
+} \
+*error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR; \
+return returnValue; \
+
+@interface STMFakePersisting ()
 
 @end
 
@@ -31,38 +41,45 @@
 #pragma mark - PersistingSync implementation
 
 - (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return nil;
+
+    STMFakePersistingEmptyResponse(nil)
+
 }
 
 - (NSArray *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return nil;
+
+    STMFakePersistingEmptyResponse(nil)
+
 }
 
 - (NSUInteger) countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return 0;
+
+    STMFakePersistingEmptyResponse(0)
+
 }
 
 - (BOOL) destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return NO;
+    
+    STMFakePersistingEmptyResponse(NO)
+    
 }
 
 - (NSDictionary *) mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return nil;
+    
+    STMFakePersistingEmptyResponse(nil)
+    
 }
 
 - (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return 0;
+    
+    STMFakePersistingEmptyResponse(0)
+
 }
 
 - (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR;
-    return nil;
+    
+    STMFakePersistingEmptyResponse(nil)
+    
 }
 
 
@@ -71,36 +88,66 @@
 - (AnyPromise *)find:(NSString *)entityName
           identifier:(NSString *)identifier
              options:(NSDictionary *)options {
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    return [self dictionaryPromiseResponse];
 }
 
 - (AnyPromise *)findAll:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options {
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    return [self arrayPromiseResponse];
 }
 
 - (AnyPromise *)merge:(NSString *)entityName
            attributes:(NSDictionary *)attributes
               options:(NSDictionary *)options {
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    return [self dictionaryPromiseResponse];
 }
 
 - (AnyPromise *)mergeMany:(NSString *)entityName
            attributeArray:(NSArray *)attributeArray
                   options:(NSDictionary *)options {
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    return [self arrayPromiseResponse];
 }
 
 - (AnyPromise *)destroy:(NSString *)entityName
              identifier:(NSString *)identifier
                 options:(NSDictionary *)options {
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    return [self boolPromiseResponse];
 }
 
 - (AnyPromise *)destroyAll:(NSString *)entityName
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options {
+    return [self integerPromiseResponse];
+}
+
+#pragma mark - Private helpers
+
+- (AnyPromise *)dictionaryPromiseResponse {
+    
+    STMFakePersistingEmptyResponsePromise()
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+}
+
+- (AnyPromise *)arrayPromiseResponse {
+    
+    STMFakePersistingEmptyResponsePromise()
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+}
+
+- (AnyPromise *)integerPromiseResponse {
+    
+    STMFakePersistingEmptyResponsePromise()
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+}
+
+- (AnyPromise *)boolPromiseResponse {
+    
+    STMFakePersistingEmptyResponsePromise()
+    
     return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 

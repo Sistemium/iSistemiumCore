@@ -10,9 +10,13 @@
 #import "STMPersistingFullStack.h"
 
 #define STMFakePersistingOptions NSDictionary *
+#define STMFakePersistingOptionEmptyDBKey @"emptyDB"
+#define STMFakePersistingOptionEmptyDB STMFakePersistingOptionEmptyDBKey:@YES
 
 @interface STMFakePersisting : NSObject <STMPersistingSync, STMPersistingPromised>
 
 + (instancetype)fakePersistingWithOptions:(STMFakePersistingOptions)options;
+
+@property (nonatomic, strong) STMFakePersistingOptions options;
 
 @end
