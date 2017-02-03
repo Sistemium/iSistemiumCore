@@ -37,6 +37,16 @@
     return unsyncedDataHelper;
 }
 
+- (void)setSyncingState:(STMDataSyncingState *)syncingState {
+
+    _syncingState = syncingState;
+    
+    if (_syncingState) {
+        [self startHandleUnsyncedObjects];
+    }
+    
+}
+
 
 #pragma mark - STMDataSyncing
 
