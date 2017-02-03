@@ -241,21 +241,25 @@ static NSString *SQLNullValueString = @"NULL";
     if ([val isKindOfClass:[NSData class]]){
         return [[STMFunctions UUIDStringFromUUIDData:val] lowercaseString];
     }
+    
+    if ([val isKindOfClass:NSSet.class]) {
+        val = [(NSSet *)val allObjects];
+    }
+    
     if ([val isKindOfClass:[NSArray class]]){
         NSMutableArray* array = @[].mutableCopy;
         for (NSDictionary* obj in val){
             if ([obj isKindOfClass:[NSDictionary class]] && obj[@"id"]){
                 [array addObject:obj[@"id"]];
             }else{
-                [array addObject:obj];
+                [array addObject:[self SQLConstantForValue:obj]];
             }
         }
         
         NSString* rez = [array componentsJoinedByString:@"','"];
         
         return rez;
-    }
-    else {
+    } else {
         if ([val respondsToSelector:@selector(intValue)]){
             return [val stringValue];
         }
