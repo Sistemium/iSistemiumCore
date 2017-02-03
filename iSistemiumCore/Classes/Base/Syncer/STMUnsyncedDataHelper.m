@@ -138,8 +138,16 @@
 
 - (void)startHandleUnsyncedObjects {
     
-    [self sendNextUnsyncedObject];
+    if (!self.subscriberDelegate) return;
+
+    if (!self.syncingState) return;
     
+    if (self.syncingState.isInSyncingProcess) return;
+    
+    self.syncingState.isInSyncingProcess = YES;
+    
+    [self sendNextUnsyncedObject];
+
 }
 
 - (void)finishHandleUnsyncedObjects {
