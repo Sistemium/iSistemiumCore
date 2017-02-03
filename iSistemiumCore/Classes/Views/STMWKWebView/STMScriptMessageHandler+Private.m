@@ -28,15 +28,8 @@
         
         result = [self findObjectsWithParameters:parameters
                                            error:&error];
-        if (error) {
-            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-                resolve(error);
-            }];
-        }
         
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(result);
-        }];
+        return [AnyPromise promiseWithValue:error ? error : result];
         
     }
     
