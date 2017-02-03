@@ -340,7 +340,11 @@
     
     if (!errored.count) return nil;
     
-    return [NSPredicate predicateWithFormat:@"NOT (id IN %@)", errored.allObjects];
+    NSArray *erroredData = [STMFunctions mapArray:errored.allObjects withBlock:^id _Nonnull(NSString * _Nonnull idString) {
+        return [STMFunctions xidDataFromXidString:idString];
+    }];
+        
+    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredData];
 
 }
 
