@@ -95,11 +95,17 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
     
     NSUUID *uuid = [NSUUID UUID];
-    NSData *data = [STMFunctions UUIDDataFromNSUUID:uuid];
-    NSString *string = [NSString stringWithFormat:@"(id = '%@')", uuid.UUIDString.lowercaseString];
+    NSData *uuidData = [STMFunctions UUIDDataFromNSUUID:uuid];
+    NSString *uuidString = uuid.UUIDString.lowercaseString;
 
-    predicate = [NSPredicate predicateWithFormat:@"xid == %@", data];
+    predicate = [NSPredicate predicateWithFormat:@"xid == %@", uuidData];
     
+    NSString *string = [NSString stringWithFormat:@"(id = '%@')", uuid.UUIDString.lowercaseString];
+    STMAssertSQLFilter(predicate, string);
+
+    predicate = [NSPredicate predicateWithFormat:@"xid IN %@", @[uuidData, uuidData]];
+    
+    string = [NSString stringWithFormat:@"(id = ('%@','%@'))", uuidString, uuidString];
     STMAssertSQLFilter(predicate, string);
 
 }
