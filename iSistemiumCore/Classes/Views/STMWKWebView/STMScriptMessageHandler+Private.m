@@ -95,7 +95,7 @@
     NSString *entityName = [NSString stringWithFormat:@"%@%@",
                             ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
-    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
+    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
         
         [STMFunctions error:&resultError
                 withMessage:[entityName stringByAppendingString:@": not found in data model"]];
@@ -194,7 +194,7 @@
     
     NSString *entityName = [NSString stringWithFormat:@"%@%@", ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
-    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
+    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
         
         [STMFunctions error:&error withMessage:[entityName stringByAppendingString:@": not found in data model"]];
         
@@ -241,7 +241,7 @@
         
         NSString *entityName = [STMFunctions addPrefixToEntityName:item];
         
-        if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
+        if ([self.modellingDelegate isConcreteEntityName:entityName]) {
             
             [subscription.entityNames addObject:entityName];
             
@@ -310,7 +310,7 @@
     NSString *entityName = [NSString stringWithFormat:@"%@%@",
                             ISISTEMIUM_PREFIX, parameters[@"entity"]];
     
-    if ([self.persistenceDelegate isConcreteEntityName:entityName]) {
+    if ([self.modellingDelegate isConcreteEntityName:entityName]) {
         
         NSString *xidString = parameters[@"id"];
         

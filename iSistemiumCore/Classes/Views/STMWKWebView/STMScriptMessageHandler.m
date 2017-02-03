@@ -33,7 +33,10 @@
 - (void)setPersistenceDelegate:(id)persistenceDelegate {
     
     _persistenceDelegate = persistenceDelegate;
-    _modellingDelegate = persistenceDelegate;
+    
+    if ([persistenceDelegate conformsToProtocol:@protocol(STMModelling)]) {
+        _modellingDelegate = persistenceDelegate;
+    }
     
 }
 
