@@ -689,13 +689,6 @@
             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
 
         }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                                                object:weakPicture];
-            
-        });
 
     } else {
         
@@ -819,9 +812,9 @@
         
     } else {
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            picture.imageThumbnail = thumbnail;
-        });
+        NSString *logMessage = [NSString stringWithFormat:@"saveImageThumbnailFile %@ writeToFile %@ error: %@", fileName, imagePath, error.localizedDescription];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
         
     }
     
