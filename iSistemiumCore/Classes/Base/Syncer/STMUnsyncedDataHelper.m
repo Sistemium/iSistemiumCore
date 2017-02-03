@@ -27,7 +27,7 @@
 @implementation STMUnsyncedDataHelper
 
 @synthesize subscriberDelegate = _subscriberDelegate;
-@synthesize state = _state;
+@synthesize syncingState = _syncingState;
 
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
