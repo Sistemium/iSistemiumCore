@@ -10,12 +10,12 @@
 
 #import "STMSessionManagement.h"
 #import "STMRequestAuthenticatable.h"
-#import "STMSocketTransportOwner.h"
+#import "STMSocketConnection.h"
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
 
 
-@interface STMSyncer : NSObject <STMSyncer, STMSocketTransportOwner>
+@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner>
 
 @property (nonatomic, strong) id <STMSession> session;
 

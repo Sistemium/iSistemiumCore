@@ -26,35 +26,6 @@
 - (NSArray *)objectsForPredicate:(NSPredicate *)predicate
                       entityName:(NSString *)entityName;
 
-- (NSArray *)objectsForEntityName:(NSString *)entityName;
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName
-                          orderBy:(NSString *)orderBy
-                        ascending:(BOOL)ascending
-                       fetchLimit:(NSUInteger)fetchLimit
-                      withFantoms:(BOOL)withFantoms
-           inManagedObjectContext:(NSManagedObjectContext *)context
-                            error:(NSError **)error;
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName
-                          orderBy:(NSString *)orderBy
-                        ascending:(BOOL)ascending
-                       fetchLimit:(NSUInteger)fetchLimit
-                      fetchOffset:(NSUInteger)fetchOffset
-                      withFantoms:(BOOL)withFantoms
-           inManagedObjectContext:(NSManagedObjectContext *)context
-                            error:(NSError **)error;
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName
-                          orderBy:(NSString *)orderBy
-                        ascending:(BOOL)ascending
-                       fetchLimit:(NSUInteger)fetchLimit
-                      fetchOffset:(NSUInteger)fetchOffset
-                      withFantoms:(BOOL)withFantoms
-                        predicate:(NSPredicate *)predicate
-           inManagedObjectContext:(NSManagedObjectContext *)context
-                            error:(NSError **)error;
-
 - (NSArray *)objectsForEntityName:(NSString *)entityName
                           orderBy:(NSString *)orderBy
                         ascending:(BOOL)ascending

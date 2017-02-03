@@ -19,6 +19,6 @@
 
 @interface STMPersistingTests : XCTestCase
 
-@property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync> persister;
+@property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync, STMPersistingAsync, STMPersistingPromised, STMModelling> persister;
 
 @end

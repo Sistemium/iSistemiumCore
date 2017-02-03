@@ -26,10 +26,6 @@
 
 #pragma mark methods to remove from STMCoreObjectsController
 
-- (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
-    return [STMCoreObjectsController setRelationshipFromDictionary:dictionary];
-}
-
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
     return [STMCoreObjectsController dictionaryForJSWithObject:object];
 }
@@ -40,6 +36,80 @@
 
 
 #pragma mark - Private CoreData helpers
+
+- (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
+    
+    NSString *name = dictionary[@"name"];
+    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
+    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
+    
+    NSDictionary *serverDataModel = STMEntityController.stcEntities;
+    STMEntity *entityModel = serverDataModel[entityName];
+    
+    if (!entityModel) {
+        NSLog(@"dataModel have no relationship's entity with name %@", entityName);
+        return NO;
+    }
+    
+    NSString *roleOwner = entityModel.roleOwner;
+    NSString *roleOwnerEntityName = [STMFunctions addPrefixToEntityName:roleOwner];
+    NSString *roleName = entityModel.roleName;
+    NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+    NSString *destinationEntityName = ownerRelationships[roleName];
+    NSString *destination = [STMFunctions removePrefixFromEntityName:destinationEntityName];
+    NSDictionary *properties = dictionary[@"properties"];
+    NSDictionary *ownerData = properties[roleOwner];
+    NSDictionary *destinationData = properties[destination];
+    NSString *ownerXid = ownerData[@"xid"];
+    NSString *destinationXid = destinationData[@"xid"];
+    
+    BOOL ok = YES;
+    
+    if (!ownerXid || [ownerXid isEqualToString:@""] || !destinationXid || [destinationXid isEqualToString:@""]) {
+        
+        ok = NO;
+        NSLog(@"Not ok relationship dictionary %@", dictionary);
+        
+    }
+    
+    if (ok) {
+        
+        NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
+        NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
+        
+        NSSet *destinationSet = [ownerObject valueForKey:roleName];
+        
+        if ([destinationSet containsObject:destinationObject]) {
+            
+            NSLog(@"already have relationship %@ %@ — %@ %@", roleOwnerEntityName, ownerXid, destinationEntityName, destinationXid);
+            
+            
+        } else {
+            
+            BOOL ownerIsWaitingForSync = [STMCoreObjectsController isWaitingToSyncForObject:ownerObject];
+            BOOL destinationIsWaitingForSync = [STMCoreObjectsController isWaitingToSyncForObject:destinationObject];
+            
+            NSDate *ownerDeviceTs = [ownerObject valueForKey:@"deviceTs"];
+            NSDate *destinationDeviceTs = [destinationObject valueForKey:@"deviceTs"];
+            
+            [[ownerObject mutableSetValueForKey:roleName] addObject:destinationObject];
+            
+            if (!ownerIsWaitingForSync) {
+                [ownerObject setValue:ownerDeviceTs forKey:@"deviceTs"];
+            }
+            
+            if (!destinationIsWaitingForSync) {
+                [destinationObject setValue:destinationDeviceTs forKey:@"deviceTs"];
+            }
+            
+        }
+        
+        
+    }
+    
+    return YES;
+    
+}
 
 - (NSDictionary *)mergeWithoutSave:entityName
                         attributes:(NSDictionary *)attributes
@@ -104,59 +174,6 @@
     
 }
 
-- (NSArray *)objectsForEntityName:(NSString *)entityName {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:@"id"
-                            ascending:YES
-                           fetchLimit:0
-                          withFantoms:NO
-               inManagedObjectContext:[self document].managedObjectContext
-                                error:nil];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:0
-                          withFantoms:withFantoms
-               inManagedObjectContext:context
-                                error:error];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-               inManagedObjectContext:context
-                                error:error];
-    
-}
-
-- (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
-    
-    return [self objectsForEntityName:entityName
-                              orderBy:orderBy
-                            ascending:ascending
-                           fetchLimit:fetchLimit
-                          fetchOffset:fetchOffset
-                          withFantoms:withFantoms
-                            predicate:nil
-                           resultType:NSManagedObjectResultType
-               inManagedObjectContext:context
-                                error:error];
-    
-}
 
 - (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
     
@@ -342,7 +359,7 @@
 }
 
 - (void)postprocessingForObject:(NSManagedObject *)object {
-#warning This is to specific. Need to remove this dependency on STMClientDataController
+#warning This is too specific. Need to remove this dependency on STMClientDataController
     if ([object isKindOfClass:[STMSetting class]]) {
         
         STMSetting *setting = (STMSetting *)object;

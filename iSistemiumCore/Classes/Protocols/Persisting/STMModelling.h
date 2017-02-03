@@ -6,13 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-typedef NS_ENUM(NSInteger, STMStorageType) {
-    STMStorageTypeFMDB,
-    STMStorageTypeCoreData,
-    STMStorageTypeAbstract,
-    STMStorageTypeNone
-};
-
+#import "STMPersisting.h"
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
 

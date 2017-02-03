@@ -370,7 +370,10 @@ static NSString *SQLNullValueString = @"NULL";
                     rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ <> %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ %@ %@)",
+                    leftSQLExpression,
+                    [rightSQLExpression isEqual: @"NULL"] ? @"IS NOT" : @"=",
+                    rightSQLExpression];
         }
         case NSMatchesPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
@@ -403,10 +406,12 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 - (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate{
+    
     NSMutableArray *subs = [NSMutableArray array];
     
     for (NSPredicate *sub in [predicate subpredicates]) {
-        [subs addObject:[self SQLFilterForPredicate:sub]];
+        NSString *part = [self SQLFilterForPredicate:sub];
+        if (part && part.length) [subs addObject:part];
     }
     
     if (subs.count == 1){
@@ -439,18 +444,35 @@ static NSString *SQLNullValueString = @"NULL";
     return [NSString stringWithFormat:@"(%@)", [subs componentsJoinedByString:conjunction]];
 }
 
+- (NSString *)normalizeWhereClause:(NSString *)whereClause {
+    
+    NSRegularExpression* regex =
+    [NSRegularExpression regularExpressionWithPattern: @"[ ]*\\([ ]*\\)[ ]*"
+                                              options: NSRegularExpressionCaseInsensitive
+                                                error: nil];
+    
+    return [regex stringByReplacingMatchesInString:whereClause
+                                           options:0
+                                             range:NSMakeRange(0, whereClause.length)
+                                      withTemplate: @""];
+}
+
 - (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate{
+   
+    NSString *result;
+    
     if ([predicate respondsToSelector:@selector(compoundPredicateType)]){
-        return [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate];
+        result = [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate];
+    } else if ([predicate respondsToSelector:@selector(predicateOperatorType)]){
+        result = [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate];
     }
-    else {
-        if ([predicate respondsToSelector:@selector(predicateOperatorType)]){
-            return [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate];
-        }
-        else {
-            NSLog(@"SQLFilterForPredicate predicate is not of a convertible class");
-        }
+    
+    if (result) {
+        return [self normalizeWhereClause:result];
     }
+    
+    NSLog(@"SQLFilterForPredicate predicate is not of a convertible class");
+    
     return nil;
 }
 

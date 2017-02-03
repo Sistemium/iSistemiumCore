@@ -70,7 +70,7 @@
 #define NOTIFICATION_SYNCER_STATUS_CHANGED @"syncStatusChanged"
 //#define NOTIFICATION_SYNCER_DID_CHANGE_CONTENT @"syncerDidChangeContent"
 
-#define NOTIFICATION_PERSISTER_HAVE_UNSYNCED @"persisterHaveUnsynced"
+//#define NOTIFICATION_PERSISTER_HAVE_UNSYNCED @"persisterHaveUnsynced"
 
 #define NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS @"socketAuthorizationSuccess"
 

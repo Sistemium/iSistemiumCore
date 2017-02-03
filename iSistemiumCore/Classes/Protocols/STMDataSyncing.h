@@ -13,9 +13,7 @@
 
 @protocol STMDataSyncing <NSObject>
 
-- (NSString *)subscribeUnsynced:(id <STMDataSyncingSubscriber>)subscriber;
-
-- (BOOL)unSubscribe:(NSString *)subscriptionId;
+@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
 
 - (BOOL)setSynced:(BOOL)success
            entity:(NSString *)entity

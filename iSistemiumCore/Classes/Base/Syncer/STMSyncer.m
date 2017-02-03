@@ -21,11 +21,12 @@
 
 #import "STMDataSyncingSubscriber.h"
 
+#import "STMSocketTransport+Persisting.h"
 
 @interface STMSyncer() <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) STMSocketTransport <STMPersistingWithHeadersAsync> *socketTransport;
+@property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic) NSInteger fetchLimit;
@@ -46,8 +47,6 @@
 
 @property (nonatomic) NSUInteger entityCount;
 @property (atomic) NSUInteger fantomsCount;
-
-@property (nonatomic, strong) NSString *subscriptionId;
 
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
@@ -76,17 +75,6 @@
 
 - (void)customInit {
     NSLog(@"syncer init");
-}
-
-- (void)notificationToInitSendDataProcess {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PERSISTER_HAVE_UNSYNCED
-                                                            object:self];
-        
-    });
-    
 }
 
 
@@ -216,8 +204,6 @@
                 [STMClientDataController checkClientData];
                 //                self.syncing = YES;
                 //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-                
-                [self notificationToInitSendDataProcess];
                 
                 self.syncerState = STMSyncerIdle;
                 
@@ -494,9 +480,9 @@
                 
                 if (self.socketUrlString) {
                     
-                    self.socketTransport = [STMSocketTransport initWithUrl:self.socketUrlString
-                                                         andEntityResource:self.entityResource
-                                                                     owner:self];
+                    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
+                                                              andEntityResource:self.entityResource
+                                                                          owner:self];
                     
                     if (!self.socketTransport) {
                         
@@ -573,7 +559,7 @@
 }
 
 
-#pragma mark - STMSocketTransportOwner protocol
+#pragma mark - STMSocketConnectionOwner protocol
 
 - (void)socketReceiveAuthorization {
     
@@ -969,6 +955,8 @@
     
     if (!finishReceiving && --self.entityCount) {
         
+        NSLog(@"remain %@ entities to receive", @(self.entityCount));
+        
         if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
         
         if (self.entitySyncNames.firstObject) {
@@ -984,7 +972,9 @@
         }
         
     } else {
-        
+
+        NSLog(@"remain %@ entities to receive", @(self.entityCount));
+
         [self receivingDidFinish];
         
     }
@@ -1072,7 +1062,6 @@
         
     } else {
 
-        [self notificationToInitSendDataProcess];
         [self startDefantomization];
         
         [STMCoreObjectsController dataLoadingFinished];
@@ -1393,46 +1382,10 @@
 #pragma mark find ack handler
 
 - (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName context:(NSDictionary *)context {
-    
-    NSString *resource = response[@"resource"];
-    NSNumber *errorCode = response[@"error"];
-
+        
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
-    if (errorCode) {
-        
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:[NSString stringWithFormat:@"    %@ %@: ERROR: %@", entityName, xid, errorCode]
-                                              context:context];
-        
-        return;
-        
-    }
-    
-    if (!resource) {
-        
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:@"ERROR: have no resource string in response"
-                                              context:context];
-        return;
-        
-    }
-    
-    NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-    
-    if (!responseData) {
-        
-        NSString *errorString = [NSString stringWithFormat:@"    %@: ERROR: find response data is not a dictionary", resource];
-        [self socketReceiveJSDataFindAckWithErrorCode:errorCode
-                                          errorString:errorString
-                                              context:context];
-        return;
-        
-    }
-    
-    xid = [STMFunctions xidDataFromXidString:responseData[@"id"]];
-    
-    [self parseFindAckResponseData:responseData
+    [self parseFindAckResponseData:response
                     withEntityName:entityName
                                xid:xid
                            context:context];
@@ -1520,24 +1473,17 @@
 
 - (void)subscribeToUnsyncedObjects {
     
-    [self unsubscribeFromUnsyncedObjects];
-    
-    self.subscriptionId = [self.dataSyncingDelegate subscribeUnsynced:self];
+    NSLogMethodName;
 
-    NSLog(@"subscribeToUnsyncedObjects with subscriptionId: %@", self.subscriptionId);
+    self.dataSyncingDelegate.subscriberDelegate = self;
     
 }
 
 - (void)unsubscribeFromUnsyncedObjects {
 
-    if ([self.dataSyncingDelegate unSubscribe:self.subscriptionId]) {
-        
-        NSLog(@"successfully unsubscribed subscriptionId: %@", self.subscriptionId);
-        self.subscriptionId = nil;
-        
-    } else {
-        NSLog(@"ERROR! can not unsubscribe subscriptionId: %@", self.subscriptionId);
-    }
+    NSLogMethodName;
+
+    self.dataSyncingDelegate.subscriberDelegate = nil;
 
 }
 
@@ -1560,17 +1506,13 @@
             NSLog(@"updateResource error: %@", error.localizedDescription);
         }
         
-        NSDictionary *resultData = result[@"data"];
-        
-        success &= resultData != nil;
-        
         if (success) {
             [self bunchOfObjectsSended];
         }
         
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
-                                   itemData:resultData
+                                   itemData:result
                                 itemVersion:itemVersion];
         
     }];

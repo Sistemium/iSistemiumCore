@@ -17,7 +17,6 @@
 
 @interface STMSocketTransport()
 
-@property (nonatomic, weak) id <STMSocketTransportOwner> owner;
 @property (nonatomic, weak) STMLogger *logger;
 @property (nonatomic, strong) SocketIOClient *socket;
 @property (nonatomic, strong) NSString *socketUrl;
@@ -31,7 +30,7 @@
 
 @implementation STMSocketTransport
 
-+ (instancetype)initWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketTransportOwner>)owner {
++ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner {
     
     STMLogger *logger = [STMLogger sharedLogger];
 
@@ -60,10 +59,6 @@
 
 - (NSTimeInterval)timeout {
     return [self.owner timeout];
-}
-
-- (BOOL)isReady {
-    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
 }
 
 - (void)startSocket {
@@ -97,20 +92,6 @@
     
 }
 
-- (void)closeSocketInBackground {
-    
-    STMLogger *logger = [STMLogger sharedLogger];
-    
-    [logger saveLogMessageWithText:@"close socket in background"
-                           numType:STMLogMessageTypeInfo];
-    
-//    self.wasClosedInBackground = YES;
-//    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
-    
-    [self closeSocket];
-    
-}
-
 - (void)reconnectSocket {
     
     [self closeSocket];
@@ -124,23 +105,6 @@
 
     self.socket = nil;
     self.isAuthorized = NO;
-    
-}
-
-- (void)checkSocket {
-    
-    if (!self.isReady) {
-        [self reconnectSocket];
-    }
-    
-//    if (self.wasClosedInBackground) {
-//        
-//        self.wasClosedInBackground = NO;
-//        [self startSocket];
-//        
-//    } else if (![STMSocketController socketIsAvailable]) {
-//        [self reconnectSocket];
-//    }
     
 }
 
@@ -230,6 +194,131 @@
     
 }
 
+
+#pragma mark - STMSocketConnection protocol
+
+@synthesize isReady = _isReady;
+@synthesize owner = _owner;
+
+
+- (BOOL)isReady {
+    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
+}
+
+- (void)checkSocket {
+    
+    if (!self.isReady) {
+        [self reconnectSocket];
+    }
+    
+    //    if (self.wasClosedInBackground) {
+    //
+    //        self.wasClosedInBackground = NO;
+    //        [self startSocket];
+    //
+    //    } else if (![STMSocketController socketIsAvailable]) {
+    //        [self reconnectSocket];
+    //    }
+    
+}
+
+- (void)closeSocketInBackground {
+    
+    STMLogger *logger = [STMLogger sharedLogger];
+    
+    [logger saveLogMessageWithText:@"close socket in background"
+                           numType:STMLogMessageTypeInfo];
+    
+    //    self.wasClosedInBackground = YES;
+    //    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
+    
+    [self closeSocket];
+    
+}
+
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
+    
+    [self socketSendEvent:event
+                withValue:value
+        completionHandler:nil];
+    
+}
+
+- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
+    
+    [self logSendEvent:event withValue:value];
+    
+    if (self.isReady) {
+        
+        if (event == STMSocketEventJSData) {
+            
+            if ([value isKindOfClass:[NSDictionary class]]) {
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+                
+                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+                    
+                    if ([data.firstObject isEqual:@"NO ACK"]) {
+                        
+                        NSError *error = nil;
+                        [STMFunctions error:&error withMessage:@"ack timeout"];
+                        
+                        completionHandler(NO, nil, error);
+                        
+                    } else {
+                        
+                        completionHandler(YES, data, nil);
+                        
+                    }
+                    
+                }];
+                
+            } else {
+                
+            }
+            
+        } else {
+            
+            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
+            
+            if (value && primaryKey) {
+                
+                NSDictionary *dataDic = @{primaryKey : value};
+                
+                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+                
+                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+                
+                if (dataDic) {
+                    
+                    [self.socket emit:eventStringValue
+                                 with:@[dataDic]];
+                    
+                } else {
+                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
+                }
+                
+            }
+            
+        }
+        
+    } else {
+        
+        NSString *errorMessage = @"socket not connected while sendEvent";
+        
+        [self socketLostConnection:errorMessage];
+        
+        NSError *error = nil;
+        [STMFunctions error:&error
+                withMessage:errorMessage];
+        
+        if (completionHandler) {
+            completionHandler(NO, nil, error);
+        }
+        
+    }
+    
+}
 
 #pragma mark - socket events handlers
 
@@ -364,93 +453,6 @@
             
             [self socketSendEvent:STMSocketEventStatusChange withValue:value];
             
-        }
-        
-    }
-
-}
-
-
-#pragma mark - send events
-
-- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
-    
-    [self socketSendEvent:event
-                withValue:value
-        completionHandler:nil];
-    
-}
-
-- (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
-    [self logSendEvent:event withValue:value];
-    
-    if (self.isReady) {
-        
-        if (event == STMSocketEventJSData) {
-            
-            if ([value isKindOfClass:[NSDictionary class]]) {
-                
-                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-                
-                [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
-
-                    if ([data.firstObject isEqual:@"NO ACK"]) {
-
-                        NSError *error = nil;
-                        [STMFunctions error:&error withMessage:@"ack timeout"];
-                        
-                        completionHandler(NO, nil, error);
-                        
-                    } else {
-                    
-                        completionHandler(YES, data, nil);
-
-                    }
-                    
-                }];
-                
-            } else {
-                
-            }
-            
-        } else {
-         
-            NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
-            
-            if (value && primaryKey) {
-                
-                NSDictionary *dataDic = @{primaryKey : value};
-                
-                dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-                
-                NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-                
-                if (dataDic) {
-                    
-                    [self.socket emit:eventStringValue
-                                 with:@[dataDic]];
-                    
-                } else {
-                    NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
-                }
-                
-            }
-
-        }
-        
-    } else {
-        
-        NSString *errorMessage = @"socket not connected while sendEvent";
-        
-        [self socketLostConnection:errorMessage];
-        
-        NSError *error = nil;
-        [STMFunctions error:&error
-                withMessage:errorMessage];
-        
-        if (completionHandler) {
-            completionHandler(NO, nil, error);
         }
         
     }
@@ -597,263 +599,6 @@
     
 }
 
-
-#pragma mark - STMPersistingWithHeadersAsync
-#pragma mark find
-
-- (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
-
-    NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
-                                                       identifier:identifier];
-
-    if (errorMessage) {
-    
-        [self completeFindAsyncHandler:completionHandler
-                      withErrorMessage:errorMessage];
-        return;
-        
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    NSString *resource = [entity resource];
-
-    NSDictionary *value = @{@"method"   : kSocketFindMethod,
-                            @"resource" : resource,
-                            @"id"       : identifier};
-    
-    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-        
-        if (success) {
-        
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-            
-            if (!response) {
-                
-                [self completeFindAsyncHandler:completionHandler
-                              withErrorMessage:@"ERROR: response contain no dictionary"];
-                return;
-
-            }
-            
-            if (response[@"error"]) {
-                
-                [self completeFindAsyncHandler:completionHandler
-                              withErrorMessage:[NSString stringWithFormat:@"response got error: %@", response[@"error"]]];
-                return;
-
-            }
-            
-            completionHandler(YES, response, nil, nil);
-
-        } else {
-            completionHandler(NO, nil, nil, error);
-        }
-        
-    }];
-    
-}
-
-- (NSString *)preFindAsyncCheckForEntityName:(NSString *)entityName identifier:(NSString *)identifier {
-    
-    if (!self.isReady) {
-        return @"socket is not ready (not connected or not authorize)";
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-
-    if (!entity) {
-        return [NSString stringWithFormat:@"have no such entity %@", entityName];
-    }
-
-    if (![entity resource]) {
-        return [NSString stringWithFormat:@"no resource for entity %@", entityName];
-    }
-    
-    if (!identifier) {
-        return [NSString stringWithFormat:@"no identifier for findAsync: %@", entityName];
-    }
-
-    return nil;
-    
-}
-
-- (void)completeFindAsyncHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler withErrorMessage:(NSString *)errorMessage {
-    
-    NSError *localError = nil;
-    [STMFunctions error:&localError withMessage:errorMessage];
-    
-    completionHandler(NO, nil, nil, localError);
-    
-}
-
-#pragma mark findAll
-
-- (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler {
-    
-    NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
-    
-    if (errorMessage) {
-        
-        [self completeFindAllAsyncHandler:completionHandler
-                         withErrorMessage:errorMessage];
-        return;
-        
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    NSString *resource = [entity resource];
-
-    NSDictionary *value = @{@"method"   : kSocketFindAllMethod,
-                            @"resource" : resource,
-                            @"options"  : options
-                            };
-    
-    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-        
-        if (success) {
-            
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-
-            if (!response) {
-
-                [self completeFindAllAsyncHandler:completionHandler
-                            withErrorMessage:@"ERROR: response contain no dictionary"];
-                return;
-
-            }
-
-            NSNumber *errorCode = response[@"error"];
-            
-            if (errorCode) {
-
-                [self completeFindAllAsyncHandler:completionHandler
-                            withErrorMessage:[NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode]];
-                return;
-
-            }
-            
-            NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-            
-            if (!responseData) {
-
-                [self completeFindAllAsyncHandler:completionHandler
-                            withErrorMessage:[NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName]];
-                return;
-
-            }
-            
-            NSMutableDictionary *headers = @{}.mutableCopy;
-            
-            [response enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            
-                if (![key isEqualToString:@"data"]) {
-                    headers[key] = obj;
-                }
-                
-            }];
-            
-            completionHandler(YES, responseData, headers, nil);
-
-        } else {
-            completionHandler(NO, nil, nil, error);
-        }
-
-    }];
-    
-}
-
-- (NSString *)preFindAllAsyncCheckForEntityName:(NSString *)entityName {
-    
-    if (!self.isReady) {
-        return @"socket is not ready (not connected or not authorize)";
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    if (!entity) {
-        return [NSString stringWithFormat:@"have no such entity %@", entityName];
-    }
-    
-    if (![entity resource]) {
-        return [NSString stringWithFormat:@"no resource for entity %@", entityName];
-    }
-    
-    return nil;
-    
-}
-
-- (void)completeFindAllAsyncHandler:(void (^)(BOOL success, NSArray *result, NSDictionary *headers, NSError *error))completionHandler withErrorMessage:(NSString *)errorMessage {
-    
-    NSError *localError = nil;
-    [STMFunctions error:&localError withMessage:errorMessage];
-    
-    completionHandler(NO, nil, nil, localError);
-    
-}
-
-#pragma mark merge
-
-- (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler {
-
-    if (!self.isReady) {
-        
-        [self completeMergeAsyncHandler:completionHandler
-                       withErrorMessage:@"socket is not ready (not connected or not authorize)"];
-        return;
-        
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    NSString *resource = [entity resource];
-    
-    if (!resource) {
-
-        [self completeMergeAsyncHandler:completionHandler
-                       withErrorMessage:[NSString stringWithFormat:@"no url for entity %@", entityName]];
-        return;
-        
-    }
-    
-
-    NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
-                            @"resource" : resource,
-                            @"id"       : attributes[@"id"],
-                            @"attrs"    : attributes};
-
-    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-        
-        if (success) {
-            
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-            
-            if (!response) {
-                
-                [self completeMergeAsyncHandler:completionHandler
-                               withErrorMessage:@"ERROR: response contain no dictionary"];
-                return;
-                
-            }
-            
-            completionHandler(YES, response, nil, nil);
-
-        } else {
-            completionHandler(NO, nil, nil, error);
-        }
-        
-    }];
-    
-}
-
-- (void)completeMergeAsyncHandler:(void (^)(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error))completionHandler withErrorMessage:(NSString *)errorMessage {
-    
-    NSError *localError = nil;
-    [STMFunctions error:&localError withMessage:errorMessage];
-    
-    completionHandler(NO, nil, nil, localError);
-
-}
 
 
 #pragma mark - socket events names and keys

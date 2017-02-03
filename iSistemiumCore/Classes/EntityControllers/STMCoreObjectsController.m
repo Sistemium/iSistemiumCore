@@ -24,9 +24,6 @@
 
 #import "STMModeller+Private.h"
 
-#import "STMPredicateToSQL.h"
-
-
 #define FLUSH_LIMIT MAIN_MAGIC_NUMBER
 
 
@@ -40,52 +37,11 @@
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
-@property (nonatomic) BOOL isDefantomizingProcessRunning;
-
-@property (nonatomic, strong) NSMutableArray *flushDeclinedObjectsArray;
-@property (nonatomic, strong) NSMutableArray *updateRequests;
-//@property (nonatomic, strong) NSMutableArray *fantomsPendingArray;
 
 @end
 
 
 @implementation STMCoreObjectsController
-
-//- (NSMutableArray *)fantomsPendingArray {
-//    
-//    if (!_fantomsPendingArray) {
-//        _fantomsPendingArray = @[].mutableCopy;
-//    }
-//    return _fantomsPendingArray;
-//    
-//}
-//
-//- (NSMutableArray *)fantomsArray {
-//    
-//    if (!_fantomsArray) {
-//        _fantomsArray = @[].mutableCopy;
-//    }
-//    return _fantomsArray;
-//    
-//}
-//
-//- (NSMutableArray *)notFoundFantomsArray {
-//    
-//    if (!_notFoundFantomsArray) {
-//        _notFoundFantomsArray = @[].mutableCopy;
-//    }
-//    return _notFoundFantomsArray;
-//    
-//}
-
-- (NSMutableArray *)updateRequests {
-    
-    if (!_updateRequests) {
-        _updateRequests = @[].mutableCopy;
-    }
-    return _updateRequests;
-    
-}
 
 
 - (NSMutableDictionary *)entitiesOwnKeys {
@@ -135,113 +91,12 @@
 }
 
 - (void)addObservers {
-    
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:nil];
-
-    [nc addObserver:self
-           selector:@selector(applicationDidBecomeActive)
-               name:UIApplicationDidBecomeActiveNotification
-             object:nil];
 
 }
 
 - (void)removeObservers {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
-        
-        STMCoreSession *session = notification.object;
-        
-        if (session.status != STMSessionRunning) {
-
-        }
-        
-    }
-    
-}
-
-- (void)documentSavedSuccessfully {
-#warning to implement in STMScriptMessageHandler with PersistingObserving
-//    [self checkUpdateRequests];
-//    [self checkSubscribedObjects];
-    
-}
-
-- (void)applicationDidBecomeActive {
-#warning to implement in STMScriptMessageHandler with PersistingObserving
-//    if (![STMCoreObjectsController document].isSaving) [self checkSubscribedObjects];
-}
-
-- (void)checkUpdateRequests {
-#warning Seems to be unused
-    NSArray *checkRequests = self.updateRequests.copy;
-    self.updateRequests = nil;
-    
-    for (NSDictionary *updateRequest in checkRequests) {
-
-        NSString *entityName = updateRequest[@"entityName"];
-        NSArray *requestData = updateRequest[@"data"];
-        
-        void (^completionHandler)(BOOL success, NSArray *updatedObjects, NSError *error) = updateRequest[@"completionHandler"];
-        
-        NSMutableArray *result = @[].mutableCopy;
-        
-        for (NSDictionary *objectData in requestData) {
-            
-            NSString *xidString = objectData[@"id"];
-            NSError *error = nil;
-            
-            NSDictionary *object = [STMCoreObjectsController.persistenceDelegate findSync:entityName
-                                                                               identifier:xidString
-                                                                                  options:nil
-                                                                                    error:&error];
-            // TODO: check errors
-            [result addObject:object];
-
-        }
-        
-        completionHandler(YES, result, nil);
-        
-    }
-    
-}
-
-- (void)checkSubscribedObjects {
-#warning to implement in STMScriptMessageHandler with PersistingObserving
-    
-//    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-//        return;
-//    }
-//    
-//    NSMutableArray *subscribedObjects = self.subscribedObjects.mutableCopy;
-//    self.subscribedObjects = nil;
-//    
-//    for (NSString *entityName in self.entitiesToSubscribe.allKeys) {
-//        
-//        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entity.name == %@", entityName];
-//        NSArray *bunchOfObjects = [subscribedObjects filteredArrayUsingPredicate:predicate];
-//        
-//        if (bunchOfObjects.count > 0) {
-    
-//            [STMCoreObjectsController sendSubscribedBunchOfObjects:bunchOfObjects
-//                                                        entityName:entityName];
-
-//            [subscribedObjects removeObjectsInArray:bunchOfObjects];
-//            
-//        }
-//        
-//    }
-
-}
-
 
 #pragma mark - singleton
 
@@ -260,25 +115,6 @@
 
 
 #pragma mark - recieved objects management
-
-+ (void)processingOfDataArray:(NSArray *)array withEntityName:(NSString *)entityName andRoleName:(NSString *)roleName withCompletionHandler:(void (^)(BOOL success))completionHandler {
-
-    NSDictionary *options;
-    
-    if (roleName){
-        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow,@"roleName":roleName};
-    }else{
-        options = @{STMPersistingOptionLts: STMFunctions.stringFromNow};
-    }
-    
-    [[self persistenceDelegate] mergeMany:entityName attributeArray:array options:options].then(^(NSArray *result){
-        completionHandler(YES);
-    }).catch(^(NSError *error){
-        completionHandler(NO);
-    });
-
-}
-
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     
@@ -299,109 +135,6 @@
     }
 
 }
-
-
-#warning deprecated - use STMFunctions method
-+ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    [self.persistenceDelegate setObjectData:objectData toObject:object withRelations:true];
-}
-
-#pragma mark - recieved relationships management
-
-+ (void)setRelationshipsFromArray:(NSArray *)array withCompletionHandler:(void (^)(BOOL success))completionHandler {
-    
-    BOOL result = YES;
-    
-    for (NSDictionary *datum in array) {
-        
-        if (![self setRelationshipFromDictionary:datum]) {
-            result = NO;
-        }
-        
-    }
-
-    completionHandler(result);
-    
-}
-
-+ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
-    
-    NSString *name = dictionary[@"name"];
-    NSArray *nameExplode = [name componentsSeparatedByString:@"."];
-    NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
-    
-    NSDictionary *serverDataModel = [[STMEntityController stcEntities] copy];
-    
-    if ([[serverDataModel allKeys] containsObject:entityName]) {
-        
-        STMEntity *entityModel = serverDataModel[entityName];
-        NSString *roleOwner = entityModel.roleOwner;
-        NSString *roleOwnerEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:roleOwner];
-        NSString *roleName = entityModel.roleName;
-        NSDictionary *ownerRelationships = [self ownObjectRelationshipsForEntityName:roleOwnerEntityName];
-        NSString *destinationEntityName = ownerRelationships[roleName];
-        NSString *destination = [destinationEntityName stringByReplacingOccurrencesOfString:ISISTEMIUM_PREFIX withString:@""];
-        NSDictionary *properties = dictionary[@"properties"];
-        NSDictionary *ownerData = properties[roleOwner];
-        NSDictionary *destinationData = properties[destination];
-        NSString *ownerXid = ownerData[@"xid"];
-        NSString *destinationXid = destinationData[@"xid"];
-        BOOL ok = YES;
-        
-        if (!ownerXid || [ownerXid isEqualToString:@""] || !destinationXid || [destinationXid isEqualToString:@""]) {
-            
-            ok = NO;
-            NSLog(@"Not ok relationship dictionary %@", dictionary);
-            
-        }
-        
-        if (ok) {
-            
-            NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
-            NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
-            
-            NSSet *destinationSet = [ownerObject valueForKey:roleName];
-            
-            if ([destinationSet containsObject:destinationObject]) {
-                
-                NSLog(@"already have relationship %@ %@ — %@ %@", roleOwnerEntityName, ownerXid, destinationEntityName, destinationXid);
-                
-                
-            } else {
-                
-                BOOL ownerIsWaitingForSync = [self isWaitingToSyncForObject:ownerObject];
-                BOOL destinationIsWaitingForSync = [self isWaitingToSyncForObject:destinationObject];
-                
-                NSDate *ownerDeviceTs = [ownerObject valueForKey:@"deviceTs"];
-                NSDate *destinationDeviceTs = [destinationObject valueForKey:@"deviceTs"];
-                
-                [[ownerObject mutableSetValueForKey:roleName] addObject:destinationObject];
-                
-                if (!ownerIsWaitingForSync) {
-                    [ownerObject setValue:ownerDeviceTs forKey:@"deviceTs"];
-                }
-                
-                if (!destinationIsWaitingForSync) {
-                    [destinationObject setValue:destinationDeviceTs forKey:@"deviceTs"];
-                }
-                
-            }
-            
-            
-        }
-        
-        return YES;
-        
-    } else {
-        
-        NSLog(@"dataModel have no relationship's entity with name %@", entityName);
-        
-        return NO;
-        
-    }
-
-}
-
 
 #pragma mark - info methods
 
@@ -458,7 +191,10 @@
 }
 
 
-
+#warning Need to move it somewhere
++ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    [self.persistenceDelegate setObjectData:objectData toObject:object withRelations:true];
+}
 
 + (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
     
@@ -535,27 +271,6 @@
         
     }
     
-}
-
-+ (NSArray *)allObjectsFromContext:(NSManagedObjectContext *)context {
-    
-    if (!context) context = [self document].managedObjectContext;
-    
-    NSMutableArray *results = @[].mutableCopy;
-    
-    for (NSString *entityName in [self localDataModelEntityNames]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        
-        NSArray *fetchResult = [context executeFetchRequest:request error:nil];
-        
-        if (fetchResult) [results addObjectsFromArray:fetchResult];
-        
-    }
-
-    return results;
-
 }
 
 
@@ -754,8 +469,7 @@
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG
-    [self totalNumberOfObjectsInCoreData];
-    [self totalNumberOfObjectsInFMDB];
+    [self logTotalNumberOfObjectsInStorages];
 #else
 
 #endif
@@ -766,308 +480,53 @@
 
 }
 
-+ (void)totalNumberOfObjectsInCoreData {
-
-    NSArray *entityNames = [self localDataModelEntityNames];
++ (void)logTotalNumberOfObjectsInStorages {
     
-    NSUInteger totalCount = 0;
+    NSArray *entityNames = [self.persistenceDelegate entitiesByName].allKeys;
     
-    NSMutableString *logMessage = @"".mutableCopy;
-    
-    for (NSString *entityName in entityNames) {
-        
-        NSUInteger count = [self numberOfObjectsForEntityNameInCoreData:entityName];
-        [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
-        totalCount += count;
-
-    }
-    
-    NSLog(@"CoreData: number of objects: %@", logMessage);
-    NSLog(@"CoreData: fantoms count %lu", (unsigned long)[self numberOfFantoms]);
-    NSLog(@"CoreData: total count %lu", (unsigned long)totalCount);
-
-}
-
-+ (void)totalNumberOfObjectsInFMDB {
-    
-    NSArray *entityNames = [self localDataModelEntityNames];
-    
-    NSUInteger totalCount = 0;
-    NSUInteger fantomsCount = 0;
-    
-    NSMutableString *logMessage = @"".mutableCopy;
+    NSUInteger totalCountFMDB = 0;
+    NSUInteger totalCountCoreData = 0;
+    NSUInteger totalFantoms = 0;
     
     for (NSString *entityName in entityNames) {
-
-        if ([self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB) {
-            
-            NSError *error = nil;
-            NSUInteger count = [[self persistenceDelegate] countSync:entityName
-                                                            predicate:nil
-                                                              options:nil
-                                                                error:&error];
-            
-            NSArray *result = [[self persistenceDelegate] findAllSync:entityName
-                                                   predicate:nil
-                                                     options:@{STMPersistingOptionFantoms: @YES}
-                                                       error:&error];
-            count += result.count;
-            fantomsCount += result.count;
-            
-            totalCount += count;
-            
-            [logMessage appendString:[NSString stringWithFormat:@"\n%@ count %@", entityName, @(count)]];
-            
-        } else {
-            [logMessage appendString:[NSString stringWithFormat:@"\n%@ count 0", entityName]];
-        }
+        
+        if (![self.persistenceDelegate isConcreteEntityName:entityName]) continue;
+        
+        NSError *error = nil;
+        
+        NSUInteger countFMDB =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionForceStorageFMDB}
+                                      error:&error];
+        
+        NSUInteger countCoreData =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionForceStorageCoreData}
+                                      error:&error];
+        
+        NSUInteger countFantoms =
+        [self.persistenceDelegate countSync:entityName
+                                  predicate:nil
+                                    options:@{STMPersistingOptionFantoms:@YES}
+                                      error:&error];
+        
+        NSLog(@"%@ count: %u + %u%@",
+              entityName, countFMDB, countCoreData,
+              countFantoms ? [NSString stringWithFormat:@" (+ %@ fantoms)", @(countFantoms)] : @""
+              );
+        
+        totalCountFMDB += countFMDB;
+        totalCountCoreData += countCoreData;
+        totalFantoms += countFantoms;
         
     }
     
-    NSLog(@"FMDB: number of objects: %@", logMessage);
-    NSLog(@"FMDB: fantoms count %@", @(fantomsCount));
-    NSLog(@"FMDB: total count %@", @(totalCount));
-
-}
-
-
-#pragma mark - resolving fantoms
-
-/* comment out fantom resolving due to implemeting it in new syncer
-
-+ (BOOL)isDefantomizingProcessRunning {
-    return [self sharedController].isDefantomizingProcessRunning;
-}
-
-+ (void)fillFantomsArray {
-    
-    STMCoreObjectsController *objController = [self sharedController];
-    
-    NSArray *entityNamesWithResolveFantoms = [STMEntityController entityNamesWithResolveFantoms];
-    
-    for (NSString *entityName in entityNamesWithResolveFantoms) {
-        
-        NSError *error;
-        NSArray *results = [self.persistenceDelegate findAllSync:entityName predicate:nil options:@{STMPersistingOptionFantoms:@YES} error:&error];
-        
-        if (results.count > 0) {
-            
-            NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
-            
-            STMEntity *entity = [STMEntityController stcEntities][entityName];
-            
-            if (entity.url) {
-                
-                for (NSDictionary *fantomObject in results) {
-                    
-                    NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
-                    
-                    if (![objController.notFoundFantomsArray containsObject:fantomDic]) {
-                        [objController.fantomsArray addObject:fantomDic];
-                    }
-                    
-                }
-                
-            } else {
-                NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
-            }
-            
-        } else {
-            NSLog(@"have no fantoms for %@", entityName);
-        }
-        
-    }
+    NSLog(@"Total count: %u + %u", totalCountFMDB, totalCountCoreData);
+    NSLog(@"Fantoms total count: %@", @(totalFantoms));
     
 }
-
-+ (void)resolveFantoms {
-    
-    STMCoreObjectsController *objController = [self sharedController];
-    
-    @synchronized (objController) {
-        
-        if (!objController.isDefantomizingProcessRunning || !objController.fantomsArray.count) {
-            [self fillFantomsArray];
-        }
-    
-        if (objController.fantomsArray.count > 0) {
-            
-            objController.isDefantomizingProcessRunning = YES;
-
-            NSLog(@"DEFANTOMIZING_START");
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                                object:objController
-                                                              userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
-            
-            for (int i = 1; i<=10 && objController.fantomsArray.count > 0; i++) {
-                [self requestNextFantom];
-            }
-            
-        } else {
-            [self stopDefantomizing];
-        }
-        
-    }
-}
-
-+ (NSDictionary *)requestNextFantom{
-
-    NSDictionary *fantom = [STMFunctions popArray:self.sharedController.fantomsArray];
-    
-    if (fantom) {
-        [self.sharedController.fantomsPendingArray addObject:fantom];
-        [self requestFantomObjectWithParameters:fantom];
-    }
-    
-    return fantom;
-}
-
-+ (void)requestFantomObjectWithParameters:(NSDictionary *)parameters {
-    
-    if ([parameters isKindOfClass:[NSDictionary class]]) {
-        
-        NSString *entityName = parameters[@"entityName"];
-        
-        if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
-            entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
-        }
-        
-        STMEntity *entity = [STMEntityController stcEntities][entityName];
-        
-        if (!entity.url) {
-            
-            NSString *errorMessage = [NSString stringWithFormat:@"no url for entity %@", entityName];
-            
-            [self requestFantomObjectErrorMessage:errorMessage
-                                       parameters:parameters];
-            return;
-            
-        }
-        
-        NSString *resource = entity.url;
-        NSString *xidString = parameters[@"id"];
-        
-        if (!xidString) {
-            
-            NSString *errorMessage = [NSString stringWithFormat:@"no xid in request parameters %@", parameters];
-            
-            [self requestFantomObjectErrorMessage:errorMessage
-                                       parameters:parameters];
-            return;
-
-        }
-        
-        [STMSocketController sendFantomFindEventToResource:resource
-                                                   withXid:xidString
-                                                andTimeout:[[self syncer] timeout]];
-
-    } else {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"parameters is not an NSDictionary class: %@", parameters];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-        
-        [self requestFantomObjectErrorMessage:logMessage parameters:parameters];
-
-    }
-
-}
-
-+ (void)requestFantomObjectErrorMessage:(NSString *)errorMessage parameters:(NSDictionary *)parameters {
-
-    [self didFinishResolveFantom:parameters successfully:NO];
-    NSLog(@"%@", errorMessage);
-
-}
-
-+ (void)didFinishResolveFantom:(NSDictionary *)fantomDic successfully:(BOOL)successfully {
-    
-    STMCoreObjectsController *objController = [self sharedController];
-    
-    if (!fantomDic) {
-        
-        NSString *logMessage = @"fantomDic is nil in didFinishResolveFantom:";
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
-        
-        fantomDic = objController.fantomsArray.firstObject;
-        
-    }
-    
-    @synchronized (objController.fantomsPendingArray) {
-        [objController.fantomsPendingArray removeObject:fantomDic];
-    }
-    
-    NSString *entityName = fantomDic[@"entityName"];
-    NSString *fantomXid = fantomDic[@"id"];
-
-    if (successfully) {
-        
-        NSLog(@"success defantomize %@ %@ pending: %u", entityName, fantomXid, objController.fantomsPendingArray.count);
-        
-    } else {
-        
-        [objController.notFoundFantomsArray addObject:fantomDic];
-        NSLog(@"bad luck defantomize %@ %@", entityName, fantomXid);
-        
-    }
-    
-    @synchronized (objController) {
-        if (objController.fantomsArray.count > 0) {
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
-                                                                object:objController
-                                                              userInfo:@{@"fantomsCount": @(objController.fantomsArray.count)}];
-
-            [self requestNextFantom];
-            
-        } else {
-            if (!objController.fantomsPendingArray.count) {
-                [self resolveFantoms];
-            }
-        }
-    }
-    
-}
-
-+ (void)stopDefantomizing {
-    
-    STMCoreObjectsController *objController = [self sharedController];
-    objController.isDefantomizingProcessRunning = NO;
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                        object:objController
-                                                      userInfo:nil];
-
-    [objController.fantomsArray removeAllObjects];
-    [objController.notFoundFantomsArray removeAllObjects];
-    [objController.fantomsPendingArray removeAllObjects];
-
-}
-
-*/
-
-#warning need to do with persister
-+ (NSFetchRequest *)isFantomFetchRequestForEntityName:(NSString *)entityName {
-    
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id"
-                                                                  ascending:YES
-                                                                   selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"isFantom == YES && xid != nil"];
-        
-        return request;
-
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
-
 
 #warning needs to be removed
 + (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
@@ -1078,101 +537,6 @@
 
 
 #pragma mark - generate arrayForJS
-
-+ (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray <NSDictionary *> *)objectsDics entityName:(NSString *)entityName {
-    
-    NSMutableArray *dataArray = @[].mutableCopy;
-
-    NSArray *ownKeys = [self ownObjectKeysForEntityName:entityName].allObjects;
-    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[/*@"deviceTs", */@"deviceCts"]];
-
-    NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName].allKeys;
-    
-    [objectsDics enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        
-        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObjectDic:obj
-                                                                        ownKeys:ownKeys
-                                                               ownRelationships:ownRelationships];
-        [dataArray addObject:propertiesDictionary];
-
-    }];
-    
-//    NSLog(@"find prepare objectsDics array %@", @([NSDate timeIntervalSinceReferenceDate]));
-    
-    return dataArray;
-
-}
-
-+ (NSDictionary *)dictionaryForJSWithObjectDic:(NSDictionary *)objectDic ownKeys:(NSArray *)ownKeys ownRelationships:(NSArray *)ownRelationships {
-    
-    NSUInteger capacity = ownKeys.count + ownRelationships.count + 2;
-
-    NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionaryWithCapacity:capacity];
-    
-    if (objectDic[@"xid"]) {
-        propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)objectDic[@"xid"]];
-    }
-
-    if (objectDic[@"deviceTs"]) {
-        propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)objectDic[@"deviceTs"]];
-    }
-    
-    for (NSString *key in ownKeys) {
-        propertiesDictionary[key] = [self convertValue:objectDic[key] forKey:key];
-    }
-    
-    for (NSString *relationship in ownRelationships) {
-        
-        NSString *resultKey = [relationship stringByAppendingString:@".xid"];
-        NSString *dictKey = [relationship stringByAppendingString:RELATIONSHIP_SUFFIX];
-        
-        NSData *xidData = objectDic[resultKey];
-        
-        propertiesDictionary[dictKey] = (xidData.length != 0) ? [STMFunctions UUIDStringFromUUIDData:xidData] : [NSNull null];
-
-    }
-    
-    return propertiesDictionary;
-    
-}
-
-+ (id)convertValue:(id)value forKey:(NSString *)key {
-    
-    if (value) {
-        
-        if ([value isKindOfClass:[NSDate class]]) {
-            
-            value = [STMFunctions stringFromDate:value];
-            
-        } else if ([value isKindOfClass:[NSData class]]) {
-            
-            if ([key isEqualToString:@"deviceUUID"] || [key hasSuffix:@"Xid"]) {
-                
-                value = [STMFunctions UUIDStringFromUUIDData:value];
-                
-            } else if ([key isEqualToString:@"deviceToken"]) {
-                
-                value = [STMFunctions hexStringFromData:value];
-                
-            } else {
-                
-                value = [STMFunctions base64HexStringFromData:value];
-                
-            }
-            
-        }
-        
-        value = [NSString stringWithFormat:@"%@", value];
-        
-    } else {
-        
-        value = [NSNull null];
-        
-    }
-    
-    return value;
-
-}
 
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
     return [self dictionaryForJSWithObject:object withNulls:YES];
@@ -1206,61 +570,6 @@
     return propertiesDictionary;
 
 }
-
-#pragma mark - fetching objects
-
-+ (NSUInteger)numberOfObjectsForEntityNameInCoreData:(NSString *)entityName {
-
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-#warning temporary disable count via persistenceDelegate
-// old implementation
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        NSError *error;
-        NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request error:&error];
-        
-        return result;
-
-// new implementation
-//        NSError *error;
-//        
-//        return [[self persistenceDelegate] countSync:entityName
-//                                           predicate:nil
-//                                             options:nil
-//                                               error:&error];
-        
-    } else {
-        
-        return 0;
-        
-    }
-
-}
-
-+ (NSUInteger)numberOfFantoms {
-    
-    NSUInteger resultCount = 0;
-    
-    for (NSString *entityName in [self localDataModelEntityNames]) {
-        
-        NSFetchRequest *request = [self isFantomFetchRequestForEntityName:entityName];
-        
-        if (request) {
-
-        NSUInteger result = [[self document].managedObjectContext countForFetchRequest:request
-                                                                                 error:nil];
-        
-        resultCount += result;
-
-    }
-    
-    }
-    
-    return resultCount;
-
-}
-
 
 #pragma mark - create dictionary from object
 

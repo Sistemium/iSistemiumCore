@@ -48,6 +48,10 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     STMAssertSQLFilter(predicate, @"(avatarPictureId IS NULL)");
     
+    predicate = [NSPredicate predicateWithFormat:@"avatarPictureId != %@", nil];
+    
+    STMAssertSQLFilter(predicate, @"(avatarPictureId IS NOT NULL)");
+    
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", @[@"error", @"important"]];
     
     STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");

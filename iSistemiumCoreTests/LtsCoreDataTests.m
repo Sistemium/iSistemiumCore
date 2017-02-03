@@ -14,6 +14,7 @@
 
 
 @interface LtsCoreDataTests : STMPersistingTests
+
 @end
 
 

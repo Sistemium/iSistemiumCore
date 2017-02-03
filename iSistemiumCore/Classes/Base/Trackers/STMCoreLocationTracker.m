@@ -272,8 +272,8 @@
         
         NSError *error;
         NSDictionary *options = @{
-            @"sortBy": @"timestamp",
-            @"ASC": @NO,
+            STMPersistingOptionOrder: @"timestamp",
+            STMPersistingOptionOrderDirectionDesc,
             STMPersistingOptionPageSize: @"1"
         };
         

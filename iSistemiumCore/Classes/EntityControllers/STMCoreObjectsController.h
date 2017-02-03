@@ -20,19 +20,8 @@
 
 + (void)checkObjectsForFlushing;
 
-+ (void)processingOfDataArray:(NSArray *)array
-               withEntityName:(NSString *)entityName
-                  andRoleName:(NSString *)roleName
-        withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
-
 + (void)setObjectData:(NSDictionary *)objectData
              toObject:(STMDatum *)object;
-
-+ (void)setRelationshipsFromArray:(NSArray *)array
-            withCompletionHandler:(void (^)(BOOL success))completionHandler;
-
-+ (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary;
 
 + (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
@@ -53,10 +42,11 @@
 + (STMDatum *)objectForXid:(NSData *)xidData
                 entityName:(NSString *)entityName;
 
-+ (NSArray <NSDictionary *> *)arrayForJSWithObjectsDics:(NSArray<NSDictionary *> *)objectsDics entityName:(NSString *)entityName;
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object;
+
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls;
+
 + (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
                                   withNulls:(BOOL)withNulls
                              withBinaryData:(BOOL)withBinaryData;
@@ -71,5 +61,7 @@
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName;
 
++ (void)logTotalNumberOfObjectsInStorages;
++ (BOOL)isWaitingToSyncForObject:(NSManagedObject *)object;
 
 @end
