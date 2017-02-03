@@ -95,7 +95,7 @@
     NSUInteger count =
     [self.persister destroyAllSync:entityName
                      predicate:predicate
-                       options:nil
+                       options:@{STMPersistingOptionRecordstatuses:@NO}
                          error:&error];
     
     XCTAssertNil(error);
@@ -109,6 +109,12 @@
     NSError *error;
     
     NSPredicate *predicate;
+    
+    NSDictionary *testData = @{@"type": @"debug",
+                               @"text": @"testCountSync"};
+    
+    NSDictionary *testObject =
+    [self.persister mergeSync:entityName attributes:testData options:nil error:&error];
 
     NSUInteger countAll = [self.persister countSync:entityName
                                           predicate:predicate
@@ -128,6 +134,12 @@
     
     NSLog(@"testCountSync result: %lu %@ records of %lu total", (unsigned long)count, entityName, (unsigned long)countAll);
     
+    [self.persister destroySync:entityName
+                     identifier:testObject[@"id"]
+                        options:@{STMPersistingOptionRecordstatuses:@NO}
+                          error:&error];
+    
+    XCTAssertNil(error);
 }
 
 - (void)testCountSyncWithOptions {
