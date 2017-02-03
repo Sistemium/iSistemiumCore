@@ -17,7 +17,8 @@
 @interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
-@property (nonatomic, strong) XCTestExpectation *syncedExpectation;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *syncedExpectations;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjectsIds;
 @property (nonatomic, strong) NSString *pkToWait;
 
 @end
@@ -48,43 +49,97 @@
 
     XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync"];
-    
-    self.syncedExpectation = expectation;
     self.pkToWait = [NSUUID UUID].UUIDString;
     
-    NSDictionary *attributes = @{
-                                 @"text": @"testMessage",
-                                 @"type": @"important",
-                                 @"source": @"SyncingDataTests",
-                                 @"ownerXid": self.pkToWait
-                                 };
-    
-    [self.persister mergeAsync:@"STMLogMessage"
-                    attributes:attributes
-                       options:nil
-             completionHandler:^(BOOL success, NSDictionary *logMessage, NSError *error) {
-                 XCTAssertNotNil(logMessage);
-             }];
-
-//    NSError *error;
-//    
-//    NSDictionary *logMessage = [self.persister mergeSync:@"STMLogMessage"
-//                                              attributes:attributes
-//                                                 options:nil
-//                                                   error:&error];
-//
-//    XCTAssertNotNil(logMessage);
+    [self createTestData];
     
     NSDate *startedAt = [NSDate date];
     
     self.unsyncedDataHelper.syncingState = [[STMDataSyncingState alloc] init];
     
-    [self waitForExpectationsWithTimeout:PersistingTestsTimeOut
-                                 handler:^(NSError * _Nullable error)
-    {
+    [self waitForExpectationsWithTimeout:PersistingTestsTimeOut handler:^(NSError * _Nullable error) {
+
+        XCTAssertNil(error);
+
+        [self.testObjectsIds enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSString * _Nonnull entityName, BOOL * _Nonnull stop) {
+           
+            NSError *localError = nil;
+            
+            BOOL result = [self.persister destroySync:entityName
+                                           identifier:objectId
+                                              options:nil
+                                                error:&localError];
+            
+            XCTAssertTrue(result);
+            XCTAssertNil(localError);
+            
+        }];
+        
         NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
+        
     }];
+
+}
+
+- (void)createTestData {
+    
+    self.syncedExpectations = @{}.mutableCopy;
+    self.testObjectsIds = @{}.mutableCopy;
+    
+    NSDictionary *testAttributes = @{@"source"      : @"SyncingDataTests",
+                                     @"ownerXid"    : self.pkToWait};
+    
+    NSString *entityName = @"STMLogMessage";
+    NSMutableDictionary *logMessageAttributes = testAttributes.mutableCopy;
+    logMessageAttributes[@"text"] = @"testMessage";
+    logMessageAttributes[@"type"] = @"important";
+    
+    NSError *error = nil;
+    NSDictionary *logMessage = [self.persister mergeSync:entityName
+                                              attributes:logMessageAttributes
+                                                 options:nil
+                                                   error:&error];
+
+    XCTAssertNotNil(logMessage);
+
+    NSString *logMessageId = logMessage[@"id"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync logMessage"];
+    self.syncedExpectations[logMessageId] = expectation;
+    self.testObjectsIds[logMessageId] = entityName;
+    
+    entityName = @"STMPartner";
+    NSMutableDictionary *partnerAttributes = testAttributes.mutableCopy;
+    partnerAttributes[@"name"] = @"testPartner";
+
+    NSDictionary *partner = [self.persister mergeSync:entityName
+                                           attributes:partnerAttributes
+                                              options:nil
+                                                error:&error];
+    
+    XCTAssertNotNil(partner);
+
+    NSString *partnerId = partner[@"id"];
+    expectation = [self expectationWithDescription:@"wait for sync partner"];
+    self.syncedExpectations[partnerId] = expectation;
+    self.testObjectsIds[partnerId] = entityName;
+
+    
+    entityName = @"STMOutlet";
+    NSMutableDictionary *outletAttributes = testAttributes.mutableCopy;
+    outletAttributes[@"name"] = @"testOutlet";
+    outletAttributes[@"partnerId"] = partnerId;
+
+    NSDictionary *outlet = [self.persister mergeSync:entityName
+                                          attributes:outletAttributes
+                                             options:nil
+                                               error:&error];
+    
+    XCTAssertNotNil(outlet);
+
+    NSString *outletId = outlet[@"id"];
+    expectation = [self expectationWithDescription:@"wait for sync outlet"];
+    self.syncedExpectations[outletId] = expectation;
+    self.testObjectsIds[outletId] = entityName;
 
 }
 
@@ -120,7 +175,10 @@
                                itemVersion:itemVersion];
         
         if ([itemData[@"ownerXid"] isEqualToString:self.pkToWait]) {
-            [self.syncedExpectation fulfill];
+            
+            XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
+            [expectation fulfill];
+            
         }
         
     });
