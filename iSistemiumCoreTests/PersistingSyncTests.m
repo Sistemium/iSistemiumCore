@@ -46,15 +46,17 @@
     
     // the test itself
     
+    NSString *key = @"text";
+    
     NSArray *result =
     [self.persister findAllSync:entityName
                       predicate:predicate
                         options:@{STMPersistingOptionOrderDirectionAsc,
-                                  STMPersistingOptionOrder:@"text,type"}
+                                  STMPersistingOptionOrder:@"type,text"}
                           error:&error];
     
     XCTAssertEqual(result.count, 2);
-    XCTAssertEqualObjects(result.firstObject[@"text"], @"a");
+    XCTAssertEqualObjects(result.firstObject[key], testDataA[key]);
     
     result =
     [self.persister findAllSync:entityName
@@ -64,8 +66,30 @@
                           error:&error];
     
     XCTAssertEqual(result.count, 2);
-    XCTAssertEqualObjects(result.firstObject[@"text"], @"z");
+    XCTAssertEqualObjects(result.firstObject[key], testDataZ[key]);
+
+    // now the same but the order option
     
+    result =
+    [self.persister findAllSync:entityName
+                      predicate:predicate
+                        options:@{STMPersistingOptionOrderDirectionAsc,
+                                  STMPersistingOptionOrder:@"text"}
+                          error:&error];
+    
+    XCTAssertEqual(result.count, 2);
+    XCTAssertEqualObjects(result.firstObject[key], testDataA[key]);
+    
+    result =
+    [self.persister findAllSync:entityName
+                      predicate:predicate
+                        options:@{STMPersistingOptionOrderDirectionDesc,
+                                  STMPersistingOptionOrder:@"type,text"}
+                          error:&error];
+    
+    XCTAssertEqual(result.count, 2);
+    XCTAssertEqualObjects(result.firstObject[key], testDataZ[key]);
+
     // cleanup
     
     NSUInteger count =
