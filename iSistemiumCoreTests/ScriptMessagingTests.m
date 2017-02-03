@@ -64,6 +64,8 @@
         self.scriptMessagingDelegate = self.scriptMessenger;
     }
     
+    self.fakePerster.options = nil;
+    
 }
 
 - (void)testWhereFilter {
@@ -174,6 +176,7 @@
     
 }
 
+#pragma mark - Private helpers
 
 - (void)doFindRequestId:(NSString *)requestId body:(NSDictionary*)body expect:(NSString *)errorDescription{
     
