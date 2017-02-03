@@ -340,21 +340,32 @@
         [result addObject:managedObject];
     }
     
+    NSMutableDictionary <NSString*,NSMutableArray*> *picturesWithThumbnails = @{}.mutableCopy;
+    
     if (result.count > 0) {
 
         NSLogMethodName;
 
         for (STMCorePicture *picture in result) {
             
-//            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
-//                
-//                NSString* thumbnailHref = picture.thumbnailHref;
-//                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-//                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-//                
-//                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-//                continue;
-//            }
+            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+                
+                NSString* thumbnailHref = picture.thumbnailHref;
+                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+                
+                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
+                
+                NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
+                
+                if (!picturesWithThumbnails[picture.entity.name]){
+                    picturesWithThumbnails[picture.entity.name] = @[].mutableCopy;
+                }
+                
+                [picturesWithThumbnails[picture.entity.name] addObject:picDict];
+                
+                continue;
+            }
             
             NSArray *pathComponents = [picture.imagePath pathComponents];
             
@@ -382,6 +393,18 @@
             
         }
 
+    }
+    
+    for (NSString* entityName in picturesWithThumbnails.allKeys){
+    
+        if (picturesWithThumbnails[entityName].count > 0){
+            [STMCoreController.persistenceDelegate mergeMany:entityName attributeArray:picturesWithThumbnails[entityName] options:nil].then(^(NSArray *result){
+                NSLog(@"Thumbnail set for %i %@ pictures",result.count,entityName);
+            }).catch(^(NSError *error){
+                NSLog(@"Error setting thumbnail%@ for %@ pictures",error, entityName);
+            });
+        }
+        
     }
     
 }
@@ -486,6 +509,12 @@
                 [self setImagesFromData:photoData
                              forPicture:picture
                               andUpload:NO];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:picture];
+                    
+                });
                 
             } else {
                 
@@ -761,12 +790,32 @@
 
 + (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
     
+    NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
+    NSString *fileName = [xid stringByAppendingString:@".jpg"];
+    
     UIImage *imageThumbnail = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(imageThumbnail, [self jpgQuality]);
     
-    if ([NSThread isMainThread]) {
+    NSString *imagePath = [[self imagesCachePath] stringByAppendingPathComponent:fileName];
+    
+    NSError *error = nil;
+    BOOL result = [thumbnail writeToFile:imagePath
+                            options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                              error:&error];
+    
+    if (result) {
         
-        picture.imageThumbnail = thumbnail;
+        if ([NSThread isMainThread]) {
+            
+            picture.imageThumbnail = fileName;
+            
+        } else {
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                picture.imageThumbnail = fileName;
+            });
+            
+        }
         
     } else {
         
@@ -872,7 +921,11 @@
                                                        NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
                                                        
                                                        [STMCoreController.persistenceDelegate merge:object.entity.name attributes:dictObject options:nil].then(^(NSArray *result){
-                                                           NSLog(@"picture downloaded");
+                                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                                               
+                                                               [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
+                                                               
+                                                           });
                                                        }).catch(^(NSError *error){
                                                            NSLog(@"Error:%@",error);
                                                        });

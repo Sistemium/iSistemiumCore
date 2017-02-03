@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSNumber *id;
 @property (nullable, nonatomic, copy) NSString *imageFormat;
 @property (nullable, nonatomic, copy) NSString *imagePath;
-@property (nullable, nonatomic, retain) NSData *imageThumbnail;
+@property (nullable, nonatomic, retain) NSString *imageThumbnail;
 @property (nullable, nonatomic, copy) NSNumber *isFantom;
 @property (nullable, nonatomic, copy) NSDate *lts;
 @property (nullable, nonatomic, copy) NSString *name;

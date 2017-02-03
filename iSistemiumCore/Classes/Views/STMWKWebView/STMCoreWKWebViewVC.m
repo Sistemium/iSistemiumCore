@@ -838,6 +838,8 @@ STMImagePickerOwnerProtocol>
     NSString *callbackFunction = parameters[@"callback"];
     if (getPictureXid) self.getPictureCallbackJSFunctions[getPictureXid] = callbackFunction;
     
+    if (getPictureXid) self.getPictureMessageParameters[getPictureXid] = parameters;
+    
     NSString *getPictureSize = parameters[@"size"];
     
     NSDictionary *picture = [self.persistenceDelegate findSync:@"STMArticlePicture" identifier:getPictureXid options:nil error:nil];
@@ -858,31 +860,24 @@ STMImagePickerOwnerProtocol>
         object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
     }
     
-    if (!object) {
+    if (!picture) {
         
         [self getPictureWithXid:getPictureXid
-                          error:[NSString stringWithFormat:@"no object with xid %@", getPictureXid]];
+                          error:[NSString stringWithFormat:@"no picture with xid %@", getPictureXid]];
         return;
         
     }
     
-    if (![object isKindOfClass:[STMCorePicture class]]) {
-        
-        [self getPictureWithXid:getPictureXid
-                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
-        return;
-        
-    }
-    
-    [self.persistenceDelegate setObjectData:picture toObject:object];
+    [self.persistenceDelegate setObjectData:picture toObject:object withRelations:true];
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
         if (object.imageThumbnail) {
             
-            [self getPictureSendData:object.imageThumbnail
-                          parameters:parameters
-                  jsCallbackFunction:callbackFunction];
+            [self getPicture:object
+               withImagePath:object.imageThumbnail
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
             
         } else {
             [self downloadPicture:object];
@@ -966,7 +961,7 @@ STMImagePickerOwnerProtocol>
         
         [self removeObserversForPicture:picture];
         
-        [self handleGetPictureParameters:self.getPictureMessageParameters[(NSData *)picture.xid]];
+        [self handleGetPictureParameters:self.getPictureMessageParameters[[STMFunctions UUIDStringFromUUIDData:picture.xid]]];
         
     }
     
@@ -1486,7 +1481,7 @@ int counter = 0;
     
     if (photoObject) {
         
-        [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
+        [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject withRelations:true];
         
         NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
                                                                                  withNulls:YES
