@@ -428,6 +428,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - NSString <-> NSData manipulation
 
++ (NSString *)uuidString {
+    return [NSUUID UUID].UUIDString.lowercaseString;
+}
+
 + (NSData *)dataWithHexString:(NSString *)hexString {
     
 // https://opensource.apple.com/source/Security/Security-55471.14.18/libsecurity_transform/NSData+HexString.m.auto.html
