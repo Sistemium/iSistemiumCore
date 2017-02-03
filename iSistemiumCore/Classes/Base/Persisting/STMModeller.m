@@ -14,6 +14,8 @@
 
 #import "STMModeller+Private.h"
 
+#import "STMSessionManager.h"
+
 @interface STMModeller()
 
 @property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
@@ -157,7 +159,7 @@
     
 }
 
-- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations{
     
     NSEntityDescription *entity = object.entity;
     NSString *entityName = entity.name;
@@ -183,16 +185,22 @@
             
         } else {
             
-            if ([key hasSuffix:RELATIONSHIP_SUFFIX] && object.managedObjectContext != nil) {
+            if ([key hasSuffix:RELATIONSHIP_SUFFIX] && withRelations) {
                 
                 NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
                 NSString *localKey = [key substringToIndex:toIndex];
                 
-                if ([ownObjectRelationships objectForKey:localKey]) {
+                NSString* destinationEntityName = [ownObjectRelationships objectForKey:localKey];
+                
+                NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                
+                if (destinationEntityName && destinationObjectXid) {
                     
-                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                    STMDatum *destinationObject = (STMDatum*) [self newObjectForEntityName:destinationEntityName];
                     
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    NSDictionary *destinationObjectData = [STMSessionManager.sharedManager.currentSession.persistenceDelegate findSync:destinationEntityName identifier:destinationObjectXid options:nil error:nil];
+                    
+                    [self setObjectData:destinationObjectData toObject:destinationObject withRelations:false];
                     
                     [object setValue:destinationObject forKey:localKey];
                     

@@ -36,6 +36,6 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
 
-- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object;
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations;
 
 @end

@@ -303,7 +303,7 @@
 
 #warning deprecated - use STMFunctions method
 + (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    [self.persistenceDelegate setObjectData:objectData toObject:object];
+    [self.persistenceDelegate setObjectData:objectData toObject:object withRelations:true];
 }
 
 #pragma mark - recieved relationships management
@@ -751,7 +751,6 @@
 + (void)dataLoadingFinished {
     
     [STMCorePicturesController checkPhotos];
-    [STMCorePicturesController sharedController].downloadingPictures = YES;
 //    [self checkObjectsForFlushing];
     
 #ifdef DEBUG

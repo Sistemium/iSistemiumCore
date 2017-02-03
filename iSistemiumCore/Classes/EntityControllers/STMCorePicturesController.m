@@ -311,7 +311,7 @@
     
     for (NSDictionary *object in objects){
         STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
         [result addObject:managedObject];
     }
     
@@ -319,7 +319,7 @@
     
     for (NSDictionary *object in objects){
         STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
         [result addObject:managedObject];
     }
     
@@ -327,7 +327,7 @@
     
     for (NSDictionary *object in objects){
         STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
         [result addObject:managedObject];
     }
     
@@ -336,7 +336,7 @@
     
     for (NSDictionary *object in objects){
         STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
         [result addObject:managedObject];
     }
     
