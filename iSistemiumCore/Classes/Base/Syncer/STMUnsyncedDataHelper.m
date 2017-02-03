@@ -277,6 +277,8 @@
 
         NSString *parentId = object[relKey];
         
+        if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
+
         NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
         NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
         NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
