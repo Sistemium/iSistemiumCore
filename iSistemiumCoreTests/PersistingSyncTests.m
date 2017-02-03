@@ -179,4 +179,35 @@
     
 }
 
+- (void)testUpdate {
+    
+    NSString *entityName = @"STMLogMessage";
+    NSError *error;
+    
+    NSDictionary *testData = @{@"id" : @"non nexisting",@"text": @"updated test data",@"type": @"should not be updated"};
+    
+    NSDictionary *testOptions = @{@"fieldsToUpdate" : @[@"text"]};
+    
+    NSDictionary *updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
+    
+    XCTAssertNotNil(error);
+    XCTAssertNil(updatedData);
+    
+    testData = @{@"type": @"debug",
+                 @"text": @"testUpdate"};
+    
+    NSDictionary *testObject = [self.persister mergeSync:entityName attributes:testData options:nil error:&error];
+    
+    XCTAssertNotNil(testObject);
+    XCTAssertNil(error);
+    
+    testData = @{@"id" : testObject[@"id"] ,@"text": @"updated test data",@"type": @"should not be updated"};
+    
+    updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
+    
+    XCTAssertNil(error);
+    XCTAssertEqual(testData[@"text"], updatedData[@"text"]);
+    XCTAssertNotEqual(testData[@"type"], updatedData[@"type"]);
+}
+
 @end
