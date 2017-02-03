@@ -130,61 +130,46 @@
 
 - (void)testFindError {
     
-    NSString *requestId;
-    STMScriptMessage *message;
-    
     // Not Implemented
     
-    requestId = @"1";
+    [self doFindRequestId:@"1"
+                     body:@{@"entity":@"LogMessage",
+                            @"id": [STMFunctions uuidString]
+                            }
+                   expect:@"Not implemented"];
     
-    self.errorExpectations[requestId] = [self expectationWithDescription:@"Not implemented"];
+    // No xid
     
-    message = [[STMScriptMessage alloc] init];
-    
-    message.nameSTM = WK_MESSAGE_FIND;
-    message.bodySTM = @{
-                        @"entity":@"LogMessage",
-                        @"id": [STMFunctions uuidString],
-                        @"requestId": requestId
-                        };
-    
-    [self.scriptMessagingDelegate receiveFindMessage:message];
-
-    // empty xid
-    
-    requestId = @"2";
-    
-    self.errorExpectations[requestId] = [self expectationWithDescription:@"empty xid"];
-    
-    message = [[STMScriptMessage alloc] init];
-    
-    message.nameSTM = WK_MESSAGE_FIND;
-    message.bodySTM = @{
-                        @"entity":@"LogMessage",
-                        @"requestId": requestId
-                        };
-    
-    [self.scriptMessagingDelegate receiveFindMessage:message];
+    [self doFindRequestId:@"2"
+                     body:@{@"entity":@"LogMessage"}
+                   expect:@"empty xid"];
     
     // No Entity
     
-    requestId = @"3";
-    
-    self.errorExpectations[requestId] = [self expectationWithDescription:@"entity is not specified"];
-    
-    message = [[STMScriptMessage alloc] init];
-    
-    message.nameSTM = WK_MESSAGE_FIND;
-    message.bodySTM = @{
-                        @"requestId": requestId
-                        };
-    
-    [self.scriptMessagingDelegate receiveFindMessage:message];
+    [self doFindRequestId:@"3"
+                     body:@{}
+                   expect:@"entity is not specified"];
 
+    // Now wait because STMScriptMessageHandler is using async promises
+    
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
 }
 
+
+- (void)doFindRequestId:(NSString *)requestId body:(NSDictionary*)body expect:(NSString *)errorDescription{
+    
+    self.errorExpectations[requestId] = [self expectationWithDescription:errorDescription];
+    
+    STMScriptMessage *message = [[STMScriptMessage alloc] init];
+    
+    message.nameSTM = WK_MESSAGE_FIND;
+    message.bodySTM = body.mutableCopy;
+    
+    message.bodySTM[@"requestId"] = requestId;
+    
+    [self.scriptMessagingDelegate receiveFindMessage:message];
+}
 
 #pragma mark - STMScriptMessagingOwner protocol
 
