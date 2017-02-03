@@ -78,6 +78,8 @@
     
     NSDate *startedAt = [NSDate date];
     
+    self.unsyncedDataHelper.syncingState = [[STMDataSyncingState alloc] init];
+    
     [self waitForExpectationsWithTimeout:PersistingTestsTimeOut
                                  handler:^(NSError * _Nullable error)
     {
@@ -122,7 +124,6 @@
         }
         
     });
-
     
 }
 
