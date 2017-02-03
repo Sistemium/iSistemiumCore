@@ -11,6 +11,10 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 
+@implementation STMDataSyncingState
+
+@end
+
 
 @interface STMUnsyncedDataHelper()
 
@@ -23,6 +27,7 @@
 @implementation STMUnsyncedDataHelper
 
 @synthesize subscriberDelegate = _subscriberDelegate;
+@synthesize state = _state;
 
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
