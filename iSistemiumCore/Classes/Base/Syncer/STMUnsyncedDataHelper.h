@@ -12,7 +12,7 @@
 
 #import "STMPersistingFullStack.h"
 
-@interface STMDataSyncingState
+@interface STMDataSyncingState : NSObject
 
 @end
 
