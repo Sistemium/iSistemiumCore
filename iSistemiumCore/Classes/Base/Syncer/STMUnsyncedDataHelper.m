@@ -227,7 +227,7 @@
     
     NSDictionary *options = @{STMPersistingOptionPageSize : @1,
                               STMPersistingOptionOrder:@"deviceTs,id",
-                              STMPersistingOptionOrderDirectionDesc};
+                              STMPersistingOptionOrderDirectionAsc};
     
     NSArray *result = [self.persistenceDelegate findAllSync:entityName
                                                   predicate:predicate
