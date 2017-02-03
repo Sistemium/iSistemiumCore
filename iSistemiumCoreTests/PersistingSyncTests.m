@@ -19,6 +19,66 @@
     [STMCoreObjectsController logTotalNumberOfObjectsInStorages];
 }
 
+- (void)testOrderBy {
+    
+    NSString *entityName = @"STMLogMessage";
+    NSError *error;
+
+    // create test data
+    
+    NSString *xid = [NSUUID UUID].UUIDString;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", xid];
+    
+    NSDictionary *testDataA= @{@"type": @"debug",
+                               @"ownerXid": xid,
+                               @"text": @"a"};
+    
+    NSDictionary *testDataZ= @{@"type": @"debug",
+                               @"ownerXid": xid,
+                               @"text": @"z"};
+    
+    [self.persister mergeManySync:entityName
+                   attributeArray:@[testDataA, testDataZ]
+                          options:nil
+                            error:&error];
+
+    XCTAssertNil(error);
+    
+    // the test itself
+    
+    NSArray *result =
+    [self.persister findAllSync:entityName
+                      predicate:predicate
+                        options:@{STMPersistingOptionOrderDirectionAsc,
+                                  STMPersistingOptionOrder:@"text,type"}
+                          error:&error];
+    
+    XCTAssertEqual(result.count, 2);
+    XCTAssertEqualObjects(result.firstObject[@"text"], @"a");
+    
+    result =
+    [self.persister findAllSync:entityName
+                      predicate:predicate
+                        options:@{STMPersistingOptionOrderDirectionDesc,
+                                  STMPersistingOptionOrder:@"text,type"}
+                          error:&error];
+    
+    XCTAssertEqual(result.count, 2);
+    XCTAssertEqualObjects(result.firstObject[@"text"], @"z");
+    
+    // cleanup
+    
+    NSUInteger count =
+    [self.persister destroyAllSync:entityName
+                     predicate:predicate
+                       options:nil
+                         error:&error];
+    
+    XCTAssertNil(error);
+    XCTAssertEqual(count, 2);
+    
+}
+
 - (void)testCountSync {
     
     NSString *entityName = @"STMLogMessage";

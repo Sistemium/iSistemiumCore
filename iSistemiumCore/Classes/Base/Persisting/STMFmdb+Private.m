@@ -259,6 +259,7 @@
     NSString* options = @"";
     
     if (orderBy) {
+        orderBy = [[orderBy componentsSeparatedByString:@","] componentsJoinedByString:ascending?@" ASC,":@" DESC,"];
         NSString *order = [NSString stringWithFormat:@" ORDER BY %@ %@", orderBy, ascending ? @"ASC" : @"DESC"];
         options = [options stringByAppendingString:order];
     }
