@@ -77,7 +77,11 @@
         
         if ([value isKindOfClass:[NSString class]]) {
             
-            value = [STMFunctions dataFromString:[value stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+            if (((NSString*) value).length == 36){
+                value = [STMFunctions dataFromString:[value stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+            }else{
+                value =  [[NSData alloc] initWithBase64EncodedString:value options:0];
+            }
             
         } else {
             
