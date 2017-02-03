@@ -52,10 +52,18 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     STMAssertSQLFilter(predicate, @"(avatarPictureId IS NOT NULL)");
     
-    predicate = [NSPredicate predicateWithFormat:@"type IN %@", @[@"error", @"important"]];
+    NSSet *set = [NSSet setWithObjects:@"error", @"important", nil];
+    
+    predicate = [NSPredicate predicateWithFormat:@"type IN %@", set];
     
     STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
     
+    NSArray *array = set.allObjects;
+    
+    predicate = [NSPredicate predicateWithFormat:@"type IN %@", array];
+    
+    STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
+
     predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
     
     STMAssertSQLFilter(predicate, @"NOT (id IN ('xid','xid'))");
@@ -82,7 +90,8 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     predicate = [NSPredicate predicateWithFormat:@"ANY outlets.partner.id == %@", @"xid"];
     
-     STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
+    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
+    
 }
 
 - (NSManagedObjectModel *) sampleModel {
