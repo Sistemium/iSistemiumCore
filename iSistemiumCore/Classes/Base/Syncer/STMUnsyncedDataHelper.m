@@ -293,7 +293,9 @@
 
         if (parent) {
             
-            if (!parent[@"lts"]) {
+            NSString *parentLts = parent[@"lts"];
+            
+            if (!parentLts || [parentLts isEqualToString:@""]) {
                 
                 haveUnsyncedParent = YES;
                 break;
