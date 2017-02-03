@@ -14,10 +14,8 @@
 
 @interface STMUnsyncedDataHelper()
 
-@property (nonatomic, strong) NSString *subscriptionId;
-@property (nonatomic, strong) NSMutableDictionary *failToSyncObjects;
-@property (nonatomic) BOOL isHandlingUnsyncedObjects;
-
+@property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
 
 @end
 
@@ -34,15 +32,6 @@
     return unsyncedDataHelper;
 }
 
-- (NSMutableDictionary *)failToSyncObjects {
-    
-    if (!_failToSyncObjects) {
-        _failToSyncObjects = @{}.mutableCopy;
-    }
-    return _failToSyncObjects;
-    
-}
-
 
 #pragma mark - STMDataSyncing
 
@@ -54,56 +43,26 @@
     
 }
 
-- (void)subscribeUnsynced {
-    
-    if (self.subscriberDelegate) {
-        
-        for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
-            
-            NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
-            
-            NSLog(@"subscribe to %@", entityName);
-            
-            self.subscriptionId = [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
-                
-                NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-                [self startHandleUnsyncedObjects];
-                
-            }];
-            
-        }
-        
-        [self startHandleUnsyncedObjects];
-        
-    }
-    
-}
-
-- (void)unsubscribeUnsynced {
-    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
-}
-
-- (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
+- (BOOL)setSynced:(BOOL)success entity:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     if (!success) {
         
-        if (itemData && itemData[@"id"]) {
-            self.failToSyncObjects[itemData[@"id"]] = itemData;
-        }
-        NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
+        NSLog(@"failToSync %@ %@", entityName, itemData[@"id"]);
+        
+        [self declineFromSync:itemData entityName:entityName];
         
     } else {
         
         if (itemVersion) {
             
             NSError *error;
-            [self.persistenceDelegate mergeSync:entity
+            [self.persistenceDelegate mergeSync:entityName
                                      attributes:itemData
                                         options:@{STMPersistingOptionLts: itemVersion}
                                           error:&error];
             
         } else {
-            NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
+            NSLog(@"No itemVersion for %@ %@", entityName, itemData[@"id"]);
         }
         
     }
@@ -118,19 +77,64 @@
     return 0;
 }
 
-#pragma mark - handle unsynced objects
 
-- (void)startHandleUnsyncedObjects {
+#pragma mark - Private helpers
+
+- (void)subscribeUnsynced {
     
-    if (self.isHandlingUnsyncedObjects) {
-        return;
+    if (!self.subscriberDelegate) return;
+    
+    self.subscriptions = [NSMutableArray array];
+    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    
+    for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
+        
+        NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+        
+        NSLog(@"subscribe to %@", entityName);
+        
+        [self.subscriptions addObject:[self.persistenceDelegate observeEntity:entityName
+                                                                    predicate:predicate
+                                                                     callback:^(NSArray * _Nullable data)
+                                       {
+                                           NSLog(@"observeEntity %@ data count %u", entityName, data.count);
+                                           [self startHandleUnsyncedObjects];
+                                       }]];
+        
     }
     
-    self.isHandlingUnsyncedObjects = YES;
+    [self startHandleUnsyncedObjects];
+    
+}
+
+- (void)unsubscribeUnsynced {
+    NSLog(@"unsubscribeUnsynced");
+    
+    [self.subscriptions enumerateObjectsUsingBlock:^(NSString * _Nonnull subscriptionId, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self.persistenceDelegate cancelSubscription:subscriptionId];
+    }];
+    
+    self.subscriptions = nil;
+    
+}
+
+#pragma mark - state control
+
+- (void)startHandleUnsyncedObjects {
     
     [self sendNextUnsyncedObject];
     
 }
+
+- (void)finishHandleUnsyncedObjects {
+    NSLog(@"finishHandleUnsyncedObjects");
+    [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSMutableSet<NSString *> * ids, BOOL * stop) {
+        NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
+    }];
+}
+
+
+#pragma mark - handle unsynced objects
 
 - (void)sendNextUnsyncedObject {
 
@@ -141,7 +145,7 @@
         NSString *entityName = objectToSend[@"entityName"];
         NSDictionary *object = objectToSend[@"object"];
         
-        NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
+//        NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
         
         if (self.subscriberDelegate) {
             
@@ -168,7 +172,7 @@
     
     for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
 
-        anyObjectToSend = [self findUnsyncedObjectWithEntityName:uploadableEntityName];
+        anyObjectToSend = [self findSyncableObjectWithEntityName:uploadableEntityName];
         
         if (anyObjectToSend) break;
         
@@ -178,9 +182,9 @@
     
 }
 
-- (NSDictionary *)findUnsyncedObjectWithEntityName:(NSString *)entityName {
+- (NSDictionary *)findSyncableObjectWithEntityName:(NSString *)entityName {
     
-    NSDictionary *unsyncedObject = [self anyUnsyncedObjectWithEntityName:entityName];
+    NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName identifier:nil];
     
     if (unsyncedObject) {
         
@@ -190,31 +194,15 @@
         NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
         
         if (unsyncedParent) {
-            
             return unsyncedParent;
-            
         } else {
-            
-            if (!self.failToSyncObjects[unsyncedObject[@"id"]]) {
-                
-                return resultObject;
-                
-            } else {
-                
-                return [self findUnsyncedObjectWithEntityName:entityName];
-                
-            }
-            
+            return resultObject;
         }
         
     }
     
     return nil;
 
-}
-
-- (NSDictionary *)anyUnsyncedObjectWithEntityName:(NSString *)entityName {
-    return [self unsyncedObjectWithEntityName:entityName identifier:nil];
 }
 
 - (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
@@ -229,21 +217,21 @@
         
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
         
-    } else {
-        
-        if (self.failToSyncObjects.allKeys.count) {
-        
-            [subpredicates addObject:[NSPredicate predicateWithFormat:@"NOT (id IN %@)", self.failToSyncObjects.allKeys]];
-
-        }
-        
     }
+    
+    NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
+    
+    if (erroredExclusion) [subpredicates addObject:erroredExclusion];
 
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
+    NSDictionary *options = @{STMPersistingOptionPageSize : @1,
+                              STMPersistingOptionOrder:@"deviceTs,id",
+                              STMPersistingOptionOrderDirectionAsc};
+    
     NSArray *result = [self.persistenceDelegate findAllSync:entityName
                                                   predicate:predicate
-                                                    options:@{STMPersistingOptionPageSize : @1}
+                                                    options:options
                                                       error:&error];
     return result.firstObject;
 
@@ -259,13 +247,6 @@
 
         NSString *parentId = object[relKey];
         
-        if (self.failToSyncObjects[parentId]) {
-            
-            [self declineFromSync:object];
-            break;
-            
-        }
-
         NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
         NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
         NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
@@ -287,15 +268,7 @@
                 
             } else {
                 
-                if (!self.failToSyncObjects[unsyncedParent[@"id"]]) {
-
-                    anyUnsyncedParent = resultObject;
-
-                } else {
-
-                    [self declineFromSync:object];
-
-                }
+                anyUnsyncedParent = resultObject;
 
                 break;
 
@@ -309,19 +282,33 @@
     
 }
 
-- (void)finishHandleUnsyncedObjects {
+- (void)declineFromSync:(NSDictionary *)object entityName:(NSString *)entityName{
     
-    self.isHandlingUnsyncedObjects = NO;
-    self.failToSyncObjects = nil;
+    NSString *pk = object[@"id"];
     
+    @synchronized (self.erroredObjectsByEntity) {
+        NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
+        
+        if (!errored) errored = [NSMutableSet set];
+        
+        [errored addObject:pk];
+        
+        self.erroredObjectsByEntity[entityName] = errored;
+    }
+
 }
 
-- (void)declineFromSync:(NSDictionary *)object {
+
+#pragma mark - Predicates
+
+- (NSPredicate *)excludingErroredPredicateWithEntityName:(NSString *)entityName {
+
+    NSSet *errored = self.erroredObjectsByEntity[entityName];
     
-    //    NSLog(@"declineFromSync %@ %@", object[@"entityName"], object[@"id"]);
+    if (!errored.count) return nil;
     
-    self.failToSyncObjects[object[@"id"]] = object;
-    
+    return [NSPredicate predicateWithFormat:@"NOT (id IN %@)", errored.allObjects];
+
 }
 
 - (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
@@ -339,7 +326,6 @@
         
     }
     
-#warning predicates could be different if object in CoreData or STMFMDB
     [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
     
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
