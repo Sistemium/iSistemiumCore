@@ -105,7 +105,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
 
     predicate = [NSPredicate predicateWithFormat:@"xid IN %@", @[uuidData, uuidData]];
     
-    string = [NSString stringWithFormat:@"(id = ('%@','%@'))", uuidString, uuidString];
+    string = [NSString stringWithFormat:@"(id IN ('%@','%@'))", uuidString, uuidString];
     STMAssertSQLFilter(predicate, string);
 
 }
