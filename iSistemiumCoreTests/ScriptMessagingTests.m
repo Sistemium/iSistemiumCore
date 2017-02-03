@@ -153,9 +153,6 @@
                      body:@{}
                    expect:@"entity is not specified"];
 
-    // Now wait because STMScriptMessageHandler is using async promises
-    
-    
     // Not Found
     
     self.fakePerster.options = @{STMFakePersistingOptionEmptyDB};
@@ -168,6 +165,10 @@
                             @"id": xid
                             }
                    expect:errorDescription];
+    
+    //
+    // Now wait because STMScriptMessageHandler is using async promises
+    //
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
