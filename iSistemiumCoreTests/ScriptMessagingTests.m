@@ -71,12 +71,12 @@
     
     XCTAssertTrue([self.modeller isConcreteEntityName:entityName]);
     
-    NSString *xid = @"7998f0143e83491fac972717e77fa0ff";
+    NSUUID *xid = [NSUUID UUID];
     
     STMScriptMessagingWhereFilterDictionary *whereFilter
     =@{
        @"ANY outletSalesmanContracts": @{
-               @"salesmanId": @{@"==": xid}
+               @"salesmanId": @{@"==": xid.UUIDString}
                }
        };
     
@@ -90,7 +90,7 @@
     
     NSString *predicateString = [NSString stringWithFormat:@"%@", predicate];
     
-    NSString *expectedString = @"ANY outletSalesmanContracts.salesman.xid == <7998f014 3e83491f ac972717 e77fa0ff>";
+    NSString *expectedString = [NSString stringWithFormat:@"ANY outletSalesmanContracts.salesman.xid == %@", [STMFunctions UUIDDataFromNSUUID:xid]];
     
     XCTAssertEqualObjects(predicateString, expectedString);
     

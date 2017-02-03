@@ -78,8 +78,11 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
     
-    STMAssertSQLFilter(predicate, @"(exists ( select * from outlet where partnerId = 'xid' and id = outletId ))");
+    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and id = outletId ))");
     
+    predicate = [NSPredicate predicateWithFormat:@"ANY outlets.partner.id == %@", @"xid"];
+    
+     STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
 }
 
 - (NSManagedObjectModel *) sampleModel {
@@ -95,7 +98,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
                            type:NSInteger32AttributeType]
     ];
     
-    NSEntityDescription *partner = [self entityWithName:@"Partner"
+    NSEntityDescription *partner = [self entityWithName:@"STMPartner"
                                             properties:partnerProperties];
     
     NSArray *outletProperties = @[
@@ -107,7 +110,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
                           type:NSInteger32AttributeType]
     ];
     
-    NSEntityDescription *outlet = [self entityWithName:@"Outlet"
+    NSEntityDescription *outlet = [self entityWithName:@"STMOutlet"
                                             properties:outletProperties];
     
     NSRelationshipDescription *outletPartner = [[NSRelationshipDescription alloc] init];
@@ -118,7 +121,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     NSRelationshipDescription *partnerOutlets = [[NSRelationshipDescription alloc] init];
     
-    partnerOutlets.name = @"Outlets";
+    partnerOutlets.name = @"outlets";
     partnerOutlets.destinationEntity = outlet;
     partnerOutlets.inverseRelationship = outletPartner;
     
