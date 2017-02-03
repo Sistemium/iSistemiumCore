@@ -130,6 +130,7 @@
     }];
     
     self.subscriptions = nil;
+    self.erroredObjectsByEntity = nil;
     
 }
 
