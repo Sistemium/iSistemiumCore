@@ -30,6 +30,7 @@
 @implementation STMSyncerHelper
 
 @synthesize subscriberDelegate = _subscriberDelegate;
+@synthesize syncingState = _syncingState;
 
 
 - (instancetype)init {
