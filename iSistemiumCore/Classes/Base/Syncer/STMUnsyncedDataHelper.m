@@ -70,6 +70,8 @@
         
         if (itemVersion) {
             
+            NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
+
             NSError *error;
             [self.persistenceDelegate mergeSync:entityName
                                      attributes:itemData
