@@ -167,6 +167,13 @@
 
 - (void)sendNextUnsyncedObject {
 
+    if (!self.syncingState) {
+        
+        [self finishHandleUnsyncedObjects];
+        return;
+        
+    }
+    
     NSDictionary *objectToSend = [self anyObjectToSend];
     
     if (objectToSend) {
