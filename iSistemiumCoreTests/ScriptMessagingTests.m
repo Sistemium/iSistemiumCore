@@ -18,7 +18,7 @@
 @property (nonatomic, strong) STMModeller *modeller;
 @property (nonatomic, strong) STMScriptMessageHandler *scriptMessenger;
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessagingDelegate;
-@property (nonatomic, strong) id <STMPersistingSync, STMPersistingPromised> fakePerster;
+@property (nonatomic, strong) STMFakePersisting *fakePerster;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *errorExpectations;
 
@@ -130,18 +130,21 @@
 
 - (void)testFindError {
     
+    NSString *entityName = @"LogMessage";
+    NSString *xid = [STMFunctions uuidString];
+    
     // Not Implemented
     
     [self doFindRequestId:@"1"
-                     body:@{@"entity":@"LogMessage",
-                            @"id": [STMFunctions uuidString]
+                     body:@{@"entity":entityName,
+                            @"id": xid
                             }
                    expect:@"Not implemented"];
     
     // No xid
     
     [self doFindRequestId:@"2"
-                     body:@{@"entity":@"LogMessage"}
+                     body:@{@"entity":entityName}
                    expect:@"empty xid"];
     
     // No Entity
@@ -152,12 +155,28 @@
 
     // Now wait because STMScriptMessageHandler is using async promises
     
+    
+    // Not Found
+    
+    self.fakePerster.options = @{STMFakePersistingOptionEmptyDB};
+    
+    NSString *errorDescription =
+    [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xid, entityName];
+    
+    [self doFindRequestId:@"4"
+                     body:@{@"entity":entityName,
+                            @"id": xid
+                            }
+                   expect:errorDescription];
+    
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
 }
 
 
 - (void)doFindRequestId:(NSString *)requestId body:(NSDictionary*)body expect:(NSString *)errorDescription{
+    
+    XCTAssertNil(self.errorExpectations[requestId]);
     
     self.errorExpectations[requestId] = [self expectationWithDescription:errorDescription];
     
