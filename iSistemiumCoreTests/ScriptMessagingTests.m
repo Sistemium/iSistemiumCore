@@ -168,6 +168,15 @@
                             }
                    expect:errorDescription];
     
+    errorDescription =
+    [NSString stringWithFormat:@"entityName: not found in data model"];
+    
+    [self doFindRequestId:@"5"
+                     body:@{@"entity":@"entityName",
+                            @"id": xid
+                            }
+                   expect:errorDescription];
+    
     //
     // Now wait because STMScriptMessageHandler is using async promises
     //
