@@ -61,16 +61,16 @@
     
     [self updateObjectsFromScriptMessage:message
                    withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
-                       
-                       if (success) {
-                           [self.owner callbackWithData:updatedObjects
-                                             parameters:parameters];
-                       } else {
-                           [self.owner callbackWithError:error.localizedDescription
-                                              parameters:parameters];
-                       }
-                       
-                   }];
+        
+        if (success) {
+            [self.owner callbackWithData:updatedObjects
+                              parameters:parameters];
+        } else {
+            [self.owner callbackWithError:error.localizedDescription
+                               parameters:parameters];
+        }
+        
+    }];
     
 }
 
