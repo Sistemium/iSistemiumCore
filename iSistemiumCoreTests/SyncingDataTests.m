@@ -152,7 +152,11 @@
     
     NSString *source = itemData[@"source"];
     
-    BOOL isNotTheExpecteedData = !([entityName isEqualToString:@"STMLogMessage"] && ![source isEqual:NSNull.null] && [source isEqualToString:@"SyncingDataTests"]);
+    NSArray *testEntities = [self.testObjects.allValues valueForKeyPath:@"@distinctUnionOfObjects.self"];
+    BOOL isNotTestEntities = ![testEntities containsObject:entityName];
+    BOOL isNotTestSource = [source isEqual:NSNull.null] || ![source isEqualToString:@"SyncingDataTests"];
+    
+    BOOL isNotTheExpecteedData = isNotTestEntities || isNotTestSource;
     
     if (isNotTheExpecteedData) {
         [self.unsyncedDataHelper setSynced:NO
