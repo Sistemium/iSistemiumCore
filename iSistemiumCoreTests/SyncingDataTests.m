@@ -56,8 +56,6 @@
     
     [self createTestData];
     
-    NSLog(@"self.testObjects %@", self.testObjects);
-    
     NSDate *startedAt = [NSDate date];
     
     self.unsyncedDataHelper.syncingState = [[STMDataSyncingState alloc] init];
@@ -98,13 +96,26 @@
     [self createTestObject:@"STMLogMessage" withAttributes:@{@"text"    : @"testMessage",
                                                              @"type"    : @"important"}];
 
-    NSDictionary *partner = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner"}];
+    NSDictionary *partnerOne = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner"}];
     
-    NSString *partnerId = partner[@"id"];
-
     [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet",
-                                                         @"partnerId"   : partnerId}];
+                                                         @"partnerId"   : partnerOne[@"id"]}];
+
+    [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet2",
+                                                         @"partnerId"   : partnerOne[@"id"]}];
+
+    NSDictionary *partnerTwo = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner2"}];
     
+    [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet3",
+                                                         @"partnerId"   : partnerTwo[@"id"]}];
+
+    NSDictionary *outlet = [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet4",
+                                                                                @"partnerId"   : partnerOne[@"id"]}];
+
+    [self createTestObject:@"STMOutletPhoto" withAttributes:@{@"outletId"   : outlet[@"id"]}];
+    
+    NSLog(@"self.testObjects %@", self.testObjects);
+
 }
 
 - (NSDictionary *)createTestObject:(NSString *)entityName withAttributes:(NSDictionary *)attributes {
@@ -127,7 +138,7 @@
     XCTAssertNotNil(object);
 
     NSString *objectId = object[@"id"];
-    NSString *expectationDescription = [NSString stringWithFormat:@"wait for sync %@", entityName];
+    NSString *expectationDescription = [NSString stringWithFormat:@"wait for sync %@ %@", entityName, objectId];
     XCTestExpectation *expectation = [self expectationWithDescription:expectationDescription];
     self.syncedExpectations[objectId] = expectation;
     self.testObjects[objectId] = entityName;
