@@ -175,7 +175,8 @@
     
     XCTAssertNotNil(itemVersion);
     XCTAssertNotNil(itemData);
-
+    
+//    dispatch_async(dispatch_get_main_queue(), ^{
     dispatch_after(SYNCING_DATA_TEST_DISPATCH_TIME, dispatch_get_main_queue(), ^{
     
         [self.unsyncedDataHelper setSynced:YES
