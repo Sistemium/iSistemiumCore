@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMDataSyncing.h"
+#import "STMPersistingSync.h"
 
 
-@interface STMSyncerHelper : NSObject <STMDataSyncing>
+@interface STMSyncerHelper : NSObject
 
 @property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
-
+@property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
 
 @end
