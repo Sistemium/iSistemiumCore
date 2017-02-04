@@ -49,7 +49,7 @@
 
     XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
     
-    self.pkToWait = [NSUUID UUID].UUIDString;
+    self.pkToWait = [STMFunctions uuidString];
     
     [self createTestData];
     
