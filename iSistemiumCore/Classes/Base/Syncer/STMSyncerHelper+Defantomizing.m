@@ -103,7 +103,7 @@
         
     } else {
         
-        @synchronized (self.failToResolveFantomsArray) {
+        @synchronized (self) {
             [self.failToResolveFantomsArray addObject:fantomDic];
         }
         
