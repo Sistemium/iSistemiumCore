@@ -215,11 +215,19 @@
                    expect:errorDescription];
     
     // Find Updated
-    body =  @{@"entity":entityName,
-              @"id":xid
-              };
+
     
-    [self doFindRequest:body expect:errorDescription];
+    [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
+                 expect:errorDescription];
+    
+    // Create many
+    
+    [self doUpdateManyRequest:[STMFunctions setValue:@[@{@"name":@"Name 1"}]
+                                              forKey:@"data"
+                                        inDictionary:body]
+                       expect:errorDescription];
+    
+    [self doFindAllRequest:body expect:errorDescription];
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -240,6 +248,14 @@
     
 }
 
+- (void)doFindAllRequest:(NSDictionary*)body expect:(NSString *)errorDescription{
+    
+    [self.scriptMessagingDelegate receiveFindMessage:[self doRequestName:WK_MESSAGE_FIND_ALL
+                                                                    body:body
+                                                             description:errorDescription]];
+    
+}
+
 - (void)doUpdateRequest:(NSDictionary*)body expect:(NSString *)description{
     
     [self.scriptMessagingDelegate receiveUpdateMessage:[self doRequestName:WK_MESSAGE_UPDATE
@@ -248,6 +264,14 @@
     
 }
 
+
+- (void)doUpdateManyRequest:(NSDictionary*)body expect:(NSString *)description{
+    
+    [self.scriptMessagingDelegate receiveUpdateMessage:[self doRequestName:WK_MESSAGE_UPDATE_ALL
+                                                                      body:body
+                                                               description:description]];
+    
+}
 
 - (STMScriptMessage *)doRequestName:(NSString *)requestName body:(NSDictionary*)body description:(NSString *)description{
     
