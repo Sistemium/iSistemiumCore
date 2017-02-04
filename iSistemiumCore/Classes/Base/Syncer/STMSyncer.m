@@ -1482,7 +1482,7 @@
     
     [self.socketTransport mergeAsync:entityName attributes:itemData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
-        NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
+//        NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
         
         if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
             self.isSendingData = NO;
