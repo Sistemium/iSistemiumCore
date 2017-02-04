@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncingSubscriber.h"
+#import "STMPersistingFullStack.h"
+
 
 @protocol STMDataSyncingState <NSObject>
 
@@ -22,6 +24,7 @@
 
 @property (nonatomic, strong) id <STMDataSyncingState> syncingState;
 @property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
+@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 - (void)startSyncing;
 - (void)pauseSyncing;

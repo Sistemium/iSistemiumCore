@@ -9,12 +9,9 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncing.h"
-#import "STMPersistingFullStack.h"
 
 
 @interface STMUnsyncedDataHelper : NSObject <STMDataSyncing>
-
-@property (nonatomic, strong) id <STMPersistingFullStack> persistenceDelegate;
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate
                                                   subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate;

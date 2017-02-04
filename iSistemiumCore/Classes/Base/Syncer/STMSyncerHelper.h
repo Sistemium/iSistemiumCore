@@ -9,12 +9,9 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncing.h"
-#import "STMPersistingFullStack.h"
 
 
 @interface STMSyncerHelper : NSObject <STMDataSyncing>
-
-@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 @property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
 
