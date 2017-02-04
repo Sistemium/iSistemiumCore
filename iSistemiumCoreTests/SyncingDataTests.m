@@ -165,9 +165,9 @@
     BOOL isNotTestSource = [source isEqual:NSNull.null] || ![source isEqualToString:@"SyncingDataTests"];
     BOOL isNotCurrentTest = ![itemData[@"ownerXid"] isEqual:self.pkToWait];
     
-    BOOL isNotTheExpecteedData = isNotTestEntities || isNotTestSource || isNotCurrentTest;
+    BOOL isNotTheExpectedData = isNotTestEntities || isNotTestSource || isNotCurrentTest;
     
-    if (isNotTheExpecteedData) {
+    if (isNotTheExpectedData) {
         [self.unsyncedDataHelper setSynced:NO
                                     entity:entityName
                                   itemData:itemData
