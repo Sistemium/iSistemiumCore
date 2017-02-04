@@ -15,8 +15,8 @@
 
 - (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
     
-    NSError* error = nil;
-    NSArray *result = nil;
+    NSError *error;
+    NSArray *result;
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         return [self rejectWithErrorMessage:@"message.body is not a NSDictionary class"];
@@ -26,8 +26,7 @@
     
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
         
-        result = [self findObjectsWithParameters:parameters
-                                           error:&error];
+        result = [self findObjectsWithParameters:parameters error:&error];
         
         return [AnyPromise promiseWithValue:error ? error : result];
         
@@ -35,22 +34,16 @@
     
     NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
     
-    if (error) {
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-            resolve(error);
-        }];
-    }
+    if (error) return [AnyPromise promiseWithValue:error];
     
     NSString *entityName = parameters[@"entity"];
     NSDictionary *options = parameters[@"options"];
     
-    NSPredicate *predicate = [self predicateForScriptMessage:scriptMessage
-                                                       error:&error];
+    NSPredicate *predicate = [self predicateForScriptMessage:scriptMessage error:&error];
     
-    return [self.persistenceDelegate
-            findAll:entityName
-            predicate:predicate
-            options:options];
+    return [self.persistenceDelegate findAll:entityName
+                                   predicate:predicate
+                                     options:options];
     
 }
 
@@ -66,8 +59,6 @@
         
         [STMFunctions error:&resultError
                 withMessage:@"message.body is not a NSDictionary class"];
-        completionHandler(NO, nil, resultError);
-        return;
         
     }
     
@@ -79,8 +70,6 @@
         
         [STMFunctions error:&resultError
                 withMessage:[entityName stringByAppendingString:@": not found in data model"]];
-        completionHandler(NO, nil, resultError);
-        return;
         
     }
     
@@ -93,9 +82,6 @@
             [STMFunctions error:&resultError
                     withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class",
                                  scriptMessage.name]];
-            completionHandler(NO, nil, resultError);
-            return;
-            
         } else {
             
             parametersData = @[parametersData];
@@ -109,9 +95,6 @@
             [STMFunctions error:&resultError
                     withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class",
                                  scriptMessage.name]];
-            completionHandler(NO, nil, resultError);
-            return;
-            
         }
         
     } else {
@@ -119,38 +102,22 @@
         [STMFunctions error:&resultError
                 withMessage:[NSString stringWithFormat:@"unknown update message name: %@",
                              scriptMessage.name]];
+    }
+    
+    if (resultError) {
         completionHandler(NO, nil, resultError);
         return;
-        
     }
     
-    [self handleUpdateMessageData:parametersData
-                       entityName:entityName
-                completionHandler:completionHandler];
-    
-}
-
-- (void)handleUpdateMessageData:(NSArray *)data entityName:(NSString *)entityName
-              completionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler{
-    
-    NSError *localError = nil;
-    
-    NSArray *results = [self.persistenceDelegate
-                        mergeManySync:entityName
-                        attributeArray:data
-                        options:nil
-                        error:&localError];
-    
-    if (localError) {
-        
-        completionHandler(NO, nil, localError);
-        
-    } else {
-        
-        // Assuming there's no CoreData
-        completionHandler(YES, results, localError);
-        
-    }
+    [self.persistenceDelegate mergeMany:entityName
+                         attributeArray:parametersData
+                                options:nil]
+    .then(^(NSArray *updatedObjects){
+        completionHandler(YES, updatedObjects, nil);
+    })
+    .catch(^(NSError *error){
+        completionHandler(NO, nil, error);
+    });
     
 }
 
@@ -178,7 +145,8 @@
     
     return [self.persistenceDelegate destroy:entityName
                                   identifier:xidString
-                                     options:nil].then(^(NSNumber *result){
+                                     options:nil]
+    .then(^(NSNumber *result){
         return @[@{@"objectXid":xidString}];
     });
     
@@ -224,8 +192,7 @@
         
     } else {
         
-        [STMFunctions error:error
-                withMessage:errorMessage];
+        [STMFunctions error:error withMessage:errorMessage];
         
     }
     

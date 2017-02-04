@@ -50,16 +50,6 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
         
     } else if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND_ALL]) {
         
-        //        body = @{@"entity"   : @"Outlet",
-        //                 @"where"    : @{
-        //                         @"ANY outletSalesmanContracts" : @{
-        //                                 @"salesmanId" : @{
-        //                                         @"==" : @"00351224-e017-11de-b51c-0026551eee5a"
-        //                                         }
-        //                                 }
-        //                         }
-        //                 };
-        
         NSDictionary *filter = ([body[@"filter"] isKindOfClass:[self filterClass]]) ? body[@"filter"] : nil;
         //        if (!filter) NSLog(@"filter section malformed");
         
