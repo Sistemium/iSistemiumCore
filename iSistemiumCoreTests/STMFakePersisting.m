@@ -30,12 +30,24 @@ if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
 *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR; \
 return returnValue; \
 
+#define STMFakePersistingIfInMemoryDB \
+if (self.options[STMFakePersistingOptionInMemoryDBKey])
+
 @interface STMFakePersisting ()
+
+@property (nonatomic, strong) NSMutableDictionary <NSString*, NSMutableSet <NSDictionary*> *> *data;
 
 @end
 
 
 @implementation STMFakePersisting
+
+- (void)setOptions:(NSDictionary *)options {
+    if (options[STMFakePersistingOptionInMemoryDBKey]) {
+        self.data = [NSMutableDictionary dictionary];
+    }
+    _options = options.copy;
+}
 
 + (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
     STMFakePersisting *result = [[self.class alloc] init];
@@ -43,27 +55,55 @@ return returnValue; \
     return result;
 }
 
+
+- (NSMutableSet <NSDictionary*> *)dataWithName:(NSString *)name {
+    NSMutableSet *data = self.data[name];
+    if (!data) {
+        data = [NSMutableSet set];
+        self.data[name] = data;
+    }
+    return data;
+}
+
 #pragma mark - PersistingSync implementation
 
 - (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
+    STMFakePersistingIfInMemoryDB {
+        NSSet *found = [[self dataWithName:entityName] objectsPassingTest:^BOOL(NSDictionary *obj, BOOL * _Nonnull stop) {
+            if (![identifier isEqualToString:obj[@"id"]]) return NO;
+            *stop = @(YES);
+            return YES;
+        }];
+        return found.allObjects.firstObject;
+    }
+    
     STMFakePersistingEmptyResponse(nil)
 
 }
 
-- (NSArray *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
+    STMFakePersistingIfInMemoryDB {
+        return [[self dataWithName:entityName] filteredSetUsingPredicate:predicate].allObjects;
+    }
     STMFakePersistingEmptyResponse(nil)
 
 }
 
 - (NSUInteger) countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
-    STMFakePersistingEmptyResponse(0)
+    return [self findAllSync:entityName predicate:predicate options:options error:error].count;
 
 }
 
 - (BOOL) destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+    
+    STMFakePersistingIfInMemoryDB {
+        NSDictionary *found = [self findSync:entityName identifier:identifier options:options error:error];
+        [[self dataWithName:entityName] removeObject:found];
+        return !!found;
+    }
     
     STMFakePersistingEmptyResponse(NO)
     
@@ -76,17 +116,39 @@ return returnValue; \
         return nil;
     }
     
+    STMFakePersistingIfInMemoryDB {
+        [[self dataWithName:entityName] addObject:attributes];
+        return attributes;
+    }
+    
     STMFakePersistingEmptyResponse(attributes)
     
 }
 
 - (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
+    STMFakePersistingIfInMemoryDB {
+        NSArray *found = [self findAllSync:entityName predicate:predicate options:options error:error];
+        
+        __block NSUInteger result = 0;
+        
+        [found enumerateObjectsUsingBlock:^(NSDictionary* obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            result += [self destroySync:entityName identifier:obj[@"id"] options:options error:error];
+        }];
+        
+        return result;
+    }
+    
     STMFakePersistingEmptyResponse(0)
 
 }
 
 - (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+    
+    STMFakePersistingIfInMemoryDB {
+        [[self dataWithName:entityName] addObjectsFromArray:attributeArray];
+        return attributeArray;
+    }
     
     STMFakePersistingEmptyResponse(attributeArray)
     

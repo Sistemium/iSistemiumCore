@@ -10,6 +10,8 @@
 #import "STMPersistingFullStack.h"
 
 #define STMFakePersistingOptions NSDictionary *
+#define STMFakePersistingOptionInMemoryDBKey @"inMemoryDB"
+#define STMFakePersistingOptionInMemoryDB STMFakePersistingOptionInMemoryDBKey:@YES
 #define STMFakePersistingOptionEmptyDBKey @"emptyDB"
 #define STMFakePersistingOptionEmptyDB STMFakePersistingOptionEmptyDBKey:@YES
 
