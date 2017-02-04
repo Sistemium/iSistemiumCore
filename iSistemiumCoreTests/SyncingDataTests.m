@@ -18,7 +18,7 @@
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *syncedExpectations;
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjectsIds;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjects;
 @property (nonatomic, strong) NSString *pkToWait;
 
 @end
@@ -61,7 +61,7 @@
 
         XCTAssertNil(error);
 
-        [self.testObjectsIds enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSString * _Nonnull entityName, BOOL * _Nonnull stop) {
+        [self.testObjects enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSString * _Nonnull entityName, BOOL * _Nonnull stop) {
            
             NSError *localError = nil;
             
@@ -84,7 +84,7 @@
 - (void)createTestData {
     
     self.syncedExpectations = @{}.mutableCopy;
-    self.testObjectsIds = @{}.mutableCopy;
+    self.testObjects = @{}.mutableCopy;
     
     NSDictionary *testAttributes = @{@"source"      : @"SyncingDataTests",
                                      @"ownerXid"    : self.pkToWait};
@@ -105,7 +105,7 @@
     NSString *logMessageId = logMessage[@"id"];
     XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync logMessage"];
     self.syncedExpectations[logMessageId] = expectation;
-    self.testObjectsIds[logMessageId] = entityName;
+    self.testObjects[logMessageId] = entityName;
     
     entityName = @"STMPartner";
     NSMutableDictionary *partnerAttributes = testAttributes.mutableCopy;
@@ -121,7 +121,7 @@
     NSString *partnerId = partner[@"id"];
     expectation = [self expectationWithDescription:@"wait for sync partner"];
     self.syncedExpectations[partnerId] = expectation;
-    self.testObjectsIds[partnerId] = entityName;
+    self.testObjects[partnerId] = entityName;
 
     
     entityName = @"STMOutlet";
@@ -139,7 +139,7 @@
     NSString *outletId = outlet[@"id"];
     expectation = [self expectationWithDescription:@"wait for sync outlet"];
     self.syncedExpectations[outletId] = expectation;
-    self.testObjectsIds[outletId] = entityName;
+    self.testObjects[outletId] = entityName;
 
 }
 
