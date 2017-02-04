@@ -201,20 +201,25 @@
     NSString *xid = [STMFunctions uuidString];
     NSString *errorDescription;
     
-    NSDictionary *body = @{@"entity":entityName,
-                           @"id":xid
-                           };
+    NSDictionary *body = @{@"entity":entityName};
     
-    self.fakePerster.options = @{STMFakePersistingOptionEmptyDB};
+    self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
     
     // Update data
     
-    errorDescription = @"!";
+    errorDescription = @"Expect no errors";
     
-    [self doUpdateRequest:[STMFunctions setValue:@{}
+    [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid}
                                           forKey:@"data"
                                     inDictionary:body]
                    expect:errorDescription];
+    
+    // Find Updated
+    body =  @{@"entity":entityName,
+              @"id":xid
+              };
+    
+    [self doFindRequest:body expect:errorDescription];
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -270,6 +275,7 @@
     XCTestExpectation *expectation = self.expectations[parameters[@"requestId"]];
     XCTAssertNotNil(expectation);
     XCTAssertNotNil(data);
+    XCTAssertEqualObjects(@"Expect no errors", expectation.description);
     [expectation fulfill];
 
 }
