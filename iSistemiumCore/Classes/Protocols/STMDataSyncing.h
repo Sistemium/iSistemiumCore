@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncingSubscriber.h"
-
-@class STMDataSyncingState;
+#import "STMDataSyncingState.h"
 
 @protocol STMDataSyncing <NSObject>
 
