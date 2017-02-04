@@ -220,9 +220,9 @@
 
     NSDictionary *anyObjectToSend = nil;
     
-    for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
+    for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
 
-        anyObjectToSend = [self findSyncableObjectWithEntityName:uploadableEntityName];
+        anyObjectToSend = [self findSyncableObjectWithEntityName:entityName];
         
         if (anyObjectToSend) break;
         
