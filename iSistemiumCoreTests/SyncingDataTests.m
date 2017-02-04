@@ -159,8 +159,9 @@
     NSArray *testEntities = [self.testObjects.allValues valueForKeyPath:@"@distinctUnionOfObjects.self"];
     BOOL isNotTestEntities = ![testEntities containsObject:entityName];
     BOOL isNotTestSource = [source isEqual:NSNull.null] || ![source isEqualToString:@"SyncingDataTests"];
+    BOOL isNotCurrentTest = ![itemData[@"ownerXid"] isEqual:self.pkToWait];
     
-    BOOL isNotTheExpecteedData = isNotTestEntities || isNotTestSource;
+    BOOL isNotTheExpecteedData = isNotTestEntities || isNotTestSource || isNotCurrentTest;
     
     if (isNotTheExpecteedData) {
         [self.unsyncedDataHelper setSynced:NO
@@ -182,12 +183,8 @@
                                   itemData:itemData
                                itemVersion:itemVersion];
         
-        if ([itemData[@"ownerXid"] isEqualToString:self.pkToWait]) {
-            
-            XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
-            [expectation fulfill];
-            
-        }
+        XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
+        [expectation fulfill];
         
     });
     
