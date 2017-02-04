@@ -15,7 +15,7 @@
 
 #import "STMCoreSessionManager.h"
 
-#define PersistingTestsTimeOut 5
+#define PersistingTestsTimeOut 15
 
 @interface STMPersistingTests : XCTestCase
 
