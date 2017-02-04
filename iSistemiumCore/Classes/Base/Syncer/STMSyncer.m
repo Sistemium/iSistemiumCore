@@ -161,7 +161,7 @@
 
 - (void)setSyncerState:(STMSyncerState)syncerState {
     
-    if (self.isRunning/* && !self.syncing*/ && syncerState != _syncerState) {
+    if (self.isRunning && syncerState != _syncerState) {
         
         STMSyncerState previousState = _syncerState;
         
@@ -183,18 +183,6 @@
         
         switch (_syncerState) {
             case STMSyncerIdle: {
-                
-                //                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-                //                self.syncing = NO;
-                //                self.sendOnce = NO;
-                //                self.checkSending = NO;
-                
-                //                self.entitySyncNames = nil;
-                
-                //                if (self.receivingEntitiesNames) self.receivingEntitiesNames = nil;
-                //                if (self.fetchCompletionHandler) self.fetchCompletionHandler(self.fetchResult);
-                //                self.fetchCompletionHandler = nil;
-                
                 break;
             }
             case STMSyncerSendData:
@@ -202,9 +190,6 @@
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
                 [STMClientDataController checkClientData];
-                //                self.syncing = YES;
-                //                [STMSocketController sendUnsyncedObjects:self withTimeout:[self timeout]];
-                
                 self.syncerState = STMSyncerIdle;
                 
                 break;
@@ -212,7 +197,6 @@
             case STMSyncerReceiveData: {
                 
                 [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                //                self.syncing = YES;
                 [self receiveData];
                 self.syncerState = STMSyncerIdle;
                 
