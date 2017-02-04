@@ -50,8 +50,11 @@
     XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
     
     self.pkToWait = [STMFunctions uuidString];
+    NSLog(@"self.pkToWait %@", self.pkToWait);
     
     [self createTestData];
+    
+    NSLog(@"self.testObjects %@", self.testObjects);
     
     NSDate *startedAt = [NSDate date];
     
