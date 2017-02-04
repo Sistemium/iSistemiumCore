@@ -21,6 +21,7 @@
 @property (nonatomic, strong) STMFakePersisting *fakePerster;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *expectations;
+@property (nonatomic) NSUInteger requestId;
 
 @end
 
@@ -62,6 +63,8 @@
         self.scriptMessenger.modellingDelegate = self.modeller;
         
         self.scriptMessagingDelegate = self.scriptMessenger;
+        
+        self.requestId = 0;
     }
     
     self.fakePerster.options = nil;
@@ -130,30 +133,25 @@
 }
 
 
-- (void)testFindError {
+- (void)testFindErrors {
     
     NSString *entityName = @"LogMessage";
     NSString *xid = [STMFunctions uuidString];
     
     // Not Implemented
     
-    [self doFindRequestId:@"1"
-                     body:@{@"entity":entityName,
-                            @"id": xid
-                            }
-                   expect:@"Not implemented"];
+    [self doFindRequest:@{@"entity":entityName,
+                          @"id": xid
+                          }
+                 expect:@"Not implemented"];
     
     // No xid
     
-    [self doFindRequestId:@"2"
-                     body:@{@"entity":entityName}
-                   expect:@"empty xid"];
+    [self doFindRequest:@{@"entity":entityName} expect:@"empty xid"];
     
     // No Entity
     
-    [self doFindRequestId:@"3"
-                     body:@{}
-                   expect:@"entity is not specified"];
+    [self doFindRequest:@{} expect:@"entity is not specified"];
 
     // Not Found
     
@@ -167,9 +165,7 @@
     errorDescription =
     [NSString stringWithFormat:@"entityName: not found in data model"];
     
-    [self doFindRequestId:@"4"
-                     body:body
-                   expect:errorDescription];
+    [self doFindRequest:body expect:errorDescription];
     
     // Find with unknown id
     
@@ -182,18 +178,13 @@
     errorDescription =
     [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xid, entityName];
     
-    [self doFindRequestId:@"5"
-                     body:body
-                   expect:errorDescription];
+    [self doFindRequest:body expect:errorDescription];
     
     // Update with no data
     
     errorDescription = @"message.body.data for update message is not a NSDictionary class";
     
-    [self.scriptMessagingDelegate receiveUpdateMessage:[self expect:WK_MESSAGE_UPDATE
-                                                          requestId:@"6"
-                                                               body:body
-                                                             description:errorDescription]];
+    [self doUpdateRequest:body expect:errorDescription];
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -207,18 +198,26 @@
 #pragma mark - Private helpers
 
 
-- (void)doFindRequestId:(NSString *)requestId body:(NSDictionary*)body expect:(NSString *)errorDescription{
+- (void)doFindRequest:(NSDictionary*)body expect:(NSString *)errorDescription{
     
-    [self.scriptMessagingDelegate receiveFindMessage:[self expect:WK_MESSAGE_FIND
-                                                        requestId:requestId
-                                                             body:body
-                                                           description:errorDescription]];
+    [self.scriptMessagingDelegate receiveFindMessage:[self doRequestName:WK_MESSAGE_FIND
+                                                                    body:body
+                                                             description:errorDescription]];
+    
+}
+
+- (void)doUpdateRequest:(NSDictionary*)body expect:(NSString *)description{
+    
+    [self.scriptMessagingDelegate receiveUpdateMessage:[self doRequestName:WK_MESSAGE_UPDATE
+                                                                      body:body
+                                                               description:description]];
     
 }
 
 
-- (STMScriptMessage *)expect:(NSString *)requestName requestId:(NSString *)requestId body:(NSDictionary*)body description:(NSString *)description{
+- (STMScriptMessage *)doRequestName:(NSString *)requestName body:(NSDictionary*)body description:(NSString *)description{
     
+    NSString *requestId = [NSString stringWithFormat:@"%@", @(++self.requestId)];
     XCTAssertNil(self.expectations[requestId]);
     
     self.expectations[requestId] = [self expectationWithDescription:description];
@@ -238,7 +237,12 @@
 
 
 - (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters {
-    XCTAssertNoThrow(@"not expected");
+    NSLog(@"ScriptMessagingTests callbackWithData: %@ params: %@", data, parameters);
+    XCTestExpectation *expectation = self.expectations[parameters[@"requestId"]];
+    XCTAssertNotNil(expectation);
+    XCTAssertNotNil(data);
+    [expectation fulfill];
+
 }
 
 - (void)callbackWithError:(NSString *)errorDescription parameters:(NSDictionary *)parameters {
@@ -252,7 +256,7 @@
 }
 
 - (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
-    XCTAssertNoThrow(@"not expected");
+    XCTAssertNil(@"not expected");
 }
 
 
