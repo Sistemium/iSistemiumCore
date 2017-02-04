@@ -42,14 +42,6 @@
     
 }
 
-- (instancetype)init {
-    
-    self = [super init];
-    _subscriptions = [NSMutableDictionary dictionary];
-    return self;
-    
-}
-
 #pragma mark - Private methods
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {

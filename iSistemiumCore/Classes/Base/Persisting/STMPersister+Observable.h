@@ -6,10 +6,23 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPersister.h"
 #import "STMPersistingObserving.h"
 
-@interface STMPersister (Observable) <STMPersistingObserving>
+#warning should rename the class files to STMPersistingObservable
+
+@interface STMPersistingObservingSubscription : NSObject
+
+@property (nonatomic, strong, nonnull) NSString *entityName;
+@property (nonatomic, strong, nullable) NSPredicate *predicate;
+@property (nonatomic, strong, nonnull) STMPersistingObservingSubscriptionCallback callback;
+
+@end
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface STMPersistingObservable : NSObject <STMPersistingObserving>
+
+@property (nonatomic, strong, readonly) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
 
 - (void)notifyObservingEntityName:(NSString *)entityName
                         ofUpdated:(NSDictionary *)item;
@@ -18,3 +31,5 @@
                    ofUpdatedArray:(NSArray *)items;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -8,7 +8,15 @@
 
 #import "STMPersister+Observable.h"
 
-@implementation STMPersister (Observable)
+@implementation STMPersistingObservable
+
+- (instancetype)init {
+    
+    self = [super init];
+    _subscriptions = [NSMutableDictionary dictionary];
+    return self;
+    
+}
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate

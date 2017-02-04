@@ -8,8 +8,9 @@
 
 #import <CoreData/CoreData.h>
 #import "STMModelling.h"
+#import "STMPersister+Observable.h"
 
-@interface STMModeller : NSObject <STMModelling>
+@interface STMModeller : STMPersistingObservable <STMModelling>
 
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 
