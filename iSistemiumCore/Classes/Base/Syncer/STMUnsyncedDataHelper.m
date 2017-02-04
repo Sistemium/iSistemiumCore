@@ -59,16 +59,6 @@
 
 #pragma mark - STMDataSyncing
 
-+ (instancetype)initWithPersistenceDelegate:(id<STMPersistingFullStack>)persistenceDelegate subscriberDelegate:(id<STMDataSyncingSubscriber>)subscriberDelegate {
-    
-    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
-    unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
-    
-    return unsyncedDataHelper;
-    
-}
-
 - (void)startSyncing {
     self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
 }
