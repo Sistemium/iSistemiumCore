@@ -140,6 +140,9 @@
 
 - (void)startHandleUnsyncedObjects {
     
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+    
     if (!self.subscriberDelegate) return;
 
     if (!self.syncingState) return;
@@ -154,6 +157,9 @@
 
 - (void)finishHandleUnsyncedObjects {
     
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSLog(@"finishHandleUnsyncedObjects");
     
     [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSMutableSet<NSString *> * ids, BOOL * stop) {
@@ -175,7 +181,10 @@
         return;
         
     }
-    
+
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSDictionary *objectToSend = [self anyObjectToSend];
     
     if (objectToSend) {
@@ -206,6 +215,9 @@
 
 - (NSDictionary *)anyObjectToSend {
    
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSDictionary *anyObjectToSend = nil;
     
     for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
@@ -222,6 +234,9 @@
 
 - (NSDictionary *)findSyncableObjectWithEntityName:(NSString *)entityName {
     
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName];
     
     if (unsyncedObject) {
@@ -242,6 +257,9 @@
 }
 
 - (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName {
+
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
 
     NSError *error = nil;
     
@@ -269,6 +287,9 @@
 
 - (BOOL)haveUnsyncedParentForObject:(NSDictionary *)object {
     
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     BOOL haveUnsyncedParent = NO;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
