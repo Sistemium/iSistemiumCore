@@ -11,7 +11,8 @@
 #import "STMUnsyncedDataHelper.h"
 #import "STMLogger.h"
 
-#define SYNCING_DATA_TEST_ASYNC_DELAY PersistingTestsTimeOut / 5 * NSEC_PER_SEC
+//#define SYNCING_DATA_TEST_ASYNC_DELAY PersistingTestsTimeOut / 5 * NSEC_PER_SEC
+#define SYNCING_DATA_TEST_ASYNC_DELAY 0.5 * NSEC_PER_SEC
 #define SYNCING_DATA_TEST_DISPATCH_TIME dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY))
 #define SYNCING_DATA_TEST_SOURCE @"SyncingDataTests"
 
