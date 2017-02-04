@@ -16,19 +16,31 @@
 - (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
     
     NSError *error;
-    NSArray *result;
     
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         return [self rejectWithErrorMessage:@"message.body is not a NSDictionary class"];
     }
     
     NSDictionary *parameters = scriptMessage.body;
+    NSString *entityName = parameters[@"entity"];
+
+    if (!entityName) {
+        return [self rejectWithErrorMessage:@"entity is not specified"];
+    }
     
+    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
+        return [self rejectWithErrorMessage:[entityName stringByAppendingString:@": not found in data model"]];
+    }
+
     if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
         
-        result = [self findObjectsWithParameters:parameters error:&error];
+        NSString *xidString = parameters[@"id"];
         
-        return [AnyPromise promiseWithValue:error ? error : result];
+        if (!xidString) {
+            return [self rejectWithErrorMessage:@"empty xid"];
+        }
+            
+        return [self findEntityName:entityName xidString:xidString];
         
     }
     
@@ -36,7 +48,6 @@
     
     if (error) return [AnyPromise promiseWithValue:error];
     
-    NSString *entityName = parameters[@"entity"];
     NSDictionary *options = parameters[@"options"];
     
     NSPredicate *predicate = [self predicateForScriptMessage:scriptMessage error:&error];
@@ -238,57 +249,26 @@
     
     [STMFunctions error:&error withMessage:errorMessage];
     
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        resolve(error);
-    }];
+    return [AnyPromise promiseWithValue:error];
     
 }
 
-- (NSArray *)findObjectsWithParameters:(NSDictionary *)parameters error:(NSError **)error {
+- (AnyPromise *)findEntityName:(NSString *)entityName xidString:(NSString *)xidString {
     
-    NSString *errorMessage = nil;
     
-    NSString *entityName = parameters[@"entity"];
-    
-    if (!entityName) {
-        errorMessage = @"entity is not specified";
-    } else if ([self.modellingDelegate isConcreteEntityName:entityName]) {
+    return [self.persistenceDelegate find:entityName
+                               identifier:xidString
+                                  options:nil]
+    .then(^(NSDictionary * object){
         
-        NSString *xidString = parameters[@"id"];
-        
-        if (xidString) {
-            
-            NSDictionary* object = [self.persistenceDelegate findSync:entityName
-                                                           identifier:xidString
-                                                              options:nil
-                                                                error:error];
-            
-            if (object) {
-                return @[object];
-            }
-            
-            if (*error) {
-                errorMessage = [*error localizedDescription];
-                return nil;
-            }
-            
-            errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@",
-                            xidString, entityName];
-            
-        } else {
-            errorMessage = @"empty xid";
+        if (object) {
+            return [AnyPromise promiseWithValue:@[object]];
         }
         
-    } else {
-        errorMessage = [entityName stringByAppendingString:@": not found in data model"];
-    }
+        NSString *errorMessage = [NSString stringWithFormat:@"no object with xid %@ and entity name %@", xidString, entityName];
+        return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:errorMessage]];
     
-    if (errorMessage) {
-        [STMFunctions error:error
-                withMessage:errorMessage];
-    }
-    
-    return nil;
+    });
     
 }
 
