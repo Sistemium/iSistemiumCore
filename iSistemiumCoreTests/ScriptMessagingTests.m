@@ -13,6 +13,17 @@
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMFakePersisting.h"
 
+
+@interface ScriptMessagingTestsExpectation : NSObject
+
+@property (nonatomic,strong) XCTestExpectation * expectation;
+@property (nonatomic) NSNumber *count;
+@property (nonatomic,strong) NSPredicate *predicate;
+
++ (instancetype)withExpectation:(XCTestExpectation *)expectation;
+
+@end
+
 @interface ScriptMessagingTests : XCTestCase <STMScriptMessagingOwner>
 
 @property (nonatomic, strong) STMModeller *modeller;
@@ -20,8 +31,19 @@
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessagingDelegate;
 @property (nonatomic, strong) STMFakePersisting *fakePerster;
 
-@property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *expectations;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, ScriptMessagingTestsExpectation *> *expectations;
 @property (nonatomic) NSUInteger requestId;
+
+@end
+
+
+@implementation ScriptMessagingTestsExpectation
+
++ (instancetype)withExpectation:(XCTestExpectation *)expectation {
+    ScriptMessagingTestsExpectation *instance = [[self.class alloc] init];
+    instance.expectation = expectation;
+    return instance;
+}
 
 @end
 
@@ -222,12 +244,22 @@
     
     // Create many
     
-    [self doUpdateManyRequest:[STMFunctions setValue:@[@{@"name":@"Name 1"}]
+    NSArray *testArray = @[
+                           @{@"text":@"Name 1"},
+                           @{@"text":@"Name 2"}
+                           ];
+    
+    [self doUpdateManyRequest:[STMFunctions setValue:testArray
                                               forKey:@"data"
                                         inDictionary:body]
                        expect:errorDescription];
     
-    [self doFindAllRequest:body expect:errorDescription];
+    [self doFindAllRequest:body expectCount:@(3)];
+    
+    NSDictionary *where = @{@"text": @{@"==": @"Name 1"}};
+    
+    [self doFindAllRequest:[STMFunctions setValue:where forKey:@"where" inDictionary:body]
+               expectCount:@(1)];
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -248,11 +280,15 @@
     
 }
 
-- (void)doFindAllRequest:(NSDictionary*)body expect:(NSString *)errorDescription{
+- (void)doFindAllRequest:(NSDictionary*)body expectCount:(NSNumber *)count{
     
-    [self.scriptMessagingDelegate receiveFindMessage:[self doRequestName:WK_MESSAGE_FIND_ALL
-                                                                    body:body
-                                                             description:errorDescription]];
+    STMScriptMessage *message = [self doRequestName:WK_MESSAGE_FIND_ALL
+                                               body:body
+                                        description:@"Expect no errors"];
+    
+    self.expectations[message.body[@"requestId"]].count = count;
+    
+    [self.scriptMessagingDelegate receiveFindMessage:message];
     
 }
 
@@ -278,7 +314,7 @@
     NSString *requestId = [NSString stringWithFormat:@"%@", @(++self.requestId)];
     XCTAssertNil(self.expectations[requestId]);
     
-    self.expectations[requestId] = [self expectationWithDescription:description];
+    self.expectations[requestId] = [ScriptMessagingTestsExpectation withExpectation:[self expectationWithDescription:description]];
     
     STMScriptMessage *message = [[STMScriptMessage alloc] init];
     
@@ -296,18 +332,25 @@
 
 - (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters {
     NSLog(@"ScriptMessagingTests callbackWithData: %@ params: %@", data, parameters);
-    XCTestExpectation *expectation = self.expectations[parameters[@"requestId"]];
+    
+    ScriptMessagingTestsExpectation *expectation = self.expectations[parameters[@"requestId"]];
     XCTAssertNotNil(expectation);
     XCTAssertNotNil(data);
-    XCTAssertEqualObjects(@"Expect no errors", expectation.description);
-    [expectation fulfill];
+    XCTAssertEqualObjects(@"Expect no errors", expectation.expectation.description);
+    NSNumber *count = expectation.count;
+    
+    if (count) {
+        XCTAssertEqual(count.integerValue, data.count);
+    }
+    
+    [expectation.expectation fulfill];
 
 }
 
 - (void)callbackWithError:(NSString *)errorDescription parameters:(NSDictionary *)parameters {
     XCTAssertNotNil(errorDescription);
     NSLog(@"ScriptMessagingTests callbackWithError '%@' params: %@", errorDescription, parameters);
-    XCTestExpectation *expectation = self.expectations[parameters[@"requestId"]];
+    XCTestExpectation *expectation = self.expectations[parameters[@"requestId"]].expectation;
     if (expectation) {
         XCTAssertEqualObjects(expectation.description, errorDescription);
         [expectation fulfill];
