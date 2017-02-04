@@ -71,8 +71,7 @@
     }
     
     NSDictionary *parameters = scriptMessage.body;
-    NSString *entityName = [NSString stringWithFormat:@"%@%@",
-                            ISISTEMIUM_PREFIX, parameters[@"entity"]];
+    NSString *entityName = parameters[@"entity"];
     
     if (![self.modellingDelegate isConcreteEntityName:entityName]) {
         
@@ -175,9 +174,7 @@
         subscription.callbackName = callbackName;
     }
     
-    for (NSString *item in entities) {
-        
-        NSString *entityName = [STMFunctions addPrefixToEntityName:item];
+    for (NSString *entityName in entities) {
         
         if ([self.modellingDelegate isConcreteEntityName:entityName]) {
             
