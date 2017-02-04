@@ -14,17 +14,14 @@
 
 + (instancetype)array;
 
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumber *> *primaryIndex;
-
 - (void)addObject:(NSDictionary*)anObject;
 - (void)addObjectsFromArray:(NSArray <NSDictionary*> *)array;
 
-- (void)removeObjectAtIndex:(NSUInteger)index;
+- (BOOL)removeObjectWithKey:(NSString *)key;
 
-- (NSDictionary *)objectWithKey:(NSString *)idettifier;
+- (NSDictionary *)objectWithKey:(NSString *)key;
 - (NSDictionary *)objectAtIndex:(NSUInteger)index;
 
 - (NSArray <NSDictionary *> *)filteredArrayUsingPredicate:(NSPredicate *)predicate;
-
 
 @end

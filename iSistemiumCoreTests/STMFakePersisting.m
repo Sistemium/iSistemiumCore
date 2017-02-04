@@ -101,10 +101,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (BOOL) destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB {
-        STMIndexedArray *data = [self dataWithName:entityName];
-        NSNumber *index = data.primaryIndex[identifier];
-        if (!index) return 0;
-        [data removeObjectAtIndex:index.integerValue];
+        return [[self dataWithName:entityName] removeObjectWithKey:identifier];
     }
     
     STMFakePersistingEmptyResponse(NO)
