@@ -1083,7 +1083,7 @@
     
     if (!self.socketTransport.isReady) {
         
-        [self.syncerHelper defantomizingFinished];
+        [self.defantomizingDelegate defantomizingFinished];
         return;
         
     }
@@ -1094,7 +1094,7 @@
     
     self.isDefantomizing = YES;
     
-    [self.syncerHelper findFantomsWithCompletionHandler:^(NSArray <NSDictionary *> *fantomsArray) {
+    [self.defantomizingDelegate findFantomsWithCompletionHandler:^(NSArray <NSDictionary *> *fantomsArray) {
         
         if (fantomsArray) {
         
@@ -1164,8 +1164,8 @@
     
     NSLog(@"defantomize error: %@", errorString);
     
-    [self.syncerHelper defantomizeErrorWithObject:fantomDic
-                                     deleteObject:deleteObject];
+    [self.defantomizingDelegate defantomizeErrorWithObject:fantomDic
+                                              deleteObject:deleteObject];
     [self fantomsCountDecrease];
     
     return;
@@ -1197,7 +1197,7 @@
 - (void)stopDefantomizing {
     
     self.isDefantomizing = NO;
-    [self.syncerHelper defantomizingFinished];
+    [self.defantomizingDelegate defantomizingFinished];
 
 }
 
