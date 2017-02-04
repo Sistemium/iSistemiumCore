@@ -166,9 +166,8 @@
         self.batteryTracker.session = self;
         self.status = STMSessionRunning;
 
-        STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
-        syncerHelper.persistenceDelegate = self.persistenceDelegate;
-
+        STMSyncerHelper *syncerHelper = [STMSyncerHelper initWithPersistenceDelegate:self.persistenceDelegate
+                                                                  subscriberDelegate:nil];
         self.syncer.syncerHelper = syncerHelper;
         self.syncer.dataSyncingDelegate = syncerHelper;
         self.syncer.persistenceDelegate = self.persistenceDelegate;

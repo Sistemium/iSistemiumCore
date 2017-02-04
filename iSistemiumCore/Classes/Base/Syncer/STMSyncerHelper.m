@@ -23,6 +23,7 @@
 
 @implementation STMSyncerHelper
 
+@synthesize persistenceDelegate = _persistenceDelegate;
 @synthesize subscriberDelegate = _subscriberDelegate;
 @synthesize syncingState = _syncingState;
 
@@ -45,8 +46,8 @@
     
     if (!_unsyncedDataHelper) {
         
-        _unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-        _unsyncedDataHelper.persistenceDelegate = self.persistenceDelegate;
+        _unsyncedDataHelper = [STMUnsyncedDataHelper initWithPersistenceDelegate:self.persistenceDelegate
+                                                              subscriberDelegate:self.subscriberDelegate];
         
     }
     return _unsyncedDataHelper;
@@ -55,6 +56,16 @@
 
 
 #pragma mark - STMDataSyncing
+
++ (instancetype)initWithPersistenceDelegate:(id<STMPersistingFullStack>)persistenceDelegate subscriberDelegate:(id<STMDataSyncingSubscriber>)subscriberDelegate {
+    
+    STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
+    syncerHelper.persistenceDelegate = persistenceDelegate;
+    syncerHelper.subscriberDelegate = subscriberDelegate;
+    
+    return syncerHelper;
+    
+}
 
 - (void)startSyncing {
     [self.unsyncedDataHelper startSyncing];

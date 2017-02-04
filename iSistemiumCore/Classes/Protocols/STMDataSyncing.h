@@ -23,8 +23,11 @@
 @protocol STMDataSyncing <NSObject>
 
 @property (nonatomic, strong) id <STMDataSyncingState> syncingState;
-@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
 @property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
+@property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
+
++ (instancetype)initWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate
+                         subscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate;
 
 - (void)startSyncing;
 - (void)pauseSyncing;

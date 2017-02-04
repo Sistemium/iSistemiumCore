@@ -36,16 +36,10 @@
 
 @implementation STMUnsyncedDataHelper
 
+@synthesize persistenceDelegate = _persistenceDelegate;
 @synthesize subscriberDelegate = _subscriberDelegate;
 @synthesize syncingState = _syncingState;
 
-
-+ (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
-    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
-    unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
-    return unsyncedDataHelper;
-}
 
 - (void)setSyncingState:(id <STMDataSyncingState>)syncingState {
 
@@ -59,6 +53,16 @@
 
 
 #pragma mark - STMDataSyncing
+
++ (instancetype)initWithPersistenceDelegate:(id<STMPersistingFullStack>)persistenceDelegate subscriberDelegate:(id<STMDataSyncingSubscriber>)subscriberDelegate {
+    
+    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
+    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
+    unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
+    
+    return unsyncedDataHelper;
+    
+}
 
 - (void)startSyncing {
     self.syncingState = [[STMUnsyncedDataHelperState alloc] init];

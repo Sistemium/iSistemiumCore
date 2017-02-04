@@ -13,8 +13,5 @@
 
 @interface STMUnsyncedDataHelper : NSObject <STMDataSyncing>
 
-+ (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate
-                                                  subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate;
-
 
 @end

@@ -34,8 +34,8 @@
     if (!self.unsyncedDataHelper) {
         
 //        Uncomment to see test magically failed
-        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister
-                                                                                subscriber:self];
+        self.unsyncedDataHelper = [STMUnsyncedDataHelper initWithPersistenceDelegate:self.persister
+                                                                  subscriberDelegate:self];
 //        self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
 //        self.unsyncedDataHelper.persistenceDelegate = self.persister;
 //        self.unsyncedDataHelper.subscriberDelegate = self;
