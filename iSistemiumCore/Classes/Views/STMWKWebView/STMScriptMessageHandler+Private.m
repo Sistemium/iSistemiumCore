@@ -193,6 +193,19 @@
     
     if (result) {
         
+        for (NSString *entityName in subscription.persisterSubscriptions) {
+            [self.persistenceDelegate cancelSubscription:subscription.persisterSubscriptions[entityName]];
+        }
+        
+        for (NSString *entityName in subscription.entityNames) {
+            [self.persistenceDelegate observeEntity:entityName
+                                          predicate:nil
+                                           callback:^(NSArray * _Nullable data) {
+                                               [self sendSubscribedBunchOfObjects:data
+                                                                       entityName:entityName];
+                                           }];
+        }
+        
         self.subscriptions[callbackName] = subscription;
         
     } else {
