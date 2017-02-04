@@ -195,6 +195,35 @@
 }
 
 
+- (void)testUpdateErrors {
+    
+    NSString *entityName = @"LogMessage";
+    NSString *xid = [STMFunctions uuidString];
+    NSString *errorDescription;
+    
+    NSDictionary *body = @{@"entity":entityName,
+                           @"id":xid
+                           };
+    
+    self.fakePerster.options = @{STMFakePersistingOptionEmptyDB};
+    
+    // Update data
+    
+    errorDescription = @"!";
+    
+    [self doUpdateRequest:[STMFunctions setValue:@{}
+                                          forKey:@"data"
+                                    inDictionary:body]
+                   expect:errorDescription];
+    
+    //
+    // Now wait because STMScriptMessageHandler is using async promises
+    //
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+
 #pragma mark - Private helpers
 
 
