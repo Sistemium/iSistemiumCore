@@ -15,8 +15,6 @@
 
 - (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
     
-    NSError *error;
-    
     if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
         return [self rejectWithErrorMessage:@"message.body is not a NSDictionary class"];
     }
@@ -44,13 +42,12 @@
         
     }
     
-    NSLog(@"find %@", @([NSDate timeIntervalSinceReferenceDate]));
+    NSError *error;
+    NSPredicate *predicate = [self predicateForScriptMessage:scriptMessage error:&error];
     
     if (error) return [AnyPromise promiseWithValue:error];
     
     NSDictionary *options = parameters[@"options"];
-    
-    NSPredicate *predicate = [self predicateForScriptMessage:scriptMessage error:&error];
     
     return [self.persistenceDelegate findAll:entityName
                                    predicate:predicate
