@@ -56,12 +56,12 @@
 
 #pragma mark - STMDataSyncing
 
-- (void)setSyncingState:(STMDataSyncingState *)syncingState {
-    
-    _syncingState = syncingState;
-    
-    self.unsyncedDataHelper.syncingState = syncingState;
-    
+- (void)startSyncing {
+    [self.unsyncedDataHelper startSyncing];
+}
+
+- (void)pauseSyncing {
+    [self.unsyncedDataHelper pauseSyncing];
 }
 
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {

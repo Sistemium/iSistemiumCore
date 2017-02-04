@@ -1460,7 +1460,7 @@
     NSLogMethodName;
 
     self.dataSyncingDelegate.subscriberDelegate = self;
-    self.dataSyncingDelegate.syncingState = [[STMDataSyncingState alloc] init];
+    [self.dataSyncingDelegate startSyncing];
     
 }
 
@@ -1469,7 +1469,7 @@
     NSLogMethodName;
 
     self.dataSyncingDelegate.subscriberDelegate = nil;
-    self.dataSyncingDelegate.syncingState = nil;
+    [self.dataSyncingDelegate pauseSyncing];
 
 }
 

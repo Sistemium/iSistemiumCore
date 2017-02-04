@@ -12,10 +12,24 @@
 #import "STMEntityController.h"
 
 
+@interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
+
+@end
+
+
+@implementation STMUnsyncedDataHelperState
+
+@synthesize isInSyncingProcess = _isInSyncingProcess;
+
+
+@end
+
+
 @interface STMUnsyncedDataHelper()
 
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
+
 
 @end
 
@@ -33,7 +47,7 @@
     return unsyncedDataHelper;
 }
 
-- (void)setSyncingState:(STMDataSyncingState *)syncingState {
+- (void)setSyncingState:(id <STMDataSyncingState>)syncingState {
 
     _syncingState = syncingState;
     
@@ -45,6 +59,14 @@
 
 
 #pragma mark - STMDataSyncing
+
+- (void)startSyncing {
+    self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+}
+
+- (void)pauseSyncing {
+    self.syncingState = nil;
+}
 
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
