@@ -346,7 +346,7 @@
     
     NSString *pk = object[@"id"];
     
-    NSLog(@"declineFromSync: %@ %@", entityName, pk);
+//    NSLog(@"declineFromSync: %@ %@", entityName, pk);
     
     @synchronized (self.erroredObjectsByEntity) {
         NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
