@@ -13,10 +13,15 @@
 
 #define STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE [AnyPromise promiseWithValue:STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR]
 
-#define STMFakePersistingEmptyResponsePromise(value) \
-if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
-    return [AnyPromise promiseWithValue:value]; \
-}
+#define STMFakePersistingPromisedWithSyncScalar(returnType,methodName,signatureAttributes) \
+NSError *error; \
+returnType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+return [AnyPromise promiseWithValue: error ? error : @(result)];
+
+#define STMFakePersistingPromisedWithSync(returnType,methodName,signatureAttributes) \
+NSError *error; \
+returnType *result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+return [AnyPromise promiseWithValue: error ? error : result];
 
 #define STMFakePersistingEmptyResponse(returnValue) \
 if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
@@ -66,7 +71,12 @@ return returnValue; \
 
 - (NSDictionary *) mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
-    STMFakePersistingEmptyResponse(nil)
+    if (!attributes) {
+        [STMFunctions error:error withMessage:@"Empty atributes in merge"];
+        return nil;
+    }
+    
+    STMFakePersistingEmptyResponse(attributes)
     
 }
 
@@ -78,7 +88,7 @@ return returnValue; \
 
 - (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
-    STMFakePersistingEmptyResponse(nil)
+    STMFakePersistingEmptyResponse(attributeArray)
     
 }
 
@@ -89,55 +99,42 @@ return returnValue; \
           identifier:(NSString *)identifier
              options:(NSDictionary *)options {
     
-    STMFakePersistingEmptyResponsePromise(nil);
+    STMFakePersistingPromisedWithSync(NSDictionary,find,identifier)
     
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)findAll:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options {
-    STMFakePersistingEmptyResponsePromise(nil)
     
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    STMFakePersistingPromisedWithSync(NSArray,findAll,predicate)
+    
 }
 
 - (AnyPromise *)merge:(NSString *)entityName
            attributes:(NSDictionary *)attributes
               options:(NSDictionary *)options {
-    if (!attributes) {
-        return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"Empty atributes in merge"]];
-    }
-    STMFakePersistingEmptyResponsePromise(attributes)
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    STMFakePersistingPromisedWithSync(NSDictionary,merge,attributes)
 }
 
 - (AnyPromise *)mergeMany:(NSString *)entityName
            attributeArray:(NSArray *)attributeArray
                   options:(NSDictionary *)options {
     
-    STMFakePersistingEmptyResponsePromise(attributeArray)
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    STMFakePersistingPromisedWithSync(NSArray,mergeMany,attributeArray)
 }
 
 - (AnyPromise *)destroy:(NSString *)entityName
              identifier:(NSString *)identifier
                 options:(NSDictionary *)options {
     
-    STMFakePersistingEmptyResponsePromise(@NO)
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    STMFakePersistingPromisedWithSyncScalar(BOOL,destroy,identifier)
 }
 
 - (AnyPromise *)destroyAll:(NSString *)entityName
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options {
-    
-    STMFakePersistingEmptyResponsePromise(@(0))
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
+    STMFakePersistingPromisedWithSyncScalar(NSUInteger,destroyAll,predicate)
 }
 
 @end
