@@ -75,10 +75,10 @@
             
             NSUInteger result = [self.persister destroyAllSync:entityName
                                                      predicate:predicate
-                                                       options:nil
+                                                       options:@{STMPersistingOptionRecordstatuses:@NO}
                                                          error:&localError];
             
-            XCTAssertTrue(result > 0);
+            NSLog(@"testSync cleanup destroy: %@ (%@)", entityName, @(result));
             XCTAssertNil(localError);
             
         }
