@@ -9,6 +9,8 @@
 #import "STMCoreSession.h"
 
 #import "STMSyncerHelper.h"
+#import "STMUnsyncedDataHelper.h"
+
 #import "STMCoreSession+Persistable.h"
 #import "STMSyncerHelper+Defantomizing.h"
 
@@ -166,10 +168,15 @@
         self.batteryTracker.session = self;
         self.status = STMSessionRunning;
 
-        STMSyncerHelper *syncerHelper = [STMSyncerHelper initWithPersistenceDelegate:self.persistenceDelegate
-                                                                  subscriberDelegate:nil];
-        self.syncer.syncerHelper = syncerHelper;
-        self.syncer.dataSyncingDelegate = syncerHelper;
+        STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
+        
+        syncerHelper.persistenceDelegate = self.persistenceDelegate;
+        
+        STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
+                                                                                              subscriber:self.syncer];
+        self.syncer.defantomizingDelegate = syncerHelper;
+        self.syncer.dataSyncingDelegate = unsyncedHelper;
+        
         self.syncer.persistenceDelegate = self.persistenceDelegate;
         self.syncer.session = self;
 
