@@ -11,10 +11,6 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 
-@implementation STMDataSyncingState
-
-@end
-
 
 @interface STMUnsyncedDataHelper()
 

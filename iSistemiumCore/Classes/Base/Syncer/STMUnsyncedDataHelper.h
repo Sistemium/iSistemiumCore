@@ -9,15 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncing.h"
-
 #import "STMPersistingFullStack.h"
-
-@interface STMDataSyncingState : NSObject
-
-@property (nonatomic) BOOL isInSyncingProcess;
-
-
-@end
 
 
 @interface STMUnsyncedDataHelper : NSObject <STMDataSyncing>
