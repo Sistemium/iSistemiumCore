@@ -129,6 +129,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSArray *)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage;
++ (NSError *)errorWithMessage:(NSString *)errorMessage;
+
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
 NS_ASSUME_NONNULL_END

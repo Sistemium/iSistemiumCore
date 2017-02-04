@@ -1262,6 +1262,18 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (NSError *)errorWithMessage:(NSString *)errorMessage {
+    
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    
+    NSDictionary *userInfo = (errorMessage) ? @{NSLocalizedDescriptionKey: errorMessage} : nil;
+    
+    return [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                               code:1
+                           userInfo:userInfo];
+    
+}
+
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary {
     NSMutableDictionary *result = dictionary.mutableCopy;
     result[key] = value;
