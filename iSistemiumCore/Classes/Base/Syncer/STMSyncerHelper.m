@@ -95,16 +95,24 @@
 
 #pragma mark - STMDataSyncing
 
+- (void)setSyncingState:(STMDataSyncingState *)syncingState {
+    
+    _syncingState = syncingState;
+    
+    self.unsyncedDataHelper.syncingState = syncingState;
+    
+}
+
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
     _subscriberDelegate = subscriberDelegate;
 
     self.unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
     
-    (_subscriberDelegate) ? [self subscribeUnsynced] : [self unsubscribeUnsynced];
+//    (_subscriberDelegate) ? [self subscribeUnsynced] : [self unsubscribeUnsynced];
     
 }
-
+/*
 - (void)subscribeUnsynced {
 
     if (self.subscriberDelegate) {
@@ -131,46 +139,46 @@
 - (void)unsubscribeUnsynced {
     [self.persistenceDelegate cancelSubscription:self.subscriptionId];
 }
-
+*/
 - (BOOL)setSynced:(BOOL)success entity:(NSString *)entity itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
 
-//    return [self.unsyncedDataHelper setSynced:success
-//                                       entity:entity
-//                                     itemData:itemData
-//                                  itemVersion:itemVersion];
+    return [self.unsyncedDataHelper setSynced:success
+                                       entity:entity
+                                     itemData:itemData
+                                  itemVersion:itemVersion];
     
-    if (!success) {
-        
-        if (itemData && itemData[@"id"]) {
-            self.failToSyncObjects[itemData[@"id"]] = itemData;
-        }
-        NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
-        
-    } else {
-        if (itemVersion) {
-            NSError *error;
-            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{STMPersistingOptionLts: itemVersion} error:&error];
-        } else {
-            NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
-        }
-    }
-
-    [self sendNextUnsyncedObject];
-    
-    return YES;
+//    if (!success) {
+//        
+//        if (itemData && itemData[@"id"]) {
+//            self.failToSyncObjects[itemData[@"id"]] = itemData;
+//        }
+//        NSLog(@"failToSync %@ %@", itemData[@"entityName"], itemData[@"id"]);
+//        
+//    } else {
+//        if (itemVersion) {
+//            NSError *error;
+//            [self.persistenceDelegate mergeSync:entity attributes:itemData options:@{STMPersistingOptionLts: itemVersion} error:&error];
+//        } else {
+//            NSLog(@"No itemVersion for %@ %@", entity, itemData[@"id"]);
+//        }
+//    }
+//
+//    [self sendNextUnsyncedObject];
+//    
+//    return YES;
     
 }
 
 - (NSUInteger)numberOfUnsyncedObjects {
     
-    return self.unsyncedObjects.count;
-//    return [self.unsyncedDataHelper numberOfUnsyncedObjects];
+//    return self.unsyncedObjects.count;
+    return [self.unsyncedDataHelper numberOfUnsyncedObjects];
     
 }
 
 
 #pragma mark - handle unsynced objects
-
+/*
 - (void)startHandleUnsyncedObjects {
     
     if (self.isHandlingUnsyncedObjects) {
@@ -379,7 +387,7 @@
         if (!relObject) {
             continue;
         }
-
+*/
 /* move object to the head to avoid repeating checking chain of objects:
 
  instead of:
@@ -398,6 +406,7 @@
  use moveObjectToTheTailOfUnsyncedObjectsArray if using syncArray.lastObject in findObjectToSendFromSyncArray:
  
 */
+/*
         [self moveObjectToTheHeadOfUnsyncedObjectsArray:object];
 //        [self moveObjectToTheTailOfUnsyncedObjectsArray:object];
 
@@ -468,6 +477,7 @@
             withMessage:nil];
 
 }
+*/
 
 
 @end
