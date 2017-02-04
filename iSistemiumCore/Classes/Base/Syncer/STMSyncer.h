@@ -15,7 +15,7 @@
 #import "STMDefantomizing.h"
 
 
-@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner>
+@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) id <STMSession> session;
 

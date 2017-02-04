@@ -23,7 +23,7 @@
 
 #import "STMSocketTransport+Persisting.h"
 
-@interface STMSyncer() <STMDataSyncingSubscriber>
+@interface STMSyncer()
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
