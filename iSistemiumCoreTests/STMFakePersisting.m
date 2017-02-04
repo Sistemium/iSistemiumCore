@@ -8,6 +8,8 @@
 
 #import "STMFakePersisting.h"
 #import "STMFunctions.h"
+#import "STMIndexedArray.h"
+
 
 #define STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR [NSError errorWithDomain:@"com.sistemium.iSistemiumCore" code:0 userInfo:@{NSLocalizedDescriptionKey:@"Not implemented"}]
 
@@ -33,9 +35,10 @@ return returnValue; \
 #define STMFakePersistingIfInMemoryDB \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
+
 @interface STMFakePersisting ()
 
-@property (nonatomic, strong) NSMutableDictionary <NSString*, NSMutableSet <NSDictionary*> *> *data;
+@property (nonatomic, strong) NSMutableDictionary <NSString*, STMIndexedArray *> *data;
 
 @end
 
@@ -56,10 +59,10 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 }
 
 
-- (NSMutableSet <NSDictionary*> *)dataWithName:(NSString *)name {
-    NSMutableSet *data = self.data[name];
+- (STMIndexedArray *)dataWithName:(NSString *)name {
+    STMIndexedArray *data = self.data[name];
     if (!data) {
-        data = [NSMutableSet set];
+        data = [STMIndexedArray array];
         self.data[name] = data;
     }
     return data;
@@ -70,12 +73,9 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
     STMFakePersistingIfInMemoryDB {
-        NSSet *found = [[self dataWithName:entityName] objectsPassingTest:^BOOL(NSDictionary *obj, BOOL * _Nonnull stop) {
-            if (![identifier isEqualToString:obj[@"id"]]) return NO;
-            *stop = @(YES);
-            return YES;
-        }];
-        return found.allObjects.firstObject;
+        
+        STMIndexedArray *data = [self dataWithName:entityName];
+        return [data objectWithKey:identifier];
     }
     
     STMFakePersistingEmptyResponse(nil)
@@ -85,8 +85,9 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
     STMFakePersistingIfInMemoryDB {
-        return [[self dataWithName:entityName] filteredSetUsingPredicate:predicate].allObjects;
+        return [[self dataWithName:entityName] filteredArrayUsingPredicate:predicate];
     }
+    
     STMFakePersistingEmptyResponse(nil)
 
 }
@@ -100,9 +101,10 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (BOOL) destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB {
-        NSDictionary *found = [self findSync:entityName identifier:identifier options:options error:error];
-        [[self dataWithName:entityName] removeObject:found];
-        return !!found;
+        STMIndexedArray *data = [self dataWithName:entityName];
+        NSNumber *index = data.primaryIndex[identifier];
+        if (!index) return 0;
+        [data removeObjectAtIndex:index.integerValue];
     }
     
     STMFakePersistingEmptyResponse(NO)
@@ -128,6 +130,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB {
+        
         NSArray *found = [self findAllSync:entityName predicate:predicate options:options error:error];
         
         __block NSUInteger result = 0;
