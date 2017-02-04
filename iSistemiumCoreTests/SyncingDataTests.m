@@ -19,6 +19,7 @@
 @interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
+@property (nonatomic, weak) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *syncedExpectations;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjects;
 @property (nonatomic, strong) NSString *pkToWait;
@@ -32,13 +33,9 @@
     [super setUp];
     
     if (!self.unsyncedDataHelper) {
-        
-//        Uncomment to see test magically failed
-        self.unsyncedDataHelper = [STMUnsyncedDataHelper initWithPersistenceDelegate:self.persister
-                                                                  subscriberDelegate:self];
-//        self.unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-//        self.unsyncedDataHelper.persistenceDelegate = self.persister;
-//        self.unsyncedDataHelper.subscriberDelegate = self;
+        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister subscriber:self];
+        self.dataSyncingDelegate = self.unsyncedDataHelper;
+        XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
     }
 
 }
@@ -49,8 +46,6 @@
 
 - (void)testSync {
 
-    XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
-    
     self.pkToWait = [STMFunctions uuidString];
     NSLog(@"self.pkToWait %@", self.pkToWait);
     
@@ -58,7 +53,7 @@
     
     NSDate *startedAt = [NSDate date];
     
-    [self.unsyncedDataHelper startSyncing];
+    [self.dataSyncingDelegate startSyncing];
     
     [self waitForExpectationsWithTimeout:PersistingTestsTimeOut handler:^(NSError * _Nullable error) {
 
@@ -164,10 +159,10 @@
     BOOL isNotTheExpectedData = isNotTestEntities || isNotTestSource || isNotCurrentTest;
     
     if (isNotTheExpectedData) {
-        [self.unsyncedDataHelper setSynced:NO
-                                    entity:entityName
-                                  itemData:itemData
-                               itemVersion:itemVersion];
+        [self.dataSyncingDelegate setSynced:NO
+                                     entity:entityName
+                                   itemData:itemData
+                                itemVersion:itemVersion];
         return;
     };
     
@@ -179,10 +174,10 @@
 //    dispatch_async(dispatch_get_main_queue(), ^{
     dispatch_after(SYNCING_DATA_TEST_DISPATCH_TIME, dispatch_get_main_queue(), ^{
     
-        [self.unsyncedDataHelper setSynced:YES
-                                    entity:entityName
-                                  itemData:itemData
-                               itemVersion:itemVersion];
+        [self.dataSyncingDelegate setSynced:YES
+                                     entity:entityName
+                                   itemData:itemData
+                                itemVersion:itemVersion];
         
         XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
         [expectation fulfill];
