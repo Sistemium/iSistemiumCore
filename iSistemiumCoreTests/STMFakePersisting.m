@@ -13,9 +13,9 @@
 
 #define STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE [AnyPromise promiseWithValue:STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR]
 
-#define STMFakePersistingEmptyResponsePromise() \
+#define STMFakePersistingEmptyResponsePromise(value) \
 if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
-    return [AnyPromise promiseWithValue:nil]; \
+    return [AnyPromise promiseWithValue:value]; \
 }
 
 #define STMFakePersistingEmptyResponse(returnValue) \
@@ -88,68 +88,56 @@ return returnValue; \
 - (AnyPromise *)find:(NSString *)entityName
           identifier:(NSString *)identifier
              options:(NSDictionary *)options {
-    return [self dictionaryPromiseResponse];
+    
+    STMFakePersistingEmptyResponsePromise(nil);
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)findAll:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options {
-    return [self arrayPromiseResponse];
+    STMFakePersistingEmptyResponsePromise(nil)
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)merge:(NSString *)entityName
            attributes:(NSDictionary *)attributes
               options:(NSDictionary *)options {
-    return [self dictionaryPromiseResponse];
+    if (!attributes) {
+        return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"Empty atributes in merge"]];
+    }
+    STMFakePersistingEmptyResponsePromise(attributes)
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)mergeMany:(NSString *)entityName
            attributeArray:(NSArray *)attributeArray
                   options:(NSDictionary *)options {
-    return [self arrayPromiseResponse];
+    
+    STMFakePersistingEmptyResponsePromise(attributeArray)
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)destroy:(NSString *)entityName
              identifier:(NSString *)identifier
                 options:(NSDictionary *)options {
-    return [self boolPromiseResponse];
+    
+    STMFakePersistingEmptyResponsePromise(@NO)
+    
+    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
 
 - (AnyPromise *)destroyAll:(NSString *)entityName
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options {
-    return [self integerPromiseResponse];
-}
-
-#pragma mark - Private helpers
-
-- (AnyPromise *)dictionaryPromiseResponse {
     
-    STMFakePersistingEmptyResponsePromise()
+    STMFakePersistingEmptyResponsePromise(@(0))
     
     return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
 }
-
-- (AnyPromise *)arrayPromiseResponse {
-    
-    STMFakePersistingEmptyResponsePromise()
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
-}
-
-- (AnyPromise *)integerPromiseResponse {
-    
-    STMFakePersistingEmptyResponsePromise()
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
-}
-
-- (AnyPromise *)boolPromiseResponse {
-    
-    STMFakePersistingEmptyResponsePromise()
-    
-    return STMFAKE_PERSISTING_NOT_IMPLEMENTED_PROMISE;
-}
-
 
 @end
