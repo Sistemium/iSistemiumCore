@@ -94,61 +94,45 @@
     self.syncedExpectations = @{}.mutableCopy;
     self.testObjects = @{}.mutableCopy;
     
+    [self createTestObject:@"STMLogMessage" withAttributes:@{@"text"    : @"testMessage",
+                                                             @"type"    : @"important"}];
+
+    NSDictionary *partner = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner"}];
+    
+    NSString *partnerId = partner[@"id"];
+
+    [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet",
+                                                         @"partnerId"   : partnerId}];
+    
+}
+
+- (NSDictionary *)createTestObject:(NSString *)entityName withAttributes:(NSDictionary *)attributes {
+    
     NSDictionary *testAttributes = @{@"source"      : SYNCING_DATA_TEST_SOURCE,
                                      @"ownerXid"    : self.pkToWait};
     
-    NSString *entityName = @"STMLogMessage";
-    NSMutableDictionary *logMessageAttributes = testAttributes.mutableCopy;
-    logMessageAttributes[@"text"] = @"testMessage";
-    logMessageAttributes[@"type"] = @"important";
+    NSMutableDictionary *objectAttributes = testAttributes.mutableCopy;
+    
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        objectAttributes[key] = obj;
+    }];
     
     NSError *error = nil;
-    NSDictionary *logMessage = [self.persister mergeSync:entityName
-                                              attributes:logMessageAttributes
-                                                 options:nil
-                                                   error:&error];
-
-    XCTAssertNotNil(logMessage);
-
-    NSString *logMessageId = logMessage[@"id"];
-    XCTestExpectation *expectation = [self expectationWithDescription:@"wait for sync logMessage"];
-    self.syncedExpectations[logMessageId] = expectation;
-    self.testObjects[logMessageId] = entityName;
-    
-    entityName = @"STMPartner";
-    NSMutableDictionary *partnerAttributes = testAttributes.mutableCopy;
-    partnerAttributes[@"name"] = @"testPartner";
-
-    NSDictionary *partner = [self.persister mergeSync:entityName
-                                           attributes:partnerAttributes
-                                              options:nil
-                                                error:&error];
-    
-    XCTAssertNotNil(partner);
-
-    NSString *partnerId = partner[@"id"];
-    expectation = [self expectationWithDescription:@"wait for sync partner"];
-    self.syncedExpectations[partnerId] = expectation;
-    self.testObjects[partnerId] = entityName;
-
-    
-    entityName = @"STMOutlet";
-    NSMutableDictionary *outletAttributes = testAttributes.mutableCopy;
-    outletAttributes[@"name"] = @"testOutlet";
-    outletAttributes[@"partnerId"] = partnerId;
-
-    NSDictionary *outlet = [self.persister mergeSync:entityName
-                                          attributes:outletAttributes
+    NSDictionary *object = [self.persister mergeSync:entityName
+                                          attributes:objectAttributes
                                              options:nil
                                                error:&error];
     
-    XCTAssertNotNil(outlet);
+    XCTAssertNotNil(object);
 
-    NSString *outletId = outlet[@"id"];
-    expectation = [self expectationWithDescription:@"wait for sync outlet"];
-    self.syncedExpectations[outletId] = expectation;
-    self.testObjects[outletId] = entityName;
-
+    NSString *objectId = object[@"id"];
+    NSString *expectationDescription = [NSString stringWithFormat:@"wait for sync %@", entityName];
+    XCTestExpectation *expectation = [self expectationWithDescription:expectationDescription];
+    self.syncedExpectations[objectId] = expectation;
+    self.testObjects[objectId] = entityName;
+    
+    return object;
+    
 }
 
 
