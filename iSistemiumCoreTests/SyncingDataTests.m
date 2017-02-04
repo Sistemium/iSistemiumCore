@@ -65,19 +65,23 @@
 
         XCTAssertNil(error);
 
-        [self.testObjects enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSString * _Nonnull entityName, BOOL * _Nonnull stop) {
-           
+        NSArray *testEntities = [self.testObjects.allValues valueForKeyPath:@"@distinctUnionOfObjects.self"];
+
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"source == %@", SYNCING_DATA_TEST_SOURCE];
+        
+        for (NSString *entityName in testEntities) {
+            
             NSError *localError = nil;
             
-            BOOL result = [self.persister destroySync:entityName
-                                           identifier:objectId
-                                              options:nil
-                                                error:&localError];
+            NSUInteger result = [self.persister destroyAllSync:entityName
+                                                     predicate:predicate
+                                                       options:nil
+                                                         error:&localError];
             
-            XCTAssertTrue(result);
+            XCTAssertTrue(result > 0);
             XCTAssertNil(localError);
             
-        }];
+        }
         
         NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
         
