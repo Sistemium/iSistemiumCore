@@ -61,7 +61,6 @@
 @property (nonatomic, strong) Reachability *internetReachability;
 
 @property (nonatomic) BOOL downloadAlertWasShown;
-@property (nonatomic) BOOL newsReceiving;
 
 @property (nonatomic, strong) STMSpinnerView *sendSpinner;
 @property (nonatomic, strong) STMSpinnerView *receiveSpinner;
@@ -168,6 +167,14 @@
         self.progressBar.hidden = YES;
         [UIApplication sharedApplication].idleTimerDisabled = NO;
     });
+}
+
+- (void)syncerReceiveStarted {
+    
+    self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
+
+    [self updateSyncInfo];
+    
 }
 
 - (void)updateSyncInfo {
@@ -421,63 +428,34 @@
 
 #pragma mark -
 
-- (void)syncerNewsHaveObjects:(NSNotification *)notification {
-    
-    self.newsReceiving = YES;
-    self.totalEntityCount = [(notification.userInfo)[@"totalNumberOfObjects"] floatValue];
-    
-}
-
 - (void)entitiesReceivingDidFinish {
-
-    self.newsReceiving = NO;
     self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
-    
 }
 
 - (void)entityCountdownChange:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSyncer class]] && !self.newsReceiving) {
-        
-        float countdownValue = [(notification.userInfo)[@"countdownValue"] floatValue];
-        self.progressBar.hidden = NO;
-        self.progressBar.progress = (self.totalEntityCount - countdownValue) / self.totalEntityCount;
-        
-    }
+    float countdownValue = [(notification.userInfo)[@"countdownValue"] floatValue];
+    self.progressBar.hidden = NO;
+    self.progressBar.progress = (self.totalEntityCount - countdownValue) / self.totalEntityCount;
     
 }
 
 - (void)getBunchOfObjects:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSyncer class]]) {
-        
-        NSNumber *numberOfObjects = notification.userInfo[@"count"];
-        
-        numberOfObjects = @(self.previousNumberOfObjects + numberOfObjects.intValue);
-        
-        NSString *pluralType = [STMFunctions pluralTypeForCount:numberOfObjects.intValue];
-        NSString *numberOfObjectsString = [pluralType stringByAppendingString:@"OBJECTS"];
-        
-        NSString *receiveString = ([pluralType isEqualToString:@"1"]) ? NSLocalizedString(@"RECEIVE1", nil) : NSLocalizedString(@"RECEIVE", nil);
-        
-        self.numberOfObjectLabel.text = [NSString stringWithFormat:@"%@ %@ %@", receiveString, numberOfObjects, NSLocalizedString(numberOfObjectsString, nil)];
-        
-        self.previousNumberOfObjects = numberOfObjects.intValue;
-        
-        if (self.newsReceiving) {
-            
-            self.progressBar.hidden = NO;
-            self.progressBar.progress = numberOfObjects.floatValue / self.totalEntityCount;
-            
-        }
-        
-    }
+    NSNumber *numberOfObjects = notification.userInfo[@"count"];
+    
+    numberOfObjects = @(self.previousNumberOfObjects + numberOfObjects.intValue);
+    
+    NSString *pluralType = [STMFunctions pluralTypeForCount:numberOfObjects.intValue];
+    NSString *numberOfObjectsString = [pluralType stringByAppendingString:@"OBJECTS"];
+    
+    NSString *receiveString = ([pluralType isEqualToString:@"1"]) ? NSLocalizedString(@"RECEIVE1", nil) : NSLocalizedString(@"RECEIVE", nil);
+    
+    self.numberOfObjectLabel.text = [NSString stringWithFormat:@"%@ %@ %@", receiveString, numberOfObjects, NSLocalizedString(numberOfObjectsString, nil)];
+    
+    self.previousNumberOfObjects = numberOfObjects.intValue;
     
 }
-
-//- (void)syncerDidChangeContent:(NSNotification *)notification {
-//    [self updateCloudImages];
-//}
 
 - (void)socketAuthorizationSuccess {
     [self updateCloudImages];
@@ -1124,11 +1102,6 @@
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
-//    [nc addObserver:self
-//           selector:@selector(syncerStatusChanged:)
-//               name:NOTIFICATION_SYNCER_STATUS_CHANGED
-//             object:self.syncer];
-    
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_STARTED
@@ -1145,39 +1118,29 @@
              object:self.syncer];
 
     [nc addObserver:self
-           selector:@selector(updateSyncInfo)
+           selector:@selector(syncerReceiveStarted)
                name:NOTIFICATION_SYNCER_RECEIVE_STARTED
-             object:self.syncer];
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(getBunchOfObjects:)
                name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
-             object:self.syncer];
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_RECEIVE_FINISHED
-             object:self.syncer];
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(entityCountdownChange:)
-               name:@"entityCountdownChange"
-             object:self.syncer];
-
-    [nc addObserver:self
-           selector:@selector(syncerNewsHaveObjects:)
-               name:@"syncerNewsHaveObjects"
-             object:self.syncer];
+               name:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+             object:nil];
     
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
                name:@"entitiesReceivingDidFinish"
              object:self.syncer];
-    
-//    [nc addObserver:self
-//           selector:@selector(syncerDidChangeContent:)
-//               name:NOTIFICATION_SYNCER_DID_CHANGE_CONTENT
-//             object:nil];
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)
