@@ -1472,6 +1472,67 @@
 }
 
 
+#pragma mark - STMDataDownloadingOwner
+
+- (BOOL)downloadingTransportIsReady {
+    return [self transportIsReady];
+}
+
+- (void)entitiesWasUpdated {
+    
+    [STMEntityController flushSelf];
+    [self subscribeToUnsyncedObjects];
+
+}
+
+- (void)dataDownloadingFinished {
+    
+    [self startDefantomization];
+    
+    [self turnOffNetworkActivityIndicator];
+
+    [STMCoreObjectsController dataLoadingFinished];
+    
+    if (self.fetchCompletionHandler) {
+        
+        self.fetchCompletionHandler(self.fetchResult);
+        self.fetchCompletionHandler = nil;
+        
+    }
+
+}
+
+- (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
+    
+    __block BOOL blockIsComplete = NO;
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @(pageSize),
+                              STMPersistingOptionOffset     : offset};
+    
+    [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+        
+        if (blockIsComplete) {
+            NSLog(@"completionHandler for %@ %@ already complete", entityName, offset);
+            return;
+        }
+        
+        blockIsComplete = YES;
+        
+        NSString *offset = headers[STMPersistingOptionOffset];
+        NSUInteger pageSize = [headers[STMPersistingOptionPageSize] integerValue];
+
+        [self.dataDownloadingDelegate dataReceivedSuccessfully:success
+                                                    entityName:entityName
+                                                        result:result
+                                                        offset:offset
+                                                      pageSize:pageSize
+                                                         error:error];
+        
+    }];
+
+}
+
+
 #pragma mark - STMDataSyncingSubscriber
 
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
