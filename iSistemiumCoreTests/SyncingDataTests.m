@@ -145,9 +145,7 @@
 
 #pragma mark - STMDataSyncingSubscriber
 
-- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName
-                                itemData:(NSDictionary *)itemData
-                             itemVersion:(NSString *)itemVersion {
+- (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     NSString *source = itemData[@"source"];
     

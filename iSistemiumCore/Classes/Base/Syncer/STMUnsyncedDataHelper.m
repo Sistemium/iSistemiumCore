@@ -216,9 +216,9 @@
             BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
             NSString *objectVersion = isFMDB ? object[@"deviceTs"] : object[@"ts"];
             
-            [self.subscriberDelegate haveUnsyncedObjectWithEntityName:entityName
-                                                             itemData:object
-                                                          itemVersion:objectVersion];
+            [self.subscriberDelegate haveUnsynced:entityName
+                                         itemData:object
+                                      itemVersion:objectVersion];
             
         }
         
