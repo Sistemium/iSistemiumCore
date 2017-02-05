@@ -83,28 +83,39 @@
     
     NSLog(@"receiveSubscribeMessage: %@", parameters);
     
-    if ([parameters[@"entities"] isKindOfClass:[NSArray class]]) {
+    NSArray *entities = parameters[@"entities"];
+    
+    if (![entities isKindOfClass:NSArray.class]) {
+        [self.owner callbackWithError:@"message.parameters.entities is not a NSArray class"
+                           parameters:parameters];
+    }
+    
+    NSString *errorMessage;
+
+    NSString *dataCallback = parameters[@"dataCallback"];
+    NSString *callback = parameters[@"callback"];
+    
+    if (!dataCallback) {
+        errorMessage = @"No dataCallback specified";
+    } else if (!callback) {
+        errorMessage = @"No callback specified";
+    }
+    
+    if (errorMessage) {
+        return [self.owner callbackWithError:errorMessage parameters:parameters];
+    }
+    
+    NSError *error = nil;
+    
+    if ([self subscribeToEntities:entities callbackName:dataCallback error:&error]) {
         
-        NSArray *entities = parameters[@"entities"];
-        NSString *dataCallback = parameters[@"dataCallback"];
-        NSError *error = nil;
-        
-        if ([self subscribeToEntities:entities callbackName:dataCallback error:&error]) {
-            
-            [self.owner callbackWithData:@[@"subscribe to entities success"]
-                              parameters:parameters
-                      jsCallbackFunction:parameters[@"callback"]];
-            
-        } else {
-            
-            [self.owner callbackWithError:error.localizedDescription
-                               parameters:parameters];
-            
-        }
+        [self.owner callbackWithData:@[@"subscribe to entities success"]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
         
     } else {
         
-        [self.owner callbackWithError:@"message.parameters.entities is not a NSArray class"
+        [self.owner callbackWithError:error.localizedDescription
                            parameters:parameters];
         
     }
