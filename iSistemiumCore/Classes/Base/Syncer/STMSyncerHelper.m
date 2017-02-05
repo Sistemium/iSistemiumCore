@@ -66,19 +66,5 @@
     
 }
 
-- (void)setEntityCount:(NSUInteger)entityCount {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
-                                                            object:self
-                                                          userInfo:@{@"countdownValue": @((int)entityCount)}];
-        
-    });
-    
-    _entityCount = entityCount;
-    
-}
-
 
 @end

@@ -22,7 +22,6 @@
 @property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
-@property (nonatomic) NSUInteger entityCount;
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
 @property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) STMDocument *document;

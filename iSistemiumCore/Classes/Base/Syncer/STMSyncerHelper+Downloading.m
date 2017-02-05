@@ -11,6 +11,8 @@
 #import "STMCoreObjectsController.h"
 #import "STMClientEntityController.h"
 
+#import <objc/runtime.h>
+
 
 @interface STMDataDownloadingState : NSObject <STMDataSyncingState>
 
@@ -24,8 +26,39 @@
 
 @end
 
+static void *entityCountVar;
 
 @implementation STMSyncerHelper (Downloading)
+
+
+#pragma mark - variables
+
+- (NSUInteger)entityCount {
+    
+    id result = objc_getAssociatedObject(self, &entityCountVar);
+    
+    if (result == nil) {
+        objc_setAssociatedObject(self, &entityCountVar, 0, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    
+    return [result integerValue];
+
+}
+
+- (void)setEntityCount:(NSUInteger)entityCount {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+                                                            object:self
+                                                          userInfo:@{@"countdownValue": @(entityCount)}];
+        
+    });
+    
+    objc_setAssociatedObject(self, &entityCountVar, @(entityCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+}
+
 
 #pragma mark - STMDataDownloading
 
