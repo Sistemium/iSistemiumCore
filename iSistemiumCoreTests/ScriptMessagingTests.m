@@ -271,6 +271,7 @@
 - (void)testSubscriptions {
     
     NSString *entityName = @"LogMessage";
+    NSString *xid = [STMFunctions uuidString];
 
     // Test for the callback key should be lowercase
     
@@ -301,11 +302,21 @@
     
     [self doSubscribeRequest:body expect:@"subscribe to entities success"];
     
+    // Merge test data and catch it in delegate
+    
+    XCTestExpectation *waitData = [self expectationWithDescription:@"Wait for subscribed data"];
+    
+    ScriptMessagingTestsExpectation *expectation = [ScriptMessagingTestsExpectation withExpectation:waitData];
+    expectation.count = @(2);
+    expectation.predicate = [NSPredicate predicateWithFormat:@"entity == %@ AND data.ownerXid == %@", entityName, xid];
+    
+    self.expectations[@"subscription"] = expectation;
+    
     self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
     
     NSArray *testArray = @[
-                           @{@"text":@"Name 1"},
-                           @{@"text":@"Name 2"}
+                           @{@"text":@"Name 1", @"ownerXid":xid},
+                           @{@"text":@"Name 2", @"ownerXid":xid}
                            ];
     
     [self doUpdateManyRequest:[STMFunctions setValue:testArray
@@ -431,7 +442,7 @@
     
     if (!requestId) {
         XCTAssertNotNil(jsCallbackFunction);
-        return;
+        requestId =  parameters[@"reason"];
     }
     
     ScriptMessagingTestsExpectation *expectation = self.expectations[requestId];
@@ -439,6 +450,14 @@
     
     if ([parameters[@"callBack"] isEqualToString:@"subscribeCallBack"]) {
         XCTAssertEqualObjects(data.firstObject, expectation.expectation.description);
+    }
+    
+    if (expectation.predicate) {
+        data = [data filteredArrayUsingPredicate:expectation.predicate];
+    }
+    
+    if (expectation.count) {
+        XCTAssertEqual(expectation.count.integerValue, data.count);
     }
     
     [expectation.expectation fulfill];
