@@ -25,8 +25,14 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionOrder @"sortBy"
 #define STMPersistingOptionOrderDirection @"direction"
 
-#define STMPersistingOptionOrderDirectionDesc STMPersistingOptionOrderDirection:@"DESC"
-#define STMPersistingOptionOrderDirectionAsc STMPersistingOptionOrderDirection:@"ASC"
+#define STMPersistingOptionOrderDirectionDescValue @"DESC"
+#define STMPersistingOptionOrderDirectionAscValue @"ASC"
+
+#define STMPersistingOptionOrderDirectionDesc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionDescValue
+
+#define STMPersistingOptionOrderDirectionAsc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionAscValue
 
 #define STMPersistingOptionForceStorageCoreData STMPersistingOptionForceStorage:@(STMStorageTypeCoreData)
 #define STMPersistingOptionForceStorageFMDB STMPersistingOptionForceStorage:@(STMStorageTypeFMDB)
