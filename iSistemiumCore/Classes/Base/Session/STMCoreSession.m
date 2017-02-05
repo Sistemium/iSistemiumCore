@@ -13,6 +13,8 @@
 
 #import "STMCoreSession+Persistable.h"
 #import "STMSyncerHelper+Defantomizing.h"
+#import "STMSyncerHelper+Downloading.h"
+
 
 @interface STMCoreSession()
 
@@ -174,6 +176,9 @@
         
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
                                                                                               subscriber:self.syncer];
+        self.syncer.dataDownloadingDelegate = syncerHelper;
+        syncerHelper.dataDownloadingOwner = self.syncer;
+        
         self.syncer.defantomizingDelegate = syncerHelper;
         self.syncer.dataSyncingDelegate = unsyncedHelper;
         
