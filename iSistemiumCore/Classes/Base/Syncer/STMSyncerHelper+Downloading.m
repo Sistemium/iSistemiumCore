@@ -45,7 +45,10 @@ static void *stcEntitiesVar;
     id result = objc_getAssociatedObject(self, &entityCountVar);
     
     if (!result) {
-        objc_setAssociatedObject(self, &entityCountVar, @0, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+//        result = @0;
+//        self.entityCount = result;
+        
     }
     
     return [result integerValue];
@@ -75,7 +78,8 @@ static void *stcEntitiesVar;
         NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
         NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
 
-        objc_setAssociatedObject(self, &fetchLimitVar, @(fetchLimit), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        result = @(fetchLimit);
+        objc_setAssociatedObject(self, &fetchLimitVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         
     }
     
@@ -88,7 +92,10 @@ static void *stcEntitiesVar;
     NSMutableDictionary *result = objc_getAssociatedObject(self, &temporaryETagVar);
     
     if (!result) {
-        objc_setAssociatedObject(self, &temporaryETagVar, @{}.mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+        result = @{}.mutableCopy;
+        objc_setAssociatedObject(self, &temporaryETagVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
     }
     
     return result;
@@ -100,7 +107,10 @@ static void *stcEntitiesVar;
     NSMutableArray *result = objc_getAssociatedObject(self, &entitySyncNamesVar);
     
     if (!result) {
-        objc_setAssociatedObject(self, &entitySyncNamesVar, @[].mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+        result = @[].mutableCopy;
+        self.entitySyncNames = result;
+        
     }
     
     return result;
@@ -116,7 +126,10 @@ static void *stcEntitiesVar;
     NSArray *result = objc_getAssociatedObject(self, &receivingEntitiesNamesVar);
     
     if (!result) {
-//        objc_setAssociatedObject(self, &receivingEntitiesNamesVar, @[], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+//        result = @[];
+//        self.receivingEntitiesNames = result;
+
     }
     
     return result;
@@ -132,7 +145,10 @@ static void *stcEntitiesVar;
     NSMutableDictionary *result = objc_getAssociatedObject(self, &stcEntitiesVar);
     
     if (!result) {
-        objc_setAssociatedObject(self, &stcEntitiesVar, [STMEntityController stcEntities].mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+        result = [STMEntityController stcEntities].mutableCopy;
+        self.stcEntities = result;
+        
     }
     
     return result;
