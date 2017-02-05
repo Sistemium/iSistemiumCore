@@ -33,6 +33,7 @@ static void *temporaryETagVar;
 static void *entitySyncNamesVar;
 static void *receivingEntitiesNamesVar;
 static void *stcEntitiesVar;
+static void *downloadingStateVar;
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -157,6 +158,22 @@ static void *stcEntitiesVar;
 
 - (void)setStcEntities:(NSMutableArray *)stcEntities {
     objc_setAssociatedObject(self, &stcEntitiesVar, stcEntities, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (id <STMDataSyncingState>)downloadingState {
+    
+    id <STMDataSyncingState> result = objc_getAssociatedObject(self, &downloadingStateVar);
+    
+    if (!result) {
+        
+    }
+    
+    return result;
+    
+}
+
+- (void)setDownloadingState:(id <STMDataSyncingState>)downloadingState {
+    objc_setAssociatedObject(self, &downloadingStateVar, downloadingState, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 

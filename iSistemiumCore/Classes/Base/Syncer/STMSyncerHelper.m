@@ -17,7 +17,6 @@
 
 @implementation STMSyncerHelper
 
-@synthesize downloadingState = _downloadingState;
 @synthesize dataDownloadingOwner = _dataDownloadingOwner;
 
 
