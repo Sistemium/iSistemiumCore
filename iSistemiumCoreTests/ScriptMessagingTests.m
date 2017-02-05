@@ -271,7 +271,6 @@
 - (void)testSubscriptions {
     
     NSString *entityName = @"LogMessage";
-    NSString *xid = [STMFunctions uuidString];
 
     // Test for the callback key should be lowercase
     
@@ -304,26 +303,20 @@
     
     // Merge test data and catch it in delegate
     
-    XCTestExpectation *waitData = [self expectationWithDescription:@"Wait for subscribed data"];
-    
-    ScriptMessagingTestsExpectation *expectation = [ScriptMessagingTestsExpectation withExpectation:waitData];
-    expectation.count = @(2);
-    expectation.predicate = [NSPredicate predicateWithFormat:@"entity == %@ AND data.ownerXid == %@", entityName, xid];
-    
-    self.expectations[@"subscription"] = expectation;
-    
     self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
     
     NSArray *testArray = @[
-                           @{@"text":@"Name 1", @"ownerXid":xid},
-                           @{@"text":@"Name 2", @"ownerXid":xid}
+                           @{@"text":@"Name 1"},
+                           @{@"text":@"Name 2"}
                            ];
     
-    [self doUpdateManyRequest:[STMFunctions setValue:testArray
-                                              forKey:@"data"
-                                        inDictionary:@{@"entity":entityName}]
-                       expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+    [self mergeEntityName:entityName data:testArray];
 
+    NSArray *testArray2 = @[
+                           @{@"text":@"Name 3"},
+                           @{@"text":@"Name 4"}
+                           ];
+    [self mergeEntityName:entityName data:testArray2];
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -335,6 +328,28 @@
 
 #pragma mark - Private helpers
 
+
+- (void)mergeEntityName:(NSString *)entityName data:(NSArray <NSDictionary *> *)data {
+    
+    XCTestExpectation *waitData = [self expectationWithDescription:@"Wait for subscribed data"];
+    NSString *xid = [STMFunctions uuidString];
+    
+    ScriptMessagingTestsExpectation *expectation = [ScriptMessagingTestsExpectation withExpectation:waitData];
+    expectation.count = @(data.count);
+    expectation.predicate = [NSPredicate predicateWithFormat:@"entity == %@ AND data.ownerXid == %@", entityName, xid];
+    
+    self.expectations[@"subscription"] = expectation;
+    
+    data = [STMFunctions mapArray:data withBlock:^id _Nonnull(NSDictionary * _Nonnull value) {
+        return [STMFunctions setValue:xid forKey:@"ownerXid" inDictionary:value];
+    }];
+    
+    [self doUpdateManyRequest:[STMFunctions setValue:data
+                                              forKey:@"data"
+                                        inDictionary:@{@"entity":entityName}]
+                       expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
+}
 
 - (void)doFindRequest:(NSDictionary*)body expect:(NSString *)errorDescription{
     
