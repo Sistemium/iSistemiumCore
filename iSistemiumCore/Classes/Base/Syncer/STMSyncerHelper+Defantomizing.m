@@ -11,7 +11,32 @@
 #import "STMEntityController.h"
 #import "STMCoreObjectsController.h"
 
+#import <objc/runtime.h>
+
+
+static void *failToResolveFantomsArrayVar;
+
+
 @implementation STMSyncerHelper (Defantomizing)
+
+
+#pragma mark - variables
+
+- (NSMutableArray *)failToResolveFantomsArray {
+    
+    NSMutableArray *result = objc_getAssociatedObject(self, &failToResolveFantomsArrayVar);
+    
+    if (!result) {
+        
+        result = @[].mutableCopy;
+        objc_setAssociatedObject(self, &failToResolveFantomsArrayVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+    }
+    
+    return result;
+    
+}
+
 
 #pragma mark - defantomizing
 

@@ -20,8 +20,6 @@
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSession> session;
-
-@property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
 
 

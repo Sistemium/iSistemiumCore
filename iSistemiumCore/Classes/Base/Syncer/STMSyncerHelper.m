@@ -29,7 +29,7 @@
 }
 
 - (void)customInit {
-    _failToResolveFantomsArray = @[].mutableCopy;
+
 }
 
 - (id <STMSession>)session {
