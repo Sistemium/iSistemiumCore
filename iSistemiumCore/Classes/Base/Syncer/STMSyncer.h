@@ -22,6 +22,7 @@
 
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
+@property (nonatomic, strong) id <STMDataDownloading> dataDownloadingDelegate;
 @property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;
 
 @property (nonatomic) NSTimeInterval syncInterval;
