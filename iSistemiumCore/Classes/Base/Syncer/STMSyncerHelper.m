@@ -17,8 +17,6 @@
 
 @implementation STMSyncerHelper
 
-@synthesize dataDownloadingOwner = _dataDownloadingOwner;
-
 
 - (instancetype)init {
     

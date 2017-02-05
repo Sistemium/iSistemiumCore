@@ -34,6 +34,7 @@ static void *entitySyncNamesVar;
 static void *receivingEntitiesNamesVar;
 static void *stcEntitiesVar;
 static void *downloadingStateVar;
+static void *dataDownloadingOwnerVar;
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -174,6 +175,22 @@ static void *downloadingStateVar;
 
 - (void)setDownloadingState:(id <STMDataSyncingState>)downloadingState {
     objc_setAssociatedObject(self, &downloadingStateVar, downloadingState, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (id <STMDataDownloadingOwner>)dataDownloadingOwner {
+    
+    id <STMDataDownloadingOwner> result = objc_getAssociatedObject(self, &dataDownloadingOwnerVar);
+    
+    if (!result) {
+        
+    }
+    
+    return result;
+    
+}
+
+- (void)setDataDownloadingOwner:(id <STMDataDownloadingOwner>)dataDownloadingOwner {
+    objc_setAssociatedObject(self, &dataDownloadingOwnerVar, dataDownloadingOwner, OBJC_ASSOCIATION_ASSIGN);
 }
 
 

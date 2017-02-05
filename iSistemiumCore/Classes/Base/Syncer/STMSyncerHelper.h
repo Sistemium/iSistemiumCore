@@ -18,7 +18,6 @@
 
 @interface STMSyncerHelper : NSObject
 
-@property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSession> session;
 
