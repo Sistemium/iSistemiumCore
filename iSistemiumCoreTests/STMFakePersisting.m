@@ -147,8 +147,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     }
     
     STMFakePersistingIfInMemoryDB {
-        [[self dataWithName:entityName] addObject:attributes];
-        // TODO: return merged data
+        attributes = [[self dataWithName:entityName] addObject:attributes];
         [self notifyObservingEntityName:entityName
                               ofUpdated:attributes];
         return attributes;

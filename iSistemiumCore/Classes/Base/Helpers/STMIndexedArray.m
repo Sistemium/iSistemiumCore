@@ -36,7 +36,7 @@
     }
 }
 
-- (void)addObject:(NSDictionary*)anObject {
+- (NSDictionary *)addObject:(NSDictionary*)anObject {
     @synchronized (self) {
         
         NSString *primaryKey = anObject[STM_INDEXED_ARRAY_PRIMARY_KEY];
@@ -56,6 +56,8 @@
         } else {
             _data[index.integerValue] = anObject;
         }
+        
+        return anObject;
         
     }
 }
