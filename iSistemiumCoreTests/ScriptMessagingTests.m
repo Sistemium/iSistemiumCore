@@ -77,13 +77,9 @@
     if (!self.modeller) {
         NSString *modelName = [STMCoreAuthController.authController dataModelName];
         
-        self.modeller = [STMModeller modellerWithModel:[STMModeller modelWithName:modelName]];
         self.scriptMessenger = [[STMScriptMessageHandler alloc] initWithOwner:self];
-        self.fakePerster = [STMFakePersisting fakePersistingWithOptions:nil];
-        
+        self.fakePerster = [STMFakePersisting modellerWithModel:[STMFakePersisting modelWithName:modelName]];
         self.scriptMessenger.persistenceDelegate = self.fakePerster;
-        self.scriptMessenger.modellingDelegate = self.modeller;
-        
         self.scriptMessagingDelegate = self.scriptMessenger;
         
         self.requestId = 0;

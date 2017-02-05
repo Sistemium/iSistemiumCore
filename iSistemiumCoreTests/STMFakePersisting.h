@@ -7,16 +7,19 @@
 //
 
 #import <Foundation/Foundation.h>
+
+#import "STMModeller.h"
 #import "STMPersistingFullStack.h"
-#import "STMPersister+Observable.h"
 
 #define STMFakePersistingOptions NSDictionary *
+
 #define STMFakePersistingOptionInMemoryDBKey @"inMemoryDB"
 #define STMFakePersistingOptionInMemoryDB STMFakePersistingOptionInMemoryDBKey:@YES
+
 #define STMFakePersistingOptionEmptyDBKey @"emptyDB"
 #define STMFakePersistingOptionEmptyDB STMFakePersistingOptionEmptyDBKey:@YES
 
-@interface STMFakePersisting : STMPersistingObservable <STMPersistingSync, STMPersistingPromised>
+@interface STMFakePersisting : STMModeller <STMPersistingSync, STMPersistingPromised>
 
 + (instancetype)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 
