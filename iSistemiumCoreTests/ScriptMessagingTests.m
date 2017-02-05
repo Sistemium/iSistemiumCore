@@ -13,6 +13,7 @@
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMFakePersisting.h"
 
+#define SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION @"Expect no errors"
 
 @interface ScriptMessagingTestsExpectation : NSObject
 
@@ -79,6 +80,7 @@
         
         self.scriptMessenger = [[STMScriptMessageHandler alloc] initWithOwner:self];
         self.fakePerster = [STMFakePersisting fakePersistingWithModelName:modelName options:nil];
+        self.modeller = self.fakePerster;
         self.scriptMessenger.persistenceDelegate = self.fakePerster;
         self.scriptMessagingDelegate = self.scriptMessenger;
         
@@ -217,7 +219,7 @@
     
     NSString *entityName = @"LogMessage";
     NSString *xid = [STMFunctions uuidString];
-    NSString *noErrorsDescription = @"Expect no errors";
+    NSString *noErrorsDescription = SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION;
     
     NSDictionary *body = @{@"entity":entityName};
     
@@ -267,22 +269,50 @@
 
 
 - (void)testSubscriptions {
+    
+    NSString *entityName = @"LogMessage";
 
+    // Test for the callback key should be lowercase
+    
     NSDictionary *body = @{
-                           @"entities":@[@"LogMessage"],
+                           @"entities":@[entityName],
                            @"callBack":@"callBack",
                            @"dataCallback":@"dataCallback"
                            };
     
     [self doSubscribeRequest:body expect:@"No callback specified"];
     
+    // No dataCallback specified
+    
     body = @{
-             @"entities":@[@"LogMessage"],
+             @"entities":@[entityName],
+             @"callback":@"callback"
+             };
+
+    [self doSubscribeRequest:body expect:@"No dataCallback specified"];
+    
+    // Successful subscription
+    
+    body = @{
+             @"entities":@[entityName],
              @"callback":@"callBack",
              @"dataCallback":@"dataCallback"
              };
     
     [self doSubscribeRequest:body expect:@"subscribe to entities success"];
+    
+    self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
+    
+    NSArray *testArray = @[
+                           @{@"text":@"Name 1"},
+                           @{@"text":@"Name 2"}
+                           ];
+    
+    [self doUpdateManyRequest:[STMFunctions setValue:testArray
+                                              forKey:@"data"
+                                        inDictionary:@{@"entity":entityName}]
+                       expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
     
     //
     // Now wait because STMScriptMessageHandler is using async promises
@@ -372,7 +402,7 @@
     ScriptMessagingTestsExpectation *expectation = self.expectations[parameters[@"requestId"]];
     XCTAssertNotNil(expectation);
     XCTAssertNotNil(data);
-    XCTAssertEqualObjects(@"Expect no errors", expectation.expectation.description);
+    XCTAssertEqualObjects(SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION, expectation.expectation.description);
     NSNumber *count = expectation.count;
     
     if (count) {
@@ -395,14 +425,21 @@
 
 - (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
 
-    ScriptMessagingTestsExpectation *expectation = self.expectations[parameters[@"requestId"]];
+    NSLog(@"ScriptMessagingTests jsCallbackFunction:%@ data:%@ parameters:%@", jsCallbackFunction, data, parameters);
+    
+    NSString *requestId = parameters[@"requestId"];
+    
+    if (!requestId) {
+        XCTAssertNotNil(jsCallbackFunction);
+        return;
+    }
+    
+    ScriptMessagingTestsExpectation *expectation = self.expectations[requestId];
     XCTAssertNotNil(expectation.expectation);
     
     if ([parameters[@"callBack"] isEqualToString:@"subscribeCallBack"]) {
         XCTAssertEqualObjects(data.firstObject, expectation.expectation.description);
     }
-    
-    NSLog(@"ScriptMessagingTests jsCallbackFunction:%@ data:%@ parameters:%@", jsCallbackFunction, data, parameters);
     
     [expectation.expectation fulfill];
     
