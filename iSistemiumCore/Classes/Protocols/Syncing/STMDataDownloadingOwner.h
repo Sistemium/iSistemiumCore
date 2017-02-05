@@ -14,5 +14,10 @@
              offset:(NSString *)offset
            pageSize:(NSUInteger)pageSize;
 
+- (BOOL)downloadingTransportIsReady;
+
+- (void)entitiesWasUpdated;
+- (void)dataDownloadingFinished;
+
 
 @end

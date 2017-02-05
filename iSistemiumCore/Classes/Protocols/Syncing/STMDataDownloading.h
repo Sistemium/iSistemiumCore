@@ -9,14 +9,18 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataDownloadingOwner.h"
+#import "STMDataSyncingState.h"
 
 
 @protocol STMDataDownloading <NSObject>
 
-@property (nonatomic, weak) id <STMDataDownloadingOwner> owner;
+@property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
+@property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
+@property (nonatomic, strong) NSArray *receivingEntitiesNames;
+@property (nonatomic, strong) NSMutableDictionary *stcEntities;
 
 - (void)startDownloading;
-- (void)stopDownloading;
+- (void)stopDownloading:(NSString *)stopMessage;
 
 - (void)dataReceivedSuccessfully:(BOOL)success
                       entityName:(NSString *)entityName
