@@ -9,13 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncingSubscriber.h"
-
-@protocol STMDataSyncingState <NSObject>
-
-@property (nonatomic) BOOL isInSyncingProcess;
-
-
-@end
+#import "STMDataSyncingState.h"
 
 
 @protocol STMDataSyncing <NSObject>
