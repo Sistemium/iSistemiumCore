@@ -9,11 +9,28 @@
 #import <Foundation/Foundation.h>
 
 #import "STMPersistingSync.h"
+#import "STMDataSyncingState.h"
+
+#import "STMConstants.h"
+#import "STMDocument.h"
+#import "STMSessionManager.h"
 
 
 @interface STMSyncerHelper : NSObject
 
+@property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
+@property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
+@property (nonatomic, strong) NSArray *receivingEntitiesNames;
+@property (nonatomic, strong) NSMutableDictionary *stcEntities;
+@property (nonatomic) NSUInteger entityCount;
+@property (nonatomic, strong) NSMutableArray *entitySyncNames;
+@property (nonatomic) NSInteger fetchLimit;
+@property (nonatomic, strong) STMDocument *document;
+@property (nonatomic, strong) NSMutableDictionary *temporaryETag;
+@property (nonatomic, strong) id <STMSession> session;
+
 @property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
-@property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
+
 
 @end

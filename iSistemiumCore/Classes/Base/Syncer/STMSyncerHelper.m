@@ -11,12 +11,18 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 
+
 @interface STMSyncerHelper()
+
 
 @end
 
 
 @implementation STMSyncerHelper
+
+@synthesize downloadingState = _downloadingState;
+@synthesize dataDownloadingOwner = _dataDownloadingOwner;
+
 
 - (instancetype)init {
     
@@ -29,7 +35,49 @@
 }
 
 - (void)customInit {
+    
     _failToResolveFantomsArray = @[].mutableCopy;
+    _temporaryETag = @{}.mutableCopy;
+    
+}
+
+- (NSMutableDictionary *)stcEntities {
+    
+    if (!_stcEntities) {
+        _stcEntities = [STMEntityController stcEntities].mutableCopy;
+    }
+    return _stcEntities;
+    
+}
+
+- (id <STMSession>)session {
+    return [[STMSessionManager sharedManager] currentSession];
+}
+
+- (NSInteger)fetchLimit {
+    
+    if (!_fetchLimit) {
+        
+        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
+        _fetchLimit = [settings[@"fetchLimit"] integerValue];
+        
+    }
+    return _fetchLimit;
+    
+}
+
+- (void)setEntityCount:(NSUInteger)entityCount {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+                                                            object:self
+                                                          userInfo:@{@"countdownValue": @((int)entityCount)}];
+        
+    });
+    
+    _entityCount = entityCount;
+    
 }
 
 
