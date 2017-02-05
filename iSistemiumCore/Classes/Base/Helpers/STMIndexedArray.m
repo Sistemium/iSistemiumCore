@@ -86,8 +86,14 @@
 
 - (NSArray <NSDictionary *> *)filteredArrayUsingPredicate:(NSPredicate *)predicate {
     @synchronized (self) {
-        if (!predicate) return _data.copy;
-        return [_data filteredArrayUsingPredicate:predicate];
+        
+        NSMutableArray *predicates = [NSMutableArray arrayWithObject:[NSPredicate predicateWithFormat:@"id != nil"]];
+        
+        if (predicate) [predicates addObject:predicate];
+        
+        NSCompoundPredicate *predicateWithNotDeleted = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+        
+        return [_data filteredArrayUsingPredicate:predicateWithNotDeleted];
     }
 }
 
@@ -104,7 +110,7 @@
     @synchronized (self) {
         NSString *pk = _data[index][STM_INDEXED_ARRAY_PRIMARY_KEY];
         [self.primaryIndex removeObjectForKey:pk];
-        [_data removeObjectAtIndex:index];
+        _data[index] = @{};
     }
 }
 

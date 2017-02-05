@@ -84,8 +84,39 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
+    if (options[STMPersistingOptionForceStorage]) {
+        [STMFunctions error:error withMessage:@"OptionForceStorage is not available"];
+        return nil;
+    }
+    
     STMFakePersistingIfInMemoryDB {
-        return [[self dataWithName:entityName] filteredArrayUsingPredicate:predicate];
+        
+        if (options[STMPersistingOptionFantoms]) {
+            NSMutableArray *predicates = @[[NSPredicate predicateWithFormat:@"isFantom == 1"]].mutableCopy;
+            if (predicate) [predicates addObject:predicate];
+            predicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+        }
+        
+        NSArray <NSDictionary*> *result = [[self dataWithName:entityName] filteredArrayUsingPredicate:predicate];
+        
+        if (result && options[STMPersistingOptionOrder]) {
+            result = [result sortedArrayUsingComparator:^NSComparisonResult(NSDictionary* obj1, NSDictionary* obj2) {
+                NSComparisonResult result = NSOrderedSame;
+                NSArray *fields = [options[STMPersistingOptionOrder] componentsSeparatedByString:@","];
+                for (NSString *field in fields) {
+                    result = [(NSString *)obj1[field] compare:(NSString *)obj2[field] options:0];
+                    if (result != NSOrderedSame) {
+                        if (![options[STMPersistingOptionOrderDirection] isEqualToString:@"DESC"]) {
+                            return result;
+                        }
+                        return result == NSOrderedAscending ? NSOrderedDescending : NSOrderedAscending;
+                    }
+                }
+                return result;
+            }];
+        }
+        
+        return result;
     }
     
     STMFakePersistingEmptyResponse(nil)
@@ -117,6 +148,9 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
     STMFakePersistingIfInMemoryDB {
         [[self dataWithName:entityName] addObject:attributes];
+        // TODO: return merged data
+        [self notifyObservingEntityName:entityName
+                              ofUpdated:attributes];
         return attributes;
     }
     
@@ -147,6 +181,9 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
     STMFakePersistingIfInMemoryDB {
         [[self dataWithName:entityName] addObjectsFromArray:attributeArray];
+        [self notifyObservingEntityName:entityName
+                         ofUpdatedArray:attributeArray];
+        // TODO: return merged data
         return attributeArray;
     }
     
