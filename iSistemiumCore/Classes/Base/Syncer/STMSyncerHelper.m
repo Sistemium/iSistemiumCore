@@ -51,5 +51,9 @@
     return [[STMSessionManager sharedManager] currentSession];
 }
 
+- (STMDocument *)document {
+    return self.session.document;
+}
+
 
 @end
