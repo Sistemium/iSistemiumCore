@@ -20,7 +20,6 @@
 
 @property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
 @property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
-@property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSession> session;
 

@@ -8,9 +8,6 @@
 
 #import "STMSyncerHelper.h"
 
-#import "STMConstants.h"
-#import "STMEntityController.h"
-
 
 @interface STMSyncerHelper()
 
@@ -36,15 +33,6 @@
 
 - (void)customInit {
     _failToResolveFantomsArray = @[].mutableCopy;
-}
-
-- (NSMutableDictionary *)stcEntities {
-    
-    if (!_stcEntities) {
-        _stcEntities = [STMEntityController stcEntities].mutableCopy;
-    }
-    return _stcEntities;
-    
 }
 
 - (id <STMSession>)session {

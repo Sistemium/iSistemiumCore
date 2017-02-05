@@ -10,6 +10,7 @@
 
 #import "STMCoreObjectsController.h"
 #import "STMClientEntityController.h"
+#import "STMEntityController.h"
 
 #import <objc/runtime.h>
 
@@ -31,6 +32,7 @@ static void *fetchLimitVar;
 static void *temporaryETagVar;
 static void *entitySyncNamesVar;
 static void *receivingEntitiesNamesVar;
+static void *stcEntitiesVar;
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -123,6 +125,22 @@ static void *receivingEntitiesNamesVar;
 
 - (void)setReceivingEntitiesNames:(NSArray *)receivingEntitiesNames {
     objc_setAssociatedObject(self, &receivingEntitiesNamesVar, receivingEntitiesNames, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSMutableDictionary *)stcEntities {
+    
+    NSMutableDictionary *result = objc_getAssociatedObject(self, &stcEntitiesVar);
+    
+    if (!result) {
+        objc_setAssociatedObject(self, &stcEntitiesVar, [STMEntityController stcEntities].mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    
+    return result;
+    
+}
+
+- (void)setStcEntities:(NSMutableArray *)stcEntities {
+    objc_setAssociatedObject(self, &stcEntitiesVar, stcEntities, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 
