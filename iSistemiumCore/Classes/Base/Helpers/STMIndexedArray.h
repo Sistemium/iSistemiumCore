@@ -15,7 +15,7 @@
 + (instancetype)array;
 
 - (NSDictionary *)addObject:(NSDictionary *)anObject;
-- (void)addObjectsFromArray:(NSArray <NSDictionary*> *)array;
+- (NSArray <NSDictionary*> *)addObjectsFromArray:(NSArray <NSDictionary*> *)array;
 
 - (BOOL)removeObjectWithKey:(NSString *)key;
 

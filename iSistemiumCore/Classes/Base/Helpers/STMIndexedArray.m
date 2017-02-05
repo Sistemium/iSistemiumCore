@@ -62,11 +62,13 @@
     }
 }
 
-- (void)addObjectsFromArray:(NSArray <NSDictionary*> *)array {
+- (NSArray <NSDictionary*> *)addObjectsFromArray:(NSArray <NSDictionary*> *)array {
     @synchronized (self) {
+        NSMutableArray <NSDictionary*> *result = [NSMutableArray array];
         [array enumerateObjectsUsingBlock:^(NSDictionary * obj, NSUInteger idx, BOOL * stop) {
-            [self addObject:obj];
+            [result addObject:[self addObject:obj]];
         }];
+        return result.copy;
     }
 }
 

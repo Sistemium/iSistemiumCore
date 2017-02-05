@@ -32,7 +32,11 @@ if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
 *error = STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR; \
 return returnValue; \
 
-#define STMFakePersistingIfInMemoryDB \
+#define STMFakePersistingIfInMemoryDB(returnValue) \
+if (options[STMPersistingOptionForceStorage]) { \
+[STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
+return returnValue; \
+} \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 
@@ -72,7 +76,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
-    STMFakePersistingIfInMemoryDB {
+    STMFakePersistingIfInMemoryDB(nil) {
         
         STMIndexedArray *data = [self dataWithName:entityName];
         return [data objectWithKey:identifier];
@@ -84,12 +88,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
 
-    if (options[STMPersistingOptionForceStorage]) {
-        [STMFunctions error:error withMessage:@"OptionForceStorage is not available"];
-        return nil;
-    }
-    
-    STMFakePersistingIfInMemoryDB {
+    STMFakePersistingIfInMemoryDB(nil) {
         
         if (options[STMPersistingOptionFantoms]) {
             NSMutableArray *predicates = @[[NSPredicate predicateWithFormat:@"isFantom == 1"]].mutableCopy;
@@ -131,7 +130,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (BOOL) destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
-    STMFakePersistingIfInMemoryDB {
+    STMFakePersistingIfInMemoryDB(NO) {
         return [[self dataWithName:entityName] removeObjectWithKey:identifier];
     }
     
@@ -146,7 +145,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
         return nil;
     }
     
-    STMFakePersistingIfInMemoryDB {
+    STMFakePersistingIfInMemoryDB(nil) {
         attributes = [[self dataWithName:entityName] addObject:attributes];
         [self notifyObservingEntityName:entityName
                               ofUpdated:attributes];
@@ -159,7 +158,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
-    STMFakePersistingIfInMemoryDB {
+    STMFakePersistingIfInMemoryDB(0) {
         
         NSArray *found = [self findAllSync:entityName predicate:predicate options:options error:error];
         
@@ -178,11 +177,10 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 - (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
-    STMFakePersistingIfInMemoryDB {
-        [[self dataWithName:entityName] addObjectsFromArray:attributeArray];
+    STMFakePersistingIfInMemoryDB(nil) {
+        attributeArray = [[self dataWithName:entityName] addObjectsFromArray:attributeArray];
         [self notifyObservingEntityName:entityName
                          ofUpdatedArray:attributeArray];
-        // TODO: return merged data
         return attributeArray;
     }
     
