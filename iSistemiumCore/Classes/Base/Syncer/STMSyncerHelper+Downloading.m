@@ -29,6 +29,7 @@
 static void *entityCountVar;
 static void *fetchLimitVar;
 static void *temporaryETagVar;
+static void *entitySyncNamesVar;
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -89,6 +90,22 @@ static void *temporaryETagVar;
     
     return result;
 
+}
+
+- (NSMutableArray *)entitySyncNames {
+    
+    NSMutableArray *result = objc_getAssociatedObject(self, &entitySyncNamesVar);
+    
+    if (!result) {
+        objc_setAssociatedObject(self, &entitySyncNamesVar, @[].mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    
+    return result;
+
+}
+
+- (void)setEntitySyncNames:(NSMutableArray *)entitySyncNames {
+    objc_setAssociatedObject(self, &entitySyncNamesVar, entitySyncNames, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 
