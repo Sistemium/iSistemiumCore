@@ -62,6 +62,12 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     return result;
 }
 
++ (instancetype)fakePersistingWithModelName:(NSString *)modelName
+                                    options:(STMFakePersistingOptions)options {
+    STMFakePersisting *result = [self modellerWithModel:[self modelWithName:modelName]];
+    result.options = options;
+    return result;
+}
 
 - (STMIndexedArray *)dataWithName:(NSString *)name {
     STMIndexedArray *data = self.data[name];

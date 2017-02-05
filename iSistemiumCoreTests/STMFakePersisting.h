@@ -22,6 +22,8 @@
 @interface STMFakePersisting : STMModeller <STMPersistingSync, STMPersistingPromised>
 
 + (instancetype)fakePersistingWithOptions:(STMFakePersistingOptions)options;
++ (instancetype)fakePersistingWithModelName:(NSString *)modelName 
+                                    options:(STMFakePersistingOptions)options;
 
 @property (nonatomic, strong) STMFakePersistingOptions options;
 

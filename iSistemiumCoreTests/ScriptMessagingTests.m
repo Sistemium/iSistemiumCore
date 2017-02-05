@@ -78,7 +78,7 @@
         NSString *modelName = [STMCoreAuthController.authController dataModelName];
         
         self.scriptMessenger = [[STMScriptMessageHandler alloc] initWithOwner:self];
-        self.fakePerster = [STMFakePersisting modellerWithModel:[STMFakePersisting modelWithName:modelName]];
+        self.fakePerster = [STMFakePersisting fakePersistingWithModelName:modelName options:nil];
         self.scriptMessenger.persistenceDelegate = self.fakePerster;
         self.scriptMessagingDelegate = self.scriptMessenger;
         
