@@ -35,10 +35,7 @@
 }
 
 - (void)customInit {
-    
     _failToResolveFantomsArray = @[].mutableCopy;
-    _temporaryETag = @{}.mutableCopy;
-    
 }
 
 - (NSMutableDictionary *)stcEntities {
@@ -52,18 +49,6 @@
 
 - (id <STMSession>)session {
     return [[STMSessionManager sharedManager] currentSession];
-}
-
-- (NSInteger)fetchLimit {
-    
-    if (!_fetchLimit) {
-        
-        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
-        _fetchLimit = [settings[@"fetchLimit"] integerValue];
-        
-    }
-    return _fetchLimit;
-    
 }
 
 

@@ -27,6 +27,9 @@
 @end
 
 static void *entityCountVar;
+static void *fetchLimitVar;
+static void *temporaryETagVar;
+
 
 @implementation STMSyncerHelper (Downloading)
 
@@ -37,8 +40,8 @@ static void *entityCountVar;
     
     id result = objc_getAssociatedObject(self, &entityCountVar);
     
-    if (result == nil) {
-        objc_setAssociatedObject(self, &entityCountVar, 0, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (!result) {
+        objc_setAssociatedObject(self, &entityCountVar, @0, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     
     return [result integerValue];
@@ -56,6 +59,35 @@ static void *entityCountVar;
     });
     
     objc_setAssociatedObject(self, &entityCountVar, @(entityCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+}
+
+- (NSUInteger)fetchLimit {
+    
+    id result = objc_getAssociatedObject(self, &fetchLimitVar);
+    
+    if (!result) {
+        
+        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
+        NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
+
+        objc_setAssociatedObject(self, &fetchLimitVar, @(fetchLimit), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        
+    }
+    
+    return [result integerValue];
+    
+}
+
+- (NSMutableDictionary *)temporaryETag {
+    
+    NSMutableDictionary *result = objc_getAssociatedObject(self, &temporaryETagVar);
+    
+    if (!result) {
+        objc_setAssociatedObject(self, &temporaryETagVar, @{}.mutableCopy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    
+    return result;
 
 }
 

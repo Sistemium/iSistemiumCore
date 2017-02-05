@@ -23,9 +23,7 @@
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
-@property (nonatomic) NSInteger fetchLimit;
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) NSMutableDictionary *temporaryETag;
 @property (nonatomic, strong) id <STMSession> session;
 
 @property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
