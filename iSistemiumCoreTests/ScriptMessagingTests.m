@@ -217,7 +217,7 @@
     
     NSString *entityName = @"LogMessage";
     NSString *xid = [STMFunctions uuidString];
-    NSString *errorDescription;
+    NSString *noErrorsDescription = @"Expect no errors";
     
     NSDictionary *body = @{@"entity":entityName};
     
@@ -225,18 +225,15 @@
     
     // Update data
     
-    errorDescription = @"Expect no errors";
-    
     [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid}
                                           forKey:@"data"
                                     inDictionary:body]
-                   expect:errorDescription];
+                   expect:noErrorsDescription];
     
-    // Find Updated
+    // Find Updated with id
 
-    
     [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
-                 expect:errorDescription];
+                 expect:noErrorsDescription];
     
     // Create many
     
@@ -248,9 +245,13 @@
     [self doUpdateManyRequest:[STMFunctions setValue:testArray
                                               forKey:@"data"
                                         inDictionary:body]
-                       expect:errorDescription];
+                       expect:noErrorsDescription];
+    
+    // Find all the created data
     
     [self doFindAllRequest:body expectCount:@(3)];
+    
+    // Find some of the created data with predicate
     
     NSDictionary *where = @{@"text": @{@"==": @"Name 1"}};
     
@@ -264,6 +265,32 @@
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+
+- (void)testSubscriptions {
+
+    NSDictionary *body = @{
+                           @"entities":@[@"LogMessage"],
+                           @"callBack":@"callBack",
+                           @"dataCallback":@"dataCallback"
+                           };
+    
+    [self doSubscribeRequest:body expect:@"No callback specified"];
+    
+    body = @{
+             @"entities":@[@"LogMessage"],
+             @"callback":@"callBack",
+             @"dataCallback":@"dataCallback"
+             };
+    
+    [self doSubscribeRequest:body expect:@"subscribe to entities success"];
+    
+    //
+    // Now wait because STMScriptMessageHandler is using async promises
+    //
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+}
 
 #pragma mark - Private helpers
 
@@ -305,6 +332,18 @@
     
 }
 
+- (void)doSubscribeRequest:(NSDictionary *)body expect:(NSString*)description {
+
+    STMScriptMessage *message = [self doRequestName:WK_MESSAGE_SUBSCRIBE
+                                               body:body
+                                        description:description];
+    
+//    self.expectations[message.body[@"requestId"]].count = count;
+
+    [self.scriptMessagingDelegate receiveSubscribeMessage:message];
+}
+
+
 - (STMScriptMessage *)doRequestName:(NSString *)requestName body:(NSDictionary*)body description:(NSString *)description{
     
     NSString *requestId = [NSString stringWithFormat:@"%@", @(++self.requestId)];
@@ -322,6 +361,7 @@
     return message;
     
 }
+
 
 #pragma mark - STMScriptMessagingOwner protocol
 
@@ -353,8 +393,19 @@
     }
 }
 
-- (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
-    XCTAssertNil(@"not expected");
+- (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+
+    ScriptMessagingTestsExpectation *expectation = self.expectations[parameters[@"requestId"]];
+    XCTAssertNotNil(expectation.expectation);
+    
+    if ([parameters[@"callBack"] isEqualToString:@"subscribeCallBack"]) {
+        XCTAssertEqualObjects(data.firstObject, expectation.expectation.description);
+    }
+    
+    NSLog(@"ScriptMessagingTests jsCallbackFunction:%@ data:%@ parameters:%@", jsCallbackFunction, data, parameters);
+    
+    [expectation.expectation fulfill];
+    
 }
 
 
