@@ -8,7 +8,6 @@
 
 #import "STMCoreSession+Persistable.h"
 #import "STMPersister+Async.h"
-#import "STMPersister+Observable.h"
 
 #import "STMCoreAuthController.h"
 

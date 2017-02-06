@@ -1,5 +1,5 @@
 //
-//  STMPersister+Observable.h
+//  STMPersistingObservable.h
 //  iSisSales
 //
 //  Created by Alexander Levin on 28/01/2017.

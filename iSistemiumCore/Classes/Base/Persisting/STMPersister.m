@@ -13,7 +13,6 @@
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
-#import "STMPersister+Observable.h"
 
 
 @interface STMPersister()
