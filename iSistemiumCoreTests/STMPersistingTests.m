@@ -8,6 +8,7 @@
 
 #import "STMPersistingTests.h"
 #import "STMCoreSessionManager.h"
+#import "STMCoreAuthController.h"
 
 @implementation STMPersistingTests
 
@@ -15,7 +16,16 @@
     
     [super setUp];
     
+    // Create an empty FakePersister if there are options
+    
+    if (self.fakePersistingOptions) {
+        [self fakePersistingWithOptions:self.fakePersistingOptions];
+        return;
+    }
+
     if (self.persister) return;
+    
+    // Otherwise wait for the session to start and get it's persister
     
     STMCoreSessionManager *manager = STMCoreSessionManager.sharedManager;
     
@@ -39,5 +49,17 @@
     [super tearDown];
 }
 
+- (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options {
+    
+    NSString *modelName = [STMCoreAuthController.authController dataModelName];
+    
+    STMFakePersisting *persister = [STMFakePersisting fakePersistingWithModelName:modelName options:options];
+    self.persister = persister;
+    return persister;
+}
+
+- (STMFakePersisting *)inMemoryPersisting {
+    return [self fakePersistingWithOptions:@{STMFakePersistingOptionInMemoryDB}];
+}
 
 @end

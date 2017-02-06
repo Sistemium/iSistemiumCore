@@ -12,8 +12,7 @@
 #import "STMPersistingSync.h"
 #import "STMConstants.h"
 #import "STMFunctions.h"
-
-#import "STMCoreSessionManager.h"
+#import "STMFakePersisting.h"
 
 #define PersistingTestsTimeOut 5
 #define SyncTestsTimeOut 15
@@ -21,5 +20,10 @@
 @interface STMPersistingTests : XCTestCase
 
 @property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync, STMPersistingAsync, STMPersistingPromised, STMModelling> persister;
+
+@property (nonatomic, strong) STMFakePersistingOptions fakePersistingOptions;
+
+- (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options;
+- (STMFakePersisting *)inMemoryPersisting;
 
 @end
