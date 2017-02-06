@@ -10,6 +10,7 @@
 
 @interface STMIndexedArray ()
 
+@property (nonatomic, strong) NSString * primaryKey;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumber *> *primaryIndex;
 
 @end
@@ -20,7 +21,13 @@
 }
 
 + (instancetype)array {
-    return [[self.class alloc] init];
+    return [self.class arrayWithPrimaryKey:STM_INDEXED_ARRAY_DEFAULT_PRIMARY_KEY];
+}
+
++ (instancetype)arrayWithPrimaryKey:(NSString *)key {
+    STMIndexedArray *instance = [[self.class alloc] init];
+    instance.primaryKey = key;
+    return instance;
 }
 
 - (instancetype)init {
@@ -36,15 +43,15 @@
     }
 }
 
-- (NSDictionary *)addObject:(NSDictionary*)anObject {
+- (NSDictionary *)addObject:(NSDictionary *)anObject {
     @synchronized (self) {
         
-        NSString *primaryKey = anObject[STM_INDEXED_ARRAY_PRIMARY_KEY];
+        NSString *primaryKey = anObject[self.primaryKey];
         
         if (!primaryKey) {
             primaryKey = [[NSUUID UUID] UUIDString].lowercaseString;
             NSMutableDictionary *anObjectCopy = anObject.mutableCopy;
-            anObjectCopy[STM_INDEXED_ARRAY_PRIMARY_KEY] = primaryKey;
+            anObjectCopy[self.primaryKey] = primaryKey;
             anObject = anObjectCopy.copy;
         }
         
@@ -112,7 +119,7 @@
 
 - (void)removeObjectAtIndex:(NSUInteger)index {
     @synchronized (self) {
-        NSString *pk = _data[index][STM_INDEXED_ARRAY_PRIMARY_KEY];
+        NSString *pk = _data[index][self.primaryKey];
         [self.primaryIndex removeObjectForKey:pk];
         _data[index] = @{};
     }

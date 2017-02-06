@@ -16,6 +16,10 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeNone
 };
 
+#define STMPersistingKeyVersion @"deviceTs"
+
+#define STMPersistingOptions NSDictionary *
+
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"

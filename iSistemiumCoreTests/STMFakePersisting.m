@@ -8,7 +8,7 @@
 
 #import "STMFakePersisting.h"
 #import "STMFunctions.h"
-#import "STMIndexedArray.h"
+#import "STMIndexedArrayPersisting.h"
 
 
 #define STMFAKE_PERSISTING_NOT_IMPLEMENTED_ERROR \
@@ -31,7 +31,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 @interface STMFakePersisting ()
 
-@property (nonatomic, strong) NSMutableDictionary <NSString*, STMIndexedArray *> *data;
+@property (nonatomic, strong) NSMutableDictionary <NSString*, STMIndexedArrayPersisting *> *data;
 
 @end
 
@@ -51,16 +51,16 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     return result;
 }
 
-+ (instancetype)fakePersistingWithModelName:(NSString *)modelName
-                                    options:(STMFakePersistingOptions)options {
-    STMFakePersisting *result = [STMFakePersisting fakePersistingWithOptions:options];
-    return [result initWithModel:[self modelWithName:modelName]];
++ (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
+    
+    return [[STMFakePersisting fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
+
 }
 
-- (STMIndexedArray *)dataWithName:(NSString *)name {
-    STMIndexedArray *data = self.data[name];
+- (STMIndexedArrayPersisting *)dataWithName:(NSString *)name {
+    STMIndexedArrayPersisting *data = self.data[name];
     if (!data) {
-        data = [STMIndexedArray array];
+        data = [STMIndexedArrayPersisting array];
         self.data[name] = data;
     }
     return data;
@@ -68,11 +68,11 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 #pragma mark - PersistingSync implementation
 
-- (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSDictionary *) findSync:(NSString *)entityName identifier:(NSString *)identifier options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
 
     STMFakePersistingIfInMemoryDB(nil) {
         
-        STMIndexedArray *data = [self dataWithName:entityName];
+        STMIndexedArrayPersisting *data = [self dataWithName:entityName];
         return [data objectWithKey:identifier];
     }
     
@@ -80,7 +80,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 }
 
-- (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSArray <NSDictionary*> *) findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
 
     STMFakePersistingIfInMemoryDB(nil) {
         
@@ -116,7 +116,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 }
 
-- (NSUInteger) countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSUInteger) countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
 
     return [self findAllSync:entityName predicate:predicate options:options error:error].count;
 
@@ -132,7 +132,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
 }
 
-- (NSDictionary *) mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSDictionary *) mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
     
     if (!attributes) {
         [STMFunctions error:error withMessage:@"Empty atributes in merge"];
@@ -140,9 +140,8 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     }
     
     STMFakePersistingIfInMemoryDB(nil) {
-        attributes = [[self dataWithName:entityName] addObject:attributes];
-        [self notifyObservingEntityName:entityName
-                              ofUpdated:attributes];
+        attributes = [[self dataWithName:entityName] addObject:attributes options:options];
+        [self notifyObservingEntityName:entityName ofUpdated:attributes];
         return attributes;
     }
     
@@ -150,7 +149,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
 }
 
-- (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSUInteger) destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB(0) {
         
@@ -169,12 +168,11 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 }
 
-- (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+- (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray <NSDictionary*> *)attributeArray options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB(nil) {
-        attributeArray = [[self dataWithName:entityName] addObjectsFromArray:attributeArray];
-        [self notifyObservingEntityName:entityName
-                         ofUpdatedArray:attributeArray];
+        attributeArray = [[self dataWithName:entityName] addObjectsFromArray:attributeArray options:options];
+        [self notifyObservingEntityName:entityName ofUpdatedArray:attributeArray];
         return attributeArray;
     }
     

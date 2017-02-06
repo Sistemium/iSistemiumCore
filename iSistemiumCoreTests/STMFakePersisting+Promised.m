@@ -26,7 +26,7 @@ return [AnyPromise promiseWithValue: error ? error : result];
 
 - (AnyPromise *)find:(NSString *)entityName
           identifier:(NSString *)identifier
-             options:(NSDictionary *)options {
+             options:(STMPersistingOptions)options {
     
     STMFakePersistingPromisedWithSync(NSDictionary,find,identifier)
     
@@ -34,7 +34,7 @@ return [AnyPromise promiseWithValue: error ? error : result];
 
 - (AnyPromise *)findAll:(NSString *)entityName
               predicate:(NSPredicate *)predicate
-                options:(NSDictionary *)options {
+                options:(STMPersistingOptions)options {
     
     STMFakePersistingPromisedWithSync(NSArray,findAll,predicate)
     
@@ -42,27 +42,27 @@ return [AnyPromise promiseWithValue: error ? error : result];
 
 - (AnyPromise *)merge:(NSString *)entityName
            attributes:(NSDictionary *)attributes
-              options:(NSDictionary *)options {
+              options:(STMPersistingOptions)options {
     STMFakePersistingPromisedWithSync(NSDictionary,merge,attributes)
 }
 
 - (AnyPromise *)mergeMany:(NSString *)entityName
            attributeArray:(NSArray *)attributeArray
-                  options:(NSDictionary *)options {
+                  options:(STMPersistingOptions)options {
     
     STMFakePersistingPromisedWithSync(NSArray,mergeMany,attributeArray)
 }
 
 - (AnyPromise *)destroy:(NSString *)entityName
              identifier:(NSString *)identifier
-                options:(NSDictionary *)options {
+                options:(STMPersistingOptions)options {
     
     STMFakePersistingPromisedWithSyncScalar(BOOL,destroy,identifier)
 }
 
 - (AnyPromise *)destroyAll:(NSString *)entityName
                  predicate:(NSPredicate *)predicate
-                   options:(NSDictionary *)options {
+                   options:(STMPersistingOptions)options {
     STMFakePersistingPromisedWithSyncScalar(NSUInteger,destroyAll,predicate)
 }
 
