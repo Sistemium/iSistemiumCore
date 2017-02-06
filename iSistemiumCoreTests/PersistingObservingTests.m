@@ -49,8 +49,10 @@
 }
 
 - (void)testObserveLtsInMemory {
+    id oldPersister = self.persister;
     if (!self.fakePersistingOptions) [self inMemoryPersisting];
     [self observeLtsTestStorageType:STMStorageTypeInMemory];
+    if (!self.fakePersistingOptions) self.persister = oldPersister;
 }
 
 - (void)observeLtsTestStorageType:(STMStorageType)storageType {
