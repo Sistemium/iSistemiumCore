@@ -267,6 +267,40 @@
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testDestroy {
+
+    NSString *entityName = @"LogMessage";
+    NSString *xid = [STMFunctions uuidString];
+    
+    self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
+    
+    NSDictionary *body = @{@"entity":entityName};
+    
+    // Empty xid
+    
+    [self doDestroyRequest:body expect:@"empty xid"];
+    
+    [self doDestroyRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
+                    expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+
+    [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid} forKey:@"data" inDictionary:body]
+                   expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+    
+    [self doDestroyRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
+                    expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+    
+    [self doFindAllRequest:body expectCount:@(0)];
+    
+    //
+    // Now wait
+    //
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+}
+
 
 - (void)testSubscriptions {
     
@@ -393,10 +427,17 @@
     STMScriptMessage *message = [self doRequestName:WK_MESSAGE_SUBSCRIBE
                                                body:body
                                         description:description];
-    
-//    self.expectations[message.body[@"requestId"]].count = count;
 
     [self.scriptMessagingDelegate receiveSubscribeMessage:message];
+    
+}
+
+- (void)doDestroyRequest:(NSDictionary *)body expect:(NSString *)description {
+    
+    [self.scriptMessagingDelegate receiveDestroyMessage:[self doRequestName:WK_MESSAGE_DESTROY
+                                                                       body:body
+                                                                description:description]];
+    
 }
 
 

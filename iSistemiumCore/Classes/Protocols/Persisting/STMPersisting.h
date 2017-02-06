@@ -13,8 +13,13 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeFMDB,
     STMStorageTypeCoreData,
     STMStorageTypeAbstract,
-    STMStorageTypeNone
+    STMStorageTypeNone,
+    STMStorageTypeInMemory
 };
+
+#define STMPersistingKeyVersion @"deviceTs"
+
+#define STMPersistingOptions NSDictionary *
 
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"

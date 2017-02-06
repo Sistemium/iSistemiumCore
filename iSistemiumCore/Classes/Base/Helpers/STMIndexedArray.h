@@ -8,11 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
-#define STM_INDEXED_ARRAY_PRIMARY_KEY @"id"
+#define STM_INDEXED_ARRAY_DEFAULT_PRIMARY_KEY @"id"
 
 @interface STMIndexedArray : NSObject
 
 + (instancetype)array;
++ (instancetype)arrayWithPrimaryKey:(NSString *)key;
+
+- (NSString *)primaryKey;
 
 - (NSDictionary *)addObject:(NSDictionary *)anObject;
 - (NSArray <NSDictionary*> *)addObjectsFromArray:(NSArray <NSDictionary*> *)array;
@@ -20,7 +23,6 @@
 - (BOOL)removeObjectWithKey:(NSString *)key;
 
 - (NSDictionary *)objectWithKey:(NSString *)key;
-- (NSDictionary *)objectAtIndex:(NSUInteger)index;
 
 - (NSArray <NSDictionary *> *)filteredArrayUsingPredicate:(NSPredicate *)predicate;
 

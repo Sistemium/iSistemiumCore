@@ -19,7 +19,7 @@
 #define STMFakePersistingOptionEmptyDBKey @"emptyDB"
 #define STMFakePersistingOptionEmptyDB STMFakePersistingOptionEmptyDBKey:@YES
 
-@interface STMFakePersisting : STMModeller <STMPersistingSync, STMPersistingPromised>
+@interface STMFakePersisting : STMModeller <STMPersistingSync>
 
 + (instancetype)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 + (instancetype)fakePersistingWithModelName:(NSString *)modelName 
@@ -28,3 +28,5 @@
 @property (nonatomic, strong) STMFakePersistingOptions options;
 
 @end
+
+#import "STMFakePersisting+Promised.h"
