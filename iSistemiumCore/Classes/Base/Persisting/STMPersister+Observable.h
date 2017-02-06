@@ -8,8 +8,6 @@
 
 #import "STMPersistingObserving.h"
 
-#warning should rename the class files to STMPersistingObservable
-
 @interface STMPersistingObservingSubscription : NSObject
 
 @property (nonatomic, strong, nonnull) NSString *entityName;
