@@ -392,20 +392,25 @@
             }
             
         }
-
-    }
-    
-    for (NSString* entityName in picturesWithThumbnails.allKeys){
-    
-        if (picturesWithThumbnails[entityName].count > 0){
-            
-            [STMCoreController.persistenceDelegate mergeMany:entityName attributeArray:picturesWithThumbnails[entityName] options:nil].then(^(NSArray *result){
-                NSLog(@"Thumbnail set for %i %@ pictures",result.count,entityName);
-            }).catch(^(NSError *error){
-                NSLog(@"Error setting thumbnail%@ for %@ pictures",error, entityName);
-            });
-        }
         
+        for (NSString* entityName in picturesWithThumbnails.allKeys){
+            
+            if (picturesWithThumbnails[entityName].count > 0){
+                
+                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
+                
+                for (NSDictionary* picture in picturesWithThumbnails[entityName]){
+                    [self.persistenceDelegate update:entityName attributes:picture options:options].then(^(NSArray *result){
+                        NSLog(@"Thumbnail set for %i %@ pictures",result.count,entityName);
+                    }).catch(^(NSError *error){
+                        NSLog(@"Error setting thumbnail%@ for %@ pictures",error, entityName);
+                    });
+                }
+
+            }
+            
+        }
+
     }
     
 }
