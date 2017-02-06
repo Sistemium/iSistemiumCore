@@ -28,6 +28,7 @@
 @property (nonatomic, strong) NSString *pkToWait;
 
 @property (nonatomic, strong) id <STMDataDownloading> downloadingDelegate;
+@property (nonatomic, strong) XCTestExpectation *downloadExpectation;
 
 
 @end
@@ -226,12 +227,38 @@
     
     XCTAssertNotNil(self.downloadingDelegate);
     
+    NSString *expectationDescription = @"testDownload";
+    self.downloadExpectation = [self expectationWithDescription:expectationDescription];
+
+    NSDate *startedAt = [NSDate date];
+
+    [self.downloadingDelegate startDownloading];
+    
+    XCTAssertNotNil(self.downloadingDelegate.downloadingState);
+
+    [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
+        
+        XCTAssertNil(error);
+        
+        NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
+        
+    }];
+
 }
 
 
 #pragma mark STMDataDownloadingOwner
 
 - (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
+    
+    NSLog(@"receiveData: %@, offset %@, pageSize %@", entityName, offset, @(pageSize));
+    
+    [self.downloadingDelegate dataReceivedSuccessfully:YES
+                                            entityName:entityName
+                                                result:nil
+                                                offset:offset
+                                              pageSize:0
+                                                 error:nil];
     
 }
 
@@ -240,10 +267,14 @@
 }
 
 - (void)entitiesWasUpdated {
-    
+    NSLog(@"STMEntity was updated");
 }
 
 - (void)dataDownloadingFinished {
+    
+    NSLog(@"dataDownloadingFinished");
+    
+    [self.downloadExpectation fulfill];
     
 }
 
