@@ -9,13 +9,25 @@
 #import <Foundation/Foundation.h>
 #import "STMPersisting.h"
 
-typedef void (^STMPersistingAsyncArrayResultCallback)(BOOL success, NSArray *result, NSError *error);
+#define STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS \
+BOOL success, NSArray *result, NSError *error
 
-typedef void (^STMPersistingAsyncDictionaryResultCallback)(BOOL success, NSDictionary *result, NSError *error);
+#define STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS \
+BOOL success, NSDictionary *result, NSError *error
 
-typedef void (^STMPersistingAsyncNoResultCallback)(BOOL success, NSError *error);
+#define STMP_ASYNC_NORESULT_CALLBACK_ARGS \
+BOOL success, NSError *error
 
-typedef void (^STMPersistingAsyncIntegerResultCallback)(BOOL success, NSUInteger result, NSError *error);
+#define STMP_ASYNC_INTEGER_RESULT_CALLBACK_ARGS \
+BOOL success, NSUInteger result, NSError *error
+
+typedef void (^STMPersistingAsyncArrayResultCallback)(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS);
+
+typedef void (^STMPersistingAsyncDictionaryResultCallback)(STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS);
+
+typedef void (^STMPersistingAsyncNoResultCallback)(STMP_ASYNC_NORESULT_CALLBACK_ARGS);
+
+typedef void (^STMPersistingAsyncIntegerResultCallback)(STMP_ASYNC_INTEGER_RESULT_CALLBACK_ARGS);
 
 @protocol STMPersistingAsync
 
