@@ -29,6 +29,7 @@
 
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSArray *> *> *pendingObjectsByEntity;
 
 
 @end
@@ -123,6 +124,7 @@
     
     self.subscriptions = [NSMutableArray array];
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    self.pendingObjectsByEntity = @{}.mutableCopy;
     
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
         
@@ -153,6 +155,7 @@
     
     self.subscriptions = nil;
     self.erroredObjectsByEntity = nil;
+    self.pendingObjectsByEntity = nil;
     
 }
 
@@ -255,15 +258,25 @@
                 resultObject = @{}.mutableCopy;
                 resultObject[@"entityName"] = entityName;
                 
-                NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
+                if (optionalUnsyncedParents.count > 0) {
+                    
+                    [self pendingObject:unsyncedObject
+                             entityName:entityName
+                     withHoldingParents:optionalUnsyncedParents.allValues];
                 
-                [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
-                
-                    alteredObject[key] = [NSNull null];
+                    NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
+                    
+                    [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
+                        alteredObject[key] = [NSNull null];
+                    }];
+                    
+                    resultObject[@"object"] = alteredObject;
 
-                }];
-                
-                resultObject[@"object"] = alteredObject;
+                } else {
+                    
+                    resultObject[@"object"] = unsyncedObject;
+                    
+                }
                 
             }
             
@@ -393,6 +406,26 @@
 
 }
 
+- (void)pendingObject:(NSDictionary *)object entityName:(NSString *)entityName withHoldingParents:(NSArray *)parents {
+    
+    NSString *pk = object[@"id"];
+    
+    NSLog(@"pendingObject: %@", object);
+    
+    @synchronized (self.pendingObjectsByEntity) {
+        
+        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        
+        if (!pendingObjects) pendingObjects = @{}.mutableCopy;
+        
+        pendingObjects[pk] = [parents valueForKeyPath:@"id"];
+        
+        self.pendingObjectsByEntity[entityName] = pendingObjects;
+        
+    }
+
+}
+
 
 #pragma mark - Predicates
 
@@ -402,11 +435,11 @@
     
     if (!errored.count) return nil;
     
-    NSArray *erroredData = [STMFunctions mapArray:errored.allObjects withBlock:^id _Nonnull(NSString * _Nonnull idString) {
+    NSArray *erroredIdsArray = [STMFunctions mapArray:errored.allObjects withBlock:^id _Nonnull(NSString * _Nonnull idString) {
         return [STMFunctions xidDataFromXidString:idString];
     }];
         
-    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredData];
+    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredIdsArray];
 
 }
 
