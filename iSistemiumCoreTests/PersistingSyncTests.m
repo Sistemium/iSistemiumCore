@@ -186,12 +186,12 @@
     
     NSDictionary *testData = @{@"id" : @"non nexisting",@"text": @"updated test data",@"type": @"should not be updated"};
     
-    NSDictionary *testOptions = @{@"fieldsToUpdate" : @[@"text"]};
+    NSDictionary *testOptions = @{STMPersistingOptionFieldstoUpdate : @[@"text"],STMPersistingOptionSetTs:@NO};
     
     NSDictionary *updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
-    
-    XCTAssertNotNil(error);
+
     XCTAssertNil(updatedData);
+    XCTAssertNil(error);
     
     testData = @{@"type": @"debug",
                  @"text": @"testUpdate"};
@@ -201,13 +201,23 @@
     XCTAssertNotNil(testObject);
     XCTAssertNil(error);
     
+    NSString *deviceTs = testObject[@"deviceTs"];
+    
     testData = @{@"id" : testObject[@"id"] ,@"text": @"updated test data",@"type": @"should not be updated"};
     
     updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
     
     XCTAssertNil(error);
-    XCTAssertEqual(testData[@"text"], updatedData[@"text"]);
-    XCTAssertNotEqual(testData[@"type"], updatedData[@"type"]);
+    XCTAssertTrue([testData[@"text"] isEqualToString:updatedData[@"text"]]);
+    XCTAssertFalse([testData[@"type"] isEqualToString:updatedData[@"type"]]);
+    XCTAssertTrue([deviceTs isEqualToString:updatedData[@"deviceTs"]]);
+    
+    [self.persister destroySync:entityName
+                     identifier:testObject[@"id"]
+                        options:@{STMPersistingOptionRecordstatuses:@NO}
+                          error:&error];
+    
+    XCTAssertNil(error);
 }
 
 @end
