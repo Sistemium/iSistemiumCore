@@ -39,11 +39,14 @@
 @synthesize subscriberDelegate = _subscriberDelegate;
 @synthesize syncingState = _syncingState;
 
-+ (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
++ (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate {
+    
     STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
     unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
     unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
+    
     return unsyncedDataHelper;
+    
 }
 
 - (void)setSyncingState:(id <STMDataSyncingState>)syncingState {
@@ -241,20 +244,34 @@
     
     NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName];
     
+    __block NSMutableDictionary *resultObject = nil;
+    
     if (unsyncedObject) {
         
-        if (![self haveUnsyncedParentForObject:unsyncedObject]) {
-        
-            NSDictionary *resultObject = @{@"entityName"  : entityName,
-                                           @"object"      : unsyncedObject};
-
-            return resultObject;
+        [self checkUnsyncedParentsForObject:unsyncedObject withEntityName:entityName completionHandler:^(BOOL haveUnsyncedParent, NSDictionary *optionalUnsyncedParents) {
             
-        }
+            if (!haveUnsyncedParent || (haveUnsyncedParent && optionalUnsyncedParents.count > 0)) {
+                
+                resultObject = @{}.mutableCopy;
+                resultObject[@"entityName"] = entityName;
+                
+                NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
+                
+                [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    
+                    alteredObject[key] = [NSNull null];
+                    
+                }];
+                
+                resultObject[@"object"] = alteredObject;
+                
+            }
+            
+        }];
         
     }
     
-    return nil;
+    return resultObject;
 
 }
 
@@ -355,60 +372,6 @@
     }
 
     completionHandler(haveUnsyncedParent, optionalUnsyncedParents);
-    
-}
-
-- (BOOL)haveUnsyncedParentForObject:(NSDictionary *)object {
-    
-    BOOL haveUnsyncedParent = NO;
-    
-    NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
-
-    for (NSString *relKey in relKeys) {
-
-        NSString *parentId = object[relKey];
-        
-        if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
-
-        NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
-        NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
-        NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
-        entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
-        
-        NSError *error = nil;
-
-        NSDictionary *parent = [self.persistenceDelegate findSync:entityName
-                                                       identifier:parentId
-                                                          options:nil
-                                                            error:&error];
-
-        if (parent) {
-            
-            NSString *parentLts = parent[@"lts"];
-            
-            if (!parentLts || [parentLts isEqualToString:@""]) {
-                
-                haveUnsyncedParent = YES;
-                break;
-
-            }
-            
-        } else {
-            
-            if (error) {
-                NSLog(@"error to find %@ %@: %@", entityName, parentId, error.localizedDescription);
-            } else {
-                // we have relation's id but have no both object with this id and error — something wrong with it
-            }
-            
-            haveUnsyncedParent = YES;
-            break;
-            
-        }
-        
-    }
-    
-    return haveUnsyncedParent;
     
 }
 
