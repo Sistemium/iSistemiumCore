@@ -213,8 +213,8 @@
         
         if (self.subscriberDelegate) {
             
-            BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
-            NSString *objectVersion = isFMDB ? object[@"deviceTs"] : object[@"ts"];
+            BOOL isCoreData = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeCoreData;
+            NSString *objectVersion = isCoreData ? object[@"ts"] : object[STMPersistingKeyVersion];
             
             [self.subscriberDelegate haveUnsynced:entityName
                                          itemData:object
