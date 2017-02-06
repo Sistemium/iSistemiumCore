@@ -248,7 +248,7 @@
     
     if (unsyncedObject) {
         
-        [self checkUnsyncedParentsForObject:unsyncedObject withEntityName:entityName completionHandler:^(BOOL haveUnsyncedParent, NSDictionary *optionalUnsyncedParents) {
+        [self checkUnsyncedParentsForObject:unsyncedObject withEntityName:entityName completionHandler:^(BOOL haveUnsyncedParent, NSDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents) {
             
             if (!haveUnsyncedParent || (haveUnsyncedParent && optionalUnsyncedParents.count > 0)) {
                 
@@ -257,10 +257,10 @@
                 
                 NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
                 
-                [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                    
+                [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
+                
                     alteredObject[key] = [NSNull null];
-                    
+
                 }];
                 
                 resultObject[@"object"] = alteredObject;
@@ -301,10 +301,10 @@
 
 }
 
-- (void)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName completionHandler:(void (^)(BOOL haveUnsyncedParent, NSDictionary *optionalUnsyncedParents))completionHandler {
+- (void)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName completionHandler:(void (^)(BOOL haveUnsyncedParent, NSDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents))completionHandler {
     
     BOOL haveUnsyncedParent = NO;
-    NSMutableDictionary *optionalUnsyncedParents = @{}.mutableCopy;
+    NSMutableDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents = @{}.mutableCopy;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
     
