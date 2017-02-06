@@ -29,6 +29,8 @@
 
 @property (nonatomic, strong) id <STMDataDownloading> downloadingDelegate;
 @property (nonatomic, strong) XCTestExpectation *downloadExpectation;
+@property (nonatomic) BOOL transportIsReady;
+@property (nonatomic) BOOL brokenDownload;
 
 
 @end
@@ -230,16 +232,42 @@
     }
     
     XCTAssertNotNil(self.downloadingDelegate);
+
+    [self downloadWithTransportIsReady];
+
+}
+
+- (void)downloadWithTransportIsReady {
     
-    NSString *expectationDescription = @"testDownload";
-    self.downloadExpectation = [self expectationWithDescription:expectationDescription];
+    self.brokenDownload = NO;
 
     NSDate *startedAt = [NSDate date];
-
-    [self.downloadingDelegate startDownloading];
     
-    XCTAssertNotNil(self.downloadingDelegate.downloadingState);
+    [self startDownload];
+    
+    [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
+        
+        XCTAssertNil(error);
+        
+        NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
+        
+        [self.downloadingDelegate stopDownloading:@"stopDownloadingTest"];
+        XCTAssertNil(self.downloadingDelegate.downloadingState);
+        
+        [self downloadWithTransportIsBrokenInTheMiddle];
+        
+    }];
 
+}
+
+- (void)downloadWithTransportIsBrokenInTheMiddle {
+    
+    self.brokenDownload = YES;
+    
+    NSDate *startedAt = [NSDate date];
+
+    [self startDownload];
+    
     [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
         
         XCTAssertNil(error);
@@ -250,6 +278,19 @@
 
 }
 
+- (void)startDownload {
+    
+    self.transportIsReady = YES;
+    
+    NSString *expectationDescription = self.brokenDownload ? @"brokenDownload" : @"goodDownload";
+    self.downloadExpectation = [self expectationWithDescription:expectationDescription];
+    
+    [self.downloadingDelegate startDownloading];
+    
+    XCTAssertNotNil(self.downloadingDelegate.downloadingState);
+
+}
+
 
 #pragma mark STMDataDownloadingOwner
 
@@ -257,6 +298,10 @@
     
     NSLog(@"receiveData: %@, offset %@, pageSize %@", entityName, offset, @(pageSize));
     
+    if (self.brokenDownload && ![entityName isEqualToString:@"STMEntity"]) {
+        self.transportIsReady = NO;
+    }
+
     [self.downloadingDelegate dataReceivedSuccessfully:YES
                                             entityName:entityName
                                                 result:nil
@@ -267,7 +312,7 @@
 }
 
 - (BOOL)downloadingTransportIsReady {
-    return YES;
+    return self.transportIsReady;
 }
 
 - (void)entitiesWasUpdated {
@@ -279,6 +324,7 @@
     NSLog(@"dataDownloadingFinished");
     
     [self.downloadExpectation fulfill];
+    self.downloadExpectation = nil;
     
 }
 
