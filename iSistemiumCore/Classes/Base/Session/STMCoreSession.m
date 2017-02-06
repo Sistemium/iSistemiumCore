@@ -171,15 +171,13 @@
         self.status = STMSessionRunning;
 
         STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
-        
         syncerHelper.persistenceDelegate = self.persistenceDelegate;
+        syncerHelper.dataDownloadingOwner = self.syncer;
+        self.syncer.dataDownloadingDelegate = syncerHelper;
+        self.syncer.defantomizingDelegate = syncerHelper;
         
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
                                                                                               subscriber:self.syncer];
-        self.syncer.dataDownloadingDelegate = syncerHelper;
-        syncerHelper.dataDownloadingOwner = self.syncer;
-        
-        self.syncer.defantomizingDelegate = syncerHelper;
         self.syncer.dataSyncingDelegate = unsyncedHelper;
         
         self.syncer.persistenceDelegate = self.persistenceDelegate;
