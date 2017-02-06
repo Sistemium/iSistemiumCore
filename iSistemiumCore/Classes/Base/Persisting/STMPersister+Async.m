@@ -126,25 +126,26 @@
 }
 
 - (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options
-      completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
+      completionHandler:(STMPersistingAsyncIntegerResultCallback)completionHandler{
     
     __block BOOL success = YES;
     __block NSError* error = nil;
+    __block NSUInteger result = 0;
     
     if ([self.fmdb hasTable:entityName]){
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+            result = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
             if(error){
                 success = NO;
             }
-            completionHandler(success,error);
+            completionHandler(success,result,error);
         });
     }else{
-        [self destroyAllSync:entityName predicate:predicate options:options error:&error];
+        result = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
         if(error){
             success = NO;
         }
-        completionHandler(success,error);
+        completionHandler(success,result,error);
     }
     
 }
@@ -214,9 +215,9 @@
 - (AnyPromise *)destroyAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self destroyAllAsync:entityName predicate:predicate options:options completionHandler:^(BOOL success, NSError *error){
+        [self destroyAllAsync:entityName predicate:predicate options:options completionHandler:^(BOOL success, NSUInteger result, NSError *error){
             if (success){
-                resolve([NSNumber numberWithBool:success]);
+                resolve(@(result));
             }else{
                 resolve(error);
             }

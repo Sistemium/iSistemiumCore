@@ -10,8 +10,12 @@
 #import "STMPersisting.h"
 
 typedef void (^STMPersistingAsyncArrayResultCallback)(BOOL success, NSArray *result, NSError *error);
+
 typedef void (^STMPersistingAsyncDictionaryResultCallback)(BOOL success, NSDictionary *result, NSError *error);
+
 typedef void (^STMPersistingAsyncNoResultCallback)(BOOL success, NSError *error);
+
+typedef void (^STMPersistingAsyncIntegerResultCallback)(BOOL success, NSUInteger result, NSError *error);
 
 @protocol STMPersistingAsync
 
@@ -45,7 +49,7 @@ completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
 - (void)destroyAllAsync:(NSString *)entityName
               predicate:(NSPredicate *)predicate
                 options:(NSDictionary *)options
-      completionHandler:(STMPersistingAsyncNoResultCallback)completionHandler;
+      completionHandler:(STMPersistingAsyncIntegerResultCallback)completionHandler;
 
 @optional
 
