@@ -8,6 +8,38 @@
 
 #import "STMPersistingTests.h"
 
+#define PATExpectation(name) \
+XCTestExpectation *name = [self expectationWithDescription:@"name"];
+
+#define PATExpectArrayError(expectation) \
+^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) { \
+    XCTAssertNotNil(error); \
+    XCTAssertFalse(success); \
+    [expectation fulfill]; \
+}
+
+#define PATExpectDictionaryError(expectation) \
+    ^(STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS) { \
+        XCTAssertNotNil(error); \
+        XCTAssertFalse(success); \
+        [expectation fulfill]; \
+    }
+
+#define PATExpectIntegerError(expectation) \
+    ^(STMP_ASYNC_INTEGER_RESULT_CALLBACK_ARGS) { \
+        XCTAssertNotNil(error); \
+        XCTAssertFalse(success); \
+        [expectation fulfill]; \
+    }
+
+#define PATExpectError(expectation) \
+    ^(STMP_ASYNC_NORESULT_CALLBACK_ARGS) { \
+        XCTAssertNotNil(error); \
+        XCTAssertFalse(success); \
+        [expectation fulfill]; \
+    }
+
+
 @interface PersistingAsyncTests : STMPersistingTests
 
 @end
@@ -22,71 +54,47 @@
     
     NSString *entityName = @"UnknownEntity";
     
-    XCTestExpectation *findAllAsync = [self expectationWithDescription:@"findAllAsync"];
+    PATExpectation(findAllAsync)
     
     [self.persister findAllAsync:entityName
                        predicate:nil
                          options:nil
-               completionHandler:^(BOOL success, NSArray *result, NSError *error) {
-                   XCTAssertNotNil(error);
-                   XCTAssertFalse(success);
-                   [findAllAsync fulfill];
-               }];
+               completionHandler:PATExpectArrayError(findAllAsync)];
 
-    XCTestExpectation *destroyAllAsync = [self expectationWithDescription:@"destroyAllAsync"];
+    PATExpectation(destroyAllAsync)
     
     [self.persister destroyAllAsync:entityName
                           predicate:nil
                             options:nil
-                  completionHandler:^(BOOL success, NSUInteger result, NSError *error) {
-                      XCTAssertNotNil(error);
-                      XCTAssertFalse(success);
-                      [destroyAllAsync fulfill];
-                  }];
+                  completionHandler:PATExpectIntegerError(destroyAllAsync)];
     
-    XCTestExpectation *findAsync = [self expectationWithDescription:@"findAsync"];
+    PATExpectation(findAsync)
     
     [self.persister findAsync:entityName
                     identifier:entityName
                       options:nil
-            completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-                XCTAssertNotNil(error);
-                XCTAssertFalse(success);
-                [findAsync fulfill];
-            }];
+            completionHandler:PATExpectDictionaryError(findAsync)];
     
-    XCTestExpectation *destroyAsync = [self expectationWithDescription:@"destroyAsync"];
+    PATExpectation(destroyAsync)
     
     [self.persister destroyAsync:entityName
                       identifier:entityName
                          options:nil
-               completionHandler:^(BOOL success, NSError *error) {
-                   XCTAssertNotNil(error);
-                   XCTAssertFalse(success);
-                   [destroyAsync fulfill];
-               }];
+               completionHandler:PATExpectError(destroyAsync)];
     
-    XCTestExpectation *mergeAsync = [self expectationWithDescription:@"mergeAsync"];
+    PATExpectation(mergeAsync)
     
     [self.persister mergeAsync:entityName
                     attributes:@{}
                        options:nil
-             completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-                 XCTAssertNotNil(error);
-                 XCTAssertFalse(success);
-                 [mergeAsync fulfill];
-             }];
+             completionHandler:PATExpectDictionaryError(mergeAsync)];
 
-    XCTestExpectation *mergeManyAsync = [self expectationWithDescription:@"mergeManyAsync"];
+    PATExpectation(mergeManyAsync)
     
     [self.persister mergeManyAsync:entityName
                     attributeArray:@[@{}]
                            options:nil
-                 completionHandler:^(BOOL success, NSArray *result, NSError *error) {
-                     XCTAssertNotNil(error);
-                     XCTAssertFalse(success);
-                     [mergeManyAsync fulfill];
-                 }];
+                 completionHandler:PATExpectArrayError(mergeManyAsync)];
      
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
