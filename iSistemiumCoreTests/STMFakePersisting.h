@@ -19,11 +19,16 @@
 #define STMFakePersistingOptionEmptyDBKey @"emptyDB"
 #define STMFakePersistingOptionEmptyDB STMFakePersistingOptionEmptyDBKey:@YES
 
+#define STMFakePersistingOptionCheckModelKey @"checkModel"
+#define STMFakePersistingOptionCheckModel STMFakePersistingOptionCheckModelKey:@YES
+
 @interface STMFakePersisting : STMModeller <STMPersistingSync>
 
 + (instancetype)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 + (instancetype)fakePersistingWithModelName:(NSString *)modelName 
                                     options:(STMFakePersistingOptions)options;
+
+- (void)setOption:(NSString *)option value:(id _Nonnull)value;
 
 @property (nonatomic, strong) STMFakePersistingOptions options;
 

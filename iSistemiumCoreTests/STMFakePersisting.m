@@ -23,8 +23,15 @@ return returnValue; \
 
 #define STMFakePersistingIfInMemoryDB(returnValue) \
 if (options[STMPersistingOptionForceStorage] && ![options[STMPersistingOptionForceStorage] isEqual:@(STMStorageTypeInMemory)]) { \
-[STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
-return returnValue; \
+    [STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
+    return returnValue; \
+} \
+if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) { \
+    if (![self isConcreteEntityName:entityName]) { \
+        NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName]; \
+        [STMFunctions error:error withMessage:message]; \
+        return returnValue; \
+    } \
 } \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
@@ -56,6 +63,11 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     return [[STMFakePersisting fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
 
 }
+
+- (void)setOption:(NSString *)option value:(NSString *)value {
+    _options = [STMFunctions setValue:value forKey:option inDictionary:_options];
+}
+
 
 - (STMIndexedArrayPersisting *)dataWithName:(NSString *)name {
     STMIndexedArrayPersisting *data = self.data[name];
