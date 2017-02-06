@@ -22,7 +22,7 @@ if (self.options[STMFakePersistingOptionEmptyDBKey]) { \
 return returnValue; \
 
 #define STMFakePersistingIfInMemoryDB(returnValue) \
-if (options[STMPersistingOptionForceStorage]) { \
+if (options[STMPersistingOptionForceStorage] && ![options[STMPersistingOptionForceStorage] isEqual:@(STMStorageTypeInMemory)]) { \
 [STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
 return returnValue; \
 } \
