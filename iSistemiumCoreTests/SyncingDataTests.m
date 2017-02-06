@@ -55,7 +55,7 @@
     
     [self.dataSyncingDelegate startSyncing];
     
-    [self waitForExpectationsWithTimeout:PersistingTestsTimeOut handler:^(NSError * _Nullable error) {
+    [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
 
         XCTAssertNil(error);
 
@@ -91,7 +91,8 @@
     [self createTestObject:@"STMLogMessage" withAttributes:@{@"text"    : @"testMessage",
                                                              @"type"    : @"important"}];
 
-    NSDictionary *partnerOne = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner"}];
+    NSDictionary *partnerOne = [self createTestObject:@"STMPartner"
+                                       withAttributes:@{@"name": @"testPartner"}];
     
     [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet",
                                                          @"partnerId"   : partnerOne[@"id"]}];
@@ -99,15 +100,31 @@
     [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet2",
                                                          @"partnerId"   : partnerOne[@"id"]}];
 
-    NSDictionary *partnerTwo = [self createTestObject:@"STMPartner" withAttributes:@{@"name": @"testPartner2"}];
+    NSDictionary *partnerTwo = [self createTestObject:@"STMPartner"
+                                       withAttributes:@{@"name": @"testPartner2"}];
     
     [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet3",
                                                          @"partnerId"   : partnerTwo[@"id"]}];
 
-    NSDictionary *outlet = [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet4",
-                                                                                @"partnerId"   : partnerOne[@"id"]}];
+    NSMutableDictionary *outlet = [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet4",
+                                                                                       @"partnerId"   : partnerOne[@"id"]}].mutableCopy;
 
-    [self createTestObject:@"STMOutletPhoto" withAttributes:@{@"outletId"   : outlet[@"id"]}];
+    [self createTestObject:@"STMOutletPhoto"
+            withAttributes:@{@"outletId"   : outlet[@"id"]}];
+    
+    NSDictionary *avatarPhoto = [self createTestObject:@"STMOutletPhoto"
+                                        withAttributes:@{@"outletId"   : outlet[@"id"]}];
+    
+    outlet[@"avatarPictureId"] = avatarPhoto[@"id"];
+    
+    NSError *error = nil;
+    
+    outlet = [self.persister mergeSync:@"STMOutlet"
+                            attributes:outlet
+                               options:nil
+                                 error:&error].mutableCopy;
+    
+    NSLog(@"outlet %@", outlet);
     
     NSLog(@"self.testObjects %@", self.testObjects);
 
