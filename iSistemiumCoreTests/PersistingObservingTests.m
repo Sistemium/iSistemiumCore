@@ -22,6 +22,9 @@
 
 - (void)setUp {
     
+    // Uncomment to test with inMemory store
+//    self.fakePersistingOptions = @{STMFakePersistingOptionInMemoryDB};
+    
     if (self.persister) return;
     
     self.testType = @"debug";
@@ -36,11 +39,18 @@
 }
 
 - (void)testObserveLtsFmdb {
+    if (self.fakePersistingOptions) return;
     [self observeLtsTestStorageType:STMStorageTypeFMDB];
 }
 
 - (void)testObserveLtsCoreData {
+    if (self.fakePersistingOptions) return;
     [self observeLtsTestStorageType:STMStorageTypeCoreData];
+}
+
+- (void)testObserveLtsInMemory {
+    if (!self.fakePersistingOptions) [self inMemoryPersisting];
+    [self observeLtsTestStorageType:STMStorageTypeInMemory];
 }
 
 - (void)observeLtsTestStorageType:(STMStorageType)storageType {
