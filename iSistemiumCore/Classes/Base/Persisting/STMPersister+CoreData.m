@@ -354,7 +354,7 @@
         
         STMCorePicture *picture = (STMCorePicture *)object;
         
-        if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+        if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
             
             NSString* thumbnailHref = picture.thumbnailHref;
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];

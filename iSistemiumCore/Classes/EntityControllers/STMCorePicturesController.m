@@ -148,7 +148,7 @@
             STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMCorePicture class])];
             
             NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (imageThumbnail == %@)", nil, nil];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (thumbnailPath == %@)", nil, nil];
             
             request.sortDescriptors = @[sortDescriptor];
             request.predicate = [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
@@ -330,7 +330,7 @@
 
         for (STMCorePicture *picture in result) {
             
-            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
+            if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
                 
                 NSString* thumbnailHref = picture.thumbnailHref;
                 NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
@@ -379,7 +379,7 @@
             
             if (picturesWithThumbnails[entityName].count > 0){
                 
-                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
+                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
                 
                 for (NSDictionary* picture in picturesWithThumbnails[entityName]){
                     [self.persistenceDelegate update:entityName attributes:picture options:options].then(^(NSArray *result){
@@ -478,7 +478,7 @@
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePicture class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"imageThumbnail == %@ OR imagePath == %@", nil, nil];
+    request.predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
     
     NSError *error;
     NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
@@ -774,8 +774,8 @@
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
-    UIImage *imageThumbnail = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
-    NSData *thumbnail = UIImageJPEGRepresentation(imageThumbnail, [self jpgQuality]);
+    UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
+    NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);
     
     NSString *imagePath = [[self imagesCachePath] stringByAppendingPathComponent:fileName];
     
@@ -788,12 +788,12 @@
         
         if ([NSThread isMainThread]) {
             
-            picture.imageThumbnail = fileName;
+            picture.thumbnailPath = fileName;
             
         } else {
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                picture.imageThumbnail = fileName;
+                picture.thumbnailPath = fileName;
             });
             
         }
@@ -901,7 +901,7 @@
                                                        
                                                        NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
                                                        
-                                                       NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
+                                                       NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
                                                        
                                                        [STMCoreController.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
                                                            dispatch_async(dispatch_get_main_queue(), ^{
