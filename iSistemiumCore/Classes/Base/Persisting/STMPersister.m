@@ -142,7 +142,7 @@
                                     error:error
                    inManagedObjectContext:self.document.managedObjectContext];
         default:
-            // TODO: set the error
+            [self wrongEntityName:entityName error:error];
             return nil;
     }
     
@@ -224,6 +224,11 @@
     }
     
     return [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+}
+
+- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error {
+    NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName];
+    [STMFunctions error:error withMessage:message];
 }
 
 #pragma mark - STMPersistingSync
