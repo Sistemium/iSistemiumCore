@@ -21,7 +21,7 @@
 
     [super setUp];
     
-    if (!self.fakePersistingOptions && [STMFunctions.currentTestTarget hasSuffix:@"InMemory"]) {
+    if ([STMFunctions.currentTestTarget hasSuffix:@"InMemory"]) {
         NSLog(@"STMPersistingTests will persist to memory!");
         self.fakePersistingOptions = @{STMFakePersistingOptionInMemoryDB};
         self.waitForSession = [self.class needWaitSession] && !self.persister;
@@ -66,9 +66,9 @@
     
     NSString *modelName = [STMCoreAuthController.authController dataModelName];
     
-    STMFakePersisting *persister = [STMFakePersisting fakePersistingWithModelName:modelName options:options];
-    self.persister = persister;
-    return persister;
+    self.fakePersiser = [STMFakePersisting fakePersistingWithModelName:modelName options:options];
+    self.persister = self.fakePersiser;
+    return self.fakePersiser;
 }
 
 - (STMFakePersisting *)inMemoryPersisting {

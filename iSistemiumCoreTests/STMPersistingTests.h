@@ -21,6 +21,7 @@
 @property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync, STMPersistingAsync, STMPersistingPromised, STMModelling> persister;
 
 @property (nonatomic, strong) STMFakePersistingOptions fakePersistingOptions;
+@property (nonatomic, strong) STMFakePersisting *fakePersiser;
 
 @property (nonatomic) BOOL waitForSession;
 
