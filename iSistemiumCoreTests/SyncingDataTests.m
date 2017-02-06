@@ -9,14 +9,17 @@
 #import "STMPersistingTests.h"
 
 #import "STMUnsyncedDataHelper.h"
+#import "STMSyncerHelper+Downloading.h"
 #import "STMLogger.h"
+
 
 //#define SYNCING_DATA_TEST_ASYNC_DELAY PersistingTestsTimeOut / 5 * NSEC_PER_SEC
 #define SYNCING_DATA_TEST_ASYNC_DELAY 0.5 * NSEC_PER_SEC
 #define SYNCING_DATA_TEST_DISPATCH_TIME dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY))
 #define SYNCING_DATA_TEST_SOURCE @"SyncingDataTests"
 
-@interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber>
+
+@interface SyncingDataTests : STMPersistingTests <STMDataSyncingSubscriber, STMDataDownloadingOwner>
 
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 @property (nonatomic, weak) id <STMDataSyncing> dataSyncingDelegate;
@@ -24,32 +27,40 @@
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjects;
 @property (nonatomic, strong) NSString *pkToWait;
 
+@property (nonatomic, strong) id <STMDataDownloading> downloadingDelegate;
+
+
 @end
+
 
 @implementation SyncingDataTests
 
 - (void)setUp {
-    
     [super setUp];
-    
-    if (!self.unsyncedDataHelper) {
-        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister subscriber:self];
-        self.dataSyncingDelegate = self.unsyncedDataHelper;
-        XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
-    }
-
 }
 
 - (void)tearDown {
     [super tearDown];
 }
 
+
+#pragma mark - uploading test
+
 - (void)testSync {
+
+    if (!self.unsyncedDataHelper) {
+        
+        self.unsyncedDataHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persister
+                                                                                subscriber:self];
+        self.dataSyncingDelegate = self.unsyncedDataHelper;
+        XCTAssertNotNil(self.unsyncedDataHelper.persistenceDelegate);
+        
+    }
 
     self.pkToWait = [STMFunctions uuidString];
     NSLog(@"self.pkToWait %@", self.pkToWait);
     
-    [self createTestData];
+    [self createTestSyncData];
     
     NSDate *startedAt = [NSDate date];
     
@@ -83,7 +94,7 @@
 
 }
 
-- (void)createTestData {
+- (void)createTestSyncData {
     
     self.syncedExpectations = @{}.mutableCopy;
     self.testObjects = @{}.mutableCopy;
@@ -160,7 +171,7 @@
 }
 
 
-#pragma mark - STMDataSyncingSubscriber
+#pragma mark STMDataSyncingSubscriber
 
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
@@ -198,6 +209,41 @@
         [expectation fulfill];
         
     });
+    
+}
+
+
+#pragma mark - downloading test
+
+- (void)testDownload {
+    
+    if (!self.downloadingDelegate) {
+        
+        self.downloadingDelegate = [[STMSyncerHelper alloc] init];
+        self.downloadingDelegate.dataDownloadingOwner = self;
+        
+    }
+    
+    XCTAssertNotNil(self.downloadingDelegate);
+    
+}
+
+
+#pragma mark STMDataDownloadingOwner
+
+- (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
+    
+}
+
+- (BOOL)downloadingTransportIsReady {
+    return YES;
+}
+
+- (void)entitiesWasUpdated {
+    
+}
+
+- (void)dataDownloadingFinished {
     
 }
 
