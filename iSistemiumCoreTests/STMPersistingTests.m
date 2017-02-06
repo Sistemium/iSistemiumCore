@@ -6,26 +6,36 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import "STMFunctions.h"
 #import "STMPersistingTests.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
 
 @implementation STMPersistingTests
 
++ (BOOL)needWaitSession {
+    return NO;
+}
+
 - (void)setUp {
-    
+
     [super setUp];
+    
+    if (!self.fakePersistingOptions && [STMFunctions.currentTestTarget hasSuffix:@"InMemory"]) {
+        NSLog(@"STMPersistingTests will persist to memory!");
+        self.fakePersistingOptions = @{STMFakePersistingOptionInMemoryDB};
+        self.waitForSession = [self.class needWaitSession] && !self.persister;
+    }
     
     // Create an empty FakePersister if there are options
     
     if (self.fakePersistingOptions) {
         [self fakePersistingWithOptions:self.fakePersistingOptions];
-        return;
     }
 
     if (self.persister && !self.waitForSession) return;
     
-    // Otherwise wait for the session to start and get it's persister
+    // Otherwise wait for the session to start and get it's persister if needed
     
     STMCoreSessionManager *manager = STMCoreSessionManager.sharedManager;
     

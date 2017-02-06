@@ -15,7 +15,6 @@
 #import "STMFakePersisting.h"
 
 #define PersistingTestsTimeOut 5
-#define SyncTestsTimeOut 15
 
 @interface STMPersistingTests : XCTestCase
 
@@ -27,5 +26,7 @@
 
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 - (STMFakePersisting *)inMemoryPersisting;
+
++ (BOOL)needWaitSession;
 
 @end
