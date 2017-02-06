@@ -23,7 +23,7 @@
         return;
     }
 
-    if (self.persister) return;
+    if (self.persister && !self.waitForSession) return;
     
     // Otherwise wait for the session to start and get it's persister
     
@@ -36,7 +36,10 @@
     [self expectationForPredicate:waitForSession
               evaluatedWithObject:manager
                           handler:^BOOL{
-                              self.persister = [manager.currentSession persistenceDelegate];
+                              if (!self.persister) {
+                                  self.persister = [manager.currentSession persistenceDelegate];
+                              }
+                              self.waitForSession = NO;
                               return YES;
                           }];
     
