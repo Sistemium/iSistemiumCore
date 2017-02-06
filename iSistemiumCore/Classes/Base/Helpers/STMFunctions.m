@@ -1280,4 +1280,15 @@ vm_size_t freeMemory(void) {
     return result.copy;
 }
 
++ (NSString *)currentTestTarget {
+    NSString *pattern = @"(?<=\\/tmp\\/)[^-]*";
+    NSString *path = [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"];
+    NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
+    NSTextCheckingResult *match = [re firstMatchInString:path
+                                                 options:0
+                                                   range:NSMakeRange(0, path.length)];
+    NSString *substr = [path substringWithRange:match.range];
+    return substr;
+}
+
 @end

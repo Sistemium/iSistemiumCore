@@ -133,6 +133,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
++ (NSString *)currentTestTarget;
+
 NS_ASSUME_NONNULL_END
 
 
