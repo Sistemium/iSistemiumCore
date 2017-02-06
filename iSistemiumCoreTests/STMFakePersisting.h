@@ -30,3 +30,4 @@
 @end
 
 #import "STMFakePersisting+Promised.h"
+#import "STMFakePersisting+Async.h"
