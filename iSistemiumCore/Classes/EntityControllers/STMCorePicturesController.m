@@ -398,6 +398,7 @@
     for (NSString* entityName in picturesWithThumbnails.allKeys){
     
         if (picturesWithThumbnails[entityName].count > 0){
+            
             [STMCoreController.persistenceDelegate mergeMany:entityName attributeArray:picturesWithThumbnails[entityName] options:nil].then(^(NSArray *result){
                 NSLog(@"Thumbnail set for %i %@ pictures",result.count,entityName);
             }).catch(^(NSError *error){
@@ -913,7 +914,9 @@
                                                        
                                                        NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
                                                        
-                                                       [STMCoreController.persistenceDelegate merge:object.entity.name attributes:dictObject options:nil].then(^(NSArray *result){
+                                                       NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
+                                                       
+                                                       [STMCoreController.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
                                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                                
                                                                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
