@@ -24,7 +24,14 @@
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade;
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                   isToMany:(NSNumber *)isToMany
+                                                                                    cascade:(NSNumber *)cascade;
+
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                   isToMany:(NSNumber *)isToMany
+                                                                                    cascade:(NSNumber *)cascade
+                                                                                   optional:(NSNumber *)optional;
 
 - (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName;
 

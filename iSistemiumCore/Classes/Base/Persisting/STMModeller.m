@@ -114,7 +114,11 @@
     return self.allEntitiesCache[entityName][@"fields"];
 }
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade {
+    return [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:cascade optional:nil];
+}
+
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade optional:(NSNumber *)optional {
     
     if (!entityName) {
         return nil;
@@ -128,12 +132,16 @@
         
         NSRelationshipDescription *relationship = allRelationships[relationshipName];
         
-        if (!isToMany || relationship.isToMany == isToMany.boolValue) {
-            
-            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
-                result[relationshipName] = relationship;
+        if (!optional || relationship.optional == optional.boolValue) {
+        
+            if (!isToMany || relationship.isToMany == isToMany.boolValue) {
+                
+                if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
+                    result[relationshipName] = relationship;
+                }
+                
             }
-            
+
         }
         
     }
@@ -143,7 +151,6 @@
 }
 
 - (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName{
-    
     return [self objectRelationshipsForEntityName:entityName isToMany:@NO];
 }
 
