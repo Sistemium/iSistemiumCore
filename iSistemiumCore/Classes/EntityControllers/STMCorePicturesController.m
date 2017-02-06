@@ -281,25 +281,7 @@
 
 + (void)checkPicturesPaths {
     
-    NSString *sessionUID = [STMCoreSessionManager sharedManager].currentSessionUID;
-    
-    if (sessionUID) {
-        
-        NSString *keyToCheck = [@"picturePathsDidCheckedAlready_" stringByAppendingString:sessionUID];
-        
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        BOOL picturePathsDidCheckedAlready = [[defaults objectForKey:keyToCheck] boolValue];
-        
-        if (!picturePathsDidCheckedAlready) {
-            
-            [self startCheckingPicturesPaths];
-            
-            [defaults setObject:@YES forKey:keyToCheck];
-            [defaults synchronize];
-            
-        }
-
-    }
+    [self startCheckingPicturesPaths];
     
 }
 
