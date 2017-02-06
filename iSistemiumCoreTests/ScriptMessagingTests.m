@@ -346,6 +346,8 @@
     
     [self mergeEntityName:entityName data:testArray];
 
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
     NSArray *testArray2 = @[
                            @{@"text":@"Name 3"},
                            @{@"text":@"Name 4"}
