@@ -284,9 +284,82 @@
 
 }
 
+- (void)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName completionHandler:(void (^)(BOOL haveUnsyncedParent, NSDictionary *optionalUnsyncedParents))completionHandler {
+    
+    BOOL haveUnsyncedParent = NO;
+    NSMutableDictionary *optionalUnsyncedParents = @{}.mutableCopy;
+    
+    NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
+    
+    for (NSString *relKey in relKeys) {
+        
+        NSString *parentId = object[relKey];
+        
+        if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
+        
+        NSString *relName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
+        NSString *capFirstLetter = [relName substringToIndex:1].capitalizedString;
+        NSString *capEntityName = [relName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
+        NSString *parentEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
+        
+        NSError *error = nil;
+        
+        NSDictionary *parent = [self.persistenceDelegate findSync:parentEntityName
+                                                       identifier:parentId
+                                                          options:nil
+                                                            error:&error];
+        
+        BOOL haveToCheckRelationship = NO;
+        
+        if (parent) {
+            
+            NSString *parentLts = parent[@"lts"];
+            
+            if (!parentLts || [parentLts isEqualToString:@""]) {
+                
+                haveToCheckRelationship = YES;
+                
+            }
+            
+        } else {
+            
+            if (error) {
+                NSLog(@"error to find %@ %@: %@", parentEntityName, parentId, error.localizedDescription);
+            } else {
+                NSLog(@"we have relation's id but have no both object with this id and error — something wrong with it");
+            }
+            
+            haveToCheckRelationship = YES;
+            
+        }
+        
+        if (haveToCheckRelationship) {
+            
+            haveUnsyncedParent = YES;
+            
+            NSEntityDescription *entityDesciption = [self.persistenceDelegate entitiesByName][entityName];
+            NSRelationshipDescription *relationship = entityDesciption.relationshipsByName[relName];
+            
+            if (relationship.inverseRelationship.deleteRule != NSCascadeDeleteRule) {
+                
+                if (parent) {
+                    optionalUnsyncedParents[relKey] = parent;
+                } else {
+                    NSLog(@"have no parent to wait for sync — something wrong with it");
+                }
+                
+            }
+            
+        }
+        
+    }
+
+    completionHandler(haveUnsyncedParent, optionalUnsyncedParents);
+    
+}
+
 - (BOOL)haveUnsyncedParentForObject:(NSDictionary *)object {
     
-
     BOOL haveUnsyncedParent = NO;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
