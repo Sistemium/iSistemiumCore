@@ -39,20 +39,19 @@
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options;
 
-@optional
-
-- (AnyPromise *)create:(NSString *)entityName
-            attributes:(NSDictionary *)attributes
-               options:(NSDictionary *)options;
-
 - (AnyPromise *)update:(NSString *)entityName
             attributes:(NSDictionary *)attributes
                options:(NSDictionary *)options;
+
+@optional
 
 - (AnyPromise *)updateAll:(NSString *)entityName
                attributes:(NSDictionary *)attributes
                 predicate:(NSPredicate *)predicate
                   options:(NSDictionary *)options;
 
+- (AnyPromise *)create:(NSString *)entityName
+            attributes:(NSDictionary *)attributes
+               options:(NSDictionary *)options;
 
 @end

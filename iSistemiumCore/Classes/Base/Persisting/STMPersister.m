@@ -473,4 +473,51 @@
     
 }
 
+- (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
+    NSDictionary *result;
+    
+    NSMutableDictionary *attributesToUpdate;
+    
+    if (options[STMPersistingOptionFieldstoUpdate]){
+        attributesToUpdate = @{}.mutableCopy;
+        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldstoUpdate];
+        for (NSString* attributeName in attributes.allKeys){
+            if ([fieldsToUpdate containsObject:attributeName]) {
+                attributesToUpdate[attributeName] = attributes[attributeName];
+            }
+        }
+        attributesToUpdate[@"id"] = attributes[@"id"];
+    }else{
+        attributesToUpdate = attributes.mutableCopy;
+    }
+    
+    if (!options[STMPersistingOptionSetTs] || [options[STMPersistingOptionSetTs] boolValue]){
+        NSString *now = [STMFunctions stringFromNow];
+        [attributesToUpdate setValue:now forKey:@"deviceTs"];
+    }else{
+        [attributesToUpdate removeObjectForKey:@"deviceTs"];
+    }
+    
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            result = [self.fmdb update:entityName attributes:attributesToUpdate error:error];
+            break;
+        case STMStorageTypeCoreData:
+            result = [self update:entityName
+                     attributes:attributesToUpdate
+                        options:options
+                          error:error
+         inManagedObjectContext:self.document.managedObjectContext];
+            break;
+        default:
+            break;
+    }
+    
+    [self saveWithEntityName:entityName];
+    
+    return result;
+    
+}
+
 @end

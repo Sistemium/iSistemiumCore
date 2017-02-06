@@ -37,5 +37,11 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
+- (NSDictionary *)update:(NSString *)entityName
+              attributes:(NSDictionary *)attributes
+                 options:(NSDictionary *)options
+                   error:(NSError **)error
+  inManagedObjectContext:(NSManagedObjectContext *)context;
+
 
 @end

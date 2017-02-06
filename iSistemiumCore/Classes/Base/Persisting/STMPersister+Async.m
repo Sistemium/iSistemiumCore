@@ -149,6 +149,28 @@
     
 }
 
+- (void)updateAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler{
+    __block NSDictionary* result;
+    __block BOOL success = YES;
+    __block NSError* error = nil;
+    
+    if ([self.fmdb hasTable:entityName]){
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            result = [self updateSync:entityName attributes:attributes options:options error:&error];
+            if(error){
+                success = NO;
+            }
+            if (completionHandler) completionHandler(success,result,error);
+        });
+    } else {
+        result = [self updateSync:entityName attributes:attributes options:options error:&error];
+        if(error){
+            success = NO;
+        }
+        if (completionHandler) completionHandler(success,result,error);
+    }
+}
+
 #pragma mark - STMPersistingPromised
 
 - (AnyPromise *)find:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options{
@@ -223,6 +245,18 @@
         }];
     }];
     
+}
+
+- (AnyPromise *)update:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options{
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        [self updateAsync:entityName attributes:attributes options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            if (success){
+                resolve(result);
+            }else{
+                resolve(error);
+            }
+        }];
+    }];
 }
 
 @end

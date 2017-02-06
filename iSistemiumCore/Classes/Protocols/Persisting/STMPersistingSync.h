@@ -43,23 +43,24 @@
                      options:(NSDictionary *)options
                        error:(NSError **)error;
 
-@optional
-
-- (NSDictionary *)createSync:(NSString *)entityName
-                  attributes:(NSDictionary *)attributes
-                     options:(NSDictionary *)options
-                       error:(NSError **)error;
-
 - (NSDictionary *)updateSync:(NSString *)entityName
                   attributes:(NSDictionary *)attributes
                      options:(NSDictionary *)options
                        error:(NSError **)error;
+
+@optional
 
 - (NSArray *)updateAllSync:(NSString *)entityName
                 attributes:(NSDictionary *)attributes
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options
                      error:(NSError **)error;
+
+
+- (NSDictionary *)createSync:(NSString *)entityName
+                  attributes:(NSDictionary *)attributes
+                     options:(NSDictionary *)options
+                       error:(NSError **)error;
 
 - (NSUInteger)countSync:(NSString *)entityName
               predicate:(NSPredicate *)predicate

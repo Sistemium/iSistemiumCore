@@ -26,6 +26,10 @@
        dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
             error:(NSError *_Nonnull * _Nonnull)error;
 
+- (NSDictionary * _Nonnull)update:(NSString * _Nonnull)tablename
+                       attributes:(NSDictionary<NSString *, id> * _Nonnull)attributes
+                            error:(NSError *_Nonnull * _Nonnull)error;
+
 - (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename
                                       dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
                                            error:(NSError *_Nonnull * _Nonnull)error;

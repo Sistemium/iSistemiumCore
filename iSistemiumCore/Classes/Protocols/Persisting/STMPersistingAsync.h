@@ -47,21 +47,21 @@ completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
                 options:(NSDictionary *)options
       completionHandler:(STMPersistingAsyncNoResultCallback)completionHandler;
 
-@optional
-
-- (void)createAsync:(NSString *)entityName
-         attributes:(NSDictionary *)attributes
-            options:(NSDictionary *)options
-  completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
-
 - (void)updateAsync:(NSString *)entityName
          attributes:(NSDictionary *)attributes
             options:(NSDictionary *)options
   completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
 
+@optional
+
 - (void)updateAllAsync:(NSString *)entityName
             attributes:(NSDictionary *)attributes
                options:(NSDictionary *)options
      completionHandler:(STMPersistingAsyncArrayResultCallback)completionHandler;
+
+- (void)createAsync:(NSString *)entityName
+         attributes:(NSDictionary *)attributes
+            options:(NSDictionary *)options
+  completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
 
 @end

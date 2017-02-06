@@ -145,6 +145,37 @@
 
 }
 
+- (NSDictionary *)update:(NSString *)entityName
+              attributes:(NSDictionary *)attributes
+                 options:(NSDictionary *)options
+                   error:(NSError **)error
+  inManagedObjectContext:(NSManagedObjectContext *)context {
+    
+    if (attributes[@"id"] && [attributes[@"id"] length] == 36){
+    
+        STMDatum *object = [self objectForXid:[STMFunctions xidDataFromXidString:attributes[@"id"]] entityName:entityName];
+        
+        if (![object isWaitingToSync] || options[STMPersistingOptionLts]) {
+            
+            [object setValue:@NO forKey:@"isFantom"];
+            
+            [self processingOfObject:object
+                      withEntityName:entityName
+                      fillWithValues:attributes
+                             options:options
+             ];
+            
+        }
+        
+        return [self.class dictionaryForJSWithObject:object];
+        
+    }
+    
+    [STMFunctions error:error withMessage:@"Wrong object id"];
+    
+    return nil;
+    
+}
 
 - (void)removeObjects:(NSArray*)objects {
     for (id object in objects){
