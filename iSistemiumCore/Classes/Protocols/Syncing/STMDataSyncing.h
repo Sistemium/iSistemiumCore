@@ -9,13 +9,16 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDataSyncingSubscriber.h"
+#import "STMDataSyncingState.h"
 
-@class STMDataSyncingState;
 
 @protocol STMDataSyncing <NSObject>
 
-@property (nonatomic, strong) STMDataSyncingState *syncingState;
+@property (nonatomic, strong) id <STMDataSyncingState> syncingState;
 @property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
+
+- (void)startSyncing;
+- (void)pauseSyncing;
 
 - (BOOL)setSynced:(BOOL)success
            entity:(NSString *)entity

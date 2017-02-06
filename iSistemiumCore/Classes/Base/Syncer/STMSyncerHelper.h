@@ -8,20 +8,19 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMDataSyncing.h"
-
-#import "STMPersistingPromised.h"
-#import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
-#import "STMPersistingObserving.h"
-#import "STMModelling.h"
+#import "STMDataSyncingState.h"
+
+#import "STMConstants.h"
+#import "STMDocument.h"
+#import "STMSessionManager.h"
 
 
-@interface STMSyncerHelper : NSObject <STMDataSyncing>
+@interface STMSyncerHelper : NSObject
 
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving, STMModelling> persistenceDelegate;
-
-@property (nonatomic, strong, readonly) NSMutableArray *failToResolveFantomsArray;
+@property (nonatomic, strong) STMDocument *document;
+@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
 
 
 @end

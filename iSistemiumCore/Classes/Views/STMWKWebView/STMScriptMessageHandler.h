@@ -11,11 +11,13 @@
 
 #import "STMCoreWKWebViewVC.h"
 #import "STMScriptMessaging.h"
+#import "STMPersistingObserving.h"
 
 @interface STMScriptMessagingSubscription : NSObject
 
 @property (nonatomic, strong) NSString *callbackName;
 @property (nonatomic, strong) NSMutableSet <NSString *> *entityNames;
+@property (nonatomic, strong) NSDictionary <NSString *, STMPersistingObservingSubscriptionID> *persisterSubscriptions;
 
 @end
 
@@ -28,6 +30,6 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
-@property (nonatomic, weak) id <STMPersistingPromised, STMModelling, STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving> persistenceDelegate;
 
 @end

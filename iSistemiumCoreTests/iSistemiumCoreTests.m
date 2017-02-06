@@ -10,6 +10,8 @@
 #import <CoreData/CoreData.h>
 #import "STMPredicateToSQL.h"
 #import "STMModeller.h"
+#import "STMFunctions.h"
+
 
 #define STMAssertSQLFilter(predicate, expectation, ...) \
 XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], expectation, __VA_ARGS__)
@@ -92,6 +94,20 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
     
+    NSUUID *uuid = [NSUUID UUID];
+    NSData *uuidData = [STMFunctions UUIDDataFromNSUUID:uuid];
+    NSString *uuidString = uuid.UUIDString.lowercaseString;
+
+    predicate = [NSPredicate predicateWithFormat:@"xid == %@", uuidData];
+    
+    NSString *string = [NSString stringWithFormat:@"(id = '%@')", uuid.UUIDString.lowercaseString];
+    STMAssertSQLFilter(predicate, string);
+
+    predicate = [NSPredicate predicateWithFormat:@"xid IN %@", @[uuidData, uuidData]];
+    
+    string = [NSString stringWithFormat:@"(id IN ('%@','%@'))", uuidString, uuidString];
+    STMAssertSQLFilter(predicate, string);
+
 }
 
 - (NSManagedObjectModel *) sampleModel {

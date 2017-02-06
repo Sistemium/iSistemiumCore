@@ -13,15 +13,17 @@
 #import "STMSocketConnection.h"
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
+#import "STMDataDownloading.h"
 
 
-@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner>
+@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner>
 
 @property (nonatomic, strong) id <STMSession> session;
 
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
-@property (nonatomic, strong) id <STMDefantomizing> syncerHelper;
+@property (nonatomic, strong) id <STMDataDownloading> dataDownloadingDelegate;
+@property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;
 
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;

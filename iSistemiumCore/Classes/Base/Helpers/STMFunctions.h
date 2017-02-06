@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)hexStringFromData:(NSData *)data;
 + (NSString *)base64HexStringFromData:(NSData *)data;
 
++ (NSString *)uuidString;
+
 + (NSString *)pluralTypeForCount:(NSUInteger)count;
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size;
@@ -127,6 +129,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSArray *)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock;
 
 + (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage;
++ (NSError *)errorWithMessage:(NSString *)errorMessage;
+
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
 NS_ASSUME_NONNULL_END

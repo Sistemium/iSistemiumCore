@@ -10,8 +10,8 @@
 
 @protocol STMDataSyncingSubscriber <NSObject>
 
-- (void)haveUnsyncedObjectWithEntityName:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion;
-- (void)notificationToInitSendDataProcess;
-
+- (void)haveUnsynced:(NSString *)entityName
+            itemData:(NSDictionary *)itemData
+         itemVersion:(NSString *)itemVersion;
 
 @end

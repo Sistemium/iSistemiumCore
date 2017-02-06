@@ -11,7 +11,16 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 
-@implementation STMDataSyncingState
+
+@interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
+
+@end
+
+
+@implementation STMUnsyncedDataHelperState
+
+@synthesize isInSyncingProcess = _isInSyncingProcess;
+
 
 @end
 
@@ -21,6 +30,7 @@
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
 
+
 @end
 
 
@@ -29,7 +39,6 @@
 @synthesize subscriberDelegate = _subscriberDelegate;
 @synthesize syncingState = _syncingState;
 
-
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate{
     STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
     unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
@@ -37,8 +46,26 @@
     return unsyncedDataHelper;
 }
 
+- (void)setSyncingState:(id <STMDataSyncingState>)syncingState {
+
+    _syncingState = syncingState;
+    
+    if (_syncingState) {
+        [self startHandleUnsyncedObjects];
+    }
+    
+}
+
 
 #pragma mark - STMDataSyncing
+
+- (void)startSyncing {
+    self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+}
+
+- (void)pauseSyncing {
+    self.syncingState = nil;
+}
 
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
@@ -60,6 +87,8 @@
         
         if (itemVersion) {
             
+            NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
+
             NSError *error;
             [self.persistenceDelegate mergeSync:entityName
                                      attributes:itemData
@@ -120,6 +149,7 @@
     }];
     
     self.subscriptions = nil;
+    self.erroredObjectsByEntity = nil;
     
 }
 
@@ -127,21 +157,50 @@
 
 - (void)startHandleUnsyncedObjects {
     
-    [self sendNextUnsyncedObject];
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
     
+    if (!self.subscriberDelegate) return;
+
+    if (!self.syncingState) return;
+    
+    if (self.syncingState.isInSyncingProcess) return;
+    
+    self.syncingState.isInSyncingProcess = YES;
+    
+    [self sendNextUnsyncedObject];
+
 }
 
 - (void)finishHandleUnsyncedObjects {
+    
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSLog(@"finishHandleUnsyncedObjects");
+    
     [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSMutableSet<NSString *> * ids, BOOL * stop) {
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
     }];
+    
+    self.syncingState.isInSyncingProcess = NO;
+    
 }
 
 
 #pragma mark - handle unsynced objects
 
 - (void)sendNextUnsyncedObject {
+
+    if (!self.syncingState) {
+        
+        [self finishHandleUnsyncedObjects];
+        return;
+        
+    }
+
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
 
     NSDictionary *objectToSend = [self anyObjectToSend];
     
@@ -157,9 +216,9 @@
             BOOL isFMDB = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeFMDB;
             NSString *objectVersion = isFMDB ? object[@"deviceTs"] : object[@"ts"];
             
-            [self.subscriberDelegate haveUnsyncedObjectWithEntityName:entityName
-                                                             itemData:object
-                                                          itemVersion:objectVersion];
+            [self.subscriberDelegate haveUnsynced:entityName
+                                         itemData:object
+                                      itemVersion:objectVersion];
             
         }
         
@@ -173,11 +232,14 @@
 
 - (NSDictionary *)anyObjectToSend {
    
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
     NSDictionary *anyObjectToSend = nil;
     
-    for (NSString *uploadableEntityName in [STMEntityController uploadableEntitiesNames]) {
+    for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
 
-        anyObjectToSend = [self findSyncableObjectWithEntityName:uploadableEntityName];
+        anyObjectToSend = [self findSyncableObjectWithEntityName:entityName];
         
         if (anyObjectToSend) break;
         
@@ -189,19 +251,20 @@
 
 - (NSDictionary *)findSyncableObjectWithEntityName:(NSString *)entityName {
     
-    NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName identifier:nil];
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
+    NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName];
     
     if (unsyncedObject) {
         
-        NSDictionary *resultObject = @{@"entityName"  : entityName,
-                                       @"object"      : unsyncedObject};
+        if (![self haveUnsyncedParentForObject:unsyncedObject]) {
         
-        NSDictionary *unsyncedParent = [self anyUnsyncedParentForObject:unsyncedObject];
-        
-        if (unsyncedParent) {
-            return unsyncedParent;
-        } else {
+            NSDictionary *resultObject = @{@"entityName"  : entityName,
+                                           @"object"      : unsyncedObject};
+
             return resultObject;
+            
         }
         
     }
@@ -210,19 +273,16 @@
 
 }
 
-- (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+- (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName {
+
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
 
     NSError *error = nil;
     
     NSMutableArray *subpredicates = @[].mutableCopy;
     
     [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
-    
-    if (identifier) {
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"id == %@", identifier]];
-        
-    }
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     
@@ -242,9 +302,12 @@
 
 }
 
-- (NSDictionary *)anyUnsyncedParentForObject:(NSDictionary *)object {
+- (BOOL)haveUnsyncedParentForObject:(NSDictionary *)object {
     
-    NSDictionary *anyUnsyncedParent = nil;
+//    NSLogMethodName;
+//    CURRENT_TIMESTAMP;
+
+    BOOL haveUnsyncedParent = NO;
     
     NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
 
@@ -252,44 +315,55 @@
 
         NSString *parentId = object[relKey];
         
+        if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
+
         NSString *entityName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
         NSString *capFirstLetter = [entityName substringToIndex:1].capitalizedString;
         NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
         
-        NSDictionary *unsyncedParent = [self unsyncedObjectWithEntityName:entityName
-                                                               identifier:parentId];
-        
-        if (unsyncedParent) {
-            
-            NSDictionary *resultObject = @{@"entityName"  : entityName,
-                                           @"object"      : unsyncedParent};
+        NSError *error = nil;
 
-            NSDictionary *unsyncedGrandParent = [self anyUnsyncedParentForObject:unsyncedParent];
-            
-            if (unsyncedGrandParent) {
-                
-                anyUnsyncedParent = unsyncedGrandParent;
-                
-            } else {
-                
-                anyUnsyncedParent = resultObject;
+        NSDictionary *parent = [self.persistenceDelegate findSync:entityName
+                                                       identifier:parentId
+                                                          options:nil
+                                                            error:&error];
 
+        if (parent) {
+            
+            NSString *parentLts = parent[@"lts"];
+            
+            if (!parentLts || [parentLts isEqualToString:@""]) {
+                
+                haveUnsyncedParent = YES;
                 break;
 
             }
+            
+        } else {
+            
+            if (error) {
+                NSLog(@"error to find %@ %@: %@", entityName, parentId, error.localizedDescription);
+            } else {
+                // we have relation's id but have no both object with this id and error — something wrong with it
+            }
+            
+            haveUnsyncedParent = YES;
+            break;
             
         }
         
     }
     
-    return anyUnsyncedParent;
+    return haveUnsyncedParent;
     
 }
 
 - (void)declineFromSync:(NSDictionary *)object entityName:(NSString *)entityName{
     
     NSString *pk = object[@"id"];
+    
+//    NSLog(@"declineFromSync: %@ %@", entityName, pk);
     
     @synchronized (self.erroredObjectsByEntity) {
         NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
@@ -312,7 +386,11 @@
     
     if (!errored.count) return nil;
     
-    return [NSPredicate predicateWithFormat:@"NOT (id IN %@)", errored.allObjects];
+    NSArray *erroredData = [STMFunctions mapArray:errored.allObjects withBlock:^id _Nonnull(NSString * _Nonnull idString) {
+        return [STMFunctions xidDataFromXidString:idString];
+    }];
+        
+    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredData];
 
 }
 

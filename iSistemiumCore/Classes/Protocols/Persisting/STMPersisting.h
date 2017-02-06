@@ -22,13 +22,20 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionReturnSaved @"returnSaved"
 #define STMPersistingOptionForceStorage @"forceStorage"
 #define STMPersistingOptionPageSize @"pageSize"
+#define STMPersistingOptionOffset @"offset"
 #define STMPersistingOptionOrder @"sortBy"
 #define STMPersistingOptionOrderDirection @"direction"
 #define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
 #define STMPersistingOptionSetTs @"setTs"
 
-#define STMPersistingOptionOrderDirectionDesc STMPersistingOptionOrderDirection:@"DESC"
-#define STMPersistingOptionOrderDirectionAsc STMPersistingOptionOrderDirection:@"ASC"
+#define STMPersistingOptionOrderDirectionDescValue @"DESC"
+#define STMPersistingOptionOrderDirectionAscValue @"ASC"
+
+#define STMPersistingOptionOrderDirectionDesc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionDescValue
+
+#define STMPersistingOptionOrderDirectionAsc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionAscValue
 
 #define STMPersistingOptionForceStorageCoreData STMPersistingOptionForceStorage:@(STMStorageTypeCoreData)
 #define STMPersistingOptionForceStorageFMDB STMPersistingOptionForceStorage:@(STMStorageTypeFMDB)

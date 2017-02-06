@@ -428,6 +428,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - NSString <-> NSData manipulation
 
++ (NSString *)uuidString {
+    return [NSUUID UUID].UUIDString.lowercaseString;
+}
+
 + (NSData *)dataWithHexString:(NSString *)hexString {
     
 // https://opensource.apple.com/source/Security/Security-55471.14.18/libsecurity_transform/NSData+HexString.m.auto.html
@@ -1255,6 +1259,18 @@ vm_size_t freeMemory(void) {
                                                     userInfo:userInfo];
     
     return (error == nil);
+    
+}
+
++ (NSError *)errorWithMessage:(NSString *)errorMessage {
+    
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
+    
+    NSDictionary *userInfo = (errorMessage) ? @{NSLocalizedDescriptionKey: errorMessage} : nil;
+    
+    return [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+                               code:1
+                           userInfo:userInfo];
     
 }
 

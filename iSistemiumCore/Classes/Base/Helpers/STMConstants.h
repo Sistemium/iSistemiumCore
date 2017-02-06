@@ -28,6 +28,8 @@
 #define TICK NSDate *startTime = [NSDate date]
 #define TOCK NSLog(@"ElapsedTime: %f", -[startTime timeIntervalSinceNow])
 
+#define CURRENT_TIMESTAMP NSLog(@"%@", @([[NSDate date] timeIntervalSinceReferenceDate]))
+
 #define IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 #define IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 
@@ -68,9 +70,7 @@
 #define NOTIFICATION_SYNCER_SEND_FINISHED @"sendFinished"
 
 #define NOTIFICATION_SYNCER_STATUS_CHANGED @"syncStatusChanged"
-//#define NOTIFICATION_SYNCER_DID_CHANGE_CONTENT @"syncerDidChangeContent"
-
-//#define NOTIFICATION_PERSISTER_HAVE_UNSYNCED @"persisterHaveUnsynced"
+#define NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE @"entityCountdownChange"
 
 #define NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS @"socketAuthorizationSuccess"
 
