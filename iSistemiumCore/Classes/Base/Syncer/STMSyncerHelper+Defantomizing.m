@@ -188,17 +188,6 @@ static void *defantomizingOwnerVar;
     
     NSLog(@"defantomize error: %@", errorString);
     
-    [self defantomizeErrorWithObject:fantomDic
-                        deleteObject:deleteObject];
-    
-    [self fantomsCountDecrease];
-    
-    return;
-    
-}
-
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic deleteObject:(BOOL)deleteObject {
-    
     if (deleteObject) {
         
         NSString *entityName = fantomDic[@"entityName"];
