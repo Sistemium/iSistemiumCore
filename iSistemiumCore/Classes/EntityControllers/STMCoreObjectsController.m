@@ -162,11 +162,12 @@
 
 #pragma mark - getting specified objects
 
-+ (STMDatum *)objectForXid:(NSData *)xidData {
++ (NSDictionary *)objectForIdentifier:(NSString *)identifier {
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
         
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
+        NSError *error;
+        NSDictionary *object = [[self persistenceDelegate] findSync:entityName identifier:identifier options:nil error:&error];
         
         if (object) return object;
         
@@ -176,71 +177,12 @@
 
 }
 
-+ (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
-#warning moved to Persister+CoreData 
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"xid == %@", xidData];
-        
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        
-        if (fetchResult.firstObject) return fetchResult.firstObject;
-
-    }
-    
-    return nil;
-    
-}
-
 
 #warning Need to move it somewhere
 + (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
     [self.persistenceDelegate setObjectData:objectData toObject:object];
 }
 
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
-    
-    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
-        
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
-        
-        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        return object;
-        
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
-
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
-    
-    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
-        
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
-        
-        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        return object;
-        
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:YES];
@@ -543,38 +485,7 @@
 #pragma mark - generate arrayForJS
 
 
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
-    return [self dictionaryForJSWithObject:object withNulls:YES];
-}
 
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls {
-    return [self dictionaryForJSWithObject:object withNulls:withNulls withBinaryData:YES];
-}
-
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
-
-    if (!object) {
-        return @{};
-    }
-    
-    NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
-    
-    if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
-    if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
-    
-    NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
-    NSArray *ownRelationships = [self.persistenceDelegate toOneRelationshipsForEntityName:object.entity.name].allKeys;
-    
-    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
-    
-    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
-    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
-    
-//    NSLog(@"--------------- updated object %@", propertiesDictionary[@"deviceAts"]);
-
-    return propertiesDictionary;
-
-}
 
 #pragma mark - create dictionary from object
 
