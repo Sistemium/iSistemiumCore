@@ -670,6 +670,18 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return result.copy;
 }
 
++ (NSDictionary <NSString *, NSArray <NSDictionary <NSString *, id> *> *> *)groupArray:(NSArray <NSDictionary <NSString *, id> *> *)array byKey:(NSString *)key {
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    
+    [array enumerateObjectsUsingBlock:^(NSDictionary <NSString *, id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *keyValue = obj[key];
+        NSArray *resulted = result[keyValue];
+        result[keyValue] = resulted ? [resulted arrayByAddingObject:obj] : @[obj];
+    }];
+    
+    return result.copy;
+}
+
 + (id)popArray:(NSMutableArray *)array {
     @synchronized (array) {
         id result = array.lastObject;
