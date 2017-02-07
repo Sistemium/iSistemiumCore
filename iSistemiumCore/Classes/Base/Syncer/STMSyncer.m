@@ -481,6 +481,8 @@
     
     NSLogMethodName;
     
+    [self subscribeToUnsyncedObjects];
+
     [self initTimer];
     
 }
@@ -556,7 +558,7 @@
         clientEntity.eTag = nil;
         
     }
-    
+
 }
 
 - (void)checkSocket {
