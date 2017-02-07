@@ -11,11 +11,13 @@
 #import "STMConstants.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
+#import "STMVisitPhoto.h"
+#import "STMOutletPhoto.h"
 
 #import <objc/runtime.h>
 
 
-@interface STMCorePicturesController() <NSFetchedResultsControllerDelegate>
+@interface STMCorePicturesController()
 
 @property (nonatomic, strong) NSOperationQueue *uploadQueue;
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
@@ -24,10 +26,7 @@
 @property (nonatomic, strong) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
-@property (nonatomic, strong) NSFetchedResultsController *nonloadedPicturesResultsController;
-
 @property (nonatomic, strong) NSString *imagesCachePath;
-
 
 @end
 
@@ -92,7 +91,6 @@
         self.hrefDictionary = nil;
         self.session = nil;
         self.settings = nil;
-        self.nonloadedPicturesResultsController = nil;
         
     }
     
@@ -137,43 +135,49 @@
     
 }
 
-- (NSFetchedResultsController *)nonloadedPicturesResultsController {
++ (NSArray *)allPictures {
     
-    if (!_nonloadedPicturesResultsController) {
-        
-        NSManagedObjectContext *context = self.session.document.managedObjectContext;
-        
-        if (context && self.session.status == STMSessionRunning) {
-            
-            STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMCorePicture class])];
-            
-            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(href != %@) AND (thumbnailPath == %@)", nil, nil];
-            
-            request.sortDescriptors = @[sortDescriptor];
-            request.predicate = [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
-            
-            _nonloadedPicturesResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                                     managedObjectContext:context
-                                                                                       sectionNameKeyPath:nil
-                                                                                                cacheName:nil];
-            _nonloadedPicturesResultsController.delegate = self;
-            
-            [_nonloadedPicturesResultsController performFetch:nil];
-
-        } else {
-            
-            _nonloadedPicturesResultsController = nil;
-            
-        }
-        
+    NSMutableArray *result = @[].mutableCopy;
+    
+    NSArray *objects = [self.persistenceDelegate findAllSync:@"STMArticlePicture" predicate:nil options:nil error:nil];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+        [result addObject:managedObject];
     }
-    return _nonloadedPicturesResultsController;
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMOutletPhoto" predicate:nil options:nil error:nil]];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+        [result addObject:managedObject];
+    }
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMVisitPhoto" predicate:nil options:nil error:nil]];
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+        [result addObject:managedObject];
+    }
+    
+    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMMessagePicture" predicate:nil options:nil error:nil]]
+    ;
+    
+    for (NSDictionary *object in objects){
+        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
+        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+        [result addObject:managedObject];
+    }
+    
+    return result;
     
 }
 
 - (NSArray *)photoEntitiesNames {
-    return @[];
+    return @[NSStringFromClass([STMVisitPhoto class]),NSStringFromClass([STMOutletPhoto class])];
 }
 
 - (NSArray *)instantLoadPicturesEntityNames {
@@ -183,8 +187,8 @@
 - (NSArray *)nonloadedPictures {
     
     NSArray *predicateArray = [[self photoEntitiesNames] arrayByAddingObjectsFromArray:[self instantLoadPicturesEntityNames]];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (entity.name IN %@)", predicateArray];
-    return [self.nonloadedPicturesResultsController.fetchedObjects filteredArrayUsingPredicate:predicate];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (entity.name IN %@) AND (href != %@) AND (thumbnailPath == %@)", predicateArray,nil,nil];
+    return [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate];
     
 }
 
@@ -243,16 +247,6 @@
     return _imagesCachePath;
 
 }
-
-
-#pragma mark - NSFetchedResultsControllerDelegate
-
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
-    
-}
-
 
 #pragma mark - class methods
 
