@@ -16,7 +16,7 @@
 #import "STMDataDownloading.h"
 
 
-@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner>
+@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
 @property (nonatomic, strong) id <STMSession> session;
 
