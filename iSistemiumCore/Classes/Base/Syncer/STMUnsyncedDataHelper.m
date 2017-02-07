@@ -65,7 +65,11 @@
 #pragma mark - STMDataSyncing
 
 - (void)startSyncing {
-    self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+    
+    if (!self.syncingState) {
+        self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+    }
+    
 }
 
 - (void)pauseSyncing {
