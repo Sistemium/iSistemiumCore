@@ -66,8 +66,12 @@
 
 - (void)startSyncing {
     
-    if (!self.syncingState) {
-        self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+    @synchronized (self) {
+        
+        if (!self.syncingState) {
+            self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+        }
+
     }
     
 }
