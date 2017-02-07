@@ -14,6 +14,7 @@
 + (void)checkAppVersion;
 
 + (STMClientData *)clientData;
++ (NSDictionary *)clientDataDictionary;
 
 + (NSString *)deviceUUIDString;
 
