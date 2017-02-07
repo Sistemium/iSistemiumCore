@@ -221,13 +221,12 @@ static void *dataDownloadingOwnerVar;
     @synchronized (self) {
         
         if (!self.downloadingState) {
-            
             self.downloadingState = [[STMDataDownloadingState alloc] init];
-            [self receiveData];
-            
         }
 
     }
+    
+    [self receiveData];
     
 }
 
