@@ -26,12 +26,16 @@
 
 #pragma mark methods to remove from STMCoreObjectsController
 
-+ (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object {
-    return [STMCoreObjectsController dictionaryForJSWithObject:object];
-}
-
 - (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
     return [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
+}
+
+#pragma mark - Modelling override
+
+- (NSManagedObject *)findOrCreateManagedObjectOf:(NSString *)entityName identifier:(NSString *)identifier {
+
+    return [self findOrCreateManagedObjectOf:entityName andXid:[STMFunctions xidDataFromXidString:identifier]];
+    
 }
 
 
@@ -74,8 +78,8 @@
     
     if (ok) {
         
-        NSManagedObject *ownerObject = [self objectFindOrCreateForEntityName:roleOwnerEntityName andXidString:ownerXid];
-        NSManagedObject *destinationObject = [self objectFindOrCreateForEntityName:destinationEntityName andXidString:destinationXid];
+        NSManagedObject *ownerObject = [self findOrCreateManagedObjectOf:roleOwnerEntityName identifier:ownerXid];
+        NSManagedObject *destinationObject = [self findOrCreateManagedObjectOf:destinationEntityName identifier:destinationXid];
         
         NSSet *destinationSet = [ownerObject valueForKey:roleName];
         
@@ -268,13 +272,13 @@
     
 }
 
-+ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
+- (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects {
     
     NSMutableArray *dataArray = @[].mutableCopy;
     
     [objects enumerateObjectsUsingBlock:^(STMDatum * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
-        NSDictionary *propertiesDictionary = [self dictionaryForJSWithObject:obj];
+        NSDictionary *propertiesDictionary = [self dictionaryFromManagedObject:obj];
         [dataArray addObject:propertiesDictionary];
         
     }];
@@ -386,20 +390,13 @@
     
 }
 
-- (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
+- (STMDatum *)findOrCreateManagedObjectOf:(NSString *)entityName andXid:(NSData *)xidData {
     
     STMDatum *object = [self objectForXid:xidData entityName:entityName];
     
     if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
     
     return object;
-    
-}
-
-- (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
-    
-    return [self objectFindOrCreateForEntityName:entityName
-                                          andXid:[STMFunctions xidDataFromXidString:xid]];
     
 }
 
@@ -431,7 +428,7 @@
         
         if (destinationObjectXid) {
             
-            STMDatum *destinationObject = [self.class objectFindOrCreateForEntityName:ownObjectRelationships[relationship] andXidString:destinationObjectXid];
+            NSManagedObject *destinationObject = [self findOrCreateManagedObjectOf:ownObjectRelationships[relationship] identifier:destinationObjectXid];
             
             if (![[object valueForKey:relationship] isEqual:destinationObject]) {
                 
@@ -492,24 +489,26 @@
     
     STMDatum *object = nil;
     
-    if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
-        
-        STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-            
-        object = [session.settingsController settingForDictionary:dictionary];
-        
-    } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
-        
-        NSString *internalName = dictionary[@"name"];
-        object = [STMEntityController entityWithName:internalName];
-        
+//    if ([entityName isEqualToString:NSStringFromClass([STMSetting class])]) {
+//        
+//        STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+//            
+//        object = [session.settingsController settingForDictionary:dictionary];
+//        
+//    } else if ([entityName isEqualToString:NSStringFromClass([STMEntity class])]) {
+//        
+//        NSString *internalName = dictionary[@"name"];
+//        object = [STMEntityController entityWithName:internalName];
+//        
+//    }
+    
+    if (!object && xidData) {
+        object = [self findOrCreateManagedObjectOf:entityName andXid:xidData];
     }
     
-    if (!object && xidData) object = [self objectFindOrCreateForEntityName:entityName
-                                                                    andXid:xidData];
-    
-    if (!object) object = [self newObjectForEntityName:entityName
-                                                andXid:nil];
+    if (!object) {
+        object = [self newObjectForEntityName:entityName andXid:nil];
+    }
     
     // TODO: check if lts is equal to deviceTs
     if (![object isWaitingToSync] || options[STMPersistingOptionLts]) {
@@ -524,7 +523,7 @@
         
     }
     
-    return [self.class dictionaryForJSWithObject:object];
+    return [self dictionaryFromManagedObject:object];
     
 }
 

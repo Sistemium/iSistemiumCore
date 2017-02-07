@@ -10,8 +10,6 @@
 
 @interface STMPersister (CoreData)
 
-+ (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects;
-
 - (void)removeObjects:(NSArray*)objects;
 
 - (NSUInteger)removeObjectForPredicate:(NSPredicate*)predicate
@@ -37,5 +35,5 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
-
+- (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects;
 @end

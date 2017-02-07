@@ -336,7 +336,7 @@
                                     inManagedObjectContext:[self document].managedObjectContext
                                                      error:error];
         
-        return [self.class arrayForJSWithObjects:objectsArray];
+        return [self arrayForJSWithObjects:objectsArray];
         
     }
     

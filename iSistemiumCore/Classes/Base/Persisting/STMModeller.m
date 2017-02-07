@@ -68,11 +68,10 @@
 #pragma mark - STMModelling
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
-#warning need to check if entity is stored in CoreData and use document's context
+// Override the method in persister to set proper context
     return [[NSManagedObject alloc] initWithEntity:self.entitiesByName[entityName]
                     insertIntoManagedObjectContext:nil];
 }
-
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName {
     
@@ -197,9 +196,9 @@
                 
                 if ([ownObjectRelationships objectForKey:localKey]) {
                     
-                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
                     
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self findOrCreateManagedObjectOf:ownObjectRelationships[localKey] identifier:destinationObjectXid] : nil;
                     
                     [object setValue:destinationObject forKey:localKey];
                     
@@ -211,7 +210,13 @@
         
     }
     
+    object.isFantom = @(NO);
+    
 }
 
+- (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object {
+    // TODO: remove dependency on STMDatum
+    return [self dictionaryForJSWithObject:(STMDatum *)object withNulls:YES withBinaryData:YES];
+}
 
 @end

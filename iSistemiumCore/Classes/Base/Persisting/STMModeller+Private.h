@@ -10,6 +10,12 @@
 
 @interface STMModeller (Private)
 
-+ (id)typeConversionForValue:(id)value key:(NSString *)key entityAttributes:(NSDictionary *)entityAttributes;
++ (id)typeConversionForValue:(id)value
+                         key:(NSString *)key
+            entityAttributes:(NSDictionary *)entityAttributes;
+
+- (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object
+                                  withNulls:(BOOL)withNulls
+                             withBinaryData:(BOOL)withBinaryData;
 
 @end
