@@ -242,6 +242,9 @@
         
         [self setColorForSyncImageView];
     });
+    
+    if (!self.downloadAlertWasShown) [self showDownloadAlert];
+    
 }
 
 

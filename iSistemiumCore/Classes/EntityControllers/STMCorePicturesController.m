@@ -840,6 +840,7 @@
                                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                                
                                                                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
+                                                               [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
                                                                
                                                            });
                                                        }).catch(^(NSError *error){
