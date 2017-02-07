@@ -105,24 +105,37 @@
     }
 }
 
-- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler{
+- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(void (^)(BOOL success, NSError *error))completionHandler {
+    
     __block BOOL success = YES;
     __block NSError* error = nil;
-    if ([self.fmdb hasTable:entityName]){
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            success = [self destroySync:entityName identifier:identifier options:options error:&error];
-            if(error){
-                success = NO;
-            }
-            completionHandler(success,error);
+    
+    if ([self.fmdb hasTable:entityName]) {
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            success = [self destroySync:entityName
+                             identifier:identifier
+                                options:options
+                                  error:&error];
+            
+            if (error) success = NO;
+            if (completionHandler) completionHandler(success,error);
+            
         });
-    }else{
-        success = [self destroySync:entityName identifier:identifier options:options error:&error];
-        if(error){
-            success = NO;
-        }
-        completionHandler(success,error);
+        
+    } else {
+        
+        success = [self destroySync:entityName
+                         identifier:identifier
+                            options:options
+                              error:&error];
+        
+        if (error) success = NO;
+        if (completionHandler) completionHandler(success,error);
+        
     }
+
 }
 
 - (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options
