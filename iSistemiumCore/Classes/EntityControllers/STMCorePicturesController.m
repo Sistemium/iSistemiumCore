@@ -979,7 +979,7 @@
     [self removeImageFilesForPicture:picture];
     
     NSError *error;
-    
+#warning STMEntity here is wrong name!
     [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
     
 }
