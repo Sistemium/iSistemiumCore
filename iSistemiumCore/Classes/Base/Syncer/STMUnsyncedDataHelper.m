@@ -30,6 +30,7 @@
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSArray *> *> *pendingObjectsByEntity;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
 
 
 @end
@@ -93,14 +94,20 @@
         if (itemVersion) {
             
             NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
+            
+            if ([self isPendingObject:itemData entityName:entityName]) {
+                
+                [self didSyncPendingObject:itemData entityName:entityName];
 
-            NSDictionary *options = [self isPendingObject:itemData entityName:entityName] ? nil : @{STMPersistingOptionLts: itemVersion};
+            } else {
 
-            NSError *error;
-            [self.persistenceDelegate mergeSync:entityName
-                                     attributes:itemData
-                                        options:options
-                                          error:&error];
+                NSError *error;
+                [self.persistenceDelegate mergeSync:entityName
+                                         attributes:itemData
+                                            options:@{STMPersistingOptionLts: itemVersion}
+                                              error:&error];
+
+            }
             
         } else {
             NSLog(@"No itemVersion for %@ %@", entityName, itemData[@"id"]);
@@ -128,6 +135,7 @@
     self.subscriptions = [NSMutableArray array];
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
     self.pendingObjectsByEntity = @{}.mutableCopy;
+    self.syncedPendingObjectsByEntity = @{}.mutableCopy;
     
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
         
@@ -159,6 +167,7 @@
     self.subscriptions = nil;
     self.erroredObjectsByEntity = nil;
     self.pendingObjectsByEntity = nil;
+    self.syncedPendingObjectsByEntity = nil;
     
 }
 
@@ -463,6 +472,44 @@
         
         self.pendingObjectsByEntity[entityName] = pendingObjects;
 
+    }
+    
+}
+
+- (void)didSyncPendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
+    
+    NSString *pk = object[@"id"];
+    
+    if (!pk) return;
+    
+    NSLog(@"didSyncPendingObject: %@", object);
+    
+    @synchronized (self.syncedPendingObjectsByEntity) {
+        
+        NSMutableArray *syncedObjects = self.syncedPendingObjectsByEntity[entityName];
+        
+        if (!syncedObjects) syncedObjects = @[].mutableCopy;
+        
+        [syncedObjects addObject:pk];
+        
+        self.syncedPendingObjectsByEntity[entityName] = syncedObjects;
+        
+    }
+    
+}
+
+- (BOOL)isSyncedPendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
+    
+    NSString *pk = object[@"id"];
+    
+    if (!pk) return NO;
+    
+    @synchronized (self.syncedPendingObjectsByEntity) {
+        
+        NSMutableArray *syncedObjects = self.syncedPendingObjectsByEntity[entityName];
+        
+        return [syncedObjects containsObject:pk];
+        
     }
     
 }
