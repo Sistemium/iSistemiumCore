@@ -165,6 +165,10 @@
     
 }
 
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    return [self setObjectData:objectData toObject:object withRelations:YES];
+}
+
 - (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations{
     
     NSEntityDescription *entity = object.entity;
@@ -204,15 +208,14 @@
                     
                     STMDatum *destinationObject = (STMDatum*) [self newObjectForEntityName:destinationEntityName];
                     
-<<<<<<< HEAD
                     NSDictionary *destinationObjectData = [STMSessionManager.sharedManager.currentSession.persistenceDelegate findSync:destinationEntityName identifier:destinationObjectXid options:nil error:nil];
                     
                     [self setObjectData:destinationObjectData toObject:destinationObject withRelations:false];
-=======
-                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
-                    
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self findOrCreateManagedObjectOf:ownObjectRelationships[localKey] identifier:destinationObjectXid] : nil;
->>>>>>> EntityControllerRefactor
+//=======
+//                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
+//                    
+//                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self findOrCreateManagedObjectOf:ownObjectRelationships[localKey] identifier:destinationObjectXid] : nil;
+//>>>>>>> EntityControllerRefactor
                     
                     [object setValue:destinationObject forKey:localKey];
                     

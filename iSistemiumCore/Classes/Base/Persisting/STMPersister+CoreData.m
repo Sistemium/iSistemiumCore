@@ -171,7 +171,7 @@
             
         }
         
-        return [self.class dictionaryForJSWithObject:object];
+        return [self dictionaryFromManagedObject:object];
         
     }
     

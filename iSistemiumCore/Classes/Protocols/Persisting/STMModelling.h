@@ -35,8 +35,6 @@
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
 
-- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations;
-
 @optional
 
 // TODO: Declare a separate protocol for using NSManagedObject
@@ -47,5 +45,8 @@
                                       identifier:(NSString *)identifier;
 
 - (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object;
+
+- (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object withRelations:(BOOL)withRelations;
+- (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object;
 
 @end

@@ -35,15 +35,12 @@
            inManagedObjectContext:(NSManagedObjectContext *)context
                             error:(NSError **)error;
 
-<<<<<<< HEAD
 - (NSDictionary *)update:(NSString *)entityName
               attributes:(NSDictionary *)attributes
                  options:(NSDictionary *)options
                    error:(NSError **)error
   inManagedObjectContext:(NSManagedObjectContext *)context;
 
-
-=======
 - (NSArray *)arrayForJSWithObjects:(NSArray <STMDatum *> *)objects;
->>>>>>> EntityControllerRefactor
+
 @end

@@ -842,39 +842,9 @@ STMImagePickerOwnerProtocol>
     
     NSString *getPictureSize = parameters[@"size"];
     
-<<<<<<< HEAD
-    NSDictionary *picture = [self.persistenceDelegate findSync:@"STMArticlePicture" identifier:getPictureXid options:nil error:nil];
-    STMCorePicture *object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
-=======
     NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid];
->>>>>>> EntityControllerRefactor
     
-    if (!picture){
-        picture = [self.persistenceDelegate findSync:@"STMOutletPhoto" identifier:getPictureXid  options:nil error:nil];
-        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
-    }
-    
-    if (!picture){
-        picture = [self.persistenceDelegate findSync:@"STMVisitPhoto" identifier:getPictureXid  options:nil error:nil];
-        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
-    }
-//    
-//    if (![object isKindOfClass:[STMCorePicture class]]) {
-//        
-//        [self getPictureWithXid:getPictureXidData
-//                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
-//        return;
-//        
-//    }
-    id <STMModelling> persister = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
-    
-<<<<<<< HEAD
-    if (!picture){
-        picture = [self.persistenceDelegate findSync:@"STMMessagePicture" identifier:getPictureXid  options:nil error:nil];
-        object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
-    }
-    
-    if (!picture) {
+    if (!object) {
         
         [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"no picture with xid %@", getPictureXid]];
@@ -882,50 +852,46 @@ STMImagePickerOwnerProtocol>
         
     }
     
-    [self.persistenceDelegate setObjectData:picture toObject:object withRelations:true];
-=======
-    STMCorePicture *picture = (STMCorePicture *)[persister newObjectForEntityName:@"STMCorePicture"];
-    
-    [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:object toObject:picture];
->>>>>>> EntityControllerRefactor
+    STMCorePicture *picture = (STMCorePicture *)[self.persistenceDelegate newObjectForEntityName:@"STMCorePicture"];
+    [self.persistenceDelegate setObjectData:object toObject:picture withRelations:true];
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-        if (object.imageThumbnail) {
+        if (picture.imageThumbnail) {
             
-            [self getPicture:object
-               withImagePath:object.imageThumbnail
+            [self getPicture:picture
+               withImagePath:picture.imageThumbnail
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:object];
+            [self downloadPicture:picture];
         }
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
-        if (object.resizedImagePath) {
+        if (picture.resizedImagePath) {
             
-            [self getPicture:object
-               withImagePath:object.resizedImagePath
+            [self getPicture:picture
+               withImagePath:picture.resizedImagePath
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:object];
+            [self downloadPicture:picture];
         }
         
     } else if ([getPictureSize isEqualToString:@"full"]) {
         
-        if (object.imagePath) {
+        if (picture.imagePath) {
             
-            [self getPicture:object
-               withImagePath:object.imagePath
+            [self getPicture:picture
+               withImagePath:picture.imagePath
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:object];
+            [self downloadPicture:picture];
         }
         
     } else {

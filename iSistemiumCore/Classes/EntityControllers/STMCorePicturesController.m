@@ -338,7 +338,7 @@
                 
                 if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
                 
-                NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
+                NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
                 
                 if (!picturesWithThumbnails[picture.entity.name]){
                     picturesWithThumbnails[picture.entity.name] = @[].mutableCopy;
@@ -899,7 +899,7 @@
                                                    if ([object isKindOfClass:[STMCorePicture class]]) {
                                                        [[self class] setImagesFromData:data forPicture:(STMCorePicture *)object andUpload:NO];
                                                        
-                                                       NSDictionary* dictObject = [STMCoreObjectsController dictionaryForJSWithObject:(STMDatum*)object];
+                                                       NSDictionary* dictObject = [[self.class persistenceDelegate] dictionaryFromManagedObject:object];
                                                        
                                                        NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
                                                        
