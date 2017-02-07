@@ -857,17 +857,10 @@ STMImagePickerOwnerProtocol>
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-<<<<<<< HEAD
-        if (picture.imageThumbnail) {
+        if (picture.thumbnailPath) {
             
             [self getPicture:picture
-               withImagePath:picture.imageThumbnail
-=======
-        if (object.thumbnailPath) {
-            
-            [self getPicture:object
-               withImagePath:object.thumbnailPath
->>>>>>> origin/persisterPictures
+               withImagePath:picture.thumbnailPath
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             

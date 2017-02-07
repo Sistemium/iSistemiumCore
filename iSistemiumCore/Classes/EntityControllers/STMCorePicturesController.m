@@ -283,34 +283,13 @@
         
         if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
             
-<<<<<<< HEAD
-            if (picture.imageThumbnail == nil && picture.thumbnailHref != nil){
-                
-                NSString* thumbnailHref = picture.thumbnailHref;
-                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-                
-                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-                
-                NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
-                
-                if (!picturesWithThumbnails[picture.entity.name]){
-                    picturesWithThumbnails[picture.entity.name] = @[].mutableCopy;
-                }
-                
-                [picturesWithThumbnails[picture.entity.name] addObject:picDict];
-                
-                continue;
-            }
-=======
             NSString* thumbnailHref = picture.thumbnailHref;
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
             NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
             if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
             
-            NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
->>>>>>> origin/persisterPictures
+            NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
@@ -340,7 +319,7 @@
             if (pathComponents.count > 1) {
                 [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
                 
-                NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
+                NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
                 NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
                 [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
             }
@@ -1001,13 +980,10 @@
     [self removeImageFilesForPicture:picture];
     
     NSError *error;
-<<<<<<< HEAD
-#warning STMEntity here is wrong name!
-    [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
-=======
-    
-    [self.persistenceDelegate destroySync:picture.entity.name identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
->>>>>>> origin/persisterPictures
+
+    [self.persistenceDelegate destroySync:picture.entity.name
+                               identifier:[STMFunctions hexStringFromData:picture.xid]
+                                  options:nil error:&error];
     
 }
 
