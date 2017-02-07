@@ -185,13 +185,15 @@
     
     self.syncingState.isInSyncingProcess = YES;
     
+    NSLogMethodName;
+    
     [self sendNextUnsyncedObject];
 
 }
 
 - (void)finishHandleUnsyncedObjects {
     
-    NSLog(@"finishHandleUnsyncedObjects");
+    NSLogMethodName;
     
     [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSMutableSet<NSString *> * ids, BOOL * stop) {
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
