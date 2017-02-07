@@ -206,10 +206,11 @@ static void *defantomizingOwnerVar;
         
         NSLog(@"delete fantom %@ %@", entityName, objId);
         
+        NSError *error = nil;
         [self.persistenceDelegate destroySync:entityName
                                    identifier:objId
                                       options:nil
-                                        error:nil];
+                                        error:&error];
         
     } else {
         
@@ -218,6 +219,10 @@ static void *defantomizingOwnerVar;
         }
         
     }
+    
+    [self fantomsCountDecrease];
+    
+    return;
     
 }
 
