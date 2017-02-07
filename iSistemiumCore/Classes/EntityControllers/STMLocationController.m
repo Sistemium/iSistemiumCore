@@ -14,17 +14,19 @@
 
 @implementation STMLocationController
 
++ (NSString *)locationConcreteName {
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
+    return NSStringFromClass([currentSession locationClass]);
+}
+
 + (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location {
 
     if (!location) return nil;
     
     STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
     
-    Class locationClass = [currentSession locationClass];
+    STMCoreLocation *locationObject = (STMCoreLocation *)[currentSession.persistenceDelegate newObjectForEntityName:[self locationConcreteName]];
     
-    STMCoreLocation *locationObject = (STMCoreLocation *)[currentSession.persistenceDelegate newObjectForEntityName:NSStringFromClass(locationClass)];
-    
-#warning maybe newObjectForEntityName should return (STMDatum *)
     locationObject.isFantom = @(NO);
     locationObject.xid = [STMFunctions xidDataFromXidString:[[[NSUUID alloc] init] UUIDString]];
 
