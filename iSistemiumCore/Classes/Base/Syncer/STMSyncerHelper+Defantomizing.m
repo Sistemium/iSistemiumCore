@@ -188,17 +188,6 @@ static void *defantomizingOwnerVar;
     
     NSLog(@"defantomize error: %@", errorString);
     
-    [self defantomizeErrorWithObject:fantomDic
-                        deleteObject:deleteObject];
-    
-    [self fantomsCountDecrease];
-    
-    return;
-    
-}
-
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic deleteObject:(BOOL)deleteObject {
-    
     if (deleteObject) {
         
         NSString *entityName = fantomDic[@"entityName"];
@@ -206,10 +195,11 @@ static void *defantomizingOwnerVar;
         
         NSLog(@"delete fantom %@ %@", entityName, objId);
         
+        NSError *error = nil;
         [self.persistenceDelegate destroySync:entityName
                                    identifier:objId
                                       options:nil
-                                        error:nil];
+                                        error:&error];
         
     } else {
         
@@ -218,6 +208,10 @@ static void *defantomizingOwnerVar;
         }
         
     }
+    
+    [self fantomsCountDecrease];
+    
+    return;
     
 }
 

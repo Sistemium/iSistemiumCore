@@ -685,12 +685,6 @@
     [self.socketTransport socketSendEvent:event withValue:value];
 }
 
-#pragma mark - recieve data
-
-- (void)receiveData {
-    [self.dataDownloadingDelegate startDownloading];
-}
-
 
 #pragma mark - defantomization
 
@@ -770,6 +764,13 @@
     self.dataSyncingDelegate.subscriberDelegate = nil;
     [self.dataSyncingDelegate pauseSyncing];
 
+}
+
+
+#pragma mark - recieve data
+
+- (void)receiveData {
+    [self.dataDownloadingDelegate startDownloading];
 }
 
 
