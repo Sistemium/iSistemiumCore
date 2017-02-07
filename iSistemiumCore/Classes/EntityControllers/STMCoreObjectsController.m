@@ -481,46 +481,4 @@
 
 }
 
-
-#pragma mark - generate arrayForJS
-
-
-
-
-#pragma mark - create dictionary from object
-
-+ (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError *__autoreleasing *)error {
-    
-    NSString *errorMessage = nil;
-    
-    if ([parameters isKindOfClass:[NSDictionary class]] && parameters[@"entityName"] && [parameters[@"entityName"] isKindOfClass:[NSString class]]) {
-        
-        NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:(NSString * _Nonnull)parameters[@"entityName"]];
-        
-        BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
-        if (sessionIsRunning && self.document) {
-            
-            return [self.persistenceDelegate findAllSync:entityName predicate:nil options:parameters error:error];
-            
-            
-            
-        } else {
-            
-            errorMessage = [NSString stringWithFormat:@"session is not running, please try later"];
-            
-        }
-        
-    } else {
-        
-        errorMessage = [NSString stringWithFormat:@"requestObjects: parameters is not NSDictionary"];
-        
-    }
-
-    if (errorMessage) [self error:error withMessage:errorMessage];
-    
-    return nil;
-    
-}
-
-
 @end

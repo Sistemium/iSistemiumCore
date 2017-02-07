@@ -10,9 +10,8 @@
 #import "STMDocument.h"
 #import "STMEntityDescription.h"
 #import "STMFunctions.h"
-
+#import "STMUserDefaults.h"
 #import "STMCoreObjectsController.h"
-
 
 @interface STMLogger() <NSFetchedResultsControllerDelegate>
 
@@ -74,6 +73,10 @@
     
 }
 
+- (id)persistenceDelegate {
+    return self.session.persistenceDelegate;
+}
+
 - (void)addObservers {
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -91,38 +94,20 @@
 
 - (void)requestInfo:(NSString *)xidString {
     
-    if (![xidString isEqual:[NSNull null]]) {
-        
-        NSData *xidData = [STMFunctions xidDataFromXidString:xidString];
-        
-        STMDatum *object = [STMCoreObjectsController objectForXid:xidData];
-        
-        if (object) {
-            
-            NSDictionary *objectDic = [STMCoreObjectsController dictionaryForJSWithObject:object];
-            NSString *JSONString = [STMFunctions jsonStringFromDictionary:objectDic];
-            [self saveLogMessageWithText:JSONString
-                                 numType:STMLogMessageTypeImportant];
-            
-        } else {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"no object with xid %@", xidString];
-            [self saveLogMessageWithText:logMessage
-                                 numType:STMLogMessageTypeError];
-            
-        }
-
-    } else {
-        
+    if ([xidString isEqual:[NSNull null]]) {
         NSString *logMessage = [NSString stringWithFormat:@"xidSting is NSNull"];
-        [self saveLogMessageWithText:logMessage
-                             numType:STMLogMessageTypeError];
-        
+        return [self saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+    }
+
+    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:xidString];
+    
+    if (!object) {
+        NSString *logMessage = [NSString stringWithFormat:@"no object with xid %@", xidString];
+        return [self saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
     }
     
-    [self.document saveDocument:^(BOOL success) {
-//        if (success) [[self.session syncer] setSyncerState:STMSyncerSendDataOnce];
-    }];
+    [self saveLogMessageWithText:[STMFunctions jsonStringFromDictionary:object]
+                         numType:STMLogMessageTypeImportant];
     
 }
 
@@ -130,29 +115,21 @@
     
     NSError *error;
     
-    NSArray *jsonArray = [STMCoreObjectsController jsonForObjectsWithParameters:parameters error:&error];
+    NSArray *jsonArray = [self jsonForObjectsWithParameters:parameters error:&error];
 
-    if (!error) {
+    if (error) {
 
-        NSDictionary *jsonDic = @{@"objects": jsonArray,
-                                  @"requestParameters": parameters};
-
-        NSString *JSONString = [STMFunctions jsonStringFromDictionary:jsonDic];
-        [self saveLogMessageWithText:JSONString
-                             numType:STMLogMessageTypeImportant];
-        
-    } else {
-
-        [self saveLogMessageWithText:error.localizedDescription
-                             numType:STMLogMessageTypeError];
-
+        return [self saveLogMessageWithText:error.localizedDescription numType:STMLogMessageTypeError];
     }
+    
+    NSDictionary *jsonDic = @{@"objects": jsonArray,
+                    @"requestParameters": parameters};
 
-    [self.document saveDocument:^(BOOL success) {
-//        if (success) [[self.session syncer] setSyncerState:STMSyncerSendDataOnce];
-    }];
+    [self saveLogMessageWithText:[STMFunctions jsonStringFromDictionary:jsonDic]
+                         numType:STMLogMessageTypeImportant];
 
 }
+
 
 - (void)requestDefaults {
     
@@ -164,10 +141,6 @@
         
         [self saveLogMessageWithText:JSONString
                              numType:STMLogMessageTypeImportant];
-
-        [self.document saveDocument:^(BOOL success) {
-//            if (success) [[self.session syncer] setSyncerState:STMSyncerSendDataOnce];
-        }];
 
     }
 }
@@ -430,6 +403,46 @@
     return _resultsController;
     
 }
+
+
+#pragma mark - Private helpers
+
+- (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters error:(NSError *__autoreleasing *)error {
+    
+    NSString *errorMessage = nil;
+    
+    if ([parameters isKindOfClass:[NSDictionary class]] && parameters[@"entityName"] && [parameters[@"entityName"] isKindOfClass:[NSString class]]) {
+        
+        NSString *entityName = [STMFunctions addPrefixToEntityName:(NSString * _Nonnull)parameters[@"entityName"]];
+        
+        BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
+        if (sessionIsRunning && self.document) {
+            
+            return [self.persistenceDelegate findAllSync:entityName predicate:nil options:parameters error:error];
+            
+            
+            
+        } else {
+            
+            errorMessage = [NSString stringWithFormat:@"session is not running, please try later"];
+            
+        }
+        
+    } else {
+        
+        errorMessage = [NSString stringWithFormat:@"requestObjects: parameters is not NSDictionary"];
+        
+    }
+    
+    if (errorMessage) [STMFunctions error:error withMessage:errorMessage];
+    
+    return nil;
+    
+}
+
+
+#pragma mark - Dealing with sections
+
 
 - (NSMutableIndexSet *)deletedSectionIndexes {
     

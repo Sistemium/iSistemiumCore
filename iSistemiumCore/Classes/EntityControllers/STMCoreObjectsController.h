@@ -26,9 +26,6 @@
 + (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
 + (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
-+ (NSArray *)jsonForObjectsWithParameters:(NSDictionary *)parameters
-                                    error:(NSError **)error;
-
 + (void)dataLoadingFinished;
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName
