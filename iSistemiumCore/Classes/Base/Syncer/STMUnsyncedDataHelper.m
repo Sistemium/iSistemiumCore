@@ -86,6 +86,7 @@
         NSLog(@"failToSync %@ %@", entityName, itemData[@"id"]);
         
         [self declineFromSync:itemData entityName:entityName];
+        [self releasePendingObject:itemData entityName:entityName];
         
     } else {
         
@@ -93,10 +94,12 @@
             
             NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
 
+            NSDictionary *options = [self isPendingObject:itemData entityName:entityName] ? nil : @{STMPersistingOptionLts: itemVersion};
+
             NSError *error;
             [self.persistenceDelegate mergeSync:entityName
                                      attributes:itemData
-                                        options:@{STMPersistingOptionLts: itemVersion}
+                                        options:options
                                           error:&error];
             
         } else {
@@ -297,13 +300,15 @@
     [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
-    
     if (erroredExclusion) [subpredicates addObject:erroredExclusion];
+    
+    NSPredicate *pendingObjectsExclusion = [self excludingPendingObjectsPredicateWithEntityName:entityName];
+    if (pendingObjectsExclusion) [subpredicates addObject:pendingObjectsExclusion];
 
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
-    NSDictionary *options = @{STMPersistingOptionPageSize : @1,
-                              STMPersistingOptionOrder:@"deviceTs,id",
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
+                              STMPersistingOptionOrder      :@"deviceTs,id",
                               STMPersistingOptionOrderDirectionAsc};
     
     NSArray *result = [self.persistenceDelegate findAllSync:entityName
@@ -426,6 +431,42 @@
 
 }
 
+- (BOOL)isPendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
+    
+    NSString *pk = object[@"id"];
+    
+    if (!pk) return NO;
+    
+    @synchronized (self.pendingObjectsByEntity) {
+        
+        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+
+        return pendingObjects[pk] ? YES : NO;
+        
+    }
+
+}
+
+- (void)releasePendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
+    
+    NSString *pk = object[@"id"];
+    
+    if (!pk) return;
+    
+    NSLog(@"releasePendingObject: %@", object);
+
+    @synchronized (self.pendingObjectsByEntity) {
+        
+        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+
+        [pendingObjects removeObjectForKey:pk];
+        
+        self.pendingObjectsByEntity[entityName] = pendingObjects;
+
+    }
+    
+}
+
 
 #pragma mark - Predicates
 
@@ -441,6 +482,16 @@
         
     return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredIdsArray];
 
+}
+
+- (NSPredicate *)excludingPendingObjectsPredicateWithEntityName:(NSString *)entityName {
+    
+    NSDictionary *pendingObjects = self.pendingObjectsByEntity[entityName];
+
+    if (!pendingObjects.count) return nil;
+
+    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", pendingObjects.allKeys];
+    
 }
 
 - (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
