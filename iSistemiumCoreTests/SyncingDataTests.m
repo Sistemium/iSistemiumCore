@@ -12,7 +12,7 @@
 #import "STMSyncerHelper+Downloading.h"
 #import "STMLogger.h"
 
-#define SyncTestsTimeOut 5
+#define SyncTestsTimeOut 15
 #define SYNCING_DATA_TEST_ASYNC_DELAY 0.5 * NSEC_PER_SEC
 
 #define SYNCING_DATA_TEST_DISPATCH_TIME dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY))
@@ -24,6 +24,8 @@
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 @property (nonatomic, weak) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *syncedExpectations;
+@property (nonatomic, strong) XCTestExpectation *outletRepeatSyncExpectation;
+@property (nonatomic, strong) NSString *outletRepeatSyncId;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjects;
 @property (nonatomic, strong) NSString *pkToWait;
 
@@ -127,11 +129,13 @@
     NSMutableDictionary *outlet = [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet4",
                                                                                        @"partnerId"   : partnerOne[@"id"]}].mutableCopy;
 
+    self.outletRepeatSyncId = outlet[@"id"];
+
     [self createTestObject:@"STMOutletPhoto"
-            withAttributes:@{@"outletId"   : outlet[@"id"]}];
+            withAttributes:@{@"outletId"   : self.outletRepeatSyncId}];
     
     NSDictionary *avatarPhoto = [self createTestObject:@"STMOutletPhoto"
-                                        withAttributes:@{@"outletId"   : outlet[@"id"]}];
+                                        withAttributes:@{@"outletId"   : self.outletRepeatSyncId}];
     
     outlet[@"avatarPictureId"] = avatarPhoto[@"id"];
     
@@ -141,6 +145,9 @@
                             attributes:outlet
                                options:nil
                                  error:&error].mutableCopy;
+    
+    NSString *expectationDescription = [NSString stringWithFormat:@"wait for repeat sync outlet %@", self.outletRepeatSyncId];
+    self.outletRepeatSyncExpectation = [self expectationWithDescription:expectationDescription];
     
     NSLog(@"outlet %@", outlet);
     
@@ -212,8 +219,22 @@
                                    itemData:itemData
                                 itemVersion:itemVersion];
         
-        XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
-        [expectation fulfill];
+        NSString *pk = itemData[@"id"];
+        
+        XCTestExpectation *expectation = self.syncedExpectations[pk];
+        
+        if (expectation) {
+
+            [expectation fulfill];
+            [self.syncedExpectations removeObjectForKey:pk];
+            
+        } else {
+            
+            if ([pk isEqualToString:self.outletRepeatSyncId]) {
+                [self.outletRepeatSyncExpectation fulfill];
+            }
+            
+        }
         
     });
     
