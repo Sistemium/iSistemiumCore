@@ -197,10 +197,6 @@
     NSUInteger nonloadedPicturesCount = [self nonloadedPictures].count;
     
     if (nonloadedPicturesCount == 0) {
-
-        [self.session.document saveDocument:^(BOOL success) {
-            
-        }];
         
         self.downloadingPictures = NO;
     
