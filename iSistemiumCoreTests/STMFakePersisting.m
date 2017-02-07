@@ -96,11 +96,16 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
     STMFakePersistingIfInMemoryDB(nil) {
         
+        NSMutableArray *predicates = @[].mutableCopy;
+        
         if (options[STMPersistingOptionFantoms]) {
-            NSMutableArray *predicates = @[[NSPredicate predicateWithFormat:@"isFantom == 1"]].mutableCopy;
-            if (predicate) [predicates addObject:predicate];
-            predicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+            [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 1"]];
+        } else {
+            [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 0 OR isFantom == nil"]];
         }
+        
+        if (predicate) [predicates addObject:predicate];
+        predicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
         
         NSArray <NSDictionary*> *result = [[self dataWithName:entityName] filteredArrayUsingPredicate:predicate];
         
