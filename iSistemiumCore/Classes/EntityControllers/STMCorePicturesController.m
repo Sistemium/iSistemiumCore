@@ -981,7 +981,7 @@
     
     NSError *error;
     
-    [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
+    [self.persistenceDelegate destroySync:picture.entity.name identifier:[STMFunctions hexStringFromData:picture.xid] options:nil error:&error];
     
 }
 
