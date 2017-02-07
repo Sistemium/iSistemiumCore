@@ -914,6 +914,8 @@
 - (void)subscribeToUnsyncedObjects {
     
     NSLogMethodName;
+    
+    [self unsubscribeFromUnsyncedObjects];
 
     self.dataSyncingDelegate.subscriberDelegate = self;
     [self.dataSyncingDelegate startSyncing];
