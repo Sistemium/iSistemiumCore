@@ -434,7 +434,8 @@
             predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
         }
         default:
-            break;
+            [self wrongEntityName:entityName error:error];
+            return NO;
     }
     
     NSUInteger deletedCount = [self destroyAllSync:entityName
@@ -496,9 +497,11 @@
     }
     
     switch ([self storageForEntityName:entityName options:options]) {
+            
         case STMStorageTypeFMDB:
             result = [self.fmdb update:entityName attributes:attributesToUpdate error:error];
             break;
+            
         case STMStorageTypeCoreData:
             result = [self update:entityName
                      attributes:attributesToUpdate
@@ -506,8 +509,10 @@
                           error:error
          inManagedObjectContext:self.document.managedObjectContext];
             break;
+            
         default:
-            break;
+            [self wrongEntityName:entityName error:error];
+            return nil;
     }
     
     [self saveWithEntityName:entityName];
