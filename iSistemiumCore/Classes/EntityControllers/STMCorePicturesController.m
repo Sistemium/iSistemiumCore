@@ -293,7 +293,13 @@
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
-            [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
+            [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options]
+            .then(^(NSDictionary * result){
+                NSLog(@"startCheckingPicturesPaths updated %@ id: %@",picture.entity.name, result[@"id"]);
+            })
+            .catch(^(NSError *error){
+                NSLog(@"startCheckingPicturesPaths updating %@ id: %@ error:",picture.entity.name, picDict[@"id"], [error localizedDescription]);
+            });
             
             continue;
         }
