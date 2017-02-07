@@ -230,7 +230,7 @@
     NSSortDescriptor *idSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
     NSArray *picturesArray = [message.pictures sortedArrayUsingDescriptors:@[ordSortDescriptor, idSortDescriptor]];
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"imageThumbnail != %@", nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath != %@", nil];
     picturesArray = [picturesArray filteredArrayUsingPredicate:predicate];
 
     return picturesArray;

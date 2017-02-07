@@ -119,6 +119,7 @@
     
     XCTAssertEqual(result.count, 2);
     XCTAssertEqualObjects(result.firstObject[key], testDataZ[key]);
+<<<<<<< HEAD
     
 <<<<<<< HEAD
     NSUInteger count =
@@ -129,6 +130,10 @@
 =======
     // cleanup
 >>>>>>> EntityControllerRefactor
+=======
+
+    // cleanup
+>>>>>>> origin/persisterPictures
     
     XCTAssertEqual([self destroyTestDataOwnerXid:xid], 2);
     
@@ -144,12 +149,15 @@
     
     NSDictionary *testData = @{@"type": @"debug",
 <<<<<<< HEAD
+<<<<<<< HEAD
                                @"text": @"testCountSync"};
     
     NSDictionary *testObject =
     [self.persister mergeSync:entityName attributes:testData options:nil error:&error];
 
 =======
+=======
+>>>>>>> origin/persisterPictures
                                @"text": @"testCountSync",
                                @"ownerXid": xid};
     
@@ -158,7 +166,10 @@
     
     [self createTestDataOwnerXid:xid type:@"important"];
     
+<<<<<<< HEAD
 >>>>>>> EntityControllerRefactor
+=======
+>>>>>>> origin/persisterPictures
     NSUInteger countAll = [self.persister countSync:entityName
                                           predicate:predicate
                                             options:nil
@@ -186,11 +197,17 @@
     
     XCTAssertNil(error);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     
     XCTAssertEqual([self destroyTestDataOwnerXid:xid], 2);
 
 >>>>>>> EntityControllerRefactor
+=======
+    
+    XCTAssertEqual([self destroyTestDataOwnerXid:xid], 2);
+
+>>>>>>> origin/persisterPictures
 }
 
 - (void)testCountSyncWithOptions {

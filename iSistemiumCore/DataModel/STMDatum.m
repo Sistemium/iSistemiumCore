@@ -215,7 +215,7 @@
         excludeProperties = [coreEntityKeys arrayByAddingObjectsFromArray:@[@"imagePath",
                                                                             @"resizedImagePath",
                                                                             @"calculatedSum",
-                                                                            @"imageThumbnail",
+                                                                            @"thumbnailPath",
                                                                             @"deviceAts"]];
     });
 

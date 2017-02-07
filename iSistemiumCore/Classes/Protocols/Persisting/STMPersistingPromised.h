@@ -39,11 +39,11 @@
                  predicate:(NSPredicate *)predicate
                    options:(NSDictionary *)options;
 
+@optional
+
 - (AnyPromise *)update:(NSString *)entityName
             attributes:(NSDictionary *)attributes
                options:(NSDictionary *)options;
-
-@optional
 
 - (AnyPromise *)updateAll:(NSString *)entityName
                attributes:(NSDictionary *)attributes
