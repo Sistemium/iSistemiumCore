@@ -257,9 +257,11 @@
 
 + (void)checkPhotos {
     
-    [self checkPicturesPaths];
-    [self checkBrokenPhotos];
-    [self checkUploadedPhotos];
+    [self startCheckingPicturesPaths];
+    
+#warning sill uses core data, needs to be rewrited
+//    [self checkBrokenPhotos];
+//    [self checkUploadedPhotos];
     
 }
 
@@ -269,120 +271,61 @@
 
 #pragma mark - checkPicturesPaths
 
-+ (void)checkPicturesPaths {
-    
-    [self startCheckingPicturesPaths];
-    
-}
-
 + (void)startCheckingPicturesPaths {
     
-    NSMutableArray *result = @[].mutableCopy;
+    NSMutableArray *result = [STMCorePicturesController allPictures].mutableCopy;
     
-    NSArray *objects = [self.persistenceDelegate findAllSync:@"STMArticlePicture" predicate:nil options:nil error:nil];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMOutletPhoto" predicate:nil options:nil error:nil]];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMVisitPhoto" predicate:nil options:nil error:nil]];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMMessagePicture" predicate:nil options:nil error:nil]]
-    ;
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    NSMutableDictionary <NSString*,NSMutableArray*> *picturesWithThumbnails = @{}.mutableCopy;
-    
-    if (result.count > 0) {
+    if (result.count <= 0) return;
 
-        NSLogMethodName;
+    NSLogMethodName;
 
-        for (STMCorePicture *picture in result) {
+    for (STMCorePicture *picture in result) {
+        
+        if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
             
-            if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
-                
-                NSString* thumbnailHref = picture.thumbnailHref;
-                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-                
-                if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-                
-                NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
-                
-                if (!picturesWithThumbnails[picture.entity.name]){
-                    picturesWithThumbnails[picture.entity.name] = @[].mutableCopy;
-                }
-                
-                [picturesWithThumbnails[picture.entity.name] addObject:picDict];
-                
-                continue;
-            }
+            NSString* thumbnailHref = picture.thumbnailHref;
+            NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+            NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
-            NSArray *pathComponents = [picture.imagePath pathComponents];
+            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
             
-            if (pathComponents.count == 0) {
+            NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
+            
+            NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
+            
+            [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
+            
+            continue;
+        }
+        
+        NSArray *pathComponents = [picture.imagePath pathComponents];
+        
+        if (pathComponents.count == 0) {
+            
+            if (picture.href) {
                 
-                if (picture.href) {
-                    
-                    [self hrefProcessingForObject:picture];
-                    
-                } else {
-                    
-                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-                    [self deletePicture:picture];
-                    
-                }
+                [self hrefProcessingForObject:picture];
                 
             } else {
                 
-                if (pathComponents.count > 1) {
-                    [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
-                }
+                NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+                [self deletePicture:picture];
                 
+            }
+            
+        } else {
+            
+            if (pathComponents.count > 1) {
+                [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
+                
+                NSDictionary *picDict = [STMCoreObjectsController dictionaryForJSWithObject:picture];
+                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
+                [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
             }
             
         }
         
-        for (NSString* entityName in picturesWithThumbnails.allKeys){
-            
-            if (picturesWithThumbnails[entityName].count > 0){
-                
-                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
-                
-                for (NSDictionary* picture in picturesWithThumbnails[entityName]){
-                    [self.persistenceDelegate update:entityName attributes:picture options:options].then(^(NSArray *result){
-                        NSLog(@"Thumbnail set for %i %@ pictures",result.count,entityName);
-                    }).catch(^(NSError *error){
-                        NSLog(@"Error setting thumbnail%@ for %@ pictures",error, entityName);
-                    });
-                }
-
-            }
-            
-        }
-
     }
     
 }
