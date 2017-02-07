@@ -14,27 +14,49 @@
 #import <objc/runtime.h>
 
 
-static void *failToResolveFantomsArrayVar;
+@interface STMSyncerHelperDefantomizingProperties : NSObject
 
+@property (nonatomic, strong) NSMutableArray *failToResolveFantomsArray;
+
+
+@end
+
+
+@implementation STMSyncerHelperDefantomizingProperties
+
+- (instancetype)init {
+
+    self = [super init];
+    
+    if (self) {
+        _failToResolveFantomsArray = @[].mutableCopy;
+    }
+    return self;
+    
+}
+
+
+@end
+
+
+static void *defantomizingPropertiesVar;
 
 @implementation STMSyncerHelper (Defantomizing)
 
 
-#pragma mark - variables
-
-- (NSMutableArray *)failToResolveFantomsArray {
+- (STMSyncerHelperDefantomizingProperties *)defantomizingProperties {
     
-    NSMutableArray *result = objc_getAssociatedObject(self, &failToResolveFantomsArrayVar);
+    STMSyncerHelperDefantomizingProperties *result = objc_getAssociatedObject(self, &defantomizingPropertiesVar);
     
     if (!result) {
         
-        result = @[].mutableCopy;
-        objc_setAssociatedObject(self, &failToResolveFantomsArrayVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        result = [[STMSyncerHelperDefantomizingProperties alloc] init];
+        objc_setAssociatedObject(self, &defantomizingPropertiesVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         
     }
     
     return result;
-    
+
 }
 
 
@@ -63,7 +85,7 @@ static void *failToResolveFantomsArrayVar;
                                                          options:@{STMPersistingOptionFantoms:@YES}
                                                            error:&error];
         
-        NSArray *failToResolveFantomsIds = [self.failToResolveFantomsArray valueForKeyPath:@"id"];
+        NSArray *failToResolveFantomsIds = [[self defantomizingProperties].failToResolveFantomsArray valueForKeyPath:@"id"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
         
         results = [results filteredArrayUsingPredicate:predicate];
@@ -129,7 +151,7 @@ static void *failToResolveFantomsArrayVar;
     } else {
         
         @synchronized (self) {
-            [self.failToResolveFantomsArray addObject:fantomDic];
+            [[self defantomizingProperties].failToResolveFantomsArray addObject:fantomDic];
         }
         
     }
@@ -149,7 +171,7 @@ static void *failToResolveFantomsArrayVar;
     });
     
     // do not nil object used in syncronized()
-    [self.failToResolveFantomsArray removeAllObjects];
+    [[self defantomizingProperties].failToResolveFantomsArray removeAllObjects];
     
 }
 
