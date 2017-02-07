@@ -28,6 +28,7 @@
 @end
 
 static void *entityCountVar;
+static void *entitiesWasUpdatedVar;
 static void *fetchLimitVar;
 static void *temporaryETagVar;
 static void *entitySyncNamesVar;
@@ -69,6 +70,25 @@ static void *dataDownloadingOwnerVar;
     
     objc_setAssociatedObject(self, &entityCountVar, @(entityCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
+}
+
+- (BOOL)entitiesWasUpdated {
+    
+    NSNumber *result = objc_getAssociatedObject(self, &entitiesWasUpdatedVar);
+    
+    if (!result) {
+        
+        result = @NO;
+        self.entitiesWasUpdated = result.boolValue;
+        
+    }
+    
+    return result.boolValue;
+    
+}
+
+- (void)setEntitiesWasUpdated:(BOOL)entitiesWasUpdated {
+    objc_setAssociatedObject(self, &entitiesWasUpdatedVar, @(entitiesWasUpdated), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (NSUInteger)fetchLimit {
@@ -425,7 +445,12 @@ static void *dataDownloadingOwnerVar;
     
     if ([entityName isEqualToString:@"STMEntity"]) {
 
-        [self.dataDownloadingOwner entitiesWasUpdated];
+        if (self.entitiesWasUpdated) {
+         
+            [self.dataDownloadingOwner entitiesWasUpdated];
+            self.entitiesWasUpdated = NO;
+            
+        }
         
         self.stcEntities = nil;
         
@@ -651,6 +676,10 @@ static void *dataDownloadingOwnerVar;
 - (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
     
     NSLog(@"    %@: get %@ objects", entityName, @(result.count));
+    
+    if ([entityName isEqualToString:@"STMEntity"]) {
+        self.entitiesWasUpdated = YES;
+    }
     
     if (isLastPage) {
         

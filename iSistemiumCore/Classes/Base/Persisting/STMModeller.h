@@ -8,7 +8,7 @@
 
 #import <CoreData/CoreData.h>
 #import "STMModelling.h"
-#import "STMPersister+Observable.h"
+#import "STMPersistingObservable.h"
 
 @interface STMModeller : STMPersistingObservable <STMModelling>
 

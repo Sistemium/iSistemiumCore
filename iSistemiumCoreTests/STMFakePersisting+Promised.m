@@ -8,17 +8,26 @@
 
 #import "STMFakePersisting+Promised.h"
 
+#define STM_FAKE_PERSISTING_PROMISED_DISPATCH_QUEUE DISPATCH_QUEUE_PRIORITY_DEFAULT
+
 
 #define STMFakePersistingPromisedWithSyncScalar(returnType,methodName,signatureAttributes) \
-NSError *error; \
-returnType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
-return [AnyPromise promiseWithValue: error ? error : @(result)];
+return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
+    dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_PROMISED_DISPATCH_QUEUE, 0), ^{ \
+        NSError *error; \
+        returnType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+        if (error) resolve(error); else resolve(@(result)); \
+    }); \
+}];
 
 #define STMFakePersistingPromisedWithSync(returnType,methodName,signatureAttributes) \
-NSError *error; \
-returnType *result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
-return [AnyPromise promiseWithValue: error ? error : result];
-
+return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
+    dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_PROMISED_DISPATCH_QUEUE, 0), ^{ \
+        NSError *error; \
+        returnType *result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+        if (error) resolve(error); else resolve(result); \
+    }); \
+}];
 
 @implementation STMFakePersisting (Promised)
 

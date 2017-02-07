@@ -12,9 +12,9 @@
 #import "STMSyncerHelper+Downloading.h"
 #import "STMLogger.h"
 
-
-//#define SYNCING_DATA_TEST_ASYNC_DELAY PersistingTestsTimeOut / 5 * NSEC_PER_SEC
+#define SyncTestsTimeOut 15
 #define SYNCING_DATA_TEST_ASYNC_DELAY 0.5 * NSEC_PER_SEC
+
 #define SYNCING_DATA_TEST_DISPATCH_TIME dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SYNCING_DATA_TEST_ASYNC_DELAY))
 #define SYNCING_DATA_TEST_SOURCE @"SyncingDataTests"
 
@@ -24,17 +24,25 @@
 @property (nonatomic, strong) STMUnsyncedDataHelper *unsyncedDataHelper;
 @property (nonatomic, weak) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *syncedExpectations;
+@property (nonatomic, strong) XCTestExpectation *outletRepeatSyncExpectation;
+@property (nonatomic, strong) NSString *outletRepeatSyncId;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *testObjects;
 @property (nonatomic, strong) NSString *pkToWait;
 
 @property (nonatomic, strong) id <STMDataDownloading> downloadingDelegate;
 @property (nonatomic, strong) XCTestExpectation *downloadExpectation;
+@property (nonatomic) BOOL transportIsReady;
+@property (nonatomic) BOOL brokenDownload;
 
 
 @end
 
 
 @implementation SyncingDataTests
+
++(BOOL)needWaitSession {
+    return YES;
+}
 
 - (void)setUp {
     [super setUp];
@@ -121,11 +129,13 @@
     NSMutableDictionary *outlet = [self createTestObject:@"STMOutlet" withAttributes:@{@"name"        : @"testOutlet4",
                                                                                        @"partnerId"   : partnerOne[@"id"]}].mutableCopy;
 
+    self.outletRepeatSyncId = outlet[@"id"];
+
     [self createTestObject:@"STMOutletPhoto"
-            withAttributes:@{@"outletId"   : outlet[@"id"]}];
+            withAttributes:@{@"outletId"   : self.outletRepeatSyncId}];
     
     NSDictionary *avatarPhoto = [self createTestObject:@"STMOutletPhoto"
-                                        withAttributes:@{@"outletId"   : outlet[@"id"]}];
+                                        withAttributes:@{@"outletId"   : self.outletRepeatSyncId}];
     
     outlet[@"avatarPictureId"] = avatarPhoto[@"id"];
     
@@ -135,6 +145,9 @@
                             attributes:outlet
                                options:nil
                                  error:&error].mutableCopy;
+    
+    NSString *expectationDescription = [NSString stringWithFormat:@"wait for repeat sync outlet %@", self.outletRepeatSyncId];
+    self.outletRepeatSyncExpectation = [self expectationWithDescription:expectationDescription];
     
     NSLog(@"outlet %@", outlet);
     
@@ -206,8 +219,22 @@
                                    itemData:itemData
                                 itemVersion:itemVersion];
         
-        XCTestExpectation *expectation = self.syncedExpectations[itemData[@"id"]];
-        [expectation fulfill];
+        NSString *pk = itemData[@"id"];
+        
+        XCTestExpectation *expectation = self.syncedExpectations[pk];
+        
+        if (expectation) {
+
+            [expectation fulfill];
+            [self.syncedExpectations removeObjectForKey:pk];
+            
+        } else {
+            
+            if ([pk isEqualToString:self.outletRepeatSyncId]) {
+                [self.outletRepeatSyncExpectation fulfill];
+            }
+            
+        }
         
     });
     
@@ -226,16 +253,42 @@
     }
     
     XCTAssertNotNil(self.downloadingDelegate);
+
+    [self downloadWithTransportIsReady];
+
+}
+
+- (void)downloadWithTransportIsReady {
     
-    NSString *expectationDescription = @"testDownload";
-    self.downloadExpectation = [self expectationWithDescription:expectationDescription];
+    self.brokenDownload = NO;
 
     NSDate *startedAt = [NSDate date];
-
-    [self.downloadingDelegate startDownloading];
     
-    XCTAssertNotNil(self.downloadingDelegate.downloadingState);
+    [self startDownload];
+    
+    [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
+        
+        XCTAssertNil(error);
+        
+        NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
+        
+        [self.downloadingDelegate stopDownloading:@"stopDownloadingTest"];
+        XCTAssertNil(self.downloadingDelegate.downloadingState);
+        
+        [self downloadWithTransportIsBrokenInTheMiddle];
+        
+    }];
 
+}
+
+- (void)downloadWithTransportIsBrokenInTheMiddle {
+    
+    self.brokenDownload = YES;
+    
+    NSDate *startedAt = [NSDate date];
+
+    [self startDownload];
+    
     [self waitForExpectationsWithTimeout:SyncTestsTimeOut handler:^(NSError * _Nullable error) {
         
         XCTAssertNil(error);
@@ -246,6 +299,19 @@
 
 }
 
+- (void)startDownload {
+    
+    self.transportIsReady = YES;
+    
+    NSString *expectationDescription = self.brokenDownload ? @"brokenDownload" : @"goodDownload";
+    self.downloadExpectation = [self expectationWithDescription:expectationDescription];
+    
+    [self.downloadingDelegate startDownloading];
+    
+    XCTAssertNotNil(self.downloadingDelegate.downloadingState);
+
+}
+
 
 #pragma mark STMDataDownloadingOwner
 
@@ -253,6 +319,10 @@
     
     NSLog(@"receiveData: %@, offset %@, pageSize %@", entityName, offset, @(pageSize));
     
+    if (self.brokenDownload && ![entityName isEqualToString:@"STMEntity"]) {
+        self.transportIsReady = NO;
+    }
+
     [self.downloadingDelegate dataReceivedSuccessfully:YES
                                             entityName:entityName
                                                 result:nil
@@ -263,7 +333,7 @@
 }
 
 - (BOOL)downloadingTransportIsReady {
-    return YES;
+    return self.transportIsReady;
 }
 
 - (void)entitiesWasUpdated {
@@ -275,6 +345,7 @@
     NSLog(@"dataDownloadingFinished");
     
     [self.downloadExpectation fulfill];
+    self.downloadExpectation = nil;
     
 }
 

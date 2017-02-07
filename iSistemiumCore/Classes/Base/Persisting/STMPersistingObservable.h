@@ -1,5 +1,5 @@
 //
-//  STMPersister+Observable.h
+//  STMPersistingObservable.h
 //  iSisSales
 //
 //  Created by Alexander Levin on 28/01/2017.
@@ -7,8 +7,6 @@
 //
 
 #import "STMPersistingObserving.h"
-
-#warning should rename the class files to STMPersistingObservable
 
 @interface STMPersistingObservingSubscription : NSObject
 
