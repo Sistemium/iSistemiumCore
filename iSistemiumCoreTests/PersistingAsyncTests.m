@@ -11,33 +11,28 @@
 #define PATExpectation(name) \
 XCTestExpectation *name = [self expectationWithDescription:@"name"];
 
-#define PATExpectArrayError(expectation) \
-^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) { \
+#define PATExpectErrorBody(expectation) \
     XCTAssertNotNil(error); \
     XCTAssertFalse(success); \
     [expectation fulfill]; \
 }
 
+
+#define PATExpectArrayError(expectation) \
+    ^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) { \
+    PATExpectErrorBody(expectation)
+
 #define PATExpectDictionaryError(expectation) \
     ^(STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
+        PATExpectErrorBody(expectation)
 
 #define PATExpectIntegerError(expectation) \
     ^(STMP_ASYNC_INTEGER_RESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
+        PATExpectErrorBody(expectation)
 
 #define PATExpectError(expectation) \
     ^(STMP_ASYNC_NORESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
+        PATExpectErrorBody(expectation)
 
 
 @interface PersistingAsyncTests : STMPersistingTests
