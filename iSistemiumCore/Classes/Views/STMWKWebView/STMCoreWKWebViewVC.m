@@ -830,7 +830,7 @@
     
     NSString *getPictureSize = parameters[@"size"];
     
-    STMDatum *object = [STMCoreObjectsController objectForXid:getPictureXidData];
+    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid];
     
     if (!object) {
         
@@ -839,16 +839,19 @@
         return;
         
     }
+//    
+//    if (![object isKindOfClass:[STMCorePicture class]]) {
+//        
+//        [self getPictureWithXid:getPictureXidData
+//                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
+//        return;
+//        
+//    }
+    id <STMModelling> persister = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
     
-    if (![object isKindOfClass:[STMCorePicture class]]) {
-        
-        [self getPictureWithXid:getPictureXidData
-                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
-        return;
-        
-    }
+    STMCorePicture *picture = (STMCorePicture *)[persister newObjectForEntityName:@"STMCorePicture"];
     
-    STMCorePicture *picture = (STMCorePicture *)object;
+    [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:object toObject:picture];
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
@@ -1460,9 +1463,7 @@ int counter = 0;
         
         [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:self.photoData toObject:photoObject];
         
-        NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
-                                                                                 withNulls:YES
-                                                                            withBinaryData:NO];
+        NSDictionary *photoObjectDic = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate dictionaryFromManagedObject:photoObject];
         
         [self callbackWithData:@[photoObjectDic]
                     parameters:self.takePhotoMessageParameters
