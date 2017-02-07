@@ -90,7 +90,14 @@ XCTestExpectation *name = [self expectationWithDescription:@"name"];
                     attributeArray:@[@{}]
                            options:nil
                  completionHandler:PATExpectArrayError(mergeManyAsync)];
-     
+
+    PATExpectation(updateAsync)
+    
+    [self.persister updateAsync:entityName
+                     attributes:@{}
+                        options:nil
+              completionHandler:PATExpectDictionaryError(updateAsync)];
+
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
 
