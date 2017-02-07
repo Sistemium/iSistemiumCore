@@ -29,7 +29,7 @@
 
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSArray *> *> *pendingObjectsByEntity;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *pendingObjectsByEntity;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
 
 
@@ -106,8 +106,10 @@
                                          attributes:itemData
                                             options:@{STMPersistingOptionLts: itemVersion}
                                               error:&error];
-
+                
             }
+            
+            [self checkForPendingParentsForObject:itemData];
             
         } else {
             NSLog(@"No itemVersion for %@ %@", entityName, itemData[@"id"]);
@@ -406,6 +408,9 @@
     
 }
 
+
+#pragma mark - handle dictionaries
+
 - (void)declineFromSync:(NSDictionary *)object entityName:(NSString *)entityName{
     
     NSString *pk = object[@"id"];
@@ -432,11 +437,11 @@
     
     @synchronized (self.pendingObjectsByEntity) {
         
-        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
         
         if (!pendingObjects) pendingObjects = @{}.mutableCopy;
         
-        pendingObjects[pk] = [parents valueForKeyPath:@"id"];
+        pendingObjects[pk] = [[parents valueForKeyPath:@"id"] mutableCopy];
         
         self.pendingObjectsByEntity[entityName] = pendingObjects;
         
@@ -452,7 +457,7 @@
     
     @synchronized (self.pendingObjectsByEntity) {
         
-        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
 
         return pendingObjects[pk] ? YES : NO;
         
@@ -468,7 +473,7 @@
     
     @synchronized (self.pendingObjectsByEntity) {
         
-        NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
 
         if (pendingObjects[pk]) {
             
@@ -480,6 +485,58 @@
 
         }
 
+    }
+    
+}
+
+- (void)checkForPendingParentsForObject:(NSDictionary *)object {
+    
+    NSString *pk = object[@"id"];
+    
+    if (!pk) return;
+
+    @synchronized (self.pendingObjectsByEntity) {
+        
+        __block NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *copyOfPendingObjectsByEntity = self.pendingObjectsByEntity.mutableCopy;
+        
+        [self.pendingObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSMutableDictionary<NSString *,NSMutableArray *> * _Nonnull pendingObjects, BOOL * _Nonnull stop) {
+           
+            __block NSMutableDictionary<NSString *,NSMutableArray *> *copyOfPendingObjects = pendingObjects.mutableCopy;
+                        
+            [pendingObjects enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSMutableArray * _Nonnull parents, BOOL * _Nonnull stop) {
+                                
+                if ([parents containsObject:pk]) {
+                    
+                    [parents removeObject:pk];
+                    
+                    if (parents.count > 0) {
+                        
+                        copyOfPendingObjects[objectId] = parents;
+                        
+                    } else {
+                        
+                        [copyOfPendingObjects removeObjectForKey:objectId];
+                        
+                    }
+                    
+                }
+                
+            }];
+            
+            if (copyOfPendingObjects.count > 0) {
+                
+                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects;
+                
+            } else {
+                
+                [copyOfPendingObjectsByEntity removeObjectForKey:entityName];
+                
+            }
+            
+        }];
+        
+        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity;
+        
     }
     
 }
