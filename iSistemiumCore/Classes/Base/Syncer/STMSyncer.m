@@ -38,8 +38,6 @@
 @property (nonatomic) BOOL isDefantomizing;
 @property (nonatomic) BOOL isUsingNetwork;
 
-@property (atomic) NSUInteger fantomsCount;
-
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
@@ -500,7 +498,7 @@
     }
     
     if (self.isDefantomizing) {
-        [self stopDefantomizing];
+        [self.defantomizingDelegate stopDefantomization];
     }
 
 }
@@ -700,7 +698,7 @@
     
     if (!self.socketTransport.isReady) {
         
-        [self.defantomizingDelegate defantomizingFinished];
+        [self.defantomizingDelegate stopDefantomization];
         return;
         
     }
@@ -711,23 +709,7 @@
     
     self.isDefantomizing = YES;
     
-    [self.defantomizingDelegate findFantomsWithCompletionHandler:^(NSArray <NSDictionary *> *fantomsArray) {
-        
-        if (fantomsArray) {
-        
-//            NSLog(@"fantomsArray: %@", fantomsArray);
-            
-            self.fantomsCount = fantomsArray.count;
-
-            for (NSDictionary *fantomDic in fantomsArray) {
-                [self defantomizeObject:fantomDic];
-            }
-            
-        } else {
-            [self stopDefantomizing];
-        }
-        
-    }];
+    [self.defantomizingDelegate startDefantomization];
     
 }
 
@@ -753,161 +735,18 @@
         
         blockIsComplete = YES;
 
-        if (success) {
-            
-            NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
-                                      @"object": fantomDic};
-            
-            [self receiveFindAckWithResponse:result
-                                  entityName:entityName
-                                     context:context];
-            
-        } else {
-            
-            [self defantomizingObject:fantomDic
-                                error:error.localizedDescription];
-
-        }
-        
+        [self.defantomizingDelegate defantomize:fantomDic
+                                        success:success
+                                     entityName:entityName
+                                         result:result
+                                          error:error];
+                
     }];
 
 }
 
-- (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
-    [self defantomizingObject:fantomDic error:errorString deleteObject:NO];
-}
-
-- (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString deleteObject:(BOOL)deleteObject {
-    
-    NSLog(@"defantomize error: %@", errorString);
-    
-    [self.defantomizingDelegate defantomizeErrorWithObject:fantomDic
-                                              deleteObject:deleteObject];
-    [self fantomsCountDecrease];
-    
-    return;
-    
-}
-
-- (void)fantomsCountDecrease {
-
-    if (!--self.fantomsCount) {
-        
-        self.isDefantomizing = NO;
-        [self startDefantomization];
-        
-    } else {
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
-                                                                object:self
-                                                              userInfo:@{@"fantomsCount": @(self.fantomsCount)}];
-
-            
-        }];
-        
-    }
-
-}
-
-- (void)stopDefantomizing {
-    
+- (void)defantomizingFinished {
     self.isDefantomizing = NO;
-    [self.defantomizingDelegate defantomizingFinished];
-
-}
-
-
-#pragma mark - socket ack handlers
-
-#pragma mark find ack handler
-
-- (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName context:(NSDictionary *)context {
-        
-    NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
-    
-    [self parseFindAckResponseData:response
-                    withEntityName:entityName
-                               xid:xid
-                           context:context];
-    
-}
-
-- (void)socketReceiveJSDataFindAckWithErrorCode:(NSNumber *)errorCode errorString:(NSString *)errorString context:(NSDictionary *)context {
-
-    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
-        
-    }
-    
-    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
-    
-    if (defantomizing) {
-
-        BOOL deleteObject = (errorCode.integerValue == 403 || errorCode.integerValue == 404);
-
-        [self defantomizingObject:context[@"object"]
-                            error:errorString
-                     deleteObject:deleteObject];
-        
-    } else {
-        NSLog(@"find error: %@", errorString);
-    }
-    
-}
-
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
-    
-    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
-    
-    //    NSLog(@"find responseData %@", responseData);
-    
-    if (!entityName) {
-
-        NSString *errorMessage = @"Syncer parseFindAckResponseData !entityName";
-        
-        if (defantomizing) {
-        
-            [self defantomizingObject:context[@"object"]
-                                error:errorMessage];
-
-        } else {
-        
-            [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage
-                                                     numType:STMLogMessageTypeError];
-
-        }
-        
-        return;
-        
-    }
-    
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-    
-    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-
-        if (defantomizing) {
-            
-            NSDictionary *object = context[@"object"];
-            
-            if (success) {
-                
-                NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
-                
-                [self fantomsCountDecrease];
-                
-            } else {
-                
-                [self defantomizingObject:object
-                                    error:error.localizedDescription];
-                
-            }
-            
-        }
-        
-    }];
-    
-    
 }
 
 
@@ -948,13 +787,13 @@
 }
 
 - (void)dataDownloadingFinished {
-    
-    [self startDefantomization];
-    
+        
     [self turnOffNetworkActivityIndicator];
 
     [STMCoreObjectsController dataLoadingFinished];
     
+    [self startDefantomization];
+
     if (self.fetchCompletionHandler) {
         
         self.fetchCompletionHandler(self.fetchResult);
