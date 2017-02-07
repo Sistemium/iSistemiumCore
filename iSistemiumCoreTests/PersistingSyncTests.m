@@ -200,8 +200,29 @@
                             predicate:predicate
                               options:options
                                 error:&error];
-    
+
     XCTAssertTrue(count == 0, @"There should be no fantoms");
+
+    if (self.fakePersistingOptions) {
+        NSDictionary *testData = @{@"type": @"debug",
+                                   @"text": @"testCountSyncWithOptions"};
+        
+        NSDictionary *testObject =
+        [self.persister mergeSync:entityName attributes:testData options:options error:&error];
+        
+        XCTAssertNil(error);
+        XCTAssertNotNil(testObject);
+        
+        XCTAssertTrue([testObject[@"isFantom"] boolValue]);
+        
+        count = [self.persister countSync:entityName
+                                predicate:predicate
+                                  options:options
+                                    error:&error];
+        
+        XCTAssertTrue(count == 1, @"There should be 1 fantom");
+
+    }
     
     options = @{STMPersistingOptionForceStorageCoreData};
     
