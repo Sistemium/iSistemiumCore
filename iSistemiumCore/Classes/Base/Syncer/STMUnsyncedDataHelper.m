@@ -333,18 +333,19 @@
     BOOL haveUnsyncedParent = NO;
     NSMutableDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents = @{}.mutableCopy;
     
-    NSArray *relKeys = [object.allKeys filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self ENDSWITH %@", RELATIONSHIP_SUFFIX]];
+    NSEntityDescription *entityDesciption = [self.persistenceDelegate entitiesByName][entityName];
+
+    NSArray *relNames = [self.persistenceDelegate toOneRelationshipsForEntityName:entityName].allKeys;
     
-    for (NSString *relKey in relKeys) {
+    for (NSString *relName in relNames) {
+
+        NSString *relKey = [relName stringByAppendingString:RELATIONSHIP_SUFFIX];
         
         NSString *parentId = object[relKey];
         
         if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
         
-        NSString *relName = [relKey substringToIndex:(relKey.length - RELATIONSHIP_SUFFIX.length)];
-        NSString *capFirstLetter = [relName substringToIndex:1].capitalizedString;
-        NSString *capEntityName = [relName stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
-        NSString *parentEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
+        NSString *parentEntityName = [entityDesciption.relationshipsByName[relName] destinationEntity].name;
         
         NSError *error = nil;
         
@@ -359,9 +360,13 @@
             
             NSString *parentLts = parent[@"lts"];
             
-            if (!parentLts || [parentLts isEqualToString:@""]) {
+            BOOL isEmptyLts = (!parentLts || [parentLts isEqualToString:@""]);
+            
+            if (isEmptyLts) {
                 
-                haveToCheckRelationship = YES;
+                BOOL isSynced = [self isSyncedPendingObject:parent entityName:parentEntityName];
+                
+                haveToCheckRelationship = !isSynced;
                 
             }
             
@@ -381,7 +386,6 @@
             
             haveUnsyncedParent = YES;
             
-            NSEntityDescription *entityDesciption = [self.persistenceDelegate entitiesByName][entityName];
             NSRelationshipDescription *relationship = entityDesciption.relationshipsByName[relName];
             
             if (relationship.inverseRelationship.deleteRule != NSCascadeDeleteRule) {
@@ -462,15 +466,19 @@
     
     if (!pk) return;
     
-    NSLog(@"releasePendingObject: %@", object);
-
     @synchronized (self.pendingObjectsByEntity) {
         
         NSMutableDictionary <NSString *, NSArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
 
-        [pendingObjects removeObjectForKey:pk];
-        
-        self.pendingObjectsByEntity[entityName] = pendingObjects;
+        if (pendingObjects[pk]) {
+            
+            NSLog(@"releasePendingObject: %@", object);
+
+            [pendingObjects removeObjectForKey:pk];
+            
+            self.pendingObjectsByEntity[entityName] = pendingObjects;
+
+        }
 
     }
     
