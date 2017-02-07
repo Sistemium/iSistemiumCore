@@ -645,7 +645,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
-+ (NSDictionary*)mapDictionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
++ (NSDictionary *)mapDictionary:(NSDictionary *)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
     
     NSMutableDictionary *result = NSMutableDictionary.alloc.init;
     
@@ -655,10 +655,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         result[key] = mapped;
     }
     
-    return result;
+    return result.copy;
 }
 
-+ (NSDictionary*)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock {
++ (NSArray *)mapArray:(NSArray *)array withBlock:(id (^)(id value))mapperBlock {
     NSMutableArray *result = [NSMutableArray array];
     
     [array enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
