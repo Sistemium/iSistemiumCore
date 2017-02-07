@@ -40,6 +40,10 @@
                              inDictionary:anObject];
     }
     
+    NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionFantoms] && [options[STMPersistingOptionFantoms] boolValue]];
+    
+    anObject = [STMFunctions setValue:isFantom forKey:@"isFantom" inDictionary:anObject];
+    
     return [self addObject:anObject];
     
 }}

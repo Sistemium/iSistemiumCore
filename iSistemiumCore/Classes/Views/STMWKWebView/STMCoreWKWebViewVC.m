@@ -842,8 +842,12 @@ STMImagePickerOwnerProtocol>
     
     NSString *getPictureSize = parameters[@"size"];
     
+<<<<<<< HEAD
     NSDictionary *picture = [self.persistenceDelegate findSync:@"STMArticlePicture" identifier:getPictureXid options:nil error:nil];
     STMCorePicture *object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
+=======
+    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid];
+>>>>>>> EntityControllerRefactor
     
     if (!picture){
         picture = [self.persistenceDelegate findSync:@"STMOutletPhoto" identifier:getPictureXid  options:nil error:nil];
@@ -854,7 +858,17 @@ STMImagePickerOwnerProtocol>
         picture = [self.persistenceDelegate findSync:@"STMVisitPhoto" identifier:getPictureXid  options:nil error:nil];
         object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
     }
+//    
+//    if (![object isKindOfClass:[STMCorePicture class]]) {
+//        
+//        [self getPictureWithXid:getPictureXidData
+//                          error:[NSString stringWithFormat:@"object with xid %@ is not a Picture kind of class", getPictureXid]];
+//        return;
+//        
+//    }
+    id <STMModelling> persister = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
     
+<<<<<<< HEAD
     if (!picture){
         picture = [self.persistenceDelegate findSync:@"STMMessagePicture" identifier:getPictureXid  options:nil error:nil];
         object = (STMCorePicture*) [self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
@@ -869,6 +883,11 @@ STMImagePickerOwnerProtocol>
     }
     
     [self.persistenceDelegate setObjectData:picture toObject:object withRelations:true];
+=======
+    STMCorePicture *picture = (STMCorePicture *)[persister newObjectForEntityName:@"STMCorePicture"];
+    
+    [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate setObjectData:object toObject:picture];
+>>>>>>> EntityControllerRefactor
     
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
@@ -1483,9 +1502,7 @@ int counter = 0;
         
         [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject withRelations:true];
         
-        NSDictionary *photoObjectDic = [STMCoreObjectsController dictionaryForJSWithObject:photoObject
-                                                                                 withNulls:YES
-                                                                            withBinaryData:NO];
+        NSDictionary *photoObjectDic = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate dictionaryFromManagedObject:photoObject];
         
         [self callbackWithData:@[photoObjectDic]
                     parameters:self.takePhotoMessageParameters

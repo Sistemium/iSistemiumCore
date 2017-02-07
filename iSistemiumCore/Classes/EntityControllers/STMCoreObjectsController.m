@@ -158,11 +158,12 @@
 
 #pragma mark - getting specified objects
 
-+ (STMDatum *)objectForXid:(NSData *)xidData {
++ (NSDictionary *)objectForIdentifier:(NSString *)identifier {
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
         
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
+        NSError *error;
+        NSDictionary *object = [[self persistenceDelegate] findSync:entityName identifier:identifier options:nil error:&error];
         
         if (object) return object;
         
@@ -172,71 +173,12 @@
 
 }
 
-+ (STMDatum *)objectForXid:(NSData *)xidData entityName:(NSString *)entityName {
-#warning moved to Persister+CoreData 
-    if ([[self localDataModelEntityNames] containsObject:entityName]) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"xid == %@", xidData];
-        
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        
-        if (fetchResult.firstObject) return fetchResult.firstObject;
-
-    }
-    
-    return nil;
-    
-}
-
 
 #warning Need to move it somewhere
 + (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
     [self.persistenceDelegate setObjectData:objectData toObject:object withRelations:true];
 }
 
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
-    
-    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
-        
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
-        
-        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        return object;
-        
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
-
-+ (STMDatum *)objectFindOrCreateForEntityName:(NSString *)entityName andXidString:(NSString *)xid {
-    
-    NSArray *dataModelEntityNames = [self localDataModelEntityNames];
-    
-    if ([dataModelEntityNames containsObject:entityName]) {
-        
-        NSData *xidData = [STMFunctions xidDataFromXidString:xid];
-
-        STMDatum *object = [self objectForXid:xidData entityName:entityName];
-        
-        if (!object) object = [self newObjectForEntityName:entityName andXid:xidData];
-        
-        return object;
-        
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:YES];
@@ -535,6 +477,7 @@
 
 }
 
+<<<<<<< HEAD
 
 #pragma mark - generate arrayForJS
 
@@ -607,4 +550,6 @@
 }
 
 
+=======
+>>>>>>> EntityControllerRefactor
 @end

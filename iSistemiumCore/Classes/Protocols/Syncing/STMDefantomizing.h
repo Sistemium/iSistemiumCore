@@ -8,15 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
-typedef void (^STMDefantomizingArrayResultCallback)(NSArray <NSDictionary *> *fantomsArray);
+#import "STMDefantomizingOwner.h"
+
 
 @protocol STMDefantomizing <NSObject>
 
-- (void)findFantomsWithCompletionHandler:(STMDefantomizingArrayResultCallback)completionHandler;
+@property (nonatomic, weak) id <STMDefantomizingOwner> defantomizingOwner;
 
-- (void)defantomizeErrorWithObject:(NSDictionary *)fantomDic
-                      deleteObject:(BOOL)deleteObject;
+- (void)startDefantomization;
+- (void)stopDefantomization;
 
-- (void)defantomizingFinished;
+- (void)defantomize:(NSDictionary *)fantomDic
+            success:(BOOL)success
+         entityName:(NSString *)entityName
+             result:(NSDictionary *)result
+              error:(NSError *)error;
+
 
 @end

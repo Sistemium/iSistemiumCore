@@ -8,6 +8,7 @@
 
 #import "STMCoreController.h"
 
+#define STM_ENTITY_NAME @"STMEntity"
 
 @interface STMEntityController : STMCoreController
 
@@ -25,10 +26,5 @@
 + (NSArray *)uploadableEntitiesNames;
 
 + (STMEntity *)entityWithName:(NSString *)name;
-
-+ (void)deleteEntityWithName:(NSString *)name;
-
-+ (NSString *)entityNameForURLString:(NSString *)urlString;
-
 
 @end

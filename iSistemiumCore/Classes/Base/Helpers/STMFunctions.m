@@ -645,7 +645,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some other usefull methods
 
-+ (NSDictionary*)mapDictionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
++ (NSDictionary *)mapDictionary:(NSDictionary *)dictionary withBlock:(id (^)(id value, id key))mapperBlock{
     
     NSMutableDictionary *result = NSMutableDictionary.alloc.init;
     
@@ -655,16 +655,28 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         result[key] = mapped;
     }
     
-    return result;
+    return result.copy;
 }
 
-+ (NSDictionary*)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock {
++ (NSArray *)mapArray:(NSArray *)array withBlock:(id (^)(id value))mapperBlock {
     NSMutableArray *result = [NSMutableArray array];
     
     [array enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         id mapped = mapperBlock(obj);
         if (!mapped) return;
         [result addObject:mapped];
+    }];
+    
+    return result.copy;
+}
+
++ (NSDictionary <NSString *, NSArray <NSDictionary <NSString *, id> *> *> *)groupArray:(NSArray <NSDictionary <NSString *, id> *> *)array byKey:(NSString *)key {
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    
+    [array enumerateObjectsUsingBlock:^(NSDictionary <NSString *, id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *keyValue = obj[key];
+        NSArray *resulted = result[keyValue];
+        result[keyValue] = resulted ? [resulted arrayByAddingObject:obj] : @[obj];
     }];
     
     return result.copy;
@@ -1278,6 +1290,17 @@ vm_size_t freeMemory(void) {
     NSMutableDictionary *result = dictionary.mutableCopy;
     result[key] = value;
     return result.copy;
+}
+
++ (NSString *)currentTestTarget {
+    NSString *pattern = @"(?<=\\/tmp\\/)[^-]*";
+    NSString *path = [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"];
+    NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
+    NSTextCheckingResult *match = [re firstMatchInString:path
+                                                 options:0
+                                                   range:NSMakeRange(0, path.length)];
+    NSString *substr = [path substringWithRange:match.range];
+    return substr;
 }
 
 @end

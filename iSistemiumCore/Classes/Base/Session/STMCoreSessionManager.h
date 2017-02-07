@@ -8,10 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "STMSessionManagement.h"
+#import "STMCoreSession.h"
 
 @interface STMCoreSessionManager : NSObject <STMSessionManager>
 
-@property (nonatomic, strong) NSMutableDictionary *sessions;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, STMCoreSession *> *sessions;
 @property (nonatomic, strong) id <STMSession> currentSession;
 @property (nonatomic, strong) NSString *currentSessionUID;
 

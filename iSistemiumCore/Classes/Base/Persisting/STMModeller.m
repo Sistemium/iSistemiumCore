@@ -70,11 +70,10 @@
 #pragma mark - STMModelling
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
-#warning need to check if entity is stored in CoreData and use document's context
+// Override the method in persister to set proper context
     return [[NSManagedObject alloc] initWithEntity:self.entitiesByName[entityName]
                     insertIntoManagedObjectContext:nil];
 }
-
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName {
     
@@ -116,7 +115,11 @@
     return self.allEntitiesCache[entityName][@"fields"];
 }
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade{
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade {
+    return [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:cascade optional:nil];
+}
+
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade optional:(NSNumber *)optional {
     
     if (!entityName) {
         return nil;
@@ -130,12 +133,16 @@
         
         NSRelationshipDescription *relationship = allRelationships[relationshipName];
         
-        if (!isToMany || relationship.isToMany == isToMany.boolValue) {
-            
-            if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
-                result[relationshipName] = relationship;
+        if (!optional || relationship.optional == optional.boolValue) {
+        
+            if (!isToMany || relationship.isToMany == isToMany.boolValue) {
+                
+                if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
+                    result[relationshipName] = relationship;
+                }
+                
             }
-            
+
         }
         
     }
@@ -145,7 +152,6 @@
 }
 
 - (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName{
-    
     return [self objectRelationshipsForEntityName:entityName isToMany:@NO];
 }
 
@@ -198,9 +204,15 @@
                     
                     STMDatum *destinationObject = (STMDatum*) [self newObjectForEntityName:destinationEntityName];
                     
+<<<<<<< HEAD
                     NSDictionary *destinationObjectData = [STMSessionManager.sharedManager.currentSession.persistenceDelegate findSync:destinationEntityName identifier:destinationObjectXid options:nil error:nil];
                     
                     [self setObjectData:destinationObjectData toObject:destinationObject withRelations:false];
+=======
+                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
+                    
+                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self findOrCreateManagedObjectOf:ownObjectRelationships[localKey] identifier:destinationObjectXid] : nil;
+>>>>>>> EntityControllerRefactor
                     
                     [object setValue:destinationObject forKey:localKey];
                     
@@ -212,7 +224,13 @@
         
     }
     
+    object.isFantom = @(NO);
+    
 }
 
+- (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object {
+    // TODO: remove dependency on STMDatum
+    return [self dictionaryForJSWithObject:(STMDatum *)object withNulls:YES withBinaryData:YES];
+}
 
 @end

@@ -23,8 +23,15 @@ return returnValue; \
 
 #define STMFakePersistingIfInMemoryDB(returnValue) \
 if (options[STMPersistingOptionForceStorage] && ![options[STMPersistingOptionForceStorage] isEqual:@(STMStorageTypeInMemory)]) { \
-[STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
-return returnValue; \
+    [STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
+    return returnValue; \
+} \
+if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) { \
+    if (![self isConcreteEntityName:entityName]) { \
+        NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName]; \
+        [STMFunctions error:error withMessage:message]; \
+        return returnValue; \
+    } \
 } \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
@@ -57,6 +64,11 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 }
 
+- (void)setOption:(NSString *)option value:(NSString *)value {
+    _options = [STMFunctions setValue:value forKey:option inDictionary:_options];
+}
+
+
 - (STMIndexedArrayPersisting *)dataWithName:(NSString *)name {
     STMIndexedArrayPersisting *data = self.data[name];
     if (!data) {
@@ -84,11 +96,16 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
     STMFakePersistingIfInMemoryDB(nil) {
         
+        NSMutableArray *predicates = @[].mutableCopy;
+        
         if (options[STMPersistingOptionFantoms]) {
-            NSMutableArray *predicates = @[[NSPredicate predicateWithFormat:@"isFantom == 1"]].mutableCopy;
-            if (predicate) [predicates addObject:predicate];
-            predicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+            [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 1"]];
+        } else {
+            [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 0 OR isFantom == nil"]];
         }
+        
+        if (predicate) [predicates addObject:predicate];
+        predicate = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
         
         NSArray <NSDictionary*> *result = [[self dataWithName:entityName] filteredArrayUsingPredicate:predicate];
         

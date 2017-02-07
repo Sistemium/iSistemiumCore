@@ -14,8 +14,6 @@
 
 @required
 
-- (NSManagedObject *)newObjectForEntityName:(NSString *)entityName;
-
 - (STMStorageType)storageForEntityName:(NSString *)entityName;
 
 - (BOOL)isConcreteEntityName:(NSString *)entityName;
@@ -24,12 +22,30 @@
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade;
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                   isToMany:(NSNumber *)isToMany
+                                                                                    cascade:(NSNumber *)cascade;
+
+- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                   isToMany:(NSNumber *)isToMany
+                                                                                    cascade:(NSNumber *)cascade
+                                                                                   optional:(NSNumber *)optional;
 
 - (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName;
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations;
+
+@optional
+
+// TODO: Declare a separate protocol for using NSManagedObject
+
+- (NSManagedObject *)newObjectForEntityName:(NSString *)entityName;
+
+- (NSManagedObject *)findOrCreateManagedObjectOf:(NSString *)entityName
+                                      identifier:(NSString *)identifier;
+
+- (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object;
 
 @end

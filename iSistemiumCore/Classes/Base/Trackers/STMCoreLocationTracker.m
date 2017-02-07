@@ -17,10 +17,8 @@
 
 #define ACTUAL_LOCATION_CHECK_TIME_INTERVAL 5.0
 
-#warning hardcoded "STMLocation"
-#define STMLOCATION_CONCRETE_ENTITY @"STMLocation"
 
-#warning - it seems this class use almost none of the parent class methods after implemetation of new "desiredAccuracy zero-rule"
+// TODO: it seems this class use almost none of the parent class methods after implemetation of new "desiredAccuracy zero-rule"
 
 
 @interface STMCoreLocationTracker() <CLLocationManagerDelegate>
@@ -64,6 +62,15 @@
 @implementation STMCoreLocationTracker
 
 @synthesize lastLocation = _lastLocation;
+
+- (NSString *)locationConcreteName {
+    STMCoreSession *currentSession = self.session;
+    return NSStringFromClass([currentSession locationClass]);
+}
+
+- (id <STMPersistingAsync, STMModelling>)persistenceDelegate {
+    return [self.session persistenceDelegate];
+}
 
 - (void)customInit {
     
@@ -277,7 +284,7 @@
             STMPersistingOptionPageSize: @"1"
         };
         
-        NSDictionary *location = [[self.session.persistenceDelegate findAllSync:STMLOCATION_CONCRETE_ENTITY predicate:nil options:options error:&error] lastObject];
+        NSDictionary *location = [[self.session.persistenceDelegate findAllSync:self.locationConcreteName predicate:nil options:options error:&error] lastObject];
         
         if (location) {
             _lastLocationObject = (STMCoreLocation *)[self.session.persistenceDelegate newObjectForEntityName:@"STMCoreLocation"];
@@ -834,12 +841,12 @@
 
         }
         
-        NSDictionary *checkinLocationDic = checkinLocationObject ? [STMCoreObjectsController dictionaryForJSWithObject:checkinLocationObject] : @{};
+        NSDictionary *checkinLocationDic = checkinLocationObject ? [[self persistenceDelegate] dictionaryFromManagedObject:checkinLocationObject] : @{};
 
         id <STMCheckinDelegate> checkinDelegate = checkinRequest[@"delegate"];
         NSNumber *requestId = checkinRequest[@"requestId"];
         
-        [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:checkinLocationDic options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+        [self.session.persistenceDelegate mergeAsync:self.locationConcreteName attributes:checkinLocationDic options:nil completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
             //TODO: check if success
             [checkinDelegate getCheckinLocation:result
                                    forRequestId:requestId];
@@ -1082,7 +1089,10 @@
     
     NSLog(@"location %@", self.lastLocation);
     
-    [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:[STMCoreObjectsController dictionaryForJSWithObject:locationObject] options:nil completionHandler:nil];
+    [self.persistenceDelegate mergeAsync:self.locationConcreteName
+                              attributes:[[self persistenceDelegate] dictionaryFromManagedObject:locationObject]
+                                 options:nil
+                       completionHandler:nil];
     
 }
 
@@ -1099,7 +1109,10 @@
             NSLog(@"UPDATE LAST SEEN TIMESTAMP FOR LOCATION: %@", self.lastLocation);
             self.lastLocationObject.lastSeenAt = [NSDate date];
             
-            [self.session.persistenceDelegate mergeAsync:STMLOCATION_CONCRETE_ENTITY attributes:[STMCoreObjectsController dictionaryForJSWithObject:self.lastLocationObject] options:nil completionHandler:nil];
+            [self.session.persistenceDelegate mergeAsync:self.locationConcreteName
+                                              attributes:[[self persistenceDelegate] dictionaryFromManagedObject:self.lastLocationObject]
+                                                 options:nil
+                                       completionHandler:nil];
 
         }
 

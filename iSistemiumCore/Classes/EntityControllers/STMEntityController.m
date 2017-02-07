@@ -7,7 +7,6 @@
 //
 
 #import "STMEntityController.h"
-#import "STMCoreObjectsController.h"
 
 @interface STMEntityController()
 
@@ -79,13 +78,19 @@
     
     if (!_entitiesArray) {
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
-        request.predicate = [STMPredicate predicateWithNoFantoms];
-        
         NSError *error;
-        NSArray *result = [[STMEntityController document].managedObjectContext executeFetchRequest:request error:&error];
+        NSDictionary *options = @{STMPersistingOptionOrder:@"name"};
+        NSArray *result = [self.class.persistenceDelegate findAllSync:STM_ENTITY_NAME
+                                                            predicate:nil
+                                                              options:options
+                                                                error:&error];
 
+        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
+            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
+            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
+            return entity;
+        }];
+        
         _entitiesArray = (result.count > 0) ? result : nil;
 
     }
@@ -99,16 +104,15 @@
         
         NSMutableDictionary *stcEntities = [NSMutableDictionary dictionary];
         
-        NSArray *stcEntitiesArray = self.entitiesArray.copy;
-        
-        for (STMEntity *entity in stcEntitiesArray) {
+        for (STMEntity *entity in self.entitiesArray) {
             
             NSString *capFirstLetter = (entity.name) ? [[entity.name substringToIndex:1] capitalizedString] : nil;
             
-            NSString *capEntityName = [entity.name stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
+            NSString *capEntityName = [entity.name stringByReplacingCharactersInRange:NSMakeRange(0,1)
+                                                                           withString:capFirstLetter];
             
             if (capEntityName) {
-                stcEntities[[ISISTEMIUM_PREFIX stringByAppendingString:capEntityName]] = entity;
+                stcEntities[[STMFunctions addPrefixToEntityName:capEntityName]] = entity;
             }
             
         }
@@ -124,9 +128,7 @@
     
     if (!_uploadableEntitiesNames) {
         
-        NSMutableDictionary *stcEntities = [self.stcEntities mutableCopy];
-        
-        NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
             return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
         }];
         
@@ -158,9 +160,7 @@
 
 + (NSArray *)entityNamesWithResolveFantoms {
     
-    NSMutableDictionary *stcEntities = [[self stcEntities] mutableCopy];
-
-    NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+    NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
         return ([[obj valueForKey:@"isResolveFantoms"] boolValue] && [obj valueForKey:@"url"] != nil);
     }];
     
@@ -170,9 +170,7 @@
 
 + (NSSet *)entityNamesWithLifeTime {
     
-    NSMutableDictionary *stcEntities = [[self stcEntities] mutableCopy];
-    
-    NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+    NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
         return ([[obj valueForKey:@"lifeTime"] doubleValue] > 0);
     }];
     
@@ -184,9 +182,11 @@
     
     NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
-    NSArray *result = [[self persistenceDelegate] findAllSync:@"STMEntity" predicate:predicate options:nil error:&error];
     
-    return result;
+    return [self.persistenceDelegate findAllSync:STM_ENTITY_NAME
+                                       predicate:predicate
+                                         options:nil
+                                           error:&error];
     
 }
 
@@ -196,6 +196,7 @@
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
+    // TODO: use Persistence
     NSError *error;
     NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
                                                                           error:&error];
@@ -204,126 +205,45 @@
     
 }
 
-+ (NSString *)entityNameForURLString:(NSString *)urlString {
-    
-    for (STMEntity *entity in [self stcEntities].allValues) {
-        
-        if ([entity.url isEqualToString:urlString]) {
-            
-            return [[self stcEntities] allKeysForObject:entity].lastObject;
-            
-        }
-        
-    }
-
-    return nil;
-    
-}
-
-+ (void)deleteEntityWithName:(NSString *)name {
-    
-    __weak STMEntity *entityToDelete = ([self stcEntities])[name];
-    
-    if (entityToDelete) {
-        
-        __weak NSManagedObjectContext *context = entityToDelete.managedObjectContext;
-        
-        [context performBlock:^{
-            
-            [context deleteObject:entityToDelete];
-            
-        }];
-        
-    } else {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"where is no entity with name %@ to delete", name];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
-        
-    }
-    
-}
-
 + (void)checkEntitiesForDuplicates {
     
-/* next two lines is for generating duplicates
- 
-    NSArray *entitiesArray = [self stcEntitiesArray];
-    NSLog(@"entitiesArray.count %d", entitiesArray.count);
- 
-*/
-    NSString *entityName = NSStringFromClass([STMEntity class]);
-    NSString *property = @"name";
+    NSArray *names = [self.stcEntitiesArray valueForKeyPath:@"name"];
+    __block NSUInteger totalDuplicates = 0;
     
-    STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:self.document.managedObjectContext];
-    
-    NSPropertyDescription *entityProperty = entity.propertiesByName[property];
-    
-    if (entityProperty) {
+    [names enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        NSPredicate *byName = [NSPredicate predicateWithFormat:@"name == %@", name];
+        NSArray *result = [self.stcEntitiesArray filteredArrayUsingPredicate:byName];
         
-        NSExpression *expression = [NSExpression expressionForKeyPath:property];
-        NSExpression *countExpression = [NSExpression expressionForFunction:@"count:" arguments:@[expression]];
-        NSExpressionDescription *ed = [[NSExpressionDescription alloc] init];
-        ed.expression = countExpression;
-        ed.expressionResultType = NSInteger64AttributeType;
-        ed.name = @"count";
+        if (result.count < 2) return;
         
-        request.propertiesToFetch = @[entityProperty, ed];
-        request.propertiesToGroupBy = @[entityProperty];
-        request.resultType = NSDictionaryResultType;
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:property ascending:YES]];
+        totalDuplicates += result.count - 1;
         
-        NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:nil];
+        NSArray *sortDescriptors = @[
+            [NSSortDescriptor sortDescriptorWithKey:@"isFantom" ascending:NO],
+            [NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:NO]
+        ];
         
-        result = [result filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"count > 1"]];
+        result = [result sortedArrayUsingDescriptors:sortDescriptors];
+        
+        NSArray *duplicates = [result subarrayWithRange:NSMakeRange(1, result.count - 1)];
 
-        if (result.count > 0) {
-            
-            for (NSDictionary *entity in result) {
-                
-                NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", entity[property], entity[ed.name]];
-                [[STMLogger sharedLogger] saveLogMessageWithText:message type:@"error"];
-                
-                [self removeDuplicatesWithName:entity[property]];
-                
-            }
-            
-        } else {
-            [[STMLogger sharedLogger] saveLogMessageWithText:@"stc.entity duplicates not found"];
-        }
-        
-    }
-    
-}
+        NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", name, @(duplicates.count)];
+        [[STMLogger sharedLogger] saveLogMessageWithText:message type:@"error"];
 
-+ (void)removeDuplicatesWithName:(NSString *)name {
-    
-    NSLog(@"remove entity duplicates for %@", name);
-    
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-    
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
-    
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
-                                                                          error:&error];
-    
-    if (result) {
-    
-        STMEntity *actualEntity = result.lastObject;
-        NSMutableArray *mutableResult = result.mutableCopy;
-        [mutableResult removeObject:actualEntity];
-        
         NSError *error;
+        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
         
-        for (STMEntity *entity in mutableResult) {
-            [self.persistenceDelegate destroySync:@"STMEntity" identifier:[STMFunctions hexStringFromData:entity.xid] options:nil error:&error];
-        }
+        [[self persistenceDelegate] destroyAllSync:STM_ENTITY_NAME
+                                         predicate:duplicatesPredicate
+                                           options:@{STMPersistingOptionRecordstatuses:@(NO)}
+                                             error:&error];
+    }];
 
+    if (!totalDuplicates) {
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"stc.entity duplicates not found"];
     }
-    
+
 }
 
 

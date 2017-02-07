@@ -7,7 +7,6 @@
 //
 
 #import "STMCoreSessionManager.h"
-#import "STMCoreSession.h"
 #import "STMSettingsData.h"
 
 #define SETTINGS_SCHEMA @"settings_schema"
@@ -42,7 +41,7 @@
     
 }
 
-- (NSMutableDictionary *)sessions {
+- (NSMutableDictionary <NSString *, STMCoreSession *> *)sessions {
     if (!_sessions) {
         _sessions = [NSMutableDictionary dictionary];
     }
@@ -50,7 +49,7 @@
 }
 
 - (STMCoreSession *)currentSession {
-    return (self.sessions)[self.currentSessionUID];
+    return (STMCoreSession *)self.sessions[self.currentSessionUID];
 }
 
 - (void)setCurrentSessionUID:(NSString *)currentSessionUID {

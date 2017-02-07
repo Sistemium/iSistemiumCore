@@ -1,12 +1,12 @@
 //
-//  STMPersister+Observable.m
+//  STMPersistingObservable.m
 //  iSisSales
 //
 //  Created by Alexander Levin on 28/01/2017.
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMPersister+Observable.h"
+#import "STMPersistingObservable.h"
 
 @implementation STMPersistingObservable
 
