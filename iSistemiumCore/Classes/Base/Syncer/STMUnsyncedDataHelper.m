@@ -419,7 +419,7 @@
     
 //    NSLog(@"declineFromSync: %@ %@", entityName, pk);
     
-    @synchronized (self.erroredObjectsByEntity) {
+    @synchronized (self) {
         NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
         
         if (!errored) errored = [NSMutableSet set];
@@ -437,7 +437,7 @@
     
     NSLog(@"pendingObject: %@", object);
     
-    @synchronized (self.pendingObjectsByEntity) {
+    @synchronized (self) {
         
         NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
         
@@ -457,7 +457,7 @@
     
     if (!pk) return NO;
     
-    @synchronized (self.pendingObjectsByEntity) {
+    @synchronized (self) {
         
         NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
 
@@ -473,7 +473,7 @@
     
     if (!pk) return;
     
-    @synchronized (self.pendingObjectsByEntity) {
+    @synchronized (self) {
         
         NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
 
@@ -497,7 +497,7 @@
     
     if (!pk) return;
 
-    @synchronized (self.pendingObjectsByEntity) {
+    @synchronized (self) {
         
         __block NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *copyOfPendingObjectsByEntity = self.pendingObjectsByEntity.mutableCopy;
         
@@ -551,7 +551,7 @@
     
     NSLog(@"didSyncPendingObject: %@", object);
     
-    @synchronized (self.syncedPendingObjectsByEntity) {
+    @synchronized (self) {
         
         NSMutableArray *syncedObjects = self.syncedPendingObjectsByEntity[entityName];
         
@@ -571,7 +571,7 @@
     
     if (!pk) return NO;
     
-    @synchronized (self.syncedPendingObjectsByEntity) {
+    @synchronized (self) {
         
         NSMutableArray *syncedObjects = self.syncedPendingObjectsByEntity[entityName];
         
