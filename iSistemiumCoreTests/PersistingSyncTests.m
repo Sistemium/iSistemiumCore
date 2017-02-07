@@ -243,9 +243,12 @@
     NSString *entityName = @"STMLogMessage";
     NSError *error;
     
-    NSDictionary *testData = @{@"id" : @"non nexisting",@"text": @"updated test data",@"type": @"should not be updated"};
+    NSDictionary *testData = @{@"id" : @"non existing",@"text": @"updated test data",@"type": @"should not be updated"};
     
-    NSDictionary *testOptions = @{STMPersistingOptionFieldstoUpdate : @[@"text"],STMPersistingOptionSetTs:@NO};
+    NSDictionary *testOptions = @{
+                                  STMPersistingOptionFieldstoUpdate : @[@"text"],
+                                  STMPersistingOptionSetTs:@NO
+                                  };
     
     NSDictionary *updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
 
@@ -267,9 +270,11 @@
     updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
     
     XCTAssertNil(error);
-    XCTAssertTrue([testData[@"text"] isEqualToString:updatedData[@"text"]]);
-    XCTAssertFalse([testData[@"type"] isEqualToString:updatedData[@"type"]]);
-    XCTAssertTrue([deviceTs isEqualToString:updatedData[@"deviceTs"]]);
+    
+    XCTAssertEqualObjects(testData[@"text"], updatedData[@"text"]);
+    XCTAssertNotEqualObjects(testData[@"type"], updatedData[@"type"]);
+    
+    XCTAssertEqualObjects(deviceTs, updatedData[@"deviceTs"]);
     
     [self.persister destroySync:entityName
                      identifier:testObject[@"id"]

@@ -51,4 +51,9 @@ dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_ASYNC_DISPATCH_QUEU
     STMFakePersistingAsyncWithSync(NSUInteger,destroyAll,predicate)
 }
 
+
+- (void)updateAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
+    STMFakePersistingAsyncWithSync(NSDictionary *,update,attributes)
+}
+
 @end
