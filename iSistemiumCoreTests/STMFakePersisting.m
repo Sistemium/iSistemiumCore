@@ -30,6 +30,7 @@ if (!entityName) { \
     [STMFunctions error:error withMessage:@"Entity name can not be null"]; \
     return returnValue; \
 } \
+entityName = [STMFunctions addPrefixToEntityName:entityName]; \
 if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) { \
     if (![self isConcreteEntityName:entityName]) { \
         NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName]; \
@@ -37,7 +38,6 @@ if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) 
         return returnValue; \
     } \
 } \
-entityName = [STMFunctions removePrefixFromEntityName:entityName]; \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 @interface STMFakePersisting ()
@@ -48,6 +48,14 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 
 @implementation STMFakePersisting
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate *)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
+    return [super observeEntity:[STMFunctions addPrefixToEntityName:entityName]
+                      predicate:predicate
+                       callback:callback];
+}
 
 - (void)setOptions:(NSDictionary *)options {
     if (options[STMFakePersistingOptionInMemoryDBKey]) {

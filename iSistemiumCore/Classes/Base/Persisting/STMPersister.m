@@ -37,6 +37,15 @@
     
 }
 
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate *)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
+    return [super observeEntity:[STMFunctions addPrefixToEntityName:entityName]
+                      predicate:predicate
+                       callback:callback];
+}
+
 #pragma mark - Private methods
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {
