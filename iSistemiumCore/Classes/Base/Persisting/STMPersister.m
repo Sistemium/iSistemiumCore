@@ -37,6 +37,15 @@
     
 }
 
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate *)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
+    return [super observeEntity:[STMFunctions addPrefixToEntityName:entityName]
+                      predicate:predicate
+                       callback:callback];
+}
+
 #pragma mark - Private methods
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {
@@ -107,7 +116,6 @@
                     break;
                 }
                 default: {
-                    
                 }
             }
 
@@ -137,6 +145,8 @@
                                   options:options
                                     error:error
                    inManagedObjectContext:self.document.managedObjectContext];
+            break;
+            
         default:
             [self wrongEntityName:entityName error:error];
             return nil;
@@ -252,10 +262,10 @@
             request.predicate = predicate;
             return [self.document.managedObjectContext countForFetchRequest:request
                                                                       error:error];
+            break;
         }
         default:
-            [STMFunctions error:error
-                    withMessage:@"Unknown entity or invalid storage type"];
+            [self wrongEntityName:entityName error:error];
             return 0;
     }
     
@@ -277,8 +287,7 @@
             break;
         }
         default:
-            [STMFunctions error:error
-                    withMessage:[NSString stringWithFormat:@"Unknown entity '%@'", entityName]];
+            [self wrongEntityName:entityName error:error];
             return nil;
     }
 
@@ -428,6 +437,7 @@
         case STMStorageTypeCoreData: {
             NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
             predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
+            break;
         }
         default:
             [self wrongEntityName:entityName error:error];
