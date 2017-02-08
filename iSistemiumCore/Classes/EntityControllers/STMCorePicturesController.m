@@ -28,10 +28,14 @@
 
 @property (nonatomic, strong) NSString *imagesCachePath;
 
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
+
 @end
 
 
-@implementation STMCorePicturesController
+@implementation STMCorePicturesController {
+    NSUInteger _nonloadedPicturesCount;
+}
 
 
 + (STMCorePicturesController *)sharedController {
@@ -92,6 +96,11 @@
         self.session = nil;
         self.settings = nil;
         
+        if (self.nonloadedPicturesSubscriptionID) {
+            [[self.class persistenceDelegate] cancelSubscription:self.nonloadedPicturesSubscriptionID];
+            self.nonloadedPicturesSubscriptionID = nil;
+        }
+        
     }
     
 }
@@ -135,41 +144,23 @@
     
 }
 
+#warning Need to unhardcode picture names with a new Modeller method traversing entities heirarchy
+
++ (NSArray <NSString *> *)pictureEntitiesNames {
+    return @[@"STMArticlePicture", @"STMOutletPhoto", @"STMVisitPhoto", @"STMMessagePicture"];
+}
+
 + (NSArray *)allPictures {
     
     NSMutableArray *result = @[].mutableCopy;
     
-    NSArray *objects = [self.persistenceDelegate findAllSync:@"STMArticlePicture" predicate:nil options:nil error:nil];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMArticlePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMOutletPhoto" predicate:nil options:nil error:nil]];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMOutletPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMVisitPhoto" predicate:nil options:nil error:nil]];
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMVisitPhoto"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
-    }
-    
-    objects = [objects arrayByAddingObjectsFromArray:[self.persistenceDelegate findAllSync:@"STMMessagePicture" predicate:nil options:nil error:nil]]
-    ;
-    
-    for (NSDictionary *object in objects){
-        STMDatum *managedObject = (STMDatum *)[self.persistenceDelegate newObjectForEntityName:@"STMMessagePicture"];
-        [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-        [result addObject:managedObject];
+    for (NSString *entityName in [self pictureEntitiesNames]) {
+        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:nil options:nil error:nil];
+        for (NSDictionary *object in objects){
+            NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
+            [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+            [result addObject:managedObject];
+        }
     }
     
     return result;
@@ -188,13 +179,32 @@
     
     NSArray *predicateArray = [[self photoEntitiesNames] arrayByAddingObjectsFromArray:[self instantLoadPicturesEntityNames]];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (entity.name IN %@) AND (href != %@) AND (thumbnailPath == %@)", predicateArray,nil,nil];
-    return [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate];
+    return [[self.class allPictures] filteredArrayUsingPredicate:predicate];
     
 }
 
+- (NSUInteger)nonloadedPicturesCountCached {
+
+    if (!self.nonloadedPicturesSubscriptionID) {
+        
+        _nonloadedPicturesCount = [self nonloadedPictures].count;
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
+        
+        self.nonloadedPicturesSubscriptionID = [self.class.persistenceDelegate observeAllWithPredicate:predicate callback:^(NSString * entityName, NSArray *data) {
+            if (![[self.class pictureEntitiesNames] containsObject:entityName]) return;
+            _nonloadedPicturesCount = [self nonloadedPictures].count;
+        }];
+        
+    }
+
+    return _nonloadedPicturesCount;
+}
+
+
 - (NSUInteger)nonloadedPicturesCount {
     
-    NSUInteger nonloadedPicturesCount = [self nonloadedPictures].count;
+    NSUInteger nonloadedPicturesCount = [self nonloadedPicturesCountCached];
     
     if (nonloadedPicturesCount == 0) {
         
