@@ -23,4 +23,6 @@
 
 - (BOOL)hasKey:(NSString *)aKey;
 
+@property(readonly, copy) NSArray <NSString *> *allKeys;
+
 @end

@@ -71,4 +71,8 @@
     return !!self.privateData[aKey];
 }
 
+- (NSArray <NSString *> *)allKeys {
+    return self.privateData.allKeys;
+}
+
 @end

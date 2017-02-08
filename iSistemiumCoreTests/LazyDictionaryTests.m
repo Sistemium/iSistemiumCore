@@ -64,6 +64,11 @@
     [dictionary removeObjectForKey:KEY2];
     XCTAssertFalse([dictionary hasKey:KEY2]);
     
+    // at this point there should remains only the KEY
+    
+    XCTAssertEqual(dictionary.allKeys.count, 1);
+    XCTAssertEqualObjects(dictionary.allKeys.firstObject, KEY);
+    
 }
 
 @end
