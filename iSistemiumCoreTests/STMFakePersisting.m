@@ -58,26 +58,29 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 }
 
 - (void)setOptions:(NSDictionary *)options {
-    if (options[STMFakePersistingOptionInMemoryDBKey]) {
+    if (options[STMFakePersistingOptionInMemoryDBKey] && !_options[STMFakePersistingOptionInMemoryDBKey]) {
         self.data = [STMLazyDictionary lazyDictionaryWithItemsClass:STMIndexedArrayPersisting.class];
+    } else if (!options[STMFakePersistingOptionInMemoryDBKey]) {
+        self.data = nil;
     }
     _options = options.copy;
 }
 
+- (instancetype)initWithPersistingOptions:(STMFakePersistingOptions)options {
+    [self init].options = options.copy;
+    return self;
+}
+
 + (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
-    STMFakePersisting *result = [[self.class alloc] init];
-    result.options = options;
-    return result;
+    return [[self alloc] initWithPersistingOptions:options];
 }
 
 + (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
-    
-    return [[STMFakePersisting fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
-
+    return [[self fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
 }
 
 - (void)setOption:(NSString *)option value:(NSString *)value {
-    _options = [STMFunctions setValue:value forKey:option inDictionary:_options];
+    self.options = [STMFunctions setValue:value forKey:option inDictionary:self.options];
 }
 
 
