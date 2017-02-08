@@ -41,7 +41,7 @@
     
     XCTAssertEqualObjects([dictionary[KEY2] firstObject], value);
     
-    // can assigning any object when assigning
+    // can assign any class object when assigning
     
     dictionary[KEY2] = value;
     
