@@ -517,6 +517,9 @@
     
     [self saveWithEntityName:entityName];
     
+    [self notifyObservingEntityName:entityName
+                          ofUpdated:result];
+    
     return result;
     
 }
