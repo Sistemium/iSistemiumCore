@@ -30,6 +30,8 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (id <STMScriptMessaging>)initWithOwner:(id <STMScriptMessagingOwner>)owner;
 
+- (void)handleGetPictureMessage:(WKScriptMessage *)message;
+
 - (void)receiveFindMessage:(WKScriptMessage *)message;
 
 - (void)receiveUpdateMessage:(WKScriptMessage *)message;
