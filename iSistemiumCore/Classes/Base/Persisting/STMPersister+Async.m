@@ -9,14 +9,35 @@
 #import "STMPersister+Async.h"
 #import "STMFmdb.h"
 
+
 #define STM_PERSISTER_ASYNC_DISPATCH_QUEUE DISPATCH_QUEUE_PRIORITY_DEFAULT
+#define STM_PERSISTER_PROMISED_DISPATCH_QUEUE DISPATCH_QUEUE_PRIORITY_DEFAULT
+
 
 #define STMPersisterAsyncWithSync(resultType,methodName,signatureAttributes) \
 dispatch_async(dispatch_get_global_queue(STM_PERSISTER_ASYNC_DISPATCH_QUEUE, 0), ^{ \
-NSError *error; \
-resultType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
-    if (completionHandler) completionHandler(!error,result,error); \
-});
+    NSError *error; \
+    resultType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+        if (completionHandler) completionHandler(!error,result,error); \
+    });
+
+#define STMPersisterPromisedWithSyncScalar(returnType,methodName,signatureAttributes) \
+return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
+    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_PROMISED_DISPATCH_QUEUE, 0), ^{ \
+        NSError *error; \
+        returnType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+        if (error) resolve(error); else resolve(@(result)); \
+    }); \
+}];
+
+#define STMPersisterPromisedWithSync(returnType,methodName,signatureAttributes) \
+return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
+    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_PROMISED_DISPATCH_QUEUE, 0), ^{ \
+        NSError *error; \
+        returnType *result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
+        if (error) resolve(error); else resolve(result); \
+    }); \
+}];
 
 
 @implementation STMPersister (Async)
@@ -52,97 +73,54 @@ resultType result = [self methodName##Sync:entityName signatureAttributes:signat
     STMPersisterAsyncWithSync(NSUInteger,destroyAll,predicate)
 }
 
-
 - (void)updateAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
     STMPersisterAsyncWithSync(NSDictionary *,update,attributes)
 }
 
+
 #pragma mark - STMPersistingPromised
 
-- (AnyPromise *)find:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self findAsync:entityName identifier:identifier options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error){
-            if (success){
-                resolve(result);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+
+- (AnyPromise *)find:(NSString *)entityName
+          identifier:(NSString *)identifier
+             options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSync(NSDictionary,find,identifier)
 }
 
-- (AnyPromise *)findAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self findAllAsync:entityName predicate:predicate options:options completionHandler:^(BOOL success, NSArray *result, NSError *error){
-            if (success){
-                resolve(result);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+- (AnyPromise *)findAll:(NSString *)entityName
+              predicate:(NSPredicate *)predicate
+                options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSync(NSArray,findAll,predicate)
 }
 
-- (AnyPromise *)merge:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self mergeAsync:entityName attributes:attributes options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error){
-            if (success){
-                resolve(result);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+- (AnyPromise *)merge:(NSString *)entityName
+           attributes:(NSDictionary *)attributes
+              options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSync(NSDictionary,merge,attributes)
 }
 
-- (AnyPromise *)mergeMany:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self mergeManyAsync:entityName attributeArray:attributeArray options:options completionHandler:^(BOOL success, NSArray *result, NSError *error){
-            if (success){
-                resolve(result);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+- (AnyPromise *)mergeMany:(NSString *)entityName
+           attributeArray:(NSArray *)attributeArray
+                  options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSync(NSArray,mergeMany,attributeArray)
 }
 
-- (AnyPromise *)destroy:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self destroyAsync:entityName identifier:identifier options:options completionHandler:^(BOOL success, NSError *error){
-            if (success){
-                resolve([NSNumber numberWithBool:success]);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+- (AnyPromise *)destroy:(NSString *)entityName
+             identifier:(NSString *)identifier
+                options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSyncScalar(BOOL,destroy,identifier)
 }
 
-- (AnyPromise *)destroyAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
-    
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self destroyAllAsync:entityName predicate:predicate options:options completionHandler:^(BOOL success, NSUInteger result, NSError *error){
-            if (success){
-                resolve(@(result));
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
-    
+- (AnyPromise *)destroyAll:(NSString *)entityName
+                 predicate:(NSPredicate *)predicate
+                   options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSyncScalar(NSUInteger,destroyAll,predicate)
 }
 
-- (AnyPromise *)update:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options{
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        [self updateAsync:entityName attributes:attributes options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-            if (success){
-                resolve(result);
-            }else{
-                resolve(error);
-            }
-        }];
-    }];
+- (AnyPromise *)update:(NSString *)entityName
+                 attributes:(NSDictionary *)attributes
+                   options:(STMPersistingOptions)options {
+    STMPersisterPromisedWithSync(NSDictionary,update,attributes)
 }
 
 @end
