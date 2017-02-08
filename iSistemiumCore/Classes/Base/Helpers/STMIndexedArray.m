@@ -43,6 +43,13 @@
     }
 }
 
+- (NSString *)primaryKey {
+    if (!_primaryKey) {
+        _primaryKey = STM_INDEXED_ARRAY_DEFAULT_PRIMARY_KEY;
+    }
+    return _primaryKey;
+}
+
 - (NSDictionary *)addObject:(NSDictionary *)anObject {
     @synchronized (self) {
         
