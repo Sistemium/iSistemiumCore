@@ -76,7 +76,7 @@
 }
 
 
-#pragma mark - Private helpers
+#pragma mark - Public methods
 
 - (void)notifyObservingEntityName:(NSString *)entityName
                         ofUpdated:(NSDictionary *)item {
