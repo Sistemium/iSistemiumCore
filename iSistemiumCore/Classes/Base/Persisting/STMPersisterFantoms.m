@@ -15,6 +15,14 @@
 
 @synthesize persistenceDelegate = _persistenceDelegate;
 
++ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate {
+    
+    STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
+    persisterFantoms.persistenceDelegate = persistenceDelegate;
+    
+    return persisterFantoms;
+    
+}
 
 - (NSArray *)findAllFantomsSync:(NSString *)entityName {
     

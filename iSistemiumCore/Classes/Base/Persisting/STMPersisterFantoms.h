@@ -13,4 +13,7 @@
 
 @interface STMPersisterFantoms : NSObject <STMPersistingFantoms>
 
++ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate;
+
+
 @end
