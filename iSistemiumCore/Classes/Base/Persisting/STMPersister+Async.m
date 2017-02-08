@@ -43,9 +43,7 @@ return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
 @implementation STMPersister (Async)
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
-    
     STMPersisterAsyncWithSync(NSDictionary *,find,identifier)
-    
 }
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(STMPersistingAsyncArrayResultCallback)completionHandler {
@@ -66,7 +64,6 @@ return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){ \
         BOOL result = [self destroySync:entityName identifier:identifier options:options error:&error];
         if (completionHandler) completionHandler(result,error);
     });
-    
 }
 
 - (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(STMPersistingAsyncIntegerResultCallback)completionHandler {
