@@ -100,6 +100,15 @@ XCTestExpectation *name = [self expectationWithDescription:@"name"];
                         options:nil
               completionHandler:PATExpectDictionaryError(updateAsync)];
 
+    PATExpectation(updateAsyncNoCallback)
+    
+    [self.persister updateAsync:entityName
+                     attributes:@{}
+                        options:nil
+              completionHandler:nil];
+    
+    [updateAsyncNoCallback fulfill];
+
     if (self.fakePersistingOptions) {
         
         PATExpectation(updateAsyncNoName)

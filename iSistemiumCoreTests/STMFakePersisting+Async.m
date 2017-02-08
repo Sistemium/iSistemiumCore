@@ -14,7 +14,7 @@
 dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_ASYNC_DISPATCH_QUEUE, 0), ^{ \
     NSError *error; \
     resultType result = [self methodName##Sync:entityName signatureAttributes:signatureAttributes options:options error:&error]; \
-    completionHandler(!error,result,error); \
+    if (completionHandler) completionHandler(!error,result,error); \
 });
 
 
@@ -42,7 +42,7 @@ dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_ASYNC_DISPATCH_QUEU
     dispatch_async(dispatch_get_global_queue(STM_FAKE_PERSISTING_ASYNC_DISPATCH_QUEUE, 0), ^{
         NSError *error;
         BOOL result = [self destroySync:entityName identifier:identifier options:options error:&error];
-        completionHandler(result,error);
+        if (completionHandler) completionHandler(result,error);
     });
 
 }
