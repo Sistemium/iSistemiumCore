@@ -19,14 +19,18 @@
 @implementation STMLazyDictionary
 
 + (instancetype)lazyDictionaryWithItemsClass:(Class)itemsClass {
-    
-    STMLazyDictionary *instance = [[self.class alloc] init];
-    
-    instance.privateData = [NSMutableDictionary dictionary];
-    instance.itemsClass = itemsClass;
-    
-    return instance;
-    
+    return [[self.class alloc] initWithItemsClass:itemsClass];
+}
+
+- (instancetype)init {
+    self = [super init];
+    self.privateData = [NSMutableDictionary dictionary];
+    return self;
+}
+
+- (instancetype)initWithItemsClass:(Class)itemsClass {
+    [self init].itemsClass = itemsClass;
+    return self;
 }
 
 - (id)objectForKeyedSubscript:(id)key {

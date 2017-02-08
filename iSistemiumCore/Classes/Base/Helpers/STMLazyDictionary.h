@@ -11,6 +11,7 @@
 @interface STMLazyDictionary <KeyType,ObjectType> : NSObject
 
 + (instancetype)lazyDictionaryWithItemsClass:(Class)itemsClass;
+- (instancetype)initWithItemsClass:(Class)itemsClass;
 
 - (ObjectType)objectForKeyedSubscript:(KeyType)key;
 - (void)setObject:(ObjectType)obj forKeyedSubscript:(KeyType)key;
