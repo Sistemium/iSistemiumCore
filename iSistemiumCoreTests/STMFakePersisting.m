@@ -26,6 +26,10 @@ if (options[STMPersistingOptionForceStorage] && ![options[STMPersistingOptionFor
     [STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
     return returnValue; \
 } \
+if (!entityName) { \
+    [STMFunctions error:error withMessage:@"Entity name can not be null"]; \
+    return returnValue; \
+} \
 if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) { \
     if (![self isConcreteEntityName:entityName]) { \
         NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName]; \
@@ -33,8 +37,8 @@ if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) 
         return returnValue; \
     } \
 } \
+entityName = [STMFunctions removePrefixFromEntityName:entityName]; \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
-
 
 @interface STMFakePersisting ()
 
