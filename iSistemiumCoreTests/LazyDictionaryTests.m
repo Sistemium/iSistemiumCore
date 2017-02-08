@@ -41,7 +41,7 @@
     
     XCTAssertEqualObjects([dictionary[KEY2] firstObject], value);
     
-    // can assign any class object when assigning
+    // can assign any class object when assigning to a non-parameterized dictionary
     
     dictionary[KEY2] = value;
     
@@ -70,5 +70,32 @@
     XCTAssertEqualObjects(dictionary.allKeys.firstObject, KEY);
     
 }
+
+
+- (void)testLazyDictionaryParameterized {
+    
+    STMLazyDictionary <NSString *, NSMutableArray *> *dictionary = [STMLazyDictionary lazyDictionaryWithItemsClass:NSMutableArray.class];
+    
+    NSString *KEY = @"key1";
+    
+    
+    // compiler don't worry since the dictionary is paremeterized
+    
+    XCTAssertNil(dictionary[KEY].firstObject);
+    
+    
+    // event it's fine to assign with index
+    
+    dictionary[KEY][0] = KEY;
+    
+    XCTAssertEqualObjects(dictionary[KEY].firstObject, KEY);
+    
+    
+    //dictionary[KEY] = @"uncomment to see 'Incompatible pointer types' warning";
+    
+}
+
+
+
 
 @end
