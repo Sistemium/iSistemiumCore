@@ -98,10 +98,11 @@ static void *defantomizingOwnerVar;
         }
         
         NSError *error = nil;
-        NSArray *results = [self.persistenceDelegate findAllSync:entityName
-                                                       predicate:nil
-                                                         options:@{STMPersistingOptionFantoms:@YES}
-                                                           error:&error];
+        
+        NSArray *results = [self.persistenceDelegate findAllFantomsSync:entityName
+                                                              predicate:nil
+                                                                options:nil
+                                                                  error:&error];
         
         NSArray *failToResolveFantomsIds = [[self defantomizingProperties].failToResolveFantomsArray valueForKeyPath:@"id"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
@@ -196,10 +197,10 @@ static void *defantomizingOwnerVar;
         NSLog(@"delete fantom %@ %@", entityName, objId);
         
         NSError *error = nil;
-        [self.persistenceDelegate destroySync:entityName
-                                   identifier:objId
-                                      options:nil
-                                        error:&error];
+        [self.persistenceDelegate destroyFantomSync:entityName
+                                         identifier:objId
+                                            options:nil
+                                              error:&error];
         
     } else {
         
@@ -319,7 +320,7 @@ static void *defantomizingOwnerVar;
     
     NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
     
-    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+    [self.persistenceDelegate mergeFantomAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
         
         if (defantomizing) {
             
