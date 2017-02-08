@@ -15,7 +15,7 @@
 
 @synthesize persistenceDelegate = _persistenceDelegate;
 
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate {
++ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingAsync,STMPersistingSync>)persistenceDelegate {
     
     STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
     persisterFantoms.persistenceDelegate = persistenceDelegate;
