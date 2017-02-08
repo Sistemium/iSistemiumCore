@@ -106,7 +106,7 @@ static void *persistenceFantomsDelegateVar;
             
         }
         
-        NSArray *results = [self.persistenceDelegate findAllFantomsSync:entityName];
+        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsSync:entityName];
         
         NSArray *failToResolveFantomsIds = [[self defantomizingProperties].failToResolveFantomsArray valueForKeyPath:@"id"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
@@ -200,7 +200,7 @@ static void *persistenceFantomsDelegateVar;
         
         NSLog(@"delete fantom %@ %@", entityName, objId);
         
-        [self.persistenceDelegate destroyFantomSync:entityName
+        [self.persistenceFantomsDelegate destroyFantomSync:entityName
                                          identifier:objId];
         
     } else {
@@ -319,7 +319,7 @@ static void *persistenceFantomsDelegateVar;
         
     }
     
-    [self.persistenceDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
         
         if (defantomizing) {
             
