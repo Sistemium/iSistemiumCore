@@ -12,9 +12,10 @@
 #import "STMPersistingPromised.h"
 #import "STMPersistingAsync.h"
 #import "STMPersistingSync.h"
+#import "STMPersistingFantoms.h"
 #import "STMPersistingObserving.h"
 #import "STMModelling.h"
 
-#define STMPersistingFullStack STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving, STMModelling
+#define STMPersistingFullStack STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingFantoms, STMPersistingObserving, STMModelling
 
 #endif /* STMPersistingFullStack_h */
