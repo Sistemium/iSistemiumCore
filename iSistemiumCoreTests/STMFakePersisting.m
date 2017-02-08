@@ -42,7 +42,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 @interface STMFakePersisting ()
 
-@property (nonatomic, strong) STMLazyDictionary *data;
+@property (nonatomic, strong) STMLazyDictionary <NSString *, STMIndexedArrayPersisting *> *data;
 
 @end
 
