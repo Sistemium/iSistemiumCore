@@ -8,10 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMPersistingAsync.h"
+#import "STMPersistingFullStack.h"
 
 
 @protocol STMPersistingFantoms <NSObject>
+
+@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 - (NSArray *)findAllFantomsSync:(NSString *)entityName;
 
@@ -21,5 +23,6 @@
 - (void)mergeFantomAsync:(NSString *)entityName
               attributes:(NSDictionary *)attributes
        completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
+
 
 @end
