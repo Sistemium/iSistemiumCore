@@ -177,9 +177,6 @@
     
     XCTAssertNil(error);
     
-    XCTAssertTrue([persister cancelSubscription:subscriptionId]);
-    XCTAssertFalse([persister cancelSubscription:subscriptionId]);
-    
     NSUInteger count = [persister destroySync:PersistingObservingTestEntity
                                    identifier:item[@"id"]
                                       options:@{STMPersistingOptionRecordstatuses: @NO}
@@ -187,11 +184,15 @@
     XCTAssertNil(error);
     XCTAssertEqual(count, 1);
     
-    XCTAssertTrue([persister cancelSubscription:subscriptionNotCalledBackId]);
-    
     
     [self waitForExpectationsWithTimeout:PersistingObservingTestsTimeOut
-                                 handler:nil];
+                                 handler:^(NSError * _Nullable error) {
+
+                                     XCTAssertTrue([persister cancelSubscription:subscriptionId]);
+                                     XCTAssertFalse([persister cancelSubscription:subscriptionId]);
+                                     XCTAssertTrue([persister cancelSubscription:subscriptionNotCalledBackId]);
+
+                                 }];
 }
 
 - (void)testObserveMergeMany {
