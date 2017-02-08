@@ -67,4 +67,8 @@
     return self[aKey];
 }
 
+- (BOOL)hasKey:(NSString *)aKey {
+    return !!self.privateData[aKey];
+}
+
 @end
