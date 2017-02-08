@@ -176,7 +176,6 @@
         syncerHelper.dataDownloadingOwner = self.syncer;
         self.syncer.dataDownloadingDelegate = syncerHelper;
         
-        syncerHelper.defantomizingOwner = self.syncer;
         self.syncer.defantomizingDelegate = syncerHelper;
         
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
