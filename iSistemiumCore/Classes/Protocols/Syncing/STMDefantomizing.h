@@ -9,11 +9,13 @@
 #import <Foundation/Foundation.h>
 
 #import "STMDefantomizingOwner.h"
+#import "STMPersistingFantoms.h"
 
 
 @protocol STMDefantomizing <NSObject>
 
 @property (nonatomic, weak) id <STMDefantomizingOwner> defantomizingOwner;
+@property (nonatomic, strong) id <STMPersistingFantoms> persistenceFantomsDelegate;
 
 - (void)startDefantomization;
 - (void)stopDefantomization;
