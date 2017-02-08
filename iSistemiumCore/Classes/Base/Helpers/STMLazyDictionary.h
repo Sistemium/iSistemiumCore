@@ -8,17 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
-@interface STMLazyDictionary : NSObject
+@interface STMLazyDictionary <KeyType,ObjectType> : NSObject
 
 + (instancetype)lazyDictionaryWithItemsClass:(Class)itemsClass;
 
-- (id)objectForKeyedSubscript:(NSString *)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+- (ObjectType)objectForKeyedSubscript:(KeyType)key;
+- (void)setObject:(ObjectType)obj forKeyedSubscript:(KeyType)key;
 
-- (id)objectForKey:(NSString *)aKey;
-- (id)valueForKey:(NSString *)aKey;
+- (id)objectForKey:(KeyType)aKey;
+- (id)valueForKey:(KeyType)aKey;
 
-- (void)setObject:(id)anObject forKey:(NSString *)aKey;
-- (void)removeObjectForKey:(NSString *)aKey;
+- (void)setObject:(ObjectType)anObject forKey:(KeyType)aKey;
+- (void)removeObjectForKey:(KeyType)aKey;
+
+- (BOOL)hasKey:(KeyType)aKey;
+
+@property(readonly, copy) NSArray <KeyType> *allKeys;
 
 @end

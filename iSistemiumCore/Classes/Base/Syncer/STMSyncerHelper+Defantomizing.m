@@ -42,6 +42,7 @@
 
 static void *defantomizingPropertiesVar;
 static void *defantomizingOwnerVar;
+static void *persistenceFantomsDelegateVar;
 
 @implementation STMSyncerHelper (Defantomizing)
 
@@ -65,16 +66,24 @@ static void *defantomizingOwnerVar;
     
     id <STMDefantomizingOwner> result = objc_getAssociatedObject(self, &defantomizingOwnerVar);
     
-    if (!result) {
-        
-    }
-    
     return result;
     
 }
 
 - (void)setDefantomizingOwner:(id<STMDefantomizingOwner>)defantomizingOwner {
     objc_setAssociatedObject(self, &defantomizingOwnerVar, defantomizingOwner, OBJC_ASSOCIATION_ASSIGN);
+}
+
+- (id <STMPersistingFantoms>)persistenceFantomsDelegate {
+    
+    id <STMPersistingFantoms> result = objc_getAssociatedObject(self, &persistenceFantomsDelegateVar);
+    
+    return result;
+
+}
+
+- (void)setPersistenceFantomsDelegate:(id<STMPersistingFantoms>)persistenceFantomsDelegate {
+    objc_setAssociatedObject(self, &persistenceFantomsDelegateVar, persistenceFantomsDelegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 
@@ -97,11 +106,7 @@ static void *defantomizingOwnerVar;
             
         }
         
-        NSError *error = nil;
-        NSArray *results = [self.persistenceDelegate findAllSync:entityName
-                                                       predicate:nil
-                                                         options:@{STMPersistingOptionFantoms:@YES}
-                                                           error:&error];
+        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsSync:entityName];
         
         NSArray *failToResolveFantomsIds = [[self defantomizingProperties].failToResolveFantomsArray valueForKeyPath:@"id"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
@@ -195,11 +200,8 @@ static void *defantomizingOwnerVar;
         
         NSLog(@"delete fantom %@ %@", entityName, objId);
         
-        NSError *error = nil;
-        [self.persistenceDelegate destroySync:entityName
-                                   identifier:objId
-                                      options:nil
-                                        error:&error];
+        [self.persistenceFantomsDelegate destroyFantomSync:entityName
+                                         identifier:objId];
         
     } else {
         
@@ -317,9 +319,7 @@ static void *defantomizingOwnerVar;
         
     }
     
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-    
-    [self.persistenceDelegate mergeAsync:entityName attributes:responseData options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
         
         if (defantomizing) {
             

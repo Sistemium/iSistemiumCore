@@ -20,6 +20,8 @@
 #import "STMCoreAuthController.h"
 
 #import "STMSocketTransport+Persisting.h"
+#import "STMPersisterFantoms.h"
+
 
 @interface STMSyncer()
 
@@ -214,6 +216,17 @@
         [self startSyncer];
         
     }
+    
+}
+
+- (void)setDefantomizingDelegate:(id<STMDefantomizing>)defantomizingDelegate {
+    
+    STMPersisterFantoms *persisterFantoms = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
+    defantomizingDelegate.persistenceFantomsDelegate = persisterFantoms;
+    
+    defantomizingDelegate.defantomizingOwner = self;
+
+    _defantomizingDelegate = defantomizingDelegate;
     
 }
 

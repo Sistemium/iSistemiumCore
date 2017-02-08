@@ -29,7 +29,7 @@
     
 }
 
-- (id)objectForKeyedSubscript:(NSString *)key {
+- (id)objectForKeyedSubscript:(id)key {
     
     id item = self.privateData[key];
     
@@ -41,7 +41,7 @@
 
 }
 
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
+- (void)setObject:(id)obj forKeyedSubscript:(id)key {
     
     if (obj) {
         self.privateData[key] = obj;
@@ -51,7 +51,7 @@
     
 }
 
-- (void)setObject:(id)anObject forKey:(NSString *)aKey{
+- (void)setObject:(id)anObject forKey:(id)aKey{
     self[aKey] = anObject;
 }
 
@@ -65,6 +65,14 @@
 
 - (id)objectForKey:(NSString *)aKey {
     return self[aKey];
+}
+
+- (BOOL)hasKey:(id)aKey {
+    return !!self.privateData[aKey];
+}
+
+- (NSArray *)allKeys {
+    return self.privateData.allKeys;
 }
 
 @end

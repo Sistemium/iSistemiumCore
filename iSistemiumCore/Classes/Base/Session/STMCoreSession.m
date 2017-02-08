@@ -170,20 +170,20 @@
         self.batteryTracker.session = self;
         self.status = STMSessionRunning;
 
+        self.syncer.persistenceDelegate = self.persistenceDelegate;
+
         STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
         syncerHelper.persistenceDelegate = self.persistenceDelegate;
         
         syncerHelper.dataDownloadingOwner = self.syncer;
         self.syncer.dataDownloadingDelegate = syncerHelper;
         
-        syncerHelper.defantomizingOwner = self.syncer;
         self.syncer.defantomizingDelegate = syncerHelper;
         
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
                                                                                               subscriber:self.syncer];
         self.syncer.dataSyncingDelegate = unsyncedHelper;
         
-        self.syncer.persistenceDelegate = self.persistenceDelegate;
         self.syncer.session = self;
 
     }
