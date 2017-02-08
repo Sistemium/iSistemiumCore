@@ -19,10 +19,6 @@
 
 @end
 
-@implementation STMPersistingObservingSubscription
-
-@end
-
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {

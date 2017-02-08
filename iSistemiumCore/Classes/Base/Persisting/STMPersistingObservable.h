@@ -10,9 +10,12 @@
 
 @interface STMPersistingObservingSubscription : NSObject
 
-@property (nonatomic, strong, nonnull) NSString *entityName;
+@property (nonatomic, strong, nonnull) NSString *identifier;
+
+@property (nonatomic, strong, nullable) NSString *entityName;
 @property (nonatomic, strong, nullable) NSPredicate *predicate;
-@property (nonatomic, strong, nonnull) STMPersistingObservingSubscriptionCallback callback;
+@property (nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
+@property (nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
 
 @end
 

@@ -8,6 +8,23 @@
 
 #import "STMPersistingObservable.h"
 
+@implementation STMPersistingObservingSubscription
+
++ (instancetype)subscriptionWithPredicate:(NSPredicate *)predicate {
+    
+    STMPersistingObservingSubscriptionID subscriptionId = NSUUID.UUID.UUIDString;
+    STMPersistingObservingSubscription *subscription = [[self alloc] init];
+    
+    subscription.identifier = subscriptionId;
+    subscription.predicate = predicate;
+    
+    return subscription;
+    
+}
+
+@end
+
+
 @implementation STMPersistingObservable
 
 - (instancetype)init {
@@ -18,22 +35,33 @@
     
 }
 
+
+#pragma mark - PersistingObserving protocol
+
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate
                                              callback:(STMPersistingObservingSubscriptionCallback)callback {
     
-    STMPersistingObservingSubscriptionID subscriptionId = NSUUID.UUID.UUIDString;
-    
-    STMPersistingObservingSubscription *subscription = [[STMPersistingObservingSubscription alloc] init];
+    STMPersistingObservingSubscription *subscription = [STMPersistingObservingSubscription subscriptionWithPredicate:predicate];
     
     subscription.entityName = entityName;
-    subscription.predicate = predicate;
     subscription.callback = callback;
     
-    self.subscriptions[subscriptionId] = subscription;
+    self.subscriptions[subscription.identifier] = subscription;
     
-    return subscriptionId;
+    return subscription.identifier;
     
+}
+
+- (STMPersistingObservingSubscriptionID) observeAllWithPredicate:(NSPredicate *)predicate callback:(STMPersistingObservingEntityNameArrayCallback)callback {
+    
+    STMPersistingObservingSubscription *subscription = [STMPersistingObservingSubscription subscriptionWithPredicate:predicate];
+    
+    subscription.callbackWithEntityName = callback;
+    
+    self.subscriptions[subscription.identifier] = subscription;
+    
+    return subscription.identifier;
 }
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId {
@@ -46,6 +74,9 @@
     
     return result;
 }
+
+
+#pragma mark - Private helpers
 
 - (void)notifyObservingEntityName:(NSString *)entityName
                         ofUpdated:(NSDictionary *)item {
@@ -64,19 +95,27 @@
         
         STMPersistingObservingSubscription *subscription = self.subscriptions[key];
         
-        if (![subscription.entityName isEqualToString:entityName]) continue;
+        if (subscription.entityName && ![subscription.entityName isEqualToString:entityName]) continue;
         
         NSArray *itemsFiltered = items;
         
         if (subscription.predicate) {
-            itemsFiltered = [items filteredArrayUsingPredicate:subscription.predicate];
+            @try {
+                itemsFiltered = [items filteredArrayUsingPredicate:subscription.predicate];
+            } @catch (NSException *exception) {
+                NSLog(@"notifyObservingEntityName catch: %@", exception);
+                itemsFiltered = nil;
+            }
             if (!itemsFiltered.count) continue;
         }
         
         if (!itemsFiltered.count) return;
         
-        subscription.callback(itemsFiltered);
-        
+        if (subscription.entityName) {
+            subscription.callback(itemsFiltered);
+        } else {
+            subscription.callbackWithEntityName(entityName, itemsFiltered);
+        }
     }
     
 }
