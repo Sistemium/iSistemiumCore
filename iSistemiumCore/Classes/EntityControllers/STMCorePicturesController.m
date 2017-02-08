@@ -272,7 +272,7 @@
     
     [self startCheckingPicturesPaths];
     
-#warning sill uses core data, needs to be rewrited
+#warning still uses core data, needs to be rewrited
 //    [self checkBrokenPhotos];
 //    [self checkUploadedPhotos];
     
