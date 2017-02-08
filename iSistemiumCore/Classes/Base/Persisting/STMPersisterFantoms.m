@@ -41,7 +41,7 @@
     
     return [self.persistenceDelegate destroySync:entityName
                                       identifier:identifier
-                                         options:nil
+                                         options:@{STMPersistingOptionRecordstatuses: @NO}
                                            error:&error];
     
 }
