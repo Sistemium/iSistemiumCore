@@ -65,10 +65,6 @@ static void *defantomizingOwnerVar;
     
     id <STMDefantomizingOwner> result = objc_getAssociatedObject(self, &defantomizingOwnerVar);
     
-    if (!result) {
-        
-    }
-    
     return result;
     
 }
