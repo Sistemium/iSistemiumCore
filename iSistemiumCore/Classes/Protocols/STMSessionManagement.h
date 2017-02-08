@@ -7,13 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+
 #import "STMRequestAuthenticatable.h"
 #import "STMDocument.h"
-#import "STMPersistingPromised.h"
-#import "STMPersistingAsync.h"
-#import "STMPersistingSync.h"
-#import "STMModelling.h"
-#import "STMPersistingObserving.h"
+#import "STMPersistingFullStack.h"
+
 
 typedef NS_ENUM(NSInteger, STMSyncerState) {
     STMSyncerIdle,
@@ -72,7 +70,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
 
-@property (nonatomic, strong) NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync,STMModelling,STMPersistingObserving> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;

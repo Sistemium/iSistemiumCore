@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMPersistingSync.h"
+#import "STMPersistingFullStack.h"
 #import "STMDataSyncingState.h"
 
 #import "STMConstants.h"
@@ -20,7 +20,7 @@
 
 @property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSession> session;
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMPersistingObserving> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 
 @end
