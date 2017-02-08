@@ -49,12 +49,17 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 @implementation STMFakePersisting
 
-- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
-                                            predicate:(NSPredicate *)predicate
-                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
-    return [super observeEntity:[STMFunctions addPrefixToEntityName:entityName]
-                      predicate:predicate
-                       callback:callback];
++ (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
+    return [[self alloc] initWithPersistingOptions:options];
+}
+
++ (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
+    return [[self fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
+}
+
+- (instancetype)initWithPersistingOptions:(STMFakePersistingOptions)options {
+    [self init].options = options.copy;
+    return self;
 }
 
 - (void)setOptions:(NSDictionary *)options {
@@ -66,23 +71,19 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     _options = options.copy;
 }
 
-- (instancetype)initWithPersistingOptions:(STMFakePersistingOptions)options {
-    [self init].options = options.copy;
-    return self;
-}
-
-+ (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
-    return [[self alloc] initWithPersistingOptions:options];
-}
-
-+ (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
-    return [[self fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
-}
-
 - (void)setOption:(NSString *)option value:(NSString *)value {
     self.options = [STMFunctions setValue:value forKey:option inDictionary:self.options];
 }
 
+#pragma mark - PersistingObserving override
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate *)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
+    return [super observeEntity:[STMFunctions addPrefixToEntityName:entityName]
+                      predicate:predicate
+                       callback:callback];
+}
 
 #pragma mark - PersistingSync implementation
 
