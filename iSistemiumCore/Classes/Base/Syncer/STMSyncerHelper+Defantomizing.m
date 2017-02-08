@@ -42,6 +42,7 @@
 
 static void *defantomizingPropertiesVar;
 static void *defantomizingOwnerVar;
+static void *persistenceFantomsDelegateVar;
 
 @implementation STMSyncerHelper (Defantomizing)
 
@@ -71,6 +72,18 @@ static void *defantomizingOwnerVar;
 
 - (void)setDefantomizingOwner:(id<STMDefantomizingOwner>)defantomizingOwner {
     objc_setAssociatedObject(self, &defantomizingOwnerVar, defantomizingOwner, OBJC_ASSOCIATION_ASSIGN);
+}
+
+- (id <STMPersistingFantoms>)persistenceFantomsDelegate {
+    
+    id <STMPersistingFantoms> result = objc_getAssociatedObject(self, &persistenceFantomsDelegateVar);
+    
+    return result;
+
+}
+
+- (void)setPersistenceFantomsDelegate:(id<STMPersistingFantoms>)persistenceFantomsDelegate {
+    objc_setAssociatedObject(self, &persistenceFantomsDelegateVar, persistenceFantomsDelegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 
