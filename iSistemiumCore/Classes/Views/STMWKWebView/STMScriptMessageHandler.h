@@ -30,6 +30,6 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving, STMModelling> persistenceDelegate;
 
 @end

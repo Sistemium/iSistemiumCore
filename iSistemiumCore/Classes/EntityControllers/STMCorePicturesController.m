@@ -194,6 +194,9 @@
         self.nonloadedPicturesSubscriptionID = [self.class.persistenceDelegate observeAllWithPredicate:predicate callback:^(NSString * entityName, NSArray *data) {
             if (![[self.class pictureEntitiesNames] containsObject:entityName]) return;
             _nonloadedPicturesCount = [self nonloadedPictures].count;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
+            });
         }];
         
     }
@@ -269,7 +272,7 @@
     
     [self startCheckingPicturesPaths];
     
-#warning sill uses core data, needs to be rewrited
+#warning still uses core data, needs to be rewrited
 //    [self checkBrokenPhotos];
 //    [self checkUploadedPhotos];
     
@@ -856,7 +859,6 @@
                                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                                
                                                                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
-                                                               [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
                                                                
                                                            });
                                                        }).catch(^(NSError *error){

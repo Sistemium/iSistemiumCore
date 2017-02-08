@@ -32,6 +32,7 @@
                             isFantom:(BOOL)isFantom;
 
 + (NSDictionary *)objectForIdentifier:(NSString *)identifier;
++ (NSDictionary *)objectForIdentifier:(NSString *)identifier entityName:(NSString**)name;
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName;
 

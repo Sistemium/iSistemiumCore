@@ -8,19 +8,16 @@
 
 #import <CoreData/CoreData.h>
 
-#import "STMCoreSessionManager.h"
-
+#import "STMModeller+Private.h"
 #import "STMPersister+CoreData.h"
+
 #import "STMFunctions.h"
 
 #import "STMEntityDescription.h"
 #import "STMPredicate.h"
 #import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
-#import "STMRecordStatusController.h"
-#import "STMModeller+Private.h"
-#import "STMCorePicturesController.h"
-#import "STMClientDataController.h"
+
 
 @implementation STMPersister (CoreData)
 
@@ -354,22 +351,6 @@
         
     }
     
-    if ([object isKindOfClass:[STMCorePicture class]]){
-        
-        STMCorePicture *picture = (STMCorePicture *)object;
-        
-        if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
-            
-            NSString* thumbnailHref = picture.thumbnailHref;
-            NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-            NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
-            
-            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-            
-        }
-        
-    }
-    
     [self processingOfRelationshipsForObject:object withEntityName:entityName andValues:properties];
     
     if (options[STMPersistingOptionLts]) {
@@ -378,32 +359,8 @@
                   forKey:STMPersistingOptionLts];
     }
     
-    [self postprocessingForObject:object];
-    
-#warning To implement in STMScriptMessageHandler with PersistingObserving
-//    STMCoreObjectsController *coc = [self sharedController];
-//    
-//    if ([coc.entitiesToSubscribe objectForKey:entityName]) {
-//        
-//        if (object && [object isKindOfClass:[STMDatum class]]) {
-//            [coc.subscribedObjects addObject:(STMDatum *)object];
-//        }
-//        
-//    }
-    
-}
-
-- (void)postprocessingForObject:(NSManagedObject *)object {
-#warning This is too specific. Need to remove this dependency on STMClientDataController
-    if ([object isKindOfClass:[STMSetting class]]) {
-        
-        STMSetting *setting = (STMSetting *)object;
-        
-        if ([setting.group isEqualToString:@"appSettings"]) {
-            [STMClientDataController checkAppVersion];
-        }
-        
-    }
+//  [self postprocessingForObject:object];
+//  If we need any post-processing we should use Observing
     
 }
 
@@ -463,19 +420,8 @@
             
             if (![[object valueForKey:relationship] isEqual:destinationObject]) {
                 
-//                BOOL waitingForSync = [destinationObject isWaitingToSync];
-                
                 [object setValue:destinationObject forKey:relationship];
-#warning what is this for?
-//                if (!waitingForSync) {
-//                    
-//                    [destinationObject addObserver:[self sharedController]
-//                                        forKeyPath:@"deviceTs"
-//                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
-//                                           context:nil];
-//                    
-//                }
-                
+
             }
             
         } else {
@@ -483,20 +429,7 @@
             NSManagedObject *destinationObject = [object valueForKey:relationship];
             
             if (destinationObject) {
-#warning what is this for?
-//                BOOL waitingForSync = [self isWaitingToSyncForObject:destinationObject];
-                
                 [object setValue:nil forKey:relationship];
-                
-//                if (!waitingForSync) {
-//                
-//                    [destinationObject addObserver:[self sharedController]
-//                                        forKeyPath:@"deviceTs"
-//                                           options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld)
-//                                           context:nil];
-//                    
-//                }
-                
             }
             
         }

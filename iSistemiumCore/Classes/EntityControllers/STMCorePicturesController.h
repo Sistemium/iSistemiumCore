@@ -15,6 +15,8 @@
 
 + (STMCorePicturesController *)sharedController;
 
++ (NSArray *)allPictures;
+
 - (NSUInteger)nonloadedPicturesCount;
 
 + (CGFloat)jpgQuality;

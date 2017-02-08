@@ -7,3 +7,4 @@
 #import "STMCoreUI.h"
 #import "STMEntityController.h"
 #import "STMEntity.h"
+#import "STMCorePicturesController.h"

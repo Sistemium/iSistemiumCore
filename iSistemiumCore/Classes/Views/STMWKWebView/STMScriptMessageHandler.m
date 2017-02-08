@@ -40,6 +40,17 @@
     
 }
 
+- (void)handleGetPictureMessage:(WKScriptMessage *)message {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSDictionary *parameters = message.body;
+        [self handleGetPictureParameters:parameters];
+        
+    });
+    
+}
+
 - (void)receiveFindMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;

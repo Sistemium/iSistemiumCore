@@ -8,6 +8,8 @@
 
 #import "STMScriptMessageHandler+Private.h"
 #import "STMScriptMessageHandler+Predicates.h"
+#import "STMCoreObjectsController.h"
+#import "STMCorePicturesController.h"
 
 @implementation STMScriptMessageHandler (Private)
 
@@ -159,6 +161,233 @@
     
 }
 
+#pragma mark - get pictures from WKWebView
+
+NSMutableDictionary *_getPictureCallbackJSFunctions;
+NSMutableDictionary *_getPictureMessageParameters;
+
+- (NSMutableDictionary <NSString *, NSString *> *)getPictureCallbackJSFunctions {
+    
+    if (!_getPictureCallbackJSFunctions) {
+        _getPictureCallbackJSFunctions = @{}.mutableCopy;
+    }
+    return _getPictureCallbackJSFunctions;
+    
+}
+
+- (NSMutableDictionary *)getPictureMessageParameters {
+    
+    if (!_getPictureMessageParameters) {
+        _getPictureMessageParameters = @{}.mutableCopy;
+    }
+    return _getPictureMessageParameters;
+    
+}
+
+- (void)getPictureSendData:(NSData *)imageData parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+    
+    if (imageData) {
+        
+        NSString *imageDataBase64String = [imageData base64EncodedStringWithOptions:0];
+        [self.owner callbackWithData:@[imageDataBase64String]
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
+        
+    } else {
+        
+        [self.owner callbackWithData:@"no image data"
+                    parameters:parameters
+            jsCallbackFunction:jsCallbackFunction];
+        
+    }
+    
+}
+
+- (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+    
+    NSError *error = nil;
+    NSData *imageData = [NSData dataWithContentsOfFile:[[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath]
+                                               options:0
+                                                 error:&error];
+    
+    if (imageData) {
+        
+        [self getPictureSendData:imageData
+                      parameters:parameters
+              jsCallbackFunction:jsCallbackFunction];
+        
+    } else {
+        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        [self getPictureWithXid:getPictureXid
+                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
+        
+    }
+    
+}
+
+- (void)handleGetPictureParameters:(NSDictionary *)parameters {
+    
+    NSString *getPictureXid = parameters[@"id"];
+    
+    NSString *callbackFunction = parameters[@"callback"];
+    if (getPictureXid) self.getPictureCallbackJSFunctions[getPictureXid] = callbackFunction;
+    
+    if (getPictureXid) self.getPictureMessageParameters[getPictureXid] = parameters;
+    
+    NSString *getPictureSize = parameters[@"size"];
+    
+    NSString *entityName;
+    
+    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid entityName:&entityName];
+    
+    if (!object) {
+        
+        [self getPictureWithXid:getPictureXid
+                          error:[NSString stringWithFormat:@"no picture with xid %@", getPictureXid]];
+        return;
+        
+    }
+    
+    STMCorePicture *picture = (STMCorePicture *)[self.persistenceDelegate newObjectForEntityName:entityName];
+    [self.persistenceDelegate setObjectData:object toObject:picture withRelations:true];
+    
+    if ([getPictureSize isEqualToString:@"thumbnail"]) {
+        
+        if (picture.thumbnailPath) {
+            
+            [self getPicture:picture
+               withImagePath:picture.thumbnailPath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
+        } else {
+            [self downloadPicture:picture];
+        }
+        
+    } else if ([getPictureSize isEqualToString:@"resized"]) {
+        
+        if (picture.resizedImagePath) {
+            
+            [self getPicture:picture
+               withImagePath:picture.resizedImagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
+        } else {
+            [self downloadPicture:picture];
+        }
+        
+    } else if ([getPictureSize isEqualToString:@"full"]) {
+        
+        if (picture.imagePath) {
+            
+            [self getPicture:picture
+               withImagePath:picture.imagePath
+                  parameters:parameters
+          jsCallbackFunction:callbackFunction];
+            
+        } else {
+            [self downloadPicture:picture];
+        }
+        
+    } else {
+        
+        [self getPictureWithXid:getPictureXid
+                          error:@"size parameter is not correct"];
+        
+    }
+    
+}
+
+- (void)downloadPicture:(STMCorePicture *)picture {
+    
+    if (picture.href) {
+        
+        [self addObserversForPicture:picture];
+        
+        [STMCorePicturesController downloadConnectionForObject:picture];
+        
+    } else {
+        
+        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        
+        [self getPictureWithXid:getPictureXid
+                          error:@"picture have not imagePath and href"];
+        
+    }
+    
+}
+
+- (void)pictureWasDownloaded:(NSNotification *)notification {
+    
+    if ([notification.object isKindOfClass:[STMCorePicture class]]) {
+        
+        STMCorePicture *picture = notification.object;
+        
+        [self removeObserversForPicture:picture];
+        
+        [self handleGetPictureParameters:self.getPictureMessageParameters[[STMFunctions UUIDStringFromUUIDData:picture.xid]]];
+        
+    }
+    
+}
+
+- (void)pictureDownloadError:(NSNotification *)notification {
+    
+    STMCorePicture *picture = notification.object;
+    
+    [self removeObserversForPicture:picture];
+    
+    NSString *errorString = notification.userInfo[@"error"];
+    
+    NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+    
+    [self getPictureWithXid:getPictureXid
+                      error:errorString];
+    
+}
+
+- (void)addObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureWasDownloaded:)
+                                                 name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                               object:picture];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(pictureDownloadError:)
+                                                 name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                               object:picture];
+    
+}
+
+- (void)removeObserversForPicture:(STMCorePicture *)picture {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                                  object:picture];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                                  object:picture];
+    
+}
+
+- (void)getPictureWithXid:(NSString *)xid error:(NSString *)errorString {
+    
+    NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
+    
+    [self.owner callbackWithError:errorString
+                 parameters:parameters];
+    
+    if (xid) {
+        
+        [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
+        [self.getPictureMessageParameters removeObjectForKey:xid];
+        
+    }
+    
+}
 
 #pragma mark - subscribe entities from WKWebView
 

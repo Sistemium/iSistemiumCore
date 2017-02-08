@@ -17,6 +17,7 @@ import Crashlytics
     static func removeUnusedImages(){
         DispatchQueue.global(qos: .default).async{
             do {
+                searchUnusedImages()
                 if unusedImageFiles.count > 0 {
                     let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
                     STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
@@ -33,32 +34,30 @@ import Crashlytics
     }
     
     static func searchUnusedImages(){
-        do {
-            unusedImageFiles = Set<String>()
-            var allImageFiles = Set<String>()
-            var usedImageFiles = Set<String>()
-            let document = STMCoreSessionManager.shared().currentSession.document
-            let fileManager = FileManager.default
-            let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
-            while let element = enumerator?.nextObject() as? String {
-                if element.hasSuffix(".jpg") {
-                    allImageFiles.insert(element)
-                }
+        unusedImageFiles = Set<String>()
+        var allImageFiles = Set<String>()
+        var usedImageFiles = Set<String>()
+        let fileManager = FileManager.default
+        let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
+        while let element = enumerator?.nextObject() as? String {
+            if element.hasSuffix(".jpg") {
+                allImageFiles.insert(element.components(separatedBy: "/").last!)
             }
-            let photoFetchRequest = STMFetchRequest(entityName: NSStringFromClass(STMCorePicture.self))
-            let allImages = try document!.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
-            for image in allImages{
-                if let path = image.imagePath{
-                    usedImageFiles.insert(path)
-                }
-                if let resizedPath = image.resizedImagePath{
-                    usedImageFiles.insert(resizedPath)
-                }
-            }
-            unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
-        } catch let error as NSError {
-            NSLog(error.description)
         }
+        
+        let allImages = STMCorePicturesController.allPictures() as! Array<STMCorePicture>;
+        for image in allImages{
+            if let path = image.imagePath{
+                usedImageFiles.insert(path)
+            }
+            if let resizedPath = image.resizedImagePath{
+                usedImageFiles.insert(resizedPath)
+            }
+            if let thumbnailPath = image.thumbnailPath{
+                usedImageFiles.insert(thumbnailPath)
+            }
+        }
+        unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
     }
     
     static func removeOutOfDateImages(){
@@ -77,19 +76,10 @@ import Crashlytics
             }
             
             let entities = stcEntities.filter{entityPredicate.evaluate(with: $1)}
-            
-            let document:STMDocument
-            
-            if STMCoreSessionManager.shared()?.currentSession?.document != nil{
-                document = STMCoreSessionManager.shared().currentSession.document!
-            }else{
-                return
-            }
 
             for (key,value) in entities {
                 
                 let entity = (value as! STMEntity)
-                let photoFetchRequest = STMFetchRequest(entityName: key as! String)
                 let limitDate = Date().addingTimeInterval(-1 * Double(entity.pictureLifeTime!))
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
@@ -101,11 +91,11 @@ import Crashlytics
                 
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
                 
-                photoFetchRequest.predicate = photoPredicate
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key as! String, predicate: photoPredicate, options: nil)
                 
-                let images = try document.managedObjectContext.fetch(photoFetchRequest) as! [STMCorePicture]
+                images = images.filter{photoPredicate.evaluate(with: $0)};
                 
-                for image in images{
+                for image in images as! Array<STMCorePicture>{
                     
                     let logMessage = String(format: "removeOutOfDateImages for:\(entity.name) deviceAts:\(image.deviceAts)")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)

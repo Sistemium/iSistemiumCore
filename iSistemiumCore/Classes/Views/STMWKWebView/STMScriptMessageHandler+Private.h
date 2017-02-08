@@ -17,6 +17,8 @@
 
 - (AnyPromise *)destroyObjectFromScriptMessage:(WKScriptMessage *)scriptMessage;
 
+- (void)handleGetPictureParameters:(NSDictionary *)parameters;
+
 - (BOOL)subscribeToEntities:(NSArray <NSString *> *)entities
                callbackName:(NSString *)callbackName
                       error:(NSError **)error;

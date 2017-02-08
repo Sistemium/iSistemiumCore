@@ -158,19 +158,31 @@
 
 #pragma mark - getting specified objects
 
-+ (NSDictionary *)objectForIdentifier:(NSString *)identifier {
++ (NSDictionary *)objectForIdentifier:(NSString *)identifier{
+    
+    NSString* entityName;
+    
+    return [self objectForIdentifier:identifier entityName:&entityName];
+
+}
+
++ (NSDictionary *)objectForIdentifier:(NSString *)identifier entityName:(NSString**)name{
     
     for (NSString *entityName in [self localDataModelEntityNames]) {
+        
+        if (![[self persistenceDelegate] isConcreteEntityName:entityName]) continue;
         
         NSError *error;
         NSDictionary *object = [[self persistenceDelegate] findSync:entityName identifier:identifier options:nil error:&error];
         
+        *name = entityName;
+        
         if (object) return object;
         
     }
-
+    
     return nil;
-
+    
 }
 
 
