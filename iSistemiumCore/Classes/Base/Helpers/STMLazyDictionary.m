@@ -19,7 +19,7 @@
 @implementation STMLazyDictionary
 
 + (instancetype)lazyDictionaryWithItemsClass:(Class)itemsClass {
-    return [[self.class alloc] initWithItemsClass:itemsClass];
+    return [[self alloc] initWithItemsClass:itemsClass];
 }
 
 - (instancetype)init {

@@ -25,7 +25,7 @@
 @implementation STMModeller
 
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
-    return [[STMModeller alloc] initWithModel:model];
+    return [[self alloc] initWithModel:model];
 }
 
 
