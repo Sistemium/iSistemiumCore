@@ -41,10 +41,6 @@
 
 @optional
 
-- (AnyPromise *)create:(NSString *)entityName
-            attributes:(NSDictionary *)attributes
-               options:(NSDictionary *)options;
-
 - (AnyPromise *)update:(NSString *)entityName
             attributes:(NSDictionary *)attributes
                options:(NSDictionary *)options;
@@ -54,5 +50,8 @@
                 predicate:(NSPredicate *)predicate
                   options:(NSDictionary *)options;
 
+- (AnyPromise *)create:(NSString *)entityName
+            attributes:(NSDictionary *)attributes
+               options:(NSDictionary *)options;
 
 @end

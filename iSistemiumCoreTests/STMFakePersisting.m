@@ -26,6 +26,10 @@ if (options[STMPersistingOptionForceStorage] && ![options[STMPersistingOptionFor
     [STMFunctions error:error withMessage:@"OptionForceStorage is not available"]; \
     return returnValue; \
 } \
+if (!entityName) { \
+    [STMFunctions error:error withMessage:@"Entity name can not be null"]; \
+    return returnValue; \
+} \
 if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) { \
     if (![self isConcreteEntityName:entityName]) { \
         NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName]; \
@@ -33,8 +37,8 @@ if ([(NSNumber *)self.options[STMFakePersistingOptionCheckModelKey] boolValue]) 
         return returnValue; \
     } \
 } \
+entityName = [STMFunctions removePrefixFromEntityName:entityName]; \
 if (self.options[STMFakePersistingOptionInMemoryDBKey])
-
 
 @interface STMFakePersisting ()
 
@@ -175,7 +179,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
         __block NSUInteger result = 0;
         
         [found enumerateObjectsUsingBlock:^(NSDictionary* obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            result += [self destroySync:entityName identifier:obj[@"id"] options:options error:error];
+            result += [self destroySync:entityName identifier:obj[STM_INDEXED_ARRAY_DEFAULT_PRIMARY_KEY] options:options error:error];
         }];
         
         return result;
@@ -194,6 +198,39 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     }
     
     STMFakePersistingEmptyResponse(attributeArray)
+    
+}
+
+- (NSDictionary *) updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+    
+    STMFakePersistingIfInMemoryDB(nil) {
+        
+        NSString *identifier = attributes[STM_INDEXED_ARRAY_DEFAULT_PRIMARY_KEY];
+        
+        if (!identifier) {
+            [STMFunctions error:error withMessage:@"No primary key in attributes"];
+            return nil;
+        }
+        
+        NSDictionary *found = [self findSync:entityName identifier:identifier options:options error:error];
+        
+        // TODO: maybe need an option to control if not found updates return errors
+        if (!found) return nil;
+        
+        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldstoUpdate];
+        
+        if (fieldsToUpdate) {
+            attributes = [attributes dictionaryWithValuesForKeys:fieldsToUpdate];
+        }
+        
+        NSMutableDictionary *merged = found.mutableCopy;
+        [merged addEntriesFromDictionary:attributes];
+        
+        return [self mergeSync:entityName attributes:merged options:options error:error];
+        
+    }
+    
+    STMFakePersistingEmptyResponse(nil)
     
 }
 

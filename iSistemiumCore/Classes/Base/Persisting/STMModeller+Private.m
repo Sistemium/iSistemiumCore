@@ -8,6 +8,7 @@
 
 #import "STMModeller+Private.h"
 #import "STMFunctions.h"
+#import "STMCoreObjectsController.h"
 
 @implementation STMModeller (Private)
 
@@ -77,7 +78,11 @@
         
         if ([value isKindOfClass:[NSString class]]) {
             
-            value = [STMFunctions dataFromString:[value stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+            if (((NSString*) value).length == 36){
+                value = [STMFunctions dataFromString:[value stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+            }else{
+                value =  [[NSData alloc] initWithBase64EncodedString:value options:0];
+            }
             
         } else {
             
@@ -111,6 +116,32 @@
     }
     
     return value;
+    
+}
+
+
+- (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
+    
+    if (!object) {
+        return @{};
+    }
+    
+    NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
+    
+    if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
+    if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
+    
+    NSArray *ownKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name].allObjects;
+    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
+    
+    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
+    
+    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
+    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
+    
+    //    NSLog(@"--------------- updated object %@", propertiesDictionary[@"deviceAts"]);
+    
+    return propertiesDictionary;
     
 }
 

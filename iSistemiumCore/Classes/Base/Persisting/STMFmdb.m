@@ -85,6 +85,60 @@
     return result;
 }
 
+- (NSDictionary *)update:(NSString *)tablename attributes:(NSDictionary<NSString *, id> *)attributes error:(NSError **)error{
+    
+    __block NSDictionary *result;
+    
+    tablename = [STMFunctions removePrefixFromEntityName:tablename];
+    
+    [self.queue inDatabase:^(FMDatabase *db) {
+        
+        NSArray *columns = self.columnsByTable[tablename];
+        NSString *pk = attributes[@"id"];
+        
+        NSMutableArray* keys = @[].mutableCopy;
+        NSMutableArray* values = @[].mutableCopy;
+        
+        for(NSString* key in attributes){
+            if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
+                [keys addObject:key];
+                id value = [attributes objectForKey:key];
+                if ([value isKindOfClass:[NSDate class]]) {
+                    [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+                } else {
+                    [values addObject:(NSString*)value];
+                }
+                
+            }
+        }
+        
+        [values addObject:pk];
+        
+        NSMutableArray* v = @[].mutableCopy;
+        for (int i=0;i<[keys count];i++){
+            [v addObject:@"?"];
+        }
+        
+        NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+        
+        [db executeUpdate:updateSQL values:values error:error];
+        
+        NSArray *results = [self getDataWithEntityName:tablename
+                                         withPredicate:[NSPredicate predicateWithFormat:@"id == %@", pk]
+                                               orderBy:nil
+                                             ascending:NO
+                                            fetchLimit:nil
+                                           fetchOffset:nil
+                                                    db:db];
+        
+        result = [results firstObject];
+        
+    }];
+    
+    return result;
+    
+}
+
 - (NSUInteger) count:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate {
     
     __block NSUInteger rez;

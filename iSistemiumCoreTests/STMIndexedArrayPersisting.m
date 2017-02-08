@@ -34,7 +34,7 @@
         
         anObject = [STMFunctions setValue:lts forKey:STMPersistingOptionLts inDictionary:anObject];
     
-    } else {
+    } else if (![options[STMPersistingOptionSetTs] isEqual:@NO]) {
         anObject = [STMFunctions setValue:[STMFunctions stringFromNow]
                                    forKey:STMPersistingKeyVersion
                              inDictionary:anObject];

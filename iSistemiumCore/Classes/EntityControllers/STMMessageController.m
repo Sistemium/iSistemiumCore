@@ -230,7 +230,7 @@
     NSSortDescriptor *idSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
     NSArray *picturesArray = [message.pictures sortedArrayUsingDescriptors:@[ordSortDescriptor, idSortDescriptor]];
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"imageThumbnail != %@", nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath != %@", nil];
     picturesArray = [picturesArray filteredArrayUsingPredicate:predicate];
 
     return picturesArray;
@@ -319,12 +319,11 @@
 
 + (void)markMessageAsRead:(STMMessage *)message{
     
-    NSDictionary *object = [STMCoreObjectsController dictionaryForJSWithObject:message];
-    
-    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:object[@"id"]];
+    NSString *xid = [STMFunctions UUIDStringFromUUIDData:message.xid];
+    NSDictionary *recordStatus = [STMRecordStatusController existingRecordStatusForXid:xid];
     
     if (!recordStatus){
-        recordStatus = @{@"objectXid":object[@"id"],@"name":@"STMMessage"};
+        recordStatus = @{@"objectXid":xid, @"name":@"STMMessage"};
     }
     
     if (![recordStatus[@"isRemoved"] isEqual:[NSNull null]] ? [recordStatus[@"isRemoved"] boolValue]: false) {

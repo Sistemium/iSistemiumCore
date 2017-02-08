@@ -326,8 +326,9 @@
     
     [self startDelayedAuthorizationCheck];
     
-    STMClientData *clientData = [STMClientDataController clientData];
-    NSMutableDictionary *dataDic = [STMCoreObjectsController dictionaryForJSWithObject:clientData].mutableCopy;
+    // TODO: Maybe we need here persistence delegate
+    
+    NSMutableDictionary *dataDic = [STMClientDataController clientDataDictionary].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
                               @"accessToken"    : [STMCoreAuthController authController].accessToken};
@@ -458,8 +459,6 @@
     }
 
 }
-
-
 
 - (void)logSendEvent:(STMSocketEvent)event withValue:(id)value {
     

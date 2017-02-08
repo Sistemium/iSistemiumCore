@@ -236,14 +236,14 @@
         
         STMMessagePicture *picture = picturesArray.lastObject;
         
-        if (!picture.imageThumbnail && picture.href) {
+        if (!picture.thumbnailPath && picture.href) {
             
             [STMCorePicturesController hrefProcessingForObject:picture];
             [self addSpinnerToCell:cell];
             
         } else {
             
-            UIImage *image = [UIImage imageWithData:(NSData * _Nonnull)picture.imageThumbnail];
+            UIImage *image = [UIImage imageWithContentsOfFile:[STMFunctions absolutePathForPath:picture.thumbnailPath]];
             [[cell.pictureView viewWithTag:555] removeFromSuperview];
             cell.pictureView.image = image;
             

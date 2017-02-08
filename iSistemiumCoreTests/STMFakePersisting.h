@@ -28,7 +28,7 @@
 + (instancetype)fakePersistingWithModelName:(NSString *)modelName 
                                     options:(STMFakePersistingOptions)options;
 
-- (void)setOption:(NSString *)option value:(id _Nonnull)value;
+- (void)setOption:(NSString *)option value:(id)value;
 
 @property (nonatomic, strong) STMFakePersistingOptions options;
 

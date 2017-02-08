@@ -31,7 +31,7 @@
     
     if (!self.transport) {
         self.transport = [STMSocketTransport transportWithUrl:TEST_SOCKET_URL
-                                            andEntityResource:@"STMEntity"
+                                            andEntityResource:STM_ENTITY_NAME
                                                         owner:self];
         [self waitConnection];
     }

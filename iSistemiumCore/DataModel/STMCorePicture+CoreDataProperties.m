@@ -21,7 +21,7 @@
 @dynamic id;
 @dynamic imageFormat;
 @dynamic imagePath;
-@dynamic imageThumbnail;
+@dynamic thumbnailPath;
 @dynamic isFantom;
 @dynamic lts;
 @dynamic name;

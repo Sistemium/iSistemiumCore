@@ -11,34 +11,31 @@
 #define PATExpectation(name) \
 XCTestExpectation *name = [self expectationWithDescription:@"name"];
 
-#define PATExpectArrayError(expectation) \
-^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) { \
+#define PATExpectErrorBody(expectation) \
     XCTAssertNotNil(error); \
     XCTAssertFalse(success); \
-    [expectation fulfill]; \
+    [expectation fulfill];
+
+
+#define PATExpectArrayError(expectation) \
+    ^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) { \
+    PATExpectErrorBody(expectation) \
 }
 
 #define PATExpectDictionaryError(expectation) \
     ^(STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
+    PATExpectErrorBody(expectation) \
+}
 
 #define PATExpectIntegerError(expectation) \
     ^(STMP_ASYNC_INTEGER_RESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
+        PATExpectErrorBody(expectation) \
+}
 
 #define PATExpectError(expectation) \
     ^(STMP_ASYNC_NORESULT_CALLBACK_ARGS) { \
-        XCTAssertNotNil(error); \
-        XCTAssertFalse(success); \
-        [expectation fulfill]; \
-    }
-
+        PATExpectErrorBody(expectation) \
+}
 
 @interface PersistingAsyncTests : STMPersistingTests
 
@@ -95,7 +92,35 @@ XCTestExpectation *name = [self expectationWithDescription:@"name"];
                     attributeArray:@[@{}]
                            options:nil
                  completionHandler:PATExpectArrayError(mergeManyAsync)];
-     
+
+    PATExpectation(updateAsync)
+    
+    [self.persister updateAsync:entityName
+                     attributes:@{}
+                        options:nil
+              completionHandler:PATExpectDictionaryError(updateAsync)];
+
+    PATExpectation(updateAsyncNoCallback)
+    
+    [self.persister updateAsync:entityName
+                     attributes:@{}
+                        options:nil
+              completionHandler:nil];
+    
+    [updateAsyncNoCallback fulfill];
+
+    if (self.fakePersistingOptions) {
+        
+        PATExpectation(updateAsyncNoName)
+        
+        [self.persister updateAsync:nil
+                         attributes:@{}
+                            options:nil
+                  completionHandler:^(STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS) {
+                      PATExpectErrorBody(updateAsyncNoName)
+                      XCTAssertEqualObjects(error.localizedDescription, @"Entity name can not be null");
+                  }];
+    }
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
 

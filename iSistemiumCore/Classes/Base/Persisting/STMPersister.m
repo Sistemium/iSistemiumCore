@@ -19,10 +19,6 @@
 
 @end
 
-@implementation STMPersistingObservingSubscription
-
-@end
-
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
@@ -206,8 +202,9 @@
     if ([self.fmdb hasTable:entityName]){
         return [self.fmdb commit];
     } else {
-        [self.document saveDocument:^(BOOL success){}];
-        return YES;
+        NSError *error;
+        [self.document.managedObjectContext save:&error];
+        return !error;
     }
     
 }
@@ -336,7 +333,7 @@
                                     inManagedObjectContext:[self document].managedObjectContext
                                                      error:error];
         
-        return [self.class arrayForJSWithObjects:objectsArray];
+        return [self arrayForJSWithObjects:objectsArray];
         
     }
     
@@ -433,7 +430,8 @@
             predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
         }
         default:
-            break;
+            [self wrongEntityName:entityName error:error];
+            return NO;
     }
     
     NSUInteger deletedCount = [self destroyAllSync:entityName
@@ -465,6 +463,60 @@
                 withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
         return count;
     }
+    
+}
+
+- (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+    
+    NSDictionary *result;
+    
+    NSMutableDictionary *attributesToUpdate;
+    
+    if (options[STMPersistingOptionFieldstoUpdate]){
+        attributesToUpdate = @{}.mutableCopy;
+        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldstoUpdate];
+        for (NSString* attributeName in attributes.allKeys){
+            if ([fieldsToUpdate containsObject:attributeName]) {
+                attributesToUpdate[attributeName] = attributes[attributeName];
+            }
+        }
+        attributesToUpdate[@"id"] = attributes[@"id"];
+    }else{
+        attributesToUpdate = attributes.mutableCopy;
+    }
+    
+    if (!options[STMPersistingOptionSetTs] || [options[STMPersistingOptionSetTs] boolValue]){
+        NSString *now = [STMFunctions stringFromNow];
+        [attributesToUpdate setValue:now forKey:@"deviceTs"];
+    }else{
+        [attributesToUpdate removeObjectForKey:@"deviceTs"];
+    }
+    
+    switch ([self storageForEntityName:entityName options:options]) {
+            
+        case STMStorageTypeFMDB:
+            result = [self.fmdb update:entityName attributes:attributesToUpdate error:error];
+            break;
+            
+        case STMStorageTypeCoreData:
+            result = [self update:entityName
+                     attributes:attributesToUpdate
+                        options:options
+                          error:error
+         inManagedObjectContext:self.document.managedObjectContext];
+            break;
+            
+        default:
+            [self wrongEntityName:entityName error:error];
+            return nil;
+    }
+    
+    [self saveWithEntityName:entityName];
+    
+    [self notifyObservingEntityName:entityName
+                          ofUpdated:result];
+    
+    return result;
     
 }
 

@@ -14,6 +14,8 @@
 
 #import "STMModeller+Private.h"
 
+#import "STMSessionManager.h"
+
 @interface STMModeller()
 
 @property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
@@ -68,11 +70,10 @@
 #pragma mark - STMModelling
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
-#warning need to check if entity is stored in CoreData and use document's context
+// Override the method in persister to set proper context
     return [[NSManagedObject alloc] initWithEntity:self.entitiesByName[entityName]
                     insertIntoManagedObjectContext:nil];
 }
-
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName {
     
@@ -165,6 +166,10 @@
 }
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
+    return [self setObjectData:objectData toObject:object withRelations:YES];
+}
+
+- (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations{
     
     NSEntityDescription *entity = object.entity;
     NSString *entityName = entity.name;
@@ -190,16 +195,27 @@
             
         } else {
             
-            if ([key hasSuffix:RELATIONSHIP_SUFFIX]) {
+            if ([key hasSuffix:RELATIONSHIP_SUFFIX] && withRelations) {
                 
                 NSUInteger toIndex = key.length - RELATIONSHIP_SUFFIX.length;
                 NSString *localKey = [key substringToIndex:toIndex];
                 
-                if ([ownObjectRelationships objectForKey:localKey]) {
+                NSString* destinationEntityName = [ownObjectRelationships objectForKey:localKey];
+                
+                NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                
+                if (destinationEntityName && destinationObjectXid) {
                     
-                    NSString *destinationObjectXid = [value isKindOfClass:[NSNull class]] ? nil : value;
+                    STMDatum *destinationObject = (STMDatum*) [self newObjectForEntityName:destinationEntityName];
                     
-                    NSManagedObject *destinationObject = (destinationObjectXid) ? [STMCoreObjectsController objectFindOrCreateForEntityName:ownObjectRelationships[localKey] andXidString:destinationObjectXid] : nil;
+                    NSDictionary *destinationObjectData = [STMSessionManager.sharedManager.currentSession.persistenceDelegate findSync:destinationEntityName identifier:destinationObjectXid options:nil error:nil];
+                    
+                    [self setObjectData:destinationObjectData toObject:destinationObject withRelations:false];
+//=======
+//                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
+//                    
+//                    NSManagedObject *destinationObject = (destinationObjectXid) ? [self findOrCreateManagedObjectOf:ownObjectRelationships[localKey] identifier:destinationObjectXid] : nil;
+//>>>>>>> EntityControllerRefactor
                     
                     [object setValue:destinationObject forKey:localKey];
                     
@@ -211,7 +227,13 @@
         
     }
     
+    object.isFantom = @(NO);
+    
 }
 
+- (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object {
+    // TODO: remove dependency on STMDatum
+    return [self dictionaryForJSWithObject:(STMDatum *)object withNulls:YES withBinaryData:YES];
+}
 
 @end

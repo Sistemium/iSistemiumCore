@@ -169,7 +169,6 @@
                           error:&error];
     
     XCTAssertNil(error);
-    
     XCTAssertEqual([self destroyTestDataOwnerXid:xid], 2);
 
 }
@@ -237,6 +236,52 @@
     
     XCTAssertEqual([self destroyTestDataOwnerXid:xid], 2);
     
+}
+
+- (void)testUpdate {
+    
+    NSString *entityName = @"STMLogMessage";
+    NSError *error;
+    
+    NSDictionary *testData = @{@"id" : @"non existing",@"text": @"updated test data",@"type": @"should not be updated"};
+    
+    NSDictionary *testOptions = @{
+                                  STMPersistingOptionFieldstoUpdate : @[@"text"],
+                                  STMPersistingOptionSetTs:@NO
+                                  };
+    
+    NSDictionary *updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
+
+    XCTAssertNil(updatedData);
+    XCTAssertNil(error);
+    
+    testData = @{@"type": @"debug",
+                 @"text": @"testUpdate"};
+    
+    NSDictionary *testObject = [self.persister mergeSync:entityName attributes:testData options:nil error:&error];
+    
+    XCTAssertNotNil(testObject);
+    XCTAssertNil(error);
+    
+    NSString *deviceTs = testObject[@"deviceTs"];
+    
+    testData = @{@"id" : testObject[@"id"] ,@"text": @"updated test data",@"type": @"should not be updated"};
+    
+    updatedData = [self.persister updateSync:entityName attributes:testData options:testOptions error:&error];
+    
+    XCTAssertNil(error);
+    
+    XCTAssertEqualObjects(testData[@"text"], updatedData[@"text"]);
+    XCTAssertNotEqualObjects(testData[@"type"], updatedData[@"type"]);
+    
+    XCTAssertEqualObjects(deviceTs, updatedData[@"deviceTs"]);
+    
+    [self.persister destroySync:entityName
+                     identifier:testObject[@"id"]
+                        options:@{STMPersistingOptionRecordstatuses:@NO}
+                          error:&error];
+    
+    XCTAssertNil(error);
 }
 
 @end

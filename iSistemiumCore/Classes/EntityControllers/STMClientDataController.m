@@ -207,6 +207,10 @@
     
 }
 
++ (NSDictionary *)clientDataDictionary {
+    return [[self persistenceDelegate] dictionaryFromManagedObject:[self clientData]];
+}
+
 + (void)checkAppVersion {
     
     if ([self document].managedObjectContext) {
