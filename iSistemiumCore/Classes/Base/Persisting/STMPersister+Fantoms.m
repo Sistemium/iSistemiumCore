@@ -9,35 +9,37 @@
 #import "STMPersister+Fantoms.h"
 
 #import "STMPersister+Async.h"
+#import "STMFunctions.h"
 
 
 @implementation STMPersister (Fantoms)
 
-- (NSArray *)findAllFantomsSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
-    
-    NSMutableDictionary *fantomsOptions = options.mutableCopy;
-    if (!fantomsOptions) fantomsOptions = @{}.mutableCopy;
-    
-    fantomsOptions[STMPersistingOptionFantoms] = @YES;
+- (NSArray *)findAllFantomsSync:(NSString *)entityName {
+
+    NSError *error = nil;
     
     return [self findAllSync:entityName
-                   predicate:predicate
-                     options:fantomsOptions
-                       error:error];
+                   predicate:nil
+                     options:@{STMPersistingOptionFantoms : @YES}
+                       error:&error];
     
 }
 
-- (BOOL)destroyFantomSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error {
+- (BOOL)destroyFantomSync:(NSString *)entityName identifier:(NSString *)identifier {
     
+    NSError *error = nil;
+
     return [self destroySync:entityName
                   identifier:identifier
-                     options:options
-                       error:error];
+                     options:nil
+                       error:&error];
     
 }
 
-- (void)mergeFantomAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
+- (void)mergeFantomAsync:(NSString *)entityName attributes:(NSDictionary *)attributes completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
     
+    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
+
     [self mergeAsync:entityName
           attributes:attributes
              options:options

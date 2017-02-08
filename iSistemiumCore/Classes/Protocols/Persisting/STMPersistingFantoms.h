@@ -13,20 +13,13 @@
 
 @protocol STMPersistingFantoms <NSObject>
 
-- (NSArray *)findAllFantomsSync:(NSString *)entityName
-                      predicate:(NSPredicate *)predicate
-                        options:(NSDictionary *)options
-                          error:(NSError **)error;
+- (NSArray *)findAllFantomsSync:(NSString *)entityName;
 
 - (BOOL)destroyFantomSync:(NSString *)entityName
-               identifier:(NSString *)identifier
-                  options:(NSDictionary *)options
-                    error:(NSError **)error;
+               identifier:(NSString *)identifier;
 
 - (void)mergeFantomAsync:(NSString *)entityName
               attributes:(NSDictionary *)attributes
-                 options:(NSDictionary *)options
        completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
-
 
 @end
