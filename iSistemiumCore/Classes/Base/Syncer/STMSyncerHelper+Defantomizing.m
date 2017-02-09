@@ -303,13 +303,10 @@ static void *persistenceFantomsDelegateVar;
     
     NSError *error = nil;
     
-    NSDictionary *defantom =
     [self.persistenceFantomsDelegate mergeFantomSync:entityName
                                           attributes:responseData
                                                error:&error];
-    
-    NSLog(@"defantom %@", defantom);
-    
+        
     if (defantomizing) {
         
         NSDictionary *object = context[@"object"];
@@ -329,29 +326,6 @@ static void *persistenceFantomsDelegateVar;
         
     }
 
-//    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-//        
-//        if (defantomizing) {
-//            
-//            NSDictionary *object = context[@"object"];
-//            
-//            if (success) {
-//                
-//                NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
-//                
-//                [self fantomsCountDecrease];
-//                
-//            } else {
-//                
-//                [self defantomizingObject:object
-//                                    error:error.localizedDescription];
-//                
-//            }
-//            
-//        }
-//        
-//    }];
-    
 }
 
 

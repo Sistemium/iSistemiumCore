@@ -15,7 +15,7 @@
 
 @synthesize persistenceDelegate = _persistenceDelegate;
 
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id </*STMPersistingAsync,*/STMPersistingSync>)persistenceDelegate {
++ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingSync>)persistenceDelegate {
     
     STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
     persisterFantoms.persistenceDelegate = persistenceDelegate;
@@ -56,17 +56,6 @@
                                          error:error];
 
 }
-
-//- (void)mergeFantomAsync:(NSString *)entityName attributes:(NSDictionary *)attributes completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
-//    
-//    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-//    
-//    [self.persistenceDelegate mergeAsync:entityName
-//                              attributes:attributes
-//                                 options:options
-//                       completionHandler:completionHandler];
-//    
-//}
 
 
 @end
