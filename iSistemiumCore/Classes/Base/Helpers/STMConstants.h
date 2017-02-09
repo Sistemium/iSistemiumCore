@@ -54,7 +54,6 @@
 #define DATA_CACHE_PATH @"dataCache"
 #define IMAGES_CACHE_PATH @"images"
 
-#define DEFANTOMIZING_CONTEXT @"defantomizingContext"
 #define RELATIONSHIP_SUFFIX @"Id"
 
 // Notification's names

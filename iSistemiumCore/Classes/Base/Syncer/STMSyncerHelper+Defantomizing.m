@@ -158,12 +158,9 @@ static void *persistenceFantomsDelegateVar;
     
     if (success) {
         
-        NSDictionary *context = @{@"type"  : DEFANTOMIZING_CONTEXT,
-                                  @"object": fantomDic};
-        
         [self receiveFindAckWithResponse:result
                               entityName:entityName
-                                 context:context];
+                               fantomDic:fantomDic];
         
     } else {
         
@@ -254,38 +251,25 @@ static void *persistenceFantomsDelegateVar;
 
 #pragma mark find ack handler
 
-- (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName context:(NSDictionary *)context {
+- (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName fantomDic:(NSDictionary *)fantomDic {
     
     NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
     
     [self parseFindAckResponseData:response
                     withEntityName:entityName
                                xid:xid
-                           context:context];
+                         fantomDic:fantomDic];
     
 }
 
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
-    
-    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
-    
-    //    NSLog(@"find responseData %@", responseData);
+- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid fantomDic:(NSDictionary *)fantomDic {
     
     if (!entityName) {
         
         NSString *errorMessage = @"Syncer parseFindAckResponseData !entityName";
         
-        if (defantomizing) {
-            
-            [self defantomizingObject:context[@"object"]
-                                error:errorMessage];
-            
-        } else {
-            
-            [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage
-                                                     numType:STMLogMessageTypeError];
-            
-        }
+        [self defantomizingObject:fantomDic
+                            error:errorMessage];
         
         return;
         
@@ -296,23 +280,17 @@ static void *persistenceFantomsDelegateVar;
     [self.persistenceFantomsDelegate mergeFantomSync:entityName
                                           attributes:responseData
                                                error:&error];
+    
+    if (!error) {
         
-    if (defantomizing) {
+        NSLog(@"successfully defantomize %@ %@", fantomDic[@"entityName"], fantomDic[@"id"]);
         
-        NSDictionary *object = context[@"object"];
+        [self fantomsCountDecrease];
         
-        if (!error) {
-            
-            NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
-            
-            [self fantomsCountDecrease];
-            
-        } else {
-            
-            [self defantomizingObject:object
-                                error:error.localizedDescription];
-            
-        }
+    } else {
+        
+        [self defantomizingObject:fantomDic
+                            error:error.localizedDescription];
         
     }
 
