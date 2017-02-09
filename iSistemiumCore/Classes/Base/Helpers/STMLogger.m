@@ -342,7 +342,7 @@
 - (void)createAndSaveLogMessageFromDictionary:(NSDictionary *)logMessageDic {
     
 //    NSError *error = nil;
-    NSDictionary *options = @{@"returnSaved": @NO};
+    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
     
     [self.session.persistenceDelegate mergeAsync:NSStringFromClass([STMLogMessage class])
                                       attributes:logMessageDic
