@@ -15,7 +15,8 @@
 
 @property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
 
-- (NSArray *)findAllFantomsSync:(NSString *)entityName;
+- (NSArray *)findAllFantomsIdsSync:(NSString *)entityName
+                      excludingIds:(NSArray *)excludingIds;
 
 - (BOOL)destroyFantomSync:(NSString *)entityName
                identifier:(NSString *)identifier;

@@ -24,14 +24,20 @@
     
 }
 
-- (NSArray *)findAllFantomsSync:(NSString *)entityName {
+- (NSArray *)findAllFantomsIdsSync:(NSString *)entityName excludingIds:(NSArray *)excludingIds {
     
     NSError *error = nil;
     
-    return [self.persistenceDelegate findAllSync:entityName
-                                       predicate:nil
-                                         options:@{STMPersistingOptionFantoms : @YES}
-                                           error:&error];
+    NSArray *result = [self.persistenceDelegate findAllSync:entityName
+                                                  predicate:nil
+                                                    options:@{STMPersistingOptionFantoms : @YES}
+                                                      error:&error];
+    
+    result = [result valueForKeyPath:@"id"];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", excludingIds];
+    
+    return [result filteredArrayUsingPredicate:predicate];
     
 }
 
