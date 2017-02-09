@@ -105,28 +105,17 @@ static void *persistenceFantomsDelegateVar;
             continue;
             
         }
-        
-        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsSync:entityName];
-        
-        NSArray *failToResolveFantomsIds = [[self defantomizingProperties].failToResolveFantomsArray valueForKeyPath:@"id"];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (id IN %@)", failToResolveFantomsIds];
-        
-        results = [results filteredArrayUsingPredicate:predicate];
-        
+
+        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsIdsSync:entityName
+                                                                     excludingIds:[self defantomizingProperties].failToResolveFantomsIdsArray];
+                
         if (results.count > 0) {
             
             NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
             
-            for (NSDictionary *fantomObject in results) {
+            for (NSDictionary *fantomId in results) {
                 
-                if (!fantomObject[@"id"]) {
-                    
-                    NSLog(@"fantomObject have no id: %@", fantomObject);
-                    continue;
-                    
-                }
-                
-                NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomObject[@"id"]};
+                NSDictionary *fantomDic = @{@"entityName":entityName, @"id":fantomId};
                 [fantomsArray addObject:fantomDic];
                 
             }
@@ -196,16 +185,17 @@ static void *persistenceFantomsDelegateVar;
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString deleteObject:(BOOL)deleteObject {
     
     NSLog(@"defantomize error: %@", errorString);
-    
+
+    NSString *fantomId = fantomDic[@"id"];
+
     if (deleteObject) {
         
         NSString *entityName = fantomDic[@"entityName"];
-        NSString *objId = fantomDic[@"id"];
         
-        NSLog(@"delete fantom %@ %@", entityName, objId);
+        NSLog(@"delete fantom %@ %@", entityName, fantomId);
         
         [self.persistenceFantomsDelegate destroyFantomSync:entityName
-                                         identifier:objId];
+                                         identifier:fantomId];
         
     } else {
         
