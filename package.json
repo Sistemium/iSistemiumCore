@@ -1,0 +1,24 @@
+{
+  "name": "isistemium-core",
+  "version": "1.0.0",
+  "description": "iSistemiumCore helper library",
+  "main": "generator.js",
+  "dependencies": {
+    "handlebars-generator": "Sistemium/node-handlebars-generator",
+    "node-dir": "^0.1.16"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "generate": "node generator"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sistemium/iSistemiumCore.git"
+  },
+  "author": "Alexander Levin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sistemium/iSistemiumCore/issues"
+  },
+  "homepage": "https://github.com/Sistemium/iSistemiumCore#readme"
+}
