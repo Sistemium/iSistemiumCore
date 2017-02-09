@@ -49,6 +49,34 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 
 @implementation STMFakePersisting
 
++ (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
+    return [[self alloc] initWithPersistingOptions:options];
+}
+
++ (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
+    return [[self fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
+}
+
+- (instancetype)initWithPersistingOptions:(STMFakePersistingOptions)options {
+    [self init].options = options.copy;
+    return self;
+}
+
+- (void)setOptions:(NSDictionary *)options {
+    if (options[STMFakePersistingOptionInMemoryDBKey] && !_options[STMFakePersistingOptionInMemoryDBKey]) {
+        self.data = [STMLazyDictionary lazyDictionaryWithItemsClass:STMIndexedArrayPersisting.class];
+    } else if (!options[STMFakePersistingOptionInMemoryDBKey]) {
+        self.data = nil;
+    }
+    _options = options.copy;
+}
+
+- (void)setOption:(NSString *)option value:(NSString *)value {
+    self.options = [STMFunctions setValue:value forKey:option inDictionary:self.options];
+}
+
+#pragma mark - PersistingObserving override
+
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate
                                              callback:(STMPersistingObservingSubscriptionCallback)callback {
@@ -56,30 +84,6 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
                       predicate:predicate
                        callback:callback];
 }
-
-- (void)setOptions:(NSDictionary *)options {
-    if (options[STMFakePersistingOptionInMemoryDBKey]) {
-        self.data = [STMLazyDictionary lazyDictionaryWithItemsClass:STMIndexedArrayPersisting.class];
-    }
-    _options = options.copy;
-}
-
-+ (instancetype) fakePersistingWithOptions:(STMFakePersistingOptions)options {
-    STMFakePersisting *result = [[self.class alloc] init];
-    result.options = options;
-    return result;
-}
-
-+ (instancetype)fakePersistingWithModelName:(NSString *)modelName options:(STMFakePersistingOptions)options {
-    
-    return [[STMFakePersisting fakePersistingWithOptions:options] initWithModel:[self modelWithName:modelName]];
-
-}
-
-- (void)setOption:(NSString *)option value:(NSString *)value {
-    _options = [STMFunctions setValue:value forKey:option inDictionary:_options];
-}
-
 
 #pragma mark - PersistingSync implementation
 

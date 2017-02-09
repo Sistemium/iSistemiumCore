@@ -22,9 +22,6 @@
 
 - (void)setUp {
     
-    // Uncomment to test with inMemory store
-//    self.fakePersistingOptions = @{STMFakePersistingOptionInMemoryDB};
-    
     if (self.persister) return;
     
     self.testType = @"debug";

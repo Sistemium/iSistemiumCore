@@ -186,7 +186,11 @@ static void *persistenceFantomsDelegateVar;
 }
 
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
-    [self defantomizingObject:fantomDic error:errorString deleteObject:NO];
+    
+    BOOL deleteObject = [errorString hasSuffix:@"404"] || [errorString hasSuffix:@"403"];
+    
+    [self defantomizingObject:fantomDic error:errorString deleteObject:deleteObject];
+    
 }
 
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString deleteObject:(BOOL)deleteObject {
@@ -271,28 +275,6 @@ static void *persistenceFantomsDelegateVar;
     
 }
 
-- (void)socketReceiveJSDataFindAckWithErrorCode:(NSNumber *)errorCode errorString:(NSString *)errorString context:(NSDictionary *)context {
-    
-    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
-        
-    }
-    
-    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
-    
-    if (defantomizing) {
-        
-        BOOL deleteObject = (errorCode.integerValue == 403 || errorCode.integerValue == 404);
-        
-        [self defantomizingObject:context[@"object"]
-                            error:errorString
-                     deleteObject:deleteObject];
-        
-    } else {
-        NSLog(@"find error: %@", errorString);
-    }
-    
-}
-
 - (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid context:(NSDictionary *)context {
     
     BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
@@ -319,29 +301,56 @@ static void *persistenceFantomsDelegateVar;
         
     }
     
-    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+    NSError *error = nil;
+    
+    NSDictionary *defantom =
+    [self.persistenceFantomsDelegate mergeFantomSync:entityName
+                                          attributes:responseData
+                                               error:&error];
+    
+    NSLog(@"defantom %@", defantom);
+    
+    if (defantomizing) {
         
-        if (defantomizing) {
+        NSDictionary *object = context[@"object"];
+        
+        if (!error) {
             
-            NSDictionary *object = context[@"object"];
+            NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
             
-            if (success) {
-                
-                NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
-                
-                [self fantomsCountDecrease];
-                
-            } else {
-                
-                [self defantomizingObject:object
-                                    error:error.localizedDescription];
-                
-            }
+            [self fantomsCountDecrease];
+            
+        } else {
+            
+            [self defantomizingObject:object
+                                error:error.localizedDescription];
             
         }
         
-    }];
-    
+    }
+
+//    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:responseData completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+//        
+//        if (defantomizing) {
+//            
+//            NSDictionary *object = context[@"object"];
+//            
+//            if (success) {
+//                
+//                NSLog(@"successfully defantomize %@ %@", object[@"entityName"], object[@"id"]);
+//                
+//                [self fantomsCountDecrease];
+//                
+//            } else {
+//                
+//                [self defantomizingObject:object
+//                                    error:error.localizedDescription];
+//                
+//            }
+//            
+//        }
+//        
+//    }];
     
 }
 

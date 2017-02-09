@@ -8,6 +8,18 @@
 
 #import "STMPersistingObservable.h"
 
+@interface STMPersistingObservingSubscription : NSObject
+
+@property (nonatomic, strong, nonnull) NSString *identifier;
+
+@property (nonatomic, strong, nullable) NSString *entityName;
+@property (nonatomic, strong, nullable) NSPredicate *predicate;
+@property (nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
+@property (nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
+
+@end
+
+
 @implementation STMPersistingObservingSubscription
 
 + (instancetype)subscriptionWithPredicate:(NSPredicate *)predicate {
@@ -25,6 +37,13 @@
 @end
 
 
+@interface STMPersistingObservable ()
+
+@property (nonatomic, strong) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
+
+@end
+
+
 @implementation STMPersistingObservable
 
 - (instancetype)init {
@@ -37,6 +56,7 @@
 
 
 #pragma mark - PersistingObserving protocol
+
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate

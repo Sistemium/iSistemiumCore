@@ -8,22 +8,9 @@
 
 #import "STMPersistingObserving.h"
 
-@interface STMPersistingObservingSubscription : NSObject
-
-@property (nonatomic, strong, nonnull) NSString *identifier;
-
-@property (nonatomic, strong, nullable) NSString *entityName;
-@property (nonatomic, strong, nullable) NSPredicate *predicate;
-@property (nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
-@property (nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
-
-@end
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface STMPersistingObservable : NSObject <STMPersistingObserving>
-
-@property (nonatomic, strong, readonly) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
 
 - (void)notifyObservingEntityName:(NSString *)entityName
                         ofUpdated:(NSDictionary *)item;

@@ -6,15 +6,14 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMCoreSession.h"
+#import "STMCoreSession+Persistable.h"
 
-#import "STMSyncerHelper.h"
 #import "STMUnsyncedDataHelper.h"
 
-#import "STMCoreSession+Persistable.h"
 #import "STMSyncerHelper+Defantomizing.h"
 #import "STMSyncerHelper+Downloading.h"
 
+#import "STMPersisterFantoms.h"
 
 @interface STMCoreSession()
 
@@ -174,10 +173,11 @@
 
         STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
         syncerHelper.persistenceDelegate = self.persistenceDelegate;
-        
         syncerHelper.dataDownloadingOwner = self.syncer;
-        self.syncer.dataDownloadingDelegate = syncerHelper;
+        syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
+        syncerHelper.defantomizingOwner = self.syncer;
         
+        self.syncer.dataDownloadingDelegate = syncerHelper;
         self.syncer.defantomizingDelegate = syncerHelper;
         
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate

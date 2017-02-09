@@ -9,20 +9,24 @@
 #import <Foundation/Foundation.h>
 
 #import "STMPersistingSync.h"
-#import "STMPersistingAsync.h"
+//#import "STMPersistingAsync.h"
 
 @protocol STMPersistingFantoms <NSObject>
 
-@property (nonatomic, weak) id <STMPersistingAsync,STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id </*STMPersistingAsync,*/STMPersistingSync> persistenceDelegate;
 
 - (NSArray *)findAllFantomsSync:(NSString *)entityName;
 
 - (BOOL)destroyFantomSync:(NSString *)entityName
                identifier:(NSString *)identifier;
 
-- (void)mergeFantomAsync:(NSString *)entityName
-              attributes:(NSDictionary *)attributes
-       completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
+//- (void)mergeFantomAsync:(NSString *)entityName
+//              attributes:(NSDictionary *)attributes
+//       completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler;
+//
+- (NSDictionary *)mergeFantomSync:(NSString *)entityName
+                       attributes:(NSDictionary *)attributes
+                            error:(NSError **)error;
 
 
 @end
