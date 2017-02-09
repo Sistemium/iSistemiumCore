@@ -287,7 +287,7 @@
         
         NSMutableDictionary *logMessageDic = @{}.mutableCopy;
         
-        logMessageDic[@"text"] = text;
+        logMessageDic[@"text"] = [NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], text];
         logMessageDic[@"type"] = type;
         
         if (sessionIsRunning && self.document) {
@@ -315,11 +315,40 @@
     NSArray *loggerDefaults = [defaults arrayForKey:[self loggerKey]];
     NSMutableArray *loggerDefaultsMutable = (loggerDefaults) ? loggerDefaults.mutableCopy : @[].mutableCopy;
 
-    [loggerDefaultsMutable addObject:logMessageDic];
+    NSString *type = logMessageDic[@"type"];
+    NSPredicate *typePredicate = [NSPredicate predicateWithFormat:@"type == %@", type];
+    NSMutableDictionary *lastLogMessage = [loggerDefaultsMutable filteredArrayUsingPredicate:typePredicate].lastObject;
+    
+    NSDictionary *logMessageToStore = [self logMessageToStoreWithLastLogMessage:lastLogMessage
+                                                               andLogMessageDic:logMessageDic];
+    
+    [loggerDefaultsMutable addObject:logMessageToStore];
     
     [defaults setObject:loggerDefaultsMutable forKey:[self loggerKey]];
     [defaults synchronize];
     
+}
+
+- (NSDictionary *)logMessageToStoreWithLastLogMessage:(NSDictionary *)lastLogMessage andLogMessageDic:(NSDictionary *)logMessageDic {
+    
+    if (lastLogMessage) {
+        
+        NSMutableDictionary *logMessageToStore = lastLogMessage.mutableCopy;
+        
+        NSString *text = lastLogMessage[@"text"];
+        text = [text stringByAppendingString:@"\n"];
+        text = [text stringByAppendingString:logMessageDic[@"text"]];
+        
+        logMessageToStore[@"text"] = text;
+        
+        return logMessageToStore;
+        
+    } else {
+        
+        return logMessageDic;
+        
+    }
+
 }
 
 - (void)saveLogMessageDictionaryToDocument {
@@ -341,13 +370,32 @@
 
 - (void)createAndSaveLogMessageFromDictionary:(NSDictionary *)logMessageDic {
     
-//    NSError *error = nil;
-    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+    NSString *type = logMessageDic[@"type"];
     
-    [self.session.persistenceDelegate mergeAsync:NSStringFromClass([STMLogMessage class])
-                                      attributes:logMessageDic
-                                         options:options
-                               completionHandler:nil];
+    NSPredicate *unsyncedPredicate = [[(STMSyncer *)self.session.syncer dataSyncingDelegate] predicateForUnsyncedObjectsWithEntityName:@"STMLogMessage"];
+    NSPredicate *typePredicate = [NSPredicate predicateWithFormat:@"type == %@", type];
+    
+    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[unsyncedPredicate, typePredicate]];
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
+                              STMPersistingOptionOrder      : @"deviceCts",
+                              STMPersistingOptionOrderDirectionAsc};
+    
+    [self.session.persistenceDelegate findAllAsync:@"STMLogMessage" predicate:predicate options:options completionHandler:^(BOOL success, NSArray <NSDictionary *> *result, NSError *error) {
+        
+        NSDictionary *lastUnsyncedLogMessage = result.lastObject;
+
+        NSDictionary *logMessageToStore = [self logMessageToStoreWithLastLogMessage:lastUnsyncedLogMessage
+                                                                   andLogMessageDic:logMessageDic];
+        
+        NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+        
+        [self.session.persistenceDelegate mergeAsync:NSStringFromClass([STMLogMessage class])
+                                          attributes:logMessageToStore
+                                             options:options
+                                   completionHandler:nil];
+        
+    }];
 
 }
 
