@@ -720,6 +720,9 @@
     
 }
 
+
+#pragma mark STMDefantomizingOwner
+
 - (void)defantomizeObject:(NSDictionary *)fantomDic {
     
     if (!self.isDefantomizing) {
