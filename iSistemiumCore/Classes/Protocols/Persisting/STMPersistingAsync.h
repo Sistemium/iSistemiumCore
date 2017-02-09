@@ -10,7 +10,7 @@
 #import "STMPersisting.h"
 
 #define STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS \
-BOOL success, NSArray *result, NSError *error
+BOOL success, NSArray <NSDictionary *> *result, NSError *error
 
 #define STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS \
 BOOL success, NSDictionary *result, NSError *error
