@@ -344,10 +344,11 @@
 //    NSError *error = nil;
     NSDictionary *options = @{@"returnSaved": @NO};
     
-    [self.session.persistenceDelegate mergeAsync:NSStringFromClass([STMLogMessage class]) attributes:logMessageDic options:options completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-        
-    }];
-//    [self.session.persistenceDelegate mergeSync:NSStringFromClass([STMLogMessage class]) attributes:logMessageDic options:options error:&error];
+    [self.session.persistenceDelegate mergeAsync:NSStringFromClass([STMLogMessage class])
+                                      attributes:logMessageDic
+                                         options:options
+                               completionHandler:nil];
+
 }
 
 - (void)sendLogMessageToLocalServerForDebugWithType:(NSString *)type andText:(NSString *)text {
