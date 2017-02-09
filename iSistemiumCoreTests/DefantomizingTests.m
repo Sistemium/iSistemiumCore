@@ -75,11 +75,20 @@
 
 - (void)fillPersisterWithFantoms {
     
-    NSDictionary *fantomOptions = @{STMPersistingOptionFantoms:@YES};
     self.expectations = @{}.mutableCopy;
     self.fantomObjects = @{}.mutableCopy;
     
-    NSDictionary *fantom = @{@"name" : @"fantomArticle"};
+    [self createFantomWithName:GOOD_FANTOM];
+    [self createFantomWithName:BAD_FANTOM];
+    [self createFantomWithName:BAD_FANTOM_DELETE];
+    
+    XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+    
+}
+
+- (void)createFantomWithName:(NSString *)fantomName {
+    
+    NSDictionary *fantom = @{@"name" : fantomName};
     
     NSError *error = nil;
     
@@ -90,11 +99,35 @@
     
     XCTAssertNil(error);
     
-    NSLog(@"fantom %@", fantom);
+    NSString *fantomId = fantom[@"id"];
     
-    NSString *expectationDescription = [NSString stringWithFormat:@"wait for fantom"];
-    self.fantomExpectation = [self expectationWithDescription:expectationDescription];
+    NSString *expectationDescription = fantomName;
+    self.expectations[fantomId] = [self expectationWithDescription:expectationDescription];
 
+    self.fantomObjects[fantomId] = fantom;
+    
+}
+
+- (NSUInteger)fantomsCount {
+    
+    NSError *error = nil;
+    
+    NSArray *fantoms = [self.persister findAllSync:FANTOM_ENTITY_NAME
+                                         predicate:nil
+                                           options:FANTOM_OPTIONS
+                                             error:&error];
+    
+    NSLog(@"fantoms %@", fantoms);
+    
+    NSUInteger count = [self.persister countSync:FANTOM_ENTITY_NAME
+                                       predicate:nil
+                                         options:FANTOM_OPTIONS
+                                           error:&error];
+    
+    XCTAssertNil(error);
+
+    return count;
+    
 }
 
 
