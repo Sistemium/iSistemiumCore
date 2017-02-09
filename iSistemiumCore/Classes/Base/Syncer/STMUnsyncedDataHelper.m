@@ -429,16 +429,24 @@
     
     NSString *pk = object[@"id"];
     
+    if (!pk) {
+        
+        NSLog(@"have no object id");
+        return;
+        
+    }
+    
 //    NSLog(@"declineFromSync: %@ %@", entityName, pk);
     
     @synchronized (self) {
-        NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
         
+        NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
         if (!errored) errored = [NSMutableSet set];
         
         [errored addObject:pk];
         
         self.erroredObjectsByEntity[entityName] = errored;
+        
     }
 
 }
