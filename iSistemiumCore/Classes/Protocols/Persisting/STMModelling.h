@@ -35,6 +35,8 @@
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
 
+- (NSSet<NSString*>*)hierarchyForEntityName:(NSString*)name;
+
 @optional
 
 // TODO: Declare a separate protocol for using NSManagedObject

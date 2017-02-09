@@ -236,4 +236,8 @@
     return [self dictionaryForJSWithObject:(STMDatum *)object withNulls:YES withBinaryData:YES];
 }
 
+- (NSSet<NSString*>*)hierarchyForEntityName:(NSString*)name{
+    return [NSSet set];
+}
+
 @end
