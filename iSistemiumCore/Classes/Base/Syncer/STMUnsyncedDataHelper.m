@@ -135,6 +135,29 @@
     return 0;
 }
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    return predicate;
+    
+}
+
 
 #pragma mark - Private helpers
 
@@ -613,29 +636,6 @@
     if (!pendingObjects.count) return nil;
 
     return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", pendingObjects.allKeys];
-    
-}
-
-- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    
-    NSMutableArray *subpredicates = @[].mutableCopy;
-    
-    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
-        
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
-                                                                           forGroup:@"syncer"];
-        
-        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
-        
-    }
-    
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
-    
-    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
-    
-    return predicate;
     
 }
 

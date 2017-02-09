@@ -27,5 +27,7 @@
 
 - (NSUInteger)numberOfUnsyncedObjects;
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName;
+
 
 @end
