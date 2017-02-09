@@ -16,6 +16,10 @@
         
     NSString *lts = options[STMPersistingOptionLts];
     
+    NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionFantoms] && [options[STMPersistingOptionFantoms] boolValue]];
+    
+    anObject = [STMFunctions setValue:isFantom forKey:@"isFantom" inDictionary:anObject];
+    
     if (lts) {
         
         NSDictionary *existing = [self objectWithKey:anObject[self.primaryKey]];
@@ -34,15 +38,11 @@
         
         anObject = [STMFunctions setValue:lts forKey:STMPersistingOptionLts inDictionary:anObject];
     
-    } else if (![options[STMPersistingOptionSetTs] isEqual:@NO]) {
+    } else if (!isFantom.boolValue && ![options[STMPersistingOptionSetTs] isEqual:@NO]) {
         anObject = [STMFunctions setValue:[STMFunctions stringFromNow]
                                    forKey:STMPersistingKeyVersion
                              inDictionary:anObject];
     }
-    
-    NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionFantoms] && [options[STMPersistingOptionFantoms] boolValue]];
-    
-    anObject = [STMFunctions setValue:isFantom forKey:@"isFantom" inDictionary:anObject];
     
     return [self addObject:anObject];
     
