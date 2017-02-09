@@ -1143,7 +1143,7 @@
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
                name:@"entitiesReceivingDidFinish"
-             object:self.syncer];
+             object:nil];
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)
