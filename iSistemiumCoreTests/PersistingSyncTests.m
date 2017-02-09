@@ -220,6 +220,26 @@
                                     error:&error];
         
         XCTAssertTrue(count == 1, @"There should be 1 fantom");
+        
+        NSMutableDictionary *defantomData = testObject.mutableCopy;
+        [defantomData removeObjectForKey:@"isFantom"];
+
+        testObject = [self.persister mergeSync:entityName
+                                    attributes:defantomData
+                                       options:nil
+                                         error:&error];
+        
+        XCTAssertNil(error);
+        XCTAssertNotNil(testObject);
+        
+        XCTAssertFalse([testObject[@"isFantom"] boolValue]);
+        
+        count = [self.persister countSync:entityName
+                                predicate:predicate
+                                  options:options
+                                    error:&error];
+        
+        XCTAssertTrue(count == 0, @"There should be no fantom");
 
     }
     
