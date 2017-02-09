@@ -144,10 +144,10 @@
     
 }
 
-#warning Need to unhardcode picture names with a new Modeller method traversing entities heirarchy
-
-+ (NSArray <NSString *> *)pictureEntitiesNames {
-    return @[@"STMArticlePicture", @"STMOutletPhoto", @"STMVisitPhoto", @"STMMessagePicture"];
++ (NSSet <NSString *> *)pictureEntitiesNames {
+    
+    return [[self persistenceDelegate] hierarchyForEntityName:@"STMCorePicture"];
+    
 }
 
 + (NSArray *)allPictures {
