@@ -23,7 +23,8 @@
 @interface DefantomizingTests : STMPersistingTests <STMDefantomizingOwner>
 
 @property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;
-@property (nonatomic, strong) XCTestExpectation *fantomExpectation;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *expectations;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSDictionary *> *fantomObjects;
 
 
 @end
@@ -75,6 +76,8 @@
 - (void)fillPersisterWithFantoms {
     
     NSDictionary *fantomOptions = @{STMPersistingOptionFantoms:@YES};
+    self.expectations = @{}.mutableCopy;
+    self.fantomObjects = @{}.mutableCopy;
     
     NSDictionary *fantom = @{@"name" : @"fantomArticle"};
     
