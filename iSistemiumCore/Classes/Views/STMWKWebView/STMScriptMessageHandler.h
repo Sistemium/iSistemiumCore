@@ -31,5 +31,7 @@
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving, STMModelling> persistenceDelegate;
+@property (nonatomic, strong) NSMutableDictionary *getPictureCallbackJSFunctions;
+@property (nonatomic, strong) NSMutableDictionary *getPictureMessageParameters;
 
 @end
