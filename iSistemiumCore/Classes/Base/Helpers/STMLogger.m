@@ -372,7 +372,7 @@
     
     NSString *type = logMessageDic[@"type"];
     
-    NSPredicate *unsyncedPredicate = [[(STMSyncer *)self.session.syncer dataSyncingDelegate] predicateForUnsyncedObjectsWithEntityName:@"STMLogMessage"];
+    NSPredicate *unsyncedPredicate = [STMFunctions predicateForUnsyncedObjectsWithEntityName:@"STMLogMessage"];
     NSPredicate *typePredicate = [NSPredicate predicateWithFormat:@"type == %@", type];
     
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[unsyncedPredicate, typePredicate]];
