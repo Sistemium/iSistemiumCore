@@ -16,7 +16,7 @@
 
 @interface STMSyncerHelperDefantomizingProperties : NSObject
 
-@property (nonatomic, strong) NSMutableArray *failToResolveFantomsArray;
+@property (nonatomic, strong) NSMutableArray *failToResolveFantomsIdsArray;
 @property (atomic) NSUInteger fantomsCount;
 
 
@@ -30,7 +30,7 @@
     self = [super init];
     
     if (self) {
-        _failToResolveFantomsArray = @[].mutableCopy;
+        _failToResolveFantomsIdsArray = @[].mutableCopy;
     }
     return self;
     
@@ -210,7 +210,7 @@ static void *persistenceFantomsDelegateVar;
     } else {
         
         @synchronized (self) {
-            [[self defantomizingProperties].failToResolveFantomsArray addObject:fantomDic];
+            [[self defantomizingProperties].failToResolveFantomsIdsArray addObject:fantomId];
         }
         
     }
@@ -255,7 +255,7 @@ static void *persistenceFantomsDelegateVar;
     });
     
     // do not nil object used in syncronized()
-    [[self defantomizingProperties].failToResolveFantomsArray removeAllObjects];
+    [[self defantomizingProperties].failToResolveFantomsIdsArray removeAllObjects];
     
     [self.defantomizingOwner defantomizingFinished];
     
