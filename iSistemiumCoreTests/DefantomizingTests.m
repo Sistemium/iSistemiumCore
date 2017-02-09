@@ -32,11 +32,13 @@
 
 @implementation DefantomizingTests
 
++ (BOOL)needWaitSession {
+    return YES;
+}
+
 - (void)setUp {
     
     [super setUp];
-
-    [self inMemoryPersisting];
 
     if (!self.defantomizingDelegate) {
         
@@ -158,8 +160,6 @@
         
         [self.expectations removeObjectForKey:pk];
         
-        XCTAssertEqual(self.expectations.count, [self fantomsCount]);
-
     } else if ([expectation.description isEqualToString:BAD_FANTOM_DELETE]) {
         
         error = [STMFunctions errorWithMessage:@"response got error: 404"];
@@ -173,8 +173,6 @@
         [expectation fulfill];
         
         [self.expectations removeObjectForKey:pk];
-        
-        XCTAssertEqual(self.expectations.count, [self fantomsCount]);
 
     } else if ([expectation.description isEqualToString:BAD_FANTOM]) {
         
@@ -188,11 +186,12 @@
         
         [expectation fulfill];
         
-        [self.expectations removeObjectForKey:pk];
-        
-        XCTAssertEqual(self.expectations.count + 1, [self fantomsCount]);
+        //[self.expectations removeObjectForKey:pk];
         
     }
+    
+    XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+    
     
 }
 
