@@ -135,7 +135,64 @@
 
 - (void)defantomizeObject:(NSDictionary *)fantomDic {
     
-    [self.fantomExpectation fulfill];
+    NSString *pk = fantomDic[@"id"];
+    
+    XCTestExpectation *expectation = self.expectations[pk];
+    
+    NSString *entityName = [STMFunctions addPrefixToEntityName:fantomDic[@"entityName"]];
+    
+    NSError *error = nil;
+
+    if ([expectation.description isEqualToString:GOOD_FANTOM]) {
+    
+        NSMutableDictionary *object = self.fantomObjects[pk].mutableCopy;
+        [object removeObjectForKey:@"isFantom"];
+
+        [self.defantomizingDelegate defantomize:fantomDic
+                                        success:YES
+                                     entityName:entityName
+                                         result:object
+                                          error:error];
+
+        [expectation fulfill];
+        
+        [self.expectations removeObjectForKey:pk];
+        
+        XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+
+    } else if ([expectation.description isEqualToString:BAD_FANTOM_DELETE]) {
+        
+        error = [STMFunctions errorWithMessage:@"response got error: 404"];
+        
+        [self.defantomizingDelegate defantomize:fantomDic
+                                        success:NO
+                                     entityName:entityName
+                                         result:nil
+                                          error:error];
+        
+        [expectation fulfill];
+        
+        [self.expectations removeObjectForKey:pk];
+        
+        XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+
+    } else if ([expectation.description isEqualToString:BAD_FANTOM]) {
+        
+        error = [STMFunctions errorWithMessage:@"response got error"];
+        
+        [self.defantomizingDelegate defantomize:fantomDic
+                                        success:NO
+                                     entityName:entityName
+                                         result:nil
+                                          error:error];
+        
+        [expectation fulfill];
+        
+        [self.expectations removeObjectForKey:pk];
+        
+        XCTAssertEqual(self.expectations.count + 1, [self fantomsCount]);
+        
+    }
     
 }
 
