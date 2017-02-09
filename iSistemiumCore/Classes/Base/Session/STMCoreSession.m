@@ -182,10 +182,10 @@
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
                                                                                               subscriber:self.syncer];
         self.syncer.dataSyncingDelegate = unsyncedHelper;
-        
-        self.syncer.session = self;
 
         self.status = STMSessionRunning;
+
+        self.syncer.session = self;
 
     }
     
