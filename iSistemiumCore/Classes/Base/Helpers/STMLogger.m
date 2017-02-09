@@ -322,6 +322,7 @@
     NSDictionary *logMessageToStore = [self logMessageToStoreWithLastLogMessage:lastLogMessage
                                                                andLogMessageDic:logMessageDic];
     
+    [loggerDefaultsMutable removeObject:lastLogMessage];
     [loggerDefaultsMutable addObject:logMessageToStore];
     
     [defaults setObject:loggerDefaultsMutable forKey:[self loggerKey]];
