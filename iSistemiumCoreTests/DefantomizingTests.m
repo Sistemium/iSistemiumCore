@@ -41,7 +41,7 @@
         
         self.defantomizingDelegate = [[STMSyncerHelper alloc] init];
         self.defantomizingDelegate.defantomizingOwner = self;
-        self.defantomizingDelegate.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.fakePersiser];
+        self.defantomizingDelegate.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persister];
 
     }
     
@@ -80,10 +80,12 @@
     
     NSError *error = nil;
     
-    fantom = [self.fakePersiser mergeSync:@"STMArticle"
-                               attributes:fantom
-                                  options:fantomOptions
-                                    error:&error];
+    fantom = [self.persister mergeSync:FANTOM_ENTITY_NAME
+                            attributes:fantom
+                               options:FANTOM_OPTIONS
+                                 error:&error];
+    
+    XCTAssertNil(error);
     
     NSLog(@"fantom %@", fantom);
     
