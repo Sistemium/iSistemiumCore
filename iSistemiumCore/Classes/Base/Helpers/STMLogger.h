@@ -39,5 +39,8 @@
 
 - (NSArray *)syncingTypesForSettingType:(NSString *)settingType;
 
+- (NSString *)stringTypeForNumType:(STMLogMessageType)numType;
+- (NSString *)loggerKey;
+
 
 @end
