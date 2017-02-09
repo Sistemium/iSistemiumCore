@@ -186,7 +186,11 @@ static void *persistenceFantomsDelegateVar;
 }
 
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString {
-    [self defantomizingObject:fantomDic error:errorString deleteObject:NO];
+    
+    BOOL deleteObject = [errorString hasSuffix:@"404"] || [errorString hasSuffix:@"403"];
+    
+    [self defantomizingObject:fantomDic error:errorString deleteObject:deleteObject];
+    
 }
 
 - (void)defantomizingObject:(NSDictionary *)fantomDic error:(NSString *)errorString deleteObject:(BOOL)deleteObject {
@@ -268,28 +272,6 @@ static void *persistenceFantomsDelegateVar;
                     withEntityName:entityName
                                xid:xid
                            context:context];
-    
-}
-
-- (void)socketReceiveJSDataFindAckWithErrorCode:(NSNumber *)errorCode errorString:(NSString *)errorString context:(NSDictionary *)context {
-    
-    if (errorCode.integerValue > 499 && errorCode.integerValue < 600) {
-        
-    }
-    
-    BOOL defantomizing = [context[@"type"] isEqualToString:DEFANTOMIZING_CONTEXT];
-    
-    if (defantomizing) {
-        
-        BOOL deleteObject = (errorCode.integerValue == 403 || errorCode.integerValue == 404);
-        
-        [self defantomizingObject:context[@"object"]
-                            error:errorString
-                     deleteObject:deleteObject];
-        
-    } else {
-        NSLog(@"find error: %@", errorString);
-    }
     
 }
 
