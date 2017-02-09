@@ -13,6 +13,11 @@
 
 
 #define FantomsTestsTimeOut 15
+#define GOOD_FANTOM @"good fantom"
+#define BAD_FANTOM @"bad fantom"
+#define BAD_FANTOM_DELETE @"bad fantom to delete"
+#define FANTOM_ENTITY_NAME @"STMArticle"
+#define FANTOM_OPTIONS @{STMPersistingOptionFantoms:@YES}
 
 
 @interface DefantomizingTests : STMPersistingTests <STMDefantomizingOwner>
