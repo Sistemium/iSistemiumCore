@@ -18,6 +18,8 @@
     id result = [self init];
     self.owner = owner;
     _subscriptions = [NSMutableDictionary dictionary];
+    _getPictureCallbackJSFunctions = @{}.mutableCopy;
+    _getPictureMessageParameters = @{}.mutableCopy;
     return result;
 }
 

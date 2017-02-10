@@ -236,4 +236,29 @@
     return [self dictionaryForJSWithObject:(STMDatum *)object withNulls:YES withBinaryData:YES];
 }
 
+- (NSSet<NSString*>*)hierarchyForEntityName:(NSString*)name{
+    
+    NSSet *result = [NSSet set];
+    
+    NSDictionary<NSString*, NSEntityDescription*>* entitiesByName = self.managedObjectModel.entitiesByName;
+    
+    if ([entitiesByName.allKeys containsObject:name]){
+        
+        for (NSString* subEntityName in entitiesByName[name].subentitiesByName.allKeys){
+            
+            result = [result setByAddingObjectsFromSet:[self hierarchyForEntityName:subEntityName]];
+            
+            if ([self isConcreteEntityName:subEntityName]){
+                
+                result = [result setByAddingObject:subEntityName];
+                
+            }
+            
+        }
+        
+    }
+    
+    return result;
+}
+
 @end

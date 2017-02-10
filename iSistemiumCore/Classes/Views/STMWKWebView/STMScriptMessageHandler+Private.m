@@ -163,27 +163,6 @@
 
 #pragma mark - get pictures from WKWebView
 
-NSMutableDictionary *_getPictureCallbackJSFunctions;
-NSMutableDictionary *_getPictureMessageParameters;
-
-- (NSMutableDictionary <NSString *, NSString *> *)getPictureCallbackJSFunctions {
-    
-    if (!_getPictureCallbackJSFunctions) {
-        _getPictureCallbackJSFunctions = @{}.mutableCopy;
-    }
-    return _getPictureCallbackJSFunctions;
-    
-}
-
-- (NSMutableDictionary *)getPictureMessageParameters {
-    
-    if (!_getPictureMessageParameters) {
-        _getPictureMessageParameters = @{}.mutableCopy;
-    }
-    return _getPictureMessageParameters;
-    
-}
-
 - (void)getPictureSendData:(NSData *)imageData parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     if (imageData) {

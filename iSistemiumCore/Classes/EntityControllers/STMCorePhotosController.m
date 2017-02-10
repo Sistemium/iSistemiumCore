@@ -121,7 +121,12 @@
 	
     if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
         
-        STMCorePhoto *photoObject = (STMCorePhoto *)[STMCoreObjectsController newObjectForEntityName:entityName isFantom:NO ];
+        STMCorePhoto *photoObject = (STMCorePhoto *) [[self.class persistenceDelegate] newObjectForEntityName:entityName];
+        
+        NSData *xid = [STMFunctions UUIDDataFromNSUUID:[NSUUID UUID]];
+        
+        photoObject.xid = xid;
+        
         [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject andUpload:YES];
         
         return photoObject;

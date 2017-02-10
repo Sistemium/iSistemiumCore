@@ -143,18 +143,24 @@
     
 }
 
-#warning Need to unhardcode picture names with a new Modeller method traversing entities heirarchy
-
-+ (NSArray <NSString *> *)pictureEntitiesNames {
-    return @[@"STMArticlePicture", @"STMOutletPhoto", @"STMVisitPhoto", @"STMMessagePicture"];
++ (NSSet <NSString *> *)pictureEntitiesNames {
+    
+    return [[self persistenceDelegate] hierarchyForEntityName:@"STMCorePicture"];
+    
 }
 
 + (NSArray *)allPictures {
     
+    return [self.class allPicturesWithPredicate:nil];
+    
+}
+
++ (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
+    
     NSMutableArray *result = @[].mutableCopy;
     
     for (NSString *entityName in [self pictureEntitiesNames]) {
-        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:nil options:nil error:nil];
+        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
         for (NSDictionary *object in objects){
             NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
             [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
@@ -259,9 +265,8 @@
     
     [self startCheckingPicturesPaths];
     
-#warning still uses core data, needs to be rewrited
-//    [self checkBrokenPhotos];
-//    [self checkUploadedPhotos];
+    [self checkBrokenPhotos];
+    [self checkUploadedPhotos];
     
 }
 
@@ -415,12 +420,9 @@
 
 + (void)checkBrokenPhotos {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePicture class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
     
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [self.class allPicturesWithPredicate:predicate];
     
     for (STMCorePicture *picture in result) {
         
@@ -494,13 +496,10 @@
 + (void)checkUploadedPhotos {
 
     int counter = 0;
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePhoto class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
-    
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [self.class allPicturesWithPredicate:predicate];
     
     for (STMCorePicture *picture in result) {
         
@@ -905,66 +904,60 @@
                            completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
         if (!error) {
+                
+            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
             
-            if (picture.managedObjectContext) {
+            if (statusCode == 200) {
                 
-                NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+                NSError *localError = nil;
                 
-                if (statusCode == 200) {
-                    
-                    NSError *localError = nil;
-                    
-                    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                               options:0
-                                                                                 error:&localError];
-                    
-                    if (dictionary) {
+                NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                           options:0
+                                                                             error:&localError];
+                
+                if (dictionary) {
 
-                        NSArray *picturesDicts = dictionary[@"pictures"];
+                    NSArray *picturesDicts = dictionary[@"pictures"];
 
-                        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
-                                                                               options:0
-                                                                                 error:&localError];
+                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
+                                                                           options:0
+                                                                             error:&localError];
+                    
+                    if (picturesJson) {
                         
-                        if (picturesJson) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
                             
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                
-                                for (NSDictionary *dict in picturesDicts){
-                                    if ([dict[@"name"] isEqual:@"original"]){
-                                        picture.href = dict[@"src"];
-                                    }
+                            for (NSDictionary *dict in picturesDicts){
+                                if ([dict[@"name"] isEqual:@"original"]){
+                                    picture.href = dict[@"src"];
                                 }
-                                
-                                NSString *info = [[NSString alloc] initWithData:picturesJson
-                                                                       encoding:NSUTF8StringEncoding];
-                                
-                                picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
-                                                                                       withString:@"/"];
-                                
-                                NSLog(@"%@", picture.picturesInfo);
-                                
-                                __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                                
-                                [session.document saveDocument:^(BOOL success) {
-                                }];
-                                
-                            });
+                            }
+                            
+                            NSString *info = [[NSString alloc] initWithData:picturesJson
+                                                                   encoding:NSUTF8StringEncoding];
+                            
+                            picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
+                                                                                   withString:@"/"];
+                            
+                            NSLog(@"%@", picture.picturesInfo);
+                            
+                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+                            
+                            [session.document saveDocument:^(BOOL success) {
+                            }];
+                            
+                        });
 
-                        } else {
-                            NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                        }
-                        
                     } else {
                         NSLog(@"error in json serialization: %@", localError.localizedDescription);
                     }
                     
                 } else {
-                    NSLog(@"Request error, statusCode: %ld", (long)statusCode);
+                    NSLog(@"error in json serialization: %@", localError.localizedDescription);
                 }
-
+                
             } else {
-                NSLog(@"picture have no managedObjectContext, probably it was deleted");
+                NSLog(@"Request error, statusCode: %ld", (long)statusCode);
             }
             
         } else {
