@@ -692,11 +692,11 @@
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
         if (error) {
-            NSLog(@"error: %@", error);
+            NSLog(@"sendFindWithValue entityName %@ error: %@", entityName, error);
             return;
         }
         
-        NSLog(@"success: %@", result);
+        NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
         
         NSDictionary *options = @{STMPersistingOptionLts:[STMFunctions stringFromNow]};
         
