@@ -121,11 +121,14 @@
 }
 
 - (void)hideProgressBar {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
         self.progressBar.hidden = YES;
         [UIApplication sharedApplication].idleTimerDisabled = NO;
-    });
+        
+    }];
+    
 }
 
 - (void)syncerReceiveStarted {
@@ -194,13 +197,12 @@
 
 - (void)defantomizingProgressBarFinish {
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self performSelector:@selector(hideProgressBar)
-                   withObject:nil
-                   afterDelay:0];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
+        [self hideProgressBar];
         [self setColorForSyncImageView];
-    });
+        
+    }];
     
     if (!self.downloadAlertWasShown) [self showDownloadAlert];
     
