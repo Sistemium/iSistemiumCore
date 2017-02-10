@@ -17,7 +17,7 @@
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedSettingsResultController;
-@property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync> persistenceDelegate;
 
 @end
 
