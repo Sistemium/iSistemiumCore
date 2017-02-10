@@ -33,7 +33,6 @@
 @property (nonatomic, strong) UIAlertView *authAlert;
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
-@property (nonatomic, strong) UIAlertView *timeoutAlert;
 @property (nonatomic, strong) STMCoreSession *session;
 
 @property (nonatomic, strong) NSString *appDownloadUrl;
@@ -936,46 +935,6 @@
     
 }
 
-
-- (UIAlertView *)timeoutAlert {
-    
-    if (!_timeoutAlert) {
-        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                            message:NSLocalizedString(@"TIMEOUT ERROR", nil)
-                                                           delegate:self
-                                                  cancelButtonTitle:NSLocalizedString(@"CANCEL", nil)
-                                                  otherButtonTitles:NSLocalizedString(@"OK", nil), nil];
-        
-        alertView.tag = 2;
-
-        _timeoutAlert = alertView;
-        
-    }
-    return _timeoutAlert;
-    
-}
-
-- (void)showTimeoutAlert {
-    
-    if (!self.timeoutAlert.visible) {
-
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self.timeoutAlert show];
-        }];
-        
-    }
-    
-}
-
-- (void)checkTimeoutAlert {
-    
-    if (self.timeoutAlert.visible) {
-        if (self.session.syncer.syncerState != STMSyncerIdle) [self.timeoutAlert dismissWithClickedButtonIndex:0 animated:YES];
-    }
-    
-}
-
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
     if (alertView.tag == 1) {
@@ -993,18 +952,7 @@
         
         self.updateAlertIsShowing = NO;
         
-    } else if (alertView.tag == 2) {
-
-//        if (buttonIndex == 1) [self.session.syncer setSyncerState:self.session.syncer.timeoutErrorSyncerState];
-    
     }
-    
-}
-
-- (void)stateChanged {
-    
-    [self authStateChanged];
-    [self syncStateChanged];
     
 }
 
@@ -1030,30 +978,10 @@
     
 }
 
-
-- (void)syncStateChanged {
-
-//    NSInteger badgeNumber = (self.session.status == STMSessionRunning) ? [STMMessageController unreadMessagesCount] : 0;
-//    [UIApplication sharedApplication].applicationIconBadgeNumber = badgeNumber;
-
-    [self checkTimeoutAlert];
-    
-}
-
 - (void)syncerInitSuccessfully {
     
     [self removeSpinner];
     
-}
-
-- (void)syncerTimeoutError {
-    
-#ifdef DEBUG
-
-    [self showTimeoutAlert];
-    
-#endif
-
 }
 
 - (void)showUnreadMessageCount {
@@ -1146,20 +1074,10 @@
                name:@"notAuthorized"
              object:nil];
     
-//    [nc addObserver:self
-//           selector:@selector(authControllerError:)
-//               name:@"authControllerError"
-//             object:[STMAuthController authController]];
-    
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
              object:[STMCoreAuthController authController]];
-    
-    [nc addObserver:self
-           selector:@selector(syncStateChanged)
-               name:NOTIFICATION_SYNCER_STATUS_CHANGED
-             object:self.session.syncer];
     
     [nc addObserver:self
            selector:@selector(syncerInitSuccessfully)
@@ -1168,17 +1086,7 @@
     
 //    [nc addObserver:self
 //           selector:@selector(showUnreadMessageCount)
-//               name:@"gotNewMessage"
-//             object:nil];
-//
-//    [nc addObserver:self
-//           selector:@selector(showUnreadMessageCount)
 //               name:@"messageIsRead"
-//             object:nil];
-//
-//    [nc addObserver:self
-//           selector:@selector(showUnreadMessageCount)
-//               name:@"unreadMessageCountChange"
 //             object:nil];
 
     [nc addObserver:self
@@ -1200,11 +1108,6 @@
            selector:@selector(documentNotReady)
                name:NOTIFICATION_DOCUMENT_NOT_READY
              object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(syncerTimeoutError)
-               name:@"NSURLErrorTimedOut"
-             object:self.session.syncer];
     
     [nc addObserver:self
            selector:@selector(sessionStatusChanged:)
