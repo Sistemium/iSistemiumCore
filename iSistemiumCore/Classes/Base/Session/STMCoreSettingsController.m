@@ -286,9 +286,7 @@
                                                                error:&error];
     
     return currentSettings;
-    
-//    return self.fetchedSettingsResultController.fetchedObjects;
-    
+        
 }
 
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group {
@@ -300,12 +298,6 @@
     for (NSDictionary *setting in groupSettings) {
         if (setting[@"name"] && setting[@"value"]) settingsDictionary[setting[@"name"]] = setting[@"value"];
     }
-    
-//    for (STMSetting *setting in groupSettings) {
-//        if (setting.name) settingsDictionary[(NSString *)setting.name] = setting.value;
-//    }
-    
-//    NSLog(@"settings for %@: %@", group, settingsDictionary);
     
     return settingsDictionary;
     
