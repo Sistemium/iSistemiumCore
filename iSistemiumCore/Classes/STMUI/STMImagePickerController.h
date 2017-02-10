@@ -13,7 +13,7 @@
 
 @interface STMImagePickerController : UIImagePickerController
 
-@property (nonatomic, strong) UIViewController <STMImagePickerOwnerProtocol> *ownerVC;
+@property (nonatomic, strong) id <STMImagePickerOwnerProtocol> ownerVC;
 
 - (instancetype)initWithSourceType:(UIImagePickerControllerSourceType)sourceType;
 
