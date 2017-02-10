@@ -86,7 +86,7 @@ STMImagePickerOwnerProtocol>
 - (id <STMScriptMessaging>)scriptMessageHandler {
     if (!_scriptMessageHandler) {
         STMScriptMessageHandler *scriptMessageHandler = [[STMScriptMessageHandler alloc] initWithOwner:self];
-        scriptMessageHandler.persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
+        scriptMessageHandler.persistenceDelegate = self.persistenceDelegate;
         _scriptMessageHandler = scriptMessageHandler;
     }
     return _scriptMessageHandler;
@@ -1234,7 +1234,7 @@ int counter = 0;
         
         [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject withRelations:true];
         
-        NSDictionary *photoObjectDic = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate dictionaryFromManagedObject:photoObject];
+        NSDictionary *photoObjectDic = [self.persistenceDelegate dictionaryFromManagedObject:photoObject];
         
         [self.persistenceDelegate merge:photoObject.entity.name attributes:photoObjectDic options:nil].then(^(NSDictionary * result){
             [self callbackWithData:@[result]
