@@ -15,7 +15,7 @@
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
     
-    __block NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
+    NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
                                                        identifier:identifier];
     
     if (errorMessage) {
@@ -45,7 +45,7 @@
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncArrayResultCallback)completionHandler {
     
-    __block NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
+    NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
     
     if (errorMessage) {
         
