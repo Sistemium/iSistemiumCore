@@ -392,13 +392,13 @@ static NSString *SQLNullValueString = @"NULL";
         }
         case NSLikePredicateOperatorType:
         case NSContainsPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE %%%@%%)",leftSQLExpression,rightSQLExpression]);
+            return [NSString stringWithFormat:@"(%@ LIKE '%%%@%%')", leftSQLExpression, [self unquoteString:rightSQLExpression]];
         }
         case NSBeginsWithPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE %@%%)",leftSQLExpression,rightSQLExpression]);
+            return [NSString stringWithFormat:@"(%@ LIKE '%@%%')", leftSQLExpression, [self unquoteString:rightSQLExpression]];
         }
         case NSEndsWithPredicateOperatorType: {
-            return([NSString stringWithFormat:@"(%@ LIKE %%%@)",leftSQLExpression,rightSQLExpression]);
+            return [NSString stringWithFormat:@"(%@ LIKE '%%%@')", leftSQLExpression, [self unquoteString:rightSQLExpression]];
         }
         case NSCustomSelectorPredicateOperatorType: {
             NSLog(@"SQLWhereClauseForComparisonPredicate custom selectors are not supported");
@@ -459,6 +459,24 @@ static NSString *SQLNullValueString = @"NULL";
                                            options:0
                                              range:NSMakeRange(0, whereClause.length)
                                       withTemplate: @""];
+}
+
+- (NSString *)unquoteString:(NSString *)aString {
+    
+    if ([aString isEqualToString:@"''"]) return @"";
+    
+    NSRegularExpression* regex =
+    [NSRegularExpression regularExpressionWithPattern: @"^'.*'$"
+                                              options: NSRegularExpressionCaseInsensitive
+                                                error: nil];
+    
+    NSUInteger matches = [regex numberOfMatchesInString:aString
+                                                options:0
+                                                  range:NSMakeRange(0, aString.length)];
+    if (!matches) return aString;
+    
+    return [aString substringWithRange:NSMakeRange(1, aString.length - 2)];
+    
 }
 
 - (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate{

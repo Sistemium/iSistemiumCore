@@ -108,6 +108,21 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     string = [NSString stringWithFormat:@"(id IN ('%@','%@'))", uuidString, uuidString];
     STMAssertSQLFilter(predicate, string);
 
+    predicate = [NSPredicate predicateWithFormat: @"name ENDSWITH %@", uuidString];
+    string = [NSString stringWithFormat:@"(name LIKE '%%%@')", uuidString];
+    
+    STMAssertSQLFilter(predicate, string);
+    
+    predicate = [NSPredicate predicateWithFormat: @"name BEGINSWITH %@", uuidString];
+    string = [NSString stringWithFormat:@"(name LIKE '%@%%')", uuidString];
+    
+    STMAssertSQLFilter(predicate, string);
+    
+    predicate = [NSPredicate predicateWithFormat: @"name LIKE %@", uuidString];
+    string = [NSString stringWithFormat:@"(name LIKE '%%%@%%')", uuidString];
+    
+    STMAssertSQLFilter(predicate, string);
+
 }
 
 - (NSManagedObjectModel *) sampleModel {
