@@ -120,47 +120,6 @@
     
 }
 
-//- (void)syncerStatusChanged:(NSNotification *)notification {
-//    
-//    if ([notification.object isKindOfClass:[STMSyncer class]]) {
-//        
-//        STMSyncer *syncer = notification.object;
-//        
-//        STMSyncerState fromState = [notification.userInfo[@"from"] intValue];
-//        
-//        if (syncer.syncerState == STMSyncerIdle) {
-//
-//            self.progressBar.progress = 1.0;
-//            [self performSelector:@selector(hideProgressBar)
-//                       withObject:nil
-//                       afterDelay:0];
-//            
-//            if (!self.downloadAlertWasShown) [self showDownloadAlert];
-//            
-//        } else {
-//            
-//            self.progressBar.hidden = NO;
-//            [UIApplication sharedApplication].idleTimerDisabled = YES;
-//            self.totalEntityCount = 1;
-//            
-//        }
-//        
-//        if (fromState == STMSyncerReceiveData) {
-//            
-//            [self performSelector:@selector(hideNumberOfObjects)
-//                       withObject:nil
-//                       afterDelay:5];
-//            
-//        }
-//        
-//    }
-//    
-////    [self stopSyncSpinner];
-//
-//    [self updateSyncInfo];
-//    
-//}
-
 - (void)hideProgressBar {
     dispatch_async(dispatch_get_main_queue(), ^{
         
