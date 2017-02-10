@@ -388,10 +388,16 @@
                                              @"name"    : settingName,
                                              @"value"   : value};
                 
-                [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
-                                          attributes:newSetting
-                                             options:nil
-                                   completionHandler:nil];
+                NSError *error = nil;
+                [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
+                                         attributes:newSetting
+                                            options:nil
+                                              error:&error];
+
+//                [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
+//                                          attributes:newSetting
+//                                             options:nil
+//                                   completionHandler:nil];
                 
             } else {
                 
@@ -442,10 +448,17 @@
             
             setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
             
-            [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
-                                      attributes:setting
-                                         options:nil
-                               completionHandler:nil];
+            NSError *error = nil;
+            
+            [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
+                                     attributes:setting
+                                        options:nil
+                                          error:&error];
+            
+//            [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
+//                                      attributes:setting
+//                                         options:nil
+//                               completionHandler:nil];
             
         } else {
             
