@@ -128,7 +128,7 @@ static NSString *SQLNullValueString = @"NULL";
     
     obj = [self replaceKeyWords:obj];
     
-    return obj;
+    return [obj containsString:@"."] ? obj : [self.class quotedName:obj];
 }
 
 - (NSString *)SQLExpressionForLeftKeyPath:(NSString *)keyPath{
