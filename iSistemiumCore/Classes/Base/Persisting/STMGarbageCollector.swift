@@ -9,6 +9,12 @@
 import Foundation
 import Crashlytics
 
+extension Set {
+    func setmap<U>(transform: (Element) -> U) -> Set<U> {
+        return Set<U>(self.lazy.map(transform))
+    }
+}
+
 @objc class STMGarbageCollector:NSObject{
     
     static var unusedImageFiles = Set<String>()
@@ -37,11 +43,14 @@ import Crashlytics
         unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
+        var imageFilePaths = Dictionary<String,String>()
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
         while let element = enumerator?.nextObject() as? String {
             if element.hasSuffix(".jpg") {
-                allImageFiles.insert(element.components(separatedBy: "/").last!)
+                let name = element.components(separatedBy: "/").last!
+                allImageFiles.insert(name)
+                imageFilePaths[name] = element
             }
         }
         
@@ -58,6 +67,7 @@ import Crashlytics
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
+        unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
     }
     
     static func removeOutOfDateImages(){
