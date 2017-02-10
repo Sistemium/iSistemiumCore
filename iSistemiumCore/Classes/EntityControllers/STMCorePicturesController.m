@@ -33,10 +33,9 @@
 @end
 
 
-@implementation STMCorePicturesController {
-    NSUInteger _nonloadedPicturesCount;
-}
+@implementation STMCorePicturesController
 
+@synthesize nonloadedPicturesCount = _nonloadedPicturesCount;
 
 + (STMCorePicturesController *)sharedController {
     
@@ -183,7 +182,7 @@
     
 }
 
-- (NSUInteger)nonloadedPicturesCountCached {
+- (NSUInteger)nonloadedPicturesCount {
 
     if (!self.nonloadedPicturesSubscriptionID) {
         
@@ -201,23 +200,11 @@
         
     }
 
+    if (_nonloadedPicturesCount == 0) self.downloadingPictures = NO;
+
     return _nonloadedPicturesCount;
 }
 
-
-- (NSUInteger)nonloadedPicturesCount {
-    
-    NSUInteger nonloadedPicturesCount = [self nonloadedPicturesCountCached];
-    
-    if (nonloadedPicturesCount == 0) {
-        
-        self.downloadingPictures = NO;
-    
-    }
-    
-    return nonloadedPicturesCount;
-    
-}
 
 - (NSString *)imagesCachePath {
     

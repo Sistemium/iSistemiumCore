@@ -12,12 +12,12 @@
 @interface STMCorePicturesController : STMCoreController
 
 @property (nonatomic) BOOL downloadingPictures;
+@property (nonatomic,readonly) NSUInteger nonloadedPicturesCount;
 
 + (STMCorePicturesController *)sharedController;
 
 + (NSArray *)allPictures;
 
-- (NSUInteger)nonloadedPicturesCount;
 
 + (CGFloat)jpgQuality;
 
