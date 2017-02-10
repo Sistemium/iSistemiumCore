@@ -13,33 +13,65 @@
 
 @implementation STMClientEntityController
 
-+ (STMClientEntity *)clientEntityWithName:(NSString *)name {
++ (NSString *)clientEntityClassName {
+    return NSStringFromClass([STMClientEntity class]);
+}
+
++ (void)clientEntityWithName:(NSString *)name setETag:(NSString *)eTag {
     
-    STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMClientEntity class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSMutableDictionary *clientEntity = [self clientEntityWithName:name].mutableCopy;
     
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+    clientEntity[@"eTag"] = eTag ? eTag : [NSNull null];
+    
+    NSError *error = nil;
+    
+//    NSDictionary *result =
+    [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
+                               attributes:clientEntity
+                                  options:nil
+                                    error:&error];
+    
+//    NSLog(@"clientEntity set eTag %@ result: %@", eTag, result);
+    
+}
+
++ (NSDictionary *)clientEntityWithName:(NSString *)name {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    
+    NSError *error = nil;
+    NSArray *result = [[self persistenceDelegate] findAllSync:[self clientEntityClassName]
+                                                    predicate:predicate
+                                                      options:nil
+                                                        error:&error];
     
     if (result.count > 1) {
         
         NSString *logMessage = [NSString stringWithFormat:@"more than one clientEntity with name %@", name];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                 numType:STMLogMessageTypeError];
         
     }
     
-    STMClientEntity *clientEntity = result.lastObject;
-    
+    NSDictionary *clientEntity = result.lastObject;
+
     if (!clientEntity) {
         
-        clientEntity = (STMClientEntity *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMClientEntity class]) isFantom:NO];
-        clientEntity.name = name;
+        NSString *eTag = [STMEntityController entityWithName:name].eTag;
         
-        STMEntity *entity = [STMEntityController entityWithName:name];
-        clientEntity.eTag = entity.eTag;
-        
+        clientEntity = @{@"name"    : name,
+                         @"eTag"    : eTag ? eTag : [NSNull null]};
+    
+        clientEntity =
+        [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
+                                   attributes:clientEntity
+                                      options:nil
+                                        error:&error];
+
     }
     
+//    NSLog(@"clientEntity %@", clientEntity);
+
     return clientEntity;
     
 }

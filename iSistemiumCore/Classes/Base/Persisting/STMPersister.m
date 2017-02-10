@@ -210,11 +210,21 @@
 - (BOOL)saveWithEntityName:(NSString *)entityName{
     
     if ([self.fmdb hasTable:entityName]){
+        
         return [self.fmdb commit];
+        
     } else {
-        NSError *error;
-        [self.document.managedObjectContext save:&error];
-        return !error;
+        
+#warning - may be make saveWithEntityName: method async to return correct value if using document save
+        [self.document saveDocument:^(BOOL success) {
+        }];
+        
+        return YES;
+        
+//        NSError *error;
+//        [self.document.managedObjectContext save:&error];
+//        return !error;
+        
     }
     
 }
