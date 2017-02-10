@@ -103,6 +103,12 @@
 
     [self.expectation fulfill];
     
+    NSUInteger deletedCount = [self.persister destroyAllSync:LOG_MESSAGE_ENTITY_NAME
+                                                   predicate:predicate
+                                                     options:@{STMPersistingOptionRecordstatuses:@NO}
+                                                       error:&error];
+    XCTAssertNil(error);
+    XCTAssertEqual(logMessages.count, deletedCount);
 }
 
 - (void)checkLogMessagesInUserDefaults {
