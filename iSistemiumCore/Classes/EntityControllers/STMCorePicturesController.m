@@ -722,7 +722,7 @@
 + (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
     
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
-    NSString *fileName = [xid stringByAppendingString:@".jpg"];
+    NSString *fileName = [NSString stringWithFormat:@"thumbnail_%@.jpg",xid];
     
     UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);

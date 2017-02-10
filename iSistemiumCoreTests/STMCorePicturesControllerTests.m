@@ -49,7 +49,7 @@
     
     NSString *expectedResizedImagePath = [@"resized_" stringByAppendingString:expectedImagePath];
     
-    NSString *expectedThumbnailPath = [expectedImagePath copy];
+    NSString *expectedThumbnailPath = [@"thumbnail_" stringByAppendingString:expectedImagePath];
     
     NSError *error;
     
