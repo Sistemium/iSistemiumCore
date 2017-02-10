@@ -539,11 +539,9 @@ static void *dataDownloadingOwnerVar;
         
     } else {
         
-        [self.dataDownloadingOwner dataDownloadingFinished];
-
         [self receiveFinished];
-
         self.downloadingState.isInSyncingProcess = NO;
+        [self.dataDownloadingOwner dataDownloadingFinished];
         
     }
     
