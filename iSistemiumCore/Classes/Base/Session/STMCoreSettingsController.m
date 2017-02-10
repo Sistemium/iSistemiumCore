@@ -242,12 +242,20 @@
         
         NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMSetting class])];
 
-        NSSortDescriptor *groupSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"group" ascending:YES selector:@selector(caseInsensitiveCompare:)];
-        NSSortDescriptor *nameSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)];
+        NSSortDescriptor *groupSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"group"
+                                                                              ascending:YES
+                                                                               selector:@selector(caseInsensitiveCompare:)];
+        
+        NSSortDescriptor *nameSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name"
+                                                                             ascending:YES
+                                                                              selector:@selector(caseInsensitiveCompare:)];
 
         request.sortDescriptors = @[groupSortDescriptor, nameSortDescriptor];
         
-        _fetchedSettingsResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:self.session.document.managedObjectContext sectionNameKeyPath:@"group" cacheName:nil];
+        _fetchedSettingsResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                                                               managedObjectContext:self.session.document.managedObjectContext
+                                                                                 sectionNameKeyPath:@"group"
+                                                                                          cacheName:nil];
         _fetchedSettingsResultController.delegate = self;
         
     }

@@ -511,10 +511,7 @@ static void *dataDownloadingOwnerVar;
 }
 
 - (void)nextReceiveEntityWithName:(NSString *)entityName {
-    
-//    [self fillETagWithTemporaryValueForEntityName:entityName];
-    [self checkConditionForReceivingEntityWithName:entityName];
-    
+    [self checkConditionForReceivingEntityWithName:entityName];    
 }
 
 - (void)receivingDidFinish {
