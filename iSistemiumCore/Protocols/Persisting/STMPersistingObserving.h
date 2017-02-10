@@ -17,16 +17,20 @@ typedef void (^STMPersistingObservingEntityNameArrayCallback)(NSString * _Nonnul
 @protocol STMPersistingObserving
 
 NS_ASSUME_NONNULL_BEGIN
-- (STMPersistingObservingSubscriptionID)observeEntity:(NSString * _Nonnull)entityName
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                                      predicate:(NSPredicate * _Nullable)predicate
-                                                      callback:(STMPersistingObservingSubscriptionCallback _Nonnull)callback;
+                                                      callback:(STMPersistingObservingSubscriptionCallback)callback;
+
+- (STMPersistingObservingSubscriptionID)observeAllWithPredicate:(NSPredicate * _Nullable)predicate
+                                                       callback:(STMPersistingObservingEntityNameArrayCallback)callback;
+
+- (STMPersistingObservingSubscriptionID)observeEntityNames:(NSArray *)entityNames
+                                                 predicate:(NSPredicate * _Nullable)predicate
+                                                  callback:(STMPersistingObservingEntityNameArrayCallback)callback;
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId;
 
-@optional
-
-- (STMPersistingObservingSubscriptionID)observeAllWithPredicate:(NSPredicate * _Nullable)predicate
-                                                       callback:(STMPersistingObservingEntityNameArrayCallback _Nonnull)callback;
 NS_ASSUME_NONNULL_END
 
 @end

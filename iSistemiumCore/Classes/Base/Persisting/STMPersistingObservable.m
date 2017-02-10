@@ -73,7 +73,7 @@
     
 }
 
-- (STMPersistingObservingSubscriptionID) observeAllWithPredicate:(NSPredicate *)predicate callback:(STMPersistingObservingEntityNameArrayCallback)callback {
+- (STMPersistingObservingSubscriptionID)observeAllWithPredicate:(NSPredicate *)predicate callback:(STMPersistingObservingEntityNameArrayCallback)callback {
     
     STMPersistingObservingSubscription *subscription = [STMPersistingObservingSubscription subscriptionWithPredicate:predicate];
     
@@ -82,6 +82,19 @@
     self.subscriptions[subscription.identifier] = subscription;
     
     return subscription.identifier;
+}
+
+- (STMPersistingObservingSubscriptionID)observeEntityNames:(NSArray *)entityNames predicate:(NSPredicate *)predicate callback:(STMPersistingObservingEntityNameArrayCallback)callback {
+    
+    NSSet *names = [NSSet setWithArray:entityNames];
+    
+    return [self observeAllWithPredicate:predicate
+                                callback:^(NSString *entityName, NSArray *data) {
+                                    if ([names containsObject:entityName]) {
+                                        callback(entityName, data);
+                                    }
+                                }];
+    
 }
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId {
