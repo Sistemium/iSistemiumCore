@@ -1091,7 +1091,7 @@
 
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
-               name:@"newAppVersionAvailable"
+               name:NOTIFICATION_NEW_VERSION_AVAILABLE
              object:nil];
     
     [nc addObserver:self

@@ -90,7 +90,7 @@
             
             NSMutableArray <NSString*> *columnDefinition = @[@","].mutableCopy;
             
-            [columnDefinition addObject:columnName];
+            [columnDefinition addObject:[STMPredicateToSQL quotedName:columnName]];
             [columnDefinition addObject:[self sqliteTypeForAttribute:atribute]];
             
             if ([columnName isEqualToString:@"deviceCts"]) {
@@ -212,10 +212,13 @@
     NSMutableArray* keys = @[].mutableCopy;
     NSMutableArray* values = @[].mutableCopy;
     
-    for(NSString* key in dictionary){
+    for (NSString* key in dictionary) {
+        
         if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
-            [keys addObject:key];
+            
+            [keys addObject:[STMPredicateToSQL quotedName:key]];
             id value = [dictionary objectForKey:key];
+            
             if ([value isKindOfClass:[NSDate class]]) {
                 [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
             } else {
@@ -223,6 +226,7 @@
             }
             
         }
+        
     }
     
     [values addObject:pk];
@@ -232,7 +236,7 @@
         [v addObject:@"?"];
     }
     
-    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET [isFantom] = 0, %@ = ? WHERE [id] = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
     
     if(![db executeUpdate:updateSQL values:values error:error]){
         if ([[*error localizedDescription] isEqualToString:@"ignored"]){
@@ -244,7 +248,7 @@
     }
     
     if (!db.changes) {
-        NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, isFantom, id) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
+        NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, [isFantom], [id]) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [v componentsJoinedByString:@", "]];
         if (![db executeUpdate:insertSQL values:values error:error]){
             return nil;
         }

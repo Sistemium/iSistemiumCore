@@ -23,6 +23,10 @@ static NSString *SQLNullValueString = @"NULL";
     return instance;
 }
 
++ (NSString *)quotedName:(NSString *)name {
+    return [NSString stringWithFormat:@"[%@]", name];
+}
+
 - (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath{
     NSString     *retStr = nil;
     NSDictionary *convertibleSetOperations = @{@"@avg" : @"avg",@"@max" : @"max",@"@min" : @"min",@"@sum" : @"sum",@"@distinctUnionOfObjects" : @"distinct" };
@@ -177,17 +181,17 @@ static NSString *SQLNullValueString = @"NULL";
 -(NSString *)SQLExpressionForLeftNSExpression:(NSExpression *)expression{
     NSString *retStr = nil;
     
-    switch ([expression expressionType]){
+    switch (expression.expressionType){
         case NSConstantValueExpressionType: {
-            retStr = [self SQLConstantForLeftValue:[expression constantValue]];
+            retStr = [self SQLConstantForLeftValue:expression.constantValue];
             break;
         }
         case NSVariableExpressionType: {
-            retStr = [self SQLNamedReplacementVariableForVariable:[expression variable]];
+            retStr = [self SQLNamedReplacementVariableForVariable:expression.variable];
             break;
         }
         case NSKeyPathExpressionType: {
-            retStr = [self SQLExpressionForLeftKeyPath:[expression keyPath]];
+            retStr = [self SQLExpressionForLeftKeyPath:expression.keyPath];
             break;
         }
         case NSFunctionExpressionType: {
@@ -199,7 +203,7 @@ static NSString *SQLNullValueString = @"NULL";
             break;
         }
         case NSAggregateExpressionType: {
-            retStr = [self SQLLiteralListForArray:[expression collection]];
+            retStr = [self SQLLiteralListForArray:expression.collection];
             break;
         }
         case NSUnionSetExpressionType: {
@@ -212,7 +216,7 @@ static NSString *SQLNullValueString = @"NULL";
             break;
         }
         case NSEvaluatedObjectExpressionType: {
-            retStr = [self replaceKeyWords:[expression description]];
+            retStr = [self replaceKeyWords:expression.description];
             break;
         }
         case NSBlockExpressionType: {
@@ -276,20 +280,20 @@ static NSString *SQLNullValueString = @"NULL";
 -(NSString *)SQLExpressionForNSExpression:(NSExpression *)expression{
     NSString *retStr = nil;
     
-    switch ([expression expressionType]){
+    switch (expression.expressionType){
         case NSConstantValueExpressionType: {
-            retStr = [self SQLConstantForValue:[expression constantValue]];
+            retStr = [self SQLConstantForValue:expression.constantValue];
             if (![retStr isEqual: @"NULL"]){
                 retStr = [NSString stringWithFormat:@"'%@'",retStr];
             }
             break;
         }
         case NSVariableExpressionType: {
-            retStr = [self SQLNamedReplacementVariableForVariable:[expression variable]];
+            retStr = [self SQLNamedReplacementVariableForVariable:expression.variable];
             break;
         }
         case NSKeyPathExpressionType: {
-            retStr = [self SQLExpressionForKeyPath:[expression keyPath]];
+            retStr = [self SQLExpressionForKeyPath:expression.keyPath];
             break;
         }
         case NSFunctionExpressionType: {
@@ -301,7 +305,7 @@ static NSString *SQLNullValueString = @"NULL";
             break;
         }
         case NSAggregateExpressionType: {
-            retStr = [self SQLLiteralListForArray:[expression collection]];
+            retStr = [self SQLLiteralListForArray:expression.collection];
             break;
         }
         case NSUnionSetExpressionType: {
@@ -455,10 +459,13 @@ static NSString *SQLNullValueString = @"NULL";
                                               options: NSRegularExpressionCaseInsensitive
                                                 error: nil];
     
-    return [regex stringByReplacingMatchesInString:whereClause
-                                           options:0
-                                             range:NSMakeRange(0, whereClause.length)
-                                      withTemplate: @""];
+    NSString *result = [regex stringByReplacingMatchesInString:whereClause
+                                                       options:0
+                                                         range:NSMakeRange(0, whereClause.length)
+                                                  withTemplate: @""];
+    
+    return result;
+    
 }
 
 - (NSString *)unquoteString:(NSString *)aString {
