@@ -395,7 +395,7 @@
         return nil;
     }
     
-    [self notifyObservingEntityName:entityName
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result];
     
     return result;
@@ -429,7 +429,7 @@
                 withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
     }
     
-    [self notifyObservingEntityName:entityName
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                      ofUpdatedArray:result];
     
     return result;
@@ -533,7 +533,7 @@
     
     [self saveWithEntityName:entityName];
     
-    [self notifyObservingEntityName:entityName
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result];
     
     return result;
