@@ -152,10 +152,16 @@
 
 + (NSArray *)allPictures {
     
+    return [self.class allPicturesWithPredicate:nil];
+    
+}
+
++ (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
+    
     NSMutableArray *result = @[].mutableCopy;
     
     for (NSString *entityName in [self pictureEntitiesNames]) {
-        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:nil options:nil error:nil];
+        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
         for (NSDictionary *object in objects){
             NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
             [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
@@ -272,9 +278,8 @@
     
     [self startCheckingPicturesPaths];
     
-#warning still uses core data, needs to be rewrited
-//    [self checkBrokenPhotos];
 //    [self checkUploadedPhotos];
+    [self checkBrokenPhotos];
     
 }
 
@@ -428,12 +433,9 @@
 
 + (void)checkBrokenPhotos {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePicture class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
     
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [self.class allPicturesWithPredicate:predicate];
     
     for (STMCorePicture *picture in result) {
         
