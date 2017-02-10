@@ -1236,9 +1236,14 @@ int counter = 0;
         
         NSDictionary *photoObjectDic = [STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate dictionaryFromManagedObject:photoObject];
         
-        [self callbackWithData:@[photoObjectDic]
-                    parameters:self.takePhotoMessageParameters
-            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        [self.persistenceDelegate merge:photoObject.entity.name attributes:photoObjectDic options:nil].then(^(NSDictionary * result){
+            [self callbackWithData:@[result]
+                        parameters:self.takePhotoMessageParameters
+                jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        })
+        .catch(^(NSError *error){
+            NSLog(error.localizedDescription);
+        });
         
     } else {
         

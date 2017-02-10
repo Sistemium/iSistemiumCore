@@ -918,66 +918,60 @@
                            completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
         if (!error) {
+                
+            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
             
-            if (picture.managedObjectContext) {
+            if (statusCode == 200) {
                 
-                NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+                NSError *localError = nil;
                 
-                if (statusCode == 200) {
-                    
-                    NSError *localError = nil;
-                    
-                    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                               options:0
-                                                                                 error:&localError];
-                    
-                    if (dictionary) {
+                NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                           options:0
+                                                                             error:&localError];
+                
+                if (dictionary) {
 
-                        NSArray *picturesDicts = dictionary[@"pictures"];
+                    NSArray *picturesDicts = dictionary[@"pictures"];
 
-                        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
-                                                                               options:0
-                                                                                 error:&localError];
+                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
+                                                                           options:0
+                                                                             error:&localError];
+                    
+                    if (picturesJson) {
                         
-                        if (picturesJson) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
                             
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                
-                                for (NSDictionary *dict in picturesDicts){
-                                    if ([dict[@"name"] isEqual:@"original"]){
-                                        picture.href = dict[@"src"];
-                                    }
+                            for (NSDictionary *dict in picturesDicts){
+                                if ([dict[@"name"] isEqual:@"original"]){
+                                    picture.href = dict[@"src"];
                                 }
-                                
-                                NSString *info = [[NSString alloc] initWithData:picturesJson
-                                                                       encoding:NSUTF8StringEncoding];
-                                
-                                picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
-                                                                                       withString:@"/"];
-                                
-                                NSLog(@"%@", picture.picturesInfo);
-                                
-                                __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                                
-                                [session.document saveDocument:^(BOOL success) {
-                                }];
-                                
-                            });
+                            }
+                            
+                            NSString *info = [[NSString alloc] initWithData:picturesJson
+                                                                   encoding:NSUTF8StringEncoding];
+                            
+                            picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
+                                                                                   withString:@"/"];
+                            
+                            NSLog(@"%@", picture.picturesInfo);
+                            
+                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+                            
+                            [session.document saveDocument:^(BOOL success) {
+                            }];
+                            
+                        });
 
-                        } else {
-                            NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                        }
-                        
                     } else {
                         NSLog(@"error in json serialization: %@", localError.localizedDescription);
                     }
                     
                 } else {
-                    NSLog(@"Request error, statusCode: %ld", (long)statusCode);
+                    NSLog(@"error in json serialization: %@", localError.localizedDescription);
                 }
-
+                
             } else {
-                NSLog(@"picture have no managedObjectContext, probably it was deleted");
+                NSLog(@"Request error, statusCode: %ld", (long)statusCode);
             }
             
         } else {
