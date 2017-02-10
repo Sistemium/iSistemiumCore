@@ -359,27 +359,27 @@
     NSDictionary *defaultSettings = [self defaultSettings];
     //        NSLog(@"defaultSettings %@", defaultSettings);
     
-    for (NSString *settingsGroupName in [defaultSettings allKeys]) {
+    for (NSString *settingsGroupName in defaultSettings.allKeys) {
         //            NSLog(@"settingsGroup %@", settingsGroupName);
         
-        NSDictionary *settingsGroup = [defaultSettings valueForKey:settingsGroupName];
+        NSDictionary *settingsGroup = defaultSettings[settingsGroupName];
         
-        for (NSString *settingName in [settingsGroup allKeys]) {
+        for (NSString *settingName in settingsGroup.allKeys) {
             //                NSLog(@"setting %@ %@", settingName, [settingsGroup valueForKey:settingName]);
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
-            STMSetting *settingToCheck = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
+            NSMutableDictionary *settingToCheck = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
 
             NSString *settingValue = [settingsGroup valueForKey:settingName];
             
-            if ([[self.startSettings allKeys] containsObject:settingName]) {
+            if ([self.startSettings.allKeys containsObject:settingName]) {
                 
-                id nValue = [self normalizeValue:[self.startSettings valueForKey:settingName] forKey:settingName];
+                id nValue = [self normalizeValue:self.startSettings[settingName] forKey:settingName];
                 
                 if (nValue) {
                     settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
                 } else {
-                    NSLog(@"value %@ is not correct for %@", [self.startSettings valueForKey:settingName], settingName);
+                    NSLog(@"value %@ is not correct for %@", self.startSettings[settingName], settingName);
                     [self.startSettings removeObjectForKey:settingName];
                 }
                 
@@ -394,21 +394,18 @@
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
                 newSetting.value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
                 
-//                [newSetting addObserver:self forKeyPath:@"value" options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld) context:nil];
-                
             } else {
                 
-                id nValue = [self normalizeValue:settingToCheck.value forKey:settingName];
+                id nValue = [self normalizeValue:settingToCheck[@"value"] forKey:settingName];
 
-                settingToCheck.value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
-                
-//                [settingToCheck addObserver:self forKeyPath:@"value" options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld) context:nil];
+                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
                 
                 if ([[self.startSettings allKeys] containsObject:settingName]) {
-                    if (![settingToCheck.value isEqualToString:settingValue]) {
-                        settingToCheck.value = settingValue;
-//                        NSLog(@"new value");
+                    
+                    if (![settingToCheck[@"value"] isEqualToString:settingValue]) {
+                        settingToCheck[@"value"] = settingValue;
                     }
+                    
                 }
                 
             }
@@ -460,11 +457,6 @@
     
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-//    NSLog(@"observeChangeValueForObject %@", object);
-//    NSLog(@"old value %@", [change valueForKey:NSKeyValueChangeOldKey]);
-//    NSLog(@"new value %@", [change valueForKey:NSKeyValueChangeNewKey]);
-}
 
 #pragma mark - NSFetchedResultsController delegate
 
