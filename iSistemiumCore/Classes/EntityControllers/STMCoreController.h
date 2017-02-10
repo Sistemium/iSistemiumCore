@@ -32,7 +32,7 @@
 
 + (STMDocument *)document;
 
-+ (NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> *) persistenceDelegate;
++ (id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving>) persistenceDelegate;
 + (STMSyncer *)syncer;
 
 @end
