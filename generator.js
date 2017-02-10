@@ -3,9 +3,12 @@ const dir = require('node-dir');
 const fs = require('fs');
 const _ = require('underscore');
 
+const sourceExtension = 'hb';
+const distExtension = 'm';
+
 const options = {
-    sourceExtension: 'hb',
-    distExtension: 'm'
+    sourceExtension,
+    distExtension
 };
 
 const templates = 'templates';
@@ -18,6 +21,8 @@ dir.subdirs(root, function(err, paths) {
 
     paths.forEach(directory => {
 
+        const sourceExtensionRe = new RegExp(`\\.${sourceExtension}$`);
+
         let ignoreRe = /[^\/]+$/;
 
         let folder = directory.match(ignoreRe)[0];
@@ -26,7 +31,7 @@ dir.subdirs(root, function(err, paths) {
 
         let files = fs.readdirSync(directory);
 
-        if (!_.find(files, file => /\.hb$/.test(file))) return;
+        if (!_.find(files, file => sourceExtensionRe.test(file))) return;
 
         folder = directory.replace(`${root}/`, '');
 
