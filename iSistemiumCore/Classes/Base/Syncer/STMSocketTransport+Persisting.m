@@ -7,6 +7,7 @@
 //
 
 #import "STMSocketTransport+Persisting.h"
+#import "STMSocketTransport+Decoder.h"
 
 @implementation STMSocketTransport (Persisting)
 
@@ -32,48 +33,11 @@
     
     [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
         
-        if (success) {
-            
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-            
-            if (!response) {
-                
-                [self completeWithErrorMessage:@"ERROR: response contain no dictionary"
-                             dictionaryHandler:completionHandler];
-                return;
-                
-            }
-            
-            if (response[@"error"]) {
-                
-                errorMessage = [NSString stringWithFormat:@"response got error: %@", response[@"error"]];
-                
-                [self completeWithErrorMessage:errorMessage dictionaryHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-            
-            if (!responseData) {
-                
-                errorMessage = [NSString stringWithFormat:@"    %@: ERROR: find response data is not an dictionary", entityName];
-                
-                [self completeWithErrorMessage:errorMessage dictionaryHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSDictionary *headers = [STMFunctions mapDictionary:response
-                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
-                                                          return [key isEqualToString:@"data"] ? nil : value;
-                                                      }];
-            
-            completionHandler(YES, responseData, headers, nil);
-            
-        } else {
-            completionHandler(NO, nil, nil, error);
+        if (!success) {
+            return completionHandler(NO, nil, nil, error);
         }
+        
+        [self respondOnData:data dictionaryHandler:completionHandler];
         
     }];
     
@@ -101,52 +65,11 @@
     
     [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
         
-        if (success) {
-            
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-            
-            if (!response) {
-                
-                [self completeWithErrorMessage:@"ERROR: response contain no dictionary"
-                                  arrayHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSNumber *errorCode = response[@"error"];
-            
-            if (errorCode) {
-                
-                errorMessage = [NSString stringWithFormat:@"    %@: ERROR: %@", entityName, errorCode];
-                
-                [self completeWithErrorMessage:errorMessage
-                                  arrayHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSArray *responseData = ([response[@"data"] isKindOfClass:[NSArray class]]) ? response[@"data"] : nil;
-            
-            if (!responseData) {
-                
-                errorMessage = [NSString stringWithFormat:@"    %@: ERROR: find all response data is not an array", entityName];
-                
-                [self completeWithErrorMessage:errorMessage
-                             arrayHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSDictionary *headers = [STMFunctions mapDictionary:response
-                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
-                                                          return [key isEqualToString:@"data"] ? nil : value;
-                                                      }];
-            
-            completionHandler(YES, responseData, headers, nil);
-            
-        } else {
-            completionHandler(NO, nil, nil, error);
+        if (!success) {
+            return completionHandler(NO, nil, nil, error);
         }
+        
+        [self respondOnData:data arrayHandler:completionHandler];
         
     }];
     
@@ -154,28 +77,12 @@
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
     
-    if (!self.isReady) {
-        
-        [self completeWithErrorMessage:@"socket is not ready (not connected or not authorized)"
-                     dictionaryHandler:completionHandler];
-        
-        return;
-        
-    }
-    
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    NSString *resource = [entity resource];
+    NSString *resource = [[STMEntityController stcEntities][entityName] resource];
     
     if (!resource) {
-        
-        [self completeWithErrorMessage:[NSString stringWithFormat:@"no url for entity %@", entityName]
-                     dictionaryHandler:completionHandler];
-        
-        return;
-        
+        return [self completeWithErrorMessage:[NSString stringWithFormat:@"no url for entity %@", entityName]
+                            dictionaryHandler:completionHandler];
     }
-    
     
     NSDictionary *value = @{@"method"   : kSocketUpdateMethod,
                             @"resource" : resource,
@@ -183,42 +90,67 @@
                             @"attrs"    : attributes};
     
     [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
-        
-        if (success) {
-            
-            NSDictionary *response = ([data.firstObject isKindOfClass:[NSDictionary class]]) ? data.firstObject : nil;
-            
-            if (!response) {
-                
-                [self completeWithErrorMessage:@"ERROR: response contain no dictionary"
-                             dictionaryHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSDictionary *responseData = ([response[@"data"] isKindOfClass:[NSDictionary class]]) ? response[@"data"] : nil;
-            
-            if (!responseData) {
-                
-                NSString *errorMessage = [NSString stringWithFormat:@"    %@: ERROR: find response data is not an dictionary", entityName];
-                
-                [self completeWithErrorMessage:errorMessage dictionaryHandler:completionHandler];
-                return;
-                
-            }
-            
-            NSDictionary *headers = [STMFunctions mapDictionary:response
-                                                      withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
-                                                          return [key isEqualToString:@"data"] ? nil : value;
-                                                      }];
-            
-            completionHandler(YES, responseData, headers, nil);
-            
-        } else {
-            completionHandler(NO, nil, nil, error);
+
+        if (!success) {
+            return completionHandler(NO, nil, nil, error);
         }
+
+        [self respondOnData:data dictionaryHandler:completionHandler];
         
     }];
+    
+}
+
+
+#pragma mark - Responders
+
+- (void)respondOnData:(NSArray *)data dictionaryHandler:(STMPersistingWithHeadersAsyncDictionaryResultCallback)handler {
+    
+    STSocketsJSDataResponse *decoded = [self STSocketsJSDataResponseFromSocketIO:data];
+    NSError *error;
+    
+    if ([decoded isKindOfClass:STSocketsJSDataResponseError.class]) {
+        
+        STSocketsJSDataResponseError *errorResponse = (STSocketsJSDataResponseError *)decoded;
+        [STMFunctions error:&error withMessage:errorResponse.errorText];
+        handler(NO, nil, errorResponse.headers, error);
+        
+    } else if (![decoded isKindOfClass:STSocketsJSDataResponseSuccessObject.class]){
+        
+        [STMFunctions error:&error withMessage:@"response is not a dictionary"];
+        handler(NO, nil, decoded.headers, error);
+        
+    } else {
+        
+        STSocketsJSDataResponseSuccessObject *response = (STSocketsJSDataResponseSuccessObject *)decoded;
+        handler(YES, response.data, response.headers, nil);
+        
+    }
+
+}
+
+- (void)respondOnData:(NSArray *)data arrayHandler:(STMPersistingWithHeadersAsyncArrayResultCallback)handler {
+    
+    STSocketsJSDataResponse *decoded = [self STSocketsJSDataResponseFromSocketIO:data];
+    NSError *error;
+    
+    if ([decoded isKindOfClass:STSocketsJSDataResponseError.class]) {
+        
+        STSocketsJSDataResponseError *errorResponse = (STSocketsJSDataResponseError *)decoded;
+        [STMFunctions error:&error withMessage:errorResponse.errorText];
+        handler(NO, nil, errorResponse.headers, error);
+        
+    } else if (![decoded isKindOfClass:STSocketsJSDataResponseSuccessArray.class]){
+        
+        [STMFunctions error:&error withMessage:@"response is not an array"];
+        handler(NO, nil, decoded.headers, error);
+        
+    } else {
+        
+        STSocketsJSDataResponseSuccessArray *response = (STSocketsJSDataResponseSuccessArray *)decoded;
+        handler(YES, response.data, response.headers, nil);
+        
+    }
     
 }
 
