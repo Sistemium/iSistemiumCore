@@ -53,6 +53,18 @@
     
 }
 
++ (id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>)persistenceDelegate {
+    return [[self sharedController] persistenceDelegate];
+}
+
+- (id)persistenceDelegate {
+    
+    if (!_persistenceDelegate) {
+        _persistenceDelegate = self.session.persistenceDelegate;
+    }
+    
+    return _persistenceDelegate;
+}
 
 #pragma mark - instance properties
 
@@ -294,7 +306,7 @@
             
             if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
             
-            NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
+            NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
@@ -330,7 +342,7 @@
             if (pathComponents.count > 1) {
                 [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
                 
-                NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
+                NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
                 NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
                 [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
             }
@@ -841,7 +853,7 @@
                                                        
                                                        NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
                                                        
-                                                       [STMCoreController.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
+                                                       [self.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
                                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                                
                                                                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
