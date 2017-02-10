@@ -155,15 +155,15 @@
         
         NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
         
-        NSLog(@"subscribe to %@", entityName);
+        STMPersistingObservingSubscriptionID sid =
+        [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
+            NSLog(@"observeEntity %@ data count %u", entityName, data.count);
+            [self startHandleUnsyncedObjects];
+        }];
         
-        [self.subscriptions addObject:[self.persistenceDelegate observeEntity:entityName
-                                                                    predicate:predicate
-                                                                     callback:^(NSArray * _Nullable data)
-                                       {
-                                           NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-                                           [self startHandleUnsyncedObjects];
-                                       }]];
+        [self.subscriptions addObject:sid];
+        
+        NSLog(@"subscribe to %@ %@", entityName, sid);
         
     }
     
