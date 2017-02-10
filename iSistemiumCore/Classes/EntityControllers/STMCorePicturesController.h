@@ -35,6 +35,6 @@
 
 + (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data ;
 
-@property (nonatomic,weak) id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> persistenceDelegate;
+@property (nonatomic,weak) id <STMPersistingFullStack> persistenceDelegate;
 
 @end

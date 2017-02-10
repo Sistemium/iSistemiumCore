@@ -208,12 +208,13 @@
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
         
-        self.nonloadedPicturesSubscriptionID = [self.class.persistenceDelegate observeAllWithPredicate:predicate callback:^(NSString * entityName, NSArray *data) {
-            if (![[self.class pictureEntitiesNames] containsObject:entityName]) return;
+        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:[self.class pictureEntitiesNames].allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
+            
             _nonloadedPicturesCount = [self nonloadedPictures].count;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
             });
+            
         }];
         
     }
