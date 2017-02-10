@@ -46,5 +46,6 @@
 - (void)sendEventViaSocket:(STMSocketEvent)event
                  withValue:(id)value;
 
+- (void)sendFindWithValue:(NSDictionary *)value;
 
 @end

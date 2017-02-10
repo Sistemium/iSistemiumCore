@@ -684,6 +684,27 @@
     [self.socketTransport socketSendEvent:event withValue:value];
 }
 
+- (void)sendFindWithValue:(NSDictionary *)value {
+    
+    NSString *entityName = [STMFunctions addPrefixToEntityName:value[@"entity"]];
+    NSString *identifier = value[@"id"];
+    
+    [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+        
+        if (error) {
+            NSLog(@"error: %@", error);
+            return;
+        }
+        
+        NSLog(@"success: %@", result);
+        
+        NSDictionary *options = @{STMPersistingOptionLts:[STMFunctions stringFromNow]};
+        
+        [self.persistenceDelegate mergeAsync:entityName attributes:result options:options completionHandler:nil];
+        
+    }];
+
+}
 
 #pragma mark - defantomization
 
