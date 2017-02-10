@@ -10,7 +10,10 @@
 
 @interface STMClientEntityController : STMCoreController
 
-+ (STMClientEntity *)clientEntityWithName:(NSString *)name;
++ (NSDictionary *)clientEntityWithName:(NSString *)name;
+
++ (void)clientEntityWithName:(NSString *)name
+                     setETag:(NSString *)eTag;
 
 
 @end
