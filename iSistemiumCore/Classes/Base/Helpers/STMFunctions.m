@@ -79,22 +79,20 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSDate *)dateFromString:(NSString *)string {
     
-    STMDateFormatter *dateFormatter = (string.length == 10) ? [self dateFormatterWithoutTime] : [self dateFormatterWithMilliseconds];
+    BOOL isStringWithoutTime = (string && ![string isKindOfClass:[NSNull class]] && [string isKindOfClass:[NSString class]] && string.length == 10);
+    
+    STMDateFormatter *dateFormatter = (isStringWithoutTime) ? [self dateFormatterWithoutTime] : [self dateFormatterWithMilliseconds];
     
     return [dateFormatter dateFromString:string];
     
 }
 
 + (NSString *)stringFromDate:(NSDate *)date {
-    
     return [[self dateFormatterWithMilliseconds] stringFromDate:date];
-    
 }
 
 + (NSString *)stringFromNow {
-    
     return [[self dateFormatterWithMilliseconds] stringFromDate:[NSDate date]];
-    
 }
 
 +(NSString *)addPrefixToEntityName:(NSString*)entityName{
