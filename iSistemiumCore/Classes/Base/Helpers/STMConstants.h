@@ -84,6 +84,8 @@
 #define NOTIFICATION_DOCUMENT_NOT_READY @"documentNotReady"
 #define NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY @"documentSavedSuccessfully"
 
+#define NOTIFICATION_NEW_VERSION_AVAILABLE @"newAppVersionAvailable"
+
 #define RINGING_LOCAL_NOTIFICATION @"ringingLocalNotification"
 
 
