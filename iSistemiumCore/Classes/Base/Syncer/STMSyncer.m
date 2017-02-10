@@ -882,7 +882,7 @@
         
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
-                                   itemData:result
+                                   itemData:success ? result : itemData
                                 itemVersion:itemVersion];
         
     }];
