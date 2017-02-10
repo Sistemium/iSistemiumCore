@@ -19,12 +19,7 @@
 #import "STMCoreAuthController.h"
 
 #import "STMCoreDataModel.h"
-#import "STMPersistingPromised.h"
-#import "STMPersistingAsync.h"
-#import "STMPersistingSync.h"
-#import "STMModelling.h"
-#import "STMPersistingObserving.h"
-
+#import "STMPersistingFullStack.h"
 
 @interface STMCoreController : NSObject
 
@@ -32,7 +27,7 @@
 
 + (STMDocument *)document;
 
-+ (id <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving>) persistenceDelegate;
++ (id <STMPersistingFullStack>) persistenceDelegate;
 + (STMSyncer *)syncer;
 
 @end
