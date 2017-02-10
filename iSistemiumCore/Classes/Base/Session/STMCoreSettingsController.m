@@ -278,7 +278,17 @@
 }
 
 - (NSArray *)currentSettings {
-    return self.fetchedSettingsResultController.fetchedObjects;
+    
+    NSError *error = nil;
+    NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
+                                                           predicate:nil
+                                                             options:nil
+                                                               error:&error];
+    
+    return currentSettings;
+    
+//    return self.fetchedSettingsResultController.fetchedObjects;
+    
 }
 
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group {
@@ -287,9 +297,13 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@", group];
     NSArray *groupSettings = [[self currentSettings] filteredArrayUsingPredicate:predicate];
     
-    for (STMSetting *setting in groupSettings) {
-        if (setting.name) settingsDictionary[(NSString *)setting.name] = setting.value;
+    for (NSDictionary *setting in groupSettings) {
+        if (setting[@"name"] && setting[@"value"]) settingsDictionary[setting[@"name"]] = setting[@"value"];
     }
+    
+//    for (STMSetting *setting in groupSettings) {
+//        if (setting.name) settingsDictionary[(NSString *)setting.name] = setting.value;
+//    }
     
 //    NSLog(@"settings for %@: %@", group, settingsDictionary);
     
@@ -474,6 +488,8 @@
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
     
     if ([anObject isKindOfClass:[STMSetting class]]) {
+        
+//        NSLog(@"anObject %@", anObject);
         
         NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", [anObject valueForKey:@"group"]];
         
