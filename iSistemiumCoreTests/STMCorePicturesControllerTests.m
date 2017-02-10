@@ -18,9 +18,17 @@
 
 @implementation STMCorePicturesControllerTests
 
++ (BOOL)needWaitSession {
+    return YES;
+}
+
 - (void)testDownloadConnectionForObject {
     
+    [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
+    
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    
+    NSString *xid = [STMFunctions uuidString];
     
     XCTestExpectation *downloadExpectation = [self expectationWithDescription:@"Downloading picture"];
     
@@ -31,17 +39,17 @@
                name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
              object:picture];
     
-    picture.xid = [STMFunctions xidDataFromXidString:@"bd9ea158-7d96-46fd-b34c-d5351dfe3200"];
+    picture.xid = [STMFunctions xidDataFromXidString:xid];
     
     picture.href = @"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/largeImage.png";
     
     picture.thumbnailHref = @"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png";
     
-    NSString *expectedImagePath = @"bd9ea158-7d96-46fd-b34c-d5351dfe3200.jpg";
+    NSString *expectedImagePath = [xid stringByAppendingString:@".jpg"];
     
-    NSString *expectedResizedImagePath = @"resized_bd9ea158-7d96-46fd-b34c-d5351dfe3200.jpg";
+    NSString *expectedResizedImagePath = [@"resized_" stringByAppendingString:expectedImagePath];
     
-    NSString *expectedThumbnailPath = @"bd9ea158-7d96-46fd-b34c-d5351dfe3200.jpg";
+    NSString *expectedThumbnailPath = [expectedImagePath copy];
     
     NSError *error;
     
@@ -59,7 +67,11 @@
         
         [[NSNotificationCenter defaultCenter] removeObserver:downloadExpectation];
         
-        NSDictionary *rez = [self.persister findSync:@"STMVisitPhoto" identifier:@"bd9ea158-7d96-46fd-b34c-d5351dfe3200" options:nil error:&error];
+        NSDictionary *rez = [self.persister findSync:@"STMVisitPhoto" identifier:xid options:nil error:&error];
+        
+        XCTAssertNil(error);
+        
+        NSLog(@"VisitPhoto: %@", rez);
         
         XCTAssertNil(error);
         
