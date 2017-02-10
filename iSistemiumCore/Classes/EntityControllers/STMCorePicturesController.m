@@ -312,10 +312,10 @@
             
             [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options]
             .then(^(NSDictionary * result){
-                NSLog(@"startCheckingPicturesPaths updated %@ id: %@",picture.entity.name, result[@"id"]);
+                NSLog(@"thumbnail set %@ id: %@",picture.entity.name, result[@"id"]);
             })
             .catch(^(NSError *error){
-                NSLog(@"startCheckingPicturesPaths updating %@ id: %@ error:",picture.entity.name, picDict[@"id"], [error localizedDescription]);
+                NSLog(@"thumbnail set %@ id: %@ error:",picture.entity.name, picDict[@"id"], [error localizedDescription]);
             });
             
             continue;
