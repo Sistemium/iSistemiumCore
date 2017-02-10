@@ -23,6 +23,10 @@ static NSString *SQLNullValueString = @"NULL";
     return instance;
 }
 
++ (NSString *)quotedName:(NSString *)name {
+    return [NSString stringWithFormat:@"[%@]", name];
+}
+
 - (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath{
     NSString     *retStr = nil;
     NSDictionary *convertibleSetOperations = @{@"@avg" : @"avg",@"@max" : @"max",@"@min" : @"min",@"@sum" : @"sum",@"@distinctUnionOfObjects" : @"distinct" };
