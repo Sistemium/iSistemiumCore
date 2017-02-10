@@ -551,8 +551,8 @@
         
         stcEntityName = [STMFunctions removePrefixFromEntityName:stcEntityName];
         
-        STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:stcEntityName];
-        clientEntity.eTag = nil;
+        [STMClientEntityController clientEntityWithName:stcEntityName
+                                                setETag:nil];
         
     }
 

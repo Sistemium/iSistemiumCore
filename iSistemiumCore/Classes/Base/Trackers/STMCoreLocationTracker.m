@@ -64,8 +64,10 @@
 @synthesize lastLocation = _lastLocation;
 
 - (NSString *)locationConcreteName {
+    
     STMCoreSession *currentSession = self.session;
     return NSStringFromClass([currentSession locationClass]);
+    
 }
 
 - (id <STMPersistingAsync, STMModelling>)persistenceDelegate {

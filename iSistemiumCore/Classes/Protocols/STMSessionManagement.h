@@ -38,12 +38,16 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 };
 
 
-@protocol STMLogger <NSObject, UITableViewDataSource, UITableViewDelegate>
+@protocol STMLogger <NSObject>
 
 - (void)saveLogMessageWithText:(NSString *)text;
 - (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type;
 - (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType;
 - (void)saveLogMessageDictionaryToDocument;
+
+- (void)saveLogMessageWithText:(NSString *)text
+                          type:(NSString *)type
+                         owner:(STMDatum *)owner;
 
 @property (nonatomic, weak) UITableView *tableView;
 
@@ -78,7 +82,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;
 @property (nonatomic, strong) NSDictionary *startSettings;
-@property (nonatomic, strong) id <STMLogger> logger;
+@property (nonatomic, strong) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer> syncer;
 
 + (id <STMSession>)initWithUID:(NSString *)uid

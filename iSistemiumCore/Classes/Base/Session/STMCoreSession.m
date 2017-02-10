@@ -167,7 +167,6 @@
         //    NSLog(@"currentSettings %@", [self.settingsController currentSettings]);
         self.locationTracker.session = self;
         self.batteryTracker.session = self;
-        self.status = STMSessionRunning;
 
         self.syncer.persistenceDelegate = self.persistenceDelegate;
 
@@ -183,7 +182,9 @@
         STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
                                                                                               subscriber:self.syncer];
         self.syncer.dataSyncingDelegate = unsyncedHelper;
-        
+
+        self.status = STMSessionRunning;
+
         self.syncer.session = self;
 
     }

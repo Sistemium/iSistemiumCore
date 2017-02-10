@@ -15,7 +15,7 @@
 
 @synthesize persistenceDelegate = _persistenceDelegate;
 
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id </*STMPersistingAsync,*/STMPersistingSync>)persistenceDelegate {
++ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingSync>)persistenceDelegate {
     
     STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
     persisterFantoms.persistenceDelegate = persistenceDelegate;
@@ -24,14 +24,20 @@
     
 }
 
-- (NSArray *)findAllFantomsSync:(NSString *)entityName {
+- (NSArray *)findAllFantomsIdsSync:(NSString *)entityName excludingIds:(NSArray *)excludingIds {
     
     NSError *error = nil;
     
-    return [self.persistenceDelegate findAllSync:entityName
-                                       predicate:nil
-                                         options:@{STMPersistingOptionFantoms : @YES}
-                                           error:&error];
+    NSArray *result = [self.persistenceDelegate findAllSync:entityName
+                                                  predicate:nil
+                                                    options:@{STMPersistingOptionFantoms : @YES}
+                                                      error:&error];
+    
+    result = [result valueForKeyPath:@"id"];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", excludingIds];
+    
+    return [result filteredArrayUsingPredicate:predicate];
     
 }
 
@@ -56,17 +62,6 @@
                                          error:error];
 
 }
-
-//- (void)mergeFantomAsync:(NSString *)entityName attributes:(NSDictionary *)attributes completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
-//    
-//    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-//    
-//    [self.persistenceDelegate mergeAsync:entityName
-//                              attributes:attributes
-//                                 options:options
-//                       completionHandler:completionHandler];
-//    
-//}
 
 
 @end

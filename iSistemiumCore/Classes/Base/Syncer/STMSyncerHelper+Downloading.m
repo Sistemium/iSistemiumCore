@@ -368,10 +368,18 @@ static void *dataDownloadingOwnerVar;
             
             if (resource) {
                 
-                STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
+                NSString *eTag = self.temporaryETag[entityName];
                 
-                NSString *eTag = clientEntity.eTag;
-                eTag = eTag ? eTag : @"*";
+                if (!eTag) {
+                    
+                    NSDictionary *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
+                    
+                    eTag = clientEntity[@"eTag"];
+                    eTag = (eTag && ![eTag isKindOfClass:[NSNull class]]) ? eTag : @"*";
+                    
+                }
+                
+//                NSLog(@"receive with eTag: %@", eTag);
                 
                 [self receiveDataForEntityName:entityName
                                           eTag:eTag];
@@ -495,17 +503,15 @@ static void *dataDownloadingOwnerVar;
     
     NSString *eTag = self.temporaryETag[entityName];
     STMEntity *entity = self.stcEntities[entityName];
-    STMClientEntity *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
     
-    clientEntity.eTag = eTag;
+//    NSLog(@"set eTag: %@", eTag);
     
+    [STMClientEntityController clientEntityWithName:entity.name setETag:eTag];
+        
 }
 
 - (void)nextReceiveEntityWithName:(NSString *)entityName {
-    
-    [self fillETagWithTemporaryValueForEntityName:entityName];
-    [self checkConditionForReceivingEntityWithName:entityName];
-    
+    [self checkConditionForReceivingEntityWithName:entityName];    
 }
 
 - (void)receivingDidFinish {

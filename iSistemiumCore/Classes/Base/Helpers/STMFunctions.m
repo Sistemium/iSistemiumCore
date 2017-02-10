@@ -79,22 +79,20 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSDate *)dateFromString:(NSString *)string {
     
-    STMDateFormatter *dateFormatter = (string.length == 10) ? [self dateFormatterWithoutTime] : [self dateFormatterWithMilliseconds];
+    BOOL isStringWithoutTime = (string && ![string isKindOfClass:[NSNull class]] && [string isKindOfClass:[NSString class]] && string.length == 10);
+    
+    STMDateFormatter *dateFormatter = (isStringWithoutTime) ? [self dateFormatterWithoutTime] : [self dateFormatterWithMilliseconds];
     
     return [dateFormatter dateFromString:string];
     
 }
 
 + (NSString *)stringFromDate:(NSDate *)date {
-    
     return [[self dateFormatterWithMilliseconds] stringFromDate:date];
-    
 }
 
 + (NSString *)stringFromNow {
-    
     return [[self dateFormatterWithMilliseconds] stringFromDate:[NSDate date]];
-    
 }
 
 +(NSString *)addPrefixToEntityName:(NSString*)entityName{
@@ -987,6 +985,29 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     }
     return appStateString;
+    
+}
+
++ (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    return predicate;
     
 }
 
