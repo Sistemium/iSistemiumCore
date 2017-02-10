@@ -278,8 +278,8 @@
     
     [self startCheckingPicturesPaths];
     
-//    [self checkUploadedPhotos];
     [self checkBrokenPhotos];
+    [self checkUploadedPhotos];
     
 }
 
@@ -509,13 +509,10 @@
 + (void)checkUploadedPhotos {
 
     int counter = 0;
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMCorePhoto class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
-    
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *result = [self.class allPicturesWithPredicate:predicate];
     
     for (STMCorePicture *picture in result) {
         
