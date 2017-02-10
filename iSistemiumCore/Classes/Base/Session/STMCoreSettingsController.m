@@ -351,6 +351,8 @@
     NSDictionary *defaultSettings = [self defaultSettings];
     //        NSLog(@"defaultSettings %@", defaultSettings);
     
+    NSArray *currentSettings = [self currentSettings];
+    
     for (NSString *settingsGroupName in defaultSettings.allKeys) {
         //            NSLog(@"settingsGroup %@", settingsGroupName);
         
@@ -360,7 +362,7 @@
             //                NSLog(@"setting %@ %@", settingName, [settingsGroup valueForKey:settingName]);
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
-            NSMutableDictionary *settingToCheck = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
+            NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
 
             NSString *settingValue = [settingsGroup valueForKey:settingName];
             
@@ -378,13 +380,18 @@
             }
 
             if (!settingToCheck) {
-                
-                STMSetting *newSetting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
-                newSetting.group = settingsGroupName;
-                newSetting.name = settingName;
-                
+
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
-                newSetting.value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                NSString *value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+
+                NSDictionary *newSetting = @{@"group"   : settingsGroupName,
+                                             @"name"    : settingName,
+                                             @"value"   : value};
+                
+                [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
+                                          attributes:newSetting
+                                             options:nil
+                                   completionHandler:nil];
                 
             } else {
                 
