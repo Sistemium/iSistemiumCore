@@ -382,7 +382,7 @@
             if (!settingToCheck) {
 
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
-                NSString *value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                id value = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
 
                 NSDictionary *newSetting = @{@"group"   : settingsGroupName,
                                              @"name"    : settingName,
@@ -397,7 +397,7 @@
                 
                 id nValue = [self normalizeValue:settingToCheck[@"value"] forKey:settingName];
 
-                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 
                 if ([[self.startSettings allKeys] containsObject:settingName]) {
                     
@@ -423,36 +423,39 @@
 
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
 
-    NSString *value;
+    NSArray *currentSettings = [self currentSettings];
     
-    for (NSString *settingName in [newSettings allKeys]) {
+    for (NSString *settingName in newSettings.allKeys) {
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", group, settingName];
-        STMSetting *setting = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
-        value = [self normalizeValue:[newSettings valueForKey:settingName] forKey:settingName];
+        NSMutableDictionary *setting = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+        NSString *value = [self normalizeValue:newSettings[settingName] forKey:settingName];
         
         if (value) {
             
             if (!setting) {
                 
-                setting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
-                setting.group = group;
-                setting.name = settingName;
+                setting = @{@"group"    : group,
+                            @"name"     : settingName}.mutableCopy;
                 
             }
             
-            setting.value = ([value isKindOfClass:[NSString class]]) ? value : nil;
+            setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
+            
+            [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
+                                      attributes:setting
+                                         options:nil
+                               completionHandler:nil];
             
         } else {
             
-            NSLog(@"wrong value %@ for setting %@", [newSettings valueForKey:settingName], settingName);
-            value = setting.value;
+            NSLog(@"wrong value %@ for setting %@", newSettings[settingName], settingName);
             
         }
         
     }
-    
-    return value;
+
+    return @"";
     
 }
 
