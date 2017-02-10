@@ -66,9 +66,11 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 - (NSArray *)currentSettings;
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
-- (id)settingForDictionary:(NSDictionary *)dictionary;
+//- (id)settingForDictionary:(NSDictionary *)dictionary;
+
 
 @end
+
 
 @protocol STMSession <NSObject>
 

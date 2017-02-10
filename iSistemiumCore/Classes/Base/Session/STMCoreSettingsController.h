@@ -25,7 +25,7 @@
 
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
 
-- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary;
+//- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
 - (BOOL)isBool:(NSString *)value;

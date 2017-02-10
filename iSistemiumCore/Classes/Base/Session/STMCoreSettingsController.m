@@ -269,7 +269,7 @@
 #ifdef DEBUG
 //    NSLog(@"self.currentSettings %@", self.currentSettings);
     
-    for (STMSetting *setting in self.currentSettings) {
+    for (NSDictionary *setting in [self currentSettings]) {
         
         NSLog(@"setting %@", setting);
         
@@ -286,7 +286,7 @@
                                                                error:&error];
     
     return currentSettings;
-        
+    
 }
 
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group {
@@ -316,35 +316,35 @@
     
 }
 
-- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary {
-    
-    NSString *settingName = dictionary[@"name"];
-    NSString *settingGroup = dictionary[@"group"];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@ AND group == %@", settingName, settingGroup];
-    
-    NSArray *result = [self.fetchedSettingsResultController.fetchedObjects filteredArrayUsingPredicate:predicate];
-    
-    STMSetting *setting = [result lastObject];
-    
-    if (result.count > 1) {
-        
-        NSLog(@"More than one setting with name %@ and group %@, get lastObject", settingName, settingGroup);
-        NSLog(@"remove all other setting objects with name %@ and group %@", settingName, settingGroup);
-        
-        predicate = [NSPredicate predicateWithFormat:@"SELF != %@", setting];
-        result = [result filteredArrayUsingPredicate:predicate];
-        NSError *error;
-        
-        for (STMSetting *settingObject in result) {
-            [self.persistenceDelegate destroySync:@"STMSetting" identifier:[STMFunctions hexStringFromData:settingObject.xid] options:nil error:&error];
-        }
-        
-    }
-    
-    return setting;
-    
-}
+//- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary {
+//    
+//    NSString *settingName = dictionary[@"name"];
+//    NSString *settingGroup = dictionary[@"group"];
+//    
+//    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@ AND group == %@", settingName, settingGroup];
+//    
+//    NSArray *result = [self.fetchedSettingsResultController.fetchedObjects filteredArrayUsingPredicate:predicate];
+//    
+//    STMSetting *setting = [result lastObject];
+//    
+//    if (result.count > 1) {
+//        
+//        NSLog(@"More than one setting with name %@ and group %@, get lastObject", settingName, settingGroup);
+//        NSLog(@"remove all other setting objects with name %@ and group %@", settingName, settingGroup);
+//        
+//        predicate = [NSPredicate predicateWithFormat:@"SELF != %@", setting];
+//        result = [result filteredArrayUsingPredicate:predicate];
+//        NSError *error;
+//        
+//        for (STMSetting *settingObject in result) {
+//            [self.persistenceDelegate destroySync:@"STMSetting" identifier:[STMFunctions hexStringFromData:settingObject.xid] options:nil error:&error];
+//        }
+//        
+//    }
+//    
+//    return setting;
+//    
+//}
 
 - (void)checkSettings {
     
