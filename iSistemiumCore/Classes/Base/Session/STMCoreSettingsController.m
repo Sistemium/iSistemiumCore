@@ -316,36 +316,6 @@
     
 }
 
-//- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary {
-//    
-//    NSString *settingName = dictionary[@"name"];
-//    NSString *settingGroup = dictionary[@"group"];
-//    
-//    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@ AND group == %@", settingName, settingGroup];
-//    
-//    NSArray *result = [self.fetchedSettingsResultController.fetchedObjects filteredArrayUsingPredicate:predicate];
-//    
-//    STMSetting *setting = [result lastObject];
-//    
-//    if (result.count > 1) {
-//        
-//        NSLog(@"More than one setting with name %@ and group %@, get lastObject", settingName, settingGroup);
-//        NSLog(@"remove all other setting objects with name %@ and group %@", settingName, settingGroup);
-//        
-//        predicate = [NSPredicate predicateWithFormat:@"SELF != %@", setting];
-//        result = [result filteredArrayUsingPredicate:predicate];
-//        NSError *error;
-//        
-//        for (STMSetting *settingObject in result) {
-//            [self.persistenceDelegate destroySync:@"STMSetting" identifier:[STMFunctions hexStringFromData:settingObject.xid] options:nil error:&error];
-//        }
-//        
-//    }
-//    
-//    return setting;
-//    
-//}
-
 - (void)checkSettings {
     
     NSDictionary *defaultSettings = [self defaultSettings];
@@ -393,11 +363,6 @@
                                          attributes:newSetting
                                             options:nil
                                               error:&error];
-
-//                [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
-//                                          attributes:newSetting
-//                                             options:nil
-//                                   completionHandler:nil];
                 
             } else {
                 
@@ -454,11 +419,6 @@
                                      attributes:setting
                                         options:nil
                                           error:&error];
-            
-//            [self.persistenceDelegate mergeAsync:NSStringFromClass([STMSetting class])
-//                                      attributes:setting
-//                                         options:nil
-//                               completionHandler:nil];
             
         } else {
             
