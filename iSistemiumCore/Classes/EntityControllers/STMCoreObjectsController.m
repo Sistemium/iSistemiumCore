@@ -476,11 +476,4 @@
     
 }
 
-#warning needs to be removed
-+ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
-    
-    return [STMFunctions error:error withMessage:errorMessage];
-
-}
-
 @end
