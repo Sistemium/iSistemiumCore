@@ -16,8 +16,8 @@
 
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, strong) NSFetchedResultsController *fetchedSettingsResultController;
-@property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync, STMPersistingObserving> persistenceDelegate;
+
 
 @end
 
@@ -42,17 +42,7 @@
 - (NSMutableArray *)groupNames {
     
     if (!_groupNames) {
-
-        NSMutableArray *groupNames = [NSMutableArray array];
-        
-        for (id <NSFetchedResultsSectionInfo> sectionInfo in self.fetchedSettingsResultController.sections) {
-            
-            [groupNames addObject:[sectionInfo name]];
-
-        }
-        
-        _groupNames = groupNames;
-        
+        _groupNames = [[self currentSettings] valueForKeyPath:@"@distinctUnionOfObjects.group"];
     }
     
     return _groupNames;
@@ -221,46 +211,9 @@
     _session = session;
     
     self.persistenceDelegate = session.persistenceDelegate;
-
-    NSError *error;
-    if (![self.fetchedSettingsResultController performFetch:&error]) {
-        
-        NSLog(@"settingsController performFetch error %@", error);
-        
-    } else {
-        
-        [self checkSettings];
-//        [self NSLogSettings];
-        
-    }
     
-}
-
-- (NSFetchedResultsController *)fetchedSettingsResultController {
-    
-    if (!_fetchedSettingsResultController) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMSetting class])];
-
-        NSSortDescriptor *groupSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"group"
-                                                                              ascending:YES
-                                                                               selector:@selector(caseInsensitiveCompare:)];
-        
-        NSSortDescriptor *nameSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name"
-                                                                             ascending:YES
-                                                                              selector:@selector(caseInsensitiveCompare:)];
-
-        request.sortDescriptors = @[groupSortDescriptor, nameSortDescriptor];
-        
-        _fetchedSettingsResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                               managedObjectContext:self.session.document.managedObjectContext
-                                                                                 sectionNameKeyPath:@"group"
-                                                                                          cacheName:nil];
-        _fetchedSettingsResultController.delegate = self;
-        
-    }
-    
-    return _fetchedSettingsResultController;
+    [self subscribeForSettings];
+    [self checkSettings];
     
 }
 
@@ -433,64 +386,45 @@
 }
 
 
-#pragma mark - NSFetchedResultsController delegate
+#pragma mark - subscribing
 
-- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-//    NSLog(@"controllerWillChangeContent");
-}
-
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-//    NSLog(@"controllerDidChangeContent");
+- (void)subscribeForSettings {
     
-    self.groupNames = nil;
-    
-    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
-        if (success) {
-            NSLog(@"save settings success");
-        }
+    [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray * _Nullable data) {
+        [self getSubscribedData:data];
     }];
     
 }
 
-- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
+- (void)getSubscribedData:(NSArray *)data {
     
-    if ([anObject isKindOfClass:[STMSetting class]]) {
-        
-//        NSLog(@"anObject %@", anObject);
-        
-        NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", [anObject valueForKey:@"group"]];
-        
-        NSDictionary *userInfo = nil;
-        
-        if ([anObject valueForKey:@"value"]) {
-            userInfo = @{[anObject valueForKey:@"name"]: [anObject valueForKey:@"value"]};
-        }
-        
-        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-        
-        [nc postNotificationName:notificationName
-                          object:self.session
-                        userInfo:userInfo];
-        
-        [nc postNotificationName:@"settingsChanged"
-                          object:self.session
-                        userInfo:@{@"changedObject": anObject}];
-        
+    for (NSDictionary *anObject in data) {
+        [self getSubscribedObject:anObject];
     }
-        
-    if (type == NSFetchedResultsChangeDelete) {
-        
-//        NSLog(@"NSFetchedResultsChangeDelete");
-        
-    } else if (type == NSFetchedResultsChangeInsert) {
-        
-//        NSLog(@"NSFetchedResultsChangeInsert");
-        
-    } else if (type == NSFetchedResultsChangeUpdate) {
-        
-//        NSLog(@"NSFetchedResultsChangeUpdate");
-        
+    
+    self.groupNames = nil;
+    
+}
+
+- (void)getSubscribedObject:(NSDictionary *)anObject {
+    
+    NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
+    
+    NSDictionary *userInfo = nil;
+    
+    if (anObject[@"value"] && anObject[@"name"]) {
+        userInfo = @{anObject[@"name"]: anObject[@"value"]};
     }
+    
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    
+    [nc postNotificationName:notificationName
+                      object:self.session
+                    userInfo:userInfo];
+    
+    [nc postNotificationName:@"settingsChanged"
+                      object:self.session
+                    userInfo:@{@"changedObject": anObject}];
     
 }
 
