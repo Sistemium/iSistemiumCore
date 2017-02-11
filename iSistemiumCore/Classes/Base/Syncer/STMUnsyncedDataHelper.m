@@ -213,6 +213,10 @@
     
     self.syncingState.isInSyncingProcess = NO;
     
+    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    self.pendingObjectsByEntity = @{}.mutableCopy;
+    self.syncedPendingObjectsByEntity = @{}.mutableCopy;
+    
 }
 
 

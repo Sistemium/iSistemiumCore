@@ -24,6 +24,8 @@
 
 @implementation STMModeller
 
+@synthesize concreteEntities = _concreteEntities;
+
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
     return [[self alloc] initWithModel:model];
 }
@@ -64,6 +66,11 @@
     }
     
     self.allEntitiesCache = cache.copy;
+    
+    _concreteEntities = [STMFunctions mapDictionary:self.entitiesByName withBlock:^id _Nonnull(NSEntityDescription *entity, NSString *key) {
+        return [self isConcreteEntityName:key] ? entity : nil;
+    }];
+    
     return self;
 }
 

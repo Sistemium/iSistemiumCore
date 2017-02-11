@@ -651,7 +651,7 @@
     
     if ([entitiesNames isKindOfClass:[NSArray class]]) {
         
-        NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+        NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
         NSMutableArray *existingNames = [@[] mutableCopy];
         
         for (NSString *entityName in entitiesNames) {

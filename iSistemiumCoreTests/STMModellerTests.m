@@ -8,12 +8,17 @@
 
 
 #import "STMPersistingTests.h"
+#import "STMModeller.h"
 
 @interface STMModellerTests : STMPersistingTests
 
 @end
 
 @implementation STMModellerTests
+
++ (BOOL)needWaitSession {
+    return YES;
+}
 
 - (void)testEntitiesHierarchy {
     
@@ -27,6 +32,33 @@
     resultSet= [self.persister hierarchyForEntityName:@"STMCorePhoto"];
     XCTAssertEqualObjects(expectedPictrureNamesSet, resultSet);
     
+}
+
+- (void)testEntitiesList {
+
+    NSMutableSet *fromPersister = [NSSet setWithArray:self.persister.concreteEntities.allKeys].mutableCopy;
+    
+    NSArray *coreEntities = [self localDataModelEntityNames];
+    
+    [fromPersister minusSet:[NSSet setWithArray:coreEntities]];
+    
+    XCTAssertEqual(fromPersister.count, 0);
+    
+    if (fromPersister.count) {
+        NSLog(@"fromPersister: %@", fromPersister);
+    }
+    
+
+}
+
+
+- (NSArray *)localDataModelEntityNames {
+    
+    NSArray *entities = [(STMModeller *)self.persister managedObjectModel].entitiesByName.allValues;
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"abstract == NO"];
+    
+    return [[entities filteredArrayUsingPredicate:predicate] valueForKeyPath:@"name"];
     
 }
 

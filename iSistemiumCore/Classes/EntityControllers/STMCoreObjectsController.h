@@ -16,7 +16,6 @@
 
 + (void)checkObjectsForFlushing;
 
-+ (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
 
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;

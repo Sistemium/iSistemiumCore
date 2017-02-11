@@ -333,7 +333,7 @@ static void *dataDownloadingOwnerVar;
     
     STMEntity *entity = self.stcEntities[entityName];
     
-    NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+    NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
     
     if (entity.roleName) {
         

@@ -33,7 +33,6 @@
 @property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToOneRelationships;
 @property (nonatomic, strong) NSMutableDictionary *entitiesToManyRelationships;
-@property (nonatomic, strong) NSArray *localDataModelEntityNames;
 @property (nonatomic, strong) NSArray *coreEntityKeys;
 @property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
@@ -168,7 +167,7 @@
 
 + (NSDictionary *)objectForIdentifier:(NSString *)identifier entityName:(NSString**)name{
     
-    for (NSString *entityName in [self localDataModelEntityNames]) {
+    for (NSString *entityName in self.persistenceDelegate.concreteEntities.allKeys) {
         
         if (![[self persistenceDelegate] isConcreteEntityName:entityName]) continue;
         
@@ -283,25 +282,6 @@
 
 }
 
-#warning deprecated - use STMModeling (isConcreteEntityName etc)
-+ (NSArray <NSString *> *)localDataModelEntityNames {
-    return [self sharedController].localDataModelEntityNames;
-}
-
-- (NSArray *)localDataModelEntityNames {
-    
-    if (!_localDataModelEntityNames) {
-        
-        NSArray *entities = [[self class] document].managedObjectModel.entitiesByName.allValues;
-        
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"abstract == NO"];
-        
-        _localDataModelEntityNames = [[entities filteredArrayUsingPredicate:predicate] valueForKeyPath:@"name"];
-        
-    }
-    return _localDataModelEntityNames;
-    
-}
 
 + (NSArray *)coreEntityKeys {
     return [self sharedController].coreEntityKeys;
