@@ -400,7 +400,7 @@
     }
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                          ofUpdated:result];
+                          ofUpdated:result ? result : attributes];
     
     return result;
 
@@ -431,10 +431,11 @@
     if (![self saveWithEntityName:entityName]){
         [STMFunctions error:error
                 withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
+        return nil;
     }
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                     ofUpdatedArray:result];
+                     ofUpdatedArray:result.count ? result : attributeArray];
     
     return result;
     
