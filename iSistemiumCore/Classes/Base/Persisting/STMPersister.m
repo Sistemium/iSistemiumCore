@@ -17,6 +17,8 @@
 
 @interface STMPersister()
 
+@property (nonatomic,strong) NSString * fmdbFileName;
+
 @end
 
 @implementation STMPersister
@@ -25,7 +27,9 @@
 
     STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
     
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
+    NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
+    
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister fileName:fmdbFileName];
     persister.document = [STMDocument documentWithUID:uid
                                                iSisDB:iSisDB
                                         dataModelName:modelName];
