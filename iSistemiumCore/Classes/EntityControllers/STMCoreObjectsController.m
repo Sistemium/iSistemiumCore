@@ -186,12 +186,6 @@
 }
 
 
-#warning Need to move it somewhere
-+ (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    [self.persistenceDelegate setObjectData:objectData toObject:object withRelations:true];
-}
-
-
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:YES];
 }

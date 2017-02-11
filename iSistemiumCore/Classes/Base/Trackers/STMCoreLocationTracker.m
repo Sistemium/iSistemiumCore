@@ -291,7 +291,7 @@
         if (location) {
             _lastLocationObject = (STMCoreLocation *)[self.session.persistenceDelegate newObjectForEntityName:@"STMCoreLocation"];
             
-            [STMCoreObjectsController setObjectData:location toObject:_lastLocationObject];
+            [self.session.persistenceDelegate setObjectData:location toObject:_lastLocationObject];
         }
 
     }
@@ -839,7 +839,7 @@
         if (checkinLocationObject) {
 
             NSDictionary *checkinData = checkinRequest[@"checkinData"];
-            [STMCoreObjectsController setObjectData:checkinData toObject:checkinLocationObject];
+            [self.session.persistenceDelegate setObjectData:checkinData toObject:checkinLocationObject];
 
         }
         

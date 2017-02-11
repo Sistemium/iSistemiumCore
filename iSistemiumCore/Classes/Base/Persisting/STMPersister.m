@@ -219,15 +219,10 @@
         
     } else {
         
-#warning - may be make saveWithEntityName: method async to return correct value if using document save
         [self.document saveDocument:^(BOOL success) {
         }];
         
         return YES;
-        
-//        NSError *error;
-//        [self.document.managedObjectContext save:&error];
-//        return !error;
         
     }
     
