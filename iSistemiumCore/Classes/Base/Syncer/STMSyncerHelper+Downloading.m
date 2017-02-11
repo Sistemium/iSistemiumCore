@@ -549,6 +549,8 @@ static void *dataDownloadingOwnerVar;
 
 - (void)saveReceiveDate {
     
+    if (!self.session.uid) return;
+    
     STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     
     NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
