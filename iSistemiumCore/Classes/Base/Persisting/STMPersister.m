@@ -406,28 +406,33 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
-    for (NSDictionary* dictionary in attributeArray){
+    for (NSDictionary *dictionary in attributeArray) {
         
-        NSDictionary* dict = [self mergeWithoutSave:entityName
+        NSDictionary *dict = [self mergeWithoutSave:entityName
                                          attributes:dictionary
                                             options:[self fixMergeOptions:options entityName:entityName]
                                               error:error];
         
-        if (dict){
+        if (dict) {
             [result addObject:dict];
         }
         
-        if (*error){
+        if (*error) {
+            
             #warning possible danger, will rollback changes from other threads
             [self.fmdb rollback];
             return nil;
+            
         }
+        
     }
     
-    if (![self saveWithEntityName:entityName]){
+    if (![self saveWithEntityName:entityName]) {
+        
         [STMFunctions error:error
                 withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
         return nil;
+        
     }
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
