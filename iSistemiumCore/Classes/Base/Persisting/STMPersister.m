@@ -10,6 +10,8 @@
 
 #import "STMConstants.h"
 #import "STMFunctions.h"
+#import "STMEntityController.h"
+#import "STMSettingsController.h"
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
@@ -100,7 +102,44 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    if ([entityName isEqualToString:@"STMRecordStatus"]) {
+    NSString *entityEntityName = @"STMEntity";
+    NSString *settingEntityName = @"STMSetting";
+    NSString *recordStatusEntityName = @"STMRecordStatus";
+
+#warning - have to think up something smarter than hardcoding entity's names
+    
+    if ([entityName isEqualToString:entityEntityName]) {
+        
+        NSDictionary *entity = [STMEntityController entityWithName:attributes[@"name"]];
+        
+        if (entity) {
+            
+            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
+            editedAttributes[@"id"] = entity[@"id"];
+            
+            attributes = editedAttributes;
+            
+        }
+        
+    }
+    
+    if ([entityName isEqualToString:settingEntityName]) {
+        
+        NSDictionary *setting = [STMSettingsController settingWithName:attributes[@"name"]
+                                                              forGroup:attributes[@"group"]];
+        
+        if (setting) {
+            
+            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
+            editedAttributes[@"id"] = setting[@"id"];
+            
+            attributes = editedAttributes;
+
+        }
+        
+    }
+
+    if ([entityName isEqualToString:recordStatusEntityName]) {
         
         if (![attributes[@"isRemoved"] isEqual:NSNull.null] ? [attributes[@"isRemoved"] boolValue] : false) {
             
