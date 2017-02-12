@@ -316,8 +316,10 @@
             } else {
                 
                 id nValue = [self normalizeValue:settingToCheck[@"value"] forKey:settingName];
+                
+                nValue = [nValue isKindOfClass:[NSString class]] ? nValue : [NSNull null];
 
-                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
+                settingToCheck[@"value"] = nValue;
                 
                 if ([self.startSettings.allKeys containsObject:settingName]) {
                     
