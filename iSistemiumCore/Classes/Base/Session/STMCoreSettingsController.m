@@ -319,7 +319,7 @@
 
                 settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 
-                if ([[self.startSettings allKeys] containsObject:settingName]) {
+                if ([self.startSettings.allKeys containsObject:settingName]) {
                     
                     if (![settingToCheck[@"value"] isEqualToString:settingValue]) {
                         settingToCheck[@"value"] = settingValue;
