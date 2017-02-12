@@ -192,17 +192,15 @@
 
 + (NSDictionary *)entityWithName:(NSString *)name {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSError *error = nil;
+    NSDictionary *entity = [[self persistenceDelegate] findAllSync:NSStringFromClass([STMEntity class])
+                                                         predicate:predicate
+                                                           options:nil
+                                                             error:&error].lastObject;
     
-    // TODO: use Persistence
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
-                                                                          error:&error];
-    
-    return result.lastObject;
-    
+    return entity;
+        
 }
 
 + (void)checkEntitiesForDuplicates {
