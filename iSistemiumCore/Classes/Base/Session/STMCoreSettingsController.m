@@ -311,11 +311,7 @@
                                              @"name"    : settingName,
                                              @"value"   : value};
                 
-                NSError *error = nil;
-                [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
-                                         attributes:newSetting
-                                            options:nil
-                                              error:&error];
+                [self mergeSync:newSetting];
                 
             } else {
                 
@@ -366,12 +362,7 @@
             
             setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
             
-            NSError *error = nil;
-            
-            [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
-                                     attributes:setting
-                                        options:nil
-                                          error:&error];
+            [self mergeSync:setting];
             
         } else {
             
@@ -405,6 +396,16 @@
 
 - (BOOL)valueIsNSString:(id)value {
     return [value isKindOfClass:[NSString class]];
+}
+
+- (void)mergeSync:(NSDictionary *)setting {
+    
+    NSError *error = nil;
+    [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
+                             attributes:setting
+                                options:nil
+                                  error:&error];
+
 }
 
 
