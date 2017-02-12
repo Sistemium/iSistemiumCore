@@ -385,6 +385,28 @@
     
 }
 
+- (BOOL)value:(id)valueOne isEqual:(id)valueTwo {
+    
+    if ([self valueIsNSNull:valueOne] && [self valueIsNSNull:valueTwo]) {
+        return YES;
+    }
+    
+    if ([self valueIsNSString:valueOne] && [self valueIsNSString:valueTwo]) {
+        return [valueOne isEqualToString:valueTwo];
+    }
+    
+    return NO;
+    
+}
+
+- (BOOL)valueIsNSNull:(id)value {
+    return [value isKindOfClass:[NSNull class]];
+}
+
+- (BOOL)valueIsNSString:(id)value {
+    return [value isKindOfClass:[NSString class]];
+}
+
 
 #pragma mark - subscribing
 
