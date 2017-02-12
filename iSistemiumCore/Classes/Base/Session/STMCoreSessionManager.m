@@ -104,9 +104,11 @@
             session.settingsController.startSettings = startSettings.mutableCopy;
             session.settingsController.session = session;
             
-            if (session.document && session.document.documentState == UIDocumentStateClosed) {
+            if (session.document) {
                 
-                [STMDocument openDocument:session.document];
+                if (session.document.documentState == UIDocumentStateClosed) {
+                    [STMDocument openDocument:session.document];
+                }
                 
             } else {
                 
