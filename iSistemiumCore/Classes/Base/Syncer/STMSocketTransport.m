@@ -33,6 +33,9 @@
 + (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner {
     
     STMLogger *logger = [STMLogger sharedLogger];
+    
+    socketUrlString = [socketUrlString isKindOfClass:[NSNull class]] ? nil : socketUrlString;
+    entityResource = [entityResource isKindOfClass:[NSNull class]] ? nil : entityResource;
 
     if (!socketUrlString || !entityResource || !owner) {
         
