@@ -231,11 +231,16 @@
 
         NSError *error;
         NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
-        
+
+        NSMutableArray *newStcEntitiesArray = [self stcEntitiesArray].mutableCopy;
+        [newStcEntitiesArray removeObjectsInArray:duplicates];
+        [self sharedInstance].entitiesArray = newStcEntitiesArray;
+
         [[self persistenceDelegate] destroyAllSync:STM_ENTITY_NAME
                                          predicate:duplicatesPredicate
                                            options:@{STMPersistingOptionRecordstatuses:@(NO)}
                                              error:&error];
+        
     }];
 
     if (!totalDuplicates) {
