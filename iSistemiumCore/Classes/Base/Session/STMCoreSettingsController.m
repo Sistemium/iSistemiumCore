@@ -294,7 +294,7 @@
                 id nValue = [self normalizeValue:self.startSettings[settingName] forKey:settingName];
                 
                 if (nValue) {
-                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 } else {
                     NSLog(@"value %@ is not correct for %@", self.startSettings[settingName], settingName);
                     [self.startSettings removeObjectForKey:settingName];
