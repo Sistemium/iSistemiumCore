@@ -211,15 +211,6 @@
         [self reconnectSocket];
     }
     
-    //    if (self.wasClosedInBackground) {
-    //
-    //        self.wasClosedInBackground = NO;
-    //        [self startSocket];
-    //
-    //    } else if (![STMSocketController socketIsAvailable]) {
-    //        [self reconnectSocket];
-    //    }
-    
 }
 
 - (void)closeSocketInBackground {
@@ -228,9 +219,6 @@
     
     [logger saveLogMessageWithText:@"close socket in background"
                            numType:STMLogMessageTypeInfo];
-    
-    //    self.wasClosedInBackground = YES;
-    //    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
     
     [self closeSocket];
     

@@ -405,9 +405,6 @@
                         
                     }
                     
-                    //                    [STMSocketController startSocketWithUrl:self.socketUrlString
-                    //                                          andEntityResource:self.entityResource];
-                    
                 } else {
                     
                     NSLog(@"have NO socketURL, fail to start socket controller");
@@ -437,10 +434,7 @@
     
     if (self.isRunning) {
         
-        //        [STMSocketController closeSocket];
-        
         [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-        //        self.syncing = NO;
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
