@@ -395,7 +395,8 @@
     }
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                          ofUpdated:result ? result : attributes];
+                          ofUpdated:result ? result : attributes
+                            options:options];
     
     return result;
 
@@ -430,7 +431,8 @@
     }
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                     ofUpdatedArray:result.count ? result : attributeArray];
+                     ofUpdatedArray:result.count ? result : attributeArray
+                            options:options];
     
     return result;
     
@@ -534,7 +536,8 @@
     [self saveWithEntityName:entityName];
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                          ofUpdated:result];
+                          ofUpdated:result
+                            options:options];
     
     return result;
     

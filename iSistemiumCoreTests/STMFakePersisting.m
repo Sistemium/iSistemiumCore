@@ -163,7 +163,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
     STMFakePersistingIfInMemoryDB(nil) {
         attributes = [self.data[entityName] addObject:attributes options:options];
-        [self notifyObservingEntityName:entityName ofUpdated:attributes];
+        [self notifyObservingEntityName:entityName ofUpdated:attributes options:options];
         return attributes;
     }
     
@@ -194,7 +194,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     
     STMFakePersistingIfInMemoryDB(nil) {
         attributeArray = [self.data[entityName] addObjectsFromArray:attributeArray options:options];
-        [self notifyObservingEntityName:entityName ofUpdatedArray:attributeArray];
+        [self notifyObservingEntityName:entityName ofUpdatedArray:attributeArray options:options];
         return attributeArray;
     }
     

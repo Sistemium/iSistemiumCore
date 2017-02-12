@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import "STMPersisting.h"
 
 #define STMPersistingObservingSubscriptionID NSString *
 
@@ -30,6 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                   callback:(STMPersistingObservingEntityNameArrayCallback)callback;
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId;
+
+@optional
+
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate * _Nullable)predicate
+                                              options:(STMPersistingOptions _Nullable)options
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback;
+
 
 NS_ASSUME_NONNULL_END
 

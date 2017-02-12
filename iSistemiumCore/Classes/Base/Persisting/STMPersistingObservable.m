@@ -16,6 +16,7 @@
 @property (nonatomic, strong, nullable) NSPredicate *predicate;
 @property (nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
 @property (nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
+@property (nonatomic, strong, nullable) STMPersistingOptions options;
 
 @end
 
@@ -60,12 +61,14 @@
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate
+                                              options:(STMPersistingOptions)options
                                              callback:(STMPersistingObservingSubscriptionCallback)callback {
     
     STMPersistingObservingSubscription *subscription = [STMPersistingObservingSubscription subscriptionWithPredicate:predicate];
     
     subscription.entityName = entityName;
     subscription.callback = callback;
+    subscription.options = options;
     
     self.subscriptions[subscription.identifier] = subscription;
     
@@ -97,6 +100,15 @@
     
 }
 
+- (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
+                                            predicate:(NSPredicate * _Nullable)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback {
+    
+    return [self observeEntity:entityName predicate:predicate options:nil callback:callback];
+    
+}
+
+
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId {
     
     BOOL result = self.subscriptions[subscriptionId] != nil;
@@ -111,15 +123,17 @@
 
 #pragma mark - Public methods
 
-- (void)notifyObservingEntityName:(NSString *)entityName
-                        ofUpdated:(NSDictionary *)item {
+- (void)notifyObservingEntityName:(NSString *)entityName ofUpdated:(NSDictionary *)item options:(STMPersistingOptions)options {
+    
     if (!item) return;
+    
     [self notifyObservingEntityName:entityName
-                     ofUpdatedArray:[NSArray arrayWithObject:item]];
+                     ofUpdatedArray:[NSArray arrayWithObject:item]
+                            options:options];
+    
 }
 
-- (void)notifyObservingEntityName:(NSString *)entityName
-                   ofUpdatedArray:(NSArray *)items {
+- (void)notifyObservingEntityName:(NSString *)entityName ofUpdatedArray:(NSArray *)items options:(STMPersistingOptions)options;{
     
     if (!items.count) return;
     
@@ -130,6 +144,15 @@
         
         if (subscription.entityName && ![subscription.entityName isEqualToString:entityName]) continue;
         
+        NSSet *unmatchedOptions = [subscription.options keysOfEntriesPassingTest:^BOOL(NSString *optionName, id optionValue, BOOL *stop) {
+            if ([optionValue isKindOfClass:NSNumber.class]) {
+                return [optionValue boolValue] != [(NSNumber *)options[optionName] boolValue];
+            }
+            return [optionValue isEqual:options[optionName]];
+        }];
+        
+        if (unmatchedOptions.count) continue;
+        
         NSArray *itemsFiltered = items;
         
         if (subscription.predicate) {
@@ -139,10 +162,9 @@
                 NSLog(@"notifyObservingEntityName catch: %@", exception);
                 itemsFiltered = nil;
             }
-            if (!itemsFiltered.count) continue;
         }
         
-        if (!itemsFiltered.count) return;
+        if (!itemsFiltered.count) continue;
         
         if (subscription.entityName) {
             subscription.callback(itemsFiltered);
