@@ -42,10 +42,12 @@
 }
 
 - (NSMutableDictionary <NSString *, STMCoreSession *> *)sessions {
+    
     if (!_sessions) {
         _sessions = [NSMutableDictionary dictionary];
     }
     return _sessions;
+    
 }
 
 - (STMCoreSession *)currentSession {
@@ -88,7 +90,7 @@
             session.settingsControls = validSettings[@"controls"];
             session.manager = self;
 
-            [self.sessions setValue:session forKey:uid];
+            self.sessions[uid] = session;
 
             self.currentSessionUID = uid;
 
@@ -102,9 +104,11 @@
             session.settingsController.startSettings = startSettings.mutableCopy;
             session.settingsController.session = session;
             
-            if (session.document && session.document.documentState == UIDocumentStateClosed) {
+            if (session.document) {
                 
-                [STMDocument openDocument:session.document];
+                if (session.document.documentState == UIDocumentStateClosed) {
+                    [STMDocument openDocument:session.document];
+                }
                 
             } else {
                 
@@ -112,6 +116,7 @@
                 
                 [session.logger saveLogMessageWithText:logMessage
                                                numType:STMLogMessageTypeError];
+                
             }
 
         }

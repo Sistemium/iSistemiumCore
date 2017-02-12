@@ -287,14 +287,14 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
             NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
 
-            NSString *settingValue = [settingsGroup valueForKey:settingName];
+            id settingValue = settingsGroup[settingName];
             
             if ([self.startSettings.allKeys containsObject:settingName]) {
                 
                 id nValue = [self normalizeValue:self.startSettings[settingName] forKey:settingName];
                 
                 if (nValue) {
-                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 } else {
                     NSLog(@"value %@ is not correct for %@", self.startSettings[settingName], settingName);
                     [self.startSettings removeObjectForKey:settingName];
@@ -305,28 +305,30 @@
             if (!settingToCheck) {
 
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
-                id value = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
+                nValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
 
                 NSDictionary *newSetting = @{@"group"   : settingsGroupName,
                                              @"name"    : settingName,
-                                             @"value"   : value};
+                                             @"value"   : nValue};
                 
-                NSError *error = nil;
-                [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
-                                         attributes:newSetting
-                                            options:nil
-                                              error:&error];
+                [self mergeSync:newSetting];
                 
             } else {
                 
                 id nValue = [self normalizeValue:settingToCheck[@"value"] forKey:settingName];
-
-                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 
-                if ([[self.startSettings allKeys] containsObject:settingName]) {
+                nValue = [nValue isKindOfClass:[NSString class]] ? nValue : [NSNull null];
+
+                settingToCheck[@"value"] = nValue;
+                
+                if ([self.startSettings.allKeys containsObject:settingName]) {
                     
-                    if (![settingToCheck[@"value"] isEqualToString:settingValue]) {
+                    if (![self value:nValue isEqual:settingValue]) {
+                        
                         settingToCheck[@"value"] = settingValue;
+                        
+                        [self mergeSync:settingToCheck];
+
                     }
                     
                 }
@@ -366,12 +368,7 @@
             
             setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
             
-            NSError *error = nil;
-            
-            [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
-                                     attributes:setting
-                                        options:nil
-                                          error:&error];
+            [self mergeSync:setting];
             
         } else {
             
@@ -383,6 +380,38 @@
 
     return @"";
     
+}
+
+- (BOOL)value:(id)valueOne isEqual:(id)valueTwo {
+    
+    if ([self valueIsNSNull:valueOne] && [self valueIsNSNull:valueTwo]) {
+        return YES;
+    }
+    
+    if ([self valueIsNSString:valueOne] && [self valueIsNSString:valueTwo]) {
+        return [valueOne isEqualToString:valueTwo];
+    }
+    
+    return NO;
+    
+}
+
+- (BOOL)valueIsNSNull:(id)value {
+    return [value isKindOfClass:[NSNull class]];
+}
+
+- (BOOL)valueIsNSString:(id)value {
+    return [value isKindOfClass:[NSString class]];
+}
+
+- (void)mergeSync:(NSDictionary *)setting {
+    
+    NSError *error = nil;
+    [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
+                             attributes:setting
+                                options:nil
+                                  error:&error];
+
 }
 
 

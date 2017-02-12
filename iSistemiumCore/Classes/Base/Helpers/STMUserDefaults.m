@@ -185,6 +185,13 @@
 
 - (void)setObject:(id)value forKey:(NSString *)defaultName {
 	
+    if (!value) {
+        
+        [self.defaultsDic removeObjectForKey:defaultName];
+        return;
+        
+    }
+    
     NSArray *availableClasses = @[[NSData class],
                                   [NSDate class],
                                   [NSNumber class],

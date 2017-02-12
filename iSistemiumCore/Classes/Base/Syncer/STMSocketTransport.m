@@ -33,6 +33,9 @@
 + (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner {
     
     STMLogger *logger = [STMLogger sharedLogger];
+    
+    socketUrlString = [socketUrlString isKindOfClass:[NSNull class]] ? nil : socketUrlString;
+    entityResource = [entityResource isKindOfClass:[NSNull class]] ? nil : entityResource;
 
     if (!socketUrlString || !entityResource || !owner) {
         
@@ -211,15 +214,6 @@
         [self reconnectSocket];
     }
     
-    //    if (self.wasClosedInBackground) {
-    //
-    //        self.wasClosedInBackground = NO;
-    //        [self startSocket];
-    //
-    //    } else if (![STMSocketController socketIsAvailable]) {
-    //        [self reconnectSocket];
-    //    }
-    
 }
 
 - (void)closeSocketInBackground {
@@ -228,9 +222,6 @@
     
     [logger saveLogMessageWithText:@"close socket in background"
                            numType:STMLogMessageTypeInfo];
-    
-    //    self.wasClosedInBackground = YES;
-    //    [STMSocketController socketLostConnection:@"closeSocketInBackground"];
     
     [self closeSocket];
     
