@@ -77,7 +77,7 @@
 - (STMSetting *)settingObjectForIndexPath:(NSIndexPath *)indexPath {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", [self groupNames][indexPath.section], [self settingNameForIndexPath:indexPath]];
-    return [[[self.session.settingsController currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
+    return [self.session.settingsController.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
     
 }
 
