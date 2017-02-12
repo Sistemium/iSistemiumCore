@@ -356,11 +356,8 @@
         
     }
     
-    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
-        if (success) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete" object:self];
-        }
-    }];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete"
+                                                        object:self];
 
 }
 
