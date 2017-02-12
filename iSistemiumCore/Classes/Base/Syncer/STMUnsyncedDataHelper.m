@@ -155,8 +155,10 @@
         
         NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
         
+        NSDictionary *onlyLocalChanges = @{STMPersistingOptionLts:@NO};
+        
         STMPersistingObservingSubscriptionID sid =
-        [self.persistenceDelegate observeEntity:entityName predicate:predicate callback:^(NSArray * _Nullable data) {
+        [self.persistenceDelegate observeEntity:entityName predicate:predicate options:onlyLocalChanges callback:^(NSArray *data) {
             NSLog(@"observeEntity %@ data count %u", entityName, data.count);
             [self startHandleUnsyncedObjects];
         }];
