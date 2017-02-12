@@ -356,6 +356,8 @@
         
     }
     
+    self.currentSettings = nil;
+
     [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete"
                                                         object:self];
 
@@ -391,6 +393,8 @@
         }
         
     }
+
+    self.currentSettings = nil;
 
     return @"";
     
@@ -446,6 +450,7 @@
     }
     
     self.groupNames = nil;
+    self.currentSettings = nil;
     
 }
 
