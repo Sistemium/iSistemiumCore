@@ -323,8 +323,12 @@
                 
                 if ([self.startSettings.allKeys containsObject:settingName]) {
                     
-                    if (![settingToCheck[@"value"] isEqualToString:settingValue]) {
+                    if (![self value:nValue isEqual:settingValue]) {
+                        
                         settingToCheck[@"value"] = settingValue;
+                        
+                        [self mergeSync:settingToCheck];
+
                     }
                     
                 }
