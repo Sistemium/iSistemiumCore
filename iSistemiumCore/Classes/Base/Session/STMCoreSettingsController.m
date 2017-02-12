@@ -287,7 +287,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
             NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
 
-            NSString *settingValue = [settingsGroup valueForKey:settingName];
+            id settingValue = settingsGroup[settingName];
             
             if ([self.startSettings.allKeys containsObject:settingName]) {
                 
