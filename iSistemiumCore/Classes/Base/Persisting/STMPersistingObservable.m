@@ -137,10 +137,16 @@
     
     if (!items.count) return;
     
+#warning - needs to check somehow if subscription is canceled
+    
+    NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions = self.subscriptions.copy;
+    
     // TODO: maybe we need to cache subscriptions by entityName
-    for (STMPersistingObservingSubscriptionID key in self.subscriptions) {
+    for (STMPersistingObservingSubscriptionID key in subscriptions) {
         
         STMPersistingObservingSubscription *subscription = self.subscriptions[key];
+        
+        if (!subscription) continue;
         
         if (subscription.entityName && ![subscription.entityName isEqualToString:entityName]) continue;
         
@@ -167,9 +173,9 @@
         if (!itemsFiltered.count) continue;
         
         if (subscription.entityName) {
-            subscription.callback(itemsFiltered);
+            if (subscription.callback) subscription.callback(itemsFiltered);
         } else {
-            subscription.callbackWithEntityName(entityName, itemsFiltered);
+            if (subscription.callbackWithEntityName) subscription.callbackWithEntityName(entityName, itemsFiltered);
         }
     }
     
