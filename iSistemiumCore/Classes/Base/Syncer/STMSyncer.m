@@ -433,6 +433,8 @@
 - (void)stopSyncer {
     
     if (self.isRunning) {
+
+        [self.socketTransport closeSocket];
         
         [self.session.logger saveLogMessageWithText:@"Syncer stop"];
         self.syncerState = STMSyncerIdle;
