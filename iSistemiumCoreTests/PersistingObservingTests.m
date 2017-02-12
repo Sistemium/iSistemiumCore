@@ -8,7 +8,7 @@
 
 #import "STMPersistingTests.h"
 
-#define PersistingObservingTestsTimeOut 10
+#define PersistingObservingTestsTimeOut 1
 #define PersistingObservingTestEntity @"STMLogMessage"
 
 @interface PersistingObservingTests : STMPersistingTests
@@ -34,6 +34,82 @@
 - (void)tearDown {
     [super tearDown];
 }
+
+
+- (void)testObservingWithOptions {
+    
+    XCTestExpectation *not2BCalledTwiceExpectation = [self expectationWithDescription:@"Expect not to be called twice"];
+    
+    XCTestExpectation *not2BCalledTwiceExpectation2 = [self expectationWithDescription:@"Also expect not to be called twice"];
+    
+    NSError *error;
+    NSString *xid = [STMFunctions uuidString];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"source == %@", xid];
+    
+    STMPersistingObservingSubscriptionID subscriptionIdLts =
+    [self.persister observeEntity:PersistingObservingTestEntity
+                        predicate:predicate
+                          options:@{STMPersistingOptionLts:@YES}
+                         callback:^(NSArray *data)
+     {
+         NSDictionary *item = data.firstObject;
+         
+         XCTAssertEqualObjects(xid, item[@"ownerXid"]);
+         
+         [not2BCalledTwiceExpectation fulfill];
+         
+     }];
+
+    STMPersistingObservingSubscriptionID subscriptionIdLtsNo =
+    [self.persister observeEntity:PersistingObservingTestEntity
+                        predicate:predicate
+                          options:@{STMPersistingOptionLts:@NO}
+                         callback:^(NSArray *data)
+     {
+         NSDictionary *item = data.firstObject;
+         NSString *ownerXid = item[@"ownerXid"];
+         
+         XCTAssertTrue([[NSNull null] isEqual:ownerXid] || ownerXid == nil);
+         
+         [not2BCalledTwiceExpectation2 fulfill];
+         
+     }];
+
+    NSDictionary *item =
+    [self.persister mergeSync:PersistingObservingTestEntity
+                   attributes:@{@"type": self.testType, @"source": xid}
+                      options:nil
+                        error:&error];
+    
+    XCTAssertNil(error);
+    
+    XCTAssertTrue([predicate evaluateWithObject:item substitutionVariables:nil]);
+    
+    NSString *itemVersion = item[STMPersistingKeyVersion];
+    
+    XCTAssertNotNil(itemVersion);
+    
+    item = [STMFunctions setValue:xid forKey:@"ownerXid" inDictionary:item];
+    
+    [self.persister mergeSync:PersistingObservingTestEntity
+                   attributes:item
+                      options:@{STMPersistingOptionLts:itemVersion}
+                        error:&error];
+    
+    [self waitForExpectationsWithTimeout:PersistingObservingTestsTimeOut handler:^(NSError *err) {
+        
+        NSError *error;
+        
+        [self.persister cancelSubscription:subscriptionIdLts];
+        [self.persister cancelSubscription:subscriptionIdLtsNo];
+        
+        [self.persister destroySync:PersistingObservingTestEntity identifier:item[@"id"] options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
+        
+    }];
+    
+}
+
 
 - (void)testObserveLtsFmdb {
     if (self.fakePersistingOptions) return;
