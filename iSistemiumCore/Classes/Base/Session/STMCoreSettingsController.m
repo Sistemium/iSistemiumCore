@@ -305,11 +305,11 @@
             if (!settingToCheck) {
 
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
-                id value = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
+                nValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
 
                 NSDictionary *newSetting = @{@"group"   : settingsGroupName,
                                              @"name"    : settingName,
-                                             @"value"   : value};
+                                             @"value"   : nValue};
                 
                 [self mergeSync:newSetting];
                 
