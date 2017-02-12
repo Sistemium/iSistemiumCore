@@ -205,13 +205,13 @@
 
 + (void)checkEntitiesForDuplicates {
     
-    NSArray *names = [self.stcEntitiesArray valueForKeyPath:@"name"];
+    NSArray *names = [[self stcEntitiesArray] valueForKeyPath:@"name"];
     __block NSUInteger totalDuplicates = 0;
     
     [names enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
         
         NSPredicate *byName = [NSPredicate predicateWithFormat:@"name == %@", name];
-        NSArray *result = [self.stcEntitiesArray filteredArrayUsingPredicate:byName];
+        NSArray *result = [[self stcEntitiesArray] filteredArrayUsingPredicate:byName];
         
         if (result.count < 2) return;
         
