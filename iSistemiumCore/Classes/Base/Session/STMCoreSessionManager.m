@@ -42,10 +42,12 @@
 }
 
 - (NSMutableDictionary <NSString *, STMCoreSession *> *)sessions {
+    
     if (!_sessions) {
         _sessions = [NSMutableDictionary dictionary];
     }
     return _sessions;
+    
 }
 
 - (STMCoreSession *)currentSession {
@@ -88,7 +90,7 @@
             session.settingsControls = validSettings[@"controls"];
             session.manager = self;
 
-            [self.sessions setValue:session forKey:uid];
+            self.sessions[uid] = session;
 
             self.currentSessionUID = uid;
 
@@ -112,6 +114,7 @@
                 
                 [session.logger saveLogMessageWithText:logMessage
                                                numType:STMLogMessageTypeError];
+                
             }
 
         }
