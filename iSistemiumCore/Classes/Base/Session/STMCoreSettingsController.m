@@ -42,7 +42,7 @@
 - (NSMutableArray *)groupNames {
     
     if (!_groupNames) {
-        _groupNames = [[self currentSettings] valueForKeyPath:@"@distinctUnionOfObjects.group"];
+        _groupNames = [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
     }
     
     return _groupNames;
@@ -222,7 +222,7 @@
 #ifdef DEBUG
 //    NSLog(@"self.currentSettings %@", self.currentSettings);
     
-    for (NSDictionary *setting in [self currentSettings]) {
+    for (NSDictionary *setting in self.currentSettings) {
         
         NSLog(@"setting %@", setting);
         
@@ -232,13 +232,18 @@
 
 - (NSArray *)currentSettings {
     
-    NSError *error = nil;
-    NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
-                                                           predicate:nil
-                                                             options:nil
-                                                               error:&error];
+    if (!_currentSettings) {
     
-    return currentSettings;
+        NSError *error = nil;
+        NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
+                                                               predicate:nil
+                                                                 options:nil
+                                                                   error:&error];
+        
+        _currentSettings = currentSettings;
+
+    }
+    return _currentSettings;
     
 }
 
@@ -246,7 +251,7 @@
     
     NSMutableDictionary *settingsDictionary = [NSMutableDictionary dictionary];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@", group];
-    NSArray *groupSettings = [[self currentSettings] filteredArrayUsingPredicate:predicate];
+    NSArray *groupSettings = [self.currentSettings filteredArrayUsingPredicate:predicate];
     
     for (NSDictionary *setting in groupSettings) {
         if (setting[@"name"] && setting[@"value"]) settingsDictionary[setting[@"name"]] = setting[@"value"];
@@ -274,7 +279,7 @@
     NSDictionary *defaultSettings = [self defaultSettings];
     //        NSLog(@"defaultSettings %@", defaultSettings);
     
-    NSArray *currentSettings = [self currentSettings];
+    NSArray *currentSettings = self.currentSettings;
     
     for (NSString *settingsGroupName in defaultSettings.allKeys) {
         //            NSLog(@"settingsGroup %@", settingsGroupName);
@@ -349,7 +354,7 @@
 
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
 
-    NSArray *currentSettings = [self currentSettings];
+    NSArray *currentSettings = self.currentSettings;
     
     for (NSString *settingName in newSettings.allKeys) {
         

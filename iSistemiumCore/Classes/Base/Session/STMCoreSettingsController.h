@@ -19,7 +19,6 @@
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 
 - (NSDictionary *)defaultSettings;
-- (NSArray *)currentSettings;
 - (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
 
@@ -36,6 +35,7 @@
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, strong) id <STMSession> session;
 @property (nonatomic, strong) NSMutableArray *groupNames;
+@property (nonatomic, strong) NSArray *currentSettings;
 
 
 @end
