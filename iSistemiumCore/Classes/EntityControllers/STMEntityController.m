@@ -190,7 +190,7 @@
     
 }
 
-+ (STMEntity *)entityWithName:(NSString *)name {
++ (NSDictionary *)entityWithName:(NSString *)name {
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
