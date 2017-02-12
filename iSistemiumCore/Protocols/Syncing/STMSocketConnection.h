@@ -28,6 +28,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 @property (nonatomic, weak) id <STMSocketConnectionOwner> owner;
 @property (nonatomic) BOOL isReady;
 
+- (void)closeSocket;
 - (void)closeSocketInBackground;
 - (void)checkSocket;
 
@@ -37,5 +38,6 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 - (void)socketSendEvent:(STMSocketEvent)event
               withValue:(id)value
       completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler;
+
 
 @end
