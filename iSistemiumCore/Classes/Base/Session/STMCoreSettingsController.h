@@ -17,6 +17,7 @@
 + (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
++ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group;
 
 - (NSDictionary *)defaultSettings;
 - (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;

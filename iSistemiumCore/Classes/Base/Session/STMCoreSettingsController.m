@@ -274,6 +274,18 @@
     
 }
 
++ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group {
+    
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
+    STMCoreSettingsController *currentController = currentSession.settingsController;
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"group == %@ && name == %@", group, name];
+    NSDictionary *setting = [currentController.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+
+    return setting;
+    
+}
+
 - (void)checkSettings {
     
     NSDictionary *defaultSettings = [self defaultSettings];
