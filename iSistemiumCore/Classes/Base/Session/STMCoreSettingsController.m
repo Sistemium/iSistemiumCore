@@ -456,23 +456,27 @@
 
 - (void)getSubscribedObject:(NSDictionary *)anObject {
     
-    NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
+    dispatch_async(dispatch_get_main_queue(), ^{
     
-    NSDictionary *userInfo = nil;
-    
-    if (anObject[@"value"] && anObject[@"name"]) {
-        userInfo = @{anObject[@"name"]: anObject[@"value"]};
-    }
-    
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    
-    [nc postNotificationName:notificationName
-                      object:self.session
-                    userInfo:userInfo];
-    
-    [nc postNotificationName:@"settingsChanged"
-                      object:self.session
-                    userInfo:@{@"changedObject": anObject}];
+        NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
+        
+        NSDictionary *userInfo = nil;
+        
+        if (anObject[@"value"] && anObject[@"name"]) {
+            userInfo = @{anObject[@"name"]: anObject[@"value"]};
+        }
+
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        
+        [nc postNotificationName:notificationName
+                          object:self.session
+                        userInfo:userInfo];
+        
+        [nc postNotificationName:@"settingsChanged"
+                          object:self.session
+                        userInfo:@{@"changedObject": anObject}];
+
+    });
     
 }
 
