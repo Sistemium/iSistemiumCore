@@ -19,6 +19,7 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
 @interface iSistemiumCoreTests : XCTestCase
 
 @property (nonatomic,strong) STMPredicateToSQL *predicateToSQL;
+@property (nonatomic,strong) STMModeller *modeller;
 
 @end
 
@@ -28,7 +29,8 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     [super setUp];
     if (!self.predicateToSQL) {
         NSManagedObjectModel *model = [self sampleModel];
-        self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:[STMModeller modellerWithModel:model]];
+        self.modeller = [STMModeller modellerWithModel:model];
+        self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:self.modeller];
     }
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
