@@ -7,6 +7,7 @@
 //
 
 #import "STMPersistingTests.h"
+#import "STMLogger.h"
 
 @interface STMPersistingSpeedTests : STMPersistingTests
 
@@ -55,5 +56,73 @@
     
     NSLog(@"testFindSpeed measured %lu finds per seconds", - (unsigned long) (10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]));
 }
+
+- (void)testInsertLargeData{
+    
+    NSString *entityName = @"STMLogMessage";
+    int numberOfLogs = 100;
+    __block NSError *error;
+    
+    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+    
+    [self measureBlock:^{
+        
+        for (int i = 0; i<numberOfLogs;i++){
+            
+            NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
+            
+            NSDictionary *logMessage = @{@"text":[NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
+                                         @"type":@"debug"};
+            
+            [self.persister mergeSync:entityName attributes:logMessage options:options error:&error];
+            
+            XCTAssertNil(error);
+            
+        }
+        
+    }];
+    
+}
+
+- (void)testFindFromLargeData{
+    
+    NSString *entityName = @"STMLogMessage";
+    int numberOfLogs = 10000;
+    __block NSError *error;
+    
+    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+    
+    NSMutableArray *logMessages = @[].mutableCopy;
+    
+    for (int i = 0; i<numberOfLogs;i++){
+        
+        NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
+        
+        NSDictionary *logMessage = @{@"text":[NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
+                                     @"type":@"debug"};
+        
+        XCTAssertNil(error);
+        
+        [logMessages addObject:logMessage];
+        
+    }
+    
+    [self.persister mergeManySync:entityName attributeArray:logMessages options:options error:&error];
+    
+    [self measureBlock:^{
+        
+        NSArray *rez = [self.persister findAllSync:entityName predicate:[NSPredicate predicateWithFormat:@"type == %@",@"debug"] options:nil error:&error];
+        
+        XCTAssertGreaterThanOrEqual(rez.count, numberOfLogs);
+        
+        rez = [self.persister findAllSync:entityName predicate:[NSPredicate predicateWithFormat:@"text ENDSWITH %@",@"0"] options:nil error:&error];
+        
+        XCTAssertGreaterThanOrEqual(rez.count, numberOfLogs % 10);
+        
+    }];
+    
+}
+
+
 
 @end
