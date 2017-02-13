@@ -10,10 +10,13 @@
 
 @interface STMPredicateToSQL : NSObject
 
-@property (nonatomic, strong) id <STMModelling> modellingDelegate;
+@property (nonatomic, weak) id <STMModelling> modellingDelegate;
 
-- (NSString *) SQLFilterForPredicate:(NSPredicate *)predicate;
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate;
 
 + (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling;
+
++ (NSString *)quotedName:(NSString*)name;
+
 
 @end

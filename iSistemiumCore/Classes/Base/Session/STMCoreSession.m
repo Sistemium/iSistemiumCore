@@ -164,7 +164,7 @@
     
     if (notification.object == self.settingsController) {
     
-        //    NSLog(@"currentSettings %@", [self.settingsController currentSettings]);
+        //    NSLog(@"currentSettings %@", self.settingsController.currentSettings);
         self.locationTracker.session = self;
         self.batteryTracker.session = self;
 

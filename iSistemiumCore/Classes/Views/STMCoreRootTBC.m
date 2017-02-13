@@ -33,7 +33,7 @@
 @property (nonatomic, strong) UIAlertView *authAlert;
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
-@property (nonatomic, strong) STMCoreSession *session;
+@property (nonatomic, weak) STMCoreSession *session;
 
 @property (nonatomic, strong) NSString *appDownloadUrl;
 @property (nonatomic) BOOL updateAlertIsShowing;
@@ -1091,7 +1091,7 @@
 
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
-               name:@"newAppVersionAvailable"
+               name:NOTIFICATION_NEW_VERSION_AVAILABLE
              object:nil];
     
     [nc addObserver:self
@@ -1119,6 +1119,10 @@
                name:@"lowFreeDiskSpace"
              object:nil];
     
+}
+
+- (void)dealloc {
+    [self removeObservers];
 }
 
 - (void)removeObservers {

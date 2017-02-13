@@ -95,6 +95,11 @@
     
 }
 
+- (void)dealloc{
+    NSLogMethodName;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)removeObservers {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -109,6 +114,7 @@
             
             if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
                 [self stopSyncer];
+                [[NSNotificationCenter defaultCenter] removeObserver:self];
             } else if (session.status == STMSessionRunning) {
                 [self startSyncer];
             }
@@ -405,9 +411,6 @@
                         
                     }
                     
-                    //                    [STMSocketController startSocketWithUrl:self.socketUrlString
-                    //                                          andEntityResource:self.entityResource];
-                    
                 } else {
                     
                     NSLog(@"have NO socketURL, fail to start socket controller");
@@ -436,11 +439,10 @@
 - (void)stopSyncer {
     
     if (self.isRunning) {
-        
-        //        [STMSocketController closeSocket];
+
+        [self.socketTransport closeSocket];
         
         [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-        //        self.syncing = NO;
         self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
@@ -466,7 +468,7 @@
     //    self.xmlNamespace = nil;
     self.httpTimeoutForeground = 0;
     self.httpTimeoutBackground = 0;
-    self.syncInterval = 0;
+//    self.syncInterval = 0;
     //    self.uploadLogType = nil;
     
 }
@@ -651,7 +653,7 @@
     
     if ([entitiesNames isKindOfClass:[NSArray class]]) {
         
-        NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+        NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
         NSMutableArray *existingNames = [@[] mutableCopy];
         
         for (NSString *entityName in entitiesNames) {
@@ -684,6 +686,27 @@
     [self.socketTransport socketSendEvent:event withValue:value];
 }
 
+- (void)sendFindWithValue:(NSDictionary *)value {
+    
+    NSString *entityName = [STMFunctions addPrefixToEntityName:value[@"entity"]];
+    NSString *identifier = value[@"id"];
+    
+    [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+        
+        if (error) {
+            NSLog(@"sendFindWithValue entityName %@ error: %@", entityName, error);
+            return;
+        }
+        
+        NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
+        
+        NSDictionary *options = @{STMPersistingOptionLts:[STMFunctions stringFromNow]};
+        
+        [self.persistenceDelegate mergeAsync:entityName attributes:result options:options completionHandler:nil];
+        
+    }];
+
+}
 
 #pragma mark - defantomization
 
@@ -861,7 +884,7 @@
         
         [self.dataSyncingDelegate setSynced:success
                                      entity:entityName
-                                   itemData:result
+                                   itemData:success ? result : itemData
                                 itemVersion:itemVersion];
         
     }];

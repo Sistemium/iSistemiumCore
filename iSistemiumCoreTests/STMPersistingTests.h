@@ -23,8 +23,6 @@
 @property (nonatomic, strong) STMFakePersistingOptions fakePersistingOptions;
 @property (nonatomic, strong) STMFakePersisting *fakePersiser;
 
-@property (nonatomic) BOOL waitForSession;
-
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 - (STMFakePersisting *)inMemoryPersisting;
 

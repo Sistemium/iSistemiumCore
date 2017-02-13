@@ -83,6 +83,10 @@
     
 }
 
+- (void)dealloc {
+    [self removeObservers];
+}
+
 - (void)prepareToDestroy {
     
     [self stopTracking];

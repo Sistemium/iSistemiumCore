@@ -226,21 +226,23 @@
             
             NSString *entityName = NSStringFromClass([STMSetting class]);
             
-            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-            request.predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
             
-            NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-            STMSetting *availableVersionSetting = [fetchResult lastObject];
+            [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
             
-            if (availableVersionSetting) {
+                NSDictionary *availableVersionSetting = result.lastObject;
                 
-                NSNumber *availableVersion = @([availableVersionSetting.value integerValue]);
-                NSNumber *currentVersion = @([clientData.appVersion integerValue]);
+                if (availableVersionSetting) {
+                    
+                    NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
+                    NSNumber *currentVersion = @([clientData.appVersion integerValue]);
+                    
+                    [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
+                    
+                }
+
                 
-                [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
-                
-            }
+            }];
             
         }
         
@@ -253,29 +255,31 @@
     if ([availableVersion compare:currentVersion] == NSOrderedDescending) {
         
         NSString *entityName = NSStringFromClass([STMSetting class]);
-
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"name == %@", @"appDownloadUrl"];
         
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        STMSetting *appDownloadUrlSetting = [fetchResult lastObject];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"appDownloadUrl"];
         
-        if (appDownloadUrlSetting) {
+        [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+           
+            NSDictionary *appDownloadUrlSetting = result.lastObject;
             
-            STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-            [defaults setObject:@YES forKey:@"newAppVersionAvailable"];
-            [defaults setObject:availableVersion forKey:@"availableVersion"];
-            [defaults setObject:appDownloadUrlSetting.value forKey:@"appDownloadUrl"];
-            [defaults synchronize];
+            if (appDownloadUrlSetting) {
+                
+                STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+                [defaults setObject:@YES forKey:@"newAppVersionAvailable"];
+                [defaults setObject:availableVersion forKey:@"availableVersion"];
+                [defaults setObject:appDownloadUrlSetting[@"value"] forKey:@"appDownloadUrl"];
+                [defaults synchronize];
+                
+                NSDictionary *userInfo = @{@"availableVersion"  : availableVersion,
+                                           @"appDownloadUrl"    : appDownloadUrlSetting[@"value"]};
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_NEW_VERSION_AVAILABLE
+                                                                    object:nil
+                                                                  userInfo:userInfo];
+                
+            }
             
-            NSDictionary *userInfo = @{@"availableVersion": availableVersion, @"appDownloadUrl":appDownloadUrlSetting.value};
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"newAppVersionAvailable"
-                                                                object:nil
-                                                              userInfo:userInfo];
-            
-        }
+        }];
         
     } else {
         

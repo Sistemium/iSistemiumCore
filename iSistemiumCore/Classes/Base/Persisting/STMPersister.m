@@ -10,12 +10,16 @@
 
 #import "STMConstants.h"
 #import "STMFunctions.h"
+#import "STMEntityController.h"
+#import "STMSettingsController.h"
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
 
 
 @interface STMPersister()
+
+@property (nonatomic,strong) NSString * fmdbFileName;
 
 @end
 
@@ -25,7 +29,9 @@
 
     STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
     
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister];
+    NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
+    
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister fileName:fmdbFileName];
     persister.document = [STMDocument documentWithUID:uid
                                                iSisDB:iSisDB
                                         dataModelName:modelName];
@@ -96,7 +102,44 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    if ([entityName isEqualToString:@"STMRecordStatus"]) {
+    NSString *entityEntityName = @"STMEntity";
+    NSString *settingEntityName = @"STMSetting";
+    NSString *recordStatusEntityName = @"STMRecordStatus";
+
+#warning - have to think up something smarter than hardcoding entity's names
+    
+    if ([entityName isEqualToString:entityEntityName]) {
+        
+        NSDictionary *entity = [STMEntityController entityWithName:attributes[@"name"]];
+        
+        if (entity) {
+            
+            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
+            editedAttributes[@"id"] = entity[@"id"];
+            
+            attributes = editedAttributes;
+            
+        }
+        
+    }
+    
+    if ([entityName isEqualToString:settingEntityName]) {
+        
+        NSDictionary *setting = [STMSettingsController settingWithName:attributes[@"name"]
+                                                              forGroup:attributes[@"group"]];
+        
+        if (setting) {
+            
+            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
+            editedAttributes[@"id"] = setting[@"id"];
+            
+            attributes = editedAttributes;
+
+        }
+        
+    }
+
+    if ([entityName isEqualToString:recordStatusEntityName]) {
         
         if (![attributes[@"isRemoved"] isEqual:NSNull.null] ? [attributes[@"isRemoved"] boolValue] : false) {
             
@@ -215,15 +258,10 @@
         
     } else {
         
-#warning - may be make saveWithEntityName: method async to return correct value if using document save
         [self.document saveDocument:^(BOOL success) {
         }];
         
         return YES;
-        
-//        NSError *error;
-//        [self.document.managedObjectContext save:&error];
-//        return !error;
         
     }
     
@@ -395,8 +433,9 @@
         return nil;
     }
     
-    [self notifyObservingEntityName:entityName
-                          ofUpdated:result];
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
+                          ofUpdated:result ? result : attributes
+                            options:options];
     
     return result;
 
@@ -406,31 +445,38 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
-    for (NSDictionary* dictionary in attributeArray){
+    for (NSDictionary *dictionary in attributeArray) {
         
-        NSDictionary* dict = [self mergeWithoutSave:entityName
+        NSDictionary *dict = [self mergeWithoutSave:entityName
                                          attributes:dictionary
                                             options:[self fixMergeOptions:options entityName:entityName]
                                               error:error];
         
-        if (dict){
+        if (dict) {
             [result addObject:dict];
         }
         
-        if (*error){
+        if (*error) {
+            
             #warning possible danger, will rollback changes from other threads
             [self.fmdb rollback];
             return nil;
+            
         }
+        
     }
     
-    if (![self saveWithEntityName:entityName]){
+    if (![self saveWithEntityName:entityName]) {
+        
         [STMFunctions error:error
                 withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
+        return nil;
+        
     }
     
-    [self notifyObservingEntityName:entityName
-                     ofUpdatedArray:result];
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
+                     ofUpdatedArray:result.count ? result : attributeArray
+                            options:options];
     
     return result;
     
@@ -533,8 +579,9 @@
     
     [self saveWithEntityName:entityName];
     
-    [self notifyObservingEntityName:entityName
-                          ofUpdated:result];
+    [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
+                          ofUpdated:result
+                            options:options];
     
     return result;
     

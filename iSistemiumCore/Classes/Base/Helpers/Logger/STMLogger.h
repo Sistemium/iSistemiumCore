@@ -12,7 +12,7 @@
 
 @interface STMLogger : NSObject
 
-@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, weak) UITableView *tableView;
 
 @end

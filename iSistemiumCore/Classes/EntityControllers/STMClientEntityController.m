@@ -57,7 +57,7 @@
 
     if (!clientEntity) {
         
-        NSString *eTag = [STMEntityController entityWithName:name].eTag;
+        NSString *eTag = [STMEntityController entityWithName:name][@"eTag"];
         
         clientEntity = @{@"name"    : name,
                          @"eTag"    : eTag ? eTag : [NSNull null]};

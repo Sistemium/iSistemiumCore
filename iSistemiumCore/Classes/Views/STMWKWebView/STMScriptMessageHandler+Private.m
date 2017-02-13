@@ -386,7 +386,7 @@
         
         if ([self.modellingDelegate isConcreteEntityName:entityName]) {
             
-            [subscription.entityNames addObject:entityName];
+            [subscription.entityNames addObject:[STMFunctions addPrefixToEntityName:entityName]];
             
         } else {
             
@@ -408,6 +408,7 @@
         for (NSString *entityName in subscription.entityNames) {
             [self.persistenceDelegate observeEntity:entityName
                                           predicate:nil
+                                            options:@{STMPersistingOptionLts:@YES}
                                            callback:^(NSArray * _Nullable data) {
                                                [self sendSubscribedBunchOfObjects:data
                                                                        entityName:entityName];

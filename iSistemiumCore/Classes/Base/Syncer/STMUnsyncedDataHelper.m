@@ -155,15 +155,17 @@
         
         NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
         
-        NSLog(@"subscribe to %@", entityName);
+        NSDictionary *onlyLocalChanges = @{STMPersistingOptionLts:@NO};
         
-        [self.subscriptions addObject:[self.persistenceDelegate observeEntity:entityName
-                                                                    predicate:predicate
-                                                                     callback:^(NSArray * _Nullable data)
-                                       {
-                                           NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-                                           [self startHandleUnsyncedObjects];
-                                       }]];
+        STMPersistingObservingSubscriptionID sid =
+        [self.persistenceDelegate observeEntity:entityName predicate:predicate options:onlyLocalChanges callback:^(NSArray *data) {
+            NSLog(@"observeEntity %@ data count %u", entityName, data.count);
+            [self startHandleUnsyncedObjects];
+        }];
+        
+        [self.subscriptions addObject:sid];
+        
+        NSLog(@"subscribe to %@ %@", entityName, sid);
         
     }
     
@@ -212,6 +214,10 @@
     }];
     
     self.syncingState.isInSyncingProcess = NO;
+    
+    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    self.pendingObjectsByEntity = @{}.mutableCopy;
+    self.syncedPendingObjectsByEntity = @{}.mutableCopy;
     
 }
 

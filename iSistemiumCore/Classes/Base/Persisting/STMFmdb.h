@@ -10,39 +10,42 @@
 
 @interface STMFmdb : NSObject
 
-- (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling;
+NS_ASSUME_NONNULL_BEGIN
 
-- (NSUInteger)count:(NSString * _Nonnull)name
-      withPredicate:(NSPredicate * _Nonnull)predicate;
+- (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName;
 
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name
-                              withPredicate:(NSPredicate * _Nonnull)predicate
+- (NSUInteger)count:(NSString *)name
+      withPredicate:(NSPredicate *)predicate;
+
+- (NSArray *)getDataWithEntityName:(NSString *)name
+                              withPredicate:(NSPredicate *)predicate
                                     orderBy:(NSString * _Nullable)orderBy
                                   ascending:(BOOL)ascending
                                  fetchLimit:(NSUInteger * _Nullable)fetchLimit
                                 fetchOffset:(NSUInteger * _Nullable)fetchOffset;
 
-- (BOOL)mergeInto:(NSString * _Nonnull)tablename
-       dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
-            error:(NSError *_Nonnull * _Nonnull)error;
+- (BOOL)mergeInto:(NSString *)tablename
+       dictionary:(NSDictionary<NSString *, id> *)dictionary
+            error:(NSError **)error;
 
-- (NSDictionary * _Nonnull)update:(NSString * _Nonnull)tablename
-                       attributes:(NSDictionary<NSString *, id> * _Nonnull)attributes
-                            error:(NSError *_Nonnull * _Nonnull)error;
+- (NSDictionary *)update:(NSString *)tablename
+                       attributes:(NSDictionary<NSString *, id> *)attributes
+                            error:(NSError **)error;
 
-- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename
-                                      dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
-                                           error:(NSError *_Nonnull * _Nonnull)error;
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString *)tablename
+                                      dictionary:(NSDictionary<NSString *, id> *)dictionary
+                                           error:(NSError **)error;
 
-- (NSUInteger)destroy:(NSString * _Nonnull)tablename
-            predicate:(NSPredicate* _Nonnull)predicate
-                error:(NSError *_Nonnull * _Nonnull)error;
+- (NSUInteger)destroy:(NSString *)tablename
+            predicate:(NSPredicate*)predicate
+                error:(NSError **)error;
 
-- (BOOL)hasTable:(NSString * _Nonnull)name;
+- (BOOL)hasTable:(NSString *)name;
 
 - (BOOL)commit;
 - (BOOL)startTransaction;
 - (BOOL)rollback;
 
+NS_ASSUME_NONNULL_END
 
 @end

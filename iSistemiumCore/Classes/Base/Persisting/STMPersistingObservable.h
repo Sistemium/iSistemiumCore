@@ -13,10 +13,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface STMPersistingObservable : NSObject <STMPersistingObserving>
 
 - (void)notifyObservingEntityName:(NSString *)entityName
-                        ofUpdated:(NSDictionary *)item;
+                        ofUpdated:(NSDictionary *)item
+                          options:(STMPersistingOptions _Nullable)options;
 
 - (void)notifyObservingEntityName:(NSString *)entityName
-                   ofUpdatedArray:(NSArray *)items;
+                   ofUpdatedArray:(NSArray *)items
+                          options:(STMPersistingOptions _Nullable)options;
 
 @end
 

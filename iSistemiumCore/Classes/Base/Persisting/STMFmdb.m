@@ -24,14 +24,14 @@
 
 @implementation STMFmdb
 
-- (instancetype _Nonnull)initWithModelling:(id <STMModelling> _Nonnull)modelling {
+- (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName{
     
     self = [super init];
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentDirectory = [paths objectAtIndex:0];
-#warning database name should be with user id and iSisDB
-    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:@"database.db"];
+    
+    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
@@ -45,7 +45,7 @@
     
 }
 
-- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error{
+- (NSDictionary * _Nullable)mergeIntoAndResponse:(NSString *)tablename dictionary:(NSDictionary<NSString *, id> *)dictionary error:(NSError **)error{
     
     __block NSDictionary *response;
     
@@ -71,7 +71,7 @@
     
 }
 
-- (BOOL) mergeInto:(NSString * _Nonnull)tablename dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary error:(NSError *_Nonnull * _Nonnull)error {
+- (BOOL) mergeInto:(NSString *)tablename dictionary:(NSDictionary<NSString *, id> *)dictionary error:(NSError **)error {
     
     __block BOOL result;
     
@@ -186,7 +186,7 @@
     return results;
 }
 
-- (NSUInteger)destroy:(NSString * _Nonnull)tablename predicate:(NSPredicate* _Nonnull)predicate error:(NSError *_Nonnull * _Nonnull)error{
+- (NSUInteger)destroy:(NSString *)tablename predicate:(NSPredicate *)predicate error:(NSError **)error{
     
     NSString *where = [self.predicateToSQL SQLFilterForPredicate:predicate];
     

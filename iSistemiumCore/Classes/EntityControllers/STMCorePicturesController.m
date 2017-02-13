@@ -23,7 +23,7 @@
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
 @property (nonatomic) BOOL waitingForDownloadPicture;
 
-@property (nonatomic, strong) STMCoreSession *session;
+@property (nonatomic, weak) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSString *imagesCachePath;
@@ -33,10 +33,9 @@
 @end
 
 
-@implementation STMCorePicturesController {
-    NSUInteger _nonloadedPicturesCount;
-}
+@implementation STMCorePicturesController
 
+@synthesize nonloadedPicturesCount = _nonloadedPicturesCount;
 
 + (STMCorePicturesController *)sharedController {
     
@@ -54,6 +53,18 @@
     
 }
 
++ (id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>)persistenceDelegate {
+    return [[self sharedController] persistenceDelegate];
+}
+
+- (id)persistenceDelegate {
+    
+    if (!_persistenceDelegate) {
+        _persistenceDelegate = self.session.persistenceDelegate;
+    }
+    
+    return _persistenceDelegate;
+}
 
 #pragma mark - instance properties
 
@@ -189,7 +200,7 @@
     
 }
 
-- (NSUInteger)nonloadedPicturesCountCached {
+- (NSUInteger)nonloadedPicturesCount {
 
     if (!self.nonloadedPicturesSubscriptionID) {
         
@@ -197,33 +208,22 @@
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
         
-        self.nonloadedPicturesSubscriptionID = [self.class.persistenceDelegate observeAllWithPredicate:predicate callback:^(NSString * entityName, NSArray *data) {
-            if (![[self.class pictureEntitiesNames] containsObject:entityName]) return;
+        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:[self.class pictureEntitiesNames].allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
+            
             _nonloadedPicturesCount = [self nonloadedPictures].count;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"nonloadedPicturesCountDidChange" object:self];
             });
+            
         }];
         
     }
 
+    if (_nonloadedPicturesCount == 0) self.downloadingPictures = NO;
+
     return _nonloadedPicturesCount;
 }
 
-
-- (NSUInteger)nonloadedPicturesCount {
-    
-    NSUInteger nonloadedPicturesCount = [self nonloadedPicturesCountCached];
-    
-    if (nonloadedPicturesCount == 0) {
-        
-        self.downloadingPictures = NO;
-    
-    }
-    
-    return nonloadedPicturesCount;
-    
-}
 
 - (NSString *)imagesCachePath {
     
@@ -307,16 +307,16 @@
             
             if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
             
-            NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
+            NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
             [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options]
             .then(^(NSDictionary * result){
-                NSLog(@"startCheckingPicturesPaths updated %@ id: %@",picture.entity.name, result[@"id"]);
+                NSLog(@"thumbnail set %@ id: %@",picture.entity.name, result[@"id"]);
             })
             .catch(^(NSError *error){
-                NSLog(@"startCheckingPicturesPaths updating %@ id: %@ error:",picture.entity.name, picDict[@"id"], [error localizedDescription]);
+                NSLog(@"thumbnail set %@ id: %@ error:",picture.entity.name, picDict[@"id"], [error localizedDescription]);
             });
             
             continue;
@@ -343,7 +343,7 @@
             if (pathComponents.count > 1) {
                 [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
                 
-                NSDictionary *picDict = [[self.class persistenceDelegate] dictionaryFromManagedObject:picture];
+                NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
                 NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
                 [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
             }
@@ -723,7 +723,7 @@
 + (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
     
     NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
-    NSString *fileName = [xid stringByAppendingString:@".jpg"];
+    NSString *fileName = [NSString stringWithFormat:@"thumbnail_%@.jpg",xid];
     
     UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);
@@ -854,7 +854,7 @@
                                                        
                                                        NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
                                                        
-                                                       [STMCoreController.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
+                                                       [self.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
                                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                                
                                                                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];

@@ -16,9 +16,9 @@
     
     entityName = [entityName stringByReplacingOccurrencesOfString:ISISTEMIUM_PREFIX withString:@""];
     
-    STMEntity *entity = [STMEntityController entityWithName:entityName];
+    NSDictionary *entity = [STMEntityController entityWithName:entityName];
     
-    return entity.workflow;
+    return entity[@"workflow"];
 
 }
 

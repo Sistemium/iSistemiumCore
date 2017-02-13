@@ -11,6 +11,12 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
 
+@interface STMPersistingTests ()
+
+@property (nonatomic) BOOL waitForSession;
+
+@end
+
 @implementation STMPersistingTests
 
 + (BOOL)needWaitSession {

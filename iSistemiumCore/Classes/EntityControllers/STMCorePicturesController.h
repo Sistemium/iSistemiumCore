@@ -12,12 +12,12 @@
 @interface STMCorePicturesController : STMCoreController
 
 @property (nonatomic) BOOL downloadingPictures;
+@property (nonatomic,readonly) NSUInteger nonloadedPicturesCount;
 
 + (STMCorePicturesController *)sharedController;
 
 + (NSArray *)allPictures;
 
-- (NSUInteger)nonloadedPicturesCount;
 
 + (CGFloat)jpgQuality;
 
@@ -35,5 +35,6 @@
 
 + (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data ;
 
+@property (nonatomic,weak) id <STMPersistingFullStack> persistenceDelegate;
 
 @end

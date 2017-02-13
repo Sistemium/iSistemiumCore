@@ -333,7 +333,7 @@ static void *dataDownloadingOwnerVar;
     
     STMEntity *entity = self.stcEntities[entityName];
     
-    NSArray *localDataModelEntityNames = [STMCoreObjectsController localDataModelEntityNames];
+    NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
     
     if (entity.roleName) {
         
@@ -539,17 +539,17 @@ static void *dataDownloadingOwnerVar;
         
     } else {
         
-        [self.dataDownloadingOwner dataDownloadingFinished];
-
         [self receiveFinished];
-
         self.downloadingState.isInSyncingProcess = NO;
+        [self.dataDownloadingOwner dataDownloadingFinished];
         
     }
     
 }
 
 - (void)saveReceiveDate {
+    
+    if (!self.session.uid) return;
     
     STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     

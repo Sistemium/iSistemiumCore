@@ -38,33 +38,48 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     [super tearDown];
 }
 
+- (void)testSQLFiltersSubqueries {
+
+    NSPredicate *predicate;
+    
+    predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
+    
+    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where [partnerId] = 'xid' and id = outletId ))");
+    
+    predicate = [NSPredicate predicateWithFormat:@"ANY outlets.partner.id == %@", @"xid"];
+    
+    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
+    
+
+}
+
 - (void)testSQLFilters {
     
     NSPredicate *predicate;
     
     predicate = [NSPredicate predicateWithFormat:@"date == %@", @"2017-01-01"];
     
-    STMAssertSQLFilter(predicate, @"(date = '2017-01-01')");
+    STMAssertSQLFilter(predicate, @"([date] = '2017-01-01')");
     
     predicate = [NSPredicate predicateWithFormat:@"avatarPictureId == %@", nil];
     
-    STMAssertSQLFilter(predicate, @"(avatarPictureId IS NULL)");
+    STMAssertSQLFilter(predicate, @"([avatarPictureId] IS NULL)");
     
     predicate = [NSPredicate predicateWithFormat:@"avatarPictureId != %@", nil];
     
-    STMAssertSQLFilter(predicate, @"(avatarPictureId IS NOT NULL)");
+    STMAssertSQLFilter(predicate, @"([avatarPictureId] IS NOT NULL)");
     
     NSSet *set = [NSSet setWithObjects:@"error", @"important", nil];
     
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", set];
     
-    STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
+    STMAssertSQLFilter(predicate, @"([type] IN ('error','important'))");
     
     NSArray *array = set.allObjects;
     
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", array];
     
-    STMAssertSQLFilter(predicate, @"(type IN ('error','important'))");
+    STMAssertSQLFilter(predicate, @"([type] IN ('error','important'))");
 
     predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
     
@@ -72,27 +87,19 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", nil];
     
-    STMAssertSQLFilter(predicate, @"(type IN (NULL))");
+    STMAssertSQLFilter(predicate, @"([type] IN (NULL))");
     
     predicate = [NSPredicate predicateWithFormat:@"SELF.deviceTs > SELF.lts"];
     
-    STMAssertSQLFilter(predicate, @"(deviceTs > lts)");
+    STMAssertSQLFilter(predicate, @"([deviceTs] > lts)");
     
     predicate = [NSPredicate predicateWithFormat:@"deviceTs > lts"];
     
-    STMAssertSQLFilter(predicate, @"(deviceTs > lts)");
+    STMAssertSQLFilter(predicate, @"([deviceTs] > lts)");
 
     predicate = [NSCompoundPredicate notPredicateWithSubpredicate:predicate];
     
-    STMAssertSQLFilter(predicate, @"NOT (deviceTs > lts)");
-    
-    predicate = [NSPredicate predicateWithFormat:@"outlet.partnerId == %@", @"xid"];
-    
-    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and id = outletId ))");
-    
-    predicate = [NSPredicate predicateWithFormat:@"ANY outlets.partner.id == %@", @"xid"];
-    
-    STMAssertSQLFilter(predicate, @"(exists ( select * from Outlet where partnerId = 'xid' and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id ))");
+    STMAssertSQLFilter(predicate, @"NOT ([deviceTs] > lts)");
     
     NSUUID *uuid = [NSUUID UUID];
     NSData *uuidData = [STMFunctions UUIDDataFromNSUUID:uuid];
@@ -100,12 +107,27 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
 
     predicate = [NSPredicate predicateWithFormat:@"xid == %@", uuidData];
     
-    NSString *string = [NSString stringWithFormat:@"(id = '%@')", uuid.UUIDString.lowercaseString];
+    NSString *string = [NSString stringWithFormat:@"([id] = '%@')", uuid.UUIDString.lowercaseString];
     STMAssertSQLFilter(predicate, string);
 
     predicate = [NSPredicate predicateWithFormat:@"xid IN %@", @[uuidData, uuidData]];
     
-    string = [NSString stringWithFormat:@"(id IN ('%@','%@'))", uuidString, uuidString];
+    string = [NSString stringWithFormat:@"([id] IN ('%@','%@'))", uuidString, uuidString];
+    STMAssertSQLFilter(predicate, string);
+
+    predicate = [NSPredicate predicateWithFormat: @"name ENDSWITH %@", uuidString];
+    string = [NSString stringWithFormat:@"([name] LIKE '%%%@')", uuidString];
+    
+    STMAssertSQLFilter(predicate, string);
+    
+    predicate = [NSPredicate predicateWithFormat: @"name BEGINSWITH %@", uuidString];
+    string = [NSString stringWithFormat:@"([name] LIKE '%@%%')", uuidString];
+    
+    STMAssertSQLFilter(predicate, string);
+    
+    predicate = [NSPredicate predicateWithFormat: @"name LIKE %@", uuidString];
+    string = [NSString stringWithFormat:@"([name] LIKE '%%%@%%')", uuidString];
+    
     STMAssertSQLFilter(predicate, string);
 
 }

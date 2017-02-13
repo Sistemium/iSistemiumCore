@@ -19,7 +19,7 @@
 @interface LoggerTests : STMPersistingTests
 
 @property (nonatomic, strong) XCTestExpectation *expectation;
-
+@property (nonatomic, strong) NSString *xid;
 
 @end
 
@@ -35,33 +35,30 @@
 
 - (void)setUp {
     [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
+    self.xid = [STMFunctions uuidString];
 }
 
 - (void)testLogger {
     
     STMLogMessageType messageType = STMLogMessageTypeImportant;
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"testMessage 1"
+    [[STMLogger sharedLogger] saveLogMessageWithText:[@"testMessage 1 " stringByAppendingString:self.xid]
                                              numType:messageType];
 
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"testMessage 2"
+    [[STMLogger sharedLogger] saveLogMessageWithText:[@"testMessage 2 " stringByAppendingString:self.xid]
                                              numType:messageType];
 
     if ([self.class needWaitSession]) {
        
         [self performSelector:@selector(checkLogMessagesInPersister)
                    withObject:nil
-                   afterDelay:1];
+                   afterDelay:0.1];
         
     } else {
 
         [self performSelector:@selector(checkLogMessagesInUserDefaults)
                    withObject:nil
-                   afterDelay:1];
+                   afterDelay:0.1];
 
     }
     
@@ -88,7 +85,9 @@
     NSPredicate *typePredicate = [NSPredicate predicateWithFormat:@"type == %@", type];
     NSPredicate *unsyncedPredicate = [STMFunctions predicateForUnsyncedObjectsWithEntityName:LOG_MESSAGE_ENTITY_NAME];
     
-    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[unsyncedPredicate, typePredicate]];
+    NSPredicate *selfXidPredicate = [NSPredicate predicateWithFormat: @"text ENDSWITH %@", self.xid];
+    
+    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[unsyncedPredicate, typePredicate, selfXidPredicate]];
     
     NSError *error = nil;
     NSArray *logMessages = [self.persister findAllSync:LOG_MESSAGE_ENTITY_NAME
@@ -100,10 +99,16 @@
     
     NSLog(@"logMessages %@", logMessages);
     
-    XCTAssertTrue(logMessages.count == 1);
+    XCTAssertEqual(logMessages.count, 2);
 
     [self.expectation fulfill];
     
+    NSUInteger deletedCount = [self.persister destroyAllSync:LOG_MESSAGE_ENTITY_NAME
+                                                   predicate:predicate
+                                                     options:@{STMPersistingOptionRecordstatuses:@NO}
+                                                       error:&error];
+    XCTAssertNil(error);
+    XCTAssertEqual(logMessages.count, deletedCount);
 }
 
 - (void)checkLogMessagesInUserDefaults {

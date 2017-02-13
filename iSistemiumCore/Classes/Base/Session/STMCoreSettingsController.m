@@ -16,8 +16,8 @@
 
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, strong) NSFetchedResultsController *fetchedSettingsResultController;
-@property (nonatomic, weak) id <STMPersistingSync> persistenceDelegate;
+@property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync, STMPersistingObserving> persistenceDelegate;
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
 
 @end
 
@@ -42,17 +42,7 @@
 - (NSMutableArray *)groupNames {
     
     if (!_groupNames) {
-
-        NSMutableArray *groupNames = [NSMutableArray array];
-        
-        for (id <NSFetchedResultsSectionInfo> sectionInfo in self.fetchedSettingsResultController.sections) {
-            
-            [groupNames addObject:[sectionInfo name]];
-
-        }
-        
-        _groupNames = groupNames;
-        
+        _groupNames = [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
     }
     
     return _groupNames;
@@ -216,52 +206,33 @@
 
 #pragma mark - instance methods
 
+- (void)dealloc {
+    [self unsubscribeFromSettings];
+    NSLog(@"dealloc settings");
+}
+
 - (void)setSession:(id<STMSession>)session {
     
     _session = session;
     
     self.persistenceDelegate = session.persistenceDelegate;
+    
+    [self unsubscribeFromSettings];
 
-    NSError *error;
-    if (![self.fetchedSettingsResultController performFetch:&error]) {
-        
-        NSLog(@"settingsController performFetch error %@", error);
-        
-    } else {
-        
-        [self checkSettings];
-//        [self NSLogSettings];
-        
+    if (!session) {
+        NSLog(@"empty session");
+        return;
     }
+    
+    [self subscribeForSettings];
+    [self checkSettings];
     
 }
 
-- (NSFetchedResultsController *)fetchedSettingsResultController {
-    
-    if (!_fetchedSettingsResultController) {
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMSetting class])];
-
-        NSSortDescriptor *groupSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"group"
-                                                                              ascending:YES
-                                                                               selector:@selector(caseInsensitiveCompare:)];
-        
-        NSSortDescriptor *nameSortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name"
-                                                                             ascending:YES
-                                                                              selector:@selector(caseInsensitiveCompare:)];
-
-        request.sortDescriptors = @[groupSortDescriptor, nameSortDescriptor];
-        
-        _fetchedSettingsResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                               managedObjectContext:self.session.document.managedObjectContext
-                                                                                 sectionNameKeyPath:@"group"
-                                                                                          cacheName:nil];
-        _fetchedSettingsResultController.delegate = self;
-        
-    }
-    
-    return _fetchedSettingsResultController;
-    
+- (void)unsubscribeFromSettings {
+    if (!self.subscriptionId) return;
+    NSLog(@"subscriptionId: %@", self.subscriptionId);
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
 }
 
 - (void)NSLogSettings {
@@ -269,7 +240,7 @@
 #ifdef DEBUG
 //    NSLog(@"self.currentSettings %@", self.currentSettings);
     
-    for (STMSetting *setting in self.currentSettings) {
+    for (NSDictionary *setting in self.currentSettings) {
         
         NSLog(@"setting %@", setting);
         
@@ -279,15 +250,18 @@
 
 - (NSArray *)currentSettings {
     
-    NSError *error = nil;
-    NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
-                                                           predicate:nil
-                                                             options:nil
-                                                               error:&error];
+    if (!_currentSettings) {
     
-    return currentSettings;
-    
-//    return self.fetchedSettingsResultController.fetchedObjects;
+        NSError *error = nil;
+        NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
+                                                               predicate:nil
+                                                                 options:nil
+                                                                   error:&error];
+        
+        _currentSettings = currentSettings;
+
+    }
+    return _currentSettings;
     
 }
 
@@ -295,17 +269,11 @@
     
     NSMutableDictionary *settingsDictionary = [NSMutableDictionary dictionary];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@", group];
-    NSArray *groupSettings = [[self currentSettings] filteredArrayUsingPredicate:predicate];
+    NSArray *groupSettings = [self.currentSettings filteredArrayUsingPredicate:predicate];
     
     for (NSDictionary *setting in groupSettings) {
         if (setting[@"name"] && setting[@"value"]) settingsDictionary[setting[@"name"]] = setting[@"value"];
     }
-    
-//    for (STMSetting *setting in groupSettings) {
-//        if (setting.name) settingsDictionary[(NSString *)setting.name] = setting.value;
-//    }
-    
-//    NSLog(@"settings for %@: %@", group, settingsDictionary);
     
     return settingsDictionary;
     
@@ -324,32 +292,14 @@
     
 }
 
-- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary {
++ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group {
     
-    NSString *settingName = dictionary[@"name"];
-    NSString *settingGroup = dictionary[@"group"];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@ AND group == %@", settingName, settingGroup];
-    
-    NSArray *result = [self.fetchedSettingsResultController.fetchedObjects filteredArrayUsingPredicate:predicate];
-    
-    STMSetting *setting = [result lastObject];
-    
-    if (result.count > 1) {
-        
-        NSLog(@"More than one setting with name %@ and group %@, get lastObject", settingName, settingGroup);
-        NSLog(@"remove all other setting objects with name %@ and group %@", settingName, settingGroup);
-        
-        predicate = [NSPredicate predicateWithFormat:@"SELF != %@", setting];
-        result = [result filteredArrayUsingPredicate:predicate];
-        NSError *error;
-        
-        for (STMSetting *settingObject in result) {
-            [self.persistenceDelegate destroySync:@"STMSetting" identifier:[STMFunctions hexStringFromData:settingObject.xid] options:nil error:&error];
-        }
-        
-    }
-    
+    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
+    STMCoreSettingsController *currentController = currentSession.settingsController;
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"group == %@ && name == %@", group, name];
+    NSDictionary *setting = [currentController.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+
     return setting;
     
 }
@@ -358,6 +308,8 @@
     
     NSDictionary *defaultSettings = [self defaultSettings];
     //        NSLog(@"defaultSettings %@", defaultSettings);
+    
+    NSArray *currentSettings = self.currentSettings;
     
     for (NSString *settingsGroupName in defaultSettings.allKeys) {
         //            NSLog(@"settingsGroup %@", settingsGroupName);
@@ -368,16 +320,16 @@
             //                NSLog(@"setting %@ %@", settingName, [settingsGroup valueForKey:settingName]);
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
-            NSMutableDictionary *settingToCheck = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
+            NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
 
-            NSString *settingValue = [settingsGroup valueForKey:settingName];
+            id settingValue = settingsGroup[settingName];
             
             if ([self.startSettings.allKeys containsObject:settingName]) {
                 
                 id nValue = [self normalizeValue:self.startSettings[settingName] forKey:settingName];
                 
                 if (nValue) {
-                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                    settingValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
                 } else {
                     NSLog(@"value %@ is not correct for %@", self.startSettings[settingName], settingName);
                     [self.startSettings removeObjectForKey:settingName];
@@ -386,24 +338,32 @@
             }
 
             if (!settingToCheck) {
-                
-                STMSetting *newSetting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
-                newSetting.group = settingsGroupName;
-                newSetting.name = settingName;
-                
+
                 id nValue = [self normalizeValue:settingValue forKey:settingName];
-                newSetting.value = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
+                nValue = ([nValue isKindOfClass:[NSString class]]) ? nValue : [NSNull null];
+
+                NSDictionary *newSetting = @{@"group"   : settingsGroupName,
+                                             @"name"    : settingName,
+                                             @"value"   : nValue};
+                
+                [self mergeSync:newSetting];
                 
             } else {
                 
                 id nValue = [self normalizeValue:settingToCheck[@"value"] forKey:settingName];
-
-                settingToCheck[@"value"] = ([nValue isKindOfClass:[NSString class]]) ? nValue : nil;
                 
-                if ([[self.startSettings allKeys] containsObject:settingName]) {
+                nValue = [nValue isKindOfClass:[NSString class]] ? nValue : [NSNull null];
+
+                settingToCheck[@"value"] = nValue;
+                
+                if ([self.startSettings.allKeys containsObject:settingName]) {
                     
-                    if (![settingToCheck[@"value"] isEqualToString:settingValue]) {
+                    if (![self value:nValue isEqual:settingValue]) {
+                        
                         settingToCheck[@"value"] = settingValue;
+                        
+                        [self mergeSync:settingToCheck];
+
                     }
                     
                 }
@@ -414,83 +374,116 @@
         
     }
     
-    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
-        if (success) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete" object:self];
-        }
-    }];
+    self.currentSettings = nil;
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete"
+                                                        object:self];
 
 }
 
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
 
-    NSString *value;
+    NSArray *currentSettings = self.currentSettings;
     
-    for (NSString *settingName in [newSettings allKeys]) {
+    for (NSString *settingName in newSettings.allKeys) {
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", group, settingName];
-        STMSetting *setting = [[[self currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
-        value = [self normalizeValue:[newSettings valueForKey:settingName] forKey:settingName];
+        NSMutableDictionary *setting = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+        NSString *value = [self normalizeValue:newSettings[settingName] forKey:settingName];
         
         if (value) {
             
             if (!setting) {
                 
-                setting = (STMSetting *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMSetting class]) isFantom:NO];
-                setting.group = group;
-                setting.name = settingName;
+                setting = @{@"group"    : group,
+                            @"name"     : settingName}.mutableCopy;
                 
             }
             
-            setting.value = ([value isKindOfClass:[NSString class]]) ? value : nil;
+            setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
+            
+            [self mergeSync:setting];
             
         } else {
             
-            NSLog(@"wrong value %@ for setting %@", [newSettings valueForKey:settingName], settingName);
-            value = setting.value;
+            NSLog(@"wrong value %@ for setting %@", newSettings[settingName], settingName);
             
         }
         
     }
-    
-    return value;
+
+    self.currentSettings = nil;
+
+    return @"";
     
 }
 
-
-#pragma mark - NSFetchedResultsController delegate
-
-- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-//    NSLog(@"controllerWillChangeContent");
+- (BOOL)value:(id)valueOne isEqual:(id)valueTwo {
+    
+    if ([self valueIsNSNull:valueOne] && [self valueIsNSNull:valueTwo]) {
+        return YES;
+    }
+    
+    if ([self valueIsNSString:valueOne] && [self valueIsNSString:valueTwo]) {
+        return [valueOne isEqualToString:valueTwo];
+    }
+    
+    return NO;
+    
 }
 
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-//    NSLog(@"controllerDidChangeContent");
+- (BOOL)valueIsNSNull:(id)value {
+    return [value isKindOfClass:[NSNull class]];
+}
+
+- (BOOL)valueIsNSString:(id)value {
+    return [value isKindOfClass:[NSString class]];
+}
+
+- (void)mergeSync:(NSDictionary *)setting {
     
-    self.groupNames = nil;
+    NSError *error = nil;
+    [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
+                             attributes:setting
+                                options:@{STMPersistingOptionLts : [STMFunctions stringFromNow]}
+                                  error:&error];
+
+}
+
+
+#pragma mark - subscribing
+
+- (void)subscribeForSettings {
     
-    [[(STMCoreSession *)self.session document] saveDocument:^(BOOL success) {
-        if (success) {
-            NSLog(@"save settings success");
-        }
+    self.subscriptionId = [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray * data) {
+        [self getSubscribedData:data];
     }];
     
 }
 
-- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
+- (void)getSubscribedData:(NSArray *)data {
     
-    if ([anObject isKindOfClass:[STMSetting class]]) {
-        
-//        NSLog(@"anObject %@", anObject);
-        
-        NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", [anObject valueForKey:@"group"]];
+    for (NSDictionary *anObject in data) {
+        [self getSubscribedObject:anObject];
+    }
+    
+    self.groupNames = nil;
+    self.currentSettings = nil;
+    
+}
+
+- (void)getSubscribedObject:(NSDictionary *)anObject {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+    
+        NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
         
         NSDictionary *userInfo = nil;
         
-        if ([anObject valueForKey:@"value"]) {
-            userInfo = @{[anObject valueForKey:@"name"]: [anObject valueForKey:@"value"]};
+        if (anObject[@"value"] && anObject[@"name"]) {
+            userInfo = @{anObject[@"name"]: anObject[@"value"]};
         }
-        
+
         NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
         
         [nc postNotificationName:notificationName
@@ -500,22 +493,8 @@
         [nc postNotificationName:@"settingsChanged"
                           object:self.session
                         userInfo:@{@"changedObject": anObject}];
-        
-    }
-        
-    if (type == NSFetchedResultsChangeDelete) {
-        
-//        NSLog(@"NSFetchedResultsChangeDelete");
-        
-    } else if (type == NSFetchedResultsChangeInsert) {
-        
-//        NSLog(@"NSFetchedResultsChangeInsert");
-        
-    } else if (type == NSFetchedResultsChangeUpdate) {
-        
-//        NSLog(@"NSFetchedResultsChangeUpdate");
-        
-    }
+
+    });
     
 }
 

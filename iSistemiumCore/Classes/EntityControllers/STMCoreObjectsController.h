@@ -16,10 +16,6 @@
 
 + (void)checkObjectsForFlushing;
 
-+ (void)setObjectData:(NSDictionary *)objectData
-             toObject:(STMDatum *)object;
-
-+ (NSArray <NSString *> *)localDataModelEntityNames;
 + (NSArray *)coreEntityKeys;
 
 + (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;

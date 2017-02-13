@@ -25,6 +25,7 @@
 
 + (NSArray *)uploadableEntitiesNames;
 
-+ (STMEntity *)entityWithName:(NSString *)name;
++ (NSDictionary *)entityWithName:(NSString *)name;
+
 
 @end

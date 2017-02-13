@@ -84,7 +84,7 @@
     XCTAssertNil(dictionary[KEY].firstObject);
     
     
-    // event it's fine to assign with index
+    // it's fine to assign with index
     
     dictionary[KEY][0] = KEY;
     

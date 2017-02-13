@@ -17,15 +17,13 @@
 + (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
++ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group;
 
 - (NSDictionary *)defaultSettings;
-- (NSArray *)currentSettings;
 - (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
 
 - (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
-
-- (STMSetting *)settingForDictionary:(NSDictionary *)dictionary;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
 - (BOOL)isBool:(NSString *)value;
@@ -36,8 +34,9 @@
 
 
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
-@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableArray *groupNames;
+@property (nonatomic, strong) NSArray *currentSettings;
 
 
 @end

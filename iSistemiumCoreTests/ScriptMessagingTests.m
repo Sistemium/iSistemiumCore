@@ -348,6 +348,8 @@
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
+    // TODO: test that merge with no LTS doesn't trigger subscription
+    
     NSArray *testArray2 = @[
                            @{@"text":@"Name 3"},
                            @{@"text":@"Name 4"}
@@ -380,11 +382,15 @@
         return [STMFunctions setValue:xid forKey:@"ownerXid" inDictionary:value];
     }];
     
-    [self doUpdateManyRequest:[STMFunctions setValue:data
-                                              forKey:@"data"
-                                        inDictionary:@{@"entity":entityName}]
-                       expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
-
+    NSError *error;
+    
+    [self.fakePerster mergeManySync:entityName
+                     attributeArray:data
+                            options:@{STMPersistingOptionLts:[STMFunctions stringFromNow]}
+                              error:&error];
+    
+    XCTAssertNil(error);
+    
 }
 
 - (void)doFindRequest:(NSDictionary*)body expect:(NSString *)errorDescription{

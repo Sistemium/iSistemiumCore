@@ -190,30 +190,28 @@
     
 }
 
-+ (STMEntity *)entityWithName:(NSString *)name {
++ (NSDictionary *)entityWithName:(NSString *)name {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSError *error = nil;
+    NSDictionary *entity = [[self persistenceDelegate] findAllSync:NSStringFromClass([STMEntity class])
+                                                         predicate:predicate
+                                                           options:nil
+                                                             error:&error].lastObject;
     
-    // TODO: use Persistence
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
-                                                                          error:&error];
-    
-    return result.lastObject;
-    
+    return entity;
+        
 }
 
 + (void)checkEntitiesForDuplicates {
     
-    NSArray *names = [self.stcEntitiesArray valueForKeyPath:@"name"];
+    NSArray *names = [[self stcEntitiesArray] valueForKeyPath:@"name"];
     __block NSUInteger totalDuplicates = 0;
     
     [names enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
         
         NSPredicate *byName = [NSPredicate predicateWithFormat:@"name == %@", name];
-        NSArray *result = [self.stcEntitiesArray filteredArrayUsingPredicate:byName];
+        NSArray *result = [[self stcEntitiesArray] filteredArrayUsingPredicate:byName];
         
         if (result.count < 2) return;
         
@@ -233,11 +231,16 @@
 
         NSError *error;
         NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
-        
+
+        NSMutableArray *newStcEntitiesArray = [self stcEntitiesArray].mutableCopy;
+        [newStcEntitiesArray removeObjectsInArray:duplicates];
+        [self sharedInstance].entitiesArray = newStcEntitiesArray;
+
         [[self persistenceDelegate] destroyAllSync:STM_ENTITY_NAME
                                          predicate:duplicatesPredicate
                                            options:@{STMPersistingOptionRecordstatuses:@(NO)}
                                              error:&error];
+        
     }];
 
     if (!totalDuplicates) {

@@ -461,12 +461,16 @@
 
 - (void)updateSyncDatesLabels {
     
+    NSString *userID = [STMCoreAuthController authController].userID;
+    
+    if (!userID) return;
+    
     STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
     
-    NSString *key = [@"sendDate" stringByAppendingString:[STMCoreAuthController authController].userID];
+    NSString *key = [@"sendDate" stringByAppendingString:userID];
     NSString *sendDateString = [defaults objectForKey:key];
     
-    key = [@"receiveDate" stringByAppendingString:[STMCoreAuthController authController].userID];
+    key = [@"receiveDate" stringByAppendingString:userID];
     NSString *receiveDateString = [defaults objectForKey:key];
     
     self.sendDateLabel.text = (sendDateString) ? sendDateString : nil;
@@ -1113,7 +1117,7 @@
     
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
-               name:@"newAppVersionAvailable"
+               name:NOTIFICATION_NEW_VERSION_AVAILABLE
              object:nil];
     
     [nc addObserver:self

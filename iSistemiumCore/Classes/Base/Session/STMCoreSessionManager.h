@@ -13,7 +13,7 @@
 @interface STMCoreSessionManager : NSObject <STMSessionManager>
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, STMCoreSession *> *sessions;
-@property (nonatomic, strong) id <STMSession> currentSession;
+@property (nonatomic, weak) id <STMSession> currentSession;
 @property (nonatomic, strong) NSString *currentSessionUID;
 
 + (instancetype)sharedManager;
