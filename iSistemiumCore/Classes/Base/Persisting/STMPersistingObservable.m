@@ -72,6 +72,8 @@
     
     self.subscriptions[subscription.identifier] = subscription;
     
+    NSLog(@"%@ %@", entityName, subscription.identifier);
+    
     return subscription.identifier;
     
 }
@@ -83,6 +85,8 @@
     subscription.callbackWithEntityName = callback;
     
     self.subscriptions[subscription.identifier] = subscription;
+    
+    NSLog(@"%@", subscription.identifier);
     
     return subscription.identifier;
 }
@@ -111,7 +115,7 @@
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId {
     
-    BOOL result = self.subscriptions[subscriptionId] != nil;
+    BOOL result = subscriptionId && self.subscriptions[subscriptionId] != nil;
     
     if (result) {
         [self.subscriptions removeObjectForKey:subscriptionId];
@@ -137,16 +141,14 @@
     
     if (!items.count) return;
     
-#warning - needs to check somehow if subscription is canceled
-    
-    NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions = self.subscriptions.copy;
-    
-    // TODO: maybe we need to cache subscriptions by entityName
-    for (STMPersistingObservingSubscriptionID key in subscriptions) {
+    for (STMPersistingObservingSubscriptionID key in self.subscriptions.allKeys) {
         
         STMPersistingObservingSubscription *subscription = self.subscriptions[key];
         
-        if (!subscription) continue;
+        if (!subscription) {
+            NSLog(@"no subscription: %@", key);
+            continue;
+        }
         
         if (subscription.entityName && ![subscription.entityName isEqualToString:entityName]) continue;
         
