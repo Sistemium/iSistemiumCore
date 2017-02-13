@@ -159,7 +159,7 @@
         [self removeSessionForUID:session.uid];
         
     } else {
-//        [self removeSessionForUID:session.uid];
+        [self removeSessionForUID:session.uid];
     }
     
 }
@@ -181,6 +181,7 @@
     
     if (session.status == STMSessionStopped) {
         
+        [session dismissSession];
         [self.sessions removeObjectForKey:uid];
         
     } else {
