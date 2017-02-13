@@ -36,4 +36,13 @@
     
 }
 
+- (void)removeObservers {
+    // will be overridden by ancestors
+}
+
+- (void)dealloc {
+    [self removeObservers];
+    NSLog(@"%@", [self class]);
+}
+
 @end

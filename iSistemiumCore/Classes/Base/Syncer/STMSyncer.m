@@ -95,6 +95,11 @@
     
 }
 
+- (void)dealloc{
+    NSLogMethodName;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)removeObservers {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -109,6 +114,7 @@
             
             if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
                 [self stopSyncer];
+                [[NSNotificationCenter defaultCenter] removeObserver:self];
             } else if (session.status == STMSessionRunning) {
                 [self startSyncer];
             }
