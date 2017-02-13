@@ -426,6 +426,10 @@ static void *dataDownloadingOwnerVar;
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
         
+    } else {
+        
+        [self saveReceiveDate];
+
     }
     
     if (!finishReceiving && --self.entityCount) {
@@ -528,7 +532,6 @@ static void *dataDownloadingOwnerVar;
         
     } else {
         
-#warning - do it only if have no error or always?
         [self saveReceiveDate];
         
     }

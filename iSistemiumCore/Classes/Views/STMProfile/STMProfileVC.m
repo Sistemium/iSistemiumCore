@@ -139,6 +139,15 @@
     
 }
 
+- (void)syncerReceiveFinished {
+    
+    [self updateSyncInfo];
+    [self performSelector:@selector(hideNumberOfObjects)
+               withObject:nil
+               afterDelay:2];
+    
+}
+
 - (void)updateSyncInfo {
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -428,12 +437,10 @@
 - (void)hideNumberOfObjects {
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.syncer.syncerState != STMSyncerReceiveData) {
-            
-            self.previousNumberOfObjects = 0;
-            self.numberOfObjectLabel.text = @"";
-            
-        }
+        
+        self.previousNumberOfObjects = 0;
+        self.numberOfObjectLabel.text = @"";
+        
     });
 }
 
@@ -1096,7 +1103,7 @@
              object:nil];
 
     [nc addObserver:self
-           selector:@selector(updateSyncInfo)
+           selector:@selector(syncerReceiveFinished)
                name:NOTIFICATION_SYNCER_RECEIVE_FINISHED
              object:nil];
 
