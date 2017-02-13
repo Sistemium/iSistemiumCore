@@ -427,7 +427,7 @@
     NSError *error = nil;
     [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
                              attributes:setting
-                                options:nil
+                                options:@{STMPersistingOptionLts : [STMFunctions stringFromNow]}
                                   error:&error];
 
 }
