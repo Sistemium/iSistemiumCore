@@ -462,7 +462,7 @@
     //    self.xmlNamespace = nil;
     self.httpTimeoutForeground = 0;
     self.httpTimeoutBackground = 0;
-    self.syncInterval = 0;
+//    self.syncInterval = 0;
     //    self.uploadLogType = nil;
     
 }
