@@ -153,7 +153,7 @@
 
 - (void)sessionStopped:(id <STMSession>)session {
     
-    if (session.status == STMSessionRemoving) {
+    if (session.status == STMSessionRemoving || session.status == STMSessionFinishing || session.status == STMSessionStopped) {
         
         session.status = STMSessionStopped;
         [self removeSessionForUID:session.uid];

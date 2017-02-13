@@ -15,7 +15,7 @@
 @interface STMCoreTracker : NSObject
 
 @property (nonatomic, strong) STMDocument *document;
-@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic, strong) NSString *group;
 @property (nonatomic) BOOL tracking;

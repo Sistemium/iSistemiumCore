@@ -33,7 +33,7 @@
 @property (nonatomic, strong) UIAlertView *authAlert;
 @property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
-@property (nonatomic, strong) STMCoreSession *session;
+@property (nonatomic, weak) STMCoreSession *session;
 
 @property (nonatomic, strong) NSString *appDownloadUrl;
 @property (nonatomic) BOOL updateAlertIsShowing;

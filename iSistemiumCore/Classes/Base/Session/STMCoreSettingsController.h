@@ -34,7 +34,7 @@
 
 
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
-@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableArray *groupNames;
 @property (nonatomic, strong) NSArray *currentSettings;
 
