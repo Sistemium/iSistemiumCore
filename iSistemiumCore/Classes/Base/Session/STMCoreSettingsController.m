@@ -17,7 +17,7 @@
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync, STMPersistingObserving> persistenceDelegate;
-
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
 
 @end
 
@@ -206,15 +206,33 @@
 
 #pragma mark - instance methods
 
+- (void)dealloc {
+    [self unsubscribeFromSettings];
+    NSLog(@"dealloc settings");
+}
+
 - (void)setSession:(id<STMSession>)session {
     
     _session = session;
     
     self.persistenceDelegate = session.persistenceDelegate;
     
+    [self unsubscribeFromSettings];
+
+    if (!session) {
+        NSLog(@"empty session");
+        return;
+    }
+    
     [self subscribeForSettings];
     [self checkSettings];
     
+}
+
+- (void)unsubscribeFromSettings {
+    if (!self.subscriptionId) return;
+    NSLog(@"subscriptionId: %@", self.subscriptionId);
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
 }
 
 - (void)NSLogSettings {
@@ -437,7 +455,7 @@
 
 - (void)subscribeForSettings {
     
-    [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray * _Nullable data) {
+    self.subscriptionId = [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray * data) {
         [self getSubscribedData:data];
     }];
     
