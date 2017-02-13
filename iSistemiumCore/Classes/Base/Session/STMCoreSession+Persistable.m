@@ -48,10 +48,12 @@
             
             if (completionHandler) completionHandler(success);
             
-            if (self.status == STMSessionRemoving) {
-                self.document = nil;
-                self.persistenceDelegate = nil;
-            }
+            self.document = nil;
+            self.persistenceDelegate = nil;
+            self.settingsController = nil;
+            self.trackers = nil;
+            self.logger = nil;
+            self.syncer = nil;
             
         }];
         
