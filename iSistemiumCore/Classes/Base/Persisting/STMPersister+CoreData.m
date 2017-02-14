@@ -35,6 +35,19 @@
     
 }
 
+- (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray <NSString *> *)values {
+    
+    if ([self storageForEntityName:entityName] != STMStorageTypeCoreData) {
+        return [super primaryKeyPredicateEntityName:entityName values:values];
+    }
+    
+    NSArray *xids = [STMFunctions mapArray:values withBlock:^id (id value) {
+        return [STMFunctions xidDataFromXidString:value];
+    }];
+    
+    return [NSPredicate predicateWithFormat:@"xid IN %@", xids];
+    
+}
 
 #pragma mark - Private CoreData helpers
 
