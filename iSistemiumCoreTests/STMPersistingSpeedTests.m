@@ -56,4 +56,58 @@
     NSLog(@"testFindSpeed measured %lu finds per seconds", - (unsigned long) (10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]));
 }
 
+
+- (void)testMergeManySpeed {
+
+    __block NSTimeInterval totalTime = 0;
+    NSUInteger count = 500;
+    
+    [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
+        
+        totalTime += [self measureSampleData:@{} count:count];
+        
+    }];
+    
+    NSLog(@"testMergeManySpeed merged %lu items per second", @(-10.0 * count / totalTime).integerValue);
+    
+}
+
+- (NSTimeInterval)measureSampleData:(NSDictionary *)options count:(NSUInteger)count {
+    
+    NSString *entityName = @"LogMessage";
+    
+    NSString *ownerXid = [STMFunctions uuidString];
+    
+    NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", ownerXid];
+    NSDictionary *cleanupOptions = @{STMPersistingOptionRecordstatuses:@NO};
+    
+    NSError *error;
+    NSTimeInterval result = 0;
+
+    options = [STMFunctions setValue:[STMFunctions stringFromNow]
+                              forKey:STMPersistingOptionLts
+                        inDictionary:options];
+    
+    [self startMeasuring];
+    
+    NSDate *startedAt = [NSDate date];
+
+    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:count];
+    
+    [self.persister mergeManySync:entityName attributeArray:sampleData options:options error:&error];
+    
+    XCTAssertNil(error);
+    
+    result = [startedAt timeIntervalSinceNow];
+    
+    [self stopMeasuring];
+    
+    [self.persister destroyAllSync:entityName predicate:cleanupPredicate options:cleanupOptions error:&error];
+    
+    XCTAssertNil(error);
+    
+    return result;
+    
+}
+
 @end
