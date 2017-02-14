@@ -7,6 +7,7 @@
 //
 
 #import "STMPersistingTests.h"
+#define STMPersistingSpeedTestsCount 500
 
 @interface STMPersistingSpeedTests : STMPersistingTests
 
@@ -29,7 +30,7 @@
     
     NSArray *sourceArray = [self.persister findAllSync:sourceEntityName
                                              predicate:nil
-                                               options:@{STMPersistingOptionPageSize:@500}
+                                               options:@{STMPersistingOptionPageSize:@(STMPersistingSpeedTestsCount)}
                                                  error:&error];
     XCTAssertNil(error);
     XCTAssertNotEqual(sourceArray.count, 0, @"There should be some sourceArray data to test");
@@ -60,34 +61,32 @@
 - (void)testMergeManySpeed {
 
     __block NSTimeInterval totalTime = 0;
-    NSUInteger count = 500;
     
     [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
         
-        totalTime += [self measureSampleData:@{} count:count];
+        totalTime += [self measureSampleData:@{}];
         
     }];
     
-    NSLog(@"testMergeManySpeed merged %lu items per second", @(-10.0 * count / totalTime).integerValue);
+    NSLog(@"testMergeManySpeed merged %lu items per second", @(-10.0 * STMPersistingSpeedTestsCount / totalTime).integerValue);
     
 }
 
 - (void)testMergeManySpeedReturnSaved {
     
     __block NSTimeInterval totalTime = 0;
-    NSUInteger count = 1000;
     
     [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
 
-        totalTime += [self measureSampleData:@{STMPersistingOptionReturnSaved:@YES} count:count];
+        totalTime += [self measureSampleData:@{STMPersistingOptionReturnSaved:@YES}];
         
     }];
     
-    NSLog(@"testMergeManySpeedReturnSaved merged %lu items per second", @(-10.0 * count / totalTime).integerValue);
+    NSLog(@"testMergeManySpeedReturnSaved merged %lu items per second", @(-10.0 * STMPersistingSpeedTestsCount / totalTime).integerValue);
 
 }
 
-- (NSTimeInterval)measureSampleData:(NSDictionary *)options count:(NSUInteger)count {
+- (NSTimeInterval)measureSampleData:(NSDictionary *)options {
     
     NSString *entityName = @"LogMessage";
     
@@ -107,7 +106,7 @@
     
     NSDate *startedAt = [NSDate date];
 
-    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:count];
+    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:STMPersistingSpeedTestsCount];
     
     [self.persister mergeManySync:entityName attributeArray:sampleData options:options error:&error];
     
