@@ -72,6 +72,21 @@
     
 }
 
+- (void)testMergeManySpeedReturnSaved {
+    
+    __block NSTimeInterval totalTime = 0;
+    NSUInteger count = 1000;
+    
+    [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
+
+        totalTime += [self measureSampleData:@{STMPersistingOptionReturnSaved:@YES} count:count];
+        
+    }];
+    
+    NSLog(@"testMergeManySpeedReturnSaved merged %lu items per second", @(-10.0 * count / totalTime).integerValue);
+
+}
+
 - (NSTimeInterval)measureSampleData:(NSDictionary *)options count:(NSUInteger)count {
     
     NSString *entityName = @"LogMessage";
