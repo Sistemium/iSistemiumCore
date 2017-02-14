@@ -369,29 +369,34 @@
     
     predicate = [self predicate:predicate withOptions:options];
     
-    if ([self.fmdb hasTable:entityName]){
-        
-        return [self.fmdb getDataWithEntityName:entityName
-                                  withPredicate:predicate
-                                        orderBy:orderBy
-                                      ascending:asc
-                                     fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
-                                    fetchOffset:options[@"offset"] ? &offset : nil];
-    } else {
-        
-        NSArray* objectsArray = [self objectsForEntityName:entityName
-                                                   orderBy:orderBy
-                                                 ascending:asc
-                                                fetchLimit:pageSize
-                                               fetchOffset:offset
-                                               withFantoms:YES
-                                                 predicate:predicate
-                                                resultType:NSManagedObjectResultType
-                                    inManagedObjectContext:[self document].managedObjectContext
-                                                     error:error];
-        
-        return [self arrayForJSWithObjects:objectsArray];
-        
+    switch ([self storageForEntityName:entityName options:options]) {
+        case STMStorageTypeFMDB:
+            
+            return [self.fmdb getDataWithEntityName:entityName
+                                      withPredicate:predicate
+                                            orderBy:orderBy
+                                          ascending:asc
+                                         fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
+                                        fetchOffset:options[@"offset"] ? &offset : nil];
+
+        case STMStorageTypeCoreData: {
+            NSArray* objectsArray = [self objectsForEntityName:entityName
+                                                       orderBy:orderBy
+                                                     ascending:asc
+                                                    fetchLimit:pageSize
+                                                   fetchOffset:offset
+                                                   withFantoms:YES
+                                                     predicate:predicate
+                                                    resultType:NSManagedObjectResultType
+                                        inManagedObjectContext:[self document].managedObjectContext
+                                                         error:error];
+            
+            return [self arrayForJSWithObjects:objectsArray];
+            
+        }
+        default: 
+            [self wrongEntityName:entityName error:error];
+            return nil;
     }
     
 }

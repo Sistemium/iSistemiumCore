@@ -39,6 +39,8 @@
 
 - (NSSet<NSString*>*)hierarchyForEntityName:(NSString*)name;
 
+- (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray *)values;
+
 @optional
 
 // TODO: Declare a separate protocol for using NSManagedObject
