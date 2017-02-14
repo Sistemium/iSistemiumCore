@@ -72,7 +72,7 @@
             NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
             
             NSDictionary *logMessage = @{@"text":[NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
-                                         @"type":@"debug"};
+                                         @"type":@"info"};
             
             [self.persister mergeSync:entityName attributes:logMessage options:options error:&error];
             
@@ -99,7 +99,7 @@
         NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
         
         NSDictionary *logMessage = @{@"text":[NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
-                                     @"type":@"debug"};
+                                     @"type":@"info"};
         
         XCTAssertNil(error);
         
@@ -111,7 +111,7 @@
     
     [self measureBlock:^{
         
-        NSArray *rez = [self.persister findAllSync:entityName predicate:[NSPredicate predicateWithFormat:@"type == %@",@"debug"] options:nil error:&error];
+        NSArray *rez = [self.persister findAllSync:entityName predicate:[NSPredicate predicateWithFormat:@"type == %@",@"info"] options:nil error:&error];
         
         XCTAssertGreaterThanOrEqual(rez.count, numberOfLogs);
         
