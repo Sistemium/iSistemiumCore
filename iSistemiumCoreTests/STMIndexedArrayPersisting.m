@@ -15,15 +15,18 @@
 @synchronized (self) {
         
     NSString *lts = options[STMPersistingOptionLts];
+    NSString *now = [STMFunctions stringFromNow];
+    NSMutableDictionary *theObjectCopy = anObject.mutableCopy;
     
+    NSDictionary *existing = [self objectWithKey:anObject[self.primaryKey]];
     NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionFantoms] && [options[STMPersistingOptionFantoms] boolValue]];
     
-    anObject = [STMFunctions setValue:isFantom forKey:@"isFantom" inDictionary:anObject];
+    theObjectCopy[STMPersistingKeyPhantom] = isFantom;
+    theObjectCopy[STMPersistingOptionLts] = existing[STMPersistingOptionLts];
+    theObjectCopy[STMPersistingKeyCreationTimestamp] = existing[STMPersistingKeyCreationTimestamp];
     
     if (lts) {
         
-        NSDictionary *existing = [self objectWithKey:anObject[self.primaryKey]];
-       
         if (existing) {
             
             NSString *version = existing[STMPersistingKeyVersion];
@@ -36,15 +39,21 @@
             
         }
         
-        anObject = [STMFunctions setValue:lts forKey:STMPersistingOptionLts inDictionary:anObject];
+        theObjectCopy[STMPersistingOptionLts] = lts;
     
     } else if (!isFantom.boolValue && ![options[STMPersistingOptionSetTs] isEqual:@NO]) {
-        anObject = [STMFunctions setValue:[STMFunctions stringFromNow]
-                                   forKey:STMPersistingKeyVersion
-                             inDictionary:anObject];
+        theObjectCopy[STMPersistingKeyVersion] = now;
     }
     
-    return [self addObject:anObject];
+    if (!theObjectCopy[STMPersistingOptionLts]) {
+        theObjectCopy[STMPersistingOptionLts] = @"";
+    }
+    
+    if (!theObjectCopy[STMPersistingKeyCreationTimestamp]) {
+        theObjectCopy[STMPersistingKeyCreationTimestamp] = now;
+    }
+    
+    return [self addObject:theObjectCopy];
     
 }}
 
