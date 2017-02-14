@@ -268,4 +268,10 @@
     return result;
 }
 
+- (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray *)values {
+    
+    return [NSPredicate predicateWithFormat:@"id IN %@", values];
+    
+}
+
 @end
