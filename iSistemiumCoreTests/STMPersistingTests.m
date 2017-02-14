@@ -66,9 +66,6 @@
     
 }
 
-- (void)tearDown {
-    [super tearDown];
-}
 
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options {
     
@@ -81,6 +78,27 @@
 
 - (STMFakePersisting *)inMemoryPersisting {
     return [self fakePersistingWithOptions:@{STMFakePersistingOptionInMemoryDB}];
+}
+
+- (NSArray *)sampleDataOf:(NSString *)entityName ownerXid:(NSString *)ownerXid count:(NSUInteger)count {
+    
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
+    
+    for (NSUInteger i = 1; count > i; i++) {
+        
+        NSString *name = [NSString stringWithFormat:@"%@ - %@", entityName, @(i)];
+        
+        [result addObject:@{
+                            @"ownerXid": ownerXid,
+                            @"name": name,
+                            @"text": name,
+                            @"type": @"debug",
+                            @"source": NSStringFromClass(self.class)
+                            }];
+    }
+    
+    return result.copy;
+    
 }
 
 @end

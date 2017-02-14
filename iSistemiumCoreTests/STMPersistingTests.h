@@ -28,4 +28,6 @@
 
 + (BOOL)needWaitSession;
 
+- (NSArray *)sampleDataOf:(NSString *)entityName ownerXid:(NSString *)ownerXid count:(NSUInteger)count;
+
 @end
