@@ -616,11 +616,7 @@
     
     if (!errored.count) return nil;
     
-    NSArray *erroredIdsArray = [STMFunctions mapArray:errored.allObjects withBlock:^id _Nonnull(NSString * _Nonnull idString) {
-        return [STMFunctions xidDataFromXidString:idString];
-    }];
-        
-    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", erroredIdsArray];
+    return [NSCompoundPredicate notPredicateWithSubpredicate:[self.persistenceDelegate primaryKeyPredicateEntityName:entityName values:errored.allObjects]];
 
 }
 
@@ -630,7 +626,7 @@
 
     if (!pendingObjects.count) return nil;
 
-    return [NSPredicate predicateWithFormat:@"NOT (xid IN %@)", pendingObjects.allKeys];
+    return [NSCompoundPredicate notPredicateWithSubpredicate:[self.persistenceDelegate primaryKeyPredicateEntityName:entityName values:pendingObjects.allKeys]];
     
 }
 
