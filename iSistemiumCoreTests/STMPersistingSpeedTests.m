@@ -54,7 +54,7 @@
         }
     }];
     
-    NSLog(@"testFindSpeed measured %lu finds per seconds", - (unsigned long) (10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]));
+    NSLog(@"testFindSpeed measured %lu finds per seconds", @(-10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]).integerValue);
 }
 
 
@@ -102,12 +102,12 @@
                               forKey:STMPersistingOptionLts
                         inDictionary:options];
     
+    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:STMPersistingSpeedTestsCount];
+    
     [self startMeasuring];
     
     NSDate *startedAt = [NSDate date];
 
-    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:STMPersistingSpeedTestsCount];
-    
     [self.persister mergeManySync:entityName attributeArray:sampleData options:options error:&error];
     
     XCTAssertNil(error);
