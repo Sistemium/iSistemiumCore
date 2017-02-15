@@ -74,6 +74,8 @@
 #define NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS @"socketAuthorizationSuccess"
 
 #define NOTIFICATION_SESSION_STATUS_CHANGED @"sessionStatusChanged"
+#define NOTIFICATION_SESSION_REMOVED @"sessionRemoved"
+
 #define NOTIFICATION_PICTURE_WAS_DOWNLOADED @"pictureWasDownloaded"
 #define NOTIFICATION_PICTURE_DOWNLOAD_ERROR @"pictureDownloadError"
 #define NOTIFICATION_DEFANTOMIZING_START @"defantomizingStart"
