@@ -124,7 +124,7 @@
 
 - (NSUInteger)destroyOwnData:(NSString *)entityName {
     
-    // Paged destroy is 10 times faster with 100K items to destroy  
+    // Paged destroy is 10 times faster with 100K items to destroy
     NSUInteger pageSize = 10000;
     NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
     NSDictionary *cleanupOptions = @{
