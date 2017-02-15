@@ -38,9 +38,12 @@
     NSLog(@"testFindSpeed will do %lu find requests to '%@'",
           (unsigned long)sourceArray.count, parentEntity);
     
-    NSDate *startedAt = [NSDate date];
+    __block NSTimeInterval result = 0;
     
     [self measureBlock:^{
+        
+        NSDate *startedAt = [NSDate date];
+        
         for (NSDictionary *item in sourceArray) {
             
             if (!item[parentKey]) continue;
@@ -52,9 +55,12 @@
             
             XCTAssertNil(error);
         }
+        
+        result += [startedAt timeIntervalSinceNow];
+        
     }];
     
-    NSLog(@"testFindSpeed measured %lu finds per second", @(-10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]).integerValue);
+    NSLog(@"testFindSpeed measured %lu finds per second", @(-10.0 * sourceArray.count / result).integerValue);
 }
 
 
