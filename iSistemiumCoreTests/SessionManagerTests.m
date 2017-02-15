@@ -21,6 +21,7 @@
 @property (nonatomic, strong) NSMutableArray *runningSessionsUIDs;
 @property (nonatomic, strong) XCTestExpectation *expectation;
 @property (nonatomic, strong) NSString *removedSessionUID;
+@property (nonatomic) BOOL haveAuthSession;
 
 
 @end
@@ -45,10 +46,24 @@
 
     self.sessionManager = [STMCoreSessionManager sharedManager];
     
+    self.haveAuthSession = [STMCoreAuthController authController].controllerState == STMAuthSuccess;
+
+    NSUInteger count = self.haveAuthSession ? 1 : 0;
+    
     XCTAssertNotNil(self.sessionManager);
-    XCTAssertEqual(self.sessionManager.sessions.count, 0);
-    XCTAssertNil(self.sessionManager.currentSession);
-    XCTAssertNil(self.sessionManager.currentSessionUID);
+    XCTAssertEqual(self.sessionManager.sessions.count, count);
+    
+    if (self.haveAuthSession) {
+        
+        XCTAssertNotNil(self.sessionManager.currentSession);
+        XCTAssertNotNil(self.sessionManager.currentSessionUID);
+        
+    } else {
+        
+        XCTAssertNil(self.sessionManager.currentSession);
+        XCTAssertNil(self.sessionManager.currentSessionUID);
+        
+    }
 
     self.numberOfSessions = 2;
     self.sessionsUIDs = @[].mutableCopy;
@@ -56,8 +71,10 @@
 
     for (NSUInteger i = 1; i <= self.numberOfSessions; i++) {
     
+        count = self.haveAuthSession ? i + 1 : i;
+
         [self.sessionsUIDs addObject:[self startSomeSession]];
-        XCTAssertEqual(self.sessionManager.sessions.count, i);
+        XCTAssertEqual(self.sessionManager.sessions.count, count);
         
     }
     
@@ -129,9 +146,7 @@
     
     if ([self.removedSessionUID isEqualToString:uid]) {
         
-        BOOL haveAuthSession = [STMCoreAuthController authController].controllerState == STMAuthSuccess;
-
-        NSUInteger sessionsCount = haveAuthSession ? self.runningSessionsUIDs.count + 1 : self.runningSessionsUIDs.count;
+        NSUInteger sessionsCount = self.haveAuthSession ? self.runningSessionsUIDs.count + 1 : self.runningSessionsUIDs.count;
 
         XCTAssertEqual(self.sessionManager.sessions.count, sessionsCount);
         XCTAssertNotEqual(self.sessionManager.currentSessionUID, uid);
