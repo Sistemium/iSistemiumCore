@@ -11,18 +11,14 @@
 
 @implementation STMSyncerHelper
 
-- (instancetype)init {
+- (instancetype)initWithPersistenceDelegate:(id)persistenceDelegate {
     
     self = [super init];
     if (self) {
-        [self customInit];
+        self.persistenceDelegate = persistenceDelegate;
     }
     return self;
     
-}
-
-- (void)customInit {
-
 }
 
 - (id <STMSession>)session {

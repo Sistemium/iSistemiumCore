@@ -20,6 +20,8 @@
 
 @interface STMSyncerHelper : STMCoreObject
 
+- (instancetype)initWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate;
+
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
