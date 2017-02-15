@@ -23,11 +23,15 @@
 @property (nonatomic, strong) STMFakePersistingOptions fakePersistingOptions;
 @property (nonatomic, strong) STMFakePersisting *fakePersiser;
 
+@property (nonatomic, strong) NSString *ownerXid;
+
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 - (STMFakePersisting *)inMemoryPersisting;
 
 + (BOOL)needWaitSession;
 
 - (NSArray *)sampleDataOf:(NSString *)entityName ownerXid:(NSString *)ownerXid count:(NSUInteger)count;
+
+- (NSUInteger)destroyOwnData:(NSString *)entityName;
 
 @end

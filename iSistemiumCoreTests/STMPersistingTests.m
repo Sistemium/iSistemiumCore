@@ -25,6 +25,8 @@
 
 - (void)setUp {
 
+    self.ownerXid = [STMFunctions uuidString];
+    
     [super setUp];
     
     if ([STMFunctions.currentTestTarget hasSuffix:@"InMemory"]) {
@@ -66,6 +68,13 @@
     
 }
 
+- (void)tearDown {
+    for (NSString *entityName in [self.persister concreteEntities]) {
+        if ([self.persister storageForEntityName:entityName] == STMStorageTypeFMDB) {
+            [self destroyOwnData:entityName];
+        }
+    }
+}
 
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options {
     
@@ -99,6 +108,23 @@
     
     return result.copy;
     
+}
+
+- (NSUInteger)destroyOwnData:(NSString *)entityName {
+    
+    NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
+    NSDictionary *cleanupOptions = @{STMPersistingOptionRecordstatuses:@NO};
+    NSError *error;
+    
+    NSUInteger result = [self.persister destroyAllSync:entityName predicate:cleanupPredicate options:cleanupOptions error:&error];
+
+    XCTAssertNil(error);
+    
+    if (result) {
+        NSLog(@"destroyOwnData: %@ of %@", @(result), entityName);
+    }
+    
+    return result;
 }
 
 @end
