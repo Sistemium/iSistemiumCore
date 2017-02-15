@@ -186,7 +186,7 @@
     return results;
 }
 
-- (NSUInteger)destroy:(NSString *)tablename predicate:(NSPredicate *)predicate error:(NSError **)error{
+- (NSUInteger)destroy:(NSString *)tablename predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSString *where = [self.predicateToSQL SQLFilterForPredicate:predicate];
     
@@ -198,7 +198,14 @@
     
     __block NSUInteger result = 0;
     
-    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@", [STMFunctions removePrefixFromEntityName:tablename],where];
+    tablename = [STMFunctions removePrefixFromEntityName:tablename];
+    NSString *limit = @"";
+    
+    if (options[STMPersistingOptionPageSize]) {
+        limit = [NSString stringWithFormat:@" LIMIT %@", options[STMPersistingOptionPageSize]];
+    }
+    
+    NSString* destroySQL = [NSString stringWithFormat:@"DELETE FROM %@%@%@", tablename, where, limit];
     
     [self.queue inDatabase:^(FMDatabase *db) {
         if([db executeUpdate:destroySQL values:nil error:error]){

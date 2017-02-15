@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)destroy:(NSString *)tablename
             predicate:(NSPredicate*)predicate
+              options:(NSDictionary *)options 
                 error:(NSError **)error;
 
 - (BOOL)hasTable:(NSString *)name;

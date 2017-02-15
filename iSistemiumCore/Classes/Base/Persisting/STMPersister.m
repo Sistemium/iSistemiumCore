@@ -222,6 +222,7 @@
             
             result = [self.fmdb destroy:entityName
                               predicate:predicate
+                                options:options
                                   error:error];
             break;
         
