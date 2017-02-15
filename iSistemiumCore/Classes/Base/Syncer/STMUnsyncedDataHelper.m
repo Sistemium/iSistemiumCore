@@ -165,7 +165,7 @@
         
         [self.subscriptions addObject:sid];
         
-        NSLog(@"subscribe to %@ %@", entityName, sid);
+//        NSLog(@"subscribe to %@ %@", entityName, sid);
         
     }
     
