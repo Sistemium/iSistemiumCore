@@ -20,23 +20,33 @@ extension Set {
     static var unusedImageFiles = Set<String>()
     static var outOfDateImages = Set<STMCorePicture>()
     
-    static func removeUnusedImages(){
-        DispatchQueue.global(qos: .default).async{
-            do {
-                searchUnusedImages()
-                if unusedImageFiles.count > 0 {
-                    let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
-                    STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
+    static func removeUnusedImages() -> AnyPromise{
+        
+        return AnyPromise.promiseWithResolverBlock({ resolve in
+            
+            DispatchQueue.global(qos: .default).async{
+                var err:NSError? = nil
+                do {
+                    searchUnusedImages()
+                    if unusedImageFiles.count > 0 {
+                        let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
+                        STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
+                    }
+                    for unusedImage in unusedImageFiles{
+                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
+                        self.unusedImageFiles.remove(unusedImage)
+                        NotificationCenter.default.post(name: Notification.Name(rawValue: "unusedImageRemoved"), object: nil)
+                    }
+                } catch let error as NSError {
+                    err = error
+                    NSLog(error.description)
+                    
                 }
-                for unusedImage in unusedImageFiles{
-                    try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
-                    self.unusedImageFiles.remove(unusedImage)
-                    NotificationCenter.default.post(name: Notification.Name(rawValue: "unusedImageRemoved"), object: nil)
-                }
-            } catch let error as NSError {
-                NSLog(error.description)
+                resolve(err)
             }
-        }
+            
+        })
+        
     }
     
     static func searchUnusedImages(){
