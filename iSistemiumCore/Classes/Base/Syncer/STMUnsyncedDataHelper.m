@@ -184,11 +184,11 @@
         if (!self.subscriberDelegate || self.isPaused) return;
 
         if (!self.syncingState) {
-            NSLogMethodName;            
+            NSLogMethodName;
             self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+            [self sendNextUnsyncedObject];
         }
         
-        [self sendNextUnsyncedObject];
     }
 
 }
