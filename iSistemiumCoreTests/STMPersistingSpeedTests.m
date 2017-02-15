@@ -64,7 +64,7 @@
     
     [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
         
-        totalTime += [self measureSampleData:@{}];
+        totalTime += [self measureSampleData:@{STMPersistingOptionReturnSaved:@NO}];
         
     }];
     

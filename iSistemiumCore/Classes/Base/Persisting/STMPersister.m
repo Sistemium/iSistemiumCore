@@ -71,7 +71,10 @@
     
     NSString *now = [STMFunctions stringFromNow];
     NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    BOOL returnSaved = !([options[STMPersistingOptionReturnSaved] isEqual:@NO] || options[STMPersistingOptionLts]) || [options[STMPersistingOptionReturnSaved] isEqual:@YES];
+    
+    BOOL returnSaved = YES;
+    
+    if ([options[STMPersistingOptionReturnSaved] isEqual:@NO]) returnSaved = NO;
     
     if (options[STMPersistingOptionLts]) {
         [savingAttributes setValue:options[STMPersistingOptionLts] forKey:STMPersistingOptionLts];
