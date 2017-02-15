@@ -10,9 +10,17 @@
 
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
+#import "STMCoreAuthController.h"
 
 
 @interface SessionManagerTests : XCTestCase
+
+@property (nonatomic, strong) STMCoreSessionManager *sessionManager;
+@property (nonatomic) NSUInteger numberOfSessions;
+@property (nonatomic, strong) NSMutableArray *sessionsUIDs;
+@property (nonatomic, strong) NSMutableArray *runningSessionsUIDs;
+@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, strong) NSString *removedSessionUID;
 
 
 @end
@@ -32,34 +40,106 @@
 
 - (void)testSessionManager {
     
-    STMCoreSessionManager *sm = [STMCoreSessionManager sharedManager];
+    NSDate *startedAt = [NSDate date];
+    self.expectation = [self expectationWithDescription:@"waiting for session stop"];
+
+    self.sessionManager = [STMCoreSessionManager sharedManager];
     
-    XCTAssertNotNil(sm);
-    XCTAssertEqual(sm.sessions.count, 0);
-    XCTAssertNil(sm.currentSession);
-    XCTAssertNil(sm.currentSessionUID);
+    XCTAssertNotNil(self.sessionManager);
+    XCTAssertEqual(self.sessionManager.sessions.count, 0);
+    XCTAssertNil(self.sessionManager.currentSession);
+    XCTAssertNil(self.sessionManager.currentSessionUID);
+
+    self.numberOfSessions = 2;
+    self.sessionsUIDs = @[].mutableCopy;
+    self.runningSessionsUIDs = @[].mutableCopy;
+
+    for (NSUInteger i = 1; i <= self.numberOfSessions; i++) {
+    
+        [self.sessionsUIDs addObject:[self startSomeSession]];
+        XCTAssertEqual(self.sessionManager.sessions.count, i);
+        
+    }
+    
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError * _Nullable error) {
+        
+        XCTAssertNil(error);
+        
+        NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
+        
+    }];
+    
+}
+
+- (NSString *)startSomeSession {
     
     NSString *sessionUID = [STMFunctions uuidString];
     
-    STMCoreSession *session = [sm startSessionForUID:sessionUID
-                                              iSisDB:nil
-                                        authDelegate:nil
-                                            trackers:nil
-                                       startSettings:nil
-                             defaultSettingsFileName:nil];
+    STMCoreSession *session = [self.sessionManager startSessionForUID:sessionUID
+                                                               iSisDB:nil
+                                                         authDelegate:nil
+                                                             trackers:nil
+                                                        startSettings:nil
+                                              defaultSettingsFileName:nil];
     
     XCTAssertNotNil(session);
-    XCTAssertEqual(sm.sessions.count, 1);
-    XCTAssertEqual(sm.currentSession, session);
-    XCTAssertEqual(sm.currentSessionUID, session.uid);
-    
-//    [sm stopSessionForUID:sessionUID];
-//
-//    XCTAssertNil(session);
-//    XCTAssertEqual(sm.sessions.count, 0);
-//    XCTAssertNil(sm.currentSession);
-//    XCTAssertNil(sm.currentSessionUID);
+    XCTAssertEqual(self.sessionManager.currentSession, session);
+    XCTAssertEqual(self.sessionManager.currentSessionUID, session.uid);
 
+    NSPredicate *waitForSession = [NSPredicate predicateWithFormat:@"status == %d", STMSessionRunning];
+    
+    [self expectationForPredicate:waitForSession
+              evaluatedWithObject:session
+                          handler:^BOOL{
+                              
+                              NSLog(@"%@ session == STMSessionRunning", session.uid);
+                              
+                              [self.runningSessionsUIDs addObject:session.uid];
+                              
+                              if (self.runningSessionsUIDs.count == self.numberOfSessions) {
+                                  [self stopSession];
+                              }
+                              
+                              return YES;
+                              
+    }];
+
+    return sessionUID;
+    
+}
+
+- (void)stopSession {
+    
+    NSLogMethodName;
+    
+    self.removedSessionUID = self.runningSessionsUIDs.firstObject;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionRemoved:)
+                                                 name:NOTIFICATION_SESSION_REMOVED
+                                               object:self.sessionManager];
+    
+    [self.runningSessionsUIDs removeObject:self.removedSessionUID];
+    [self.sessionManager stopSessionForUID:self.removedSessionUID];
+
+}
+
+- (void)sessionRemoved:(NSNotification *)notification {
+    
+    NSString *uid = notification.userInfo[@"uid"];
+    
+    if ([self.removedSessionUID isEqualToString:uid]) {
+        
+        BOOL haveAuthSession = [STMCoreAuthController authController].controllerState == STMAuthSuccess;
+
+        NSUInteger sessionsCount = haveAuthSession ? self.runningSessionsUIDs.count + 1 : self.runningSessionsUIDs.count;
+
+        XCTAssertEqual(self.sessionManager.sessions.count, sessionsCount);
+        XCTAssertNotEqual(self.sessionManager.currentSessionUID, uid);
+        
+        [self.expectation fulfill];
+        
+    }
+    
 }
 
 
