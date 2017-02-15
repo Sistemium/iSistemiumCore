@@ -103,7 +103,7 @@
                               forKey:STMPersistingOptionLts
                         inDictionary:options];
     
-    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:self.ownerXid count:STMPersistingSpeedTestsCount];
+    NSArray *sampleData = [self sampleDataOf:entityName count:STMPersistingSpeedTestsCount];
     
     [self startMeasuring];
     
@@ -151,48 +151,44 @@
 
 - (void)testFindFromLargeData{
     
-    NSString *entityName = @"STMLogMessage";
-    int numberOfLogs = 10000;
+    NSString *entityName = @"LogMessage";
+    
+    NSUInteger numberOfPages = 10;
+    NSUInteger pageSize = 10000;
+    
+    NSUInteger totalItems = pageSize * numberOfPages;
+    
     __block NSError *error;
     
     NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
     
-    NSMutableArray *logMessages = @[].mutableCopy;
-    
     NSString *type = @"debug";
     
-    for (int i = 0; i<numberOfLogs;i++){
-        
-        NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
-        
-        NSDictionary *logMessage = @{@"text": [NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
-                                     @"type": type,
-                                     @"ownerXid": self.ownerXid};
-        
-        XCTAssertNil(error);
-        
-        [logMessages addObject:logMessage];
-        
+    NSDate *startedAt = [NSDate date];
+    
+    for (NSUInteger i = 1; i<=numberOfPages; i++){
+        // Async helps with memory issues
+        XCTestExpectation *mergePage = [self expectationWithDescription:[NSString stringWithFormat:@"Page %lu", i]];
+        [self.persister mergeManyAsync:entityName attributeArray:[self sampleDataOf:entityName count:pageSize] options:options completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+            [mergePage fulfill];
+            XCTAssertNil(error);
+            NSLog(@"testFindFromLargeData created page %lu of %lu", i, numberOfPages);
+        }];
+        [self waitForExpectationsWithTimeout:10 handler:nil];
     }
     
-    [self.persister mergeManySync:entityName attributeArray:logMessages options:options error:&error];
-    
-    XCTAssertNil(error);
+    NSLog(@"testFindFromLargeData created %lu of %@ in %lu seconds", totalItems, entityName, @(-[startedAt timeIntervalSinceNow]).integerValue);
     
     NSPredicate *isJustMergedData = [NSPredicate predicateWithFormat:@"type == %@ AND ownerXid == %@", type, self.ownerXid];
-    NSPredicate *endsWith0 = [NSPredicate predicateWithFormat:@"text ENDSWITH %@", @"0"];
+    NSPredicate *endsWith0 = [NSPredicate predicateWithFormat:@"text ENDSWITH %@", @"00"];
     
     endsWith0 = [NSCompoundPredicate andPredicateWithSubpredicates:@[endsWith0, isJustMergedData]];
     
     [self measureBlock:^{
         
-        NSArray *rez = [self.persister findAllSync:entityName predicate:isJustMergedData options:nil error:&error];
+        NSArray *rez = [self.persister findAllSync:entityName predicate:endsWith0 options:nil error:&error];
         
-        XCTAssertEqual(rez.count, numberOfLogs);
-        
-        rez = [self.persister findAllSync:entityName predicate:endsWith0 options:nil error:&error];
-        
-        XCTAssertGreaterThanOrEqual(rez.count, numberOfLogs % 10);
+        XCTAssertGreaterThanOrEqual(rez.count, totalItems % 100);
         
     }];
     
