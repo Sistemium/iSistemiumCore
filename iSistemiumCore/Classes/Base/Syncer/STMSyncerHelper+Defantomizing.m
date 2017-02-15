@@ -253,47 +253,27 @@ static void *persistenceFantomsDelegateVar;
 
 - (void)receiveFindAckWithResponse:(NSDictionary *)response entityName:(NSString *)entityName fantomDic:(NSDictionary *)fantomDic {
     
-    NSData *xid = [STMFunctions xidDataFromXidString:response[@"id"]];
-    
-    [self parseFindAckResponseData:response
-                    withEntityName:entityName
-                               xid:xid
-                         fantomDic:fantomDic];
-    
-}
-
-- (void)parseFindAckResponseData:(NSDictionary *)responseData withEntityName:(NSString *)entityName xid:(NSData *)xid fantomDic:(NSDictionary *)fantomDic {
-    
     if (!entityName) {
         
         NSString *errorMessage = @"Syncer parseFindAckResponseData !entityName";
         
-        [self defantomizingObject:fantomDic
-                            error:errorMessage];
-        
-        return;
-        
+        return [self defantomizingObject:fantomDic error:errorMessage];
     }
     
-    NSError *error = nil;
-    
-    [self.persistenceFantomsDelegate mergeFantomSync:entityName
-                                          attributes:responseData
-                                               error:&error];
-    
-    if (!error) {
-        
-        NSLog(@"successfully defantomize %@ %@", fantomDic[@"entityName"], fantomDic[@"id"]);
-        
-        [self fantomsCountDecrease];
-        
-    } else {
-        
-        [self defantomizingObject:fantomDic
-                            error:error.localizedDescription];
-        
-    }
+    [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:response callback:^
+     (STMP_ASYNC_DICTIONARY_RESULT_CALLBACK_ARGS) {
+         
+         if (error) {
+             return [self defantomizingObject:fantomDic error:error.localizedDescription];
+         }
+         
+         NSLog(@"successfully defantomize %@ %@", fantomDic[@"entityName"], fantomDic[@"id"]);
+         
+         [self fantomsCountDecrease];
+         
+     }];
 
+    
 }
 
 
