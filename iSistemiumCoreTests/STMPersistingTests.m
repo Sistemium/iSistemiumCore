@@ -69,11 +69,20 @@
 }
 
 - (void)tearDown {
+    
+    NSDate *startedAt = [NSDate date];
+    NSUInteger count = 0;
+    
     for (NSString *entityName in [self.persister concreteEntities]) {
         if ([self.persister storageForEntityName:entityName] == STMStorageTypeFMDB) {
-            [self destroyOwnData:entityName];
+            count += [self destroyOwnData:entityName];
         }
     }
+    
+    if (count) {
+        NSLog(@"tearDown finished in %lu ms", @(-[startedAt timeIntervalSinceNow]*1000).integerValue);
+    }
+    
 }
 
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options {
@@ -89,20 +98,23 @@
     return [self fakePersistingWithOptions:@{STMFakePersistingOptionInMemoryDB}];
 }
 
-- (NSArray *)sampleDataOf:(NSString *)entityName ownerXid:(NSString *)ownerXid count:(NSUInteger)count {
+- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count {
     
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
     
+    NSString *now = [STMFunctions stringFromNow];
+    NSString *source = NSStringFromClass(self.class);
+    
     for (NSUInteger i = 1; count >= i; i++) {
         
-        NSString *name = [NSString stringWithFormat:@"%@ - %@", entityName, @(i)];
+        NSString *name = [NSString stringWithFormat:@"%@ at %@ - %@", entityName, now, @(i)];
         
         [result addObject:@{
-                            @"ownerXid": ownerXid,
+                            @"ownerXid": self.ownerXid,
                             @"name": name,
                             @"text": name,
                             @"type": @"debug",
-                            @"source": NSStringFromClass(self.class)
+                            @"source": source
                             }];
     }
     
@@ -112,8 +124,13 @@
 
 - (NSUInteger)destroyOwnData:(NSString *)entityName {
     
+    // Paged destroy is 10 times faster with 100K items to destroy  
+    NSUInteger pageSize = 10000;
     NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
-    NSDictionary *cleanupOptions = @{STMPersistingOptionRecordstatuses:@NO};
+    NSDictionary *cleanupOptions = @{
+                                     STMPersistingOptionRecordstatuses:@NO,
+                                     STMPersistingOptionPageSize:@(pageSize)
+                                     };
     NSError *error;
     
     NSUInteger result = [self.persister destroyAllSync:entityName predicate:cleanupPredicate options:cleanupOptions error:&error];
@@ -122,6 +139,9 @@
     
     if (result) {
         NSLog(@"destroyOwnData: %@ of %@", @(result), entityName);
+        if (result >= pageSize) {
+            return result + [self destroyOwnData:entityName];
+        }
     }
     
     return result;

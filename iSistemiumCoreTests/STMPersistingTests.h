@@ -30,7 +30,7 @@
 
 + (BOOL)needWaitSession;
 
-- (NSArray *)sampleDataOf:(NSString *)entityName ownerXid:(NSString *)ownerXid count:(NSUInteger)count;
+- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count;
 
 - (NSUInteger)destroyOwnData:(NSString *)entityName;
 
