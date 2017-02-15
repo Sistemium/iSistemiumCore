@@ -184,6 +184,10 @@
         [session dismissSession];
         [self.sessions removeObjectForKey:uid];
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SESSION_REMOVED
+                                                            object:self
+                                                          userInfo:@{@"uid" : uid}];
+        
     } else {
 
         session.status = STMSessionRemoving;
