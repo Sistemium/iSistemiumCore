@@ -62,16 +62,8 @@
         clientEntity = @{@"name"    : name,
                          @"eTag"    : eTag ? eTag : [NSNull null]};
     
-        clientEntity =
-        [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
-                                   attributes:clientEntity
-                                      options:nil
-                                        error:&error];
-
     }
     
-//    NSLog(@"clientEntity %@", clientEntity);
-
     return clientEntity;
     
 }
