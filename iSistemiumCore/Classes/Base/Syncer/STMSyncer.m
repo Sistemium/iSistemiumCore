@@ -11,7 +11,6 @@
 #import "STMSyncer.h"
 #import "STMDocument.h"
 
-#import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
@@ -97,7 +96,7 @@
 
 - (void)dealloc{
     NSLogMethodName;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self removeObservers];
 }
 
 - (void)removeObservers {
@@ -374,63 +373,56 @@
 
 - (void)startSyncer {
     
-    if (!self.isRunning && self.session.status == STMSessionRunning) {
+    if (self.isRunning || self.session.status != STMSessionRunning) {
+        return;
+    }
         
-        self.settings = nil;
+    self.settings = nil;
+    
+    BOOL success = [self checkStcEntities];
         
-        [self checkStcEntitiesWithCompletionHandler:^(BOOL success) {
-            
-            if (success) {
-                
-                [STMEntityController checkEntitiesForDuplicates];
-                [STMClientDataController checkClientData];
-                [self.session.logger saveLogMessageDictionaryToDocument];
-                [self.session.logger saveLogMessageWithText:@"Syncer start"];
-                
-                [self checkUploadableEntities];
-                
-                [self addObservers];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
-                                                                        object:self];
-
-                });
-                
-                if (self.socketUrlString) {
-                    
-                    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
-                                                              andEntityResource:self.entityResource
-                                                                          owner:self];
-                    
-                    if (!self.socketTransport) {
-                        
-                        NSLog(@"can not start socket transport");
-                        [[STMCoreAuthController authController] logout];
-                        
-                    }
-                    
-                } else {
-                    
-                    NSLog(@"have NO socketURL, fail to start socket controller");
-                    [[STMCoreAuthController authController] logout];
-                    
-                }
-                
-                self.isRunning = YES;
-                
-            } else {
-                
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                         numType:STMLogMessageTypeError];
-                
-            }
-            
-        }];
+    if (!success) {
+        
+        return [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
+                                                        numType:STMLogMessageTypeError];
         
     }
     
+    if (!self.socketUrlString) {
+        NSLog(@"have NO socketURL, fail to start socket controller");
+        return [[STMCoreAuthController authController] logout];
+    }
+    
+    [STMEntityController checkEntitiesForDuplicates];
+    [STMClientDataController checkClientData];
+    
+    [self.session.logger saveLogMessageDictionaryToDocument];
+    [self.session.logger saveLogMessageWithText:@"Syncer start"];
+    
+    [self checkUploadableEntities];
+    
+    [self addObservers];
+    
+    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
+                                              andEntityResource:self.entityResource
+                                                          owner:self];
+
+    if (!self.socketTransport) {
+        
+        NSLog(@"can not start socket transport");
+        return [[STMCoreAuthController authController] logout];
+        
+    }
+    
+    self.isRunning = YES;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
+                                                            object:self];
+        
+    });
+
 }
 
 
@@ -504,41 +496,37 @@
 
 }
 
-- (void)checkStcEntitiesWithCompletionHandler:(void (^)(BOOL success))completionHandler {
+- (BOOL)checkStcEntities {
     
     NSDictionary *stcEntities = [STMEntityController stcEntities];
     
     NSString *stcEntityName = NSStringFromClass([STMEntity class]);
     
-    if (!stcEntities[stcEntityName]) {
+    STMEntity *entity = stcEntities[stcEntityName];
+
+    if (!entity) {
         
-        STMEntity *entity = (STMEntity *)[STMCoreObjectsController newObjectForEntityName:stcEntityName isFantom:NO];
+        NSError *error;
+        NSDictionary *attributes = @{
+                                     @"name": [STMFunctions removePrefixFromEntityName:stcEntityName],
+                                     @"url": self.entityResource
+                                     };
         
-        stcEntityName = [STMFunctions removePrefixFromEntityName:stcEntityName];
+        [self.persistenceDelegate mergeSync:stcEntityName attributes:attributes options:nil error:&error];
         
-        entity.name = stcEntityName;
+        [STMEntityController flushSelf];
+        
+        return !error;
+        
+    } else if (![entity.url isEqualToString:self.entityResource]) {
+        
+        NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
+        
         entity.url = self.entityResource;
         
-         [self.document saveDocument:^(BOOL success) {
-         }];
-         // otherwise syncer does not start before socket is connected+authorized
-         completionHandler(YES);
-        
-    } else {
-        
-        STMEntity *entity = stcEntities[stcEntityName];
-        
-        if (![entity.url isEqualToString:self.entityResource]) {
-            
-            NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
-            
-            entity.url = self.entityResource;
-            
-        }
-        
-        completionHandler(YES);
-        
     }
+    
+    return true;
     
 }
 
