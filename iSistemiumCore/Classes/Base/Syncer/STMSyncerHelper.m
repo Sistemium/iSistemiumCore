@@ -6,17 +6,10 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMSyncerHelper.h"
-
-
-@interface STMSyncerHelper()
-
-
-@end
+#import "STMSyncerHelper+Private.h"
 
 
 @implementation STMSyncerHelper
-
 
 - (instancetype)init {
     
@@ -40,5 +33,10 @@
     return self.session.document;
 }
 
+
+#pragma mark - Private Properties
+
+@synthesize dataDownloadingOwner = _dataDownloadingOwner;
+@synthesize receivingEntitiesNames = _receivingEntitiesNames;
 
 @end

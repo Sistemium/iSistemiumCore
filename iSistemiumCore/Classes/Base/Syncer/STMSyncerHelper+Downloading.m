@@ -6,16 +6,21 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import "STMSyncerHelper+Private.h"
 #import "STMSyncerHelper+Downloading.h"
 
-#import "STMCoreObjectsController.h"
 #import "STMClientEntityController.h"
 #import "STMEntityController.h"
 
 #import <objc/runtime.h>
 
 
-@interface STMDataDownloadingState : NSObject <STMDataSyncingState>
+@interface STMDataDownloadingState ()
+
+@property (nonatomic, strong) NSMutableArray *entitySyncNames;
+@property (nonatomic) NSUInteger entityCount;
+@property (nonatomic) BOOL entitiesWasUpdated;
+@property (nonatomic) NSUInteger fetchLimit;
 
 @end
 
@@ -24,195 +29,42 @@
 
 @synthesize isInSyncingProcess = _isInSyncingProcess;
 
+- (instancetype)initWithFetchLimit:(NSUInteger)fetchLimit {
+    
+    self = [super init];
+    
+    self.entitySyncNames = [NSMutableArray array];
+    self.fetchLimit = fetchLimit;
+    
+    return self;
+}
+
+- (void)setEntityCount:(NSUInteger)entityCount {
+
+    _entityCount = entityCount;
+    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+                                userInfo:@{@"countdownValue": @(entityCount)}];
+    
+}
+
 
 @end
-
-static void *entityCountVar;
-static void *entitiesWasUpdatedVar;
-static void *fetchLimitVar;
-static void *temporaryETagVar;
-static void *entitySyncNamesVar;
-static void *receivingEntitiesNamesVar;
-static void *stcEntitiesVar;
-static void *downloadingStateVar;
-static void *dataDownloadingOwnerVar;
 
 
 @implementation STMSyncerHelper (Downloading)
 
+@dynamic dataDownloadingOwner;
+@dynamic receivingEntitiesNames;
 
 #pragma mark - variables
 
-- (NSUInteger)entityCount {
-    
-    id result = objc_getAssociatedObject(self, &entityCountVar);
-    
-    if (!result) {
-        
-//        result = @0;
-//        self.entityCount = result;
-        
-    }
-    
-    return [result integerValue];
 
-}
-
-- (void)setEntityCount:(NSUInteger)entityCount {
+- (NSDictionary *)stcEntities {
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
-                                                            object:self
-                                                          userInfo:@{@"countdownValue": @(entityCount)}];
-        
-    });
-    
-    objc_setAssociatedObject(self, &entityCountVar, @(entityCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
-}
-
-- (BOOL)entitiesWasUpdated {
-    
-    NSNumber *result = objc_getAssociatedObject(self, &entitiesWasUpdatedVar);
-    
-    if (!result) {
-        
-        result = @NO;
-        self.entitiesWasUpdated = result.boolValue;
-        
-    }
-    
-    return result.boolValue;
+    return [STMEntityController stcEntities];
     
 }
-
-- (void)setEntitiesWasUpdated:(BOOL)entitiesWasUpdated {
-    objc_setAssociatedObject(self, &entitiesWasUpdatedVar, @(entitiesWasUpdated), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSUInteger)fetchLimit {
-    
-    id result = objc_getAssociatedObject(self, &fetchLimitVar);
-    
-    if (!result) {
-        
-        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
-        NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
-
-        result = @(fetchLimit);
-        objc_setAssociatedObject(self, &fetchLimitVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        
-    }
-    
-    return [result integerValue];
-    
-}
-
-- (NSMutableDictionary *)temporaryETag {
-    
-    NSMutableDictionary *result = objc_getAssociatedObject(self, &temporaryETagVar);
-    
-    if (!result) {
-        
-        result = @{}.mutableCopy;
-        objc_setAssociatedObject(self, &temporaryETagVar, result, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        
-    }
-    
-    return result;
-
-}
-
-- (NSMutableArray *)entitySyncNames {
-    
-    NSMutableArray *result = objc_getAssociatedObject(self, &entitySyncNamesVar);
-    
-    if (!result) {
-        
-        result = @[].mutableCopy;
-        self.entitySyncNames = result;
-        
-    }
-    
-    return result;
-
-}
-
-- (void)setEntitySyncNames:(NSMutableArray *)entitySyncNames {
-    objc_setAssociatedObject(self, &entitySyncNamesVar, entitySyncNames, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSArray *)receivingEntitiesNames {
-    
-    NSArray *result = objc_getAssociatedObject(self, &receivingEntitiesNamesVar);
-    
-    if (!result) {
-        
-//        result = @[];
-//        self.receivingEntitiesNames = result;
-
-    }
-    
-    return result;
-    
-}
-
-- (void)setReceivingEntitiesNames:(NSArray *)receivingEntitiesNames {
-    objc_setAssociatedObject(self, &receivingEntitiesNamesVar, receivingEntitiesNames, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSMutableDictionary *)stcEntities {
-    
-    NSMutableDictionary *result = objc_getAssociatedObject(self, &stcEntitiesVar);
-    
-    if (!result) {
-        
-        result = [STMEntityController stcEntities].mutableCopy;
-        self.stcEntities = result;
-        
-    }
-    
-    return result;
-    
-}
-
-- (void)setStcEntities:(NSMutableArray *)stcEntities {
-    objc_setAssociatedObject(self, &stcEntitiesVar, stcEntities, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (id <STMDataSyncingState>)downloadingState {
-    
-    id <STMDataSyncingState> result = objc_getAssociatedObject(self, &downloadingStateVar);
-    
-    if (!result) {
-        
-    }
-    
-    return result;
-    
-}
-
-- (void)setDownloadingState:(id <STMDataSyncingState>)downloadingState {
-    objc_setAssociatedObject(self, &downloadingStateVar, downloadingState, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (id <STMDataDownloadingOwner>)dataDownloadingOwner {
-    
-    id <STMDataDownloadingOwner> result = objc_getAssociatedObject(self, &dataDownloadingOwnerVar);
-    
-    if (!result) {
-        
-    }
-    
-    return result;
-    
-}
-
-- (void)setDataDownloadingOwner:(id <STMDataDownloadingOwner>)dataDownloadingOwner {
-    objc_setAssociatedObject(self, &dataDownloadingOwnerVar, dataDownloadingOwner, OBJC_ASSOCIATION_ASSIGN);
-}
-
 
 #pragma mark - STMDataDownloading
 
@@ -221,7 +73,10 @@ static void *dataDownloadingOwnerVar;
     @synchronized (self) {
         
         if (!self.downloadingState) {
-            self.downloadingState = [[STMDataDownloadingState alloc] init];
+            NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
+            NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
+            
+            self.downloadingState = [[STMDataDownloadingState alloc] initWithFetchLimit:fetchLimit];
         }
 
     }
@@ -243,14 +98,11 @@ static void *dataDownloadingOwnerVar;
     
     if (success) {
         
-        [self parseFindAllAckResponseData:result
-                               entityName:entityName
-                                   offset:offset
-                                 pageSize:pageSize];
+        [self parseFindAllAckResponseData:result entityName:entityName offset:offset pageSize:pageSize];
         
     } else {
         
-        if (self.entityCount > 0) {
+        if (self.downloadingState.entityCount > 0) {
             [self entityCountDecreaseWithError:error.localizedDescription];
         } else {
             [self receivingDidFinishWithError:error.localizedDescription];
@@ -274,17 +126,17 @@ static void *dataDownloadingOwnerVar;
         
         if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
             
-            self.entityCount = 1;
+            self.downloadingState.entityCount = 1;
             
             [self checkConditionForReceivingEntityWithName:@"STMEntity"];
             
         } else {
             
-            self.entitySyncNames = self.receivingEntitiesNames.mutableCopy;
+            self.downloadingState.entitySyncNames = self.receivingEntitiesNames.mutableCopy;
             self.receivingEntitiesNames = nil;
-            self.entityCount = self.entitySyncNames.count;
+            self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
             
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
+            [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
             
         }
         
@@ -293,25 +145,13 @@ static void *dataDownloadingOwnerVar;
 }
 
 - (void)receiveStarted {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_RECEIVE_STARTED
-                                                            object:self];
-        
-    });
-    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED userInfo:nil];
 }
 
 - (void)receiveFinished {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_RECEIVE_FINISHED
-                                                            object:self];
-        
-    });
-    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED userInfo:nil];
+    self.downloadingState.isInSyncingProcess = NO;
+    [self.dataDownloadingOwner dataDownloadingFinished];
 }
 
 - (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
@@ -329,84 +169,38 @@ static void *dataDownloadingOwnerVar;
         
     }
     
-    NSString *errorMessage = nil;
+    
+    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
+        
+        NSString *errorMessage = [NSString stringWithFormat:@"    %@: does not exist in local data model", entityName];
+        return [self entityCountDecreaseWithError:errorMessage];
+        
+    }
     
     STMEntity *entity = self.stcEntities[entityName];
-    
-    NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
-    
-    if (entity.roleName) {
+    NSString *resource = [entity resource];
+            
+    if (!resource) {
         
-        NSString *roleOwner = entity.roleOwner;
-        NSString *roleOwnerEntityName = [ISISTEMIUM_PREFIX stringByAppendingString:roleOwner];
-        
-        if (![localDataModelEntityNames containsObject:roleOwnerEntityName]) {
-            errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", roleOwnerEntityName, entityName];
-        } else {
-            
-            NSString *roleName = entity.roleName;
-            NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
-            NSString *destinationEntityName = ownerRelationships[roleName];
-            
-            if (![localDataModelEntityNames containsObject:destinationEntityName]) {
-                errorMessage = [NSString stringWithFormat:@"local data model have no %@ entity for relationship %@", destinationEntityName, entityName];
-            }
-            
-        }
+        NSString *errorMessage = [NSString stringWithFormat:@"    %@: have no url", entityName];
+        return [self entityCountDecreaseWithError:errorMessage];
         
     }
     
-    if (errorMessage) {
-        
-        [self entityCountDecreaseWithError:errorMessage];
-        
-    } else {
-        
-        if (entity.roleName || [localDataModelEntityNames containsObject:entityName]) {
-            
-            NSString *resource = [entity resource];
-            
-            if (resource) {
-                
-                NSString *eTag = self.temporaryETag[entityName];
-                
-                if (!eTag) {
-                    
-                    NSDictionary *clientEntity = [STMClientEntityController clientEntityWithName:entity.name];
-                    
-                    eTag = clientEntity[@"eTag"];
-                    eTag = (eTag && ![eTag isKindOfClass:[NSNull class]]) ? eTag : @"*";
-                    
-                }
-                
-//                NSLog(@"receive with eTag: %@", eTag);
-                
-                [self receiveDataForEntityName:entityName
-                                          eTag:eTag];
-                
-            } else {
-                
-                NSString *errorMessage = [NSString stringWithFormat:@"    %@: have no url", entityName];
-                [self entityCountDecreaseWithError:errorMessage];
-                
-            }
-            
-        } else {
-            
-            NSString *errorMessage = [NSString stringWithFormat:@"    %@: do not exist in local data model", entityName];
-            [self entityCountDecreaseWithError:errorMessage];
-            
-        }
-        
-    }
+    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entity.name][@"eTag"];
+    
+    if (!lastKnownEtag || [lastKnownEtag isEqual:[NSNull null]]) lastKnownEtag = @"*";
+                           
+    [self receiveDataForEntityName:entityName eTag:lastKnownEtag];
     
 }
+
 
 - (void)receiveDataForEntityName:(NSString *)entityName eTag:(NSString * _Nonnull)eTag {
     
     [self.dataDownloadingOwner receiveData:entityName
                                     offset:eTag
-                                  pageSize:self.fetchLimit];
+                                  pageSize:self.downloadingState.fetchLimit];
 
 }
 
@@ -423,8 +217,8 @@ static void *dataDownloadingOwnerVar;
     if (errorMessage) {
         
         NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
+        [self.session.logger saveLogMessageWithText:logMessage
+                                            numType:STMLogMessageTypeError];
         
     } else {
         
@@ -432,94 +226,70 @@ static void *dataDownloadingOwnerVar;
 
     }
     
-    if (!finishReceiving && --self.entityCount) {
+    if (finishReceiving || --self.downloadingState.entityCount) {
         
-        NSLog(@"remain %@ entities to receive", @(self.entityCount));
+        NSLog(@"remain %@ entities to receive", @(self.downloadingState.entityCount));
         
-        if (self.entitySyncNames.firstObject) [self.entitySyncNames removeObject:(id _Nonnull)self.entitySyncNames.firstObject];
+        // TODO: pass here entityName to avoid async problems
         
-        if (self.entitySyncNames.firstObject) {
-            
-            [self.document saveDocument:^(BOOL success) {}];
-            
-            [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-            
-        } else {
-            
-            [self receivingDidFinish];
-            
+        NSString *entityName = self.downloadingState.entitySyncNames.firstObject;
+        
+        if (entityName) {
+            [self.downloadingState.entitySyncNames removeObject:entityName];
         }
         
-    } else {
-        
-        NSLog(@"remain %@ entities to receive", @(self.entityCount));
-        
-        [self receivingDidFinish];
-        
+        if (self.downloadingState.entitySyncNames.firstObject) {
+            
+            return [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
+            
+        }
+            
     }
+        
+    NSLog(@"remain %@ entities to receive", @(self.downloadingState.entityCount));
+    
+    [self receivingDidFinishWithError:nil];
+
     
 }
 
 - (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
     
-    if ([entityName isEqualToString:@"STMEntity"]) {
+    if (![entityName isEqualToString:@"STMEntity"]) {
+        return [self entityCountDecrease];
+    }
 
-        if (self.entitiesWasUpdated) {
-         
-            [self.dataDownloadingOwner entitiesWasUpdated];
-            self.entitiesWasUpdated = NO;
-            
-        }
+    
+    // Special hanling of first time receiving entities
+    // TODO: move this somewhere else
+    
+    if (self.downloadingState.entitiesWasUpdated) {
+     
+        [self.dataDownloadingOwner entitiesWasUpdated];
+        self.downloadingState.entitiesWasUpdated = NO;
         
-        self.stcEntities = nil;
-        
-        NSMutableArray *entitiesNames = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            return [obj valueForKey:@"url"] ? YES : NO;
-        }].allObjects.mutableCopy;
-        
-        [entitiesNames removeObject:entityName];
-        
-        NSUInteger settingsIndex = [entitiesNames indexOfObject:@"STMSetting"];
-        if (settingsIndex != NSNotFound) [entitiesNames exchangeObjectAtIndex:settingsIndex
-                                                            withObjectAtIndex:0];
-        
-        self.entitySyncNames = entitiesNames;
-        self.entityCount = entitiesNames.count;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"entitiesReceivingDidFinish"
-                                                                object:self];
-            
-        });
-        
-        [self.document saveDocument:^(BOOL success) {}];
-        
-        [self checkConditionForReceivingEntityWithName:self.entitySyncNames.firstObject];
-        
-    } else {
-        [self entityCountDecrease];
     }
     
-}
-
-- (void)fillETagWithTemporaryValueForEntityName:(NSString *)entityName {
+    NSMutableArray *entitiesNames = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        return [obj valueForKey:@"url"] ? YES : NO;
+    }].allObjects.mutableCopy;
     
-    NSString *eTag = self.temporaryETag[entityName];
-    STMEntity *entity = self.stcEntities[entityName];
+    [entitiesNames removeObject:entityName];
     
-//    NSLog(@"set eTag: %@", eTag);
+    NSUInteger settingsIndex = [entitiesNames indexOfObject:@"STMSetting"];
+    if (settingsIndex != NSNotFound) [entitiesNames exchangeObjectAtIndex:settingsIndex
+                                                        withObjectAtIndex:0];
     
-    [STMClientEntityController clientEntityWithName:entity.name setETag:eTag];
-        
-}
+    self.downloadingState.entitySyncNames = entitiesNames;
+    self.downloadingState.entityCount = entitiesNames.count;
+    
+    [self postAsyncMainQueueNotification:@"entitiesReceivingDidFinish" userInfo:nil];
 
-- (void)nextReceiveEntityWithName:(NSString *)entityName {
-    [self checkConditionForReceivingEntityWithName:entityName];    
-}
-
-- (void)receivingDidFinish {
-    [self receivingDidFinishWithError:nil];
+    [self.document saveDocument:^(BOOL success) {}];
+    
+    [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
+ 
+    
 }
 
 - (void)receivingDidFinishWithError:(NSString *)errorString {
@@ -538,13 +308,13 @@ static void *dataDownloadingOwnerVar;
     
     if (self.receivingEntitiesNames) {
         
+        NSLog(@"receivingDidFinishWith entitiesNames: %@", self.receivingEntitiesNames);
         [self receiveData];
         
     } else {
         
+        NSLog(@"receivingDidFinish");
         [self receiveFinished];
-        self.downloadingState.isInSyncingProcess = NO;
-        [self.dataDownloadingOwner dataDownloadingFinished];
         
     }
     
@@ -570,159 +340,66 @@ static void *dataDownloadingOwnerVar;
 
 - (void)parseFindAllAckResponseData:(NSArray *)responseData entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
-    if (entityName) {
-        
-        if (responseData.count > 0) {
-            
-            if (offset) {
-                
-                BOOL isLastPage = responseData.count < pageSize;
-                
-                if (entityName) self.temporaryETag[entityName] = offset;
-                
-                [self parseSocketFindAllResponseData:responseData
-                                       forEntityName:entityName
-                                          isLastPage:isLastPage];
-                
-            } else {
-                
-                NSLog(@"    %@: receive data w/o offset", entityName);
-                [self receiveNoContentStatusForEntityWithName:entityName];
-                
-            }
-            
-        } else {
-            
-            NSLog(@"    %@: have no new data", entityName);
-            [self receiveNoContentStatusForEntityWithName:entityName];
-            
-        }
-        
-    } else {
-        
+    if (!entityName) {
         NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", entityName];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
-        
+        return [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
     }
+        
+    if (!responseData.count) {
+        NSLog(@"    %@: have no new data", entityName);
+        return [self receiveNoContentStatusForEntityWithName:entityName];
+    }
+        
+    if (!offset) {
+        NSLog(@"    %@: receive data w/o offset", entityName);
+        return [self receiveNoContentStatusForEntityWithName:entityName];
+    }
+    
+    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
+    
+    [self.persistenceDelegate mergeMany:entityName attributeArray:responseData options:options]
+    .thenInBackground(^(NSArray *data){
+        
+        [self findAllResultMergedWithSuccess:data entityName:entityName offset:offset pageSize:pageSize];
+        
+    }).catch(^(NSError *error){
+        
+        [self entityCountDecreaseWithError:error.localizedDescription];
+        
+    });
     
 }
 
-- (void)parseSocketFindAllResponseData:(NSArray *)data forEntityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
-    
-    STMEntity *entity = self.stcEntities[entityName];
-    
-    if (entity) {
-        
-        NSMutableDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]}.mutableCopy;
-        
-        NSString *roleName = entity.roleName;
-        
-        if (roleName) {
-            options[@"roleName"] = roleName;
-        }
-        
-        // sync
-        //        NSError *error = nil;
-        //        NSArray *result = [self.persistenceDelegate mergeManySync:entityName attributeArray:data options:options error:&error];
-        //
-        //        if (error) {
-        //            [self findAllResultMergedWithError:error.localizedDescription];
-        //        } else {
-        //
-        //            [self findAllResultMergedWithSuccess:data
-        //                                      entityName:entityName
-        //                                      isLastPage:isLastPage];
-        //
-        //        }
-        
-        // async
-        [self.persistenceDelegate mergeManyAsync:entityName
-                                  attributeArray:data
-                                         options:options
-                               completionHandler:^(BOOL success, NSArray *result, NSError *error) {
-                                   
-                                   if (success) {
-                                       
-                                       [self findAllResultMergedWithSuccess:data
-                                                                 entityName:entityName
-                                                                 isLastPage:isLastPage];
-                                       
-                                   } else {
-                                       [self findAllResultMergedWithError:error.localizedDescription];
-                                   }
-                                   
-                               }];
-        
-        // promised
-        //        [self.persistenceDelegate mergeMany:entityName attributeArray:data options:options].then(^(NSArray *result){
-        //
-        //            [self findAllResultMergedWithSuccess:data
-        //                                      entityName:entityName
-        //                                      isLastPage:isLastPage];
-        //
-        //        }).catch(^(NSError *error){
-        //
-        //            [self findAllResultMergedWithError:error.localizedDescription];
-        //
-        //        });
-        
-        // old style — same as promised
-        //        [STMCoreObjectsController processingOfDataArray:data withEntityName:entityName andRoleName:entity.roleName withCompletionHandler:^(BOOL success) {
-        //
-        //            if (success) {
-        //
-        //                [self findAllResultMergedWithSuccess:data
-        //                                         entityName:entityName
-        //                                         isLastPage:isLastPage];
-        //
-        //            } else {
-        //
-        //                NSString *errorString = [NSString stringWithFormat:@"error in processingOfDataArray:%@ withEntityName: %@", data, entityName];
-        //                [self findAllResultMergedWithError:errorString];
-        //
-        //            }
-        //
-        //        }];
-        
-    }
-    
-}
 
-- (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName isLastPage:(BOOL)isLastPage {
+- (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
     NSLog(@"    %@: get %@ objects", entityName, @(result.count));
     
     if ([entityName isEqualToString:@"STMEntity"]) {
-        self.entitiesWasUpdated = YES;
+        self.downloadingState.entitiesWasUpdated = YES;
     }
     
-    if (isLastPage) {
+    if (result.count < pageSize) {
         
         NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
         
-        [self fillETagWithTemporaryValueForEntityName:entityName];
         [self receiveNoContentStatusForEntityWithName:entityName];
+        
+        STMEntity *entity = self.stcEntities[entityName];
+        
+        [STMClientEntityController clientEntityWithName:entity.name setETag:offset];
         
     } else {
         
-        [self nextReceiveEntityWithName:entityName];
+        [self receiveDataForEntityName:entityName eTag:offset];
         
     }
     
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
-                                                            object:self
-                                                          userInfo:@{@"count"         :@(result.count),
-                                                                     @"entityName"    :entityName}];
-        
-    }];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+                                userInfo:@{@"count": @(result.count),
+                                           @"entityName": entityName
+                                           }];
     
-}
-
-- (void)findAllResultMergedWithError:(NSString *)errorString {
-    [self entityCountDecreaseWithError:errorString];
 }
 
 

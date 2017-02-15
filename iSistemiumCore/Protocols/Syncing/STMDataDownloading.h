@@ -17,7 +17,6 @@
 @property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
 @property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
 @property (nonatomic, strong) NSArray *receivingEntitiesNames;
-@property (nonatomic, strong) NSMutableDictionary *stcEntities;
 
 - (void)startDownloading;
 - (void)stopDownloading:(NSString *)stopMessage;
