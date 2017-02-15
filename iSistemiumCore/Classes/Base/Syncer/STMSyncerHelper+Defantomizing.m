@@ -130,14 +130,9 @@ static void *persistenceFantomsDelegateVar;
         
         NSLog(@"DEFANTOMIZING_START");
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_START
-                                                                object:self
-                                                              userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
-            
-        });
-    
+        [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_START
+                                    userInfo:@{@"fantomsCount": @(fantomsArray.count)}];
+        
         [self defantomizingProperties].fantomsCount = fantomsArray.count;
         
         for (NSDictionary *fantomDic in fantomsArray) {
@@ -216,14 +211,8 @@ static void *persistenceFantomsDelegateVar;
         
     } else {
         
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_UPDATE
-                                                                object:self
-                                                              userInfo:@{@"fantomsCount": @([self defantomizingProperties].fantomsCount)}];
-            
-            
-        }];
+        [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_UPDATE
+                                    userInfo:@{@"fantomsCount": @([self defantomizingProperties].fantomsCount)}];
         
     }
     
@@ -233,13 +222,7 @@ static void *persistenceFantomsDelegateVar;
     
     NSLog(@"DEFANTOMIZING_FINISHED");
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DEFANTOMIZING_FINISH
-                                                            object:self
-                                                          userInfo:nil];
-        
-    });
+    [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_FINISH userInfo:nil];
     
     // do not nil object used in syncronized()
     [[self defantomizingProperties].failToResolveFantomsIdsArray removeAllObjects];
