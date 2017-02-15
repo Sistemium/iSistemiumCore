@@ -276,10 +276,14 @@
 
 + (void)checkPhotos {
     
-    [self startCheckingPicturesPaths];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
     
-    [self checkBrokenPhotos];
-    [self checkUploadedPhotos];
+        [self startCheckingPicturesPaths];
+        
+        [self checkBrokenPhotos];
+        [self checkUploadedPhotos];
+        
+    });
     
 }
 
@@ -737,17 +741,7 @@
     
     if (result) {
         
-        if ([NSThread isMainThread]) {
-            
-            picture.thumbnailPath = fileName;
-            
-        } else {
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                picture.thumbnailPath = fileName;
-            });
-            
-        }
+        picture.thumbnailPath = fileName;
         
     } else {
         
