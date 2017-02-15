@@ -84,7 +84,7 @@
     
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
     
-    for (NSUInteger i = 1; count > i; i++) {
+    for (NSUInteger i = 1; count >= i; i++) {
         
         NSString *name = [NSString stringWithFormat:@"%@ - %@", entityName, @(i)];
         

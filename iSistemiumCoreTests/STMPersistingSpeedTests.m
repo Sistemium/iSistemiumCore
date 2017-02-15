@@ -54,7 +54,7 @@
         }
     }];
     
-    NSLog(@"testFindSpeed measured %lu finds per seconds", @(-10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]).integerValue);
+    NSLog(@"testFindSpeed measured %lu finds per second", @(-10.0 * sourceArray.count / [startedAt timeIntervalSinceNow]).integerValue);
 }
 
 
