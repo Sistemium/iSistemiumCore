@@ -11,6 +11,7 @@
 #import "STMPersistingTests.h"
 #import "STMCorePicturesController.h"
 #import "STMVisitPhoto.h"
+#import "iSistemiumCore-Swift.h"
 
 @interface STMCorePicturesControllerTests : STMPersistingTests
 
@@ -24,17 +25,21 @@
 
 - (void)testDownloadConnectionForObject {
     
+    [STMGarbageCollector searchUnusedImages];
+    
+    XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 0);
+    
     [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
     NSString *xid = [STMFunctions uuidString];
     
-    XCTestExpectation *downloadExpectation = [self expectationWithDescription:@"Downloading picture"];
+    __block XCTestExpectation *expectation = [self expectationWithDescription:@"Downloading picture"];
     
     STMVisitPhoto *picture = (STMVisitPhoto*) [self.persister newObjectForEntityName:@"STMVisitPhoto"];
     
-    [nc addObserver:downloadExpectation
+    [nc addObserver:expectation
            selector:@selector(fulfill)
                name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
              object:picture];
@@ -65,7 +70,7 @@
         
         XCTAssertNil(error);
         
-        [[NSNotificationCenter defaultCenter] removeObserver:downloadExpectation];
+        [[NSNotificationCenter defaultCenter] removeObserver:expectation];
         
         NSDictionary *rez = [self.persister findSync:@"STMVisitPhoto" identifier:xid options:nil error:&error];
         
@@ -80,6 +85,23 @@
         XCTAssertEqualObjects(rez[@"resizedImagePath"], expectedResizedImagePath);
         
         XCTAssertEqualObjects(rez[@"thumbnailPath"], expectedThumbnailPath);
+        
+        [self.persister destroySync:@"STMVisitPhoto" identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
+        
+        [STMGarbageCollector searchUnusedImages];
+        
+        XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 3);
+        
+        expectation = [self expectationWithDescription:@"removingPictures"];
+        
+        [STMGarbageCollector removeUnusedImages].then(^(NSError *error){
+            XCTAssertEqual(error, nil);
+            [expectation fulfill];
+        });
+        
+        [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
+            XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 0);
+        }];
         
     }];
     
