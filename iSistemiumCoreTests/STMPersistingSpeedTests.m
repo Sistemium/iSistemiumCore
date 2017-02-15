@@ -96,11 +96,6 @@
     
     NSString *entityName = @"LogMessage";
     
-    NSString *ownerXid = [STMFunctions uuidString];
-    
-    NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", ownerXid];
-    NSDictionary *cleanupOptions = @{STMPersistingOptionRecordstatuses:@NO};
-    
     NSError *error;
     NSTimeInterval result = 0;
 
@@ -108,7 +103,7 @@
                               forKey:STMPersistingOptionLts
                         inDictionary:options];
     
-    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:ownerXid count:STMPersistingSpeedTestsCount];
+    NSArray *sampleData = [self sampleDataOf:entityName ownerXid:self.ownerXid count:STMPersistingSpeedTestsCount];
     
     [self startMeasuring];
     
@@ -121,13 +116,88 @@
     result = [startedAt timeIntervalSinceNow];
     
     [self stopMeasuring];
-    
-    [self.persister destroyAllSync:entityName predicate:cleanupPredicate options:cleanupOptions error:&error];
-    
-    XCTAssertNil(error);
-    
+
     return result;
     
 }
+
+- (void)testMergeSyncSpeed{
+    
+    NSString *entityName = @"STMLogMessage";
+    int numberOfLogs = 100;
+    __block NSError *error;
+    
+    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+    
+    [self measureBlock:^{
+        
+        for (int i = 0; i<numberOfLogs;i++){
+            
+            NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
+            
+            NSDictionary *logMessage = @{@"text": [NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
+                                         @"type": @"debug",
+                                         @"ownerXid": self.ownerXid};
+            
+            [self.persister mergeSync:entityName attributes:logMessage options:options error:&error];
+            
+            XCTAssertNil(error);
+            
+        }
+        
+    }];
+    
+}
+
+- (void)testFindFromLargeData{
+    
+    NSString *entityName = @"STMLogMessage";
+    int numberOfLogs = 10000;
+    __block NSError *error;
+    
+    NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
+    
+    NSMutableArray *logMessages = @[].mutableCopy;
+    
+    NSString *type = @"debug";
+    
+    for (int i = 0; i<numberOfLogs;i++){
+        
+        NSString *messageText = [@"Log message test #" stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
+        
+        NSDictionary *logMessage = @{@"text": [NSString stringWithFormat:@"%@: %@", [STMFunctions stringFromNow], messageText],
+                                     @"type": type,
+                                     @"ownerXid": self.ownerXid};
+        
+        XCTAssertNil(error);
+        
+        [logMessages addObject:logMessage];
+        
+    }
+    
+    [self.persister mergeManySync:entityName attributeArray:logMessages options:options error:&error];
+    
+    XCTAssertNil(error);
+    
+    NSPredicate *isJustMergedData = [NSPredicate predicateWithFormat:@"type == %@ AND ownerXid == %@", type, self.ownerXid];
+    NSPredicate *endsWith0 = [NSPredicate predicateWithFormat:@"text ENDSWITH %@", @"0"];
+    
+    endsWith0 = [NSCompoundPredicate andPredicateWithSubpredicates:@[endsWith0, isJustMergedData]];
+    
+    [self measureBlock:^{
+        
+        NSArray *rez = [self.persister findAllSync:entityName predicate:isJustMergedData options:nil error:&error];
+        
+        XCTAssertEqual(rez.count, numberOfLogs);
+        
+        rez = [self.persister findAllSync:entityName predicate:endsWith0 options:nil error:&error];
+        
+        XCTAssertGreaterThanOrEqual(rez.count, numberOfLogs % 10);
+        
+    }];
+    
+}
+
+
 
 @end
