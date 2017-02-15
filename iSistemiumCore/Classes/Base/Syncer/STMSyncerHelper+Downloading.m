@@ -81,23 +81,25 @@
 
     }
     
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+//    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
     [self receiveStarted];
     
-    if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
-        
-        self.downloadingState.entityCount = 1;
-        
-        [self checkConditionForReceivingEntityWithName:@"STMEntity"];
-        
-    } else {
-        
-        self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
-        self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
-        
-        [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
-        
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
+            
+            self.downloadingState.entityCount = 1;
+            
+            [self checkConditionForReceivingEntityWithName:@"STMEntity"];
+            
+        } else {
+            
+            self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
+            self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
+            
+            [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
+            
+        }
+    });
     
 }
 
