@@ -15,8 +15,9 @@
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
 
+#import "STMCoreObject.h"
 
-@interface STMSyncer : NSObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
+@interface STMSyncer : STMCoreObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
 @property (nonatomic, weak) id <STMSession> session;
 

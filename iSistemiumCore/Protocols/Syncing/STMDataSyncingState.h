@@ -10,7 +10,4 @@
 
 @protocol STMDataSyncingState <NSObject>
 
-@property (nonatomic) BOOL isInSyncingProcess;
-
-
 @end

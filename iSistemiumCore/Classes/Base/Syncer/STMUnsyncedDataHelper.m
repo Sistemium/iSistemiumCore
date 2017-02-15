@@ -19,9 +19,6 @@
 
 @implementation STMUnsyncedDataHelperState
 
-@synthesize isInSyncingProcess = _isInSyncingProcess;
-
-
 @end
 
 
@@ -31,7 +28,9 @@
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *pendingObjectsByEntity;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
+@property (nonatomic, strong) STMUnsyncedDataHelperState *syncingState;
 
+@property (nonatomic) BOOL isPaused;
 
 @end
 
@@ -39,7 +38,6 @@
 @implementation STMUnsyncedDataHelper
 
 @synthesize subscriberDelegate = _subscriberDelegate;
-@synthesize syncingState = _syncingState;
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
@@ -51,37 +49,27 @@
     
 }
 
-- (void)setSyncingState:(id <STMDataSyncingState>)syncingState {
-
-    _syncingState = syncingState;
-    
-    if (_syncingState) {
-        [self startHandleUnsyncedObjects];
-    }
-    
-}
-
-
 #pragma mark - STMDataSyncing
 
 - (void)startSyncing {
     
     @synchronized (self) {
         
-        if (!self.syncingState) {
-            self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
-        }
+        self.isPaused = NO;
+        
+        [self startHandleUnsyncedObjects];
 
     }
     
 }
 
 - (void)pauseSyncing {
-    self.syncingState = nil;
+    self.isPaused = YES;
 }
 
 - (void)setSubscriberDelegate:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
+    self.isPaused = YES;
     _subscriberDelegate = subscriberDelegate;
     
     (_subscriberDelegate) ? [self subscribeUnsynced] : [self unsubscribeUnsynced];
@@ -191,17 +179,17 @@
 
 - (void)startHandleUnsyncedObjects {
     
-    if (!self.subscriberDelegate) return;
+    @synchronized (self) {
+        
+        if (!self.subscriberDelegate || self.isPaused) return;
 
-    if (!self.syncingState) return;
-    
-    if (self.syncingState.isInSyncingProcess) return;
-    
-    self.syncingState.isInSyncingProcess = YES;
-    
-    NSLogMethodName;
-    
-    [self sendNextUnsyncedObject];
+        if (!self.syncingState) {
+            NSLogMethodName;            
+            self.syncingState = [[STMUnsyncedDataHelperState alloc] init];
+        }
+        
+        [self sendNextUnsyncedObject];
+    }
 
 }
 
@@ -213,7 +201,7 @@
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
     }];
     
-    self.syncingState.isInSyncingProcess = NO;
+    self.syncingState = nil;
     
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
     self.pendingObjectsByEntity = @{}.mutableCopy;

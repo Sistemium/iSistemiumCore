@@ -14,7 +14,7 @@
 
 @protocol STMDataSyncing <NSObject>
 
-@property (nonatomic, strong) id <STMDataSyncingState> syncingState;
+@property (nonatomic, readonly) id <STMDataSyncingState> syncingState;
 @property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
 
 - (void)startSyncing;

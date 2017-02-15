@@ -14,11 +14,12 @@
 
 @protocol STMDataDownloading <NSObject>
 
-@property (nonatomic, strong) id <STMDataSyncingState> downloadingState;
+@property (readonly) id <STMDataSyncingState> downloadingState;
 @property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
-@property (nonatomic, strong) NSArray *receivingEntitiesNames;
 
 - (void)startDownloading;
+- (void)startDownloading:(NSArray <NSString *> *)entitiesNames;
+
 - (void)stopDownloading:(NSString *)stopMessage;
 
 - (void)dataReceivedSuccessfully:(BOOL)success

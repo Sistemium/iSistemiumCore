@@ -51,18 +51,10 @@
 
 - (instancetype)init {
     
-    self = [super init];
-    
-    if (self) {
-        [self customInit];
-    }
-    
-    return self;
-    
-}
-
-- (void)customInit {
     NSLog(@"syncer init");
+    
+    return [super init];
+    
 }
 
 
@@ -163,14 +155,8 @@
         
         NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                                                object:self
-                                                              userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
-            
-        });
-        
+        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_STATUS_CHANGED
+                                    userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
         
         NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
         NSLog(@"%@", logMessage);
@@ -210,13 +196,8 @@
 - (void)setSession:(id <STMSession>)session {
     
     if (session != _session) {
-        
-        self.document = (STMDocument *)session.document;
-
         _session = session;
-        
         [self startSyncer];
-        
     }
     
 }
@@ -279,7 +260,7 @@
 }
 
 - (BOOL)isReceivingData {
-    return self.dataDownloadingDelegate.downloadingState.isInSyncingProcess;
+    return !!self.dataDownloadingDelegate.downloadingState;
 }
 
 - (void)setIsDefantomizing:(BOOL)isDefantomizing {
@@ -383,8 +364,7 @@
         
     if (!success) {
         
-        return [[STMLogger sharedLogger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                        numType:STMLogMessageTypeError];
+        return [self.session.logger saveLogMessageWithText:@"checkStcEntities fail" numType:STMLogMessageTypeError];
         
     }
     
@@ -398,8 +378,6 @@
     
     [self.session.logger saveLogMessageDictionaryToDocument];
     [self.session.logger saveLogMessageWithText:@"Syncer start"];
-    
-    [self checkUploadableEntities];
     
     [self addObservers];
     
@@ -416,12 +394,7 @@
     
     self.isRunning = YES;
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
-                                                            object:self];
-        
-    });
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY userInfo:nil];
 
 }
 
@@ -457,11 +430,8 @@
     
     self.entityResource = nil;
     self.socketUrlString = nil;
-    //    self.xmlNamespace = nil;
     self.httpTimeoutForeground = 0;
     self.httpTimeoutBackground = 0;
-//    self.syncInterval = 0;
-    //    self.uploadLogType = nil;
     
 }
 
@@ -526,27 +496,10 @@
         
     }
     
-    return true;
+    return YES;
     
 }
 
-- (void)checkUploadableEntities {
-    
-    NSArray *uploadableEntitiesNames = [STMEntityController uploadableEntitiesNames];
-    NSLog(@"uploadableEntitiesNames %@", uploadableEntitiesNames);
-    
-    if (uploadableEntitiesNames.count == 0) {
-        
-        NSString *stcEntityName = NSStringFromClass([STMEntity class]);
-        
-        stcEntityName = [STMFunctions removePrefixFromEntityName:stcEntityName];
-        
-        [STMClientEntityController clientEntityWithName:stcEntityName
-                                                setETag:nil];
-        
-    }
-
-}
 
 - (void)checkSocket {
     [self.socketTransport checkSocket];
@@ -639,35 +592,19 @@
 
 - (void)receiveEntities:(NSArray *)entitiesNames {
     
-    if ([entitiesNames isKindOfClass:[NSArray class]]) {
-        
-        NSArray *localDataModelEntityNames = self.persistenceDelegate.concreteEntities.allKeys;
-        NSMutableArray *existingNames = [@[] mutableCopy];
-        
-        for (NSString *entityName in entitiesNames) {
-            
-            NSString *name = [STMFunctions addPrefixToEntityName:entityName];
-            
-            if ([localDataModelEntityNames containsObject:name]) {
-                [existingNames addObject:name];
-            }
-            
-        }
-        
-        if (existingNames.count > 0) {
-            
-            self.dataDownloadingDelegate.receivingEntitiesNames = existingNames;
-            [self setSyncerState:STMSyncerReceiveData];
-            
-        }
-        
-    } else {
-        
+    if (![entitiesNames isKindOfClass:[NSArray class]]) {
         NSString *logMessage = @"receiveEntities: argument is not an array";
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-        
+        return [self.session.logger saveLogMessageWithText:logMessage type:@"error"];
     }
+        
+    NSArray *existingNames = [STMFunctions mapArray:entitiesNames withBlock:^NSString *(NSString *name) {
+        return [self.persistenceDelegate isConcreteEntityName:name] ? [STMFunctions addPrefixToEntityName:name] : nil;
+    }];
     
+    if (existingNames.count > 0) {
+        [self.dataDownloadingDelegate startDownloading:existingNames];
+    }
+  
 }
 
 - (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value {
@@ -801,7 +738,9 @@
 }
 
 - (void)dataDownloadingFinished {
-        
+    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED userInfo:nil];
+
     [self turnOffNetworkActivityIndicator];
 
     [STMCoreObjectsController dataLoadingFinished];
@@ -881,13 +820,7 @@
 
 - (void)sendStarted {
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-//        NSLog(@"NOTIFICATION_SYNCER_SEND_STARTED");
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_STARTED
-                                                            object:self];
-        
-    });
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_STARTED userInfo:nil];
 
 }
 
@@ -895,14 +828,8 @@
     
     [self saveSendDate];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-//        NSLog(@"NOTIFICATION_SYNCER_SEND_FINISHED");
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_SEND_FINISHED
-                                                            object:self];
-        
-    });
-    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED userInfo:nil];
+
 }
 
 - (void)saveSendDate {
@@ -925,15 +852,7 @@
 }
 
 - (void)postObjectsSendedNotification {
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-
-        //    NSLog(@"NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED");
-        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
-                                                            object:self];
-
-    });
-
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED userInfo:nil];
 }
 
 

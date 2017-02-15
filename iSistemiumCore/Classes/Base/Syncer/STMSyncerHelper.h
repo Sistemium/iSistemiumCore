@@ -20,7 +20,6 @@
 
 @interface STMSyncerHelper : STMCoreObject
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 

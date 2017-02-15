@@ -29,14 +29,9 @@
     return [[STMSessionManager sharedManager] currentSession];
 }
 
-- (STMDocument *)document {
-    return self.session.document;
-}
-
 
 #pragma mark - Private Properties
 
 @synthesize dataDownloadingOwner = _dataDownloadingOwner;
-@synthesize receivingEntitiesNames = _receivingEntitiesNames;
 
 @end

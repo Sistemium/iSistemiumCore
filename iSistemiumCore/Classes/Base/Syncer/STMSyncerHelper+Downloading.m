@@ -21,13 +21,10 @@
 @property (nonatomic) NSUInteger entityCount;
 @property (nonatomic) BOOL entitiesWasUpdated;
 @property (nonatomic) NSUInteger fetchLimit;
-
 @end
 
 
 @implementation STMDataDownloadingState
-
-@synthesize isInSyncingProcess = _isInSyncingProcess;
 
 - (instancetype)initWithFetchLimit:(NSUInteger)fetchLimit {
     
@@ -55,7 +52,6 @@
 @implementation STMSyncerHelper (Downloading)
 
 @dynamic dataDownloadingOwner;
-@dynamic receivingEntitiesNames;
 
 #pragma mark - variables
 
@@ -69,19 +65,39 @@
 #pragma mark - STMDataDownloading
 
 - (void)startDownloading {
+    [self startDownloading:nil];
+}
+
+- (void)startDownloading:(NSArray <NSString *> *)entitiesNames {
     
     @synchronized (self) {
         
-        if (!self.downloadingState) {
-            NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
-            NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
-            
-            self.downloadingState = [[STMDataDownloadingState alloc] initWithFetchLimit:fetchLimit];
-        }
+        if (self.downloadingState) return;
+
+        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
+        NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
+        
+        self.downloadingState = [[STMDataDownloadingState alloc] initWithFetchLimit:fetchLimit];
 
     }
     
-    [self receiveData];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [self receiveStarted];
+    
+    if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
+        
+        self.downloadingState.entityCount = 1;
+        
+        [self checkConditionForReceivingEntityWithName:@"STMEntity"];
+        
+    } else {
+        
+        self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
+        self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
+        
+        [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
+        
+    }
     
 }
 
@@ -115,43 +131,8 @@
 
 #pragma mark - private methods
 
-- (void)receiveData {
-    
-    if (!self.downloadingState.isInSyncingProcess) {
-        
-        self.downloadingState.isInSyncingProcess = YES;
-        
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-        [self receiveStarted];
-        
-        if (!self.receivingEntitiesNames || [self.receivingEntitiesNames containsObject:@"STMEntity"]) {
-            
-            self.downloadingState.entityCount = 1;
-            
-            [self checkConditionForReceivingEntityWithName:@"STMEntity"];
-            
-        } else {
-            
-            self.downloadingState.entitySyncNames = self.receivingEntitiesNames.mutableCopy;
-            self.receivingEntitiesNames = nil;
-            self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
-            
-            [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
-            
-        }
-        
-    }
-    
-}
-
 - (void)receiveStarted {
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED userInfo:nil];
-}
-
-- (void)receiveFinished {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED userInfo:nil];
-    self.downloadingState.isInSyncingProcess = NO;
-    [self.dataDownloadingOwner dataDownloadingFinished];
 }
 
 - (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
@@ -284,8 +265,6 @@
     self.downloadingState.entityCount = entitiesNames.count;
     
     [self postAsyncMainQueueNotification:@"entitiesReceivingDidFinish" userInfo:nil];
-
-    [self.document saveDocument:^(BOOL success) {}];
     
     [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
  
@@ -300,23 +279,13 @@
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
         
-    } else {
-        
-        [self saveReceiveDate];
-        
     }
     
-    if (self.receivingEntitiesNames) {
-        
-        NSLog(@"receivingDidFinishWith entitiesNames: %@", self.receivingEntitiesNames);
-        [self receiveData];
-        
-    } else {
-        
-        NSLog(@"receivingDidFinish");
-        [self receiveFinished];
-        
-    }
+    NSLog(@"receivingDidFinish");
+    
+    self.downloadingState = nil;
+    [self.dataDownloadingOwner dataDownloadingFinished];
+
     
 }
 
