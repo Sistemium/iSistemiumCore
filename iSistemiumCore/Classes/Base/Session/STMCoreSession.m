@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
+#import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
 
 #import "STMUnsyncedDataHelper.h"
@@ -15,10 +16,6 @@
 
 #import "STMPersisterFantoms.h"
 #import "STMSyncer.h"
-
-@interface STMCoreSession()
-
-@end
 
 @implementation STMCoreSession
 
@@ -35,6 +32,7 @@
         session.startSettings = startSettings;
         session.authDelegate = authDelegate;
         session.startTrackers = trackers;
+        session.controllers = [NSMutableDictionary dictionary];
         
         [session addObservers];
         
@@ -47,6 +45,14 @@
         
     }
 
+}
+
+- (void)initController:(Class)controllerClass {
+    self.controllers[NSStringFromClass(controllerClass)] = [controllerClass controllerWithPersistenceDelegate:self.persistenceDelegate];
+}
+
+- (id)controllerWithName:(NSString *)name {
+    return self.controllers[name];
 }
 
 - (void)stopSession {

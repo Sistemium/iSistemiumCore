@@ -6,6 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
 #import "STMPersister+Async.h"
 
@@ -81,7 +82,7 @@
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
     self.settingsController.session = self;
-
+    
 }
 
 
