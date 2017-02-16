@@ -28,6 +28,10 @@
 - (void)observeNotification:(NSNotificationName)notificationName
                    selector:(SEL)aSelector;
 
+- (void)observeNotification:(NSNotificationName)notificationName
+                   selector:(SEL)aSelector
+                     object:(id)anObject;
+
 - (void)removeObservers;
 
 @end

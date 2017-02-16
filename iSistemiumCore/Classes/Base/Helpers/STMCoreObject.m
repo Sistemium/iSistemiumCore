@@ -38,10 +38,13 @@
     return [self.notificationCenter addObserver:anObserver selector:aSelector name:aName object:self];
 }
 
-- (void)observeNotification:(NSNotificationName)notificationName selector:(SEL)aSelector {
-    return [self.notificationCenter addObserver:self selector:aSelector name:notificationName object:nil];
+- (void)observeNotification:(NSNotificationName)notificationName selector:(SEL)aSelector object:(id)anObject {
+    return [self.notificationCenter addObserver:self selector:aSelector name:notificationName object:anObject];
 }
 
+- (void)observeNotification:(NSNotificationName)notificationName selector:(SEL)aSelector {
+    return [self observeNotification:notificationName selector:aSelector object:nil];
+}
 
 - (void)removeObservers {
     [self.notificationCenter removeObserver:self];
