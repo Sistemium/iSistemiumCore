@@ -14,6 +14,8 @@
 #import "STMSyncer.h"
 
 #import "STMEntityController.h"
+#import "STMCorePicturesController.h"
+
 @implementation STMCoreSession (Persistable)
 
 - (instancetype)initPersistable {
@@ -73,6 +75,8 @@
     }
     
     [self initController:STMEntityController.class];
+    [self initController:STMCorePicturesController.class];
+    
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
     self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];

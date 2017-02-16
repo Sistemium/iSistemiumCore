@@ -23,7 +23,7 @@
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
 @property (nonatomic) BOOL waitingForDownloadPicture;
 
-@property (nonatomic, weak) STMCoreSession *session;
+@property (nonatomic, readonly) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSString *imagesCachePath;
@@ -38,32 +38,11 @@
 @synthesize nonloadedPicturesCount = _nonloadedPicturesCount;
 
 + (STMCorePicturesController *)sharedController {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedController = nil;
-    
-    dispatch_once(&pred, ^{
-        
-        //        NSLog(@"STMObjectsController init");
-        _sharedController = [[self alloc] init];
-        
-    });
-    
-    return _sharedController;
-    
+    return [super sharedInstance];
 }
 
 + (id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>)persistenceDelegate {
     return [[self sharedController] persistenceDelegate];
-}
-
-- (id)persistenceDelegate {
-    
-    if (!_persistenceDelegate) {
-        return self.session.persistenceDelegate;
-    }
-    
-    return _persistenceDelegate;
 }
 
 #pragma mark - instance properties
@@ -72,54 +51,19 @@
     
     self = [super init];
     
-    if (self) {
-        
-        [self addObservers];
-//        [self performFetch];
-        
-    }
+    [self addObservers];
+
     return self;
     
 }
 
 - (void)addObservers {
  
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    
-    [nc addObserver:self
-           selector:@selector(authStateChanged)
-               name:@"authControllerStateChanged"
-             object:self.authController];
-
 }
 
-- (void)authStateChanged {
-    
-    if (self.authController.controllerState != STMAuthSuccess) {
-        
-        self.downloadingPictures = NO;
-        
-        self.uploadQueue.suspended = YES;
-        [self.uploadQueue cancelAllOperations];
-        self.uploadQueue = nil;
-        
-        self.hrefDictionary = nil;
-        self.session = nil;
-        self.settings = nil;
-        
-        if (self.nonloadedPicturesSubscriptionID) {
-            [[self.class persistenceDelegate] cancelSubscription:self.nonloadedPicturesSubscriptionID];
-            self.nonloadedPicturesSubscriptionID = nil;
-        }
-        
-    }
-    
-}
 
 - (STMCoreSession *)session {
-    
-    return [STMCoreSessionManager sharedManager].currentSession;
-    
+    return [self.class session];
 }
 
 - (void)setDownloadingPictures:(BOOL)downloadingPictures {
