@@ -64,27 +64,21 @@
 
 - (void)addObservers {
     
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
+                     selector:@selector(sessionStatusChanged:)
+                       object:self.session];
+
+#warning nobody posts this notification name
     
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self.session];
+    [self observeNotification:@"syncerSettingsChanged"
+                     selector:@selector(syncerSettingsChanged)
+                       object:self.session];
     
-    [nc addObserver:self
-           selector:@selector(syncerSettingsChanged)
-               name:@"syncerSettingsChanged"
-             object:self.session];
+    [self observeNotification:UIApplicationDidBecomeActiveNotification
+                     selector:@selector(appDidBecomeActive)];
     
-    [nc addObserver:self
-           selector:@selector(appDidBecomeActive)
-               name:UIApplicationDidBecomeActiveNotification
-             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(appDidEnterBackground)
-               name:UIApplicationDidEnterBackgroundNotification
-             object:nil];
+    [self observeNotification:UIApplicationDidEnterBackgroundNotification
+                     selector:@selector(appDidEnterBackground)];
     
 }
 

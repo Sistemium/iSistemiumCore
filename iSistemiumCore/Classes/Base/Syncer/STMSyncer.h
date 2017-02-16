@@ -38,8 +38,6 @@
 
 - (void)closeSocketInBackground;
 
-- (void)prepareToDestroy;
-
 - (void)upload;
 - (void)fullSync;
 - (void)receiveEntities:(NSArray *)entitiesNames;

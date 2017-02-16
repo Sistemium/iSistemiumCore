@@ -37,4 +37,5 @@
 + (id)userDefaults {
     return [STMUserDefaults standardUserDefaults];
 }
+
 @end
