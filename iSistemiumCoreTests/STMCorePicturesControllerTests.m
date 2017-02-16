@@ -12,6 +12,7 @@
 #import "STMCorePicturesController.h"
 #import "STMVisitPhoto.h"
 #import "iSistemiumCore-Swift.h"
+#import "STMCoreSessionManager.h"
 
 @interface STMCorePicturesControllerTests : STMPersistingTests
 
@@ -87,6 +88,9 @@
         XCTAssertEqualObjects(rez[@"thumbnailPath"], expectedThumbnailPath);
         
         [self.persister destroySync:@"STMVisitPhoto" identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
+        
+        // Need to set real persister because there are real pictures
+        [STMCorePicturesController sharedController].persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
         
         [STMGarbageCollector searchUnusedImages];
         
