@@ -504,7 +504,7 @@
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
         [self receiveData];
         
-        NSLog(@"checkStcEntities got callback data: %@", data);
+        NSLog(@"checkStcEntities got called back with %@ items", @(data.count));
         
     }];
     
