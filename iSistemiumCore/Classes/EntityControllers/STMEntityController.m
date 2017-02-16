@@ -8,11 +8,17 @@
 
 #import "STMEntityController.h"
 
+#define STMEC_HAS_CHANGES @"STMEntityController has changes"
+
 @interface STMEntityController()
 
 @property (nonatomic, strong) NSArray *entitiesArray;
 @property (nonatomic, strong) NSArray *uploadableEntitiesNames;
 @property (nonatomic, strong) NSDictionary *stcEntities;
+
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
+
++ (STMEntityController *)sharedInstance;
 
 @end
 
@@ -20,51 +26,42 @@
 @implementation STMEntityController
 
 + (STMEntityController *)sharedInstance {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedInstance = nil;
-    
-    dispatch_once(&pred, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    
-    return _sharedInstance;
-    
+    return [super sharedInstance];
 }
 
 - (instancetype)init {
     
     self = [super init];
+    [self addObservers];
     
-    if (self) [self addObservers];
+    NSLogMethodName;
     return self;
     
 }
 
 - (void)addObservers {
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    
-    [nc addObserver:self
-           selector:@selector(authStateChanged)
-               name:@"authControllerStateChanged"
-             object:self.authController];
+    self.entitySubscriptionID = [self.class.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
+        
+        [self flushSelf];
+        [self postNotificationName:STMEC_HAS_CHANGES];
+        
+        NSLog(@"checkStcEntities got called back with %@ items", @(data.count));
+        
+    }];
 
 }
 
 - (void)removeObservers {
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
+    [self.class.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
+    self.entitySubscriptionID = nil;
+    [super removeObservers];
 }
 
-- (void)authStateChanged {
-    
-    if (self.authController.controllerState != STMAuthSuccess) {
-        [self flushSelf];
-    }
-    
++ (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector {
+    [[self sharedInstance] addObserver:anObject selector:selector name:STMEC_HAS_CHANGES];
 }
+
 
 - (void)flushSelf {
     

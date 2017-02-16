@@ -13,6 +13,7 @@
 #import "STMCoreAuthController.h"
 #import "STMSyncer.h"
 
+#import "STMEntityController.h"
 @implementation STMCoreSession (Persistable)
 
 - (instancetype)initPersistable {
@@ -70,7 +71,8 @@
         NSLog(@"persister is not ready, have to do something with it");
         return;
     }
-
+    
+    [self initController:STMEntityController.class];
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
     self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];

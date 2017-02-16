@@ -28,5 +28,6 @@
 
 + (NSDictionary *)entityWithName:(NSString *)name;
 
++ (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector;
 
 @end
