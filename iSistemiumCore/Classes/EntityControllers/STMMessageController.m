@@ -24,6 +24,7 @@
 @property (nonatomic, strong) NSMutableDictionary *shownPictures;
 @property (nonatomic, strong) NSMutableArray *fullscreenPictures;
 
++ (STMMessageController *)sharedInstance;
 
 @end
 
