@@ -170,8 +170,8 @@
 
         self.syncer.persistenceDelegate = self.persistenceDelegate;
 
-        STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] init];
-        syncerHelper.persistenceDelegate = self.persistenceDelegate;
+        STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
+        
         syncerHelper.dataDownloadingOwner = self.syncer;
         syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
         syncerHelper.defantomizingOwner = self.syncer;

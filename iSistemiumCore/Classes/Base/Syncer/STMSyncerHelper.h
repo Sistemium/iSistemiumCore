@@ -14,15 +14,12 @@
 #import "STMDataSyncingState.h"
 
 #import "STMConstants.h"
-#import "STMDocument.h"
-#import "STMSessionManager.h"
 
 
 @interface STMSyncerHelper : STMCoreObject
 
 - (instancetype)initWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate;
 
-@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 @end

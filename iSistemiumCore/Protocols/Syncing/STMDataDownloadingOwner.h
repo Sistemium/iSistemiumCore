@@ -11,8 +11,7 @@
 @protocol STMDataDownloadingOwner <NSObject>
 
 - (void)receiveData:(NSString *)entityName
-             offset:(NSString *)offset
-           pageSize:(NSUInteger)pageSize;
+             offset:(NSString *)offset;
 
 - (BOOL)downloadingTransportIsReady;
 

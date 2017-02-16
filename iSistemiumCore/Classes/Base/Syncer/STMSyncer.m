@@ -724,6 +724,22 @@
 }
 
 
+- (void)saveReceiveDate {
+    
+    if (!self.session.uid) return;
+    
+    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+    
+    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+    
+    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [defaults setObject:receiveDateString forKey:key];
+    [defaults synchronize];
+    
+}
+
+
 #pragma mark - STMDataDownloadingOwner
 
 - (BOOL)downloadingTransportIsReady {
@@ -743,6 +759,8 @@
 
     [self turnOffNetworkActivityIndicator];
 
+    [self saveReceiveDate];
+    
     [STMCoreObjectsController dataLoadingFinished];
     
     [self startDefantomization];
@@ -756,9 +774,11 @@
 
 }
 
-- (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
+- (void)receiveData:(NSString *)entityName offset:(NSString *)offset {
     
-    NSDictionary *options = @{STMPersistingOptionPageSize   : @(pageSize),
+    NSUInteger fetchLimit = [self.settings[@"fetchLimit"] integerValue];
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @(fetchLimit),
                               STMPersistingOptionOffset     : offset};
     
     [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {

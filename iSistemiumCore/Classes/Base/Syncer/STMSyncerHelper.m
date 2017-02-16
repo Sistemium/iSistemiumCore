@@ -21,11 +21,6 @@
     
 }
 
-- (id <STMSession>)session {
-    return [[STMSessionManager sharedManager] currentSession];
-}
-
-
 #pragma mark - Private Properties
 
 @synthesize dataDownloadingOwner = _dataDownloadingOwner;

@@ -12,26 +12,22 @@
 #import "STMClientEntityController.h"
 #import "STMEntityController.h"
 
-#import <objc/runtime.h>
-
-
 @interface STMDataDownloadingState ()
 
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
 @property (nonatomic) NSUInteger entityCount;
 @property (nonatomic) BOOL entitiesWasUpdated;
-@property (nonatomic) NSUInteger fetchLimit;
+
 @end
 
 
 @implementation STMDataDownloadingState
 
-- (instancetype)initWithFetchLimit:(NSUInteger)fetchLimit {
+- (instancetype)init {
     
     self = [super init];
     
     self.entitySyncNames = [NSMutableArray array];
-    self.fetchLimit = fetchLimit;
     
     return self;
 }
@@ -73,11 +69,8 @@
     @synchronized (self) {
         
         if (self.downloadingState) return self.downloadingState;
-
-        NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
-        NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
         
-        self.downloadingState = [[STMDataDownloadingState alloc] initWithFetchLimit:fetchLimit];
+        self.downloadingState = [[STMDataDownloadingState alloc] init];
 
         if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
             
@@ -176,9 +169,7 @@
 
 - (void)receiveDataForEntityName:(NSString *)entityName eTag:(NSString * _Nonnull)eTag {
     
-    [self.dataDownloadingOwner receiveData:entityName
-                                    offset:eTag
-                                  pageSize:self.downloadingState.fetchLimit];
+    [self.dataDownloadingOwner receiveData:entityName offset:eTag];
 
 }
 
@@ -194,14 +185,9 @@
     
     if (errorMessage) {
         
-        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
-        [self.session.logger saveLogMessageWithText:logMessage
-                                            numType:STMLogMessageTypeError];
+//        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
+//        [self.session.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         
-    } else {
-        
-        [self saveReceiveDate];
-
     }
     
     if (finishReceiving || --self.downloadingState.entityCount) {
@@ -280,26 +266,11 @@
     
     NSLog(@"receivingDidFinish");
     
-    self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
-
+    self.downloadingState = nil;
     
 }
 
-- (void)saveReceiveDate {
-    
-    if (!self.session.uid) return;
-    
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [defaults setObject:receiveDateString forKey:key];
-    [defaults synchronize];
-    
-}
 
 
 #pragma mark findAll ack handler

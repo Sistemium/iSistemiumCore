@@ -314,9 +314,9 @@
 
 #pragma mark STMDataDownloadingOwner
 
-- (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
+- (void)receiveData:(NSString *)entityName offset:(NSString *)offset {
     
-    NSLog(@"receiveData: %@, offset %@, pageSize %@", entityName, offset, @(pageSize));
+    NSLog(@"receiveData: %@, offset %@, pageSize %@", entityName, offset, @(0));
     
     if (self.brokenDownload && ![entityName isEqualToString:@"STMEntity"]) {
         self.transportIsReady = NO;
