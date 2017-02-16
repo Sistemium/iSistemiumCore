@@ -9,7 +9,6 @@
 #import "STMSyncerHelper+Defantomizing.h"
 #import "STMConstants.h"
 #import "STMEntityController.h"
-#import "STMCoreObjectsController.h"
 
 #import <objc/runtime.h>
 

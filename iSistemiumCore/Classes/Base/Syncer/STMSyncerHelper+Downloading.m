@@ -72,22 +72,31 @@
         
         self.downloadingState = [[STMDataDownloadingState alloc] init];
 
-        if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
+        if (!entitiesNames) {
             
-            self.downloadingState.entityCount = 1;
+            NSMutableOrderedSet *entitiesNames = [NSMutableOrderedSet orderedSetWithObject:@"STMEntity"];
             
-            [self checkConditionForReceivingEntityWithName:@"STMEntity"];
+            if (self.stcEntities[@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
+            
+            [self.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, STMEntity *entity, BOOL *stop) {
+                if (entity.url) [entitiesNames addObject:name];
+            }];
+            
+            self.downloadingState.entitySyncNames = entitiesNames.array.mutableCopy;
             
         } else {
             
             self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
-            self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
-            
-            [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
             
         }
+
+        self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
         
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
+
+        NSLog(@"will download %@ entities", @(self.downloadingState.entityCount));
+        
+        [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
         
         return self.downloadingState;
     }
@@ -125,14 +134,16 @@
 #pragma mark - private methods
 
 
-- (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
+- (void)tryDownloadEntityName:(NSString *)entityName {
     
     if (!self.downloadingState) {
+        // TODO: call finish download
         return;
     }
 
-    NSLog(@"checkConditionForReceivingEntityWithName: %@", entityName);
+    NSLog(@"tryDownloadEntityName: %@", entityName);
     
+    // TODO: not sure it is needed
     if (![self.dataDownloadingOwner downloadingTransportIsReady]) {
         
         [self receivingDidFinishWithError:@"socket transport is not ready"];
@@ -140,37 +151,14 @@
         
     }
     
-    
-    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"    %@: does not exist in local data model", entityName];
-        return [self entityCountDecreaseWithError:errorMessage];
-        
-    }
-    
     STMEntity *entity = self.stcEntities[entityName];
-    NSString *resource = [entity resource];
-            
-    if (!resource) {
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"    %@: have no url", entityName];
-        return [self entityCountDecreaseWithError:errorMessage];
-        
-    }
     
     NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entity.name][@"eTag"];
     
     if (!lastKnownEtag || [lastKnownEtag isEqual:[NSNull null]]) lastKnownEtag = @"*";
                            
-    [self receiveDataForEntityName:entityName eTag:lastKnownEtag];
+    [self.dataDownloadingOwner receiveData:entityName offset:lastKnownEtag];
     
-}
-
-
-- (void)receiveDataForEntityName:(NSString *)entityName eTag:(NSString * _Nonnull)eTag {
-    
-    [self.dataDownloadingOwner receiveData:entityName offset:eTag];
-
 }
 
 - (void)entityCountDecrease {
@@ -185,8 +173,10 @@
     
     if (errorMessage) {
         
-//        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
-//        [self.session.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+        // TODO: need a method in owner's protocol
+        
+        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         
     }
     
@@ -204,7 +194,7 @@
         
         if (self.downloadingState.entitySyncNames.firstObject) {
             
-            return [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
+            return [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
             
         }
             
@@ -214,43 +204,6 @@
     
     [self receivingDidFinishWithError:nil];
 
-    
-}
-
-- (void)receiveNoContentStatusForEntityWithName:(NSString *)entityName {
-    
-    if (![entityName isEqualToString:@"STMEntity"]) {
-        return [self entityCountDecrease];
-    }
-
-    
-    // Special hanling of first time receiving entities
-    // TODO: move this somewhere else
-    
-    if (self.downloadingState.entitiesWasUpdated) {
-     
-        [self.dataDownloadingOwner entitiesWasUpdated];
-        self.downloadingState.entitiesWasUpdated = NO;
-        
-    }
-    
-    NSMutableArray *entitiesNames = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return [obj valueForKey:@"url"] ? YES : NO;
-    }].allObjects.mutableCopy;
-    
-    [entitiesNames removeObject:entityName];
-    
-    NSUInteger settingsIndex = [entitiesNames indexOfObject:@"STMSetting"];
-    if (settingsIndex != NSNotFound) [entitiesNames exchangeObjectAtIndex:settingsIndex
-                                                        withObjectAtIndex:0];
-    
-    self.downloadingState.entitySyncNames = entitiesNames;
-    self.downloadingState.entityCount = entitiesNames.count;
-    
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
-    
-    [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
- 
     
 }
 
@@ -266,8 +219,8 @@
     
     NSLog(@"receivingDidFinish");
     
-    [self.dataDownloadingOwner dataDownloadingFinished];
     self.downloadingState = nil;
+    [self.dataDownloadingOwner dataDownloadingFinished];
     
 }
 
@@ -284,12 +237,12 @@
         
     if (!responseData.count) {
         NSLog(@"    %@: have no new data", entityName);
-        return [self receiveNoContentStatusForEntityWithName:entityName];
+        return [self entityCountDecrease];
     }
         
     if (!offset) {
         NSLog(@"    %@: receive data w/o offset", entityName);
-        return [self receiveNoContentStatusForEntityWithName:entityName];
+        return [self entityCountDecrease];
     }
     
     NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
@@ -312,23 +265,19 @@
     
     NSLog(@"    %@: get %@ objects", entityName, @(result.count));
     
-    if ([entityName isEqualToString:@"STMEntity"]) {
-        self.downloadingState.entitiesWasUpdated = YES;
-    }
-    
     if (result.count < pageSize) {
         
         NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
-        
-        [self receiveNoContentStatusForEntityWithName:entityName];
         
         STMEntity *entity = self.stcEntities[entityName];
         
         [STMClientEntityController clientEntityWithName:entity.name setETag:offset];
         
+        [self entityCountDecrease];
+        
     } else {
         
-        [self receiveDataForEntityName:entityName eTag:offset];
+        [self.dataDownloadingOwner receiveData:entityName offset:offset];
         
     }
     

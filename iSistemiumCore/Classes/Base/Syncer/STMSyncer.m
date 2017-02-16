@@ -39,6 +39,8 @@
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
+@property (nonatomic,strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
+@property (nonatomic) BOOL needRepeatDownload;
 
 @end
 
@@ -92,6 +94,7 @@
 }
 
 - (void)removeObservers {
+    [self.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -486,8 +489,6 @@
         
         [STMEntityController flushSelf];
         
-        return !error;
-        
     } else if (![entity.url isEqualToString:self.entityResource]) {
         
         NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
@@ -495,6 +496,17 @@
         entity.url = self.entityResource;
         
     }
+    
+    self.entitySubscriptionID = [self.persistenceDelegate observeEntity:stcEntityName predicate:nil callback:^(NSArray *data) {
+        
+        [STMEntityController flushSelf];
+        [self subscribeToUnsyncedObjects];
+        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
+        [self receiveData];
+        
+        NSLog(@"checkStcEntities got callback data: %@", data);
+        
+    }];
     
     return YES;
     
@@ -720,7 +732,14 @@
 #pragma mark - recieve data
 
 - (void)receiveData {
+    
+    if ([self.dataDownloadingDelegate downloadingState]) {
+        self.needRepeatDownload = YES;
+        return;
+    }
+    
     [self.dataDownloadingDelegate startDownloading];
+    
 }
 
 
@@ -746,14 +765,15 @@
     return [self transportIsReady];
 }
 
-- (void)entitiesWasUpdated {
-    
-    [STMEntityController flushSelf];
-    [self subscribeToUnsyncedObjects];
-
-}
-
 - (void)dataDownloadingFinished {
+    
+    if (self.needRepeatDownload) {
+        NSLog(@"dataDownloadingFinished and needRepeatDownload");
+        self.needRepeatDownload = NO;
+        return [self receiveData];
+    }
+    
+    NSLogMethodName;
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED];
 

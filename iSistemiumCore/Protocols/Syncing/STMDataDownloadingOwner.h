@@ -15,7 +15,6 @@
 
 - (BOOL)downloadingTransportIsReady;
 
-- (void)entitiesWasUpdated;
 - (void)dataDownloadingFinished;
 
 
