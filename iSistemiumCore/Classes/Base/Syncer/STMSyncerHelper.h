@@ -9,11 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "STMCoreObject.h"
-
 #import "STMPersistingFullStack.h"
-#import "STMDataSyncingState.h"
-
-#import "STMConstants.h"
 
 
 @interface STMSyncerHelper : STMCoreObject

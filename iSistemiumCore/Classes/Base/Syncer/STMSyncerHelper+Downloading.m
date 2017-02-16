@@ -6,6 +6,8 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import "STMConstants.h"
+
 #import "STMSyncerHelper+Private.h"
 #import "STMSyncerHelper+Downloading.h"
 
@@ -134,6 +136,13 @@
 #pragma mark - private methods
 
 
+- (void)logErrorMessage:(NSString *)errorMessage {
+    
+    // TODO: need a method in owner's protocol
+    [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage numType:STMLogMessageTypeError];
+    
+}
+
 - (void)tryDownloadEntityName:(NSString *)entityName {
     
     if (!self.downloadingState) {
@@ -173,10 +182,7 @@
     
     if (errorMessage) {
         
-        // TODO: need a method in owner's protocol
-        
-        NSString *logMessage = [NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+        [self logErrorMessage:[NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage]];
         
     }
     
@@ -210,14 +216,10 @@
 - (void)receivingDidFinishWithError:(NSString *)errorString {
     
     if (errorString) {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
-        
+        [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
     }
     
-    NSLog(@"receivingDidFinish");
+    NSLogMethodName;
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
@@ -232,7 +234,7 @@
     
     if (!entityName) {
         NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", entityName];
-        return [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+        return [self logErrorMessage:logMessage];
     }
         
     if (!responseData.count) {
