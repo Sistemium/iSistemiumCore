@@ -1114,7 +1114,7 @@
     
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
-               name:@"entitiesReceivingDidFinish"
+               name:NOTIFICATION_SYNCER_RECEIVED_ENTITIES
              object:nil];
     
     [nc addObserver:self

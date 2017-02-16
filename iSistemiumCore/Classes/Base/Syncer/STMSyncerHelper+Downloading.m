@@ -64,27 +64,21 @@
 
 #pragma mark - STMDataDownloading
 
-- (void)startDownloading {
-    [self startDownloading:nil];
+- (id <STMDataSyncingState>)startDownloading {
+    return [self startDownloading:nil];
 }
 
-- (void)startDownloading:(NSArray <NSString *> *)entitiesNames {
+- (id <STMDataSyncingState>)startDownloading:(NSArray <NSString *> *)entitiesNames {
     
     @synchronized (self) {
         
-        if (self.downloadingState) return;
+        if (self.downloadingState) return self.downloadingState;
 
         NSDictionary *settings = [self.session.settingsController currentSettingsForGroup:@"syncer"];
         NSUInteger fetchLimit = [settings[@"fetchLimit"] integerValue];
         
         self.downloadingState = [[STMDataDownloadingState alloc] initWithFetchLimit:fetchLimit];
 
-    }
-    
-//    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    [self receiveStarted];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
         if (!entitiesNames || [entitiesNames containsObject:@"STMEntity"]) {
             
             self.downloadingState.entityCount = 1;
@@ -99,7 +93,11 @@
             [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
             
         }
-    });
+        
+        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
+        
+        return self.downloadingState;
+    }
     
 }
 
@@ -133,9 +131,6 @@
 
 #pragma mark - private methods
 
-- (void)receiveStarted {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED userInfo:nil];
-}
 
 - (void)checkConditionForReceivingEntityWithName:(NSString *)entityName {
     
@@ -266,7 +261,7 @@
     self.downloadingState.entitySyncNames = entitiesNames;
     self.downloadingState.entityCount = entitiesNames.count;
     
-    [self postAsyncMainQueueNotification:@"entitiesReceivingDidFinish" userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
     
     [self checkConditionForReceivingEntityWithName:self.downloadingState.entitySyncNames.firstObject];
  

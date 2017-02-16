@@ -17,8 +17,8 @@
 @property (readonly) id <STMDataSyncingState> downloadingState;
 @property (nonatomic, weak) id <STMDataDownloadingOwner> dataDownloadingOwner;
 
-- (void)startDownloading;
-- (void)startDownloading:(NSArray <NSString *> *)entitiesNames;
+- (id <STMDataSyncingState>)startDownloading;
+- (id <STMDataSyncingState>)startDownloading:(NSArray <NSString *> *)entitiesNames;
 
 - (void)stopDownloading:(NSString *)stopMessage;
 
