@@ -233,6 +233,7 @@
     if (!self.subscriptionId) return;
     NSLog(@"subscriptionId: %@", self.subscriptionId);
     [self.persistenceDelegate cancelSubscription:self.subscriptionId];
+    self.subscriptionId = nil;
 }
 
 - (void)NSLogSettings {
