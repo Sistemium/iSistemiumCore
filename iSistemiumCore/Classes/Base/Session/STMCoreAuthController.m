@@ -491,14 +491,16 @@
 }
 
 - (void)logout {
+
+    STMCoreSessionManager *sessionManager = [self sessionManager];
+    
+    [sessionManager.currentSession.syncer prepareToDestroy];
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"logout"
                                              numType:STMLogMessageTypeImportant];
 
     self.controllerState = STMAuthEnterPhoneNumber;
     
-    STMCoreSessionManager *sessionManager = [self sessionManager];
-
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:@"notAuthorized"
                                                   object:sessionManager.currentSession.syncer];

@@ -65,6 +65,8 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 - (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value;
 
+- (void)prepareToDestroy;
+
 @end
 
 

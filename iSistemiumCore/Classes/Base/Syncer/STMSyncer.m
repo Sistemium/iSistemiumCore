@@ -95,7 +95,9 @@
 
 - (void)removeObservers {
     [self.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    self.entitySubscriptionID = nil;
+    [self unsubscribeFromUnsyncedObjects];
+    [super removeObservers];
 }
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
@@ -410,8 +412,8 @@
 
         [self.socketTransport closeSocket];
         
-        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-        self.syncerState = STMSyncerIdle;
+//        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
+//        self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
         self.isRunning = NO;
@@ -514,7 +516,7 @@
 
 
 - (void)checkSocket {
-    [self.socketTransport checkSocket];
+    if (self.isRunning) [self.socketTransport checkSocket];
 }
 
 - (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler {
@@ -862,6 +864,8 @@
 }
 
 - (void)saveSendDate {
+    
+    if (!self.session) return;
     
     NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
     NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
