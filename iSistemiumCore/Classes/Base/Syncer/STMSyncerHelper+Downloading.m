@@ -81,7 +81,7 @@
     
 }
 
-- (void)stopDownloading:(NSString *)stopMessage {
+- (void)stopDownloading {
     
     NSLogMethodName;
     [self receivingDidFinishWithError:nil];
@@ -114,21 +114,8 @@
 }
 
 - (void)tryDownloadEntityName:(NSString *)entityName {
-    
-    if (!self.downloadingState) {
-        // TODO: call finish download
-        return;
-    }
 
     NSLog(@"tryDownloadEntityName: %@", entityName);
-    
-    // TODO: not sure it is needed
-    if (![self.dataDownloadingOwner downloadingTransportIsReady]) {
-        
-        [self receivingDidFinishWithError:@"socket transport is not ready"];
-        return;
-        
-    }
     
     STMEntity *entity = self.stcEntities[entityName];
     
@@ -167,7 +154,6 @@
     }
     
     [self receivingDidFinishWithError:nil];
-
     
 }
 

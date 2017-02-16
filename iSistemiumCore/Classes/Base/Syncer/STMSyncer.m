@@ -460,7 +460,7 @@
     [self unsubscribeFromUnsyncedObjects];
     
     if (self.isReceivingData) {
-        [self.dataDownloadingDelegate stopDownloading:@"socketLostConnection"];
+        [self.dataDownloadingDelegate stopDownloading];
     }
     
     if (self.isDefantomizing) {
@@ -761,10 +761,6 @@
 
 #pragma mark - STMDataDownloadingOwner
 
-- (BOOL)downloadingTransportIsReady {
-    return [self transportIsReady];
-}
-
 - (void)dataDownloadingFinished {
     
     if (self.needRepeatDownload) {
@@ -795,6 +791,10 @@
 }
 
 - (void)receiveData:(NSString *)entityName offset:(NSString *)offset {
+    
+    if (![self.socketTransport isReady]) {
+        return [self.dataDownloadingDelegate stopDownloading];
+    }
     
     NSUInteger fetchLimit = [self.settings[@"fetchLimit"] integerValue];
     

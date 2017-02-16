@@ -272,7 +272,7 @@
         
         NSLog(@"testSync expectation handler after %f seconds", -[startedAt timeIntervalSinceNow]);
         
-        [self.downloadingDelegate stopDownloading:@"stopDownloadingTest"];
+        [self.downloadingDelegate stopDownloading];
         XCTAssertNil(self.downloadingDelegate.downloadingState);
         
         [self downloadWithTransportIsBrokenInTheMiddle];

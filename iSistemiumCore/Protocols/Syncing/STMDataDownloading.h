@@ -20,7 +20,7 @@
 - (id <STMDataSyncingState>)startDownloading;
 - (id <STMDataSyncingState>)startDownloading:(NSArray <NSString *> *)entitiesNames;
 
-- (void)stopDownloading:(NSString *)stopMessage;
+- (void)stopDownloading;
 
 - (void)dataReceivedSuccessfully:(BOOL)success
                       entityName:(NSString *)entityName

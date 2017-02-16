@@ -13,8 +13,6 @@
 - (void)receiveData:(NSString *)entityName
              offset:(NSString *)offset;
 
-- (BOOL)downloadingTransportIsReady;
-
 - (void)dataDownloadingFinished;
 
 
