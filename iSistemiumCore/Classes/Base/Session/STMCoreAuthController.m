@@ -16,6 +16,7 @@
 #import "STMFunctions.h"
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
+#import "STMUserDefaults.h"
 
 #import "STMClientDataController.h"
 
@@ -40,7 +41,6 @@
 @property (nonatomic, strong) NSString *requestID;
 @property (nonatomic, strong) NSString *entityResource;
 @property (nonatomic, strong) NSString *socketURL;
-
 
 @end
 

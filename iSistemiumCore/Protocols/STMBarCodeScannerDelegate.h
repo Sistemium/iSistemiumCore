@@ -10,6 +10,8 @@
 #import <UIKit/UIKit.h>
 
 #import "STMCoreBarCodeController.h"
+#import "STMBarCodeScan.h"
+#import "STMBarCodeType.h"
 
 @class STMBarCodeScanner;
 

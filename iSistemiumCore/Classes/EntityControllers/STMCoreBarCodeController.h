@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreController.h"
+#import "STMBarCodeType.h"
 
 typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
     STMBarCodeTypeUnknown,

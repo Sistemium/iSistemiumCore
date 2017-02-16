@@ -9,6 +9,8 @@
 #import "STMLogger+Private.h"
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
+#import "STMUserDefaults.h"
+#import "STMLogMessage.h"
 
 @implementation STMLogger (Logger)
 

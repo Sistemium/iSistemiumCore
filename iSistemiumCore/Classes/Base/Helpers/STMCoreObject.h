@@ -21,4 +21,13 @@
                       object:(id)anObject
                     userInfo:(NSDictionary *)aUserInfo;
 
+- (void)addObserver:(id)anObserver
+           selector:(SEL)aSelector
+               name:(NSNotificationName)aName;
+
+- (void)observeNotification:(NSNotificationName)notificationName
+                   selector:(SEL)aSelector;
+
+- (void)removeObservers;
+
 @end

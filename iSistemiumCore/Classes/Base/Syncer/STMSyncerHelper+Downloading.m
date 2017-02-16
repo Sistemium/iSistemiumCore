@@ -13,6 +13,8 @@
 
 #import "STMClientEntityController.h"
 #import "STMEntityController.h"
+#import "STMLogger.h"
+#import "STMFunctions.h"
 
 @interface STMDataDownloadingState ()
 

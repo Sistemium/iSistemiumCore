@@ -25,7 +25,7 @@
 
 #import "STMCoreAppDelegate.h"
 
-//#import "STMSocketController.h"
+#import "STMUserDefaults.h"
 
 
 @interface STMCoreRootTBC () <UITabBarControllerDelegate, UIAlertViewDelegate>

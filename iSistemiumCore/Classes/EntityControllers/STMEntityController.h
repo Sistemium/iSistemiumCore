@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreController.h"
+#import "STMEntity.h"
 
 #define STM_ENTITY_NAME @"STMEntity"
 

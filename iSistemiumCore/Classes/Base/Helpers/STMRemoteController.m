@@ -9,7 +9,7 @@
 #import "STMRemoteController.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
-
+#import "STMSyncer.h"
 
 @implementation STMRemoteController
 

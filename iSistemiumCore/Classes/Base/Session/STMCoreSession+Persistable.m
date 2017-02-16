@@ -10,6 +10,7 @@
 #import "STMPersister+Async.h"
 
 #import "STMCoreAuthController.h"
+#import "STMSyncer.h"
 
 @implementation STMCoreSession (Persistable)
 

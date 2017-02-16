@@ -6,28 +6,24 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreObject.h"
+#import "STMCoreAuth.h"
 #import "STMDocument.h"
-#import "STMSyncer.h"
-#import "STMCoreSession.h"
-
-#import "STMCoreNS.h"
-
-#import "STMFunctions.h"
-#import "STMConstants.h"
-
-#import "STMCoreAuthController.h"
-
-#import "STMCoreDataModel.h"
+#import "STMSessionManagement.h"
 #import "STMPersistingFullStack.h"
+#import "STMCoreUserDefaults.h"
+#import "STMFunctions.h"
 
-@interface STMCoreController : NSObject
+@interface STMCoreController : STMCoreObject
 
-+ (STMCoreSession *)session;
++ (id <STMSession>)session;
 
 + (STMDocument *)document;
 
 + (id <STMPersistingFullStack>) persistenceDelegate;
-+ (STMSyncer *)syncer;
+
+- (id <STMCoreAuth>)authController;
+- (id <STMCoreUserDefaults>)userDefaults;
++ (id)userDefaults;
 
 @end

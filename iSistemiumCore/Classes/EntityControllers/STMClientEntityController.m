@@ -48,8 +48,8 @@
     if (result.count > 1) {
         
         NSString *logMessage = [NSString stringWithFormat:@"more than one clientEntity with name %@", name];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
+        [self.session.logger saveLogMessageWithText:logMessage
+                                            numType:STMLogMessageTypeError];
         
     }
     

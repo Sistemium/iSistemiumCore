@@ -7,6 +7,8 @@
 //
 
 #import "STMCoreController.h"
+#import "STMCoreLocation.h"
+#import <CoreLocation/CoreLocation.h>
 
 @interface STMLocationController : STMCoreController
 

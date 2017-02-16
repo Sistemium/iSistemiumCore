@@ -18,6 +18,7 @@
 #import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
 
+#import "STMCorePicture.h"
 
 @implementation STMPersister (CoreData)
 

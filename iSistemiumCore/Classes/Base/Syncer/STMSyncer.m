@@ -747,14 +747,12 @@
     
     if (!self.session.uid) return;
     
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
     NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
     
     NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
     
-    [defaults setObject:receiveDateString forKey:key];
-    [defaults synchronize];
+    [self.userDefaults setObject:receiveDateString forKey:key];
+    [self.userDefaults synchronize];
     
 }
 
@@ -865,13 +863,11 @@
 
 - (void)saveSendDate {
     
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
     NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
     NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
     
-    [defaults setObject:sendDateString forKey:key];
-    [defaults synchronize];
+    [self.userDefaults setObject:sendDateString forKey:key];
+    [self.userDefaults synchronize];
     
 }
 

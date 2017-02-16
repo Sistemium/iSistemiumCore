@@ -14,8 +14,8 @@
 #import "STMCoreSettingsController.h"
 #import "STMCoreLocationTracker.h"
 #import "STMCoreBatteryTracker.h"
-#import "STMSyncer.h"
 #import "STMModelling.h"
+#import "STMSyncer.h"
 
 @interface STMCoreSession : NSObject <STMSession>
 
@@ -37,8 +37,8 @@
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) NSDictionary *defaultSettings;
 @property (nonatomic, strong) NSDictionary *startSettings;
-@property (nonatomic, strong) STMSyncer *syncer;
 
+@property (nonatomic,strong) STMSyncer *syncer;
 
 + (instancetype)initWithUID:(NSString *)uid
                      iSisDB:(NSString *)iSisDB

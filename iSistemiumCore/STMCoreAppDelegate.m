@@ -26,6 +26,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "iSistemiumCore-Swift.h"
 
+#import "STMUserDefaults.h"
 
 @implementation STMCoreAppDelegate
 

@@ -7,7 +7,7 @@
 //
 
 #import "STMCoreController.h"
-
+#import "STMCorePicture.h"
 
 @interface STMCorePicturesController : STMCoreController
 

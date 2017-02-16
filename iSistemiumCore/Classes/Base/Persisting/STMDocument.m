@@ -9,6 +9,7 @@
 #import "STMDocument.h"
 #import "STMCoreObjectsController.h"
 #import "STMFunctions.h"
+#import "STMLogger.h"
 
 @interface STMDocument()
 

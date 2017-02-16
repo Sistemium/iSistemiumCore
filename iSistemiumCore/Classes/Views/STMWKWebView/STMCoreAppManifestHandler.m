@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreAppManifestHandler.h"
+#import "STMCoreAuthController.h"
 
 
 #define LOCAL_HTML_DIR @"localHTML"
@@ -18,7 +19,6 @@
 #define MANIFEST_CACHE_LINE @"CACHE:"
 #define MANIFEST_NETWORK_LINE @"NETWORK:"
 #define MANIFEST_FALLBACK_LINE @"FALLBACK:"
-
 
 @interface STMCoreAppManifestHandler()
 

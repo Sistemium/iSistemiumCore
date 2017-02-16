@@ -11,7 +11,7 @@
 #import "STMRequestAuthenticatable.h"
 #import "STMDocument.h"
 #import "STMPersistingFullStack.h"
-
+#import "STMSocketConnection.h"
 
 typedef NS_ENUM(NSInteger, STMSyncerState) {
     STMSyncerIdle,
@@ -57,7 +57,14 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @protocol STMSyncer <NSObject>
 
 @property (nonatomic) STMSyncerState syncerState;
+@property (readonly) BOOL transportIsReady;
+@property (readonly) BOOL isReceivingData;
+@property (readonly) BOOL isSendingData;
+
 - (void) setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler;
+
+- (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value;
+
 @end
 
 

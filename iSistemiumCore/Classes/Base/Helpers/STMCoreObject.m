@@ -32,4 +32,23 @@
     [self postAsyncMainQueueNotification:aName userInfo:nil];
 }
 
+
+- (void)addObserver:(id)anObserver selector:(SEL)aSelector name:(NSNotificationName)aName {
+    // TODO: remember observers to remove them in dealloc
+    return [self.notificationCenter addObserver:anObserver selector:aSelector name:aName object:self];
+}
+
+- (void)observeNotification:(NSNotificationName)notificationName selector:(SEL)aSelector {
+    return [self.notificationCenter addObserver:self selector:aSelector name:notificationName object:nil];
+}
+
+
+- (void)removeObservers {
+    [self.notificationCenter removeObserver:self];
+}
+
+- (void)dealloc {
+    [self removeObservers];
+}
+
 @end

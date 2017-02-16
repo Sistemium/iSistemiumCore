@@ -48,7 +48,7 @@
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMCoreAuthController authController]];
+             object:self.authController];
 
 }
 
@@ -60,7 +60,7 @@
 
 - (void)authStateChanged {
     
-    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
+    if (self.authController.controllerState != STMAuthSuccess) {
         [self flushSelf];
     }
     
@@ -227,7 +227,7 @@
         NSArray *duplicates = [result subarrayWithRange:NSMakeRange(1, result.count - 1)];
 
         NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", name, @(duplicates.count)];
-        [[STMLogger sharedLogger] saveLogMessageWithText:message type:@"error"];
+        [self.session.logger saveLogMessageWithText:message type:@"error"];
 
         NSError *error;
         NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
@@ -244,7 +244,7 @@
     }];
 
     if (!totalDuplicates) {
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"stc.entity duplicates not found"];
+        [self.session.logger saveLogMessageWithText:@"stc.entity duplicates not found"];
     }
 
 }

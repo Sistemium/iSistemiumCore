@@ -15,9 +15,9 @@
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
 
-#import "STMCoreObject.h"
+#import "STMCoreController.h"
 
-@interface STMSyncer : STMCoreObject <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
+@interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
 @property (nonatomic, weak) id <STMSession> session;
 
@@ -28,9 +28,9 @@
 
 @property (nonatomic) NSTimeInterval syncInterval;
 @property (nonatomic, strong) NSMutableDictionary *stcEntities;
-@property (nonatomic) BOOL transportIsReady;
-@property (nonatomic) BOOL isReceivingData;
-@property (nonatomic) BOOL isSendingData;
+@property (nonatomic,readwrite) BOOL transportIsReady;
+@property (nonatomic,readwrite) BOOL isReceivingData;
+@property (nonatomic,readwrite) BOOL isSendingData;
 
 
 - (void)checkSocket;

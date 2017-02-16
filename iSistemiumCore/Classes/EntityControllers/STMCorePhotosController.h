@@ -7,6 +7,8 @@
 //
 
 #import "STMCoreController.h"
+#import "STMCorePhoto.h"
+#import "STMCoreLocationTracker.h"
 
 @interface STMCorePhotosController : STMCoreController
 

@@ -8,41 +8,33 @@
 
 #import "STMCoreController.h"
 #import "STMCoreSessionManager.h"
+#import "STMCoreAuthController.h"
+#import "STMUserDefaults.h"
 
 @implementation STMCoreController
 
 + (STMCoreSession *)session {
-    
     return [STMCoreSessionManager sharedManager].currentSession;
-    
 }
 
 #warning have to remove document property after full implementation of persister
 + (STMDocument *)document {
-    
     return [self session].document;
-    
 }
 
 + (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
-    
     return [self session].persistenceDelegate;
-    
 }
 
-+ (STMSyncer *)syncer {
-    
-    return [self session].syncer;
-    
+- (id)authController {
+    return [STMCoreAuthController authController];
 }
 
-- (void)removeObservers {
-    // will be overridden by ancestors
+- (id)userDefaults {
+    return [STMUserDefaults standardUserDefaults];
 }
 
-- (void)dealloc {
-    [self removeObservers];
-    NSLog(@"%@", [self class]);
++ (id)userDefaults {
+    return [STMUserDefaults standardUserDefaults];
 }
-
 @end

@@ -12,7 +12,6 @@
 #import "STMCoreSession.h"
 
 #import "STMCoreLocationTracker.h"
-#import "STMSyncer.h"
 #import "STMEntityController.h"
 #import "STMCorePicturesController.h"
 
@@ -26,6 +25,7 @@
 
 #import "iSistemiumCore-Swift.h"
 
+#import "STMUserDefaults.h"
 
 @interface STMProfileVC () <UIAlertViewDelegate, UIActionSheetDelegate>
 
@@ -57,7 +57,6 @@
 @property (nonatomic) float totalEntityCount;
 @property (nonatomic) int previousNumberOfObjects;
 
-@property (nonatomic, strong) STMSyncer *syncer;
 @property (nonatomic, strong) Reachability *internetReachability;
 
 @property (nonatomic) BOOL downloadAlertWasShown;
@@ -82,12 +81,16 @@
     return [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 }
 
-- (STMSyncer *)syncer {
-    return (STMSyncer *)[STMCoreSessionManager sharedManager].currentSession.syncer;
+- (id <STMSyncer>)syncer {
+    return [STMCoreSessionManager sharedManager].currentSession.syncer;
 }
 
 - (STMCoreSettingsController *)settingsController {
     return [[STMCoreSessionManager sharedManager].currentSession settingsController];
+}
+
+- (id <STMCoreUserDefaults>)userDefaults {
+    return [STMUserDefaults standardUserDefaults];
 }
 
 - (NSString *)requestLocationServiceAuthorization {
@@ -472,13 +475,11 @@
     
     if (!userID) return;
     
-    STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-    
     NSString *key = [@"sendDate" stringByAppendingString:userID];
-    NSString *sendDateString = [defaults objectForKey:key];
+    NSString *sendDateString = [self.userDefaults objectForKey:key];
     
     key = [@"receiveDate" stringByAppendingString:userID];
-    NSString *receiveDateString = [defaults objectForKey:key];
+    NSString *receiveDateString = [self.userDefaults objectForKey:key];
     
     self.sendDateLabel.text = (sendDateString) ? sendDateString : nil;
     self.receiveDateLabel.text = (receiveDateString) ? receiveDateString : nil;

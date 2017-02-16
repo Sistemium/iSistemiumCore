@@ -69,7 +69,8 @@
 }
 
 + (NSString *)locationServiceStatus {
-    return [[self session].locationTracker locationServiceStatus];
+#warning not implemented
+    return @"[[self session].locationTracker locationServiceStatus]";
 }
 
 + (NSString *)tokenHash {
@@ -264,11 +265,10 @@
             
             if (appDownloadUrlSetting) {
                 
-                STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-                [defaults setObject:@YES forKey:@"newAppVersionAvailable"];
-                [defaults setObject:availableVersion forKey:@"availableVersion"];
-                [defaults setObject:appDownloadUrlSetting[@"value"] forKey:@"appDownloadUrl"];
-                [defaults synchronize];
+                [self.userDefaults setObject:@YES forKey:@"newAppVersionAvailable"];
+                [self.userDefaults setObject:availableVersion forKey:@"availableVersion"];
+                [self.userDefaults setObject:appDownloadUrlSetting[@"value"] forKey:@"appDownloadUrl"];
+                [self.userDefaults synchronize];
                 
                 NSDictionary *userInfo = @{@"availableVersion"  : availableVersion,
                                            @"appDownloadUrl"    : appDownloadUrlSetting[@"value"]};
@@ -283,11 +283,10 @@
         
     } else {
         
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        [defaults setObject:@NO forKey:@"newAppVersionAvailable"];
-        [defaults removeObjectForKey:@"availableVersion"];
-        [defaults removeObjectForKey:@"appDownloadUrl"];
-        [defaults synchronize];
+        [self.userDefaults setObject:@NO forKey:@"newAppVersionAvailable"];
+        [self.userDefaults removeObjectForKey:@"availableVersion"];
+        [self.userDefaults removeObjectForKey:@"appDownloadUrl"];
+        [self.userDefaults synchronize];
         
     }
 

@@ -7,6 +7,8 @@
 //
 
 #import "STMCoreController.h"
+#import "STMMessagePicture.h"
+
 
 @interface STMMessageController : STMCoreController
 

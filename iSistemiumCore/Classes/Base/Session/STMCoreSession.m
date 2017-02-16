@@ -14,13 +14,15 @@
 #import "STMSyncerHelper+Downloading.h"
 
 #import "STMPersisterFantoms.h"
+#import "STMSyncer.h"
 
 @interface STMCoreSession()
-
 
 @end
 
 @implementation STMCoreSession
+
+@synthesize syncer =_syncer;
 
 + (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
     
@@ -84,7 +86,7 @@
                     for (STMCoreTracker *tracker in self.trackers.allValues) {
                         [tracker prepareToDestroy];
                     }
-                    [self.syncer prepareToDestroy];
+//                    [self.syncer prepareToDestroy];
                     [self.document.managedObjectContext reset];
                     [self.manager removeSessionForUID:self.uid];
                     

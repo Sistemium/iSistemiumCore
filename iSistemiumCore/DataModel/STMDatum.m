@@ -12,7 +12,7 @@
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
 #import "STMEntityController.h"
-
+#import "STMUserDefaults.h"
 
 @implementation STMDatum
 

@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreController.h"
+#import "STMClientEntity.h"
 
 @interface STMClientEntityController : STMCoreController
 

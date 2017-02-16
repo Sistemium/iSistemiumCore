@@ -12,6 +12,9 @@
 
 #import "STMMessageVC.h"
 #import "STMCoreRootTBC.h"
+#import "STMCoreAuthController.h"
+#import "STMFetchRequest.h"
+#import "STMFunctions.h"
 
 @interface STMMessageController() <NSFetchedResultsControllerDelegate>
 
