@@ -17,33 +17,11 @@
 @interface STMDataDownloadingState ()
 
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
-@property (nonatomic) NSUInteger entityCount;
-@property (nonatomic) BOOL entitiesWasUpdated;
 
 @end
 
 
 @implementation STMDataDownloadingState
-
-- (instancetype)init {
-    
-    self = [super init];
-    
-    self.entitySyncNames = [NSMutableArray array];
-    
-    return self;
-}
-
-- (void)setEntityCount:(NSUInteger)entityCount {
-
-    _entityCount = entityCount;
-    
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
-                                userInfo:@{@"countdownValue": @(entityCount)}];
-    
-}
-
-
 @end
 
 
@@ -91,12 +69,10 @@
             self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
             
         }
-
-        self.downloadingState.entityCount = self.downloadingState.entitySyncNames.count;
         
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
 
-        NSLog(@"will download %@ entities", @(self.downloadingState.entityCount));
+        NSLog(@"will download %@ entities", @(self.downloadingState.entitySyncNames.count));
         
         [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
         
@@ -107,10 +83,8 @@
 
 - (void)stopDownloading:(NSString *)stopMessage {
     
-    [self entityCountDecreaseWithError:stopMessage
-                       finishReceiving:YES];
-    
-    self.downloadingState = nil;
+    NSLogMethodName;
+    [self receivingDidFinishWithError:nil];
     
 }
 
@@ -122,11 +96,7 @@
         
     } else {
         
-        if (self.downloadingState.entityCount > 0) {
-            [self entityCountDecreaseWithError:error.localizedDescription];
-        } else {
-            [self receivingDidFinishWithError:error.localizedDescription];
-        }
+        [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
         
     }
 
@@ -170,43 +140,31 @@
     
 }
 
-- (void)entityCountDecrease {
-    [self entityCountDecreaseWithError:nil];
+- (void)doneDownloadingEntityName:(NSString *)entityName {
+    [self doneDownloadingEntityName:entityName errorMessage:nil];
 }
 
-- (void)entityCountDecreaseWithError:(NSString *)errorMessage {
-    [self entityCountDecreaseWithError:errorMessage finishReceiving:NO];
-}
-
-- (void)entityCountDecreaseWithError:(NSString *)errorMessage finishReceiving:(BOOL)finishReceiving {
+- (void)doneDownloadingEntityName:(NSString *)entityName errorMessage:(NSString *)errorMessage {
     
     if (errorMessage) {
-        
-        [self logErrorMessage:[NSString stringWithFormat:@"entityCountDecreaseWithError: %@", errorMessage]];
-        
+        [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
     }
     
-    if (finishReceiving || --self.downloadingState.entityCount) {
+    @synchronized (self) {
         
-        NSLog(@"remain %@ entities to receive", @(self.downloadingState.entityCount));
+        [self.downloadingState.entitySyncNames removeObject:entityName];
         
-        // TODO: pass here entityName to avoid async problems
+        NSUInteger remainCount = self.downloadingState.entitySyncNames.count;
+        NSLog(@"remain %@ entities to receive", @(remainCount));
         
-        NSString *entityName = self.downloadingState.entitySyncNames.firstObject;
+        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+                                    userInfo:@{@"countdownValue": @(remainCount)}];
         
-        if (entityName) {
-            [self.downloadingState.entitySyncNames removeObject:entityName];
-        }
-        
-        if (self.downloadingState.entitySyncNames.firstObject) {
-            
+        if (self.downloadingState && self.downloadingState.entitySyncNames.count) {
             return [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
-            
         }
-            
-    }
         
-    NSLog(@"remain %@ entities to receive", @(self.downloadingState.entityCount));
+    }
     
     [self receivingDidFinishWithError:nil];
 
@@ -233,18 +191,17 @@
 - (void)parseFindAllAckResponseData:(NSArray *)responseData entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
     if (!entityName) {
-        NSString *logMessage = [NSString stringWithFormat:@"ERROR: unknown entity response: %@", entityName];
-        return [self logErrorMessage:logMessage];
+        return [self receivingDidFinishWithError:@"called parseFindAllAckResponseData with empty entityName"];
     }
         
     if (!responseData.count) {
         NSLog(@"    %@: have no new data", entityName);
-        return [self entityCountDecrease];
+        return [self doneDownloadingEntityName:entityName];
     }
         
     if (!offset) {
         NSLog(@"    %@: receive data w/o offset", entityName);
-        return [self entityCountDecrease];
+        return [self doneDownloadingEntityName:entityName];
     }
     
     NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
@@ -256,7 +213,7 @@
         
     }).catch(^(NSError *error){
         
-        [self entityCountDecreaseWithError:error.localizedDescription];
+        [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
         
     });
     
@@ -267,6 +224,11 @@
     
     NSLog(@"    %@: get %@ objects", entityName, @(result.count));
     
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+                                userInfo:@{@"count": @(result.count),
+                                           @"entityName": entityName
+                                           }];
+    
     if (result.count < pageSize) {
         
         NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
@@ -275,18 +237,13 @@
         
         [STMClientEntityController clientEntityWithName:entity.name setETag:offset];
         
-        [self entityCountDecrease];
+        [self doneDownloadingEntityName:entityName];
         
     } else {
         
         [self.dataDownloadingOwner receiveData:entityName offset:offset];
         
     }
-    
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
-                                userInfo:@{@"count": @(result.count),
-                                           @"entityName": entityName
-                                           }];
     
 }
 
