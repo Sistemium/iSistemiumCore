@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
+#import "STMCoreControlling.h"
 #import "STMCoreObject.h"
 #import "STMCoreAuth.h"
 #import "STMDocument.h"
@@ -14,7 +15,7 @@
 #import "STMCoreUserDefaults.h"
 #import "STMFunctions.h"
 
-@interface STMCoreController : STMCoreObject
+@interface STMCoreController : STMCoreObject <STMCoreControlling>
 
 + (id <STMSession>)session;
 

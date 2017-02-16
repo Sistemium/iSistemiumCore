@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMCoreControlling.h"
 
 #import "STMRequestAuthenticatable.h"
 #import "STMDocument.h"
@@ -103,6 +104,8 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
                  startSettings:(NSDictionary *)startSettings;
 
 - (BOOL)isRunningTests;
+
+- (id <STMCoreControlling>)controllerWithName:(NSString *)name;
 
 @end
 
