@@ -17,6 +17,7 @@
 #import "STMSetting.h"
 #import "STMFunctions.h"
 #import "STMCoreObjectsController.h"
+#import "STMCoreSession.h"
 
 #define DEVICE_UUID_KEY @"deviceUUID"
 
@@ -69,8 +70,7 @@
 }
 
 + (NSString *)locationServiceStatus {
-#warning not implemented
-    return @"[[self session].locationTracker locationServiceStatus]";
+    return [(STMCoreSession *)self.session locationTracker].locationServiceStatus;
 }
 
 + (NSString *)tokenHash {
