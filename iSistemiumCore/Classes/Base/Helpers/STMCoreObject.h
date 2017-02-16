@@ -12,6 +12,8 @@
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 
+- (void)postAsyncMainQueueNotification:(NSNotificationName)aName;
+
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName
                               userInfo:(NSDictionary *)aUserInfo;
 

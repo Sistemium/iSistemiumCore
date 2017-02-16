@@ -28,4 +28,8 @@
     
 }
 
+- (void)postAsyncMainQueueNotification:(NSNotificationName)aName {
+    [self postAsyncMainQueueNotification:aName userInfo:nil];
+}
+
 @end

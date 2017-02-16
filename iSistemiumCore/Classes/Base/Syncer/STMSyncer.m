@@ -394,7 +394,7 @@
     
     self.isRunning = YES;
     
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY];
 
 }
 
@@ -739,7 +739,7 @@
 
 - (void)dataDownloadingFinished {
     
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_FINISHED];
 
     [self turnOffNetworkActivityIndicator];
 
@@ -758,19 +758,10 @@
 
 - (void)receiveData:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
-    __block BOOL blockIsComplete = NO;
-    
     NSDictionary *options = @{STMPersistingOptionPageSize   : @(pageSize),
                               STMPersistingOptionOffset     : offset};
     
     [self.socketTransport findAllAsync:entityName predicate:nil options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
-        
-        if (blockIsComplete) {
-            NSLog(@"completionHandler for %@ %@ already complete", entityName, offset);
-            return;
-        }
-        
-        blockIsComplete = YES;
         
         NSString *offset = headers[STMPersistingOptionOffset];
         NSUInteger pageSize = [headers[STMPersistingOptionPageSize] integerValue];
@@ -820,7 +811,7 @@
 
 - (void)sendStarted {
 
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_STARTED userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_STARTED];
 
 }
 
@@ -828,7 +819,7 @@
     
     [self saveSendDate];
     
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED];
 
 }
 
@@ -852,7 +843,7 @@
 }
 
 - (void)postObjectsSendedNotification {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED userInfo:nil];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED];
 }
 
 
