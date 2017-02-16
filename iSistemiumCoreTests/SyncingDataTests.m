@@ -309,7 +309,6 @@
     [self.downloadingDelegate startDownloading];
     
     XCTAssertNotNil(self.downloadingDelegate.downloadingState);
-
 }
 
 
@@ -323,13 +322,16 @@
         self.transportIsReady = NO;
     }
 
-    [self.downloadingDelegate dataReceivedSuccessfully:YES
-                                            entityName:entityName
-                                                result:nil
-                                                offset:offset
-                                              pageSize:0
-                                                 error:nil];
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.downloadingDelegate dataReceivedSuccessfully:YES
+                                                entityName:entityName
+                                                    result:nil
+                                                    offset:offset
+                                                  pageSize:0
+                                                     error:nil];
+
+    });
+
 }
 
 - (BOOL)downloadingTransportIsReady {
