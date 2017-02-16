@@ -60,7 +60,7 @@
 - (id)persistenceDelegate {
     
     if (!_persistenceDelegate) {
-        _persistenceDelegate = self.session.persistenceDelegate;
+        return self.session.persistenceDelegate;
     }
     
     return _persistenceDelegate;
