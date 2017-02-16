@@ -17,8 +17,9 @@
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName
                               userInfo:(NSDictionary *)aUserInfo;
 
+- (void)postNotificationName:(NSNotificationName)aName;
+
 - (void)postNotificationName:(NSNotificationName)aName
-                      object:(id)anObject
                     userInfo:(NSDictionary *)aUserInfo;
 
 - (void)addObserver:(id)anObserver

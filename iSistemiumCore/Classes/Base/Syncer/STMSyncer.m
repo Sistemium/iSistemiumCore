@@ -39,7 +39,6 @@
 @property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
 @property (nonatomic) UIBackgroundFetchResult fetchResult;
 
-@property (nonatomic,strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
 @property (nonatomic) BOOL needRepeatDownload;
 
 @end
@@ -88,8 +87,6 @@
 }
 
 - (void)removeObservers {
-    [self.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
-    self.entitySubscriptionID = nil;
     [self unsubscribeFromUnsyncedObjects];
     [super removeObservers];
 }
@@ -483,8 +480,6 @@
         
         [self.persistenceDelegate mergeSync:stcEntityName attributes:attributes options:nil error:&error];
         
-        [STMEntityController flushSelf];
-        
     } else if (![entity.url isEqualToString:self.entityResource]) {
         
         NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
@@ -493,21 +488,17 @@
         
     }
     
-    self.entitySubscriptionID = [self.persistenceDelegate observeEntity:stcEntityName predicate:nil callback:^(NSArray *data) {
-        
-        [STMEntityController flushSelf];
-        [self subscribeToUnsyncedObjects];
-        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
-        [self receiveData];
-        
-        NSLog(@"checkStcEntities got called back with %@ items", @(data.count));
-        
-    }];
+    [STMEntityController addChangesObserver:self selector:@selector(entitiesChanged)];
     
     return YES;
     
 }
 
+- (void)entitiesChanged {
+    [self subscribeToUnsyncedObjects];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
+    [self receiveData];
+}
 
 - (void)checkSocket {
     if (self.isRunning) [self.socketTransport checkSocket];

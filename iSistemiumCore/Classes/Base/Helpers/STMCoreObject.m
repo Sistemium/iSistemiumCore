@@ -15,9 +15,15 @@
 }
 
 - (void)postNotificationName:(NSNotificationName)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo {
-    
     [self.notificationCenter postNotificationName:aName object:anObject userInfo:aUserInfo];
-    
+}
+
+- (void)postNotificationName:(NSNotificationName)aName userInfo:(NSDictionary *)aUserInfo {
+    [self postNotificationName:aName object:self userInfo:aUserInfo];
+}
+
+- (void)postNotificationName:(NSNotificationName)aName {
+    [self postNotificationName:aName userInfo:nil];
 }
 
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName userInfo:(NSDictionary *)aUserInfo {
