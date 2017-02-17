@@ -110,7 +110,7 @@
     if (*error) return nil;
     
     if (!attributes) {
-        [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
+        [STMFunctions error:error withMessage:@"Empty response from the interceptor"];
         return nil;
     }
 
