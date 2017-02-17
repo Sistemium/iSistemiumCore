@@ -29,7 +29,7 @@
 
 @property (nonatomic, strong) STMModeller *modeller;
 @property (nonatomic, strong) STMScriptMessageHandler *scriptMessenger;
-@property (nonatomic, strong) id <STMScriptMessaging> scriptMessagingDelegate;
+@property (nonatomic, weak) id <STMScriptMessaging> scriptMessagingDelegate;
 @property (nonatomic, strong) STMFakePersisting *fakePerster;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, ScriptMessagingTestsExpectation *> *expectations;
