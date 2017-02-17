@@ -55,6 +55,14 @@
     XCTAssertNil(error);
     XCTAssertEqualObjects(pk2, pk1);
     
+    [testData removeObjectForKey:STMPersistingKeyPrimary];
+    
+    NSArray *testDataArray = @[testData,testData];
+    
+    [self.persister mergeManySync:entityName attributeArray:testDataArray options:nil error:&error];
+    
+    XCTAssertNil(error);
+    
     NSUInteger count = [self.persister countSync:entityName predicate:self.cleanupPredicate options:nil error:&error];
     
     XCTAssertEqual(count, 1);
