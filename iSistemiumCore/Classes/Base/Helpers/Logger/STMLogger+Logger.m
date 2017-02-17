@@ -438,7 +438,13 @@
                 if (self.lastLogMessagesArray.count > checkIndex && [[self.lastLogMessagesArray objectAtIndex:checkIndex] isEqualToDictionary:logMessageDic]) {
                     [self enqueuePossiblePatternLogMessage:logMessageDic];
                 } else {
-                    for (NSDictionary *logMessageDic in self.possiblePatternArray) [self enqueueLogMessage:logMessageDic];
+                    
+                    for (NSDictionary *logMessage in self.possiblePatternArray) {
+                        [self enqueueLogMessage:logMessage];
+                    }
+                    [self enqueueLogMessage:logMessageDic];
+                    [self.possiblePatternArray removeAllObjects];
+                    
                 }
 
             }
