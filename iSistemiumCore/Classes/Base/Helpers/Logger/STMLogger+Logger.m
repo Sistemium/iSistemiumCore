@@ -411,13 +411,22 @@
 
     if (self.patternDetected) {
         
+        self.currentPatternIndex = (++self.currentPatternIndex == self.possiblePatternArray.count) ? 0 : self.currentPatternIndex;
         
+        if (![self.possiblePatternArray[self.currentPatternIndex] isEqualToDictionary:logMessageDic]) {
+
+            self.patternDetected = NO;
+            [self enqueueLogMessage:logMessageDic];
+            [self.possiblePatternArray removeAllObjects];
+            
+        }
         
     } else {
 
         if ([self.possiblePatternArray.firstObject isEqualToDictionary:logMessageDic]) {
             
             self.patternDetected = YES;
+            self.currentPatternIndex = 0;
             
         } else {
         

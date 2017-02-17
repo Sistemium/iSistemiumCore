@@ -19,6 +19,7 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *lastLogMessagesArray;
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *possiblePatternArray;
 @property (nonatomic) BOOL patternDetected;
+@property (nonatomic) NSUInteger currentPatternIndex;
 
 
 @end
