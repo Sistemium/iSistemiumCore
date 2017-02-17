@@ -11,7 +11,10 @@
 @protocol STMPersistingMergeInterceptor
     
 - (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error;
-    
+
+@optional
+- (NSArray *)interceptedAttributeArray:(NSArray *)attributesArray options:(NSDictionary *)options error:(NSError **)error;
+
 @end
 
 

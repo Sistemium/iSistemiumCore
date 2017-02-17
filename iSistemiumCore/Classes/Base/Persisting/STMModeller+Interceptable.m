@@ -22,12 +22,24 @@
 }
 
 - (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+
+    if (options[STMPersistingOptionBypassInterceptors]) return attributes;
     
     id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     
     if (!interceptor) return attributes;
     
     return [interceptor interceptedAttributes:attributes options:options error:error];
+    
+}
+
+- (NSArray *)applyMergeInterceptors:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error {
+    
+    id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
+    
+    if (!interceptor) return attributeArray;
+    
+    return [interceptor interceptedAttributeArray:attributeArray options:options error:error];
     
 }
 

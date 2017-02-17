@@ -426,6 +426,18 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
+    attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
+    
+    if (*error) return nil;
+    
+    if (!attributeArray) {
+        // TODO: maybe empty response with no error means ignore?
+        [STMFunctions error:error withMessage:@"Empty response from the interceptor"];
+        return nil;
+    }
+    
+    options = [STMFunctions setValue:@YES forKey:STMPersistingOptionBypassInterceptors inDictionary:options];
+
     for (NSDictionary *dictionary in attributeArray) {
         
         NSDictionary *dict = [self mergeWithoutSave:entityName

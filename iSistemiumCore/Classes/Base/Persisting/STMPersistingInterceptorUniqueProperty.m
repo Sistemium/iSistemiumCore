@@ -31,4 +31,12 @@
     
 }
 
+- (NSArray *)interceptedAttributeArray:(NSArray *)attributesArray options:(NSDictionary *)options error:(NSError **)error {
+    
+    return [STMFunctions mapArray:attributesArray withBlock:^id(NSDictionary *attributes) {
+        return [self interceptedAttributes:attributes options:options error:error];
+    }];
+    
+}
+
 @end
