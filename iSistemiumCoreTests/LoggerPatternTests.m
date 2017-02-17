@@ -47,32 +47,61 @@
         
     }
 
-    NSDictionary *dic0 = @{@"test"   : @"test 0"};
-    
-    [self.logger checkMessageForRepeatingPattern:dic0];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 1);
-    XCTAssertFalse(self.logger.patternDetected);
-
-    NSDictionary *dic1 = @{@"test"   : @"test 1"};
-
-    [self.logger checkMessageForRepeatingPattern:dic1];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertFalse(self.logger.patternDetected);
-
-    [self.logger checkMessageForRepeatingPattern:dic0];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertTrue(self.logger.patternDetected);
-
+    [self createNoPattern];
+    [self createPattern];
+    [self detectPattern];
 
     NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
     NSLog(@"possiblePatternArray %@", self.logger.possiblePatternArray);
     
+}
+
+- (void)createNoPattern {
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
+    
+    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+    XCTAssertEqual(self.logger.possiblePatternArray.count, 1);
+    XCTAssertFalse(self.logger.patternDetected);
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
+    
+    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+    XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
+    XCTAssertFalse(self.logger.patternDetected);
+
+}
+
+- (void)createPattern {
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
+    
+    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+    XCTAssertEqual(self.logger.possiblePatternArray.count, 1);
+    XCTAssertFalse(self.logger.patternDetected);
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
+    
+    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
+    XCTAssertFalse(self.logger.patternDetected);
+    
+}
+
+- (void)detectPattern {
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
+    
+    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
+    XCTAssertTrue(self.logger.patternDetected);
+    
+    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
+    
+//    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
+//    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
+//    XCTAssertFalse(self.logger.patternDetected);
+
 }
 
 
