@@ -154,25 +154,13 @@
     
     if ([uploadTypes containsObject:type]) {
         
-        BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
-        
-        NSMutableDictionary *logMessageDic = [self checkMessageForRepeatingPattern:@{@"text"  : text,
-                                                                                     @"type"  : type}].mutableCopy;
+        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"  : text,
+                                                                  @"type"  : type}];
 
-        if (!logMessageDic) return;
+        if (!result) return;
         
-        if (sessionIsRunning && self.document) {
-            
-            [self createAndSaveLogMessageFromDictionary:logMessageDic];
-            
-        } else {
-            
-            logMessageDic[@"deviceCts"] = [NSDate date];
-            
-            [self performSelector:@selector(saveLogMessageDictionary:)
-                       withObject:logMessageDic
-                       afterDelay:0];
-            
+        for (NSDictionary *logMessageDic in result) {
+            [self saveLogMessageDic:logMessageDic];
         }
         
     }
@@ -388,7 +376,7 @@
 
 #pragma mark - check repeated patterns
 
-- (NSDictionary *)checkMessageForRepeatingPattern:(NSDictionary *)logMessageDic {
+- (NSArray *)checkMessageForRepeatingPattern:(NSDictionary *)logMessageDic {
 
     if (!self.lastLogMessagesArray) self.lastLogMessagesArray = @[].mutableCopy;
     if (!self.possiblePatternArray) self.possiblePatternArray = @[].mutableCopy;
@@ -402,8 +390,12 @@
             self.patternDetected = NO;
             [self enqueueLogMessage:logMessageDic];
             [self.possiblePatternArray removeAllObjects];
-            
+
+            return @[logMessageDic];
+
         }
+        
+        return nil;
         
     } else {
 
@@ -412,6 +404,8 @@
             self.patternDetected = YES;
             self.currentPatternIndex = 0;
             
+            return nil;
+            
         } else {
         
             NSUInteger lastPatternLogMessageIndex = [self.lastLogMessagesArray indexOfObject:self.possiblePatternArray.lastObject];
@@ -419,9 +413,15 @@
             if (lastPatternLogMessageIndex == NSNotFound) {
                 
                 if ([self.lastLogMessagesArray containsObject:logMessageDic]) {
+                    
                     [self enqueuePossiblePatternLogMessage:logMessageDic];
+                    return nil;
+                    
                 } else {
+                    
                     [self enqueueLogMessage:logMessageDic];
+                    return @[logMessageDic];
+                    
                 }
                 
             } else {
@@ -429,15 +429,25 @@
                 NSUInteger checkIndex = lastPatternLogMessageIndex + 1;
                 
                 if (self.lastLogMessagesArray.count > checkIndex && [[self.lastLogMessagesArray objectAtIndex:checkIndex] isEqualToDictionary:logMessageDic]) {
+                    
                     [self enqueuePossiblePatternLogMessage:logMessageDic];
+                    return nil;
+                    
                 } else {
+                    
+                    NSMutableArray *returnArray = self.possiblePatternArray.mutableCopy;
                     
                     for (NSDictionary *logMessage in self.possiblePatternArray) {
                         [self enqueueLogMessage:logMessage];
                     }
+                    
                     [self enqueueLogMessage:logMessageDic];
+                    [returnArray addObject:logMessageDic];
+                    
                     [self.possiblePatternArray removeAllObjects];
                     
+                    return returnArray;
+
                 }
 
             }
@@ -445,8 +455,6 @@
         }
         
     }
-
-    return nil;
 
 }
 

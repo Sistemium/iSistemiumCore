@@ -23,7 +23,7 @@
 - (NSString *)loggerKey;
 
 
-- (NSDictionary *)checkMessageForRepeatingPattern:(NSDictionary *)logMessageDic;
+- (NSArray *)checkMessageForRepeatingPattern:(NSDictionary *)logMessageDic;
 
 
 @end
