@@ -40,7 +40,7 @@
     
 }
 
-#warning have to remove document property after full implementation of persister
+// TODO: to remove document property after full implementation of persister
 + (STMDocument *)document {
     return [self session].document;
 }

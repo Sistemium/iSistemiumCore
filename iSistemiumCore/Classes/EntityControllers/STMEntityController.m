@@ -255,23 +255,5 @@
 
 }
 
-#pragma mark - MergeInterceptor
-
-- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
-
-    NSDictionary *entity = [self entityWithName:attributes[@"name"] error:error];
-    
-    if (*error) return nil;
-    
-    NSString *pk = entity[STMPersistingKeyPrimary];
-    
-    if (pk && ![pk isEqualToString:attributes[STMPersistingKeyPrimary]]) {
-        return [STMFunctions setValue:pk forKey:STMPersistingKeyPrimary inDictionary:attributes];
-    }
-
-    return attributes;
-    
-}
-
 
 @end

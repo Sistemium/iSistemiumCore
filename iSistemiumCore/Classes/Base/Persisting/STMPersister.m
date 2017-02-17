@@ -100,34 +100,18 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSString *settingEntityName = @"STMSetting";
     NSString *recordStatusEntityName = @"STMRecordStatus";
 
-#warning - have to think up something smarter than hardcoding entity's names
+    // TODO: implement RecordStatus with interceptor
     
     attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     
     if (*error) return nil;
     
     if (!attributes) {
+        // TODO: maybe empty response with no error means ignore?
         [STMFunctions error:error withMessage:@"Empty response from the interceptor"];
         return nil;
-    }
-
-    if ([entityName isEqualToString:settingEntityName]) {
-        
-        NSDictionary *setting = [STMSettingsController settingWithName:attributes[@"name"]
-                                                              forGroup:attributes[@"group"]];
-        
-        if (setting) {
-            
-            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
-            editedAttributes[@"id"] = setting[@"id"];
-            
-            attributes = editedAttributes;
-
-        }
-        
     }
 
     if ([entityName isEqualToString:recordStatusEntityName]) {

@@ -26,6 +26,48 @@
     XCTAssertNotNil(self.realPersister);
 }
 
+- (void)testSettingsRealInterceptor {
+    
+    NSString *entityName = @"STMSetting";
+    NSString *name = @"testSettingsRealInterceptor";
+    NSError *error;
+    
+    id interceptor = self.realPersister.beforeMergeInterceptors[entityName];
+    
+    XCTAssertNotNil(interceptor);
+    
+    [interceptor setPersistenceDelegate:self.persister];
+    
+    [self.fakePersiser beforeMergeEntityName:entityName interceptor:interceptor];
+    
+    NSMutableDictionary *testData = [[self sampleDataOf:entityName count:1][0] mutableCopy];
+    
+    testData[@"name"] = name;
+    testData[@"group"] = NSStringFromClass(self.class);
+    testData[@"value"] = self.ownerXid;
+    
+    NSString *pk1 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
+    XCTAssertNil(error);
+    
+    [testData removeObjectForKey:STMPersistingKeyPrimary];
+    
+    NSString *pk2 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(pk2, pk1);
+    
+    NSUInteger count = [self.persister countSync:entityName predicate:self.cleanupPredicate options:nil error:&error];
+    
+    XCTAssertEqual(count, 1);
+    
+    XCTAssertTrue([self.persister destroySync:entityName identifier:pk1 options:self.cleanupOptions error:&error]);
+    XCTAssertFalse([self.persister destroySync:entityName identifier:pk2 options:self.cleanupOptions error:&error]);
+    
+    [self.fakePersiser beforeMergeEntityName:entityName interceptor:nil];
+    [interceptor setPersistenceDelegate:self.realPersister];
+    
+}
+
+
 - (void)testEntityControllerInterceptor {
     
     NSString *entityName = @"STMEntity";
