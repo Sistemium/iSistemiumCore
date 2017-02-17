@@ -42,12 +42,18 @@
     
     NSMutableDictionary *testData = [[self sampleDataOf:entityName count:1][0] mutableCopy];
     
+    NSString *xid = [STMFunctions uuidString];
     testData[@"name"] = name;
+    testData[STMPersistingKeyPrimary] = xid;
     
     NSString *pk1 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
     XCTAssertNil(error);
+    
+    XCTAssertEqualObjects(pk1, xid);
+    
     NSString *pk2 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
     XCTAssertNil(error);
+    XCTAssertEqualObjects(pk2, xid);
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     

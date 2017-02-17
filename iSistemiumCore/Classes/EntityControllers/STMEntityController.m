@@ -265,7 +265,7 @@
     
     NSString *pk = entity[STMPersistingKeyPrimary];
     
-    if (![pk isEqualToString:attributes[STMPersistingKeyPrimary]]) {
+    if (pk && ![pk isEqualToString:attributes[STMPersistingKeyPrimary]]) {
         return [STMFunctions setValue:pk forKey:STMPersistingKeyPrimary inDictionary:attributes];
     }
 
