@@ -25,6 +25,6 @@
 
 - (id <STMCoreAuth>)authController;
 - (id <STMCoreUserDefaults>)userDefaults;
-+ (id)userDefaults;
++ (id <STMCoreUserDefaults>)userDefaults;
 
 @end

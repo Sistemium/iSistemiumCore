@@ -84,7 +84,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMSession <NSObject>
 
-@property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
+@property (readonly) STMDocument *document; // have to remove document property after full implementation of persister
 
 @property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
 @property (nonatomic, strong) NSString *uid;
@@ -106,6 +106,10 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 - (BOOL)isRunningTests;
 
 - (id <STMCoreControlling>)controllerWithName:(NSString *)name;
+
+@optional
+
+- (Class)locationClass;
 
 @end
 

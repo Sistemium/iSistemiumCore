@@ -133,6 +133,7 @@
     return [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"] != nil;
 }
 
+
 #pragma mark - properties classes definition (may override in subclasses)
 
 - (Class)settingsControllerClass {
@@ -255,14 +256,6 @@
 	}
     
 }
-
-
-#pragma mark - used classes
-
-- (Class)locationClass {
-    return [STMCoreLocation class];
-}
-
 
 
 @end
