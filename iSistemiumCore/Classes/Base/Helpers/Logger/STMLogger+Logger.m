@@ -391,7 +391,10 @@
             [self enqueueLogMessage:logMessageDic];
             [self.possiblePatternArray removeAllObjects];
 
-            return @[logMessageDic];
+            NSDictionary *result = @{@"type"    : @"important",
+                                     @"text"    : @"detect end of repeating pattern"};
+            
+            return @[result, logMessageDic];
 
         }
         
