@@ -8,8 +8,7 @@
 
 #import "STMPersistingTests.h"
 #import "STMPersistingIntercepting.h"
-#import "STMClientEntityController.h"
-#import "STMEntityController.h"
+#import "STMPersistingInterceptorUniqueProperty.h"
 
 @interface PersistingInterceptingTests : STMPersistingTests <STMPersistingMergeInterceptor>
 
@@ -34,9 +33,12 @@
     NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
-    id keepEntityInterceptor = self.realPersiser.beforeMergeInterceptors.dictionaryRepresentation[entityName];
+    id keepEntityInterceptor = self.realPersiser.beforeMergeInterceptors[entityName];
     
-    STMEntityController *interceptor = [STMEntityController controllerWithPersistenceDelegate:self.persister];
+    STMPersistingInterceptorUniqueProperty *interceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:self.persister];
+    
+    interceptor.entityName = entityName;
+    interceptor.propertyName = @"name";
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:interceptor];
     [self.realPersiser beforeMergeEntityName:entityName interceptor:interceptor];
