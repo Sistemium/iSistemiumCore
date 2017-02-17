@@ -13,6 +13,12 @@
 
 @implementation STMScriptMessageHandler (Private)
 
+- (void)dealloc {
+    // TODO: tests
+    NSLogMethodName;
+    [self flushSubscribedViewController];
+}
+
 #pragma mark - find objects for WKWebView
 
 - (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
@@ -401,19 +407,20 @@
     
     if (result) {
         
-        for (NSString *entityName in subscription.persisterSubscriptions) {
-            [self.persistenceDelegate cancelSubscription:subscription.persisterSubscriptions[entityName]];
+        for (NSString *subscriptionID in subscription.persisterSubscriptions) {
+            [self.persistenceDelegate cancelSubscription:subscriptionID];
         }
         
+        NSMutableSet *persisterSubscriptions = [NSMutableSet set];
+        NSDictionary *options = @{STMPersistingOptionLts:@YES};
+        
         for (NSString *entityName in subscription.entityNames) {
-            [self.persistenceDelegate observeEntity:entityName
-                                          predicate:nil
-                                            options:@{STMPersistingOptionLts:@YES}
-                                           callback:^(NSArray * _Nullable data) {
-                                               [self sendSubscribedBunchOfObjects:data
-                                                                       entityName:entityName];
-                                           }];
+            [persisterSubscriptions addObject:[self.persistenceDelegate observeEntity:entityName predicate:nil options:options callback:^(NSArray *data) {
+                [self sendSubscribedBunchOfObjects:data entityName:entityName];
+            }]];
         }
+        
+        subscription.persisterSubscriptions = persisterSubscriptions;
         
         self.subscriptions[callbackName] = subscription;
         
@@ -453,7 +460,15 @@
 }
 
 - (void) flushSubscribedViewController {
+    
+    [self.subscriptions.allValues enumerateObjectsUsingBlock:^(STMScriptMessagingSubscription *subscription, NSUInteger idx, BOOL *stop) {
+        [subscription.persisterSubscriptions enumerateObjectsUsingBlock:^(NSString *subscriptionID, BOOL *stop) {
+            [self.persistenceDelegate cancelSubscription:subscriptionID];
+        }];
+    }];
+    
     [self.subscriptions removeAllObjects];
+    
 }
 
 
