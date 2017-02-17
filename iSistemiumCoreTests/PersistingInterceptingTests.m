@@ -15,12 +15,20 @@
 
 @implementation PersistingInterceptingTests
 
++ (BOOL)needWaitSession {
+    return YES;
+}
+
 - (void)testForceSingleItem {
     
-    NSString *entityName = @"STMClentData";
+    NSString *entityName = @"STMLogMessage";
     NSError *error;
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:self];
+    [self.realPersiser beforeMergeEntityName:entityName interceptor:self];
+    
+    XCTAssertNotNil(self.persister);
+    XCTAssertNotNil(self.realPersiser);
    
     NSDictionary *testData = [self sampleDataOf:entityName count:1][0];
     
@@ -31,10 +39,12 @@
     XCTAssertEqualObjects(result[STMPersistingKeyPrimary], self.ownerXid);
     
     result = [self.persister mergeSync:entityName attributes:testData options:nil error:&error];
+    XCTAssertNil(error);
     
     // Interceptor should set the primary key to our ownerXid again
     
     XCTAssertEqualObjects(result[STMPersistingKeyPrimary], self.ownerXid);
+    XCTAssertNil(error);
     
     NSUInteger count = [self.persister countSync:entityName predicate:self.cleanupPredicate options:nil error:&error];
     
