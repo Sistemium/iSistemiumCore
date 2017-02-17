@@ -32,6 +32,7 @@
     NSString *entityName = @"STMEntity";
     NSString *name = @"EntityControllerInterceptor";
     NSError *error;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
     id keepEntityInterceptor = self.realPersiser.beforeMergeInterceptors.dictionaryRepresentation[entityName];
     
@@ -39,6 +40,9 @@
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:interceptor];
     [self.realPersiser beforeMergeEntityName:entityName interceptor:interceptor];
+    
+    [self.persister destroyAllSync:entityName predicate:predicate options:self.cleanupOptions error:&error];
+    XCTAssertNil(error);
     
     NSMutableDictionary *testData = [[self sampleDataOf:entityName count:1][0] mutableCopy];
     
@@ -50,12 +54,11 @@
     XCTAssertNil(error);
     
     XCTAssertEqualObjects(pk1, xid);
+    [testData removeObjectForKey:STMPersistingKeyPrimary];
     
     NSString *pk2 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
     XCTAssertNil(error);
     XCTAssertEqualObjects(pk2, xid);
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
     NSUInteger count = [self.persister countSync:entityName predicate:predicate options:nil error:&error];
     
