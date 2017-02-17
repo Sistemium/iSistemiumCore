@@ -13,7 +13,11 @@
 
 - (void)beforeMergeEntityName:(NSString *)entityName interceptor:(id <STMPersistingMergeInterceptor>)interceptor {
     
-    [self.beforeMergeInterceptors setObject:interceptor forKey:entityName];
+    if (interceptor) {
+        [self.beforeMergeInterceptors setObject:interceptor forKey:entityName];
+    } else {
+        [self.beforeMergeInterceptors removeObjectForKey:entityName];
+    }
     
 }
 

@@ -27,12 +27,13 @@
     XCTAssertNotNil(self.realPersiser);
 }
 
-
 - (void)testEntityControllerInterceptor {
     
     NSString *entityName = @"STMEntity";
     NSString *name = @"EntityControllerInterceptor";
     NSError *error;
+    
+    id keepEntityInterceptor = self.realPersiser.beforeMergeInterceptors.dictionaryRepresentation[entityName];
     
     STMEntityController *interceptor = [STMEntityController controllerWithPersistenceDelegate:self.persister];
     
@@ -57,6 +58,9 @@
     XCTAssertTrue([self.persister destroySync:entityName identifier:pk1 options:self.cleanupOptions error:&error]);
     XCTAssertFalse([self.persister destroySync:entityName identifier:pk2 options:self.cleanupOptions error:&error]);
     
+    [self.fakePersiser beforeMergeEntityName:entityName interceptor:nil];
+    [self.realPersiser beforeMergeEntityName:entityName interceptor:keepEntityInterceptor];
+
 }
 
 - (void)testForceSingleItem {
@@ -88,6 +92,9 @@
     // Interceptor have had provided uniqueness of the data
     
     XCTAssertEqual(count, 1);
+    
+    [self.fakePersiser beforeMergeEntityName:entityName interceptor:nil];
+    [self.realPersiser beforeMergeEntityName:entityName interceptor:nil];
     
 }
 
