@@ -1,5 +1,5 @@
 //
-//  STMWorkflowAS.h
+//  STMWorkflowAC.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 23/09/15.
@@ -8,10 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface STMWorkflowAS : UIActionSheet
+@interface STMWorkflowAC : UIAlertController
 
 @property (nonatomic, strong) NSString *workflow;
 @property (nonatomic, strong) NSString *processing;
 
++ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle;
 
 @end

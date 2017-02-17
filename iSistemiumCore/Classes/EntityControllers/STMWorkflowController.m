@@ -24,11 +24,14 @@
 
 #pragma mark - workflow action sheet
 
-+ (STMWorkflowAS *)workflowActionSheetForProcessing:(NSString *)processing inWorkflow:(NSString *)workflow withDelegate:(id <UIActionSheetDelegate>)delegate {
++ (STMWorkflowAC *)workflowActionSheetForProcessing:(NSString *)processing inWorkflow:(NSString *)workflow withHandler:(void(^)(UIAlertAction *action))handler {
     
     NSString *title = [self descriptionForProcessing:processing inWorkflow:workflow];
         
-    STMWorkflowAS *actionSheet = [[STMWorkflowAS alloc] init];
+    STMWorkflowAC *actionSheet = [STMWorkflowAC
+                                  alertControllerWithTitle:nil
+                                  message:title
+                                  preferredStyle:UIAlertControllerStyleActionSheet];
     actionSheet.title = title;
     
     NSArray *processingRoutes = [self availableRoutesForProcessing:processing inWorkflow:workflow];
@@ -43,7 +46,12 @@
                 buttonTitle = [buttonTitle stringByAppendingString:@" …"];
             }
             
-            [actionSheet addButtonWithTitle:buttonTitle];
+            UIAlertAction *button = [UIAlertAction
+                                       actionWithTitle:buttonTitle
+                                       style:UIAlertActionStyleDefault
+                                       handler:handler];
+            
+            [actionSheet addAction:button];
             
         }
         
@@ -55,12 +63,17 @@
     
     if (IPHONE) {
 
-        [actionSheet addButtonWithTitle:NSLocalizedString(@"CLOSE", nil)];
-        actionSheet.cancelButtonIndex = actionSheet.numberOfButtons - 1;
+        UIAlertAction *cancelButton = [UIAlertAction
+                                 actionWithTitle:NSLocalizedString(@"CLOSE", nil)
+                                 style:UIAlertActionStyleCancel
+                                 handler:^(UIAlertAction *action){
+                                     
+                                 }];
+        
+        [actionSheet addAction:cancelButton];
 
     }
 
-    actionSheet.delegate = delegate;
     actionSheet.workflow = workflow;
     actionSheet.processing = processing;
     

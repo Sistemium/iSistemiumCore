@@ -26,7 +26,7 @@
 //#define MESSAGE_BODY @"Главная задача месяца это РСП Шелфтокер с ценой 185 руб. Главная задача месяца это РСП Шелфтокер с ценой 185 руб. Главная задача месяца это РСП Шелфтокер с ценой 185 руб. Главная задача месяца это РСП Шелфтокер с ценой 185 руб. Главная задача месяца это РСП Шелфтокер с ценой 185 руб."
 
 
-@interface STMMessagesTVC () <UIActionSheetDelegate>
+@interface STMMessagesTVC ()
 
 @property (nonatomic, weak) STMMessage *workflowSelectedMessage;
 @property (nonatomic, strong) NSString *nextProcessing;
@@ -302,19 +302,51 @@
     STMMessage *message = [self.resultsController objectAtIndexPath:indexPath];
     
 //    STMRecordStatus *recordStatus = [STMRecordStatusController existingRecordStatusForXid:message.xid];
-//    recordStatus.isRead = @(!recordStatus.isRead.boolValue);
+//    recozrdStatus.isRead = @(!recordStatus.isRead.boolValue);
 
     STMWorkflow *workflow = message.workflow;
     
     if (workflow) {
         
         self.workflowSelectedMessage = message;
+       
+        STMWorkflowAC *workflowActionSheet =
         
-        STMWorkflowAS *workflowActionSheet = [STMWorkflowController workflowActionSheetForProcessing:message.processing
-                                                                                          inWorkflow:workflow.workflow
-                                                                                        withDelegate:self];
+        [STMWorkflowController workflowActionSheetForProcessing:message.processing
+          inWorkflow:workflow.workflow
+        withHandler:^(UIAlertAction *action) {
+            
+            NSDictionary *result = [STMWorkflowController workflowActionSheetForProcessing:workflowActionSheet.processing
+                                                                  didSelectButtonWithIndex:0
+                                                                                inWorkflow:workflowActionSheet.workflow];
+            
+            self.nextProcessing = result[@"nextProcessing"];
+            
+            if (self.nextProcessing) {
+                
+                if ([result[@"editableProperties"] isKindOfClass:[NSArray class]]) {
+                    
+                    STMWorkflowEditablesVC *editablesVC = [[STMWorkflowEditablesVC alloc] init];
+                    
+                    editablesVC.workflow = workflowActionSheet.workflow;
+                    editablesVC.toProcessing = self.nextProcessing;
+                    editablesVC.editableFields = result[@"editableProperties"];
+                    editablesVC.parent = self;
+                    
+                    [self presentViewController:editablesVC animated:YES completion:^{
+                        
+                    }];
+                    
+                } else {
+                    
+                    [self updateAndSyncAndReloadWorkflowSelectedMessage];
+                    
+                }
+                
+            }
+        }];
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [workflowActionSheet showInView:self.view];
+            [self presentViewController:workflowActionSheet animated:YES completion:nil];
         }];
         
 //        NSLog(@"processing %@", message.processing);
@@ -359,48 +391,6 @@
     [STMMessageController markAllMessageAsRead];
     [self.tableView reloadData];
     
-}
-
-
-#pragma mark - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    
-    if ([actionSheet isKindOfClass:[STMWorkflowAS class]] && buttonIndex != actionSheet.cancelButtonIndex) {
-        
-        STMWorkflowAS *workflowAS = (STMWorkflowAS *)actionSheet;
-
-        NSDictionary *result = [STMWorkflowController workflowActionSheetForProcessing:workflowAS.processing
-                                                              didSelectButtonWithIndex:buttonIndex
-                                                                            inWorkflow:workflowAS.workflow];
-        
-        self.nextProcessing = result[@"nextProcessing"];
-        
-        if (self.nextProcessing) {
-
-            if ([result[@"editableProperties"] isKindOfClass:[NSArray class]]) {
-                
-                STMWorkflowEditablesVC *editablesVC = [[STMWorkflowEditablesVC alloc] init];
-                
-                editablesVC.workflow = workflowAS.workflow;
-                editablesVC.toProcessing = self.nextProcessing;
-                editablesVC.editableFields = result[@"editableProperties"];
-                editablesVC.parent = self;
-                
-                [self presentViewController:editablesVC animated:YES completion:^{
-                    
-                }];
-                
-            } else {
-                
-                [self updateAndSyncAndReloadWorkflowSelectedMessage];
-                
-            }
-
-        }
-
-    }
-
 }
 
 - (void)takeEditableValues:(NSDictionary *)editableValues {
