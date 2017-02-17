@@ -22,4 +22,8 @@
 
 - (NSString *)loggerKey;
 
+
+- (NSDictionary *)checkMessageForRepeatingPattern:(NSDictionary *)logMessageDic;
+
+
 @end

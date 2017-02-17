@@ -15,6 +15,12 @@
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, weak) UITableView *tableView;
 
+@property (nonatomic) NSUInteger patternDepth;
+@property (nonatomic, strong) NSMutableArray <NSDictionary *> *lastLogMessagesArray;
+@property (nonatomic, strong) NSMutableArray <NSDictionary *> *possiblePatternArray;
+@property (nonatomic) BOOL patternDetected;
+
+
 @end
 
 #import "STMLogger+Logger.h"

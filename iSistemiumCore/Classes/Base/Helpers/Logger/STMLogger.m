@@ -10,6 +10,10 @@
 #import "STMLogMessage.h"
 #import "STMCoreSettingsController.h"
 
+
+#define PATTERN_DEPTH 5
+
+
 @implementation STMLogger
 
 #pragma mark - initializers
@@ -27,6 +31,15 @@
 
 
 #pragma mark - Private properties
+
+- (NSUInteger)patternDepth {
+    
+    if (!_patternDepth) {
+        _patternDepth = PATTERN_DEPTH;
+    }
+    return _patternDepth;
+    
+}
 
 - (NSString *)uploadLogType {
     
