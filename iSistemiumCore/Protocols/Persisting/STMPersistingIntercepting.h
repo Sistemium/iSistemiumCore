@@ -17,7 +17,7 @@
 
 @protocol STMPersistingIntercepting
 
-@property (readonly,copy) NSMapTable <NSString *, id> *beforeMergeInterceptors;
+@property (readonly,copy) NSDictionary <NSString *, id> *beforeMergeInterceptors;
 
 - (void)beforeMergeEntityName:(NSString *)entityName interceptor:(id <STMPersistingMergeInterceptor>)interceptor;
 
