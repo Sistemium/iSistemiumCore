@@ -179,6 +179,27 @@
     
 }
 
+- (void)saveLogMessageDic:(NSDictionary *)logMessageDic {
+    
+    BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
+
+    if (sessionIsRunning && self.document) {
+        
+        [self createAndSaveLogMessageFromDictionary:logMessageDic];
+        
+    } else {
+        
+        NSMutableDictionary *lmd = logMessageDic.mutableCopy;
+        lmd[@"deviceCts"] = [NSDate date];
+        
+        [self performSelector:@selector(saveLogMessageDictionary:)
+                   withObject:lmd
+                   afterDelay:0];
+        
+    }
+
+}
+
 
 #pragma mark - Private
 
