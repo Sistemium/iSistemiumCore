@@ -113,7 +113,11 @@
     XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
     XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
     XCTAssertTrue(self.logger.patternDetected);
-    XCTAssertNil(result);
+    XCTAssertNotNil(result);
+    
+    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
+    NSLog(@"possiblePatternArray %@", self.logger.possiblePatternArray);
+    NSLog(@"detectPattern %@", result);
 
     result =
     [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
