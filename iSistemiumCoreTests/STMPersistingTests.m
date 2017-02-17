@@ -26,6 +26,7 @@
 - (void)setUp {
 
     self.ownerXid = [STMFunctions uuidString];
+    self.cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
     
     [super setUp];
     
@@ -126,7 +127,7 @@
     
     // Paged destroy is 10 times faster with 100K items to destroy
     NSUInteger pageSize = 10000;
-    NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
+    NSPredicate *cleanupPredicate = self.cleanupPredicate;;
     NSDictionary *cleanupOptions = @{
                                      STMPersistingOptionRecordstatuses:@NO,
                                      STMPersistingOptionPageSize:@(pageSize)

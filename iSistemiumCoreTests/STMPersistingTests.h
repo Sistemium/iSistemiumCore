@@ -24,6 +24,7 @@
 @property (nonatomic, strong) STMFakePersisting *fakePersiser;
 
 @property (nonatomic, strong) NSString *ownerXid;
+@property (nonatomic, strong) NSPredicate *cleanupPredicate;
 
 - (STMFakePersisting *)fakePersistingWithOptions:(STMFakePersistingOptions)options;
 - (STMFakePersisting *)inMemoryPersisting;
