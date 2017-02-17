@@ -61,8 +61,8 @@
                               if (!self.persister) {
                                   self.persister = [manager.currentSession persistenceDelegate];
                               }
-                              if (!self.realPersiser) {
-                                  self.realPersiser = (STMPersister *)[manager.currentSession persistenceDelegate];
+                              if (!self.realPersister) {
+                                  self.realPersister = (STMPersister *)[manager.currentSession persistenceDelegate];
                               }
                               self.waitForSession = NO;
                               return YES;

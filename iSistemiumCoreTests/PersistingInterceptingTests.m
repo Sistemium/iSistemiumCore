@@ -23,7 +23,7 @@
 - (void)setUp {
     [super setUp];
     XCTAssertNotNil(self.persister);
-    XCTAssertNotNil(self.realPersiser);
+    XCTAssertNotNil(self.realPersister);
 }
 
 - (void)testEntityControllerInterceptor {
@@ -33,7 +33,7 @@
     NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     
-    id keepEntityInterceptor = self.realPersiser.beforeMergeInterceptors[entityName];
+    id keepEntityInterceptor = self.realPersister.beforeMergeInterceptors[entityName];
     
     STMPersistingInterceptorUniqueProperty *interceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:self.persister];
     
@@ -41,7 +41,7 @@
     interceptor.propertyName = @"name";
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:interceptor];
-    [self.realPersiser beforeMergeEntityName:entityName interceptor:interceptor];
+    [self.realPersister beforeMergeEntityName:entityName interceptor:interceptor];
     
     [self.persister destroyAllSync:entityName predicate:predicate options:self.cleanupOptions error:&error];
     XCTAssertNil(error);
@@ -70,7 +70,7 @@
     XCTAssertFalse([self.persister destroySync:entityName identifier:pk2 options:self.cleanupOptions error:&error]);
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:nil];
-    [self.realPersiser beforeMergeEntityName:entityName interceptor:keepEntityInterceptor];
+    [self.realPersister beforeMergeEntityName:entityName interceptor:keepEntityInterceptor];
 
 }
 
@@ -80,7 +80,7 @@
     NSError *error;
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:self];
-    [self.realPersiser beforeMergeEntityName:entityName interceptor:self];
+    [self.realPersister beforeMergeEntityName:entityName interceptor:self];
    
     NSDictionary *testData = [self sampleDataOf:entityName count:1][0];
     
@@ -105,7 +105,7 @@
     XCTAssertEqual(count, 1);
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:nil];
-    [self.realPersiser beforeMergeEntityName:entityName interceptor:nil];
+    [self.realPersister beforeMergeEntityName:entityName interceptor:nil];
     
 }
 
