@@ -36,16 +36,16 @@
 - (void)testLoggerPattern {
     
     [self runSimpleTest];
+    [self runOneMoreSimpleTest];
+    [self runMoreComplicatedTest];
     
 }
 
 - (void)runSimpleTest {
  
-    self.logger.patternDepth = 5;
-    
+    [self initLoggerWithPatternDepth:5];
+
     [self prefillWithValues:@[@"0", @"1", @"2", @"3", @"4"]];
-    
-    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
     
     [self noPatternWithValues:@[@"5", @"9"]];
     
@@ -59,14 +59,61 @@
     [self detectEndOfPatternWithValue:@"0"];
     
     [self noPatternWithValues:@[@"a", @"b"]];
+    
+}
 
-    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
+- (void)runOneMoreSimpleTest {
+    
+    [self initLoggerWithPatternDepth:15];
+    
+    [self prefillWithValues:@[@"3", @"4"]];
+    
+    [self noPatternWithValues:@[@"9"]];
+    
+    NSArray *pattern = @[@"9"];
+    [self possiblePatternWithValues:pattern];
+    
+    for (NSUInteger i = 0; i < 10; i++) {
+        [self detectPatternWithValues:pattern];
+    }
+    
+    [self detectEndOfPatternWithValue:@"0"];
+    
+    [self noPatternWithValues:@[@"a", @"b"]];
 
 }
 
-- (void)prefillWithValues:(NSArray *)values {
+- (void)runMoreComplicatedTest {
+    
+    [self initLoggerWithPatternDepth:10];
+    
+    [self prefillWithValues:@[@"3", @"4", @"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e"]];
+    
+    NSArray *pattern = @[@"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e"];
+    [self possiblePatternWithValues:pattern];
+    
+    for (NSUInteger i = 0; i < 10; i++) {
+        [self detectPatternWithValues:pattern];
+    }
+    
+    [self detectEndOfPatternWithValue:@"0"];
+    
+    [self noPatternWithValues:@[@"f", @"g"]];
+    
+}
 
-    NSUInteger i = 0;
+- (void)initLoggerWithPatternDepth:(NSUInteger)patternDepth {
+    
+    self.logger.lastLogMessagesArray = nil;
+    self.logger.possiblePatternArray = nil;
+    self.logger.patternDepth = patternDepth;
+
+}
+
+
+#pragma mark - filling values
+
+- (void)prefillWithValues:(NSArray *)values {
     
     for (NSString *value in values) {
 
@@ -75,7 +122,7 @@
         NSArray *result =
         [self.logger checkMessageForRepeatingPattern:dic];
         
-        XCTAssertEqual(self.logger.lastLogMessagesArray.count, ++i);
+        XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
         XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
         XCTAssertNotNil(result);
 
