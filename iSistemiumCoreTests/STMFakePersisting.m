@@ -162,6 +162,16 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     }
     
     STMFakePersistingIfInMemoryDB(nil) {
+        
+        attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+        
+        if (*error) return nil;
+        
+        if (!attributes) {
+            [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
+            return nil;
+        }
+        
         attributes = [self.data[entityName] addObject:attributes options:options];
         [self notifyObservingEntityName:entityName ofUpdated:attributes options:options];
         return attributes;

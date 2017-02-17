@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMModeller.h"
+#import "STMModeller+Interceptable.h"
 #import "STMPersistingFullStack.h"
 
 #define STMFakePersistingOptions NSDictionary *

@@ -16,12 +16,6 @@
 
 #import "STMSessionManager.h"
 
-@interface STMModeller()
-
-@property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
-
-@end
-
 @implementation STMModeller
 
 @synthesize concreteEntities = _concreteEntities;

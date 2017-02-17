@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeInMemory
 };
 
+#define STMPersistingKeyPrimary @"id"
 #define STMPersistingKeyVersion @"deviceTs"
 #define STMPersistingKeyCreationTimestamp @"deviceCts"
 #define STMPersistingKeyPhantom @"isFantom"

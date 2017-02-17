@@ -15,13 +15,8 @@
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
-
-
-@interface STMPersister()
-
-@property (nonatomic,strong) NSString * fmdbFileName;
-
-@end
+#import "STMPersister+Private.h"
+#import "STMModeller+Interceptable.h"
 
 @implementation STMPersister
 
@@ -110,6 +105,15 @@
     NSString *recordStatusEntityName = @"STMRecordStatus";
 
 #warning - have to think up something smarter than hardcoding entity's names
+    
+    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+    
+    if (*error) return nil;
+    
+    if (!attributes) {
+        [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
+        return nil;
+    }
     
     if ([entityName isEqualToString:entityEntityName]) {
         

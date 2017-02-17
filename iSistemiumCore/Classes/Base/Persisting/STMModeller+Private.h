@@ -8,6 +8,13 @@
 
 #import "STMModeller.h"
 
+@interface STMModeller()
+
+@property (nonatomic,strong) NSMutableDictionary *allEntitiesCache;
+@property (nonatomic,strong) NSMutableDictionary <NSString *, id> *beforeMergeInterceptors;
+
+@end
+
 @interface STMModeller (Private)
 
 + (id)typeConversionForValue:(id)value
