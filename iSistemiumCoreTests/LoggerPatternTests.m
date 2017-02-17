@@ -55,13 +55,14 @@
         
     }
     
+    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
+    
     [self createNoPatternSimple];
     [self createPatternSimple];
     [self detectPatternSimple];
     [self finishPatternSimple];
     
     NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
-    NSLog(@"possiblePatternArray %@", self.logger.possiblePatternArray);
 
 }
 
@@ -145,7 +146,9 @@
     XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
     XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
     XCTAssertFalse(self.logger.patternDetected);
-    XCTAssertEqual(result.count, 1);
+    XCTAssertEqual(result.count, 2);
+    
+    NSLog(@"detect end of pattern %@", result);
 
 }
 
