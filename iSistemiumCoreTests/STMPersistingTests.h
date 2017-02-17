@@ -13,6 +13,7 @@
 #import "STMConstants.h"
 #import "STMFunctions.h"
 #import "STMFakePersisting.h"
+#import "STMPersister.h"
 
 #define PersistingTestsTimeOut 5
 
@@ -22,6 +23,7 @@
 
 @property (nonatomic, strong) STMFakePersistingOptions fakePersistingOptions;
 @property (nonatomic, strong) STMFakePersisting *fakePersiser;
+@property (nonatomic, weak) STMPersister *realPersiser;
 
 @property (nonatomic, strong) NSString *ownerXid;
 @property (nonatomic, strong) NSPredicate *cleanupPredicate;
