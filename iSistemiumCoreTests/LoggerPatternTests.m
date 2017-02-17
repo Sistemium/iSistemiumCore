@@ -18,6 +18,7 @@
 
 @end
 
+
 @implementation LoggerPatternTests
 
 - (void)setUp {
@@ -42,114 +43,120 @@
  
     self.logger.patternDepth = 5;
     
-    for (NSUInteger i = 0; i < self.logger.patternDepth; i++) {
-        
-        NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", @(i)]};
+    [self prefillWithValues:@[@"0", @"1", @"2", @"3", @"4"]];
+    
+    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
+    
+    [self noPatternWithValues:@[@"5", @"9"]];
+    
+    NSArray *pattern = @[@"4", @"5", @"9"];
+    [self possiblePatternWithValues:pattern];
+
+    for (NSUInteger i = 0; i < 10; i++) {
+        [self detectPatternWithValues:pattern];
+    }
+    
+    [self detectEndOfPatternWithValue:@"0"];
+    
+    [self noPatternWithValues:@[@"a", @"b"]];
+
+    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
+
+}
+
+- (void)prefillWithValues:(NSArray *)values {
+
+    NSUInteger i = 0;
+    
+    for (NSString *value in values) {
+
+        NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", value]};
         
         NSArray *result =
         [self.logger checkMessageForRepeatingPattern:dic];
         
-        XCTAssertEqual(self.logger.lastLogMessagesArray.count, i + 1);
+        XCTAssertEqual(self.logger.lastLogMessagesArray.count, ++i);
         XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
         XCTAssertNotNil(result);
+
+    }
+
+}
+
+- (void)noPatternWithValues:(NSArray *)values {
+    
+    for (NSString *value in values) {
+        
+        NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", value]};
+        
+        NSArray *result =
+        [self.logger checkMessageForRepeatingPattern:dic];
+        
+        XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
+        XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
+        XCTAssertFalse(self.logger.patternDetected);
+        XCTAssertEqual(result.count, 1);
+
+    }
+    
+}
+
+- (void)possiblePatternWithValues:(NSArray *)values {
+
+    for (NSString *value in values) {
+    
+        NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", value]};
+        
+        NSArray *result =
+        [self.logger checkMessageForRepeatingPattern:dic];
+        
+        XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
+        XCTAssertTrue(self.logger.possiblePatternArray.count > 0);
+        XCTAssertFalse(self.logger.patternDetected);
+        XCTAssertNil(result);
+
+    }
+
+}
+
+- (void)detectPatternWithValues:(NSArray *)values {
+    
+    for (NSString *value in values) {
+    
+        BOOL patternAlreadyDetected = self.logger.patternDetected;
+
+        NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", value]};
+        
+        NSArray *result =
+        [self.logger checkMessageForRepeatingPattern:dic];
+        
+        XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
+        XCTAssertTrue(self.logger.possiblePatternArray.count > 0);
+        XCTAssertTrue(self.logger.patternDetected);
+        
+        if (patternAlreadyDetected) {
+            XCTAssertNil(result);
+        } else {
+            XCTAssertEqual(result.count, 1);
+        }
         
     }
     
-    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
-    
-    [self createNoPatternSimple];
-    [self createPatternSimple];
-    [self detectPatternSimple];
-    [self finishPatternSimple];
-    
-    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
-
 }
 
-- (void)createNoPatternSimple {
+- (void)detectEndOfPatternWithValue:(NSString *)value {
+    
+    NSDictionary *dic = @{@"test"   : [NSString stringWithFormat:@"test %@", value]};
     
     NSArray *result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
+    [self.logger checkMessageForRepeatingPattern:dic];
     
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 1);
+    XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
+    XCTAssertTrue(self.logger.possiblePatternArray.count == 0);
     XCTAssertFalse(self.logger.patternDetected);
-    XCTAssertNil(result);
     
-    result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
-    XCTAssertFalse(self.logger.patternDetected);
-    XCTAssertEqual(result.count, 2);
-
-}
-
-- (void)createPatternSimple {
-    
-    NSArray *result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 1);
-    XCTAssertFalse(self.logger.patternDetected);
-    XCTAssertNil(result);
-    
-    result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertFalse(self.logger.patternDetected);
-    XCTAssertNil(result);
-    
-}
-
-- (void)detectPatternSimple {
-    
-    NSArray *result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertTrue(self.logger.patternDetected);
-    XCTAssertNotNil(result);
-    
-    NSLog(@"lastLogMessagesArray %@", self.logger.lastLogMessagesArray);
-    NSLog(@"possiblePatternArray %@", self.logger.possiblePatternArray);
-    NSLog(@"detectPattern %@", result);
-
-    result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 2"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertTrue(self.logger.patternDetected);
-    XCTAssertNil(result);
-
-}
-
-- (void)finishPatternSimple {
-
-    NSArray *result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 0"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 2);
-    XCTAssertTrue(self.logger.patternDetected);
-    XCTAssertNil(result);
-
-    result =
-    [self.logger checkMessageForRepeatingPattern:@{@"test"   : @"test 1"}];
-    
-    XCTAssertEqual(self.logger.lastLogMessagesArray.count, self.logger.patternDepth);
-    XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
-    XCTAssertFalse(self.logger.patternDetected);
     XCTAssertEqual(result.count, 2);
     
-    NSLog(@"detect end of pattern %@", result);
-
 }
 
 
