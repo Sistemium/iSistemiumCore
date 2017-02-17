@@ -404,7 +404,10 @@
             self.patternDetected = YES;
             self.currentPatternIndex = 0;
             
-            return nil;
+            NSDictionary *result = @{@"type"    : @"error",
+                                     @"text"    : [NSString stringWithFormat:@"detect repeating pattern with last %@ logMessages", @(self.possiblePatternArray.count)]};
+            
+            return @[result];
             
         } else {
         
