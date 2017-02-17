@@ -8,6 +8,8 @@
 
 #import "STMPersistingTests.h"
 #import "STMPersistingIntercepting.h"
+#import "STMClientEntityController.h"
+#import "STMEntityController.h"
 
 @interface PersistingInterceptingTests : STMPersistingTests <STMPersistingMergeInterceptor>
 
@@ -19,6 +21,44 @@
     return YES;
 }
 
+- (void)setUp {
+    [super setUp];
+    XCTAssertNotNil(self.persister);
+    XCTAssertNotNil(self.realPersiser);
+}
+
+
+- (void)testEntityControllerInterceptor {
+    
+    NSString *entityName = @"STMEntity";
+    NSString *name = @"EntityControllerInterceptor";
+    NSError *error;
+    
+    STMEntityController *interceptor = [STMEntityController controllerWithPersistenceDelegate:self.persister];
+    
+    [self.fakePersiser beforeMergeEntityName:entityName interceptor:interceptor];
+    [self.realPersiser beforeMergeEntityName:entityName interceptor:interceptor];
+    
+    NSMutableDictionary *testData = [[self sampleDataOf:entityName count:1][0] mutableCopy];
+    
+    testData[@"name"] = name;
+    
+    NSString *pk1 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
+    XCTAssertNil(error);
+    NSString *pk2 = [self.persister mergeSync:entityName attributes:testData options:nil error:&error][STMPersistingKeyPrimary];
+    XCTAssertNil(error);
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    
+    NSUInteger count = [self.persister countSync:entityName predicate:predicate options:nil error:&error];
+    
+    XCTAssertEqual(count, 1);
+    
+    XCTAssertTrue([self.persister destroySync:entityName identifier:pk1 options:self.cleanupOptions error:&error]);
+    XCTAssertFalse([self.persister destroySync:entityName identifier:pk2 options:self.cleanupOptions error:&error]);
+    
+}
+
 - (void)testForceSingleItem {
     
     NSString *entityName = @"STMLogMessage";
@@ -26,9 +66,6 @@
     
     [self.fakePersiser beforeMergeEntityName:entityName interceptor:self];
     [self.realPersiser beforeMergeEntityName:entityName interceptor:self];
-    
-    XCTAssertNotNil(self.persister);
-    XCTAssertNotNil(self.realPersiser);
    
     NSDictionary *testData = [self sampleDataOf:entityName count:1][0];
     

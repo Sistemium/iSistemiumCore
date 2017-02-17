@@ -36,6 +36,12 @@
     #warning need to remove direct links to document after full persisting concept realization
     self.document = persister.document;
 
+    [self initController:STMEntityController.class];
+    
+    STMEntityController *interceptor = (STMEntityController *)[self controllerWithClass:STMEntityController.class];
+    
+    [persister beforeMergeEntityName:STM_ENTITY_NAME interceptor:interceptor];
+    
     [self addPersistenceObservers];
     
     return self;
@@ -74,7 +80,6 @@
         return;
     }
     
-    [self initController:STMEntityController.class];
     [self initController:STMCorePicturesController.class];
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];

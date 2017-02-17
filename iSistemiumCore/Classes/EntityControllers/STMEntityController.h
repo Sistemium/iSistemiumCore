@@ -8,10 +8,11 @@
 
 #import "STMCoreController.h"
 #import "STMEntity.h"
+#import "STMPersistingIntercepting.h"
 
 #define STM_ENTITY_NAME @"STMEntity"
 
-@interface STMEntityController : STMCoreController
+@interface STMEntityController : STMCoreController <STMPersistingMergeInterceptor>
 
 + (void)flushSelf;
 
@@ -29,5 +30,7 @@
 + (NSDictionary *)entityWithName:(NSString *)name;
 
 + (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector;
+
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error;
 
 @end

@@ -120,7 +120,7 @@
 }
 
 - (instancetype)init {
-    self.beforeMergeInterceptors = [NSMutableDictionary dictionary];
+    self.beforeMergeInterceptors = [NSMapTable strongToWeakObjectsMapTable];
     return self;
 }
 

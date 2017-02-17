@@ -100,7 +100,6 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSString *entityEntityName = @"STMEntity";
     NSString *settingEntityName = @"STMSetting";
     NSString *recordStatusEntityName = @"STMRecordStatus";
 
@@ -114,22 +113,7 @@
         [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
         return nil;
     }
-    
-    if ([entityName isEqualToString:entityEntityName]) {
-        
-        NSDictionary *entity = [STMEntityController entityWithName:attributes[@"name"]];
-        
-        if (entity) {
-            
-            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
-            editedAttributes[@"id"] = entity[@"id"];
-            
-            attributes = editedAttributes;
-            
-        }
-        
-    }
-    
+
     if ([entityName isEqualToString:settingEntityName]) {
         
         NSDictionary *setting = [STMSettingsController settingWithName:attributes[@"name"]

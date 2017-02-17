@@ -13,13 +13,13 @@
 
 - (void)beforeMergeEntityName:(NSString *)entityName interceptor:(id <STMPersistingMergeInterceptor>)interceptor {
     
-    self.beforeMergeInterceptors[entityName] = interceptor;
+    [self.beforeMergeInterceptors setObject:interceptor forKey:entityName];
     
 }
 
 - (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
-    id <STMPersistingMergeInterceptor> interceptor = self.beforeMergeInterceptors[entityName];
+    id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     
     if (!interceptor) return attributes;
     

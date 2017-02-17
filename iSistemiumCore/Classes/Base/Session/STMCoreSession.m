@@ -51,6 +51,10 @@
     self.controllers[NSStringFromClass(controllerClass)] = [controllerClass controllerWithPersistenceDelegate:self.persistenceDelegate];
 }
 
+- (id)controllerWithClass:(Class)controllerClass {
+    return [self controllerWithName:NSStringFromClass(controllerClass)];
+}
+
 - (id)controllerWithName:(NSString *)name {
     return self.controllers[name];
 }

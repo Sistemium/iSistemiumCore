@@ -105,6 +105,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 - (BOOL)isRunningTests;
 
+- (id <STMCoreControlling>)controllerWithClass:(Class)controllerClass;
 - (id <STMCoreControlling>)controllerWithName:(NSString *)name;
 
 @optional

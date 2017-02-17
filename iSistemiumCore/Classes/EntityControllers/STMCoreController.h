@@ -17,6 +17,8 @@
 
 @interface STMCoreController : STMCoreObject <STMCoreControlling>
 
+@property (nonatomic,weak) id <STMPersistingFullStack> persistenceDelegate;
+
 + (id <STMSession>)session;
 
 + (STMDocument *)document;

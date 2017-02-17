@@ -13,8 +13,6 @@
 
 @interface STMCoreController ()
 
-@property (nonatomic,weak) id <STMPersistingObserving, STMPersistingSync> persistenceDelegate;
-
 @end
 
 @implementation STMCoreController

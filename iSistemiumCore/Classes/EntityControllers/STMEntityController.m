@@ -29,19 +29,23 @@
     return [super sharedInstance];
 }
 
-- (instancetype)init {
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
     
-    self = [super init];
-    [self addObservers];
+    if (self.persistenceDelegate) {
+        [self removeObservers];
+    }
     
-    NSLogMethodName;
-    return self;
+    [super setPersistenceDelegate:persistenceDelegate];
+    
+    if (persistenceDelegate) {
+        [self addObservers];
+    }
     
 }
 
 - (void)addObservers {
     
-    self.entitySubscriptionID = [self.class.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
+    self.entitySubscriptionID = [self.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
         
         [self flushSelf];
         [self postNotificationName:STMEC_HAS_CHANGES];
@@ -187,14 +191,19 @@
     
 }
 
+
 + (NSDictionary *)entityWithName:(NSString *)name {
+    NSError *error = nil;
+    return [[self sharedInstance] entityWithName:name error:&error];
+}
+
+- (NSDictionary *)entityWithName:(NSString *)name error:(NSError **)error {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
-    NSError *error = nil;
-    NSDictionary *entity = [[self persistenceDelegate] findAllSync:NSStringFromClass([STMEntity class])
-                                                         predicate:predicate
-                                                           options:nil
-                                                             error:&error].lastObject;
+    NSDictionary *entity = [self.persistenceDelegate findAllSync:NSStringFromClass([STMEntity class])
+                                                       predicate:predicate
+                                                         options:nil
+                                                           error:error].lastObject;
     
     return entity;
         
@@ -244,6 +253,24 @@
         [self.session.logger saveLogMessageWithText:@"stc.entity duplicates not found"];
     }
 
+}
+
+#pragma mark - MergeInterceptor
+
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+
+    NSDictionary *entity = [self entityWithName:attributes[@"name"] error:error];
+    
+    if (*error) return nil;
+    
+    NSString *pk = entity[STMPersistingKeyPrimary];
+    
+    if (![pk isEqualToString:attributes[STMPersistingKeyPrimary]]) {
+        return [STMFunctions setValue:pk forKey:STMPersistingKeyPrimary inDictionary:attributes];
+    }
+
+    return attributes;
+    
 }
 
 
