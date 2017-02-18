@@ -49,9 +49,11 @@
     
     [self noPatternWithValues:@[@"5", @"9"]];
     
-    NSArray *pattern = @[@"4", @"5", @"9"];
-    [self possiblePatternWithValues:pattern];
+    [self possiblePatternWithValues:@[@"4", @"5"]];
+    
+    [self detectPatternWithValues:@[@"9"]];
 
+    NSArray *pattern = @[@"4", @"5", @"9"];
     for (NSUInteger i = 0; i < 10; i++) {
         [self detectPatternWithValues:pattern];
     }
@@ -71,7 +73,7 @@
     [self noPatternWithValues:@[@"9"]];
     
     NSArray *pattern = @[@"9"];
-    [self possiblePatternWithValues:pattern];
+    [self detectPatternWithValues:pattern];
     
     for (NSUInteger i = 0; i < 10; i++) {
         [self detectPatternWithValues:pattern];
@@ -88,10 +90,15 @@
     [self initLoggerWithPatternDepth:10];
     
     [self prefillWithValues:@[@"3", @"4", @"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e"]];
-    
+
+    NSArray *possiblePattern = @[@"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d"];
+
+    [self possiblePatternWithValues:possiblePattern];
+
+    [self detectPatternWithValues:@[@"e"]];
+
     NSArray *pattern = @[@"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e"];
-    [self possiblePatternWithValues:pattern];
-    
+
     for (NSUInteger i = 0; i < 10; i++) {
         [self detectPatternWithValues:pattern];
     }
