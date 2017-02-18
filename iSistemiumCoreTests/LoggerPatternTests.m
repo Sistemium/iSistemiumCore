@@ -178,7 +178,7 @@
         XCTAssertTrue(self.logger.lastLogMessagesArray.count <= self.logger.patternDepth);
         XCTAssertEqual(self.logger.possiblePatternArray.count, 0);
         XCTAssertFalse(self.logger.patternDetected);
-        XCTAssertEqual(result.count, 1);
+        XCTAssertTrue(result.count > 0);
 
     }
     
