@@ -89,6 +89,8 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
     self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+    self.settingsController.persistenceDelegate = self.persistenceDelegate;
+    
     self.trackers = [NSMutableDictionary dictionary];
     if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
     

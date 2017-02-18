@@ -207,24 +207,26 @@
 
 - (void)dealloc {
     [self unsubscribeFromSettings];
-    NSLog(@"dealloc settings");
+    NSLogMethodName;
 }
 
 - (void)setSession:(id<STMSession>)session {
     
     _session = session;
-    
-    self.persistenceDelegate = session.persistenceDelegate;
-    
-    [self unsubscribeFromSettings];
 
-    if (!session) {
-        NSLog(@"empty session");
-        return;
-    }
-    
-    [self subscribeForSettings];
     [self checkSettings];
+    
+}
+
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
+    
+    if (self.persistenceDelegate) [self unsubscribeFromSettings];
+    
+    [super setPersistenceDelegate:persistenceDelegate];
+    
+    if (persistenceDelegate) {
+        [self subscribeForSettings];
+    }
     
 }
 
