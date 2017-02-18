@@ -9,14 +9,6 @@
 #import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
 
-#import "STMUnsyncedDataHelper.h"
-
-#import "STMSyncerHelper+Defantomizing.h"
-#import "STMSyncerHelper+Downloading.h"
-
-#import "STMPersisterFantoms.h"
-#import "STMSyncer.h"
-
 @implementation STMCoreSession
 
 @synthesize syncer =_syncer;
@@ -106,25 +98,10 @@
 
 
 - (void)addObservers {
-
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
-    [nc addObserver:self
-           selector:@selector(settingsLoadComplete:)
-               name:@"settingsLoadComplete"
-             object:self.settingsController];
+    [self observeNotification:UIApplicationDidEnterBackgroundNotification
+                     selector:@selector(applicationDidEnterBackground)];
     
-    [nc addObserver:self
-           selector:@selector(applicationDidEnterBackground)
-               name:UIApplicationDidEnterBackgroundNotification
-             object:nil];
-    
-}
-
-- (void)removeObservers {
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-
 }
 
 - (BOOL)isRunningTests {
@@ -167,36 +144,6 @@
 
 }
 
-- (void)settingsLoadComplete:(NSNotification *)notification {
-    
-    if (notification.object == self.settingsController) {
-    
-        //    NSLog(@"currentSettings %@", self.settingsController.currentSettings);
-        self.locationTracker.session = self;
-        self.batteryTracker.session = self;
-
-        self.syncer.persistenceDelegate = self.persistenceDelegate;
-
-        STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
-        
-        syncerHelper.dataDownloadingOwner = self.syncer;
-        syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
-        syncerHelper.defantomizingOwner = self.syncer;
-        
-        self.syncer.dataDownloadingDelegate = syncerHelper;
-        self.syncer.defantomizingDelegate = syncerHelper;
-        
-        STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
-                                                                                              subscriber:self.syncer];
-        self.syncer.dataSyncingDelegate = unsyncedHelper;
-
-        self.status = STMSessionRunning;
-
-        self.syncer.session = self;
-
-    }
-    
-}
 
 - (void)applicationDidEnterBackground {
     

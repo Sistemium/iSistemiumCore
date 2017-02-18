@@ -17,6 +17,14 @@
 #import "STMCorePicturesController.h"
 #import "STMPersistingInterceptorUniqueProperty.h"
 
+#import "STMUnsyncedDataHelper.h"
+
+#import "STMSyncerHelper+Defantomizing.h"
+#import "STMSyncerHelper+Downloading.h"
+
+#import "STMPersisterFantoms.h"
+#import "STMSyncer.h"
+
 @implementation STMCoreSession (Persistable)
 
 - (instancetype)initPersistable {
@@ -98,6 +106,9 @@
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
+    
+    [self.settingsController subscribeForLoadComplete:self selector:@selector(settingsLoadComplete:)];
+    
     self.settingsController.session = self;
 
     [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
@@ -109,22 +120,17 @@
 
 - (void)addPersistenceObservers {
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
+                     selector:@selector(myStatusChanged:)
+                       object:self];
     
-    [nc addObserver:self
-           selector:@selector(myStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self];
+    [self observeNotification:NOTIFICATION_DOCUMENT_READY
+                     selector:@selector(persisterDocumentReady:)
+                       object:self.document];
     
-    [nc addObserver:self
-           selector:@selector(persisterDocumentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:self.document];
-    
-    [nc addObserver:self
-           selector:@selector(persisterDocumentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:self.document];
+    [self observeNotification:NOTIFICATION_DOCUMENT_NOT_READY
+                     selector:@selector(persisterDocumentNotReady:)
+                       object:self.document];
     
 }
 
@@ -150,5 +156,30 @@
     [self persisterCompleteInitializationWithSuccess:NO];
 }
 
+- (void)settingsLoadComplete:(NSNotification *)notification {
+    
+    self.locationTracker.session = self;
+    self.batteryTracker.session = self;
+    
+    self.syncer.persistenceDelegate = self.persistenceDelegate;
+    
+    STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
+    
+    syncerHelper.dataDownloadingOwner = self.syncer;
+    syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
+    syncerHelper.defantomizingOwner = self.syncer;
+    
+    self.syncer.dataDownloadingDelegate = syncerHelper;
+    self.syncer.defantomizingDelegate = syncerHelper;
+    
+    STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
+                                                                                          subscriber:self.syncer];
+    self.syncer.dataSyncingDelegate = unsyncedHelper;
+    
+    self.status = STMSessionRunning;
+    
+    self.syncer.session = self;
+    
+}
 
 @end

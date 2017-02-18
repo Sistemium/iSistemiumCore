@@ -7,13 +7,11 @@
 //
 
 #import "STMCoreSettingsController.h"
-#import "STMCoreSession.h"
-#import "STMSettingsData.h"
-#import "STMEntityDescription.h"
-#import "STMCoreObjectsController.h"
-#import "STMCoreSessionManager.h"
+#import "STMSetting.h"
 
-@interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
+#define STMCoreSettingsControllerLoadComplete @"STMCoreSettingsControllerLoadComplete"
+
+@interface STMCoreSettingsController()
 
 @property (nonatomic,strong) STMPersistingObservingSubscriptionID subscriptionId;
 @property (nonatomic,strong) NSDictionary *defaultSettings;
@@ -55,7 +53,7 @@
     _session = session;
     
     [self checkSettings];
-    [self postNotificationName:@"settingsLoadComplete"];
+    [self postNotificationName:STMCoreSettingsControllerLoadComplete];
     
 }
 
@@ -130,6 +128,10 @@
 
 
 #pragma mark - Public methods
+
+- (void)subscribeForLoadComplete:(STMCoreObject *)anObject selector:(SEL)selector {
+    [self addObserver:anObject selector:selector name:STMCoreSettingsControllerLoadComplete];
+}
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
     

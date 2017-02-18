@@ -28,4 +28,6 @@
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSArray *currentSettings;
 
+- (void)subscribeForLoadComplete:(STMCoreObject *)anObject selector:(SEL)selector;
+
 @end
