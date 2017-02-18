@@ -13,6 +13,7 @@
 #import "STMDocument.h"
 #import "STMPersistingFullStack.h"
 #import "STMSocketConnection.h"
+#import "STMNotifications.h"
 
 typedef NS_ENUM(NSInteger, STMSyncerState) {
     STMSyncerIdle,
@@ -74,15 +75,15 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @protocol STMSettingsController <NSObject>
 
 - (NSArray *)currentSettings;
-- (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
+- (NSDictionary *)currentSettingsForGroup:(NSString *)group;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
-//- (id)settingForDictionary:(NSDictionary *)dictionary;
 
+@property (readonly) NSArray *groupNames;
 
 @end
 
 
-@protocol STMSession <NSObject>
+@protocol STMSession <NSObject,STMNotifications>
 
 @property (readonly) STMDocument *document; // have to remove document property after full implementation of persister
 
@@ -92,12 +93,10 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic) STMSessionStatus status;
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
-@property (nonatomic, strong) NSDictionary *defaultSettings;
-@property (nonatomic, strong) NSDictionary *startSettings;
 @property (nonatomic, strong) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer> syncer;
 
-+ (id <STMSession>)initWithUID:(NSString *)uid
+- (id <STMSession>)initWithUID:(NSString *)uid
                         iSisDB:(NSString *)iSisDB
                   authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                       trackers:(NSArray *)trackers
