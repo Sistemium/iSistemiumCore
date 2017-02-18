@@ -72,63 +72,33 @@
 
 - (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
     
-    if (uid) {
-        
-        STMCoreSession *session = (self.sessions)[uid];
-        
-        if (!session) {
-            
-            NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
-            
-            session = [[[self sessionClass] alloc] init];
-            session.defaultSettings = validSettings[@"values"];
-            session.settingsControls = validSettings[@"controls"];
-            session.manager = self;
-        
-            session = [session initWithUID:uid
-                                    iSisDB:(NSString *)iSisDB
-                              authDelegate:authDelegate
-                                  trackers:trackers
-                             startSettings:startSettings];
-
-            self.sessions[uid] = session;
-
-            self.currentSessionUID = uid;
-
-        } else {
-
-            self.currentSessionUID = uid;
-
-            session.authDelegate = authDelegate;
-            session.status = STMSessionRunning;
-            session.logger.session = session;
-            session.settingsController.startSettings = startSettings.mutableCopy;
-            session.settingsController.session = session;
-            
-            if (session.document) {
-                
-                if (session.document.documentState == UIDocumentStateClosed) {
-                    [STMDocument openDocument:session.document];
-                }
-                
-            } else {
-                
-                NSString *logMessage = [NSString stringWithFormat:@"session %@ have no document", session.uid];
-                
-                [session.logger saveLogMessageWithText:logMessage
-                                               numType:STMLogMessageTypeError];
-                
-            }
-
-        }
-        return session;
-        
-    } else {
-        
+    if (!uid) {
         NSLog(@"no uid");
         return nil;
-        
     }
+        
+    STMCoreSession *session = self.sessions[uid];
+    
+    if (session) {
+        // TODO: it's not good but the deleted code was even worse
+        [session stopSession];
+        [session dismissSession];
+    }
+    
+    NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
+    
+    session = [[[self sessionClass] alloc] init];
+    session.defaultSettings = validSettings[@"values"];
+    session.settingsControls = validSettings[@"controls"];
+    session.manager = self;
+
+    session = [session initWithUID:uid iSisDB:iSisDB authDelegate:authDelegate trackers:trackers startSettings:startSettings];
+
+    self.sessions[uid] = session;
+
+    self.currentSessionUID = uid;
+
+    return session;
 
 }
 

@@ -17,7 +17,7 @@
 
 @interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
 
-+ (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
++ (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 

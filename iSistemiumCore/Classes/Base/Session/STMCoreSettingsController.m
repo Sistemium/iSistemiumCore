@@ -27,7 +27,7 @@
 
 #pragma mark - class methods
 
-+ (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings {
++ (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings {
     return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
@@ -235,19 +235,6 @@
     NSLog(@"subscriptionId: %@", self.subscriptionId);
     [self.persistenceDelegate cancelSubscription:self.subscriptionId];
     self.subscriptionId = nil;
-}
-
-- (void)NSLogSettings {
-
-#ifdef DEBUG
-//    NSLog(@"self.currentSettings %@", self.currentSettings);
-    
-    for (NSDictionary *setting in self.currentSettings) {
-        
-        NSLog(@"setting %@", setting);
-        
-    }
-#endif
 }
 
 - (NSArray *)currentSettings {

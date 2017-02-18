@@ -88,7 +88,7 @@
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
-    self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings defaultSettings:self.defaultSettings];
+    self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
     
     self.trackers = [NSMutableDictionary dictionary];
