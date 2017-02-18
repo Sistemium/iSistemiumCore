@@ -14,6 +14,7 @@
 @interface LoggerPatternTests : XCTestCase
 
 @property (nonatomic, strong) STMLogger *logger;
+@property (nonatomic) NSUInteger timesToRepeat;
 
 
 @end
@@ -53,8 +54,10 @@
     
     [self detectPatternWithValues:@[@"9"]];
 
+    self.timesToRepeat = 10;
     NSArray *pattern = @[@"4", @"5", @"9"];
-    for (NSUInteger i = 0; i < 10; i++) {
+    
+    for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
         [self detectPatternWithValues:pattern];
     }
     
@@ -75,7 +78,9 @@
     NSArray *pattern = @[@"9"];
     [self detectPatternWithValues:pattern];
     
-    for (NSUInteger i = 0; i < 10; i++) {
+    self.timesToRepeat = 5;
+
+    for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
         [self detectPatternWithValues:pattern];
     }
     
@@ -97,9 +102,10 @@
 
     [self detectPatternWithValues:@[@"e"]];
 
+    self.timesToRepeat = 17;
     NSArray *pattern = @[@"5", @"6", @"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e"];
 
-    for (NSUInteger i = 0; i < 10; i++) {
+    for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
         [self detectPatternWithValues:pattern];
     }
     
@@ -210,6 +216,13 @@
     XCTAssertFalse(self.logger.patternDetected);
     
     XCTAssertEqual(result.count, 2);
+    
+    NSDictionary *testDic = result.firstObject;
+    NSString *testText = testDic[@"text"];
+    
+    BOOL textEndsCorrect = [testText hasSuffix:[NSString stringWithFormat:@"%@ times", @(self.timesToRepeat)]];
+    
+    XCTAssertTrue(textEndsCorrect);
     
 }
 
