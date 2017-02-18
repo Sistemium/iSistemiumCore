@@ -1150,6 +1150,8 @@
 
 - (void)repeatLogMessages {
     
+#warning - for test purpose only, don't forget to remove!
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     
         [[STMLogger sharedLogger] saveLogMessageWithText:@"test0" numType:STMLogMessageTypeImportant];
