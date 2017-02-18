@@ -121,19 +121,15 @@
 
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
-    if (notification.object == self.session) {
+    if (self.session.status == STMSessionFinishing) {
         
-        if (self.session.status == STMSessionFinishing) {
-            
-            [self releaseTimers];
-            [self stopTracking];
-            
-        } else if (self.session.status == STMSessionRunning) {
-            
-            [self checkTrackerAutoStart];
+        [self releaseTimers];
+        [self stopTracking];
+        
+    } else if (self.session.status == STMSessionRunning) {
+        
+        [self checkTrackerAutoStart];
 
-        }
-        
     }
     
 }
