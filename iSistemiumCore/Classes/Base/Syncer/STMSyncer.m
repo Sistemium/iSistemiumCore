@@ -44,23 +44,9 @@
 @synthesize syncInterval = _syncInterval;
 @synthesize syncerState = _syncerState;
 
-
-- (instancetype)init {
-    
-    NSLog(@"syncer init");
-    
-    return [super init];
-    
-}
-
-
 #pragma mark - observers
 
 - (void)addObservers {
-    
-    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
-                     selector:@selector(sessionStatusChanged:)
-                       object:self.session];
 
     [self observeNotification:@"syncerSettingsChanged"
                      selector:@selector(syncerSettingsChanged)
@@ -79,26 +65,6 @@
     [super removeObservers];
 }
 
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
-        
-        STMCoreSession *session = (STMCoreSession *)notification.object;
-        
-        if (session == self.session) {
-            
-            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
-                [self stopSyncer];
-                [[NSNotificationCenter defaultCenter] removeObserver:self];
-            } else if (session.status == STMSessionRunning) {
-                [self startSyncer];
-            }
-            
-        }
-        
-    }
-    
-}
 
 - (void)syncerSettingsChanged {
     [self flushSettings];
