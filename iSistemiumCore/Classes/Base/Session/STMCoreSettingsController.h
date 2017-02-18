@@ -23,9 +23,6 @@
 
 - (NSDictionary *)defaultSettings;
 - (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;
-- (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
-
-- (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
 - (BOOL)isBool:(NSString *)value;
@@ -34,11 +31,9 @@
 
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;
 
-
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableArray *groupNames;
 @property (nonatomic, strong) NSArray *currentSettings;
-
 
 @end
