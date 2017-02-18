@@ -111,6 +111,8 @@
         [self detectPatternWithValues:pattern];
     }
     
+    [self detectPatternWithValues:@[@"5", @"6"]];
+    
     [self detectEndOfPatternWithValue:@"0"];
     
     [self noPatternWithValues:@[@"f", @"g"]];
@@ -288,7 +290,7 @@
     XCTAssertTrue(self.logger.possiblePatternArray.count == 0);
     XCTAssertFalse(self.logger.patternDetected);
     
-    XCTAssertEqual(result.count, 2);
+    XCTAssertTrue(result.count > 1);
     
     NSDictionary *testDic = result.firstObject;
     NSString *testText = testDic[@"text"];
