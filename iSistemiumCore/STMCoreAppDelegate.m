@@ -410,30 +410,6 @@
         
     }
 
-    if (userInfo[@"syncer"]) {
-        
-#warning - is it used? may be rm it and use remoteCommends instead
-        if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
-            [[self syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
-                
-                if (!handlerCompleted) {
-
-                    handlerCompleted = YES;
-
-                    NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:1", NSStringFromSelector(_cmd)];
-                    [self tryCatchFetchResultHandler:handler
-                                          withResult:result
-                                          methodName:methodName];
-
-                }
-                
-            }];
-        }
-
-        meaningfulUserInfo = YES;
-        
-    }
-        
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];

@@ -165,24 +165,8 @@
 
 - (void)updateUploadSyncProgressBar {
 
-#warning should be implemented later if needed
-    
-//    STMSyncer *syncer = [self syncer];
-//    
-//    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
-//        
-//        float allUnsyncedObjectsCount = (float)[syncer numbersOfAllUnsyncedObjects];
-//        float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
-//        
-//        if (allUnsyncedObjectsCount > 0) {
-//            
-//            self.progressBar.hidden = NO;
-//            self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
-//            
-//        }
-//
-//    }
-    
+    // TODO: should be implemented later
+
 }
 
 - (void)defantomizingProgressBarStart:(NSNotification *)notification {
