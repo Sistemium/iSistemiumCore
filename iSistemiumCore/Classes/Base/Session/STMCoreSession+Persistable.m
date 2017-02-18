@@ -101,7 +101,6 @@
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
-    [self.logger saveLogMessageWithText:@"document ready"];
     
     self.trackers = [NSMutableDictionary dictionary];
     

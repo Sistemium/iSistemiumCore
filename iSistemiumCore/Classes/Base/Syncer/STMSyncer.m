@@ -6,22 +6,17 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import <AdSupport/AdSupport.h>
-
 #import "STMSyncer.h"
-#import "STMDocument.h"
 
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
-#import "STMCoreAuthController.h"
 
 #import "STMSocketTransport+Persisting.h"
 
 
 @interface STMSyncer()
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
@@ -356,8 +351,8 @@
     }
     
     if (!self.socketUrlString) {
-        NSLog(@"have NO socketURL, fail to start socket controller");
-        return [[STMCoreAuthController authController] logout];
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
+        return [self.authController logout];
     }
     
     [STMEntityController checkEntitiesForDuplicates];
@@ -373,10 +368,8 @@
                                                           owner:self];
 
     if (!self.socketTransport) {
-        
-        NSLog(@"can not start socket transport");
-        return [[STMCoreAuthController authController] logout];
-        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
+        return [self.authController logout];
     }
     
     self.isRunning = YES;

@@ -6,16 +6,12 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreController.h"
 
-#import "STMSessionManagement.h"
-#import "STMRequestAuthenticatable.h"
 #import "STMSocketConnection.h"
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
-
-#import "STMCoreController.h"
 
 @interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
