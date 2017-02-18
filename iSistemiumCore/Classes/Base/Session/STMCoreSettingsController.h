@@ -17,12 +17,11 @@
 
 @interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
 
-+ (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
++ (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 
-- (NSDictionary *)defaultSettings;
-- (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;
+- (id)normalizeValue:(id)value forKey:(NSString *)key;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
 - (BOOL)isBool:(NSString *)value;
@@ -33,7 +32,6 @@
 
 @property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, weak) id <STMSession> session;
-@property (nonatomic, strong) NSMutableArray *groupNames;
 @property (nonatomic, strong) NSArray *currentSettings;
 
 @end

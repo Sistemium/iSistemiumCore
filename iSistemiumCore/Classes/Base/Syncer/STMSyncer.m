@@ -201,7 +201,7 @@
 - (NSMutableDictionary *)settings {
     
     if (!_settings) {
-        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
+        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"].mutableCopy;
     }
     return _settings;
     

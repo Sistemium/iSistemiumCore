@@ -17,7 +17,7 @@
 #import "STMModelling.h"
 #import "STMSyncer.h"
 
-@interface STMCoreSession : NSObject <STMSession>
+@interface STMCoreSession : STMCoreObject <STMSession>
 
 @property (nonatomic, weak) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic, strong) NSString *uid;
@@ -39,12 +39,6 @@
 @property (nonatomic, strong) NSDictionary *startSettings;
 
 @property (nonatomic,strong) STMSyncer *syncer;
-
-+ (instancetype)initWithUID:(NSString *)uid
-                     iSisDB:(NSString *)iSisDB
-              authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                  trackers:(NSArray *)trackers
-             startSettings:(NSDictionary *)startSettings;
 
 - (void)stopSession;
 - (void)dismissSession;

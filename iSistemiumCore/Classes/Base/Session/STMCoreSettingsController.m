@@ -16,7 +16,8 @@
 
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
+@property (nonatomic,strong) STMPersistingObservingSubscriptionID subscriptionId;
+@property (nonatomic,strong) NSDictionary *defaultSettings;
 
 @end
 
@@ -26,26 +27,21 @@
 
 #pragma mark - class methods
 
-+ (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings {
-    
-    STMCoreSettingsController *settingsController = [[self alloc] init];
-    settingsController.startSettings = [startSettings mutableCopy];
-    return settingsController;
-    
++ (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings {
+    return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
-- (NSDictionary *)defaultSettings {
-    return  self.session.defaultSettings;
+- (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{
+    
+    self = [self init];
+    self.startSettings = [startSettings mutableCopy];
+    self.defaultSettings = defaultSettings;
+    
+    return self;
 }
 
-- (NSMutableArray *)groupNames {
-    
-    if (!_groupNames) {
-        _groupNames = [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
-    }
-    
-    return _groupNames;
-    
+- (NSArray *)groupNames {
+    return [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
 }
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
@@ -77,7 +73,11 @@
         
         NSArray *boolValueSuffixes = @[@"TrackerAutoStart"];
         
-        NSArray *URIValues = @[@"xmlNamespace",
+        NSArray *URIValues = @[@"restServerURI",
+                               @"xmlNamespace",
+                               @"recieveDataServerURI",
+                               @"sendDataServerURI",
+                               @"API.url",
                                @"socketUrl"];
         
         NSArray *timeValues = @[];
@@ -267,17 +267,13 @@
     
 }
 
-- (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group {
+- (NSDictionary *)currentSettingsForGroup:(NSString *)group {
     
-    NSMutableDictionary *settingsDictionary = [NSMutableDictionary dictionary];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@", group];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ AND name != nil AND value != nil", group];
     NSArray *groupSettings = [self.currentSettings filteredArrayUsingPredicate:predicate];
     
-    for (NSDictionary *setting in groupSettings) {
-        if (setting[@"name"] && setting[@"value"]) settingsDictionary[setting[@"name"]] = setting[@"value"];
-    }
-    
-    return settingsDictionary;
+    return [NSDictionary dictionaryWithObjects:[groupSettings valueForKeyPath:@"value"]
+                                       forKeys:[groupSettings valueForKeyPath:@"name"]];
     
 }
 
@@ -375,8 +371,7 @@
     
     self.currentSettings = nil;
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"settingsLoadComplete"
-                                                        object:self];
+    [self postNotificationName:@"settingsLoadComplete"];
 
 }
 
@@ -466,7 +461,6 @@
         [self getSubscribedObject:anObject];
     }
     
-    self.groupNames = nil;
     self.currentSettings = nil;
     
 }
@@ -483,15 +477,11 @@
             userInfo = @{anObject[@"name"]: anObject[@"value"]};
         }
 
-        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        [self.session postNotificationName:notificationName
+                                  userInfo:userInfo];
         
-        [nc postNotificationName:notificationName
-                          object:self.session
-                        userInfo:userInfo];
-        
-        [nc postNotificationName:@"settingsChanged"
-                          object:self.session
-                        userInfo:@{@"changedObject": anObject}];
+        [self.session postNotificationName:@"settingsChanged"
+               userInfo:@{@"changedObject": anObject}];
 
     });
     

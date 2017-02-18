@@ -80,15 +80,16 @@
             
             NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
             
-            session = [[self sessionClass] initWithUID:uid
-                                                iSisDB:(NSString *)iSisDB
-                                          authDelegate:authDelegate
-                                              trackers:trackers
-                                         startSettings:startSettings];
-            
+            session = [[[self sessionClass] alloc] init];
             session.defaultSettings = validSettings[@"values"];
             session.settingsControls = validSettings[@"controls"];
             session.manager = self;
+        
+            session = [session initWithUID:uid
+                                    iSisDB:(NSString *)iSisDB
+                              authDelegate:authDelegate
+                                  trackers:trackers
+                             startSettings:startSettings];
 
             self.sessions[uid] = session;
 

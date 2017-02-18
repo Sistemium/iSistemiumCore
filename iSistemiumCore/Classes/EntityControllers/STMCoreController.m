@@ -17,7 +17,7 @@
 
 @implementation STMCoreController
 
-+ (STMCoreSession *)session {
++ (id <STMSession>)session {
     return [STMCoreSessionManager sharedManager].currentSession;
 }
 
@@ -26,7 +26,7 @@
 }
 
 + (instancetype)sharedInstance {
-    return [[self session] controllerWithName:NSStringFromClass(self)];
+    return (STMCoreController*)[[self session] controllerWithClass:self.class];
 }
 
 - (instancetype)initWithPersistenceDelegate:(id)persistenceDelegate {
