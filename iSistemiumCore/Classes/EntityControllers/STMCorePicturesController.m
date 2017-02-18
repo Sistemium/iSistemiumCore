@@ -7,14 +7,13 @@
 //
 
 #import "STMCorePicturesController.h"
-#import "STMFunctions.h"
+
 #import "STMConstants.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
 #import "STMVisitPhoto.h"
 #import "STMOutletPhoto.h"
-
-#import <objc/runtime.h>
+#import "STMMessagePicture.h"
 
 
 @interface STMCorePicturesController()

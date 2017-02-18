@@ -7,14 +7,9 @@
 //
 
 #import "STMCoreSettingsController.h"
-#import "STMCoreSession.h"
-#import "STMSettingsData.h"
-#import "STMEntityDescription.h"
-#import "STMCoreObjectsController.h"
-#import "STMCoreSessionManager.h"
+#import "STMSetting.h"
 
-
-@interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
+@interface STMCoreSettingsController()
 
 @property (nonatomic,strong) STMPersistingObservingSubscriptionID subscriptionId;
 @property (nonatomic,strong) NSDictionary *defaultSettings;
@@ -75,17 +70,8 @@
 
 - (NSArray *)currentSettings {
     
-    if (!_currentSettings) {
-        
-        NSError *error = nil;
-        NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
-                                                               predicate:nil
-                                                                 options:nil
-                                                                   error:&error];
-        
-        _currentSettings = currentSettings;
-        
-    }
+    if (!_currentSettings) [self reloadCurrentSettings];
+    
     return _currentSettings;
     
 }
@@ -108,43 +94,37 @@
 
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
     
-    NSArray *currentSettings = self.currentSettings;
-    
     for (NSString *settingName in newSettings.allKeys) {
         
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", group, settingName];
-        NSMutableDictionary *setting = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+        NSMutableDictionary *setting = [self settingWithName:settingName forGroup:group].mutableCopy;
         NSString *value = [self normalizeValue:newSettings[settingName] forKey:settingName];
         
-        if (value) {
-            
-            if (!setting) {
-                
-                setting = @{@"group"    : group,
-                            @"name"     : settingName}.mutableCopy;
-                
-            }
-            
-            setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
-            
-            [self mergeSync:setting];
-            
-        } else {
-            
+        if (!value) {
             NSLog(@"wrong value %@ for setting %@", newSettings[settingName], settingName);
+            continue;
+        }
+        
+        if (!setting) {
+            
+            setting = @{@"group"    : group,
+                        @"name"     : settingName}.mutableCopy;
             
         }
         
+        setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
+        
+        [self mergeSync:setting];
+
     }
     
-    self.currentSettings = nil;
+    // subscription handler will reload currentSettings if there were any changes
     
     return @"";
     
 }
 
-
 #pragma mark - Public methods
+
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
     
@@ -318,17 +298,14 @@
 - (void)checkSettings {
     
     NSDictionary *defaultSettings = [self defaultSettings];
-    //        NSLog(@"defaultSettings %@", defaultSettings);
     
     NSArray *currentSettings = self.currentSettings;
     
     for (NSString *settingsGroupName in defaultSettings.allKeys) {
-        //            NSLog(@"settingsGroup %@", settingsGroupName);
         
         NSDictionary *settingsGroup = defaultSettings[settingsGroupName];
         
         for (NSString *settingName in settingsGroup.allKeys) {
-            //                NSLog(@"setting %@ %@", settingName, [settingsGroup valueForKey:settingName]);
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
             NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
@@ -385,10 +362,8 @@
         
     }
     
-    self.currentSettings = nil;
-
-    [self postNotificationName:@"settingsLoadComplete"];
-
+    [self reloadCurrentSettings];
+    
 }
 
 - (BOOL)value:(id)valueOne isEqual:(id)valueTwo {
@@ -423,6 +398,14 @@
 
 }
 
+- (void)reloadCurrentSettings {
+    
+    NSError *error = nil;
+    _currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
+                                                   predicate:nil
+                                                     options:nil
+                                                       error:&error];
+}
 
 #pragma mark - Notifications of changes
 
@@ -436,11 +419,11 @@
 
 - (void)notifySubscribersFor:(NSArray *)theChangedData {
     
-    self.currentSettings = nil;
+    [self reloadCurrentSettings];
     
     for (NSDictionary *anObject in theChangedData) {
         
-        NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
+        NSString *notificationName = [anObject[@"group"] stringByAppendingString:STM_SESSION_SETTINGS_CHANGED];
         
         NSDictionary *userInfo = nil;
         
@@ -449,8 +432,7 @@
         }
         
         [self.session postAsyncMainQueueNotification:notificationName userInfo:userInfo];
-        
-        [self.session postAsyncMainQueueNotification:@"settingsChanged" userInfo:@{@"changedObject": anObject}];
+        [self.session postAsyncMainQueueNotification:STM_SESSION_SETTINGS_CHANGED userInfo:@{@"changedObject": anObject}];
 
     }
     

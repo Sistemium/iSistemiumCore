@@ -508,9 +508,8 @@
 
     self.title = NSLocalizedString(@"SETTINGS", @"");
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsChanged:) name:@"settingsChanged" object:self.session];
+    [self.session addObserver:self selector:@selector(settingsChanged:) name:STM_SESSION_SETTINGS_CHANGED];
 
-    
 }
 
 //- (void)viewWillAppear:(BOOL)animated {
@@ -530,7 +529,7 @@
     
     if ([STMFunctions shouldHandleMemoryWarningFromVC:self]) {
         
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"settingsChanged" object:self.session];
+        [self.session removeObserver:self];
         [STMFunctions nilifyViewForVC:self];
         
     }

@@ -56,6 +56,10 @@
     [self.notificationCenter removeObserver:self];
 }
 
+- (void)removeObserver:(id)anObserver {
+    [self.notificationCenter removeObserver:anObserver];
+}
+
 - (void)dealloc {
     [self removeObservers];
 }

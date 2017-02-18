@@ -11,6 +11,8 @@
 
 #import "STMConstants.h"
 
+// Don't import any STM headers
+// This class is only for generic methods
 
 @interface STMDateFormatter : NSDateFormatter
 
@@ -135,8 +137,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
 + (NSString *)currentTestTarget;
-
-+ (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName;
 
 NS_ASSUME_NONNULL_END
 

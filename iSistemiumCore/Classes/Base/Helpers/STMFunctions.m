@@ -8,8 +8,13 @@
 
 #import "STMFunctions.h"
 
+// Don't import any STM headers
+// This class is only for generic methods
+
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
+
+// FIXME: move STM-dependent methods somewhere
 
 #import <CommonCrypto/CommonDigest.h>
 #import <sys/sysctl.h>
@@ -985,29 +990,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     }
     return appStateString;
-    
-}
-
-+ (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    
-    NSMutableArray *subpredicates = @[].mutableCopy;
-    
-    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
-        
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
-                                                                           forGroup:@"syncer"];
-        
-        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
-        
-    }
-    
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
-    
-    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
-    
-    return predicate;
     
 }
 

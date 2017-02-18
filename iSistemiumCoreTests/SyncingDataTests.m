@@ -187,6 +187,10 @@
 
 #pragma mark STMDataSyncingSubscriber
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    return [NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"];
+}
+
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     NSString *source = itemData[@"source"];

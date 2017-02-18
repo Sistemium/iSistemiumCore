@@ -17,6 +17,14 @@
 #import "STMCorePicturesController.h"
 #import "STMPersistingInterceptorUniqueProperty.h"
 
+#import "STMUnsyncedDataHelper.h"
+
+#import "STMSyncerHelper+Defantomizing.h"
+#import "STMSyncerHelper+Downloading.h"
+
+#import "STMPersisterFantoms.h"
+#import "STMSyncer.h"
+
 @implementation STMCoreSession (Persistable)
 
 - (instancetype)initPersistable {
@@ -86,22 +94,24 @@
     [self initController:STMEntityController.class];
     [self initController:STMCorePicturesController.class];
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
-    
     self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
-    
-    self.trackers = [NSMutableDictionary dictionary];
-    if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
-    
-    [self checkTrackersToStart];
+    self.settingsController.session = self;
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
-    self.settingsController.session = self;
-
-    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
-
+    
+    self.trackers = [NSMutableDictionary dictionary];
+    
+    [self checkTrackersToStart];
+    
+    self.status = STMSessionRunning;
+    
+    if (!self.isRunningTests) {
+        [self setupSyncer];
+    }
+    
 }
 
 
@@ -109,22 +119,17 @@
 
 - (void)addPersistenceObservers {
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
+                     selector:@selector(myStatusChanged:)
+                       object:self];
     
-    [nc addObserver:self
-           selector:@selector(myStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self];
+    [self observeNotification:NOTIFICATION_DOCUMENT_READY
+                     selector:@selector(persisterDocumentReady:)
+                       object:self.document];
     
-    [nc addObserver:self
-           selector:@selector(persisterDocumentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:self.document];
-    
-    [nc addObserver:self
-           selector:@selector(persisterDocumentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:self.document];
+    [self observeNotification:NOTIFICATION_DOCUMENT_NOT_READY
+                     selector:@selector(persisterDocumentNotReady:)
+                       object:self.document];
     
 }
 
@@ -150,5 +155,23 @@
     [self persisterCompleteInitializationWithSuccess:NO];
 }
 
+- (void)setupSyncer {
+    
+    self.syncer = [STMSyncer controllerWithPersistenceDelegate:self.persistenceDelegate];
+
+    STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
+    
+    syncerHelper.dataDownloadingOwner = self.syncer;
+    syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
+    syncerHelper.defantomizingOwner = self.syncer;
+    
+    self.syncer.dataDownloadingDelegate = syncerHelper;
+    self.syncer.defantomizingDelegate = syncerHelper;
+    
+    self.syncer.dataSyncingDelegate = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
+    
+    self.syncer.session = self;
+    
+}
 
 @end

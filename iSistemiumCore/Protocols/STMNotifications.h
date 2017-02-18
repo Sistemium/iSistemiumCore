@@ -33,4 +33,6 @@
 
 - (void)removeObservers;
 
+- (void)removeObserver:(id)anObserver;
+
 @end

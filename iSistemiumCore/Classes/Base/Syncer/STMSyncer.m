@@ -6,25 +6,20 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import <AdSupport/AdSupport.h>
-
 #import "STMSyncer.h"
-#import "STMDocument.h"
 
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
-#import "STMCoreAuthController.h"
 
 #import "STMSocketTransport+Persisting.h"
 
 
 @interface STMSyncer()
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
-@property (nonatomic, strong) NSMutableDictionary *settings;
+@property (nonatomic, strong) NSDictionary *settings;
 @property (nonatomic, strong) NSTimer *syncTimer;
 
 @property (nonatomic, strong) NSString *entityResource;
@@ -49,26 +44,10 @@
 @synthesize syncInterval = _syncInterval;
 @synthesize syncerState = _syncerState;
 
-
-- (instancetype)init {
-    
-    NSLog(@"syncer init");
-    
-    return [super init];
-    
-}
-
-
 #pragma mark - observers
 
 - (void)addObservers {
-    
-    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
-                     selector:@selector(sessionStatusChanged:)
-                       object:self.session];
 
-#warning nobody posts this notification name
-    
     [self observeNotification:@"syncerSettingsChanged"
                      selector:@selector(syncerSettingsChanged)
                        object:self.session];
@@ -81,36 +60,11 @@
     
 }
 
-- (void)dealloc{
-    NSLogMethodName;
-    [self removeObservers];
-}
-
 - (void)removeObservers {
     [self unsubscribeFromUnsyncedObjects];
     [super removeObservers];
 }
 
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
-        
-        STMCoreSession *session = (STMCoreSession *)notification.object;
-        
-        if (session == self.session) {
-            
-            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
-                [self stopSyncer];
-                [[NSNotificationCenter defaultCenter] removeObserver:self];
-            } else if (session.status == STMSessionRunning) {
-                [self startSyncer];
-            }
-            
-        }
-        
-    }
-    
-}
 
 - (void)syncerSettingsChanged {
     [self flushSettings];
@@ -198,10 +152,10 @@
     
 }
 
-- (NSMutableDictionary *)settings {
+- (NSDictionary *)settings {
     
     if (!_settings) {
-        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"].mutableCopy;
+        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
     }
     return _settings;
     
@@ -350,9 +304,7 @@
 
 - (void)startSyncer {
     
-    if (self.isRunning || self.session.status != STMSessionRunning) {
-        return;
-    }
+    if (self.isRunning) return;
         
     self.settings = nil;
     
@@ -365,8 +317,8 @@
     }
     
     if (!self.socketUrlString) {
-        NSLog(@"have NO socketURL, fail to start socket controller");
-        return [[STMCoreAuthController authController] logout];
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
+        return [self.authController logout];
     }
     
     [STMEntityController checkEntitiesForDuplicates];
@@ -382,10 +334,8 @@
                                                           owner:self];
 
     if (!self.socketTransport) {
-        
-        NSLog(@"can not start socket transport");
-        return [[STMCoreAuthController authController] logout];
-        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
+        return [self.authController logout];
     }
     
     self.isRunning = YES;
@@ -804,6 +754,29 @@
 
 
 #pragma mark - STMDataSyncingSubscriber
+
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    return predicate;
+    
+}
 
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     

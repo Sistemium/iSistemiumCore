@@ -123,10 +123,6 @@
     return 0;
 }
 
-- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    return [STMFunctions predicateForUnsyncedObjectsWithEntityName:entityName];
-}
-
 
 #pragma mark - Private helpers
 
@@ -141,7 +137,7 @@
     
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
         
-        NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+        NSPredicate *predicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
         
         NSDictionary *onlyLocalChanges = @{STMPersistingOptionLts:@NO};
         
@@ -316,7 +312,7 @@
     
     NSMutableArray *subpredicates = @[].mutableCopy;
     
-    [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
+    [subpredicates addObject:[self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName]];
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     if (erroredExclusion) [subpredicates addObject:erroredExclusion];
