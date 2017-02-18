@@ -513,7 +513,7 @@
     [returnArray insertObject:result atIndex:0];
     [returnArray addObject:logMessageDic];
     
-    NSLog(@"returnArray %@", returnArray);
+//    NSLog(@"returnArray %@", returnArray);
     
     return returnArray;
 
