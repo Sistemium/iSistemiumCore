@@ -144,8 +144,6 @@
     
     if (![[self availableTypes] containsObject:type]) type = @"info";
     
-    NSLog(@"Log %@: %@", type, text);
-    
 #ifdef DEBUG
     //    [self sendLogMessageToLocalServerForDebugWithType:type andText:text];
 #endif
@@ -160,9 +158,17 @@
         if (!result) return;
         
         for (NSDictionary *logMessageDic in result) {
+            
+            NSLog(@"%@ %@", logMessageDic[@"type"], logMessageDic[@"text"]);
+            
             [self saveLogMessageDic:logMessageDic];
+            
         }
         
+    } else {
+        
+        NSLog(@"Log %@: %@", type, text);
+
     }
     
 }
