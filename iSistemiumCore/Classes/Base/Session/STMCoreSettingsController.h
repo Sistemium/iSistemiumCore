@@ -6,18 +6,20 @@
 //  Copyright (c) 2013 Maxim V. Grigoriev. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreController.h"
+
 #import <CoreData/CoreData.h>
 #import <CoreLocation/CoreLocation.h>
 #import "STMSessionManagement.h"
 #import "STMCoreDataModel.h"
 
-@interface STMCoreSettingsController : NSObject <STMSettingsController>
+#import "STMPersistingIntercepting.h"
+
+@interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
 
 + (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
-+ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group;
 
 - (NSDictionary *)defaultSettings;
 - (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;

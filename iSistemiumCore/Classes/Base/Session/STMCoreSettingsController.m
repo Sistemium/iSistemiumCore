@@ -16,7 +16,6 @@
 
 @interface STMCoreSettingsController() <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, weak) id <STMPersistingSync, STMPersistingAsync, STMPersistingObserving> persistenceDelegate;
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
 
 @end
@@ -293,13 +292,10 @@
     
 }
 
-+ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group {
+- (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group {
     
-    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
-    STMCoreSettingsController *currentController = currentSession.settingsController;
-
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"group == %@ && name == %@", group, name];
-    NSDictionary *setting = [currentController.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+    NSDictionary *setting = [self.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
 
     return setting;
     
@@ -499,5 +495,14 @@
     
 }
 
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
+    
+    NSDictionary *setting = [self settingWithName:attributes[@"name"] forGroup:attributes[@"group"]];
+    
+    if (!setting) return attributes;
+    
+    return [STMFunctions setValue:setting[STMPersistingKeyPrimary] forKey:STMPersistingKeyPrimary inDictionary:attributes];
+    
+}
 
 @end
