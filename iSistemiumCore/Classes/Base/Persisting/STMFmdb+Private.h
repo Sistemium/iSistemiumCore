@@ -12,6 +12,15 @@
 
 CF_ASSUME_NONNULL_BEGIN
 
+@interface STMFmdb()
+
+@property (nonatomic, strong) FMDatabaseQueue *queue;
+@property (nonatomic, strong) FMDatabasePool *pool;
+@property (nonatomic, strong) NSDictionary *columnsByTable;
+@property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
+
+@end
+
 @interface STMFmdb (Private)
 
 @property (nonatomic, strong) NSDictionary * columnsByTable;
@@ -22,19 +31,6 @@ CF_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling
                                 inDatabase:(FMDatabase *)database;
-
-- (NSString *)mergeInto:(NSString * _Nonnull)tablename
-             dictionary:(NSDictionary<NSString *, id> * _Nonnull)dictionary
-                  error:(NSError *_Nonnull * _Nonnull)error
-                     db:(FMDatabase * _Nonnull)db;
-
-- (NSArray * _Nonnull)getDataWithEntityName:(NSString * _Nonnull)name
-                              withPredicate:(NSPredicate * _Nonnull)predicate
-                                    orderBy:(NSString * _Nullable)orderBy
-                                  ascending:(BOOL)ascending
-                                 fetchLimit:(NSUInteger * _Nullable)fetchLimit
-                                fetchOffset:(NSUInteger * _Nullable)fetchOffset
-                                         db:(FMDatabase *)db;
 
 CF_ASSUME_NONNULL_END
 

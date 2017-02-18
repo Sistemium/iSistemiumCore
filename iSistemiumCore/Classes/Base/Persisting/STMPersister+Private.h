@@ -12,4 +12,6 @@
 
 @property (nonatomic,strong) NSString * fmdbFileName;
 
+- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error;
+
 @end

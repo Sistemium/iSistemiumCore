@@ -16,6 +16,8 @@
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
 #import "STMPersister+Private.h"
+#import "STMPersister+Transactions.h"
+
 #import "STMModeller+Interceptable.h"
 
 @implementation STMPersister
@@ -49,204 +51,6 @@
 
 #pragma mark - Private methods
 
-- (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options {
-    
-    STMStorageType storeTo = [self storageForEntityName:entityName];
-    
-    if (options[STMPersistingOptionForceStorage]) {
-        storeTo = [options[STMPersistingOptionForceStorage] integerValue];
-    }
-    
-    return storeTo;
-}
-
-- (NSDictionary *) mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inSTMFmdb:(STMFmdb *)db{
-    
-    [db startTransaction];
-    
-    NSString *now = [STMFunctions stringFromNow];
-    NSMutableDictionary *savingAttributes = attributes.mutableCopy;
-    
-    BOOL returnSaved = YES;
-    
-    if ([options[STMPersistingOptionReturnSaved] isEqual:@NO]) returnSaved = NO;
-    
-    if (options[STMPersistingOptionLts]) {
-        [savingAttributes setValue:options[STMPersistingOptionLts] forKey:STMPersistingOptionLts];
-        [savingAttributes removeObjectForKey:@"deviceTs"];
-    } else {
-        [savingAttributes setValue:now forKey:@"deviceTs"];
-        [savingAttributes removeObjectForKey:STMPersistingOptionLts];
-    }
-    
-    savingAttributes[@"deviceAts"] = now;
-    
-    if (!savingAttributes[@"deviceCts"] || [savingAttributes[@"deviceCts"] isEqual:[NSNull null]]) {
-        savingAttributes[@"deviceCts"] = now;
-    }
-    
-    if(!returnSaved){
-        [db mergeInto:entityName
-           dictionary:savingAttributes
-                error:error];
-        return nil;
-    } else {
-        return [db mergeIntoAndResponse:entityName
-                             dictionary:savingAttributes
-                                  error:error];
-    }
-    
-}
-
-- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-    
-    NSString *recordStatusEntityName = @"STMRecordStatus";
-
-    // TODO: implement RecordStatus with interceptor
-
-    if ([entityName isEqualToString:recordStatusEntityName]) {
-        
-        if (![attributes[@"isRemoved"] isEqual:NSNull.null] ? [attributes[@"isRemoved"] boolValue] : false) {
-            
-            NSPredicate* predicate;
-            
-            NSString *objectXid = attributes[@"objectXid"];
-            NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
-            
-            switch ([self storageForEntityName:entityNameToDestroy]) {
-                case STMStorageTypeFMDB:
-                    predicate = [NSPredicate predicateWithFormat:@"id = %@", objectXid];
-                    break;
-                    
-                case STMStorageTypeCoreData: {
-                    NSData *objectXidData = [STMFunctions xidDataFromXidString:objectXid];
-                    predicate = [NSPredicate predicateWithFormat:@"xid = %@", objectXidData];
-                    break;
-                }
-                default: {
-                }
-            }
-
-            if (predicate) {
-                [self destroyWithoutSave:attributes[@"name"]
-                               predicate:predicate
-                                 options:@{STMPersistingOptionRecordstatuses:@NO}
-                                   error:error];
-            }
-            
-        }
-        
-        if (![attributes[@"isTemporary"] isEqual:NSNull.null] && [attributes[@"isTemporary"] boolValue]) return nil;
-    }
-    
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            return [self mergeWithoutSave:entityName
-                               attributes:attributes
-                                  options:options
-                                    error:error
-                                inSTMFmdb:self.fmdb];
-        case STMStorageTypeCoreData:
-            
-            return [self mergeWithoutSave:entityName
-                               attributes:attributes
-                                  options:options
-                                    error:error
-                   inManagedObjectContext:self.document.managedObjectContext];
-            break;
-            
-        default:
-            [self wrongEntityName:entityName error:error];
-            return nil;
-    }
-    
-}
-
-- (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
-    
-    NSArray* objects = @[];
-    
-    // TODO: expendable fetch on one object destroy
-    if (!options[STMPersistingOptionRecordstatuses] || [options[STMPersistingOptionRecordstatuses] boolValue]){
-        objects = [self findAllSync:entityName
-                          predicate:predicate
-                            options:options
-                              error:error];
-    }
-    
-    NSString* idKey;
-    
-    NSUInteger result = 0;
-    
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            idKey = @"id";
-            
-            result = [self.fmdb destroy:entityName
-                              predicate:predicate
-                                options:options
-                                  error:error];
-            break;
-        
-        case STMStorageTypeCoreData:
-            idKey = @"xid";
-            
-            result = [self removeObjectForPredicate:predicate
-                                         entityName:entityName];
-            break;
-            
-        default: break;
-    }
-    
-    for (NSDictionary* object in objects){
-        
-        NSDictionary *recordStatus = @{
-                                       @"objectXid":object[idKey],
-                                       @"name":[STMFunctions removePrefixFromEntityName:entityName],
-                                       @"isRemoved": @YES};
-        
-        [self mergeWithoutSave:@"STMRecordStatus"
-                    attributes:recordStatus
-                       options:nil error:error];
-        
-    }
-    
-    return result;
-    
-}
-
-
-- (BOOL)saveWithEntityName:(NSString *)entityName{
-    
-    if ([self.fmdb hasTable:entityName]){
-        
-        return [self.fmdb commit];
-        
-    } else {
-        
-        [self.document saveDocument:^(BOOL success) {
-        }];
-        
-        return YES;
-        
-    }
-    
-}
-
-- (NSPredicate *)predicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options {
-    
-    NSMutableArray *predicates = NSMutableArray.array;
-    
-    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
-    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
-    
-    if (predicate) {
-        [predicates addObject:predicate];
-    }
-    
-    return [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
-}
-
 - (void)wrongEntityName:(NSString *)entityName error:(NSError **)error {
     NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName];
     [STMFunctions error:error withMessage:message];
@@ -254,10 +58,7 @@
 
 #pragma mark - STMPersistingSync
 
-- (NSUInteger)countSync:(NSString *)entityName
-              predicate:(NSPredicate *)predicate
-                options:(NSDictionary *)options
-                  error:(NSError **)error {
+- (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
     predicate = [self predicate:predicate withOptions:options];
     
@@ -287,28 +88,12 @@
 
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    NSPredicate* predicate;
+    NSPredicate *pkPredicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
+    NSPredicate *notFantom = [NSPredicate predicateWithFormat:@"isFantom == 0"];
     
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            // TODO: isFantom = 0 should be only if no withFantoms / fantoms option
-            predicate = [NSPredicate predicateWithFormat:@"isFantom = 0 and id == %@",
-                         identifier];
-            break;
-        case STMStorageTypeCoreData:{
-            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-            predicate = [NSPredicate predicateWithFormat:@"xid == %@", identifierData];
-            break;
-        }
-        default:
-            [self wrongEntityName:entityName error:error];
-            return nil;
-    }
-
-    NSArray *results = [self findAllSync:entityName
-                               predicate:predicate
-                                 options:options
-                                   error:error];
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[pkPredicate, notFantom]];
+    
+    NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
     
     if (results.count) {
         return results.firstObject;
@@ -342,8 +127,8 @@
                                       withPredicate:predicate
                                             orderBy:orderBy
                                           ascending:asc
-                                         fetchLimit:options[STMPersistingOptionPageSize] ? &pageSize : nil
-                                        fetchOffset:options[@"offset"] ? &offset : nil];
+                                         fetchLimit:pageSize
+                                        fetchOffset:offset];
 
         case STMStorageTypeCoreData: {
             NSArray* objectsArray = [self objectsForEntityName:entityName
@@ -367,46 +152,29 @@
     
 }
 
-- (NSDictionary *)fixMergeOptions:(NSDictionary *)options
-                       entityName:(NSString *)entityName{
-    
-    if ([self storageForEntityName:entityName options:options] == STMStorageTypeCoreData && options[STMPersistingOptionLts]) {
-        NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
-        // Add 1ms because there are microseconds in deviceTs
-        options = [STMFunctions setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
-                                  forKey:STMPersistingOptionLts
-                            inDictionary:options];
-    }
-    
-    return options;
-    
-}
 
-- (NSDictionary *)mergeSync:(NSString *)entityName
-                 attributes:(NSDictionary *)attributes
-                    options:(NSDictionary *)options
-                      error:(NSError **)error{
-    
+- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+
     attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     
     if (!attributes || *error) return nil;
+
+    __block NSDictionary *result;
     
-    NSDictionary* result = [self mergeWithoutSave:entityName
-                                       attributes:attributes
-                                          options:[self fixMergeOptions:options entityName:entityName]
-                                            error:error];
+    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+        
+        result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
+        
+        // Exit if there's no result and no error from the interceptor, but don't rollback
+        if (!result || *error) return !*error;
+        
+        result = [transaction mergeWithoutSave:entityName attributes:result options:options error:error];
+        
+        return !*error;
+        
+    }];
     
-    if (*error){
-        [STMFunctions error:error
-                withMessage: [NSString stringWithFormat:@"Error merging %@", entityName]];
-        return nil;
-    }
-    
-    if (![self saveWithEntityName:entityName]){
-        [STMFunctions error:error
-                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
-        return nil;
-    }
+    if (*error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result ? result : attributes
@@ -418,40 +186,33 @@
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
     
-    NSMutableArray *result = @[].mutableCopy;
+    __block NSMutableArray *result = @[].mutableCopy;
     
     attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
     
     if (!attributeArray.count || *error) return attributeArray;
-
-    for (NSDictionary *dictionary in attributeArray) {
-        
-        NSDictionary *dict = [self mergeWithoutSave:entityName
-                                         attributes:dictionary
-                                            options:[self fixMergeOptions:options entityName:entityName]
-                                              error:error];
-        
-        if (dict) {
-            [result addObject:dict];
-        }
-        
-        if (*error) {
-            
-            #warning possible danger, will rollback changes from other threads
-            [self.fmdb rollback];
-            return nil;
-            
-        }
-        
-    }
     
-    if (![self saveWithEntityName:entityName]) {
+    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
-        [STMFunctions error:error
-                withMessage:[NSString stringWithFormat:@"Error saving %@", entityName]];
-        return nil;
+        for (NSDictionary *attributes in attributeArray) {
+            
+            NSDictionary *merged = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
+            
+            if (*error) return NO;
+            if (!merged) continue;
+            
+            merged = [transaction mergeWithoutSave:entityName attributes:merged options:options error:error];
+            
+            if (*error) return NO;
+            if (merged) [result addObject:merged];
+            
+        }
         
-    }
+        return YES;
+        
+    }];
+    
+    if (*error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                      ofUpdatedArray:result.count ? result : attributeArray
@@ -463,24 +224,8 @@
 
 - (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    NSPredicate* predicate;
-    
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            predicate = [NSPredicate predicateWithFormat:@"id = %@", identifier];
-            break;
-        case STMStorageTypeCoreData: {
-            NSData *identifierData = [STMFunctions xidDataFromXidString:identifier];
-            predicate = [NSPredicate predicateWithFormat:@"xid = %@", identifierData];
-            break;
-        }
-        default:
-            [self wrongEntityName:entityName error:error];
-            return NO;
-    }
-    
     NSUInteger deletedCount = [self destroyAllSync:entityName
-                                         predicate:predicate
+                                         predicate:[self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options]
                                            options:options
                                              error:error];
     
@@ -490,30 +235,21 @@
 
 - (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    NSUInteger count = [self destroyWithoutSave:entityName
-                                      predicate:predicate
-                                        options:options
-                                          error:error];
+    __block NSUInteger count;
     
-    if (*error){
-        #warning possible danger, will rollback changes from other threads
-        [self.fmdb rollback];
-        return 0;
-    }
+    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+        
+        count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
+        
+        return !*error;
+        
+    }];
     
-    if ([self saveWithEntityName:entityName]){
-        return count;
-    } else {
-        [STMFunctions error:error
-                withMessage: [NSString stringWithFormat:@"Error saving %@", entityName]];
-        return count;
-    }
+    return count;
     
 }
 
 - (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-    
-    NSDictionary *result;
     
     NSMutableDictionary *attributesToUpdate;
     
@@ -537,26 +273,16 @@
         [attributesToUpdate removeObjectForKey:@"deviceTs"];
     }
     
-    switch ([self storageForEntityName:entityName options:options]) {
-            
-        case STMStorageTypeFMDB:
-            result = [self.fmdb update:entityName attributes:attributesToUpdate error:error];
-            break;
-            
-        case STMStorageTypeCoreData:
-            result = [self update:entityName
-                     attributes:attributesToUpdate
-                        options:options
-                          error:error
-         inManagedObjectContext:self.document.managedObjectContext];
-            break;
-            
-        default:
-            [self wrongEntityName:entityName error:error];
-            return nil;
-    }
+    __block NSDictionary *result;
     
-    [self saveWithEntityName:entityName];
+    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+        
+        result = [transaction updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
+        
+        return !*error;
+        
+    }];
+    
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result

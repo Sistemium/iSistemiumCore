@@ -6,14 +6,17 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMPersistingTransaction.h"
 
 @protocol STMPersistingMergeInterceptor
     
+@optional
+
 - (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error;
 
-@optional
 - (NSArray *)interceptedAttributeArray:(NSArray *)attributesArray options:(NSDictionary *)options error:(NSError **)error;
+
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction;
 
 @end
 
