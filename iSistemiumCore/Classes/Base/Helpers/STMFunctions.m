@@ -8,8 +8,13 @@
 
 #import "STMFunctions.h"
 
+// Don't import any STM headers
+// This class is only for generic methods
+
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
+
+// FIXME: move STM-dependent methods somewhere
 
 #import <CommonCrypto/CommonDigest.h>
 #import <sys/sysctl.h>

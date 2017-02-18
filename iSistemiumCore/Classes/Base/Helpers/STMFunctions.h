@@ -11,6 +11,8 @@
 
 #import "STMConstants.h"
 
+// Don't import any STM headers
+// This class is only for generic methods
 
 @interface STMDateFormatter : NSDateFormatter
 
