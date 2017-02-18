@@ -8,6 +8,7 @@
 
 #import "STMModeller+Interceptable.h"
 #import "STMModeller+Private.h"
+#import "STMFunctions.h"
 
 @implementation STMModeller (Interceptable)
 
@@ -33,12 +34,17 @@
 
 - (NSArray *)applyMergeInterceptors:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error {
     
-    id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
+    NSObject <STMPersistingMergeInterceptor> *interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     
     if (!interceptor) return attributeArray;
     
-    return [interceptor interceptedAttributeArray:attributeArray options:options error:error];
+    if ([interceptor respondsToSelector:@selector(interceptedAttributeArray:options:error:)]) {
+        return [interceptor interceptedAttributeArray:attributeArray options:options error:error];
+    }
     
+    return [STMFunctions mapArray:attributeArray withBlock:^id(NSDictionary *attributes) {
+        return [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+    }];
 }
 
 @end

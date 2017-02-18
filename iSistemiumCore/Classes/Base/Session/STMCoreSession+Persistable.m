@@ -45,13 +45,6 @@
     
     [persister beforeMergeEntityName:entityNameInterceptor.entityName interceptor:entityNameInterceptor];
 
-    STMPersistingInterceptorUniqueProperty *settingNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
-    
-    settingNameInterceptor.entityName = NSStringFromClass(STMSetting.class);
-    settingNameInterceptor.propertyName = @"name";
-    
-    [persister beforeMergeEntityName:settingNameInterceptor.entityName interceptor:settingNameInterceptor];
-
     [self addPersistenceObservers];
     
     return self;
@@ -96,6 +89,8 @@
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
     self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+    self.settingsController.persistenceDelegate = self.persistenceDelegate;
+    
     self.trackers = [NSMutableDictionary dictionary];
     if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
     
@@ -104,7 +99,9 @@
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
     self.settingsController.session = self;
-    
+
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
+
 }
 
 

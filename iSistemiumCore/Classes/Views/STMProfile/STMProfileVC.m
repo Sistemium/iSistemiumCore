@@ -85,7 +85,7 @@
     return [STMCoreSessionManager sharedManager].currentSession.syncer;
 }
 
-- (STMCoreSettingsController *)settingsController {
+- (id <STMSettingsController>)settingsController {
     return [[STMCoreSessionManager sharedManager].currentSession settingsController];
 }
 
@@ -703,7 +703,7 @@
 
 - (void)enableWWANDownloading {
     
-    STMCoreSettingsController *settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
+    id <STMSettingsController> settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
 
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
