@@ -478,6 +478,8 @@
     
     if (![self.possiblePatternArray[self.currentPatternIndex] isEqualToDictionary:logMessageDic]) {
         
+        self.patternRepeatCounter = (self.currentPatternIndex != 0) ? self.patternRepeatCounter - 1 : self.patternRepeatCounter;
+
         return [self endPatternDetectionWith:logMessageDic];
         
     }
@@ -493,13 +495,27 @@
 - (NSArray *)endPatternDetectionWith:(NSDictionary *)logMessageDic {
     
     self.patternDetected = NO;
+    
+    NSRange returnRange = NSMakeRange(0, self.currentPatternIndex);
+    
+    NSMutableArray *returnArray = [self.possiblePatternArray subarrayWithRange:returnRange].mutableCopy;
+    
+    for (NSDictionary *logMessage in returnArray) {
+        [self enqueueLogMessage:logMessage];
+    }
+    
     [self enqueueLogMessage:logMessageDic];
     [self.possiblePatternArray removeAllObjects];
     
     NSDictionary *result = @{@"type"    : @"important",
                              @"text"    : [NSString stringWithFormat:@"detect end of pattern, repeat %@ times", @(self.patternRepeatCounter)]};
     
-    return @[result, logMessageDic];
+    [returnArray insertObject:result atIndex:0];
+    [returnArray addObject:logMessageDic];
+    
+    NSLog(@"returnArray %@", returnArray);
+    
+    return returnArray;
 
 }
 
