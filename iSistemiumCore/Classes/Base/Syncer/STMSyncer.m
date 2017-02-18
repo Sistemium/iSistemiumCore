@@ -67,8 +67,6 @@
                      selector:@selector(sessionStatusChanged:)
                        object:self.session];
 
-#warning nobody posts this notification name
-    
     [self observeNotification:@"syncerSettingsChanged"
                      selector:@selector(syncerSettingsChanged)
                        object:self.session];
@@ -79,11 +77,6 @@
     [self observeNotification:UIApplicationDidEnterBackgroundNotification
                      selector:@selector(appDidEnterBackground)];
     
-}
-
-- (void)dealloc{
-    NSLogMethodName;
-    [self removeObservers];
 }
 
 - (void)removeObservers {
@@ -350,9 +343,7 @@
 
 - (void)startSyncer {
     
-    if (self.isRunning || self.session.status != STMSessionRunning) {
-        return;
-    }
+    if (self.isRunning) return;
         
     self.settings = nil;
     

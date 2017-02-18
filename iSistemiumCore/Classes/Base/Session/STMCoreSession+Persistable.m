@@ -94,25 +94,25 @@
     [self initController:STMEntityController.class];
     [self initController:STMCorePicturesController.class];
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
-    
     self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
-    
-    self.trackers = [NSMutableDictionary dictionary];
-    if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
-    
-    [self checkTrackersToStart];
+    self.settingsController.session = self;
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
+    [self.logger saveLogMessageWithText:@"document ready"];
     
-    [self.settingsController subscribeForLoadComplete:self selector:@selector(settingsLoadComplete:)];
+    self.trackers = [NSMutableDictionary dictionary];
     
-    self.settingsController.session = self;
-
-    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
-
+    [self checkTrackersToStart];
+    
+    self.status = STMSessionRunning;
+    
+    if (!self.isRunningTests) {
+        [self setupSyncer];
+    }
+    
 }
 
 
@@ -156,13 +156,10 @@
     [self persisterCompleteInitializationWithSuccess:NO];
 }
 
-- (void)settingsLoadComplete:(NSNotification *)notification {
+- (void)setupSyncer {
     
-    self.locationTracker.session = self;
-    self.batteryTracker.session = self;
-    
-    self.syncer.persistenceDelegate = self.persistenceDelegate;
-    
+    self.syncer = [STMSyncer controllerWithPersistenceDelegate:self.persistenceDelegate];
+
     STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
     
     syncerHelper.dataDownloadingOwner = self.syncer;
@@ -172,11 +169,7 @@
     self.syncer.dataDownloadingDelegate = syncerHelper;
     self.syncer.defantomizingDelegate = syncerHelper;
     
-    STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate
-                                                                                          subscriber:self.syncer];
-    self.syncer.dataSyncingDelegate = unsyncedHelper;
-    
-    self.status = STMSessionRunning;
+    self.syncer.dataSyncingDelegate = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
     
     self.syncer.session = self;
     

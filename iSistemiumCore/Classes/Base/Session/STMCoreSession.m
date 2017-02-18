@@ -132,6 +132,7 @@
         
         self.locationTracker = [[[self locationTrackerClass] alloc] init];
         self.trackers[self.locationTracker.group] = self.locationTracker;
+        self.locationTracker.session = self;
         
     }
     
@@ -139,6 +140,7 @@
         
         self.batteryTracker = [[[self batteryTrackerClass] alloc] init];
         self.trackers[self.batteryTracker.group] = self.batteryTracker;
+        self.batteryTracker.session = self;
         
     }
 

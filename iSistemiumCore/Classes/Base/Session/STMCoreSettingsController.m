@@ -9,8 +9,6 @@
 #import "STMCoreSettingsController.h"
 #import "STMSetting.h"
 
-#define STMCoreSettingsControllerLoadComplete @"STMCoreSettingsControllerLoadComplete"
-
 @interface STMCoreSettingsController()
 
 @property (nonatomic,strong) STMPersistingObservingSubscriptionID subscriptionId;
@@ -53,7 +51,6 @@
     _session = session;
     
     [self checkSettings];
-    [self postNotificationName:STMCoreSettingsControllerLoadComplete];
     
 }
 
@@ -129,9 +126,6 @@
 
 #pragma mark - Public methods
 
-- (void)subscribeForLoadComplete:(STMCoreObject *)anObject selector:(SEL)selector {
-    [self addObserver:anObject selector:selector name:STMCoreSettingsControllerLoadComplete];
-}
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
     
