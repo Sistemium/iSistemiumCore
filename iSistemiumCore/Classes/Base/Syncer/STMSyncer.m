@@ -19,7 +19,7 @@
 
 @property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
-@property (nonatomic, strong) NSMutableDictionary *settings;
+@property (nonatomic, strong) NSDictionary *settings;
 @property (nonatomic, strong) NSTimer *syncTimer;
 
 @property (nonatomic, strong) NSString *entityResource;
@@ -186,10 +186,10 @@
     
 }
 
-- (NSMutableDictionary *)settings {
+- (NSDictionary *)settings {
     
     if (!_settings) {
-        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"].mutableCopy;
+        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
     }
     return _settings;
     
