@@ -44,6 +44,10 @@
     
 }
 
+- (void)testAsync {
+    [self runTestWithAsync];
+}
+
 - (void)runSimpleTest {
  
     [self initLoggerWithPatternDepth:5];
@@ -188,6 +192,35 @@
         XCTAssertNil(error);
     }];
 
+}
+
+- (void)runTestWithAsync {
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        [self initLoggerWithPatternDepth:5];
+        
+        [self prefillWithValues:@[@"0", @"1"]];
+        
+        [self noPatternWithValues:@[@"2", @"3"]];
+        
+        [self possiblePatternWithValues:@[@"1", @"2"]];
+        
+        [self detectPatternWithValues:@[@"3"]];
+        
+        self.timesToRepeat = 1000;
+        NSArray *pattern = @[@"1", @"2", @"3"];
+        
+        for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
+            [self detectPatternWithValues:pattern];
+        }
+        
+        [self detectEndOfPatternWithValue:@"0"];
+        
+        [self noPatternWithValues:@[@"a", @"b"]];
+        
+    });
+    
 }
 
 - (void)initLoggerWithPatternDepth:(NSUInteger)patternDepth {
