@@ -10,6 +10,9 @@
 #import "STMSessionManagement.h"
 
 
+#define MESSAGE_DELAY_TO_CHECK_PATTERN 1
+
+
 @interface STMLogger : NSObject
 
 @property (nonatomic, weak) id <STMSession> session;
@@ -21,6 +24,7 @@
 @property (nonatomic) BOOL patternDetected;
 @property (nonatomic) NSUInteger currentPatternIndex;
 @property (nonatomic) NSUInteger patternRepeatCounter;
+@property (nonatomic, strong) NSDate *lastLogMessageDate;
 
 
 @end
