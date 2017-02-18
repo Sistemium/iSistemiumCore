@@ -386,6 +386,8 @@
         
         if (timeInterval > MESSAGE_DELAY_TO_CHECK_PATTERN) {
 
+            self.lastLogMessageDate = now;
+
             return self.patternDetected ? [self endPatternDetectionWith:logMessageDic] : [self releasePossiblePatternArrayWith:logMessageDic];
             
         }
