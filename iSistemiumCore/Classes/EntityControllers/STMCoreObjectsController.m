@@ -303,20 +303,6 @@
 
 #pragma mark - flushing
 
-#warning should use some syncer method
-+ (NSPredicate *)notUnsyncedPredicateForEntityName:(NSString*)entityName {
-    
-    BOOL isInSyncList = [STMEntityController.uploadableEntitiesNames containsObject:entityName];
-    
-    if (!isInSyncList) return nil;
-    
-    NSPredicate *predicate1 = [NSCompoundPredicate notPredicateWithSubpredicate:[NSPredicate predicateWithFormat:@"lts < deviceTs"]];
-    
-    NSPredicate *predicate2 = [NSPredicate predicateWithFormat:@"deviceTs == nil"];
-    
-    return [[NSCompoundPredicate alloc] initWithType:NSOrPredicateType
-                                       subpredicates:@[predicate1, predicate2]];
-}
 
 + (void)checkObjectsForFlushing {
     
@@ -366,7 +352,8 @@
         NSError *error;
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
-        NSPredicate *notUnsyncedPredicate = [self notUnsyncedPredicateForEntityName:entityName];
+        NSPredicate *notUnsyncedPredicate = [[self session].syncer predicateForUnsyncedObjectsWithEntityName:entityName];
+        
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
         if (notUnsyncedPredicate) [subpredicates addObject:notUnsyncedPredicate];

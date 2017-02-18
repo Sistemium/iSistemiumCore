@@ -136,8 +136,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)currentTestTarget;
 
-+ (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName;
-
 NS_ASSUME_NONNULL_END
 
 

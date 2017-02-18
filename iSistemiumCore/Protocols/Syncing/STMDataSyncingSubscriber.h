@@ -14,4 +14,6 @@
             itemData:(NSDictionary *)itemData
          itemVersion:(NSString *)itemVersion;
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName;
+
 @end

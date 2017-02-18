@@ -14,6 +14,7 @@
 #import "STMPersistingFullStack.h"
 #import "STMSocketConnection.h"
 #import "STMNotifications.h"
+#import "STMDataSyncingSubscriber.h"
 
 typedef NS_ENUM(NSInteger, STMSyncerState) {
     STMSyncerIdle,
@@ -95,7 +96,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (nonatomic, strong) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
-@property (nonatomic, strong) id <STMSyncer> syncer;
+@property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
 
 - (id <STMSession>)initWithUID:(NSString *)uid
                         iSisDB:(NSString *)iSisDB

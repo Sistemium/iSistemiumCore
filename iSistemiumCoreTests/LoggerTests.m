@@ -83,11 +83,11 @@
     NSString *type = [[STMLogger sharedLogger] stringTypeForNumType:messageType];
     
     NSPredicate *typePredicate = [NSPredicate predicateWithFormat:@"type == %@", type];
-    NSPredicate *unsyncedPredicate = [STMFunctions predicateForUnsyncedObjectsWithEntityName:LOG_MESSAGE_ENTITY_NAME];
+//    NSPredicate *unsyncedPredicate = [STMFunctions predicateForUnsyncedObjectsWithEntityName:LOG_MESSAGE_ENTITY_NAME];
     
     NSPredicate *selfXidPredicate = [NSPredicate predicateWithFormat: @"text ENDSWITH %@", self.xid];
     
-    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[unsyncedPredicate, typePredicate, selfXidPredicate]];
+    NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[typePredicate, selfXidPredicate]];
     
     NSError *error = nil;
     NSArray *logMessages = [self.persister findAllSync:LOG_MESSAGE_ENTITY_NAME
