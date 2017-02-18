@@ -26,6 +26,8 @@
 - (void)setUp {
 
     self.ownerXid = [STMFunctions uuidString];
+    self.cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
+    self.cleanupOptions = @{STMPersistingOptionRecordstatuses:@NO};
     
     [super setUp];
     
@@ -58,6 +60,9 @@
                           handler:^BOOL{
                               if (!self.persister) {
                                   self.persister = [manager.currentSession persistenceDelegate];
+                              }
+                              if (!self.realPersister) {
+                                  self.realPersister = (STMPersister *)[manager.currentSession persistenceDelegate];
                               }
                               self.waitForSession = NO;
                               return YES;
@@ -126,12 +131,13 @@
     
     // Paged destroy is 10 times faster with 100K items to destroy
     NSUInteger pageSize = 10000;
-    NSPredicate *cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", self.ownerXid];
-    NSDictionary *cleanupOptions = @{
-                                     STMPersistingOptionRecordstatuses:@NO,
-                                     STMPersistingOptionPageSize:@(pageSize)
-                                     };
+    NSPredicate *cleanupPredicate = self.cleanupPredicate;
+    NSDictionary *cleanupOptions = [STMFunctions setValue:@(pageSize) forKey:STMPersistingOptionPageSize inDictionary:self.cleanupOptions];
     NSError *error;
+    
+    if ([self.persister storageForEntityName:entityName] == STMStorageTypeCoreData) {
+        cleanupPredicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", [STMFunctions dataFromString:[self.ownerXid stringByReplacingOccurrencesOfString:@"-" withString:@""]]];
+    }
     
     NSUInteger result = [self.persister destroyAllSync:entityName predicate:cleanupPredicate options:cleanupOptions error:&error];
 

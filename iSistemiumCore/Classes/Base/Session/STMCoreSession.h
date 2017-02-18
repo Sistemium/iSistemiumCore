@@ -17,18 +17,18 @@
 #import "STMModelling.h"
 #import "STMSyncer.h"
 
-@interface STMCoreSession : NSObject <STMSession>
+@interface STMCoreSession : STMCoreObject <STMSession>
 
-@property (nonatomic, strong) id <STMRequestAuthenticatable> authDelegate;
+@property (nonatomic, weak) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;
 
-@property (nonatomic, strong) STMDocument *document; // have to remove document property after full implementation of persister
+@property (nonatomic, weak) STMDocument *document;
 @property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
 
 @property (nonatomic, strong) STMLogger *logger;
-@property (nonatomic, strong) id <STMSessionManager> manager;
+@property (nonatomic, weak) id <STMSessionManager> manager;
 @property (nonatomic, strong) STMCoreSettingsController *settingsController;
 @property (nonatomic, strong) STMCoreLocationTracker *locationTracker;
 @property (nonatomic, strong) STMCoreBatteryTracker *batteryTracker;
@@ -40,19 +40,10 @@
 
 @property (nonatomic,strong) STMSyncer *syncer;
 
-+ (instancetype)initWithUID:(NSString *)uid
-                     iSisDB:(NSString *)iSisDB
-              authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                  trackers:(NSArray *)trackers
-             startSettings:(NSDictionary *)startSettings;
-
 - (void)stopSession;
 - (void)dismissSession;
 
 - (Class)settingsControllerClass;
 - (void)checkTrackersToStart;
-
-- (Class)locationClass;
-
 
 @end

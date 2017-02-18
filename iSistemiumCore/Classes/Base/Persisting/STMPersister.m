@@ -15,13 +15,8 @@
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
-
-
-@interface STMPersister()
-
-@property (nonatomic,strong) NSString * fmdbFileName;
-
-@end
+#import "STMPersister+Private.h"
+#import "STMModeller+Interceptable.h"
 
 @implementation STMPersister
 
@@ -105,42 +100,9 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSString *entityEntityName = @"STMEntity";
-    NSString *settingEntityName = @"STMSetting";
     NSString *recordStatusEntityName = @"STMRecordStatus";
 
-#warning - have to think up something smarter than hardcoding entity's names
-    
-    if ([entityName isEqualToString:entityEntityName]) {
-        
-        NSDictionary *entity = [STMEntityController entityWithName:attributes[@"name"]];
-        
-        if (entity) {
-            
-            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
-            editedAttributes[@"id"] = entity[@"id"];
-            
-            attributes = editedAttributes;
-            
-        }
-        
-    }
-    
-    if ([entityName isEqualToString:settingEntityName]) {
-        
-        NSDictionary *setting = [STMSettingsController settingWithName:attributes[@"name"]
-                                                              forGroup:attributes[@"group"]];
-        
-        if (setting) {
-            
-            NSMutableDictionary *editedAttributes = attributes.mutableCopy;
-            editedAttributes[@"id"] = setting[@"id"];
-            
-            attributes = editedAttributes;
-
-        }
-        
-    }
+    // TODO: implement RecordStatus with interceptor
 
     if ([entityName isEqualToString:recordStatusEntityName]) {
         
@@ -425,6 +387,10 @@
                     options:(NSDictionary *)options
                       error:(NSError **)error{
     
+    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+    
+    if (!attributes || *error) return nil;
+    
     NSDictionary* result = [self mergeWithoutSave:entityName
                                        attributes:attributes
                                           options:[self fixMergeOptions:options entityName:entityName]
@@ -454,6 +420,10 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
+    attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
+    
+    if (!attributeArray.count || *error) return attributeArray;
+
     for (NSDictionary *dictionary in attributeArray) {
         
         NSDictionary *dict = [self mergeWithoutSave:entityName

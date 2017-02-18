@@ -119,7 +119,7 @@
     
     if (!_settings) {
         
-        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:self.group];
+        _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:self.group].mutableCopy;
         for (NSString *settingName in [_settings allKeys]) {
             [_settings addObserver:self forKeyPath:settingName options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld) context:nil];
         }

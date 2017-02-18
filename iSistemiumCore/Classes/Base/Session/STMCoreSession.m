@@ -21,34 +21,32 @@
 
 @synthesize syncer =_syncer;
 
-+ (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+- (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
     
-    if (uid) {
-        
-        STMCoreSession *session = [[self alloc] init];
-        session.uid = uid;
-        session.iSisDB = iSisDB;
-        session.status = STMSessionStarting;
-        session.startSettings = startSettings;
-        session.authDelegate = authDelegate;
-        session.startTrackers = trackers;
-        session.controllers = [NSMutableDictionary dictionary];
-        
-        [session addObservers];
-        
-        return [session initPersistable];
-        
-    } else {
-        
+    if (!uid) {
         NSLog(@"no uid");
         return nil;
-        
     }
+    
+    self.uid = uid;
+    self.iSisDB = iSisDB;
+    self.status = STMSessionStarting;
+    self.startSettings = startSettings;
+    self.authDelegate = authDelegate;
+    self.startTrackers = trackers;
+    self.controllers = [NSMutableDictionary dictionary];
+    
+    [self addObservers];
 
+    return [self initPersistable];
 }
 
 - (void)initController:(Class)controllerClass {
     self.controllers[NSStringFromClass(controllerClass)] = [controllerClass controllerWithPersistenceDelegate:self.persistenceDelegate];
+}
+
+- (id)controllerWithClass:(Class)controllerClass {
+    return [self controllerWithName:NSStringFromClass(controllerClass)];
 }
 
 - (id)controllerWithName:(NSString *)name {
@@ -132,6 +130,7 @@
 - (BOOL)isRunningTests {
     return [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"] != nil;
 }
+
 
 #pragma mark - properties classes definition (may override in subclasses)
 
@@ -255,14 +254,6 @@
 	}
     
 }
-
-
-#pragma mark - used classes
-
-- (Class)locationClass {
-    return [STMCoreLocation class];
-}
-
 
 
 @end

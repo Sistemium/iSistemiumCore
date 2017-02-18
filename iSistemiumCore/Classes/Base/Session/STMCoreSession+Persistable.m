@@ -15,6 +15,7 @@
 
 #import "STMEntityController.h"
 #import "STMCorePicturesController.h"
+#import "STMPersistingInterceptorUniqueProperty.h"
 
 @implementation STMCoreSession (Persistable)
 
@@ -33,8 +34,16 @@
                        completionHandler:nil];
     
     self.persistenceDelegate = persister;
-    #warning need to remove direct links to document after full persisting concept realization
+    // TODO: remove direct links to document after full persisting concept realization
     self.document = persister.document;
+
+    
+    STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
+    
+    entityNameInterceptor.entityName = STM_ENTITY_NAME;
+    entityNameInterceptor.propertyName = @"name";
+    
+    [persister beforeMergeEntityName:entityNameInterceptor.entityName interceptor:entityNameInterceptor];
 
     [self addPersistenceObservers];
     
@@ -79,7 +88,9 @@
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
     
-    self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
+    self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
+    self.settingsController.persistenceDelegate = self.persistenceDelegate;
+    
     self.trackers = [NSMutableDictionary dictionary];
     if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
     
@@ -88,7 +99,9 @@
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
     self.settingsController.session = self;
-    
+
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
+
 }
 
 

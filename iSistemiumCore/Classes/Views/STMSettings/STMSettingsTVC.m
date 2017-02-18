@@ -6,7 +6,6 @@
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMCoreSettingsController.h"
 #import "STMSettingsTVC.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
@@ -83,9 +82,7 @@
 
 - (NSArray *)groupNames {
     
-//    return [[self controlsSettings] valueForKey:@"groupNames"];
-    
-    return [(STMCoreSettingsController *)[self.session settingsController] groupNames];
+    return [[self.session settingsController] groupNames];
     
 }
 

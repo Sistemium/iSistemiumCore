@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeInMemory
 };
 
+#define STMPersistingKeyPrimary @"id"
 #define STMPersistingKeyVersion @"deviceTs"
 #define STMPersistingKeyCreationTimestamp @"deviceCts"
 #define STMPersistingKeyPhantom @"isFantom"
@@ -35,7 +36,6 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionOrderDirection @"direction"
 #define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
 #define STMPersistingOptionSetTs @"setTs"
-
 #define STMPersistingOptionOrderDirectionDescValue @"DESC"
 #define STMPersistingOptionOrderDirectionAscValue @"ASC"
 
