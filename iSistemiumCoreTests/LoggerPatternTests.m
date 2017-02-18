@@ -40,6 +40,7 @@
     [self runOneMoreSimpleTest];
     [self runMoreComplicatedTest];
     [self runTestWithNoDetection];
+    [self runTestWithTimeDelay];
     
 }
 
@@ -135,6 +136,55 @@
     
     [self possiblePatternWithValues:@[@"f", @"g"]];
     [self noPatternWithValues:@[@"8"]];
+
+}
+
+- (void)runTestWithTimeDelay {
+    
+    [self initLoggerWithPatternDepth:10];
+    
+    [self prefillWithValues:@[@"1", @"2", @"3"]];
+    
+    [self possiblePatternWithValues:@[@"1", @"2"]];
+    
+    XCTestExpectation *expectationOne = [self expectationWithDescription:@"wait 1st delay"];
+    XCTestExpectation *expectationTwo = [self expectationWithDescription:@"wait 2nd delay"];
+    
+    double delayInSeconds = 2.0;
+    dispatch_time_t popTimeOne = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTimeOne, dispatch_get_main_queue(), ^(void){
+        
+        [self noPatternWithValues:@[@"3"]];
+        
+        [expectationOne fulfill];
+        
+        self.timesToRepeat = 5;
+        
+        [self possiblePatternWithValues:@[@"1", @"2"]];
+        [self detectPatternWithValues:@[@"3"]];
+        
+        NSArray *pattern = @[@"1", @"2", @"3"];
+        
+        for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
+            [self detectPatternWithValues:pattern];
+        }
+
+        dispatch_time_t popTimeTwo = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        dispatch_after(popTimeTwo, dispatch_get_main_queue(), ^(void){
+            
+            [self detectEndOfPatternWithValue:@"1"];
+            
+            [self noPatternWithValues:@[@"f", @"g"]];
+            
+            [expectationTwo fulfill];
+
+        });
+        
+    });
+
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError * _Nullable error) {
+        XCTAssertNil(error);
+    }];
 
 }
 
