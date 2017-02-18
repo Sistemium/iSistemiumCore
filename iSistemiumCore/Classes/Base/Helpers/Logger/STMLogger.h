@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *possiblePatternArray;
 @property (nonatomic) BOOL patternDetected;
 @property (nonatomic) NSUInteger currentPatternIndex;
+@property (nonatomic) NSUInteger patternRepeatCounter;
 
 
 @end

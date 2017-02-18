@@ -381,86 +381,94 @@
     if (!self.lastLogMessagesArray) self.lastLogMessagesArray = @[].mutableCopy;
     if (!self.possiblePatternArray) self.possiblePatternArray = @[].mutableCopy;
 
-    if (self.patternDetected) {
+    if (!self.patternDetected) {
         
-        self.currentPatternIndex = (++self.currentPatternIndex == self.possiblePatternArray.count) ? 0 : self.currentPatternIndex;
-        
-        if (![self.possiblePatternArray[self.currentPatternIndex] isEqualToDictionary:logMessageDic]) {
+        return [self checkPatternWith:logMessageDic];
 
-            self.patternDetected = NO;
-            [self enqueueLogMessage:logMessageDic];
-            [self.possiblePatternArray removeAllObjects];
-
-            NSDictionary *result = @{@"type"    : @"important",
-                                     @"text"    : @"detect end of repeating pattern"};
-            
-            return @[result, logMessageDic];
-
-        }
-        
-        return nil;
-        
     } else {
-
-        if ([self.possiblePatternArray.firstObject isEqualToDictionary:logMessageDic]) {
-            
-            self.patternDetected = YES;
-            self.currentPatternIndex = 0;
-            
-            NSDictionary *result = @{@"type"    : @"error",
-                                     @"text"    : [NSString stringWithFormat:@"detect repeating pattern with last %@ logMessages", @(self.possiblePatternArray.count)]};
-            
-            return @[result];
-            
-        } else {
         
-            NSUInteger lastPatternLogMessageIndex = [self.lastLogMessagesArray indexOfObject:self.possiblePatternArray.lastObject];
-            
-            if (lastPatternLogMessageIndex == NSNotFound) {
-                
-                if ([self.lastLogMessagesArray containsObject:logMessageDic]) {
-                    
-                    [self enqueuePossiblePatternLogMessage:logMessageDic];
-                    return nil;
-                    
-                } else {
-                    
-                    [self enqueueLogMessage:logMessageDic];
-                    return @[logMessageDic];
-                    
-                }
-                
-            } else {
-            
-                NSUInteger checkIndex = lastPatternLogMessageIndex + 1;
-                
-                if (self.lastLogMessagesArray.count > checkIndex && [[self.lastLogMessagesArray objectAtIndex:checkIndex] isEqualToDictionary:logMessageDic]) {
-                    
-                    [self enqueuePossiblePatternLogMessage:logMessageDic];
-                    return nil;
-                    
-                } else {
-                    
-                    NSMutableArray *returnArray = self.possiblePatternArray.mutableCopy;
-                    
-                    for (NSDictionary *logMessage in self.possiblePatternArray) {
-                        [self enqueueLogMessage:logMessage];
-                    }
-                    
-                    [self enqueueLogMessage:logMessageDic];
-                    [returnArray addObject:logMessageDic];
-                    
-                    [self.possiblePatternArray removeAllObjects];
-                    
-                    return returnArray;
-
-                }
-
-            }
-            
-        }
+        return [self checkPatternEndsWith:logMessageDic];
         
     }
+
+}
+
+- (NSArray *)checkPatternWith:(NSDictionary *)logMessageDic {
+    
+    NSUInteger lastPatternLogMessageIndex = [self.lastLogMessagesArray indexOfObject:self.possiblePatternArray.lastObject];
+    
+    if (lastPatternLogMessageIndex == NSNotFound) {
+        
+        return [self checkPatternStartWith:logMessageDic];
+        
+    } else {
+        
+        return [self checkPatternContinueWith:logMessageDic
+                                    checkIndex:lastPatternLogMessageIndex + 1];
+        
+    }
+
+}
+
+- (NSArray *)checkPatternStartWith:(NSDictionary *)logMessageDic {
+    
+    if ([self.lastLogMessagesArray containsObject:logMessageDic]) {
+        
+        return [self enqueuePossiblePatternLogMessage:logMessageDic];
+        
+    } else {
+        
+        [self enqueueLogMessage:logMessageDic];
+        return @[logMessageDic];
+        
+    }
+
+}
+
+- (NSArray *)checkPatternContinueWith:(NSDictionary *)logMessageDic checkIndex:(NSUInteger)checkIndex {
+
+    if (self.lastLogMessagesArray.count > checkIndex && [[self.lastLogMessagesArray objectAtIndex:checkIndex] isEqualToDictionary:logMessageDic]) {
+        
+        return [self enqueuePossiblePatternLogMessage:logMessageDic];
+        
+    } else {
+        
+        NSMutableArray *returnArray = self.possiblePatternArray.mutableCopy;
+        
+        for (NSDictionary *logMessage in self.possiblePatternArray) {
+            [self enqueueLogMessage:logMessage];
+        }
+        
+        [self enqueueLogMessage:logMessageDic];
+        [returnArray addObject:logMessageDic];
+        
+        [self.possiblePatternArray removeAllObjects];
+        
+        return returnArray;
+        
+    }
+
+}
+
+- (NSArray *)checkPatternEndsWith:(NSDictionary *)logMessageDic {
+    
+    if (![self.possiblePatternArray[self.currentPatternIndex] isEqualToDictionary:logMessageDic]) {
+        
+        self.patternDetected = NO;
+        [self enqueueLogMessage:logMessageDic];
+        [self.possiblePatternArray removeAllObjects];
+        
+        NSDictionary *result = @{@"type"    : @"important",
+                                 @"text"    : [NSString stringWithFormat:@"detect end of pattern, repeat %@ times", @(self.patternRepeatCounter)]};
+        
+        return @[result, logMessageDic];
+        
+    }
+    
+    self.currentPatternIndex = (++self.currentPatternIndex == self.possiblePatternArray.count) ? 0 : self.currentPatternIndex;
+    self.patternRepeatCounter = (self.currentPatternIndex == 0) ? self.patternRepeatCounter ++ : self.patternRepeatCounter;
+    
+    return nil;
 
 }
 
@@ -474,9 +482,28 @@
     
 }
 
-- (void)enqueuePossiblePatternLogMessage:(NSDictionary *)logMessageDictionary {
+- (NSArray *)enqueuePossiblePatternLogMessage:(NSDictionary *)logMessageDictionary {
     
     [self.possiblePatternArray addObject:logMessageDictionary];
+    
+    NSRange checkRange = NSMakeRange(self.lastLogMessagesArray.count - self.possiblePatternArray.count, self.possiblePatternArray.count);
+    
+    NSArray *arrayToCheck = [self.lastLogMessagesArray subarrayWithRange:checkRange];
+    
+    if ([arrayToCheck isEqualToArray:self.possiblePatternArray]) {
+        
+        self.patternDetected = YES;
+        self.currentPatternIndex = 0;
+        self.patternRepeatCounter = 1;
+
+        NSDictionary *result = @{@"type"    : @"error",
+                                 @"text"    : [NSString stringWithFormat:@"detect repeating pattern with last %@ logMessages", @(self.possiblePatternArray.count)]};
+
+        return @[result];
+
+    }
+    
+    return nil;
     
 }
 
