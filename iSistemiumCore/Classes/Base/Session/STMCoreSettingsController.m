@@ -18,6 +18,7 @@
 
 @property (nonatomic,strong) STMPersistingObservingSubscriptionID subscriptionId;
 @property (nonatomic,strong) NSDictionary *defaultSettings;
+@property (nonatomic,strong) NSMutableDictionary *startSettings;
 
 @end
 
@@ -25,27 +26,128 @@
 @implementation STMCoreSettingsController
 
 
-#pragma mark - class methods
+#pragma mark - Initialization
 
 + (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings {
     return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
++ (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
+    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
+}
+
 - (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{
     
     self = [self init];
-    self.startSettings = [startSettings mutableCopy];
+    self.startSettings = startSettings.mutableCopy;
     self.defaultSettings = defaultSettings;
     
     return self;
 }
 
+
+- (void)dealloc {
+    [self unsubscribeFromSettings];
+    NSLogMethodName;
+}
+
+- (void)setSession:(id<STMSession>)session {
+    
+    _session = session;
+    
+    [self checkSettings];
+    
+}
+
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
+    
+    if (self.persistenceDelegate) [self unsubscribeFromSettings];
+    
+    [super setPersistenceDelegate:persistenceDelegate];
+    
+    if (persistenceDelegate) {
+        [self subscribeForSettings];
+    }
+    
+}
+
+#pragma mark - SettingsController protocol
+
+- (NSArray *)currentSettings {
+    
+    if (!_currentSettings) {
+        
+        NSError *error = nil;
+        NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
+                                                               predicate:nil
+                                                                 options:nil
+                                                                   error:&error];
+        
+        _currentSettings = currentSettings;
+        
+    }
+    return _currentSettings;
+    
+}
+
+
 - (NSArray *)groupNames {
     return [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
 }
 
-- (id)normalizeValue:(id)value forKey:(NSString *)key {
 
+- (NSDictionary *)currentSettingsForGroup:(NSString *)group {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ AND name != nil AND value != nil", group];
+    NSArray *groupSettings = [self.currentSettings filteredArrayUsingPredicate:predicate];
+    
+    return [NSDictionary dictionaryWithObjects:[groupSettings valueForKeyPath:@"value"]
+                                       forKeys:[groupSettings valueForKeyPath:@"name"]];
+    
+}
+
+- (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
+    
+    NSArray *currentSettings = self.currentSettings;
+    
+    for (NSString *settingName in newSettings.allKeys) {
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", group, settingName];
+        NSMutableDictionary *setting = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+        NSString *value = [self normalizeValue:newSettings[settingName] forKey:settingName];
+        
+        if (value) {
+            
+            if (!setting) {
+                
+                setting = @{@"group"    : group,
+                            @"name"     : settingName}.mutableCopy;
+                
+            }
+            
+            setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
+            
+            [self mergeSync:setting];
+            
+        } else {
+            
+            NSLog(@"wrong value %@ for setting %@", newSettings[settingName], settingName);
+            
+        }
+        
+    }
+    
+    self.currentSettings = nil;
+    
+    return @"";
+    
+}
+
+
+#pragma mark - Public methods
+
+- (id)normalizeValue:(id)value forKey:(NSString *)key {
+    
     if ([value isKindOfClass:[NSString class]]) {
         
         NSArray *positiveDoubleValues = @[@"trackDetectionTime",
@@ -165,9 +267,9 @@
         return nil;
         
     } else {
-
+        
         return [NSNull null];
-
+        
     }
     
 }
@@ -190,6 +292,8 @@
     return ([value hasPrefix:@"http://"] || [value hasPrefix:@"https://"]);
 }
 
+#pragma mark - Private helpers
+
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array {
     
     BOOL result = NO;
@@ -199,81 +303,6 @@
     }
     
     return result;
-    
-}
-
-
-#pragma mark - instance methods
-
-- (void)dealloc {
-    [self unsubscribeFromSettings];
-    NSLogMethodName;
-}
-
-- (void)setSession:(id<STMSession>)session {
-    
-    _session = session;
-
-    [self checkSettings];
-    
-}
-
-- (void)setPersistenceDelegate:(id)persistenceDelegate {
-    
-    if (self.persistenceDelegate) [self unsubscribeFromSettings];
-    
-    [super setPersistenceDelegate:persistenceDelegate];
-    
-    if (persistenceDelegate) {
-        [self subscribeForSettings];
-    }
-    
-}
-
-- (void)unsubscribeFromSettings {
-    if (!self.subscriptionId) return;
-    NSLog(@"subscriptionId: %@", self.subscriptionId);
-    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
-    self.subscriptionId = nil;
-}
-
-- (NSArray *)currentSettings {
-    
-    if (!_currentSettings) {
-    
-        NSError *error = nil;
-        NSArray *currentSettings = [self.persistenceDelegate findAllSync:NSStringFromClass([STMSetting class])
-                                                               predicate:nil
-                                                                 options:nil
-                                                                   error:&error];
-        
-        _currentSettings = currentSettings;
-
-    }
-    return _currentSettings;
-    
-}
-
-- (NSDictionary *)currentSettingsForGroup:(NSString *)group {
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ AND name != nil AND value != nil", group];
-    NSArray *groupSettings = [self.currentSettings filteredArrayUsingPredicate:predicate];
-    
-    return [NSDictionary dictionaryWithObjects:[groupSettings valueForKeyPath:@"value"]
-                                       forKeys:[groupSettings valueForKeyPath:@"name"]];
-    
-}
-
-+ (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
-    
-    STMCoreSession *currentSession = [STMCoreSessionManager sharedManager].currentSession;
-    STMCoreSettingsController *currentController = currentSession.settingsController;
-    
-    NSDictionary *settingsGroup = [currentController currentSettingsForGroup:group];
-    
-    NSString *value = settingsGroup[settingsName];
-    
-    return value;
     
 }
 
@@ -362,43 +391,6 @@
 
 }
 
-- (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group {
-
-    NSArray *currentSettings = self.currentSettings;
-    
-    for (NSString *settingName in newSettings.allKeys) {
-        
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", group, settingName];
-        NSMutableDictionary *setting = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
-        NSString *value = [self normalizeValue:newSettings[settingName] forKey:settingName];
-        
-        if (value) {
-            
-            if (!setting) {
-                
-                setting = @{@"group"    : group,
-                            @"name"     : settingName}.mutableCopy;
-                
-            }
-            
-            setting[@"value"] = ([value isKindOfClass:[NSString class]]) ? value : [NSNull null];
-            
-            [self mergeSync:setting];
-            
-        } else {
-            
-            NSLog(@"wrong value %@ for setting %@", newSettings[settingName], settingName);
-            
-        }
-        
-    }
-
-    self.currentSettings = nil;
-
-    return @"";
-    
-}
-
 - (BOOL)value:(id)valueOne isEqual:(id)valueTwo {
     
     if ([self valueIsNSNull:valueOne] && [self valueIsNSNull:valueTwo]) {
@@ -432,30 +424,22 @@
 }
 
 
-#pragma mark - subscribing
+#pragma mark - Notifications of changes
 
 - (void)subscribeForSettings {
     
-    self.subscriptionId = [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray * data) {
-        [self getSubscribedData:data];
+    self.subscriptionId = [self.persistenceDelegate observeEntity:NSStringFromClass([STMSetting class]) predicate:nil callback:^(NSArray *theChangedData) {
+        [self notifySubscribersFor:theChangedData];
     }];
     
 }
 
-- (void)getSubscribedData:(NSArray *)data {
-    
-    for (NSDictionary *anObject in data) {
-        [self getSubscribedObject:anObject];
-    }
+- (void)notifySubscribersFor:(NSArray *)theChangedData {
     
     self.currentSettings = nil;
     
-}
-
-- (void)getSubscribedObject:(NSDictionary *)anObject {
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-    
+    for (NSDictionary *anObject in theChangedData) {
+        
         NSString *notificationName = [NSString stringWithFormat:@"%@SettingsChanged", anObject[@"group"]];
         
         NSDictionary *userInfo = nil;
@@ -463,16 +447,22 @@
         if (anObject[@"value"] && anObject[@"name"]) {
             userInfo = @{anObject[@"name"]: anObject[@"value"]};
         }
-
-        [self.session postNotificationName:notificationName
-                                  userInfo:userInfo];
         
-        [self.session postNotificationName:@"settingsChanged"
-               userInfo:@{@"changedObject": anObject}];
+        [self.session postAsyncMainQueueNotification:notificationName userInfo:userInfo];
+        
+        [self.session postAsyncMainQueueNotification:@"settingsChanged" userInfo:@{@"changedObject": anObject}];
 
-    });
+    }
     
 }
+
+- (void)unsubscribeFromSettings {
+    if (!self.subscriptionId) return;
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
+    self.subscriptionId = nil;
+}
+
+#pragma mark - PersistingMergeInterceptor protocol
 
 - (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     

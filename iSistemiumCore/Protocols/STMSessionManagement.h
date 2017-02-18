@@ -74,10 +74,10 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMSettingsController <NSObject>
 
-- (NSArray *)currentSettings;
 - (NSDictionary *)currentSettingsForGroup:(NSString *)group;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
 
+@property (readonly) NSArray *currentSettings;
 @property (readonly) NSArray *groupNames;
 
 @end

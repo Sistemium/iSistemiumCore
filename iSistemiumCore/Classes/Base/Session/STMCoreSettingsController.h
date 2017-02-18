@@ -7,12 +7,7 @@
 //
 
 #import "STMCoreController.h"
-
-#import <CoreData/CoreData.h>
-#import <CoreLocation/CoreLocation.h>
 #import "STMSessionManagement.h"
-#import "STMCoreDataModel.h"
-
 #import "STMPersistingIntercepting.h"
 
 @interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
@@ -30,7 +25,6 @@
 
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;
 
-@property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSArray *currentSettings;
 
