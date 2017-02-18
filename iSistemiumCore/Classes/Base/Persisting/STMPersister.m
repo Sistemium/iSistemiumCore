@@ -84,9 +84,7 @@
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSPredicate *pkPredicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
-    NSPredicate *notFantom = [NSPredicate predicateWithFormat:@"isFantom == 0"];
-    
-    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[pkPredicate, notFantom]];
+    NSPredicate *predicate = [self predicate:pkPredicate withOptions:options];
     
     NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
     
@@ -100,50 +98,19 @@
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
-    NSUInteger offset = [options[@"startPage"] integerValue];
-    if (offset) {
-        offset -= 1;
-        offset *= pageSize;
-    }
-    NSString *orderBy = options[STMPersistingOptionOrder];
-    
-    BOOL asc = options[STMPersistingOptionOrderDirection] ? [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"] : YES;
-    
-    
-    if (!orderBy) orderBy = @"id";
-    
     predicate = [self predicate:predicate withOptions:options];
     
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
-            
-            return [self.fmdb getDataWithEntityName:entityName
-                                      withPredicate:predicate
-                                            orderBy:orderBy
-                                          ascending:asc
-                                         fetchLimit:pageSize
-                                        fetchOffset:offset];
-
-        case STMStorageTypeCoreData: {
-            NSArray* objectsArray = [self objectsForEntityName:entityName
-                                                       orderBy:orderBy
-                                                     ascending:asc
-                                                    fetchLimit:pageSize
-                                                   fetchOffset:offset
-                                                   withFantoms:YES
-                                                     predicate:predicate
-                                                    resultType:NSManagedObjectResultType
-                                        inManagedObjectContext:[self document].managedObjectContext
-                                                         error:error];
-            
-            return [self arrayForJSWithObjects:objectsArray];
-            
-        }
-        default: 
-            [self wrongEntityName:entityName error:error];
-            return nil;
-    }
+    __block NSArray <NSDictionary *> *result;
+    
+    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+        
+        result = [transaction findAllSync:entityName predicate:predicate options:options error:error];
+        
+        return !*error;
+        
+    }];
+    
+    return result;
     
 }
 
@@ -246,38 +213,17 @@
 
 - (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
     
-    NSMutableDictionary *attributesToUpdate;
-    
-    if (options[STMPersistingOptionFieldstoUpdate]){
-        attributesToUpdate = @{}.mutableCopy;
-        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldstoUpdate];
-        for (NSString* attributeName in attributes.allKeys){
-            if ([fieldsToUpdate containsObject:attributeName]) {
-                attributesToUpdate[attributeName] = attributes[attributeName];
-            }
-        }
-        attributesToUpdate[@"id"] = attributes[@"id"];
-    }else{
-        attributesToUpdate = attributes.mutableCopy;
-    }
-    
-    if (!options[STMPersistingOptionSetTs] || [options[STMPersistingOptionSetTs] boolValue]){
-        NSString *now = [STMFunctions stringFromNow];
-        [attributesToUpdate setValue:now forKey:@"deviceTs"];
-    }else{
-        [attributesToUpdate removeObjectForKey:@"deviceTs"];
-    }
-    
     __block NSDictionary *result;
     
     [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
-        result = [transaction updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
+        result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:error];
         
         return !*error;
         
     }];
     
+    if (*error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result

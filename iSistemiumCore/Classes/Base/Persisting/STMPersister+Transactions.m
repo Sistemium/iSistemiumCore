@@ -58,7 +58,7 @@
     
     NSString *orderBy = options[STMPersistingOptionOrder];
     
-    BOOL asc = options[STMPersistingOptionOrderDirection] ? [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"] : YES;
+    BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
     
     
     if (!orderBy) orderBy = @"id";
@@ -66,21 +66,12 @@
     predicate = [self.persister predicate:predicate withOptions:options];
     
     switch ([self.persister storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:
             
+        case STMStorageTypeFMDB:
             return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset];
             
         case STMStorageTypeCoreData: {
-            NSArray* objectsArray = [self.persister objectsForEntityName:entityName
-                                                                 orderBy:orderBy
-                                                               ascending:asc
-                                                              fetchLimit:pageSize
-                                                             fetchOffset:offset
-                                                             withFantoms:YES
-                                                               predicate:predicate
-                                                              resultType:NSManagedObjectResultType
-                                                  inManagedObjectContext:self.persister.document.managedObjectContext
-                                                                   error:error];
+            NSArray* objectsArray = [self.persister objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.persister.document.managedObjectContext error:error];
             
             return [self.persister arrayForJSWithObjects:objectsArray];
             
@@ -96,19 +87,19 @@
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
     switch ([self.persister storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB: {
+            
+        case STMStorageTypeFMDB:
             return [super mergeWithoutSave:entityName attributes:attributes options:options error:error];
-        }
-        case STMStorageTypeCoreData: {
+        
+        case STMStorageTypeCoreData:
             self.needSaveDocument = YES;
             options = [self fixMergeOptions:options entityName:entityName];
             return [self.persister mergeWithoutSave:entityName attributes:attributes options:options error:error inManagedObjectContext:self.persister.document.managedObjectContext];
-            break;
-        }
-        default:{
+
+        default:
             [self.persister wrongEntityName:entityName error:error];
             return nil;
-        }
+        
     }
     
 }
@@ -129,10 +120,12 @@
         case STMStorageTypeFMDB:
             count = [super destroyWithoutSave:entityName predicate:predicate options:options error:error];
             break;
+            
         case STMStorageTypeCoreData:
             self.needSaveDocument = YES;
             count = [self.persister removeObjectForPredicate:predicate entityName:entityName];
             break;
+            
         default:
             [self.persister wrongEntityName:entityName error:error];
             return 0;
@@ -157,20 +150,35 @@
 
 - (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
-    switch ([self.persister storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB: {
-            return [super updateWithoutSave:entityName attributes:attributes options:options error:error];
+    NSMutableDictionary *attributesToUpdate = attributes.mutableCopy;
+    
+    for (NSString *attributeName in attributesToUpdate.allKeys){
+        if (![options[STMPersistingOptionFieldstoUpdate] containsObject:attributeName]) {
+            [attributesToUpdate removeObjectForKey:attributeName];
         }
-        case STMStorageTypeCoreData: {
+    }
+    
+    if (!options[STMPersistingOptionSetTs] || [options[STMPersistingOptionSetTs] boolValue]){
+        attributesToUpdate[STMPersistingKeyVersion] = [STMFunctions stringFromNow];
+    } else {
+        [attributesToUpdate removeObjectForKey:STMPersistingKeyVersion];
+    }
+    
+    switch ([self.persister storageForEntityName:entityName options:options]) {
+            
+        case STMStorageTypeFMDB:
+            return [super updateWithoutSave:entityName attributes:attributes options:options error:error];
+        
+        case STMStorageTypeCoreData:
             self.needSaveDocument = YES;
             options = [self fixMergeOptions:options entityName:entityName];
-            return [self.persister update:entityName attributes:attributes options:options error:error inManagedObjectContext:self.persister.document.managedObjectContext];
+            return [self.persister update:entityName attributes:attributesToUpdate options:options error:error inManagedObjectContext:self.persister.document.managedObjectContext];
             break;
-        }
-        default:{
+        
+        default:
             [self.persister wrongEntityName:entityName error:error];
             return 0;
-        }
+    
     }
     
 }
