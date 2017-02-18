@@ -127,10 +127,10 @@
     [self possiblePatternWithValues:possiblePattern];
     
     self.timesToRepeat = 17;
-    NSArray *pattern = @[@"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h"];
+    NSArray *repeatValues = @[@"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h"];
     
     for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
-        [self noPatternWithValues:pattern];
+        [self noPatternWithValues:repeatValues];
     }
     
     [self possiblePatternWithValues:@[@"f", @"g"]];
