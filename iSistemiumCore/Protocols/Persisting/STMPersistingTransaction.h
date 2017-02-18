@@ -10,6 +10,8 @@
 
 @protocol STMPersistingTransaction
 
+@property (readonly) id <STMModelling> modellingDelegate;
+
 - (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error;
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error;

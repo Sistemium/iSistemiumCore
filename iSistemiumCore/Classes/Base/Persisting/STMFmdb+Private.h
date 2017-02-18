@@ -18,6 +18,7 @@ CF_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FMDatabasePool *pool;
 @property (nonatomic, strong) NSDictionary *columnsByTable;
 @property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
+@property (nonatomic, weak) id <STMModelling> modellingDelegate;
 
 @end
 

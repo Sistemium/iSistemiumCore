@@ -12,7 +12,7 @@
 #import "STMFunctions.h"
 #import "STMPersister+CoreData.h"
 
-@interface STMPersisterTransaction : STMFmdbTransaction <STMPersistingTransaction>
+@interface STMPersisterTransaction : STMFmdbTransaction
 
 @property (nonatomic,weak) STMPersister *persister;
 
@@ -40,6 +40,12 @@
 }
 
 
+#pragma mark - PersistingTransaction protocol
+
+- (id <STMModelling>)modellingDelegate {
+    return self.persister;
+}
+
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
@@ -62,12 +68,7 @@
     switch ([self.persister storageForEntityName:entityName options:options]) {
         case STMStorageTypeFMDB:
             
-            return [super findAllSync:entityName
-                            predicate:predicate
-                              orderBy:orderBy
-                            ascending:asc
-                           fetchLimit:pageSize
-                          fetchOffset:offset];
+            return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset];
             
         case STMStorageTypeCoreData: {
             NSArray* objectsArray = [self.persister objectsForEntityName:entityName
@@ -120,23 +121,24 @@
     if (!options[STMPersistingOptionRecordstatuses] || [options[STMPersistingOptionRecordstatuses] boolValue]){
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
+    
+    NSUInteger count = 0;
 
     switch ([self.persister storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB: {
-            return [super destroyWithoutSave:entityName predicate:predicate options:options error:error];
-        }
-        case STMStorageTypeCoreData: {
-            self.needSaveDocument = YES;
-            return [self.persister removeObjectForPredicate:predicate entityName:entityName];
+            
+        case STMStorageTypeFMDB:
+            count = [super destroyWithoutSave:entityName predicate:predicate options:options error:error];
             break;
-        }
-        default:{
+        case STMStorageTypeCoreData:
+            self.needSaveDocument = YES;
+            count = [self.persister removeObjectForPredicate:predicate entityName:entityName];
+            break;
+        default:
             [self.persister wrongEntityName:entityName error:error];
             return 0;
-        }
     }
     
-    for (NSDictionary* object in objects){
+    for (NSDictionary *object in objects){
         
         NSDictionary *recordStatus = @{
                                        @"objectXid":object[STMPersistingKeyPrimary],
@@ -144,9 +146,11 @@
                                        @"isRemoved": @YES,
                                        };
         
-        [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:nil error:error];
+        [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
         
     }
+    
+    return count;
     
 }
 
@@ -171,6 +175,9 @@
     
 }
 
+
+#pragma mark - Private helpers
+
 - (NSDictionary *)fixMergeOptions:(NSDictionary *)options
                        entityName:(NSString *)entityName{
     
@@ -187,6 +194,9 @@
 }
 
 @end
+
+
+#pragma mark - Category methods
 
 @implementation STMPersister (Transactions)
 

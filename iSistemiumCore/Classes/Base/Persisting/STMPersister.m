@@ -6,12 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "STMConstants.h"
 #import "STMFunctions.h"
-#import "STMEntityController.h"
-#import "STMSettingsController.h"
 
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"

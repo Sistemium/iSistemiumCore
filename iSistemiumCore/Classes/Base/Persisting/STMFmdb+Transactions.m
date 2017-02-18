@@ -26,6 +26,10 @@
 
 #pragma mark - PersistingTransaction protocol
 
+- (id <STMModelling>)modellingDelegate {
+    return self.stmFMDB.modellingDelegate;
+}
+
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
     NSString *now = [STMFunctions stringFromNow];
