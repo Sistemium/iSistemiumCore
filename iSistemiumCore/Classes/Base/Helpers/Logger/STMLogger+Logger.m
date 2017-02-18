@@ -159,7 +159,7 @@
         
         for (NSDictionary *logMessageDic in result) {
             
-            NSLog(@"%@ %@", logMessageDic[@"type"], logMessageDic[@"text"]);
+            NSLog(@"Log %@: %@", logMessageDic[@"type"], logMessageDic[@"text"]);
             
             [self saveLogMessageDic:logMessageDic];
             
