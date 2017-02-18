@@ -39,6 +39,7 @@
     [self runSimpleTest];
     [self runOneMoreSimpleTest];
     [self runMoreComplicatedTest];
+    [self runTestWithNoDetection];
     
 }
 
@@ -113,6 +114,28 @@
     
     [self noPatternWithValues:@[@"f", @"g"]];
     
+}
+
+- (void)runTestWithNoDetection {
+    
+    [self initLoggerWithPatternDepth:10];
+    
+    [self prefillWithValues:@[@"3", @"4", @"5", @"6"]];
+    
+    NSArray *possiblePattern = @[@"4", @"5"];
+    
+    [self possiblePatternWithValues:possiblePattern];
+    
+    self.timesToRepeat = 17;
+    NSArray *pattern = @[@"7", @"8", @"9", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h"];
+    
+    for (NSUInteger i = 0; i < self.timesToRepeat; i++) {
+        [self noPatternWithValues:pattern];
+    }
+    
+    [self possiblePatternWithValues:@[@"f", @"g"]];
+    [self noPatternWithValues:@[@"8"]];
+
 }
 
 - (void)initLoggerWithPatternDepth:(NSUInteger)patternDepth {
