@@ -23,8 +23,6 @@
 
 - (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
 
-    if (options[STMPersistingOptionBypassInterceptors]) return attributes;
-    
     id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     
     if (!interceptor) return attributes;

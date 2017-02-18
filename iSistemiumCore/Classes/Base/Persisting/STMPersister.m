@@ -103,16 +103,6 @@
     NSString *recordStatusEntityName = @"STMRecordStatus";
 
     // TODO: implement RecordStatus with interceptor
-    
-    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
-    
-    if (*error) return nil;
-    
-    if (!attributes) {
-        // TODO: maybe empty response with no error means ignore?
-        [STMFunctions error:error withMessage:@"Empty response from the interceptor"];
-        return nil;
-    }
 
     if ([entityName isEqualToString:recordStatusEntityName]) {
         
@@ -397,6 +387,10 @@
                     options:(NSDictionary *)options
                       error:(NSError **)error{
     
+    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+    
+    if (!attributes || *error) return nil;
+    
     NSDictionary* result = [self mergeWithoutSave:entityName
                                        attributes:attributes
                                           options:[self fixMergeOptions:options entityName:entityName]
@@ -428,15 +422,7 @@
     
     attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
     
-    if (*error) return nil;
-    
-    if (!attributeArray) {
-        // TODO: maybe empty response with no error means ignore?
-        [STMFunctions error:error withMessage:@"Empty response from the interceptor"];
-        return nil;
-    }
-    
-    options = [STMFunctions setValue:@YES forKey:STMPersistingOptionBypassInterceptors inDictionary:options];
+    if (!attributeArray.count || *error) return attributeArray;
 
     for (NSDictionary *dictionary in attributeArray) {
         

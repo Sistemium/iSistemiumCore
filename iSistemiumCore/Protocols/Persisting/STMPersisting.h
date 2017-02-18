@@ -36,8 +36,6 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionOrderDirection @"direction"
 #define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
 #define STMPersistingOptionSetTs @"setTs"
-#define STMPersistingOptionBypassInterceptors @"bypassInterceptors"
-
 #define STMPersistingOptionOrderDirectionDescValue @"DESC"
 #define STMPersistingOptionOrderDirectionAscValue @"ASC"
 
