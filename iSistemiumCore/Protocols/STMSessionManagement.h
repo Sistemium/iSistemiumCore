@@ -82,6 +82,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @end
 
+#define STM_SESSION_SETTINGS_CHANGED @"SettingsChanged"
 
 @protocol STMSession <NSObject,STMNotifications>
 

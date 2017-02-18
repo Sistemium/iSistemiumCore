@@ -45,46 +45,17 @@
 
 - (void)addObservers {
     
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [self.session addObserver:self
+                     selector:@selector(sessionStatusChanged:)
+                         name:NOTIFICATION_SESSION_STATUS_CHANGED];
     
-    [nc addObserver:self
-           selector:@selector(sessionStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self.session];
+    [self.session addObserver:self
+                     selector:@selector(trackerSettingsChanged:)
+                         name:[self.group stringByAppendingString:STM_SESSION_SETTINGS_CHANGED]];
     
-    [nc addObserver:self
-           selector:@selector(trackerSettingsChanged:)
-               name:[NSString stringWithFormat:@"%@SettingsChanged", self.group]
-             object:self.session];
-    
-//    [nc addObserver:self
-//           selector:@selector(checkTimeForTracking)
-//               name:UIApplicationDidBecomeActiveNotification
-//             object:nil];
-    
-//    [nc addObserver:self
-//           selector:@selector(checkTimeForTracking)
-//               name:@"applicationPerformFetchWithCompletionHandler"
-//             object:nil];
-    
-    [nc addObserver:self
-           selector:@selector(didReceiveRemoteNotification:)
-               name:@"applicationDidReceiveRemoteNotification"
-             object: nil];
+    [self observeNotification:@"applicationDidReceiveRemoteNotification"
+                     selector:@selector(didReceiveRemoteNotification:)];
 
-}
-
-- (void)removeObservers {
-
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-//    [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIFICATION_SESSION_STATUS_CHANGED object:self.session];
-//    [[NSNotificationCenter defaultCenter] removeObserver:self name:[NSString stringWithFormat:@"%@SettingsChanged", self.group] object:self.session];
-    
-}
-
-- (void)dealloc {
-    [self removeObservers];
 }
 
 - (void)prepareToDestroy {
@@ -119,12 +90,11 @@
     
     if (!_settings) {
         
+        // FIXME: is it really working?
         _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:self.group].mutableCopy;
         for (NSString *settingName in [_settings allKeys]) {
             [_settings addObserver:self forKeyPath:settingName options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld) context:nil];
         }
-    
-//        NSLog(@"_settings %@", _settings);
 
     }
     
