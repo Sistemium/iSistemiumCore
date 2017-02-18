@@ -10,6 +10,8 @@
 #import "STMSessionManagement.h"
 #import "STMPersistingIntercepting.h"
 
+#define STM_SETTING_NAME @"STMSetting"
+
 @interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
 
 + (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;

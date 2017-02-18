@@ -7,14 +7,10 @@
 //
 
 #import "STMCoreObject.h"
-#import <CoreLocation/CoreLocation.h>
 #import "STMSessionManagement.h"
-#import "STMDocument.h"
-#import "STMFunctions.h"
 
 @interface STMCoreTracker : STMCoreObject
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic, strong) NSString *group;

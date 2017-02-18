@@ -97,7 +97,7 @@
     self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
     self.settingsController.session = self;
-    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:NSStringFromClass(STMSetting.class) interceptor:self.settingsController];
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;

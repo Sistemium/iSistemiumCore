@@ -37,10 +37,7 @@
 }
 
 - (void)customInit {
-    
-    [self addObservers];
     NSLog(@"%@ tracker init", self.group);
-    
 }
 
 - (void)addObservers {
@@ -67,8 +64,9 @@
 
 - (void)setSession:(id<STMSession>)session {
     
+    if (_session) [self removeObservers];
     _session = session;
-    self.document = (STMDocument *)[(id <STMSession>)session document];
+    if (_session) [self addObservers];
 
 }
 
