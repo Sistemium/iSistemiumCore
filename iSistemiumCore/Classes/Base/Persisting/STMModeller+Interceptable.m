@@ -61,7 +61,7 @@
     }
     
     return [STMFunctions mapArray:attributeArray withBlock:^id(NSDictionary *attributes) {
-        return [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+        return *error ? nil : [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     }];
 }
 
