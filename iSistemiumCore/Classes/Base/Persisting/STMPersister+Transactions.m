@@ -49,7 +49,7 @@
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
-    NSUInteger offset = [options[@"startPage"] integerValue];
+    NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
     
     if (offset) {
         offset -= 1;
@@ -59,7 +59,6 @@
     NSString *orderBy = options[STMPersistingOptionOrder];
     
     BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
-    
     
     if (!orderBy) orderBy = @"id";
     
