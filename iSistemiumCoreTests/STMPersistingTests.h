@@ -17,6 +17,9 @@
 
 #define PersistingTestsTimeOut 5
 
+#define STMPTStartedAt NSDate *startedAt = [NSDate date];
+#define STMPTSecondsAfterStartedAt -[startedAt timeIntervalSinceNow]
+
 @interface STMPersistingTests : XCTestCase
 
 @property (nonatomic, strong) id <STMPersistingObserving, STMPersistingSync, STMPersistingAsync, STMPersistingPromised, STMModelling> persister;
