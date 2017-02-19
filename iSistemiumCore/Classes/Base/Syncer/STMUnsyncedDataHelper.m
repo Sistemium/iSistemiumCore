@@ -310,9 +310,13 @@
 
     NSError *error = nil;
     
-    NSMutableArray *subpredicates = [NSMutableArray arrayWithObject:[self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName]];
+    NSMutableArray *subpredicates = [NSMutableArray array];
     
-    if (!subpredicates.count) return nil;
+    NSPredicate *unsyncedPredicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
+    
+    if (!unsyncedPredicate) return nil;
+    
+    [subpredicates addObject:unsyncedPredicate];
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     if (erroredExclusion) [subpredicates addObject:erroredExclusion];
