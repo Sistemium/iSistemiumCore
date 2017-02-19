@@ -323,7 +323,7 @@
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
     NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
-                              STMPersistingOptionOrder      :@"deviceTs,id",
+                              STMPersistingOptionOrder      : @"deviceTs,id",
                               STMPersistingOptionOrderDirectionAsc};
     
     NSArray *result = [self.persistenceDelegate findAllSync:entityName
