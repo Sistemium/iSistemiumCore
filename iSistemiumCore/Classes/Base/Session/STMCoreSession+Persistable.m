@@ -15,6 +15,7 @@
 
 #import "STMEntityController.h"
 #import "STMCorePicturesController.h"
+#import "STMRecordStatusController.h"
 #import "STMPersistingInterceptorUniqueProperty.h"
 
 #import "STMUnsyncedDataHelper.h"
@@ -93,11 +94,14 @@
     
     [self initController:STMEntityController.class];
     [self initController:STMCorePicturesController.class];
+    [self initController:STMRecordStatusController.class];
     
     self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
     self.settingsController.session = self;
+    
     [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_RECORDSTATUS_NAME interceptor:(STMRecordStatusController *)[self controllerWithClass:STMRecordStatusController.class]];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;

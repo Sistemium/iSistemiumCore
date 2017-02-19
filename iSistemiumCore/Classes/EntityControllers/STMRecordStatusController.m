@@ -7,7 +7,6 @@
 //
 
 #import "STMRecordStatusController.h"
-#import "STMCoreObjectsController.h"
 
 
 @implementation STMRecordStatusController
@@ -18,7 +17,7 @@
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
     
-    NSArray* recordStatus = [[self persistenceDelegate] findAllSync:@"STMRecordStatus" predicate:predicate options:nil error:&error];
+    NSArray* recordStatus = [[self persistenceDelegate] findAllSync:STM_RECORDSTATUS_NAME predicate:predicate options:nil error:&error];
     
     if (error){
         return nil;
@@ -37,10 +36,32 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectXid IN %@", xids];
     
     NSError *error;
-    NSArray *recordStatuses = [[self persistenceDelegate] findAllSync:@"RecordStatus" predicate:predicate options:nil error:&error];
+    NSArray *recordStatuses = [[self persistenceDelegate] findAllSync:STM_RECORDSTATUS_NAME predicate:predicate options:nil error:&error];
 
     return recordStatuses;
     
+}
+
+
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction {
+    
+    if ([options[STMPersistingOptionRecordstatuses] isEqual:@NO]) return attributes;
+    
+    if ([STMFunctions isNotNullAndTrue:attributes[@"isRemoved"]]) {
+        
+        NSString *objectXid = attributes[@"objectXid"];
+        NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
+        NSPredicate *predicate = [transaction.modellingDelegate primaryKeyPredicateEntityName:entityNameToDestroy values:@[objectXid]];
+        
+        if (predicate) {
+            [transaction destroyWithoutSave:entityNameToDestroy predicate:predicate options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
+        }
+        
+    }
+    
+    if ([STMFunctions isNotNullAndTrue:attributes[@"isTemporary"]]) return nil;
+
+    return attributes;
 }
 
 @end
