@@ -229,6 +229,21 @@
     
 }
 
+- (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
+    
+    __block NSArray *result;
+    
+    [self.fmdb.pool inDatabase:^(FMDatabase *db) {
+        
+        STMPersisterTransaction *transaction = [STMPersisterTransaction persistingTransactionWithFMDatabase:db stmFMDB:self.fmdb persister:self];
+        
+        result = block(transaction);
+        
+    }];
+    
+    return result;
+    
+}
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary *)options {
     

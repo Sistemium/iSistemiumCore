@@ -12,6 +12,8 @@
 @interface STMPersister (Transactions)
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block;
+- (NSArray *)readOnly:(NSArray * (^)(id <STMPersistingTransaction> transaction))block;
+
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName options:(NSDictionary*)options;
 - (NSPredicate *)predicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options;

@@ -100,15 +100,13 @@
     
     predicate = [self predicate:predicate withOptions:options];
     
-    __block NSArray <NSDictionary *> *result;
+    __block NSError *innerError;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
-        
-        result = [transaction findAllSync:entityName predicate:predicate options:options error:error];
-        
-        return !*error;
-        
+    NSArray *result = [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+        return [transaction findAllSync:entityName predicate:predicate options:options error:&innerError];
     }];
+    
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
     return result;
     
