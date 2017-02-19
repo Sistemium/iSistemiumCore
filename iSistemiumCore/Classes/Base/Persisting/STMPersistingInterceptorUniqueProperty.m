@@ -10,7 +10,7 @@
 
 @implementation STMPersistingInterceptorUniqueProperty
 
-- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction {
  
     id value = attributes[self.propertyName];
     
@@ -23,7 +23,7 @@
     
     NSDictionary *findOptions = @{STMPersistingOptionPageSize:@(1)};
     
-    NSDictionary *existing = [self.persistenceDelegate findAllSync:self.entityName predicate:predicate options:findOptions error:error].firstObject;
+    NSDictionary *existing = [transaction findAllSync:self.entityName predicate:predicate options:findOptions error:error].firstObject;
     
     if (!existing) return attributes;
     
