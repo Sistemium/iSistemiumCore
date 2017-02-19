@@ -12,6 +12,11 @@
 #import "STMFunctions.h"
 #import "STMPredicateToSQL.h"
 
+#define SQLITE_OPEN_READONLY 0x00000001
+#define SQLITE_OPEN_READWRITE 0x00000002
+#define SQLITE_OPEN_CREATE 0x00000004
+#define SQLITE_OPEN_FILEPROTECTION_NONE 0x00400000
+#define SQLITE_OPEN_FILEPROTECTION_MASK 0x00700000
 
 @implementation STMFmdb
 
@@ -25,8 +30,8 @@
     NSString *dbPath = [documentDirectory stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
-    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    self.pool = [FMDatabasePool databasePoolWithPath:dbPath];
+    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
+    self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
 
     [self.queue inDatabase:^(FMDatabase *database){
         self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
