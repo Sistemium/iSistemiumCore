@@ -42,7 +42,7 @@
 @implementation STMSyncer
 
 @synthesize syncInterval = _syncInterval;
-@synthesize syncerState = _syncerState;
+
 
 #pragma mark - observers
 
@@ -71,72 +71,15 @@
 }
 
 - (void)appDidBecomeActive {
-    
-#ifdef DEBUG
-    [self setSyncerState:STMSyncerSendData];
-#else
-    [self setSyncerState:STMSyncerSendDataOnce];
-#endif
-    
+    [self sendData];
 }
 
 - (void)appDidEnterBackground {
-    [self setSyncerState:STMSyncerSendDataOnce];
+    [self sendData];
 }
 
 
 #pragma mark - variables setters & getters
-
-- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    self.syncerState = syncerState;
-    
-}
-
-- (void)setSyncerState:(STMSyncerState)syncerState {
-    
-    if (self.isRunning && syncerState != _syncerState) {
-        
-        _syncerState = syncerState;
-        
-        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-        NSLog(@"%@", logMessage);
-        
-        switch (_syncerState) {
-            case STMSyncerIdle: {
-                break;
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [STMClientDataController checkClientData];
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            case STMSyncerReceiveData: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [self receiveData];
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        
-    }
-    
-    return;
-    
-}
 
 - (void)setSession:(id <STMSession>)session {
     
@@ -349,7 +292,6 @@
         [self.socketTransport closeSocket];
         
 //        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-//        self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
         self.isRunning = NO;
@@ -440,9 +382,11 @@
 }
 
 - (void)entitiesChanged {
+    
     [self subscribeToUnsyncedObjects];
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
     [self receiveData];
+    
 }
 
 - (void)checkSocket {
@@ -527,11 +471,14 @@
 #pragma mark - remote control methods
 
 - (void)upload {
-    [self setSyncerState:STMSyncerSendDataOnce];
+    [self sendData];
 }
 
 - (void)fullSync {
-    [self setSyncerState:STMSyncerSendData];
+    
+    [self receiveData];
+    [self sendData];
+    
 }
 
 - (void)receiveEntities:(NSArray *)entitiesNames {
@@ -661,9 +608,27 @@
 }
 
 
-#pragma mark - recieve data
+#pragma mark - STMSyncer protocol methods
+
+- (void)sendData {
+
+    if (!self.isRunning) return;
+
+    [STMClientDataController checkClientData];
+    
+}
+
+- (void)receiveDataWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    [self receiveData];
+
+}
 
 - (void)receiveData {
+    
+    if (!self.isRunning) return;
     
     if ([self.dataDownloadingDelegate downloadingState]) {
         self.needRepeatDownload = YES;
