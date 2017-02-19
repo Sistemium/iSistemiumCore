@@ -65,24 +65,6 @@
     return rez;
 }
 
-- (NSArray *)getDataWithEntityName:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate orderBy:(NSString * _Nullable)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset{
-    
-    __block NSArray* results;
-    
-    [self.pool inDatabase:^(FMDatabase *db) {
-        
-        results = [self getDataWithEntityName:name
-                                withPredicate:predicate
-                                      orderBy:orderBy
-                                    ascending:ascending
-                                   fetchLimit:fetchLimit
-                                  fetchOffset:fetchOffset
-                                           db:db];
-        
-    }];
-    
-    return results;
-}
 
 - (BOOL) hasTable:(NSString * _Nonnull)name {
     name = [STMFunctions removePrefixFromEntityName:name];

@@ -17,13 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)count:(NSString *)name
       withPredicate:(NSPredicate *)predicate;
 
-- (NSArray *)getDataWithEntityName:(NSString *)name
-                              withPredicate:(NSPredicate *)predicate
-                                    orderBy:(NSString * _Nullable)orderBy
-                                  ascending:(BOOL)ascending
-                                 fetchLimit:(NSUInteger)fetchLimit
-                                fetchOffset:(NSUInteger)fetchOffset;
-
 - (BOOL)hasTable:(NSString *)name;
 
 NS_ASSUME_NONNULL_END

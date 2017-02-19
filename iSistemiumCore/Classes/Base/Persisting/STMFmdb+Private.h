@@ -29,7 +29,6 @@ CF_ASSUME_NONNULL_BEGIN
 
 - (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute;
 
-
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling
                                 inDatabase:(FMDatabase *)database;
 
