@@ -20,4 +20,6 @@
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName;
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
 
+- (NSPredicate *)phantomPredicateForOptions:(NSDictionary *)options;
+
 @end

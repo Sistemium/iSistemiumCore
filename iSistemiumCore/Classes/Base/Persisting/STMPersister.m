@@ -83,16 +83,11 @@
 
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    NSPredicate *pkPredicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
-    NSPredicate *predicate = [self predicate:pkPredicate withOptions:options];
+    NSPredicate *predicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
     
     NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
     
-    if (results.count) {
-        return results.firstObject;
-    }
-    
-    return nil;
+    return results.firstObject;
     
 }
 

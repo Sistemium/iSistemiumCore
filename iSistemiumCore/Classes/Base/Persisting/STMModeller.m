@@ -262,8 +262,17 @@
     return result;
 }
 
+- (NSPredicate *)phantomPredicateForOptions:(NSDictionary *)options {
+
+    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
+    return [NSPredicate predicateWithFormat:@"isFantom == %@", @(isFantom)];
+
+}
+
 - (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray *)values {
     
+    if (values.count == 1) return [NSPredicate predicateWithFormat:@"id == %@", values.firstObject];
+        
     return [NSPredicate predicateWithFormat:@"id IN %@", values];
     
 }

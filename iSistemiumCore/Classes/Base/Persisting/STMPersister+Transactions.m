@@ -265,14 +265,9 @@
 
 - (NSPredicate *)predicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options {
     
-    NSMutableArray *predicates = NSMutableArray.array;
+    NSMutableArray *predicates = [NSMutableArray arrayWithObject:[self phantomPredicateForOptions:options]];
     
-    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
-    [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom = %@", @(isFantom)]];
-    
-    if (predicate) {
-        [predicates addObject:predicate];
-    }
+    if (predicate) [predicates addObject:predicate];
     
     return [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
 }
@@ -281,7 +276,7 @@
 - (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray <NSString *> *)values options:(NSDictionary *)options {
     
     if ([self storageForEntityName:entityName options:options] != STMStorageTypeCoreData) {
-        return [super primaryKeyPredicateEntityName:entityName values:values];
+        return [self primaryKeyPredicateEntityName:entityName values:values];
     }
     
     NSArray *xids = [STMFunctions mapArray:values withBlock:^id (id value) {
