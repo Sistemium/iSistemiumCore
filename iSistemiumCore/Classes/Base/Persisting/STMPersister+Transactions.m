@@ -24,6 +24,7 @@
 @interface STMPersisterTransaction()
 
 @property (nonatomic) BOOL needSaveDocument;
+@property (nonatomic,weak) NSManagedObjectContext *coreDataContext;
 
 @end
 
@@ -34,9 +35,14 @@
 }
 
 - (instancetype)initWithFMDatabase:(FMDatabase*)database stmFMDB:(STMFmdb *)stmFMDB persister:(STMPersister *)persister {
+    
     self = [self initWithFMDatabase:database stmFMDB:stmFMDB];
+    
     self.persister = persister;
+    self.coreDataContext = persister.document.managedObjectContext;
+    
     return self;
+    
 }
 
 
@@ -85,21 +91,32 @@
 
 - (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
+    __block NSDictionary *result;
+    
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
+            
             return [super mergeWithoutSave:entityName attributes:attributes options:options error:error];
         
-        case STMStorageTypeCoreData:
+        case STMStorageTypeCoreData: {
+            
             self.needSaveDocument = YES;
             options = [self fixMergeOptions:options entityName:entityName];
-            return [self.persister mergeWithoutSave:entityName attributes:attributes options:options error:error inManagedObjectContext:self.persister.document.managedObjectContext];
+            
+            [self.coreDataContext performBlockAndWait:^{
+                result = [self.persister mergeWithoutSave:entityName attributes:attributes options:options error:error inManagedObjectContext:self.coreDataContext];
+            }];
+            
+            return result;
 
-        default:
+        } default:
+            
             [self.persister wrongEntityName:entityName error:error];
             return nil;
         
     }
+    
     
 }
 
@@ -107,27 +124,33 @@
     
     NSArray* objects = @[];
     
-    // FIXME: expendable fetch on one object destroy
     if (!options[STMPersistingOptionRecordstatuses] || [options[STMPersistingOptionRecordstatuses] boolValue]){
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
     
-    NSUInteger count = 0;
+    __block NSUInteger count = 0;
 
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
+            
             count = [super destroyWithoutSave:entityName predicate:predicate options:options error:error];
             break;
             
-        case STMStorageTypeCoreData:
+        case STMStorageTypeCoreData: {
             self.needSaveDocument = YES;
-            count = [self.persister removeObjectForPredicate:predicate entityName:entityName];
+            
+            [self.coreDataContext performBlockAndWait:^{
+                count = [self.persister removeObjectForPredicate:predicate entityName:entityName];
+            }];
+            
             break;
             
-        default:
+        } default:
+            
             [self.persister wrongEntityName:entityName error:error];
             return 0;
+            
     }
     
     for (NSDictionary *object in objects){
@@ -170,18 +193,27 @@
         [attributesToUpdate removeObjectForKey:STMPersistingKeyVersion];
     }
     
+    __block NSDictionary *result;
+    
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
+            
             return [super updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
         
-        case STMStorageTypeCoreData:
+        case STMStorageTypeCoreData: {
+        
             self.needSaveDocument = YES;
             options = [self fixMergeOptions:options entityName:entityName];
-            return [self.persister update:entityName attributes:attributesToUpdate options:options error:error inManagedObjectContext:self.persister.document.managedObjectContext];
-            break;
+            
+            [self.coreDataContext performBlockAndWait:^{
+                result = [self.persister update:entityName attributes:attributesToUpdate options:options error:error inManagedObjectContext:self.coreDataContext];
+            }];
+            
+            return result;
         
-        default:
+        } default:
+            
             [self.persister wrongEntityName:entityName error:error];
             return 0;
     
