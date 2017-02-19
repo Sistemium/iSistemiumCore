@@ -890,9 +890,7 @@
                                                                                    withString:@"/"];
                             
                             NSLog(@"%@", picture.picturesInfo);
-                            
-                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                                                        
+                                                                                    
                         });
 
                     } else {
