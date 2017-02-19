@@ -156,7 +156,7 @@
     XCTestExpectation *expectationOne = [self expectationWithDescription:@"wait 1st delay"];
     XCTestExpectation *expectationTwo = [self expectationWithDescription:@"wait 2nd delay"];
     
-    double delayInSeconds = 2.0;
+    double delayInSeconds = MESSAGE_DELAY_TO_CHECK_PATTERN + 0.1;
     dispatch_time_t popTimeOne = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTimeOne, dispatch_get_main_queue(), ^(void){
         
@@ -188,7 +188,9 @@
         
     });
 
-    [self waitForExpectationsWithTimeout:5 handler:^(NSError * _Nullable error) {
+    NSTimeInterval timeout = MESSAGE_DELAY_TO_CHECK_PATTERN * 2 + 5;
+    
+    [self waitForExpectationsWithTimeout:timeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
     }];
 
