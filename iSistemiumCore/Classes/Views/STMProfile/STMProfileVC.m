@@ -1064,7 +1064,7 @@
 
     [nc addObserver:self
            selector:@selector(updateUploadSyncProgressBar)
-               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
              object:self.syncer];
     
     [nc addObserver:self

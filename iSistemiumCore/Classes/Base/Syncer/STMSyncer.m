@@ -741,7 +741,7 @@
         }
         
         if (success) {
-            [self bunchOfObjectsSended];
+            [self bunchOfObjectsSent];
         }
         
         [self.dataSyncingDelegate setSynced:success
@@ -767,15 +767,11 @@
 
 }
 
-- (void)bunchOfObjectsSended {
+- (void)bunchOfObjectsSent {
 
     [self saveSendDate];
-    [self postObjectsSendedNotification];
-
-}
-
-- (void)postObjectsSendedNotification {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
+    
 }
 
 
