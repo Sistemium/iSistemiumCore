@@ -328,7 +328,7 @@
     NSDictionary *testDic = result.firstObject;
     NSString *testText = testDic[@"text"];
     
-    BOOL textEndsCorrect = [testText hasSuffix:[NSString stringWithFormat:@"%@ times", @(self.timesToRepeat)]];
+    BOOL textEndsCorrect = [testText hasSuffix:[NSString stringWithFormat:@"%@ times", @(self.timesToRepeat + 1)]];
     
     XCTAssertTrue(textEndsCorrect);
     

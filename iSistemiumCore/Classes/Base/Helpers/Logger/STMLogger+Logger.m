@@ -483,16 +483,14 @@
 - (NSArray *)checkPatternEndsWith:(NSDictionary *)logMessageDic {
     
     if (![self.possiblePatternArray[self.currentPatternIndex] isEqualToDictionary:logMessageDic]) {
-        
-        self.patternRepeatCounter = (self.currentPatternIndex != 0) ? self.patternRepeatCounter - 1 : self.patternRepeatCounter;
-
         return [self endPatternDetectionWith:logMessageDic];
-        
     }
+    
+    BOOL isLastIndex = (self.currentPatternIndex == self.possiblePatternArray.count - 1);
+    
+    if (isLastIndex) self.patternRepeatCounter++;
 
-    self.patternRepeatCounter = (self.currentPatternIndex == 0) ? self.patternRepeatCounter + 1 : self.patternRepeatCounter;
-
-    self.currentPatternIndex = (++self.currentPatternIndex == self.possiblePatternArray.count) ? 0 : self.currentPatternIndex;
+    isLastIndex ? self.currentPatternIndex = 0 : self.currentPatternIndex++;
 
     return nil;
 
@@ -547,7 +545,7 @@
         
         self.patternDetected = YES;
         self.currentPatternIndex = 0;
-        self.patternRepeatCounter = 0;
+        self.patternRepeatCounter = 1;
 
         NSDictionary *result = @{@"type"    : @"error",
                                  @"text"    : [NSString stringWithFormat:@"detect repeating pattern with last %@ logMessages", @(self.possiblePatternArray.count)]};
