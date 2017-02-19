@@ -85,7 +85,7 @@
     
     if (session != _session) {
         _session = session;
-        [self startSyncer];
+        if (session) [self startSyncer];
     }
     
 }
@@ -249,13 +249,11 @@
     BOOL success = [self checkStcEntities];
         
     if (!success) {
-        
         return [self.session.logger saveLogMessageWithText:@"checkStcEntities fail" numType:STMLogMessageTypeError];
-        
     }
     
     if (!self.socketUrlString) {
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
+        [self.session.logger saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
         return [self.authController logout];
     }
     
@@ -267,9 +265,7 @@
     
     [self addObservers];
     
-    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
-                                              andEntityResource:self.entityResource
-                                                          owner:self];
+    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self];
 
     if (!self.socketTransport) {
         [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
@@ -492,7 +488,7 @@
         return [self.persistenceDelegate isConcreteEntityName:name] ? [STMFunctions addPrefixToEntityName:name] : nil;
     }];
     
-    if (existingNames.count > 0) {
+    if (existingNames.count) {
         [self.dataDownloadingDelegate startDownloading:existingNames];
     }
   
@@ -529,10 +525,7 @@
 - (void)startDefantomization {
     
     if (!self.socketTransport.isReady) {
-        
-        [self.defantomizingDelegate stopDefantomization];
-        return;
-        
+        return [self.defantomizingDelegate stopDefantomization];
     }
     
     if (self.isDefantomizing) {
@@ -570,11 +563,7 @@
         
         blockIsComplete = YES;
 
-        [self.defantomizingDelegate defantomize:fantomDic
-                                        success:success
-                                     entityName:entityName
-                                         result:result
-                                          error:error];
+        [self.defantomizingDelegate defantomize:fantomDic success:success entityName:entityName result:result error:error];
                 
     }];
 
