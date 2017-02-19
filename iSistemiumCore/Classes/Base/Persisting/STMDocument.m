@@ -60,70 +60,44 @@
 
 - (void)saveDocument:(void (^)(BOOL success))completionHandler {
     
-    if (!self.isSaving) {
+    @synchronized (self) {
         
-        if (self.documentState == UIDocumentStateNormal) {
-            
-            self.isSaving = YES;
-            
-//            NSLog(@"--- Document saving start ---");
-            
-            [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
-                
-                self.isSaving = NO;
-
-                if (success) {
-                    
-                    if (self.savingHaveToRepeat) {
-                        
-//                        NSLog(@"--- repeat of Document saving ---");
-                        self.savingHaveToRepeat = NO;
-
-                        [self saveDocument:^(BOOL success) {
-                            completionHandler(success);
-                        }];
-                        
-                    } else {
-
-                        NSLog(@"--- Document saved successfully ---");
-                        
-                        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY
-                                                                            object:self];
-
-                        completionHandler(YES);
-                        
-                    }
-                    
-                } else {
-                    
-                    NSLog(@"--- UIDocumentSaveForOverwriting not success ---");
-                    completionHandler(NO);
-                    
-                    self.savingHaveToRepeat = NO;
-                    
-                }
-                
-            }];
-            
-        } else {
-            
-            NSLog(@"documentState != UIDocumentStateNormal for document: %@", self);
-            NSLog(@"documentState is %u", (int)self.documentState);
-            
-            completionHandler(NO);
-            
+        if (self.isSaving) {
+            self.savingHaveToRepeat = YES;
+            return completionHandler(YES);
         }
+            
+        if (self.documentState != UIDocumentStateNormal) {
+            NSLog(@"UIDocumentStateNormal != %u", (int)self.documentState);
+            return completionHandler(NO);
+        }
+            
+        self.isSaving = YES;
         
-    } else {
-        
-        //        NSLog(@"Document currently is saving");
-        
-        self.savingHaveToRepeat = YES;
-        
-        completionHandler(YES);
+        [self saveToURL:self.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
+            
+            self.isSaving = NO;
+
+            if (!success) {
+                NSLog(@"UIDocumentSaveForOverwriting not success");
+                self.savingHaveToRepeat = NO;
+                return completionHandler(NO);;
+            }
+                
+            NSLog(@"Document saved successfully");
+
+            if (self.savingHaveToRepeat) {
+                self.savingHaveToRepeat = NO;
+                return [self saveDocument:completionHandler];
+            }
+    
+            [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_DOCUMENT_SAVE_SUCCESSFULLY object:self];
+
+            completionHandler(YES);
+            
+        }];
 
     }
-    
 }
 
 - (void)addObservers {
