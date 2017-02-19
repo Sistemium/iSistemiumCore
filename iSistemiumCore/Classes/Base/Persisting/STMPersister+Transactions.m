@@ -73,14 +73,17 @@
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
+            
             return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset];
             
         case STMStorageTypeCoreData: {
+            
             NSArray* objectsArray = [self.persister objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.persister.document.managedObjectContext error:error];
             
             return [self.persister arrayForJSWithObjects:objectsArray];
             
         }
+            
         default:
             [self.persister wrongEntityName:entityName error:error];
             return nil;
@@ -95,9 +98,12 @@
     
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
-        case STMStorageTypeFMDB:
+        case STMStorageTypeFMDB: {
             
-            return [super mergeWithoutSave:entityName attributes:attributes options:options error:error];
+            result = [super mergeWithoutSave:entityName attributes:attributes options:options error:error];
+            break;
+        
+        }
         
         case STMStorageTypeCoreData: {
             
@@ -108,15 +114,18 @@
                 result = [self.persister mergeWithoutSave:entityName attributes:attributes options:options error:error inManagedObjectContext:self.coreDataContext];
             }];
             
-            return result;
+            break;
 
-        } default:
+        }
+        
+        default:
             
             [self.persister wrongEntityName:entityName error:error];
             return nil;
         
     }
     
+    return result;
     
 }
 
@@ -132,12 +141,15 @@
 
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
-        case STMStorageTypeFMDB:
+        case STMStorageTypeFMDB: {
             
             count = [super destroyWithoutSave:entityName predicate:predicate options:options error:error];
             break;
             
+        }
+        
         case STMStorageTypeCoreData: {
+            
             self.needSaveDocument = YES;
             
             [self.coreDataContext performBlockAndWait:^{
@@ -146,8 +158,9 @@
             
             break;
             
-        } default:
-            
+        }
+        
+        default:
             [self.persister wrongEntityName:entityName error:error];
             return 0;
             
@@ -193,13 +206,16 @@
         [attributesToUpdate removeObjectForKey:STMPersistingKeyVersion];
     }
     
-    __block NSDictionary *result;
+    __block NSDictionary *result = 0;
     
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
-        case STMStorageTypeFMDB:
+        case STMStorageTypeFMDB:{
             
-            return [super updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
+            result = [super updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
+            break;
+            
+        }
         
         case STMStorageTypeCoreData: {
         
@@ -210,15 +226,16 @@
                 result = [self.persister update:entityName attributes:attributesToUpdate options:options error:error inManagedObjectContext:self.coreDataContext];
             }];
             
-            return result;
+            break;
         
-        } default:
+        }
             
-            [self.persister wrongEntityName:entityName error:error];
-            return 0;
+        default: [self.persister wrongEntityName:entityName error:error];
     
     }
     
+    return result;
+
 }
 
 - (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {

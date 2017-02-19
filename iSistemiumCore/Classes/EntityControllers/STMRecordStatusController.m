@@ -43,6 +43,9 @@
 }
 
 
+#pragma mark - PersistingMergeInterceptor protocol
+
+
 - (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction {
     
     if ([options[STMPersistingOptionRecordstatuses] isEqual:@NO]) return attributes;
