@@ -139,6 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)currentTestTarget;
 
 + (BOOL)isNotNullAndTrue:(id)value;
++ (BOOL)isNotNull:(id)value;
 
 NS_ASSUME_NONNULL_END
 

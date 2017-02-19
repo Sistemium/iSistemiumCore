@@ -1310,5 +1310,8 @@ vm_size_t freeMemory(void) {
     return ![value isEqual:[NSNull null]] && [value boolValue];
 }
 
++ (BOOL)isNotNull:(id)value {
+    return value && ![value isEqual:[NSNull null]];
+}
 
 @end
