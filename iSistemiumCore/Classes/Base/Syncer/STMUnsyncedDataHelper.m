@@ -312,7 +312,8 @@
     
     NSMutableArray *subpredicates = @[].mutableCopy;
     
-    [subpredicates addObject:[self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName]];
+    NSPredicate *unsyncedPredicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
+    if (unsyncedPredicate) [subpredicates addObject:unsyncedPredicate];
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     if (erroredExclusion) [subpredicates addObject:erroredExclusion];
