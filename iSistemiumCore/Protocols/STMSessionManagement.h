@@ -16,12 +16,6 @@
 #import "STMNotifications.h"
 #import "STMDataSyncingSubscriber.h"
 
-typedef NS_ENUM(NSInteger, STMSyncerState) {
-    STMSyncerIdle,
-    STMSyncerSendData,
-    STMSyncerSendDataOnce,
-    STMSyncerReceiveData
-};
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -59,12 +53,13 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMSyncer <NSObject>
 
-@property (nonatomic) STMSyncerState syncerState;
 @property (readonly) BOOL transportIsReady;
 @property (readonly) BOOL isReceivingData;
 @property (readonly) BOOL isSendingData;
 
-- (void) setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler;
+- (void)sendData; // only used for checkClientData — may be do it some other way
+- (void)receiveData;
+- (void)receiveDataWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
 - (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value;
 

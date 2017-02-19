@@ -365,9 +365,7 @@
         UILongPressGestureRecognizer *longPressGesture = (UILongPressGestureRecognizer *)sender;
         
         if (longPressGesture.state == UIGestureRecognizerStateBegan) {
-            
-            self.syncer.syncerState = STMSyncerSendData;
-            
+            [self.syncer sendData];
         }
         
     }
@@ -375,14 +373,11 @@
 }
 
 - (void)uploadCloudTapped {
-    self.syncer.syncerState = STMSyncerSendDataOnce;
+    [self.syncer sendData];
 }
 
 - (void)downloadCloudTapped {
-    
-//    [[self syncer] afterSendFurcation];
-    self.syncer.syncerState = STMSyncerReceiveData;
-    
+    [self.syncer receiveData];
 }
 
 
@@ -486,7 +481,7 @@
 
 - (void)updateNonloadedPicturesInfo {
 
-    self.nonloadedPicturesButton.enabled = (self.syncer.syncerState == STMSyncerIdle);
+    self.nonloadedPicturesButton.enabled = YES;
     
     NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
@@ -804,7 +799,7 @@
     self.nameLabel.text = [STMCoreAuthController authController].userName;
     self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
 
-    BOOL syncerIsIdle = (self.syncer.syncerState == STMSyncerIdle);
+    BOOL syncerIsIdle = YES;
     self.progressBar.hidden = syncerIsIdle;
     [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     

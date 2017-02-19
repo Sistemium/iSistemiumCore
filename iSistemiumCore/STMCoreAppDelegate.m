@@ -20,7 +20,6 @@
 
 #import "STMAuthNC.h"
 
-//#import "STMSocketController.h"
 #import "STMSoundController.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -103,9 +102,7 @@
     id <STMSession> session = [self sessionManager].currentSession;
     
     if (session.status == STMSessionRunning) {
-        
-        [[session syncer] setSyncerState:STMSyncerSendData];
-        
+        [[session syncer] sendData];
     }
     
 }
@@ -290,15 +287,12 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
 
-    if ([self syncer].transportIsReady) {
-
-        [[self syncer] setSyncerState:STMSyncerReceiveData
-               fetchCompletionHandler:completionHandler];
-
+    STMSyncer *syncer = [self syncer];
+    
+    if (syncer.transportIsReady) {
+        [syncer receiveDataWithFetchCompletionHandler:completionHandler];
     } else {
-        
-        [[self syncer] checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
-        
+        [syncer checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
     }
     
 }
@@ -413,21 +407,22 @@
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[self syncer] setSyncerState:STMSyncerReceiveData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
-            
+
+        [[self syncer] receiveDataWithFetchCompletionHandler:^(UIBackgroundFetchResult result) {
+
             if (!handlerCompleted) {
                 
                 handlerCompleted = YES;
-
+                
                 NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:2", NSStringFromSelector(_cmd)];
                 [self tryCatchFetchResultHandler:handler
                                       withResult:result
                                       methodName:methodName];
 
             }
-            
+
         }];
-        
+
     }
 
 }

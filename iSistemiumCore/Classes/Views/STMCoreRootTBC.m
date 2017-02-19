@@ -1142,7 +1142,32 @@
 }
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
+    [self repeatLogMessages];
+    
+}
+
+- (void)repeatLogMessages {
+    
+#warning - for test purpose only, don't forget to remove!
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"test0" numType:STMLogMessageTypeImportant];
+        
+        for (NSUInteger i = 0; i < 100; i++) {
+            
+            [[STMLogger sharedLogger] saveLogMessageWithText:@"test1" numType:STMLogMessageTypeImportant];
+            [[STMLogger sharedLogger] saveLogMessageWithText:@"test2" numType:STMLogMessageTypeImportant];
+            
+        }
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"test1" numType:STMLogMessageTypeImportant];
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"test3" numType:STMLogMessageTypeImportant];
+
+    });
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
