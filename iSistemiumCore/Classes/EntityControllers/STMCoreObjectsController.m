@@ -318,6 +318,8 @@
         return;
         
     }
+    
+    if (!self.session.syncer) return;
 
     NSDate *startFlushing = [NSDate date];
     
@@ -352,11 +354,13 @@
         NSError *error;
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
-        NSPredicate *notUnsyncedPredicate = [[self session].syncer predicateForUnsyncedObjectsWithEntityName:entityName];
+        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:entityName];
         
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
-        if (notUnsyncedPredicate) [subpredicates addObject:notUnsyncedPredicate];
+        if (unsyncedPredicate) {
+            [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
+        }
         
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
