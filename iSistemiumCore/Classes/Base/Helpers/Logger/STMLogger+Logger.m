@@ -145,7 +145,7 @@
     if (![[self availableTypes] containsObject:type]) type = @"info";
     
 #ifdef DEBUG
-    //    [self sendLogMessageToLocalServerForDebugWithType:type andText:text];
+    [self sendLogMessageToLocalServerForDebugWithType:type andText:text];
 #endif
     
     NSArray *uploadTypes = [self syncingTypesForSettingType:self.uploadLogType];

@@ -574,6 +574,9 @@
 - (void)socketLostConnection:(NSString *)infoString {
     
     NSLogMethodName;
+
+    [self.logger saveLogMessageWithText:infoString
+                                numType:STMLogMessageTypeInfo];
     
     [self checkReachabilityAndSocketStatus];
     

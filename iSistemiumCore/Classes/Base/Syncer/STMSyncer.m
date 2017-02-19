@@ -249,12 +249,23 @@
     BOOL success = [self checkStcEntities];
         
     if (!success) {
-        return [self.session.logger saveLogMessageWithText:@"checkStcEntities fail" numType:STMLogMessageTypeError];
+        
+        return [[self.session logger] saveLogMessageWithText:@"checkStcEntities fail"
+                                                   numType:STMLogMessageTypeError];
+        
     }
     
     if (!self.socketUrlString) {
-        [self.session.logger saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
+        
+        
+        [[self.session logger] saveLogMessageWithText:self.settings.description
+                                              numType:STMLogMessageTypeInfo];
+        
+        [[self.session logger] saveLogMessageWithText:@"Syncer has no socketURL"
+                                              numType:STMLogMessageTypeError];
+        
         return [self.authController logout];
+        
     }
     
     [STMEntityController checkEntitiesForDuplicates];
@@ -603,6 +614,9 @@
 
     if (!self.isRunning) return;
 
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+    
     [STMClientDataController checkClientData];
     
 }
@@ -619,6 +633,9 @@
     
     if (!self.isRunning) return;
     
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+
     if ([self.dataDownloadingDelegate downloadingState]) {
         self.needRepeatDownload = YES;
         return;
@@ -649,6 +666,9 @@
     
     [STMCoreObjectsController dataLoadingFinished];
     
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+
     [self startDefantomization];
 
     if (self.fetchCompletionHandler) {
@@ -753,6 +773,9 @@
     [self saveSendDate];
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED];
+
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
 
 }
 
