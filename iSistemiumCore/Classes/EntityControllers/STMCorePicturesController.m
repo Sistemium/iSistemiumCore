@@ -892,10 +892,7 @@
                             NSLog(@"%@", picture.picturesInfo);
                             
                             __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                            
-                            [session.document saveDocument:^(BOOL success) {
-                            }];
-                            
+                                                        
                         });
 
                     } else {

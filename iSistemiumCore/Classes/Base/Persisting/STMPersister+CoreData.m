@@ -223,90 +223,77 @@
 
 - (NSArray *)objectsForEntityName:(NSString *)entityName orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset withFantoms:(BOOL)withFantoms predicate:(NSPredicate *)predicate resultType:(NSFetchRequestResultType)resultType inManagedObjectContext:(NSManagedObjectContext *)context error:(NSError **)error {
     
+    if (![self isConcreteEntityName:entityName]) {
+        [STMFunctions error:error withMessage:[NSString stringWithFormat:@"%@: not found in data model", entityName]];
+        return nil;
+    }
+    
     NSString *errorMessage = nil;
     
-    context = (context) ? context : [self document].managedObjectContext;
+    STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
     
-    if (context.hasChanges && fetchOffset > 0) {
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+    
+    request.fetchLimit = fetchLimit;
+    request.fetchOffset = fetchOffset;
+    request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
+    request.resultType = resultType;
+    
+    if (resultType == NSDictionaryResultType) {
         
-        [[self document] saveDocument:^(BOOL success) {
-            
-        }];
+        NSArray *ownKeys = [self fieldsForEntityName:entityName].allKeys;
+        NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
+        
+        request.propertiesToFetch = [ownKeys arrayByAddingObjectsFromArray:ownRelationships];
         
     }
     
-    if ([self isConcreteEntityName:entityName]) {
+    NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
+    BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
+    
+    SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
+    
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
+                                                                     ascending:ascending
+                                                                      selector:sortSelector];
+    
+    BOOL afterRequestSort = NO;
+    
+    if ([entity.propertiesByName objectForKey:orderBy]) {
         
-        STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:context];
+        request.sortDescriptors = @[sortDescriptor];
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+    } else if ([NSClassFromString(entity.managedObjectClassName) instancesRespondToSelector:NSSelectorFromString(orderBy)]) {
         
-        request.fetchLimit = fetchLimit;
-        request.fetchOffset = fetchOffset;
-        request.predicate = (withFantoms) ? predicate : [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
-        request.resultType = resultType;
-        
-        if (resultType == NSDictionaryResultType) {
-            
-            NSArray *ownKeys = [self fieldsForEntityName:entityName].allKeys;
-            NSArray *ownRelationships = [self toOneRelationshipsForEntityName:entityName].allKeys;
-            
-            request.propertiesToFetch = [ownKeys arrayByAddingObjectsFromArray:ownRelationships];
-            
-        }
-        
-        NSAttributeDescription *orderByAttribute = entity.attributesByName[orderBy];
-        BOOL isNSString = [NSClassFromString(orderByAttribute.attributeValueClassName) isKindOfClass:[NSString class]];
-        
-        SEL sortSelector = isNSString ? @selector(caseInsensitiveCompare:) : @selector(compare:);
-        
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:orderBy
-                                                                         ascending:ascending
-                                                                          selector:sortSelector];
-        
-        BOOL afterRequestSort = NO;
-        
-        if ([entity.propertiesByName objectForKey:orderBy]) {
-            
-            request.sortDescriptors = @[sortDescriptor];
-            
-        } else if ([NSClassFromString(entity.managedObjectClassName) instancesRespondToSelector:NSSelectorFromString(orderBy)]) {
-            
-            afterRequestSort = YES;
-            
-        } else {
-            
-            errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
-            
-            sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
-                                                           ascending:ascending
-                                                            selector:@selector(compare:)];
-            request.sortDescriptors = @[sortDescriptor];
-            
-        }
-        
-        NSError *fetchError;
-        NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
-                                                                              error:&fetchError];
-        
-        if (result) {
-            
-            if (afterRequestSort) {
-                result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
-            }
-            
-            return result;
-            
-        } else {
-            errorMessage = fetchError.localizedDescription;
-        }
-        
+        afterRequestSort = YES;
         
     } else {
         
-        errorMessage = [NSString stringWithFormat:@"%@: not found in data model", entityName];
+        errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
+        
+        sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                       ascending:ascending
+                                                        selector:@selector(compare:)];
+        request.sortDescriptors = @[sortDescriptor];
         
     }
+    
+    NSError *fetchError;
+    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+                                                                          error:&fetchError];
+    
+    if (result) {
+        
+        if (afterRequestSort) {
+            result = [result sortedArrayUsingDescriptors:@[sortDescriptor]];
+        }
+        
+        return result;
+        
+    } else {
+        errorMessage = fetchError.localizedDescription;
+    }
+    
     
     if (errorMessage) [STMFunctions error:error withMessage:errorMessage];
     

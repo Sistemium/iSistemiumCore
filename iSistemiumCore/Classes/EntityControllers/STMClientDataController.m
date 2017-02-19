@@ -176,8 +176,6 @@
 
     }
     
-    [[self document] saveDocument:^(BOOL success) {}];
-    
 //    NSLog(@"clientData %@", clientData);
 
 }

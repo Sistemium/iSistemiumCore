@@ -185,10 +185,6 @@
     [self.delegate barCodeScanner:self receiveBarCode:barcode withType:type];
     [self.delegate barCodeScanner:self receiveBarCodeScan:barCodeScan withType:type];
     
-    [[STMCoreObjectsController document] saveDocument:^(BOOL success) {
-        
-    }];
-    
 }
 
 
