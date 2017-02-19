@@ -217,6 +217,10 @@
     
 }
 
+- (void)socketWillClosed {
+    NSLog(@"STMSocketTransportTests socketWillClosed");
+}
+
 - (void)socketLostConnection {
     NSLog(@"STMSocketTransportTests socketLostConnection");
 }
