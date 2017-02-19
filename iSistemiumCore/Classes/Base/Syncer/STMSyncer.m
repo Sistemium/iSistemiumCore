@@ -640,20 +640,6 @@
 }
 
 
-- (void)saveReceiveDate {
-    
-    if (!self.session.uid) return;
-    
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:receiveDateString forKey:key];
-    [self.userDefaults synchronize];
-    
-}
-
-
 #pragma mark - STMDataDownloadingOwner
 
 - (void)dataDownloadingFinished {
@@ -781,6 +767,33 @@
 
 }
 
+- (void)bunchOfObjectsSended {
+
+    [self saveSendDate];
+    [self postObjectsSendedNotification];
+
+}
+
+- (void)postObjectsSendedNotification {
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED];
+}
+
+
+#pragma mark - save dates
+
+- (void)saveReceiveDate {
+    
+    if (!self.session.uid) return;
+    
+    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+    
+    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [self.userDefaults setObject:receiveDateString forKey:key];
+    [self.userDefaults synchronize];
+    
+}
+
 - (void)saveSendDate {
     
     if (!self.session) return;
@@ -791,17 +804,6 @@
     [self.userDefaults setObject:sendDateString forKey:key];
     [self.userDefaults synchronize];
     
-}
-
-- (void)bunchOfObjectsSended {
-
-    [self saveSendDate];
-    [self postObjectsSendedNotification];
-
-}
-
-- (void)postObjectsSendedNotification {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED];
 }
 
 
