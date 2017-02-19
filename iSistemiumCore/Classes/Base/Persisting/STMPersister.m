@@ -44,40 +44,31 @@
                        callback:callback];
 }
 
+
 #pragma mark - Private methods
+
 
 - (void)wrongEntityName:(NSString *)entityName error:(NSError **)error {
     NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName];
     [STMFunctions error:error withMessage:message];
 }
 
+
 #pragma mark - STMPersistingSync
+
 
 - (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
     predicate = [self predicate:predicate withOptions:options];
+   
+    __block NSUInteger result = 0;
     
-    switch ([self storageForEntityName:entityName options:options]) {
-        case STMStorageTypeFMDB:{
-            
-            if (![self.fmdb hasTable:entityName]) {
-                [STMFunctions error:error
-                        withMessage:[NSString stringWithFormat:@"No table for entity %@", entityName]];
-                return 0;
-            }
-            return [self.fmdb count:entityName withPredicate:predicate];
-        }
-        case STMStorageTypeCoreData: {
-            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-            request.predicate = predicate;
-            return [self.document.managedObjectContext countForFetchRequest:request
-                                                                      error:error];
-            break;
-        }
-        default:
-            [self wrongEntityName:entityName error:error];
-            return 0;
-    }
+    [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+        result = [transaction count:entityName predicate:predicate options:options error:error];
+        return nil;
+    }];
+    
+    return result;
     
 }
 

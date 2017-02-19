@@ -189,6 +189,26 @@
     
 }
 
+- (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+    
+    switch ([self.persister storageForEntityName:entityName options:options]) {
+            
+        case STMStorageTypeFMDB:
+            return [super count:entityName predicate:predicate options:options error:error];
+            
+        case STMStorageTypeCoreData: {
+            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            request.predicate = predicate;
+            return [self.persister.document.managedObjectContext countForFetchRequest:request error:error];
+        }
+            
+        default:
+            [self.persister wrongEntityName:entityName error:error];
+            return 0;
+            
+    }
+    
+}
 
 #pragma mark - Private helpers
 

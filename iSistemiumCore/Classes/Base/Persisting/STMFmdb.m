@@ -37,35 +37,6 @@
 }
 
 
-- (NSUInteger) count:(NSString * _Nonnull)name withPredicate:(NSPredicate * _Nonnull)predicate {
-    
-    __block NSUInteger rez;
-    
-    [self.pool inDatabase:^(FMDatabase *db) {
-        
-        NSString *where = [self.predicateToSQL SQLFilterForPredicate:predicate];
-        
-        if (where.length) {
-            where = [NSString stringWithFormat:@"WHERE %@", where];
-        } else {
-            where = @"";
-        }
-        
-        NSString *query = [NSString stringWithFormat:@"SELECT count(*) FROM %@ %@",
-                           [STMFunctions removePrefixFromEntityName:name], where];
-        
-        FMResultSet *s = [db executeQuery:query];
-        
-        while ([s next]) {
-            rez = (NSUInteger)[s.resultDictionary[@"count(*)"] integerValue];
-        }
-        
-    }];
-    
-    return rez;
-}
-
-
 - (BOOL) hasTable:(NSString * _Nonnull)name {
     name = [STMFunctions removePrefixFromEntityName:name];
     if ([self.columnsByTable.allKeys containsObject:name]){

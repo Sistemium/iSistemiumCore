@@ -14,9 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName;
 
-- (NSUInteger)count:(NSString *)name
-      withPredicate:(NSPredicate *)predicate;
-
 - (BOOL)hasTable:(NSString *)name;
 
 NS_ASSUME_NONNULL_END

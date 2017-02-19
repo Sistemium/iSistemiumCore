@@ -182,6 +182,31 @@
     
 }
 
+- (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+
+    NSUInteger count = 0;
+    
+    NSString *where = [self.predicator SQLFilterForPredicate:predicate];
+    
+    if (where.length) {
+        where = [NSString stringWithFormat:@"WHERE %@", where];
+    } else {
+        where = @"";
+    }
+    
+    NSString *query = [NSString stringWithFormat:@"SELECT count(*) FROM %@ %@",
+                       [STMFunctions removePrefixFromEntityName:entityName], where];
+    
+    FMResultSet *s = [self.database executeQuery:query];
+    
+    while ([s next]) {
+        count = (NSUInteger)[s.resultDictionary[@"count(*)"] integerValue];
+    }
+    
+    return count;
+    
+}
+
 
 #pragma mark - Private helpers
 
