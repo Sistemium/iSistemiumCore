@@ -99,14 +99,9 @@
     
     if (self.isRunning && syncerState != _syncerState) {
         
-        STMSyncerState previousState = _syncerState;
-        
         _syncerState = syncerState;
         
         NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        
-        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                    userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
         
         NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
         NSLog(@"%@", logMessage);
