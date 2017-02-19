@@ -186,6 +186,8 @@
 
     NSUInteger count = 0;
     
+    if (options[STMPersistingOptionForceStorage] && ![self.stmFMDB hasTable:entityName]) return 0;
+    
     NSString *where = [self.predicator SQLFilterForPredicate:predicate];
     
     if (where.length) {
