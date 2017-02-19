@@ -54,11 +54,9 @@
 
 - (NSDictionary *)mergeFantomSync:(NSString *)entityName attributes:(NSDictionary *)attributes error:(NSError *__autoreleasing *)error {
     
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-
     return [self.persistenceDelegate mergeSync:entityName
                                     attributes:attributes
-                                       options:options
+                                       options:@{STMPersistingOptionLtsNow}
                                          error:error];
 
 }
@@ -67,11 +65,9 @@
                         attributes:(NSDictionary *)attributes
                           callback:(STMPersistingAsyncDictionaryResultCallback)callback {
     
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-    
     return [self.persistenceDelegate mergeAsync:entityName
                                      attributes:attributes
-                                        options:options
+                                        options:@{STMPersistingOptionLtsNow}
                               completionHandler:callback];
 }
 

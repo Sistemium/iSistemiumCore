@@ -537,9 +537,7 @@
         
         NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
         
-        NSDictionary *options = @{STMPersistingOptionLts:[STMFunctions stringFromNow]};
-        
-        [self.persistenceDelegate mergeAsync:entityName attributes:result options:options completionHandler:nil];
+        [self.persistenceDelegate mergeAsync:entityName attributes:result options:@{STMPersistingOptionLtsNow} completionHandler:nil];
         
     }];
 

@@ -28,6 +28,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"
+#define STMPersistingOptionLtsNow STMPersistingOptionLts:[STMFunctions stringFromNow]
 #define STMPersistingOptionReturnSaved @"returnSaved"
 #define STMPersistingOptionForceStorage @"forceStorage"
 #define STMPersistingOptionPageSize @"pageSize"
