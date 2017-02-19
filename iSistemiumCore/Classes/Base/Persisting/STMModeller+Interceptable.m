@@ -24,11 +24,29 @@
 
 - (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
 
-    id <STMPersistingMergeInterceptor> interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
+    NSObject <STMPersistingMergeInterceptor> *interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     
     if (!interceptor) return attributes;
     
-    return [interceptor interceptedAttributes:attributes options:options error:error];
+    if ([interceptor respondsToSelector:@selector(interceptedAttributes:options:error:)]) {
+        return [interceptor interceptedAttributes:attributes options:options error:error];
+    }
+    
+    return attributes;
+    
+}
+
+- (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction {
+    
+    NSObject <STMPersistingMergeInterceptor> *interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
+    
+    if (!interceptor) return attributes;
+    
+    if ([interceptor respondsToSelector:@selector(interceptedAttributes:options:error:inTransaction:)]) {
+        return [interceptor interceptedAttributes:attributes options:options error:error inTransaction:transaction];
+    }
+    
+    return attributes;
     
 }
 
@@ -43,7 +61,7 @@
     }
     
     return [STMFunctions mapArray:attributeArray withBlock:^id(NSDictionary *attributes) {
-        return [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+        return *error ? nil : [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     }];
 }
 

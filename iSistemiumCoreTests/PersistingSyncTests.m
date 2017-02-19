@@ -263,7 +263,7 @@
     NSString *entityName = @"STMLogMessage";
     NSError *error;
     
-    NSDictionary *testData = @{@"id" : @"non existing",@"text": @"updated test data",@"type": @"should not be updated"};
+    NSDictionary *testData = @{@"id" : self.ownerXid, @"text": @"updated test data", @"type": @"should not be updated"};
     
     NSDictionary *testOptions = @{
                                   STMPersistingOptionFieldstoUpdate : @[@"text"],
