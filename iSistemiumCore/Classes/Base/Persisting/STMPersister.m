@@ -100,6 +100,7 @@
     
     predicate = [self predicate:predicate withOptions:options];
     
+    // Allow pass nil in error
     __block NSError *innerError;
     
     NSArray *result = [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {

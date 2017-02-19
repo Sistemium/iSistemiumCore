@@ -150,6 +150,11 @@
 
 - (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
     
+    if (!attributes[STMPersistingKeyPrimary]) {
+        [STMFunctions error:error withMessage:@"Update requires primary key"];
+        return nil;
+    }
+    
     NSMutableDictionary *attributesToUpdate = attributes.mutableCopy;
     
     for (NSString *attributeName in attributesToUpdate.allKeys){
@@ -157,6 +162,8 @@
             [attributesToUpdate removeObjectForKey:attributeName];
         }
     }
+    
+    attributesToUpdate[STMPersistingKeyPrimary] = attributes[STMPersistingKeyPrimary];
     
     if (!options[STMPersistingOptionSetTs] || [options[STMPersistingOptionSetTs] boolValue]){
         attributesToUpdate[STMPersistingKeyVersion] = [STMFunctions stringFromNow];
@@ -167,7 +174,7 @@
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
-            return [super updateWithoutSave:entityName attributes:attributes options:options error:error];
+            return [super updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
         
         case STMStorageTypeCoreData:
             self.needSaveDocument = YES;
