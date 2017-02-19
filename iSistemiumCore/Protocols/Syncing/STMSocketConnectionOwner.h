@@ -12,6 +12,7 @@
 
 - (NSTimeInterval)timeout;
 - (void)socketReceiveAuthorization;
+- (void)socketWillClosed;
 - (void)socketLostConnection;
 
 

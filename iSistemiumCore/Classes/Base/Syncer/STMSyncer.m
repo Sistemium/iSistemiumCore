@@ -338,9 +338,23 @@
     
 }
 
+- (void)socketWillClosed {
+
+    NSLogMethodName;
+
+    [self stopSyncerActivity];
+    
+}
+
 - (void)socketLostConnection {
 
     NSLogMethodName;
+
+    [self stopSyncerActivity];
+
+}
+
+- (void)stopSyncerActivity {
     
     [self releaseTimer];
     

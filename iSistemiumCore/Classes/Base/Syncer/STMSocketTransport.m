@@ -90,6 +90,8 @@
     [self.logger saveLogMessageWithText:CurrentMethodName
                                 numType:STMLogMessageTypeInfo];
 
+    [self.owner socketWillClosed];
+
     [self.socket disconnect];
     [self flushSocket];
     
