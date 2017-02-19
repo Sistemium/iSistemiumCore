@@ -236,7 +236,7 @@
         [self.session.logger saveLogMessageWithText:message type:@"error"];
 
         NSError *error;
-        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
+        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"xid IN %@", [duplicates valueForKeyPath:@"xid"]];
 
         NSMutableArray *newStcEntitiesArray = [self stcEntitiesArray].mutableCopy;
         [newStcEntitiesArray removeObjectsInArray:duplicates];
@@ -246,7 +246,7 @@
                                          predicate:duplicatesPredicate
                                            options:@{STMPersistingOptionRecordstatuses:@(NO)}
                                              error:&error];
-        
+
     }];
 
     if (!totalDuplicates) {
