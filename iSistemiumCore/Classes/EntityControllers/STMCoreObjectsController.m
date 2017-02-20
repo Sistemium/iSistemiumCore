@@ -243,44 +243,7 @@
 
 }
 
-+ (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
-    
-    if (!entityName) {
-        return nil;
-    }
-    
-    NSMutableDictionary *entitiesOwnKeys = [self sharedController].entitiesOwnKeys;
-    NSMutableSet *objectKeys = entitiesOwnKeys[entityName];
-    
-    if (!objectKeys) {
 
-        STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName
-                                                          inManagedObjectContext:[self document].managedObjectContext];
-        
-        NSSet *coreKeys = [NSSet setWithArray:[self coreEntityKeys]];
-
-        objectKeys = [NSMutableSet setWithArray:objectEntity.attributesByName.allKeys];
-        [objectKeys minusSet:coreKeys];
-        
-        entitiesOwnKeys[entityName] = objectKeys;
-        
-    }
-    
-    return objectKeys;
-    
-}
-
-+ (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName {
-    
-    return [self.persistenceDelegate objectRelationshipsForEntityName:entityName isToMany:nil];
-    
-}
-
-+ (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName {
-    
-    return [self.persistenceDelegate objectRelationshipsForEntityName:entityName isToMany:@YES];
-
-}
 
 
 + (NSArray *)coreEntityKeys {
@@ -292,7 +255,7 @@
     if (!_coreEntityKeys) {
         
         STMEntityDescription *coreEntity = [STMEntityDescription entityForName:NSStringFromClass([STMDatum class])
-                                                        inManagedObjectContext:[STMCoreObjectsController document].managedObjectContext];
+                                                        inManagedObjectContext:STMCoreObjectsController.document.managedObjectContext];
         
         _coreEntityKeys = coreEntity.attributesByName.allKeys;
         

@@ -10,7 +10,6 @@
 #import "STMFunctions.h"
 #import "STMConstants.h"
 #import "STMDatum.h"
-#import "STMCoreObjectsController.h"
 
 #import "STMModeller+Private.h"
 

@@ -145,7 +145,7 @@
     
         NSString *entityName = NSStringFromClass([STMClientData class]);
         
-        NSSet *keys = [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
+        NSSet *keys = [[self persistenceDelegate] ownObjectKeysForEntityName:entityName];
         
         for (NSString *key in keys) {
             

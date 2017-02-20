@@ -22,11 +22,6 @@
 
 @implementation STMPersister (CoreData)
 
-#pragma mark methods to remove from STMCoreObjectsController
-
-- (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
-    return [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
-}
 
 #pragma mark - Modelling override
 
@@ -69,7 +64,7 @@
     NSString *roleOwner = entityModel[@"roleOwner"];
     NSString *roleOwnerEntityName = [STMFunctions addPrefixToEntityName:roleOwner];
     NSString *roleName = entityModel[@"roleName"];
-    NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+    NSDictionary *ownerRelationships = [self objectRelationshipsForEntityName:roleOwnerEntityName isToMany:nil];
     NSString *destinationEntityName = ownerRelationships[roleName];
     NSString *destination = [STMFunctions removePrefixFromEntityName:destinationEntityName];
     NSDictionary *properties = dictionary[@"properties"];

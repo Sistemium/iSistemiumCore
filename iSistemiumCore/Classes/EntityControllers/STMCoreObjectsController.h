@@ -18,9 +18,6 @@
 
 + (NSArray *)coreEntityKeys;
 
-+ (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
-+ (NSDictionary *)ownObjectRelationshipsForEntityName:(NSString *)entityName;
-+ (NSDictionary *)toManyRelationshipsForEntityName:(NSString *)entityName;
 
 + (void)dataLoadingFinished;
 
