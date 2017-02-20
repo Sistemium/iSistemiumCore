@@ -22,9 +22,13 @@
 
         NSError *error;
         {{#if noResultCallback}}{{else}}{{resultType}} result = {{/if}}[self {{methodName}}Sync:entityName {{parameterName}}:{{parameterName}} options:options error:&error];
-        if (completionHandler) completionHandler(!error,{{#if noResultCallback}}{{else}} result,{{/if}} error);
+        if (completionHandler) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionHandler(!error,{{#if noResultCallback}}{{else}} result,{{/if}} error);
+            });
+        }
 
-   });
+    });
 
 }
 {{/each}}
