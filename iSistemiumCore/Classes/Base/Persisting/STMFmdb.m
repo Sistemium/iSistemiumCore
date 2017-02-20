@@ -22,7 +22,7 @@
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName{
     
-    self = [super init];
+    self = [self init];
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentDirectory = [paths objectAtIndex:0];
@@ -30,7 +30,10 @@
     NSString *dbPath = [documentDirectory stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
-    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
+    
+    int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE;
+    
+    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:flags];
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
 
     [self.queue inDatabase:^(FMDatabase *database){
