@@ -229,7 +229,7 @@
             
             [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
             
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [[self document].managedObjectContext performBlockAndWait:^{
                 
                     NSDictionary *availableVersionSetting = result.lastObject;
                     
