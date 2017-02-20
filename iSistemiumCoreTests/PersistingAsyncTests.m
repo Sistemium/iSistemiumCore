@@ -44,7 +44,7 @@ XCTestExpectation *name = [self expectationWithDescription:@"name"];
 @implementation PersistingAsyncTests
 
 
--(void)testErrors{
+- (void)testErrors{
     
     [self.fakePersiser setOption:STMFakePersistingOptionCheckModelKey
                            value:@(YES)];
