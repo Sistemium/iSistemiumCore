@@ -89,7 +89,7 @@
     return [UIDevice currentDevice].systemVersion;
 }
 
-+ (NSData *)deviceUUID {
++ (NSString *)deviceUUID {
     
     NSData *deviceUUID = [STMKeychain loadValueForKey:DEVICE_UUID_KEY];
     
@@ -112,12 +112,8 @@
         
     }
     
-    return deviceUUID;
+    return [STMFunctions UUIDStringFromUUIDData:deviceUUID].uppercaseString;
 
-}
-
-+ (NSString *)deviceUUIDString {
-    return [STMFunctions UUIDStringFromUUIDData:[self deviceUUID]].uppercaseString;
 }
 
 + (NSNumber *)freeDiskSpace {
@@ -143,11 +139,13 @@
 
 + (void)checkClientData {
 
-    STMClientData *clientData = [self clientData];
+    NSMutableDictionary *clientData = [self clientData].mutableCopy;
     
     if (clientData) {
+    
+        NSString *entityName = NSStringFromClass([STMClientData class]);
         
-        NSSet *keys = [STMCoreObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMClientData class])];
+        NSSet *keys = [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
         
         for (NSString *key in keys) {
             
@@ -160,19 +158,24 @@
                 id (*func)(id, SEL) = (void *)imp;
                 id value = func(self, selector);
                 
-                if (![value isEqual:[clientData valueForKey:key]]) {
+                if (![value isEqual:clientData[key]]) {
 
 //                    NSLog(@"%@ was changed", key);
-//                    NSLog(@"client value %@", [clientData valueForKey:key]);
+//                    NSLog(@"client value %@", clientData[key]);
 //                    NSLog(@"value %@", value);
                     
-                    [clientData setValue:value forKey:key];
+                    clientData[key] = value;
                     
                 }
                 
             }
             
         }
+        
+        [[self persistenceDelegate] mergeAsync:entityName
+                                    attributes:clientData
+                                       options:nil
+                             completionHandler:nil];
 
     }
     
@@ -180,47 +183,42 @@
 
 }
 
-+ (STMClientData *)clientData {
-    
-    if ([self document].managedObjectContext) {
-        
-        NSString *entityName = NSStringFromClass([STMClientData class]);
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-        
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        STMClientData *clientData = [fetchResult lastObject];
-        
-        if (!clientData) {
-            clientData = (STMClientData *)[STMCoreObjectsController newObjectForEntityName:entityName isFantom:NO];
-        }
-        
-        return clientData;
-        
-    } else {
-        
-        return nil;
-        
-    }
-    
-}
++ (NSDictionary *)clientData {
 
-+ (NSDictionary *)clientDataDictionary {
-    return [[self persistenceDelegate] dictionaryFromManagedObject:[self clientData]];
+    NSString *entityName = NSStringFromClass([STMClientData class]);
+    
+    NSError *error = nil;
+    NSArray *fetchResult = [[self persistenceDelegate] findAllSync:entityName
+                                                         predicate:nil
+                                                           options:nil
+                                                             error:&error];;
+    NSDictionary *clientData = fetchResult.lastObject;
+    
+    if (!clientData) clientData = @{};
+    
+    return clientData;
+    
 }
 
 + (void)checkAppVersion {
     
     if ([self document].managedObjectContext) {
         
-        STMClientData *clientData = [self clientData];
+        NSMutableDictionary *clientData = [self clientData].mutableCopy;
         
         if (clientData) {
             
             NSString *buildVersion = BUILD_VERSION;
-            if (![clientData.appVersion isEqualToString:buildVersion]) {
-                clientData.appVersion = buildVersion;
+            
+            if (![clientData[@"appVersion"] isEqualToString:buildVersion]) {
+                
+                clientData[@"appVersion"] = buildVersion;
+                
+                [[self persistenceDelegate] mergeAsync:NSStringFromClass([STMClientData class])
+                                            attributes:clientData
+                                               options:nil
+                                     completionHandler:nil];
+
             }
             
             NSString *entityName = NSStringFromClass([STMSetting class]);
@@ -236,7 +234,7 @@
                     if (availableVersionSetting) {
                         
                         NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
-                        NSNumber *currentVersion = @([clientData.appVersion integerValue]);
+                        NSNumber *currentVersion = @([clientData[@"appVersion"] integerValue]);
                         
                         [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
                         
