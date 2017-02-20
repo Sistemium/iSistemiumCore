@@ -256,7 +256,7 @@
             [self.coreDataContext performBlockAndWait:^{
                 NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
                 request.predicate = predicate;
-                result = [self.persister.document.managedObjectContext countForFetchRequest:request error:error];
+                result = [self.coreDataContext countForFetchRequest:request error:error];
             }];
             
             return result;
