@@ -20,8 +20,7 @@
     
     self = [self init];
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentDirectory = [paths objectAtIndex:0];
+    NSString *documentDirectory = [STMFunctions documentsDirectory];
     
     NSString *dbPath = [documentDirectory stringByAppendingPathComponent:fileName];
     
