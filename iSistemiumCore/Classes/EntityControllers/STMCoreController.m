@@ -45,7 +45,7 @@
     return [self session].document;
 }
 
-+ (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
++ (id)persistenceDelegate {
     return [self session].persistenceDelegate;
 }
 
