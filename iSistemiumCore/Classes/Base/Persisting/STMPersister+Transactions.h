@@ -11,7 +11,7 @@
 
 @interface STMPersister (Transactions)
 
-- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block;
+- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error;
 - (NSArray *)readOnly:(NSArray * (^)(id <STMPersistingTransaction> transaction))block;
 
 

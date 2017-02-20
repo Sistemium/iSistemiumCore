@@ -119,7 +119,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     
@@ -157,7 +157,7 @@
         
         return YES;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     
@@ -190,7 +190,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     return count;
     
@@ -206,7 +206,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     

@@ -57,8 +57,8 @@
     return [[UIDevice currentDevice] name];
 }
 
-+ (NSData *)deviceToken {
-    return [self appDelegate].deviceToken;
++ (NSString *)deviceToken {
+    return [STMFunctions hexStringFromData:[self appDelegate].deviceToken];
 }
 
 +(NSString *)deviceTokenError {
