@@ -92,12 +92,8 @@
 
 
 - (void)popPendingEntity {
-    @synchronized (self) {
-        NSString *nextEntity = [STMFunctions popArray:self.downloadingState.pendingEntities];
-        if (nextEntity) {
-            [self tryDownloadEntityName:nextEntity];
-        }
-    }
+    NSString *nextEntity = [STMFunctions popArray:self.downloadingState.pendingEntities];
+    if (nextEntity) [self tryDownloadEntityName:nextEntity];
 }
 
 - (void)stopDownloading {
