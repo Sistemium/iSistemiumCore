@@ -321,7 +321,7 @@
     
     // TODO: Maybe we need here persistence delegate
     
-    NSMutableDictionary *dataDic = [STMClientDataController clientDataDictionary].mutableCopy;
+    NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
                               @"accessToken"    : [STMCoreAuthController authController].accessToken};
