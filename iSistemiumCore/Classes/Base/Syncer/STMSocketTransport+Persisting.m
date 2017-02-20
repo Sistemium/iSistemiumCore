@@ -23,9 +23,7 @@
         return;
     }
     
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    
-    NSString *resource = [entity resource];
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
     
     NSDictionary *value = @{@"method"   : kSocketFindMethod,
                             @"resource" : resource,
@@ -55,8 +53,7 @@
         
     }
     
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
-    NSString *resource = [entity resource];
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
     
     NSDictionary *value = @{@"method"   : kSocketFindAllMethod,
                             @"resource" : resource,
@@ -77,7 +74,7 @@
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
     
-    NSString *resource = [[STMEntityController stcEntities][entityName] resource];
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
     
     if (!resource) {
         return [self completeWithErrorMessage:[NSString stringWithFormat:@"no url for entity %@", entityName]
@@ -168,7 +165,9 @@
         return [NSString stringWithFormat:@"have no such entity %@", entityName];
     }
     
-    if (![entity resource]) {
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
+    
+    if (!resource) {
         return [NSString stringWithFormat:@"no resource for entity %@", entityName];
     }
     
@@ -193,7 +192,9 @@
         return [NSString stringWithFormat:@"have no such entity %@", entityName];
     }
     
-    if (![entity resource]) {
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
+
+    if (!resource) {
         return [NSString stringWithFormat:@"no resource for entity %@", entityName];
     }
     
