@@ -161,20 +161,19 @@
 
 - (void)setupSyncer {
     
-    self.syncer = [STMSyncer controllerWithPersistenceDelegate:self.persistenceDelegate];
-
-    STMSyncerHelper *syncerHelper = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persistenceDelegate];
+    STMSyncer *syncer = [STMSyncer controllerWithPersistenceDelegate:self.persistenceDelegate];
+    STMSyncerHelper *syncerHelper = [STMSyncerHelper controllerWithPersistenceDelegate:self.persistenceDelegate];
     
-    syncerHelper.dataDownloadingOwner = self.syncer;
-    syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persistenceDelegate];
-    syncerHelper.defantomizingOwner = self.syncer;
+    syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms controllerWithPersistenceDelegate:self.persistenceDelegate];
+    syncerHelper.dataDownloadingOwner = syncer;
+    syncerHelper.defantomizingOwner = syncer;
     
-    self.syncer.dataDownloadingDelegate = syncerHelper;
-    self.syncer.defantomizingDelegate = syncerHelper;
+    syncer.dataDownloadingDelegate = syncerHelper;
+    syncer.defantomizingDelegate = syncerHelper;
+    syncer.dataSyncingDelegate = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
+    syncer.session = self;
     
-    self.syncer.dataSyncingDelegate = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
-    
-    self.syncer.session = self;
+    self.syncer = syncer;
     
 }
 

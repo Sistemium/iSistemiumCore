@@ -8,21 +8,7 @@
 
 #import "STMPersisterFantoms.h"
 
-#import "STMFunctions.h"
-
-
 @implementation STMPersisterFantoms
-
-@synthesize persistenceDelegate = _persistenceDelegate;
-
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id)persistenceDelegate {
-    
-    STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
-    persisterFantoms.persistenceDelegate = persistenceDelegate;
-    
-    return persisterFantoms;
-    
-}
 
 - (NSArray *)findAllFantomsIdsSync:(NSString *)entityName excludingIds:(NSArray *)excludingIds {
     

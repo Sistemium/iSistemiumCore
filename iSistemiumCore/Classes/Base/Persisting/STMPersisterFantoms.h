@@ -6,14 +6,10 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
+#import "STMCoreController.h"
 #import "STMPersistingFantoms.h"
 
 
-@interface STMPersisterFantoms : NSObject <STMPersistingFantoms>
-
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id <STMPersistingSync, STMPersistingAsync>)persistenceDelegate;
-
+@interface STMPersisterFantoms : STMCoreController <STMPersistingFantoms>
 
 @end

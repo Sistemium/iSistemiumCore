@@ -41,8 +41,8 @@
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
-    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
+    STMUnsyncedDataHelper *unsyncedDataHelper = [self controllerWithPersistenceDelegate:persistenceDelegate];
+
     unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
     
     return unsyncedDataHelper;

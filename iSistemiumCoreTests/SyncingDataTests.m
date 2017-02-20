@@ -251,7 +251,7 @@
     
     if (!self.downloadingDelegate) {
         
-        self.downloadingDelegate = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persister];
+        self.downloadingDelegate = [STMSyncerHelper controllerWithPersistenceDelegate:self.persister];
         self.downloadingDelegate.dataDownloadingOwner = self;
         
     }
