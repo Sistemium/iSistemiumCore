@@ -36,16 +36,16 @@
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
     
-    STMPersister *persister =
-    [STMPersister persisterWithModelName:dataModelName
-                                     uid:self.uid
-                                  iSisDB:self.iSisDB
-                       completionHandler:nil];
-    
+    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName uid:self.uid iSisDB:self.iSisDB completionHandler:^(BOOL success) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self persisterCompleteInitializationWithSuccess:success];
+        });
+    }];
+
     self.persistenceDelegate = persister;
     // TODO: remove direct links to document after full persisting concept realization
     self.document = persister.document;
-
+    
     
     STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
     
@@ -53,9 +53,9 @@
     entityNameInterceptor.propertyName = @"name";
     
     [persister beforeMergeEntityName:entityNameInterceptor.entityName interceptor:entityNameInterceptor];
-
-    [self addPersistenceObservers];
     
+    [self addPersistenceObservers];
+
     return self;
 }
 
