@@ -56,7 +56,7 @@
         NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
         NSPredicate *predicate = [transaction.modellingDelegate primaryKeyPredicateEntityName:entityNameToDestroy values:@[objectXid]];
         
-        if (predicate) {
+        if (predicate && [transaction.modellingDelegate isConcreteEntityName:entityNameToDestroy]) {
             [transaction destroyWithoutSave:entityNameToDestroy predicate:predicate options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
         }
         
