@@ -12,13 +12,7 @@
 #import "STMFunctions.h"
 #import "STMPredicateToSQL.h"
 
-// Flags taken from https://github.com/sqlcipher/sqlcipher/issues/156#issuecomment-187754670
-
-#define SQLITE_OPEN_READONLY 0x00000001
-#define SQLITE_OPEN_READWRITE 0x00000002
-#define SQLITE_OPEN_CREATE 0x00000004
-#define SQLITE_OPEN_FILEPROTECTION_NONE 0x00400000
-#define SQLITE_OPEN_FILEPROTECTION_MASK 0x00700000
+#import <sqlite3.h>
 
 @implementation STMFmdb
 
