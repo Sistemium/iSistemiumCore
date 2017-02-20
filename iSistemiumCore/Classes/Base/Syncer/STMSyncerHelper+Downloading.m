@@ -19,6 +19,7 @@
 @interface STMDataDownloadingState ()
 
 @property (nonatomic, strong) NSMutableArray *entitySyncNames;
+@property (nonatomic, strong) NSMutableArray <NSString *> *pendingEntities;
 
 @end
 
@@ -52,7 +53,7 @@
         
         if (self.downloadingState) return self.downloadingState;
         
-        self.downloadingState = [[STMDataDownloadingState alloc] init];
+        STMDataDownloadingState *downloadingState = [[STMDataDownloadingState alloc] init];
 
         if (!entitiesNames) {
             
@@ -64,23 +65,39 @@
                 if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
             }];
             
-            self.downloadingState.entitySyncNames = entitiesNames.array.mutableCopy;
+            downloadingState.entitySyncNames = entitiesNames.array.mutableCopy;
             
         } else {
             
-            self.downloadingState.entitySyncNames = entitiesNames.mutableCopy;
+            downloadingState.entitySyncNames = entitiesNames.mutableCopy;
             
         }
         
+        downloadingState.pendingEntities = downloadingState.entitySyncNames.mutableCopy;
+
+        self.downloadingState = downloadingState;
+        
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
 
-        NSLog(@"will download %@ entities", @(self.downloadingState.entitySyncNames.count));
+        NSLog(@"will download %@ entities", @(downloadingState.entitySyncNames.count));
         
-        [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
+        [self popPendingEntity];
+        [self popPendingEntity];
+        [self popPendingEntity];
         
-        return self.downloadingState;
+        return downloadingState;
     }
     
+}
+
+
+- (void)popPendingEntity {
+    @synchronized (self) {
+        NSString *nextEntity = [STMFunctions popArray:self.downloadingState.pendingEntities];
+        if (nextEntity) {
+            [self tryDownloadEntityName:nextEntity];
+        }
+    }
 }
 
 - (void)stopDownloading {
@@ -168,7 +185,7 @@
                                     userInfo:@{@"countdownValue": @(remainCount)}];
         
         if (self.downloadingState && self.downloadingState.entitySyncNames.count) {
-            return [self tryDownloadEntityName:self.downloadingState.entitySyncNames.firstObject];
+            return [self popPendingEntity];
         }
         
     }
