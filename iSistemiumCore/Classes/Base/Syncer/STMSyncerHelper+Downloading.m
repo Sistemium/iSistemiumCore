@@ -65,7 +65,7 @@
                 if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
             }];
             
-            downloadingState.entitySyncNames = entitiesNames.array.mutableCopy;
+            downloadingState.entitySyncNames = entitiesNames.reversedOrderedSet.array.mutableCopy;
             
         } else {
             
