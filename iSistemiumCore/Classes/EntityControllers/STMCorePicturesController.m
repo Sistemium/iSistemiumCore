@@ -1,5 +1,5 @@
 //
-//  STMPicturesController.m
+//  STMCorePicturesController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 29/11/14.
