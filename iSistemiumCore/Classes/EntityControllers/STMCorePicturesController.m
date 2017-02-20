@@ -679,8 +679,8 @@
     
     NSError *error = nil;
     BOOL result = [thumbnail writeToFile:imagePath
-                            options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                              error:&error];
+                                 options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                   error:&error];
     
     if (result) {
         
