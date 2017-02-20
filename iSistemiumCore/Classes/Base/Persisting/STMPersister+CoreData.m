@@ -58,17 +58,17 @@
     NSArray *nameExplode = [name componentsSeparatedByString:@"."];
     NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
     
-    NSDictionary *serverDataModel = STMEntityController.stcEntities;
-    STMEntity *entityModel = serverDataModel[entityName];
+    NSDictionary *serverDataModel = [STMEntityController stcEntities];
+    NSDictionary *entityModel = serverDataModel[entityName];
     
     if (!entityModel) {
         NSLog(@"dataModel have no relationship's entity with name %@", entityName);
         return NO;
     }
     
-    NSString *roleOwner = entityModel.roleOwner;
+    NSString *roleOwner = entityModel[@"roleOwner"];
     NSString *roleOwnerEntityName = [STMFunctions addPrefixToEntityName:roleOwner];
-    NSString *roleName = entityModel.roleName;
+    NSString *roleName = entityModel[@"roleName"];
     NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
     NSString *destinationEntityName = ownerRelationships[roleName];
     NSString *destination = [STMFunctions removePrefixFromEntityName:destinationEntityName];

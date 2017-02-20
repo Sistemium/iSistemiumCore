@@ -162,7 +162,7 @@
         return @"socket is not ready (not connected or not authorized)";
     }
     
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    NSDictionary *entity = [STMEntityController stcEntities][entityName];
     
     if (!entity) {
         return [NSString stringWithFormat:@"have no such entity %@", entityName];
@@ -187,7 +187,7 @@
         return @"socket is not ready (not connected or not authorized)";
     }
     
-    STMEntity *entity = [STMEntityController stcEntities][entityName];
+    NSDictionary *entity = [STMEntityController stcEntities][entityName];
     
     if (!entity) {
         return [NSString stringWithFormat:@"have no such entity %@", entityName];
