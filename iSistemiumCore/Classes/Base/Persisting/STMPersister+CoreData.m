@@ -279,7 +279,7 @@
     }
     
     NSError *fetchError;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+    NSArray *result = [self.document.managedObjectContext executeFetchRequest:request
                                                                           error:&fetchError];
     
     if (result) {
@@ -371,7 +371,7 @@
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"xid == %@", xidData];
     
-    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+    NSArray *fetchResult = [self.document.managedObjectContext executeFetchRequest:request error:nil];
     
     if (fetchResult.firstObject) return fetchResult.firstObject;
     

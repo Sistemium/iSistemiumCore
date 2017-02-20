@@ -202,7 +202,7 @@
 
 + (void)checkAppVersion {
     
-    if ([self document].managedObjectContext) {
+    if (self.document.managedObjectContext) {
         
         NSMutableDictionary *clientData = [self clientData].mutableCopy;
         
@@ -227,7 +227,7 @@
             
             [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
             
-                [[self document].managedObjectContext performBlockAndWait:^{
+                [self.document.managedObjectContext performBlockAndWait:^{
                 
                     NSDictionary *availableVersionSetting = result.lastObject;
                     

@@ -199,7 +199,7 @@
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData isFantom:(BOOL)isFantom {
     
-    NSManagedObjectContext *context = [self document].managedObjectContext;
+    NSManagedObjectContext *context = self.document.managedObjectContext;
     
     if (context) {
     
@@ -225,7 +225,7 @@
 
 + (NSArray *)attributesForEntityName:(NSString *)entityName withType:(NSAttributeType)type {
     
-    STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName inManagedObjectContext:[self document].managedObjectContext];
+    STMEntityDescription *objectEntity = [STMEntityDescription entityForName:entityName inManagedObjectContext:self.document.managedObjectContext];
     
     NSMutableArray *resultSet = @[].mutableCopy;
 

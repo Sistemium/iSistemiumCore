@@ -177,7 +177,7 @@
     
     BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
 
-    if (sessionIsRunning && self.document) {
+    if (sessionIsRunning) {
         
         [self createAndSaveLogMessageFromDictionary:logMessageDic];
         
@@ -355,7 +355,7 @@
         NSString *entityName = [STMFunctions addPrefixToEntityName:(NSString * _Nonnull)parameters[@"entityName"]];
         
         BOOL sessionIsRunning = (self.session.status == STMSessionRunning);
-        if (sessionIsRunning && self.document) {
+        if (sessionIsRunning) {
             
             return [self.persistenceDelegate findAllSync:entityName predicate:nil options:parameters error:error];
             

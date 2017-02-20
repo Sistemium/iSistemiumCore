@@ -117,7 +117,7 @@
         request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
         
         NSFetchedResultsController *resultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                                            managedObjectContext:[STMMessageController document].managedObjectContext
+                                                                                            managedObjectContext:STMMessageController.document.managedObjectContext
                                                                                               sectionNameKeyPath:nil
                                                                                                        cacheName:nil];
         resultsController.delegate = self;
@@ -134,7 +134,7 @@
     
     if (!_readMessagesResultsController) {
         
-        NSManagedObjectContext *context = [STMMessageController document].managedObjectContext;
+        NSManagedObjectContext *context = STMMessageController.document.managedObjectContext;
         
         if (context) {
             
@@ -270,7 +270,7 @@
     request.sortDescriptors = @[sortDescriptor];
     request.predicate = predicate;
     
-    NSArray *messages = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+    NSArray *messages = [self.document.managedObjectContext executeFetchRequest:request error:nil];
 
     return messages;
     

@@ -52,7 +52,7 @@
     
     if (!_resultsController) {
 
-        NSManagedObjectContext *context = [[STMCoreSessionManager sharedManager].currentSession document].managedObjectContext;
+        NSManagedObjectContext *context = [STMCoreSessionManager sharedManager].currentSession.document.managedObjectContext;
 
         if (context) {
             
