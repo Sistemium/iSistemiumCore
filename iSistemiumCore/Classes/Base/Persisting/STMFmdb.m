@@ -12,6 +12,8 @@
 #import "STMFunctions.h"
 #import "STMPredicateToSQL.h"
 
+// Flags taken from https://github.com/sqlcipher/sqlcipher/issues/156#issuecomment-187754670
+
 #define SQLITE_OPEN_READONLY 0x00000001
 #define SQLITE_OPEN_READWRITE 0x00000002
 #define SQLITE_OPEN_CREATE 0x00000004
