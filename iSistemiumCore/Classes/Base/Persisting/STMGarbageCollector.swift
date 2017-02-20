@@ -87,10 +87,10 @@ extension Set {
             }
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             
-            let stcEntities:NSDictionary
+            let stcEntities:Dictionary<String, NSDictionary>
             
             if STMEntityController.stcEntities() != nil{
-                stcEntities = STMEntityController.stcEntities() as NSDictionary
+                stcEntities = STMEntityController.stcEntities() as Dictionary<String, NSDictionary>
             }else{
                 return
             }
@@ -99,8 +99,8 @@ extension Set {
 
             for (key,value) in entities {
                 
-                let entity = (value as! STMEntity)
-                let limitDate = Date().addingTimeInterval(-1 * Double(entity.pictureLifeTime!))
+                let entity = (value as! Dictionary<String, Any>)
+                let limitDate = Date().addingTimeInterval(-(entity["pictureLifeTime"] as! Double))
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
@@ -111,13 +111,13 @@ extension Set {
                 
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
                 
-                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key as! String, predicate: photoPredicate, options: nil)
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil)
                 
                 images = images.filter{photoPredicate.evaluate(with: $0)};
                 
                 for image in images as! Array<STMCorePicture>{
                     
-                    let logMessage = String(format: "removeOutOfDateImages for:\(entity.name) deviceAts:\(image.deviceAts)")
+                    let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image.deviceAts)")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
                     if let imagePath = image.imagePath{

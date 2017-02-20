@@ -206,12 +206,9 @@
 + (NSArray <NSDictionary *> *)entitiesWithLifeTime {
     
     NSError *error;
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime > 0"];
     
-    return [self.persistenceDelegate findAllSync:STM_ENTITY_NAME
-                                       predicate:predicate
-                                         options:nil
-                                           error:&error];
+    return [self.persistenceDelegate findAllSync:STM_ENTITY_NAME predicate:predicate options:nil error:&error];
     
 }
 
