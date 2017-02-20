@@ -57,12 +57,19 @@
     if (!interceptor) return attributeArray;
     
     if ([interceptor respondsToSelector:@selector(interceptedAttributeArray:options:error:)]) {
+        
         return [interceptor interceptedAttributeArray:attributeArray options:options error:error];
+        
+    } else if ([interceptor respondsToSelector:@selector(interceptedAttributes:options:error:)]) {
+        
+        return [STMFunctions mapArray:attributeArray withBlock:^id(NSDictionary *attributes) {
+            return *error ? nil : [interceptor interceptedAttributes:attributes options:options error:error];
+        }];
+        
     }
     
-    return [STMFunctions mapArray:attributeArray withBlock:^id(NSDictionary *attributes) {
-        return *error ? nil : [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
-    }];
+    return attributeArray;
+    
 }
 
 @end
