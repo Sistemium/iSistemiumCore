@@ -357,7 +357,7 @@
 
     if (timeRemaining != DBL_MAX) {
         
-        timeRemaining -= 10; // is 10 sec enough for closing socket?
+        timeRemaining -= 5; // should be enough to close socket
         
         NSTimeInterval delayInterval = timeRemaining >= 0 ? timeRemaining : 0;
         
