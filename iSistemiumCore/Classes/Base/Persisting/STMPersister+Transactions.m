@@ -326,7 +326,7 @@
     
     __block NSArray *result;
     
-    [self.fmdb.pool inDatabase:^(FMDatabase *db) {
+    [self.fmdb.queue inDatabase:^(FMDatabase *db) {
         
         STMPersisterTransaction *transaction = [STMPersisterTransaction persistingTransactionWithFMDatabase:db stmFMDB:self.fmdb persister:self];
         
