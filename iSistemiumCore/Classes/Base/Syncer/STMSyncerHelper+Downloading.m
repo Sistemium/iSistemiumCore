@@ -181,9 +181,9 @@
     
     if (errorString) {
         [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
+    } else {
+        NSLog(@"receivingDidFinish");
     }
-    
-    NSLogMethodName;
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
