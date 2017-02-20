@@ -126,31 +126,38 @@
 
 - (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
-    if (!object) {
-        return @{};
-    }
+    if (!object) return @{};
+    
+    __block NSDictionary *result;
+    
+    if (!object.managedObjectContext) return [self fillDictionaryForObject:object withNulls:withNulls withBinaryData:withBinaryData];
+        
+    [object.managedObjectContext performBlockAndWait:^{
+    
+        result = [self fillDictionaryForObject:object withNulls:withNulls withBinaryData:withBinaryData];
+    
+    }];
+    
+    return result;
+    
+}
+
+- (NSDictionary *)fillDictionaryForObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
-    [object.managedObjectContext performBlockAndWait:^{
+    if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
+    if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
     
-        if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
-        if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
-        
-        NSArray *ownKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name].allObjects;
-        NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
-        
-        ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
-        
-        [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
-        [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
-        
-        //    NSLog(@"--------------- updated object %@", propertiesDictionary[@"deviceAts"]);
-
-    }];
+    NSArray *ownKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name].allObjects;
+    NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
+    
+    ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
+    
+    [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
+    [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
     return propertiesDictionary.copy;
-    
 }
 
 @end
