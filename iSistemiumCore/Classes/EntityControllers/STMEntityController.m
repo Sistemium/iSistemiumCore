@@ -8,6 +8,8 @@
 
 #import "STMEntityController.h"
 
+#import "STMCoreAuthController.h"
+
 #define STMEC_HAS_CHANGES @"STMEntityController has changes"
 
 
@@ -95,11 +97,14 @@
                                                               options:options
                                                                 error:&error];
 
-        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
-            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
-            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
-            return entity;
-        }];
+//        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
+//            
+//            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
+//            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
+//            
+//            return entity;
+//            
+//        }];
         
         _entitiesArray = (result.count > 0) ? result : nil;
 
@@ -141,7 +146,7 @@
     if (!_uploadableEntitiesNames) {
         
         NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
+            return ([STMFunctions isNotNullAndTrue:obj[@"isUploadable"]]);
         }];
         
         _uploadableEntitiesNames = [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
@@ -170,10 +175,18 @@
     return [self sharedInstance].uploadableEntitiesNames;
 }
 
-+ (NSArray *)entityNamesWithResolveFantoms {
++ (NSString *)resourceForEntity:(NSString *)entityName {
+    
+    NSDictionary *entity = [self stcEntities][entityName];
+
+    return ([STMFunctions isNotNull:entity[@"url"]]) ? entity[@"url"] : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, entity[@"name"]];
+
+}
+
++ (NSArray <NSString *> *)entityNamesWithResolveFantoms {
     
     NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return ([[obj valueForKey:@"isResolveFantoms"] boolValue] && [obj valueForKey:@"url"] != nil);
+        return ([STMFunctions isNotNullAndTrue:obj[@"isResolveFantoms"]] && [STMFunctions isNotNull:obj[@"url"]]);
     }];
     
     return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
