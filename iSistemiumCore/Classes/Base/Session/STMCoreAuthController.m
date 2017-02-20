@@ -625,7 +625,7 @@
         resultingRequest = [request mutableCopy];
         [resultingRequest addValue:self.accessToken forHTTPHeaderField:@"Authorization"];
         
-        NSString *deviceUUIDString = [STMClientDataController deviceUUIDString];
+        NSString *deviceUUIDString = [STMClientDataController deviceUUID];
         [resultingRequest setValue:deviceUUIDString forHTTPHeaderField:@"DeviceUUID"];
 
     }
@@ -739,7 +739,7 @@
     NSURL *url = [NSURL URLWithString:urlString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    NSString *deviceUUIDString = [STMClientDataController deviceUUIDString];
+    NSString *deviceUUIDString = [STMClientDataController deviceUUID];
     [request setValue:deviceUUIDString forHTTPHeaderField:@"DeviceUUID"];
 
     request.HTTPMethod = @"GET";

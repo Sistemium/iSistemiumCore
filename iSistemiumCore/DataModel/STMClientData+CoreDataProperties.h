@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *deviceToken;
 @property (nullable, nonatomic, retain) NSString *deviceTokenError;
 @property (nullable, nonatomic, retain) NSDate *deviceTs;
-@property (nullable, nonatomic, retain) NSData *deviceUUID;
+@property (nullable, nonatomic, retain) NSString *deviceUUID;
 @property (nullable, nonatomic, retain) NSNumber *freeDiskSpace;
 @property (nullable, nonatomic, retain) NSNumber *id;
 @property (nullable, nonatomic, retain) NSNumber *isFantom;

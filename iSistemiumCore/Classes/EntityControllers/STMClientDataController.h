@@ -16,7 +16,7 @@
 
 + (NSDictionary *)clientData;
 
-+ (NSString *)deviceUUIDString;
++ (NSString *)deviceUUID;
 
 
 @end

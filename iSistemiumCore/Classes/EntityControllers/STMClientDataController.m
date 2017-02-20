@@ -89,7 +89,7 @@
     return [UIDevice currentDevice].systemVersion;
 }
 
-+ (NSData *)deviceUUID {
++ (NSString *)deviceUUID {
     
     NSData *deviceUUID = [STMKeychain loadValueForKey:DEVICE_UUID_KEY];
     
@@ -112,12 +112,8 @@
         
     }
     
-    return deviceUUID;
+    return [STMFunctions UUIDStringFromUUIDData:deviceUUID].uppercaseString;
 
-}
-
-+ (NSString *)deviceUUIDString {
-    return [STMFunctions UUIDStringFromUUIDData:[self deviceUUID]].uppercaseString;
 }
 
 + (NSNumber *)freeDiskSpace {

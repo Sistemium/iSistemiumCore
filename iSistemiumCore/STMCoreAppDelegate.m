@@ -37,7 +37,7 @@
 
     [self startCrashlytics];
 
-    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUIDString]);
+    NSLog(@"deviceUUID %@", [STMClientDataController deviceUUID]);
     
 //    STMLogger *logger = [STMLogger sharedLogger];
 //    
