@@ -149,7 +149,7 @@
 
     }];
     
-    return propertiesDictionary;
+    return propertiesDictionary.copy;
     
 }
 
