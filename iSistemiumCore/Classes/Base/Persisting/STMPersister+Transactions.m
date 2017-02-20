@@ -70,6 +70,8 @@
     
     predicate = [self.persister predicate:predicate withOptions:options];
     
+    __block NSArray *result;
+    
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
@@ -78,9 +80,11 @@
             
         case STMStorageTypeCoreData: {
             
-            NSArray* objectsArray = [self.persister objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.persister.document.managedObjectContext error:error];
+            [self.coreDataContext performBlockAndWait:^{
+                result = [self.persister objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.coreDataContext error:error];
+            }];
             
-            return [self.persister arrayForJSWithObjects:objectsArray];
+            return [self.persister arrayForJSWithObjects:result];
             
         }
             
@@ -240,15 +244,23 @@
 
 - (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
+    __block NSUInteger result = 0;
+    
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
             return [super count:entityName predicate:predicate options:options error:error];
             
         case STMStorageTypeCoreData: {
-            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-            request.predicate = predicate;
-            return [self.persister.document.managedObjectContext countForFetchRequest:request error:error];
+            
+            [self.coreDataContext performBlockAndWait:^{
+                NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                request.predicate = predicate;
+                result = [self.persister.document.managedObjectContext countForFetchRequest:request error:error];
+            }];
+            
+            return result;
+            
         }
             
         default:
