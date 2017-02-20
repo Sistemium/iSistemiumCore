@@ -264,6 +264,7 @@
         [[self.session logger] saveLogMessageWithText:@"Syncer has no socketURL"
                                               numType:STMLogMessageTypeError];
         
+        // FIXME: spinner screen remains 
         return [self.authController logout];
         
     }
