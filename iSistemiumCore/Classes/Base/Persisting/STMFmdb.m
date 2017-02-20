@@ -22,7 +22,36 @@
     
     NSString *documentDirectory = [STMFunctions documentsDirectory];
     
-    NSString *dbPath = [documentDirectory stringByAppendingPathComponent:fileName];
+    NSString *fmdbFolderPath = [documentDirectory stringByAppendingPathComponent:@"fmdb"];
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    if (![fm fileExistsAtPath:fmdbFolderPath]) {
+        
+        NSDictionary *attributes = @{NSFileProtectionKey : NSFileProtectionNone};
+        
+        NSError *error = nil;
+        BOOL result = [fm createDirectoryAtPath:fmdbFolderPath
+                    withIntermediateDirectories:NO
+                                     attributes:attributes
+                                          error:&error];
+        
+        if (!result) {
+            
+            NSLog(@"create fmdb folder error: %@", error.localizedDescription);
+            return nil;
+
+        }
+
+        NSString *oldDbPath = [documentDirectory stringByAppendingPathComponent:fileName];
+        
+        if ([fm fileExistsAtPath:oldDbPath]) {
+            [fm removeItemAtPath:oldDbPath error:&error];
+        }
+
+    }
+    
+    NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     
