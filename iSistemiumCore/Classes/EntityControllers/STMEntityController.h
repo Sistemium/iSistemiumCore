@@ -11,23 +11,27 @@
 
 #define STM_ENTITY_NAME @"STMEntity"
 
+
 @interface STMEntityController : STMCoreController
 
 + (void)flushSelf;
 
-+ (NSDictionary *)stcEntities;
++ (NSDictionary <NSString *, NSDictionary *> *)stcEntities;
+
++ (NSString *)resourceForEntity:(NSString *)entityName;
 
 + (void)checkEntitiesForDuplicates;
 
-+ (NSArray *)entityNamesWithResolveFantoms;
++ (NSArray <NSString *> *)entityNamesWithResolveFantoms;
 
-+ (NSSet *)entityNamesWithLifeTime;
-+ (NSArray *)entitiesWithLifeTime;
++ (NSSet <NSString *> *)entityNamesWithLifeTime;
++ (NSArray <NSDictionary *> *)entitiesWithLifeTime;
 
 + (NSArray *)uploadableEntitiesNames;
 
 + (NSDictionary *)entityWithName:(NSString *)name;
 
 + (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector;
+
 
 @end
