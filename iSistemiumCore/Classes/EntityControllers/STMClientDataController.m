@@ -229,17 +229,20 @@
             
             [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
             
-                NSDictionary *availableVersionSetting = result.lastObject;
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 
-                if (availableVersionSetting) {
+                    NSDictionary *availableVersionSetting = result.lastObject;
                     
-                    NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
-                    NSNumber *currentVersion = @([clientData.appVersion integerValue]);
-                    
-                    [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
-                    
-                }
+                    if (availableVersionSetting) {
+                        
+                        NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
+                        NSNumber *currentVersion = @([clientData.appVersion integerValue]);
+                        
+                        [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
+                        
+                    }
 
+                }];
                 
             }];
             
