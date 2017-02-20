@@ -267,7 +267,7 @@
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = @"applicationPerformFetchWithCompletionHandler";
-    [logger saveLogMessageWithText:logMessage];
+    [logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
     
     __block UIBackgroundTaskIdentifier bgTask;
     
@@ -302,7 +302,7 @@
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"application didReceiveRemoteNotification userInfo: %@", userInfo];
-    [logger saveLogMessageWithText:logMessage];
+    [logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
 
     __block UIBackgroundTaskIdentifier bgTask;
     
