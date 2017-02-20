@@ -8,17 +8,21 @@
 
 #import "STMEntityController.h"
 
+#import "STMCoreAuthController.h"
+
 #define STMEC_HAS_CHANGES @"STMEntityController has changes"
+
 
 @interface STMEntityController()
 
-@property (nonatomic, strong) NSArray *entitiesArray;
-@property (nonatomic, strong) NSArray *uploadableEntitiesNames;
-@property (nonatomic, strong) NSDictionary *stcEntities;
+@property (nonatomic, strong) NSArray <NSDictionary *> *entitiesArray;
+@property (nonatomic, strong) NSArray <NSString *> *uploadableEntitiesNames;
+@property (nonatomic, strong) NSDictionary <NSString *, NSDictionary *> *stcEntities;
 
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
 
 + (STMEntityController *)sharedInstance;
+
 
 @end
 
@@ -57,13 +61,20 @@
 }
 
 - (void)removeObservers {
+    
     [self.class.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
     self.entitySubscriptionID = nil;
+    
     [super removeObservers];
+    
 }
 
 + (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector {
-    [[self sharedInstance] addObserver:anObject selector:selector name:STMEC_HAS_CHANGES];
+    
+    [[self sharedInstance] addObserver:anObject
+                              selector:selector
+                                  name:STMEC_HAS_CHANGES];
+    
 }
 
 
@@ -75,7 +86,7 @@
     
 }
 
-- (NSArray *)entitiesArray {
+- (NSArray <NSDictionary *> *)entitiesArray {
     
     if (!_entitiesArray) {
         
@@ -86,11 +97,14 @@
                                                               options:options
                                                                 error:&error];
 
-        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
-            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
-            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
-            return entity;
-        }];
+//        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
+//            
+//            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
+//            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
+//            
+//            return entity;
+//            
+//        }];
         
         _entitiesArray = (result.count > 0) ? result : nil;
 
@@ -99,18 +113,20 @@
     
 }
 
-- (NSDictionary *)stcEntities {
+- (NSDictionary <NSString *, NSDictionary *> *)stcEntities {
     
     if (!_stcEntities) {
         
         NSMutableDictionary *stcEntities = [NSMutableDictionary dictionary];
         
-        for (STMEntity *entity in self.entitiesArray) {
+        for (NSDictionary *entity in self.entitiesArray) {
             
-            NSString *capFirstLetter = (entity.name) ? [[entity.name substringToIndex:1] capitalizedString] : nil;
+            NSString *entityName = entity[@"name"];
             
-            NSString *capEntityName = [entity.name stringByReplacingCharactersInRange:NSMakeRange(0,1)
-                                                                           withString:capFirstLetter];
+            NSString *capFirstLetter = (entityName) ? [entityName substringToIndex:1].capitalizedString : nil;
+            
+            NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1)
+                                                                    withString:capFirstLetter];
             
             if (capEntityName) {
                 stcEntities[[STMFunctions addPrefixToEntityName:capEntityName]] = entity;
@@ -125,12 +141,12 @@
     
 }
 
-- (NSArray *)uploadableEntitiesNames {
+- (NSArray <NSString *> *)uploadableEntitiesNames {
     
     if (!_uploadableEntitiesNames) {
         
         NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
+            return ([STMFunctions isNotNullAndTrue:obj[@"isUploadable"]]);
         }];
         
         _uploadableEntitiesNames = [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
@@ -147,7 +163,7 @@
     [[self sharedInstance] flushSelf];
 }
 
-+ (NSDictionary *)stcEntities {
++ (NSDictionary <NSString *, NSDictionary *> *)stcEntities {
     return [self sharedInstance].stcEntities;
 }
 
@@ -159,17 +175,25 @@
     return [self sharedInstance].uploadableEntitiesNames;
 }
 
-+ (NSArray *)entityNamesWithResolveFantoms {
++ (NSString *)resourceForEntity:(NSString *)entityName {
+    
+    NSDictionary *entity = [self stcEntities][entityName];
+
+    return ([STMFunctions isNotNull:entity[@"url"]]) ? entity[@"url"] : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, entity[@"name"]];
+
+}
+
++ (NSArray <NSString *> *)entityNamesWithResolveFantoms {
     
     NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return ([[obj valueForKey:@"isResolveFantoms"] boolValue] && [obj valueForKey:@"url"] != nil);
+        return ([STMFunctions isNotNullAndTrue:obj[@"isResolveFantoms"]] && [STMFunctions isNotNull:obj[@"url"]]);
     }];
     
     return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
     
 }
 
-+ (NSSet *)entityNamesWithLifeTime {
++ (NSSet <NSString *> *)entityNamesWithLifeTime {
     
     NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
         return ([[obj valueForKey:@"lifeTime"] doubleValue] > 0);
@@ -179,7 +203,7 @@
     
 }
 
-+ (NSArray *)entitiesWithLifeTime {
++ (NSArray <NSDictionary *> *)entitiesWithLifeTime {
     
     NSError *error;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
@@ -193,8 +217,11 @@
 
 
 + (NSDictionary *)entityWithName:(NSString *)name {
+    
     NSError *error = nil;
-    return [[self sharedInstance] entityWithName:name error:&error];
+    return [[self sharedInstance] entityWithName:name
+                                           error:&error];
+    
 }
 
 - (NSDictionary *)entityWithName:(NSString *)name error:(NSError **)error {

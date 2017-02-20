@@ -60,8 +60,8 @@
             
             if (self.stcEntities[@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
             
-            [self.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, STMEntity *entity, BOOL *stop) {
-                if (entity.url) [entitiesNames addObject:name];
+            [self.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
+                if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
             }];
             
             self.downloadingState.entitySyncNames = entitiesNames.array.mutableCopy;
@@ -137,9 +137,9 @@
 
     NSLog(@"tryDownloadEntityName: %@", entityName);
     
-    STMEntity *entity = self.stcEntities[entityName];
+    NSDictionary *entity = self.stcEntities[entityName];
     
-    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entity.name][@"eTag"];
+    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entity[@"name"]][@"eTag"];
     
     if (!lastKnownEtag || [lastKnownEtag isEqual:[NSNull null]]) lastKnownEtag = @"*";
                            
@@ -207,9 +207,9 @@
         
         NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
         
-        STMEntity *entity = self.stcEntities[entityName];
+        NSDictionary *entity = self.stcEntities[entityName];
         
-        [STMClientEntityController clientEntityWithName:entity.name setETag:offset];
+        [STMClientEntityController clientEntityWithName:entity[@"name"] setETag:offset];
         
         [self doneDownloadingEntityName:entityName];
         
