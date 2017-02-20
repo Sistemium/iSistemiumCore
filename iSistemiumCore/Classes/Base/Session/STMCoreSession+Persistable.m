@@ -15,6 +15,16 @@
 
 #import "STMEntityController.h"
 #import "STMCorePicturesController.h"
+#import "STMRecordStatusController.h"
+#import "STMPersistingInterceptorUniqueProperty.h"
+
+#import "STMUnsyncedDataHelper.h"
+
+#import "STMSyncerHelper+Defantomizing.h"
+#import "STMSyncerHelper+Downloading.h"
+
+#import "STMPersisterFantoms.h"
+#import "STMSyncer.h"
 
 @implementation STMCoreSession (Persistable)
 
@@ -33,8 +43,16 @@
                        completionHandler:nil];
     
     self.persistenceDelegate = persister;
-    #warning need to remove direct links to document after full persisting concept realization
+    // TODO: remove direct links to document after full persisting concept realization
     self.document = persister.document;
+
+    
+    STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
+    
+    entityNameInterceptor.entityName = STM_ENTITY_NAME;
+    entityNameInterceptor.propertyName = @"name";
+    
+    [persister beforeMergeEntityName:entityNameInterceptor.entityName interceptor:entityNameInterceptor];
 
     [self addPersistenceObservers];
     
@@ -76,18 +94,27 @@
     
     [self initController:STMEntityController.class];
     [self initController:STMCorePicturesController.class];
+    [self initController:STMRecordStatusController.class];
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"document ready"];
+    self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
+    self.settingsController.persistenceDelegate = self.persistenceDelegate;
+    self.settingsController.session = self;
     
-    self.settingsController = [[self settingsControllerClass] initWithSettings:self.startSettings];
-    self.trackers = [NSMutableDictionary dictionary];
-    if (!self.isRunningTests) self.syncer = [[STMSyncer alloc] init];
-    
-    [self checkTrackersToStart];
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
+    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_RECORDSTATUS_NAME interceptor:(STMRecordStatusController *)[self controllerWithClass:STMRecordStatusController.class]];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
-    self.settingsController.session = self;
+    
+    self.trackers = [NSMutableDictionary dictionary];
+    
+    [self checkTrackersToStart];
+    
+    self.status = STMSessionRunning;
+    
+    if (!self.isRunningTests) {
+        [self setupSyncer];
+    }
     
 }
 
@@ -96,22 +123,17 @@
 
 - (void)addPersistenceObservers {
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
+                     selector:@selector(myStatusChanged:)
+                       object:self];
     
-    [nc addObserver:self
-           selector:@selector(myStatusChanged:)
-               name:NOTIFICATION_SESSION_STATUS_CHANGED
-             object:self];
+    [self observeNotification:NOTIFICATION_DOCUMENT_READY
+                     selector:@selector(persisterDocumentReady:)
+                       object:self.document];
     
-    [nc addObserver:self
-           selector:@selector(persisterDocumentReady:)
-               name:NOTIFICATION_DOCUMENT_READY
-             object:self.document];
-    
-    [nc addObserver:self
-           selector:@selector(persisterDocumentNotReady:)
-               name:NOTIFICATION_DOCUMENT_NOT_READY
-             object:self.document];
+    [self observeNotification:NOTIFICATION_DOCUMENT_NOT_READY
+                     selector:@selector(persisterDocumentNotReady:)
+                       object:self.document];
     
 }
 
@@ -137,5 +159,22 @@
     [self persisterCompleteInitializationWithSuccess:NO];
 }
 
+- (void)setupSyncer {
+    
+    STMSyncer *syncer = [STMSyncer controllerWithPersistenceDelegate:self.persistenceDelegate];
+    STMSyncerHelper *syncerHelper = [STMSyncerHelper controllerWithPersistenceDelegate:self.persistenceDelegate];
+    
+    syncerHelper.persistenceFantomsDelegate = [STMPersisterFantoms controllerWithPersistenceDelegate:self.persistenceDelegate];
+    syncerHelper.dataDownloadingOwner = syncer;
+    syncerHelper.defantomizingOwner = syncer;
+    
+    syncer.dataDownloadingDelegate = syncerHelper;
+    syncer.defantomizingDelegate = syncerHelper;
+    syncer.dataSyncingDelegate = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
+    syncer.session = self;
+    
+    self.syncer = syncer;
+    
+}
 
 @end

@@ -187,6 +187,10 @@
 
 #pragma mark STMDataSyncingSubscriber
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    return [NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"];
+}
+
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     NSString *source = itemData[@"source"];
@@ -247,7 +251,7 @@
     
     if (!self.downloadingDelegate) {
         
-        self.downloadingDelegate = [[STMSyncerHelper alloc] initWithPersistenceDelegate:self.persister];
+        self.downloadingDelegate = [STMSyncerHelper controllerWithPersistenceDelegate:self.persister];
         self.downloadingDelegate.dataDownloadingOwner = self;
         
     }

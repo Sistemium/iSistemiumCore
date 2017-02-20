@@ -85,7 +85,7 @@
     return [STMCoreSessionManager sharedManager].currentSession.syncer;
 }
 
-- (STMCoreSettingsController *)settingsController {
+- (id <STMSettingsController>)settingsController {
     return [[STMCoreSessionManager sharedManager].currentSession settingsController];
 }
 
@@ -182,24 +182,8 @@
 
 - (void)updateUploadSyncProgressBar {
 
-#warning should be implemented later if needed
-    
-//    STMSyncer *syncer = [self syncer];
-//    
-//    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
-//        
-//        float allUnsyncedObjectsCount = (float)[syncer numbersOfAllUnsyncedObjects];
-//        float currentlyUnsyncedObjectsCount = (float)[syncer numberOfCurrentlyUnsyncedObjects];
-//        
-//        if (allUnsyncedObjectsCount > 0) {
-//            
-//            self.progressBar.hidden = NO;
-//            self.progressBar.progress = (allUnsyncedObjectsCount - currentlyUnsyncedObjectsCount) / allUnsyncedObjectsCount;
-//            
-//        }
-//
-//    }
-    
+    // TODO: should be implemented later
+
 }
 
 - (void)defantomizingProgressBarStart:(NSNotification *)notification {
@@ -398,9 +382,7 @@
         UILongPressGestureRecognizer *longPressGesture = (UILongPressGestureRecognizer *)sender;
         
         if (longPressGesture.state == UIGestureRecognizerStateBegan) {
-            
-            self.syncer.syncerState = STMSyncerSendData;
-            
+            [self.syncer sendData];
         }
         
     }
@@ -408,14 +390,11 @@
 }
 
 - (void)uploadCloudTapped {
-    self.syncer.syncerState = STMSyncerSendDataOnce;
+    [self.syncer sendData];
 }
 
 - (void)downloadCloudTapped {
-    
-//    [[self syncer] afterSendFurcation];
-    self.syncer.syncerState = STMSyncerReceiveData;
-    
+    [self.syncer receiveData];
 }
 
 
@@ -519,7 +498,7 @@
 
 - (void)updateNonloadedPicturesInfo {
 
-    self.nonloadedPicturesButton.enabled = (self.syncer.syncerState == STMSyncerIdle);
+    self.nonloadedPicturesButton.enabled = YES;
     
     NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
@@ -828,7 +807,7 @@
 
 - (void)enableWWANDownloading {
     
-    STMCoreSettingsController *settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
+    id <STMSettingsController> settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
 
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
@@ -857,7 +836,7 @@
     self.nameLabel.text = [STMCoreAuthController authController].userName;
     self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
 
-    BOOL syncerIsIdle = (self.syncer.syncerState == STMSyncerIdle);
+    BOOL syncerIsIdle = YES;
     self.progressBar.hidden = syncerIsIdle;
     [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     
@@ -1122,7 +1101,7 @@
 
     [nc addObserver:self
            selector:@selector(updateUploadSyncProgressBar)
-               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
              object:self.syncer];
     
     [nc addObserver:self

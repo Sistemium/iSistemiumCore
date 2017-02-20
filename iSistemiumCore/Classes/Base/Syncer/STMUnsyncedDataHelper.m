@@ -41,8 +41,8 @@
 
 + (STMUnsyncedDataHelper *)unsyncedDataHelperWithPersistence:(id <STMPersistingFullStack>)persistenceDelegate subscriber:(id <STMDataSyncingSubscriber>)subscriberDelegate {
     
-    STMUnsyncedDataHelper *unsyncedDataHelper = [[STMUnsyncedDataHelper alloc] init];
-    unsyncedDataHelper.persistenceDelegate = persistenceDelegate;
+    STMUnsyncedDataHelper *unsyncedDataHelper = [self controllerWithPersistenceDelegate:persistenceDelegate];
+
     unsyncedDataHelper.subscriberDelegate = subscriberDelegate;
     
     return unsyncedDataHelper;
@@ -123,10 +123,6 @@
     return 0;
 }
 
-- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    return [STMFunctions predicateForUnsyncedObjectsWithEntityName:entityName];
-}
-
 
 #pragma mark - Private helpers
 
@@ -141,7 +137,7 @@
     
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
         
-        NSPredicate *predicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
+        NSPredicate *predicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
         
         NSDictionary *onlyLocalChanges = @{STMPersistingOptionLts:@NO};
         
@@ -314,9 +310,13 @@
 
     NSError *error = nil;
     
-    NSMutableArray *subpredicates = @[].mutableCopy;
+    NSMutableArray *subpredicates = [NSMutableArray array];
     
-    [subpredicates addObject:[self predicateForUnsyncedObjectsWithEntityName:entityName]];
+    NSPredicate *unsyncedPredicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
+    
+    if (!unsyncedPredicate) return nil;
+    
+    [subpredicates addObject:unsyncedPredicate];
     
     NSPredicate *erroredExclusion = [self excludingErroredPredicateWithEntityName:entityName];
     if (erroredExclusion) [subpredicates addObject:erroredExclusion];
@@ -327,7 +327,7 @@
     NSCompoundPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
     NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
-                              STMPersistingOptionOrder      :@"deviceTs,id",
+                              STMPersistingOptionOrder      : @"deviceTs,id",
                               STMPersistingOptionOrderDirectionAsc};
     
     NSArray *result = [self.persistenceDelegate findAllSync:entityName

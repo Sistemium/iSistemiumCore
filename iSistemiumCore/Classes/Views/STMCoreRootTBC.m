@@ -361,7 +361,7 @@
         } else {
             
             NSString *logMessage = [NSString stringWithFormat:@"Storyboard %@ not found in app's bundle", name];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeWarning];
             
         }
         
@@ -1142,7 +1142,9 @@
 }
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated {

@@ -8,21 +8,7 @@
 
 #import "STMPersisterFantoms.h"
 
-#import "STMFunctions.h"
-
-
 @implementation STMPersisterFantoms
-
-@synthesize persistenceDelegate = _persistenceDelegate;
-
-+ (instancetype)persisterFantomsWithPersistenceDelegate:(id)persistenceDelegate {
-    
-    STMPersisterFantoms *persisterFantoms = [[STMPersisterFantoms alloc] init];
-    persisterFantoms.persistenceDelegate = persistenceDelegate;
-    
-    return persisterFantoms;
-    
-}
 
 - (NSArray *)findAllFantomsIdsSync:(NSString *)entityName excludingIds:(NSArray *)excludingIds {
     
@@ -54,11 +40,9 @@
 
 - (NSDictionary *)mergeFantomSync:(NSString *)entityName attributes:(NSDictionary *)attributes error:(NSError *__autoreleasing *)error {
     
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-
     return [self.persistenceDelegate mergeSync:entityName
                                     attributes:attributes
-                                       options:options
+                                       options:@{STMPersistingOptionLtsNow}
                                          error:error];
 
 }
@@ -67,11 +51,9 @@
                         attributes:(NSDictionary *)attributes
                           callback:(STMPersistingAsyncDictionaryResultCallback)callback {
     
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-    
     return [self.persistenceDelegate mergeAsync:entityName
                                      attributes:attributes
-                                        options:options
+                                        options:@{STMPersistingOptionLtsNow}
                               completionHandler:callback];
 }
 

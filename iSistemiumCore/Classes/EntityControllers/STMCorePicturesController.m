@@ -1,5 +1,5 @@
 //
-//  STMPicturesController.m
+//  STMCorePicturesController.m
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 29/11/14.
@@ -7,14 +7,13 @@
 //
 
 #import "STMCorePicturesController.h"
-#import "STMFunctions.h"
+
 #import "STMConstants.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
 #import "STMVisitPhoto.h"
 #import "STMOutletPhoto.h"
-
-#import <objc/runtime.h>
+#import "STMMessagePicture.h"
 
 
 @interface STMCorePicturesController()
@@ -680,8 +679,8 @@
     
     NSError *error = nil;
     BOOL result = [thumbnail writeToFile:imagePath
-                            options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                              error:&error];
+                                 options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                   error:&error];
     
     if (result) {
         
@@ -891,12 +890,7 @@
                                                                                    withString:@"/"];
                             
                             NSLog(@"%@", picture.picturesInfo);
-                            
-                            __block STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-                            
-                            [session.document saveDocument:^(BOOL success) {
-                            }];
-                            
+                                                                                    
                         });
 
                     } else {

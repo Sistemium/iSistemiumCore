@@ -8,15 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMCoreObject.h"
-#import "STMPersistingFullStack.h"
+#import "STMCoreController.h"
 
 
-@interface STMSyncerHelper : STMCoreObject
-
-- (instancetype)initWithPersistenceDelegate:(id <STMPersistingFullStack>)persistenceDelegate;
-
-@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
+@interface STMSyncerHelper : STMCoreController
 
 @end
 

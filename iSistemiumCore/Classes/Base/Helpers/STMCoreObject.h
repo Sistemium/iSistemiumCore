@@ -7,32 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMNotifications.h"
 
-@interface STMCoreObject : NSObject
+@interface STMCoreObject : NSObject <STMNotifications>
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
-
-- (void)postAsyncMainQueueNotification:(NSNotificationName)aName;
-
-- (void)postAsyncMainQueueNotification:(NSNotificationName)aName
-                              userInfo:(NSDictionary *)aUserInfo;
-
-- (void)postNotificationName:(NSNotificationName)aName;
-
-- (void)postNotificationName:(NSNotificationName)aName
-                    userInfo:(NSDictionary *)aUserInfo;
-
-- (void)addObserver:(id)anObserver
-           selector:(SEL)aSelector
-               name:(NSNotificationName)aName;
-
-- (void)observeNotification:(NSNotificationName)notificationName
-                   selector:(SEL)aSelector;
-
-- (void)observeNotification:(NSNotificationName)notificationName
-                   selector:(SEL)aSelector
-                     object:(id)anObject;
-
-- (void)removeObservers;
 
 @end

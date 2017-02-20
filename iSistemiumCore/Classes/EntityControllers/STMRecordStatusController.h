@@ -7,9 +7,11 @@
 //
 
 #import "STMCoreController.h"
+#import "STMPersistingIntercepting.h"
 
+#define STM_RECORDSTATUS_NAME @"STMRecordStatus"
 
-@interface STMRecordStatusController : STMCoreController
+@interface STMRecordStatusController : STMCoreController <STMPersistingMergeInterceptor>
 
 + (NSDictionary *)existingRecordStatusForXid:(NSString *)objectXid;
 + (NSArray *)recordStatusesForXids:(NSArray *)xids;

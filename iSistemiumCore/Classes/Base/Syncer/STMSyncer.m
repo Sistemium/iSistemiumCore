@@ -6,25 +6,20 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import <AdSupport/AdSupport.h>
-
 #import "STMSyncer.h"
-#import "STMDocument.h"
 
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
-#import "STMCoreAuthController.h"
 
 #import "STMSocketTransport+Persisting.h"
 
 
 @interface STMSyncer()
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
-@property (nonatomic, strong) NSMutableDictionary *settings;
+@property (nonatomic, strong) NSDictionary *settings;
 @property (nonatomic, strong) NSTimer *syncTimer;
 
 @property (nonatomic, strong) NSString *entityResource;
@@ -47,28 +42,12 @@
 @implementation STMSyncer
 
 @synthesize syncInterval = _syncInterval;
-@synthesize syncerState = _syncerState;
-
-
-- (instancetype)init {
-    
-    NSLog(@"syncer init");
-    
-    return [super init];
-    
-}
 
 
 #pragma mark - observers
 
 - (void)addObservers {
-    
-    [self observeNotification:NOTIFICATION_SESSION_STATUS_CHANGED
-                     selector:@selector(sessionStatusChanged:)
-                       object:self.session];
 
-#warning nobody posts this notification name
-    
     [self observeNotification:@"syncerSettingsChanged"
                      selector:@selector(syncerSettingsChanged)
                        object:self.session];
@@ -81,124 +60,37 @@
     
 }
 
-- (void)dealloc{
-    NSLogMethodName;
-    [self removeObservers];
-}
-
 - (void)removeObservers {
     [self unsubscribeFromUnsyncedObjects];
     [super removeObservers];
 }
 
-- (void)sessionStatusChanged:(NSNotification *)notification {
-    
-    if ([notification.object isKindOfClass:[STMCoreSession class]]) {
-        
-        STMCoreSession *session = (STMCoreSession *)notification.object;
-        
-        if (session == self.session) {
-            
-            if (session.status == STMSessionFinishing || session.status == STMSessionRemoving) {
-                [self stopSyncer];
-                [[NSNotificationCenter defaultCenter] removeObserver:self];
-            } else if (session.status == STMSessionRunning) {
-                [self startSyncer];
-            }
-            
-        }
-        
-    }
-    
-}
 
 - (void)syncerSettingsChanged {
     [self flushSettings];
 }
 
 - (void)appDidBecomeActive {
-    
-#ifdef DEBUG
-    [self setSyncerState:STMSyncerSendData];
-#else
-    [self setSyncerState:STMSyncerSendDataOnce];
-#endif
-    
+    [self sendData];
 }
 
 - (void)appDidEnterBackground {
-    [self setSyncerState:STMSyncerSendDataOnce];
+    [self sendData];
 }
 
 
 #pragma mark - variables setters & getters
 
-- (void)setSyncerState:(STMSyncerState) syncerState fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    self.syncerState = syncerState;
-    
-}
-
-- (void)setSyncerState:(STMSyncerState)syncerState {
-    
-    if (self.isRunning && syncerState != _syncerState) {
-        
-        STMSyncerState previousState = _syncerState;
-        
-        _syncerState = syncerState;
-        
-        NSArray *syncStates = @[@"idle", @"sendData", @"sendDataOnce", @"receiveData"];
-        
-        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_STATUS_CHANGED
-                                    userInfo:@{@"from":@(previousState), @"to":@(syncerState)}];
-        
-        NSString *logMessage = [NSString stringWithFormat:@"Syncer %@", syncStates[syncerState]];
-        NSLog(@"%@", logMessage);
-        
-        switch (_syncerState) {
-            case STMSyncerIdle: {
-                break;
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [STMClientDataController checkClientData];
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            case STMSyncerReceiveData: {
-                
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-                [self receiveData];
-                self.syncerState = STMSyncerIdle;
-                
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        
-    }
-    
-    return;
-    
-}
-
 - (void)setSession:(id <STMSession>)session {
     
     if (session != _session) {
         _session = session;
-        [self startSyncer];
+        if (session) [self startSyncer];
     }
     
 }
 
-- (NSMutableDictionary *)settings {
+- (NSDictionary *)settings {
     
     if (!_settings) {
         _settings = [[(id <STMSession>)self.session settingsController] currentSettingsForGroup:@"syncer"];
@@ -350,9 +242,7 @@
 
 - (void)startSyncer {
     
-    if (self.isRunning || self.session.status != STMSessionRunning) {
-        return;
-    }
+    if (self.isRunning) return;
         
     self.settings = nil;
     
@@ -360,13 +250,22 @@
         
     if (!success) {
         
-        return [self.session.logger saveLogMessageWithText:@"checkStcEntities fail" numType:STMLogMessageTypeError];
+        return [[self.session logger] saveLogMessageWithText:@"checkStcEntities fail"
+                                                   numType:STMLogMessageTypeError];
         
     }
     
     if (!self.socketUrlString) {
-        NSLog(@"have NO socketURL, fail to start socket controller");
-        return [[STMCoreAuthController authController] logout];
+        
+        
+        [[self.session logger] saveLogMessageWithText:self.settings.description
+                                              numType:STMLogMessageTypeInfo];
+        
+        [[self.session logger] saveLogMessageWithText:@"Syncer has no socketURL"
+                                              numType:STMLogMessageTypeError];
+        
+        return [self.authController logout];
+        
     }
     
     [STMEntityController checkEntitiesForDuplicates];
@@ -377,15 +276,11 @@
     
     [self addObservers];
     
-    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString
-                                              andEntityResource:self.entityResource
-                                                          owner:self];
+    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self];
 
     if (!self.socketTransport) {
-        
-        NSLog(@"can not start socket transport");
-        return [[STMCoreAuthController authController] logout];
-        
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
+        return [self.authController logout];
     }
     
     self.isRunning = YES;
@@ -404,7 +299,6 @@
         [self.socketTransport closeSocket];
         
 //        [self.session.logger saveLogMessageWithText:@"Syncer stop"];
-//        self.syncerState = STMSyncerIdle;
         [self releaseTimer];
         [self flushSettings];
         self.isRunning = NO;
@@ -444,9 +338,23 @@
     
 }
 
+- (void)socketWillClosed {
+
+    NSLogMethodName;
+
+    [self stopSyncerActivity];
+    
+}
+
 - (void)socketLostConnection {
 
     NSLogMethodName;
+
+    [self stopSyncerActivity];
+
+}
+
+- (void)stopSyncerActivity {
     
     [self releaseTimer];
     
@@ -495,9 +403,11 @@
 }
 
 - (void)entitiesChanged {
+    
     [self subscribeToUnsyncedObjects];
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVED_ENTITIES];
     [self receiveData];
+    
 }
 
 - (void)checkSocket {
@@ -582,11 +492,14 @@
 #pragma mark - remote control methods
 
 - (void)upload {
-    [self setSyncerState:STMSyncerSendDataOnce];
+    [self sendData];
 }
 
 - (void)fullSync {
-    [self setSyncerState:STMSyncerSendData];
+    
+    [self receiveData];
+    [self sendData];
+    
 }
 
 - (void)receiveEntities:(NSArray *)entitiesNames {
@@ -600,7 +513,7 @@
         return [self.persistenceDelegate isConcreteEntityName:name] ? [STMFunctions addPrefixToEntityName:name] : nil;
     }];
     
-    if (existingNames.count > 0) {
+    if (existingNames.count) {
         [self.dataDownloadingDelegate startDownloading:existingNames];
     }
   
@@ -624,9 +537,7 @@
         
         NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
         
-        NSDictionary *options = @{STMPersistingOptionLts:[STMFunctions stringFromNow]};
-        
-        [self.persistenceDelegate mergeAsync:entityName attributes:result options:options completionHandler:nil];
+        [self.persistenceDelegate mergeAsync:entityName attributes:result options:@{STMPersistingOptionLtsNow} completionHandler:nil];
         
     }];
 
@@ -637,10 +548,7 @@
 - (void)startDefantomization {
     
     if (!self.socketTransport.isReady) {
-        
-        [self.defantomizingDelegate stopDefantomization];
-        return;
-        
+        return [self.defantomizingDelegate stopDefantomization];
     }
     
     if (self.isDefantomizing) {
@@ -678,11 +586,7 @@
         
         blockIsComplete = YES;
 
-        [self.defantomizingDelegate defantomize:fantomDic
-                                        success:success
-                                     entityName:entityName
-                                         result:result
-                                          error:error];
+        [self.defantomizingDelegate defantomize:fantomDic success:success entityName:entityName result:result error:error];
                 
     }];
 
@@ -716,30 +620,40 @@
 }
 
 
-#pragma mark - recieve data
+#pragma mark - STMSyncer protocol methods
+
+- (void)sendData {
+
+    if (!self.isRunning) return;
+
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+    
+    [STMClientDataController checkClientData];
+    
+}
+
+- (void)receiveDataWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
+    
+    self.fetchCompletionHandler = handler;
+    self.fetchResult = UIBackgroundFetchResultNewData;
+    [self receiveData];
+
+}
 
 - (void)receiveData {
     
+    if (!self.isRunning) return;
+    
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+
     if ([self.dataDownloadingDelegate downloadingState]) {
         self.needRepeatDownload = YES;
         return;
     }
     
     [self.dataDownloadingDelegate startDownloading];
-    
-}
-
-
-- (void)saveReceiveDate {
-    
-    if (!self.session.uid) return;
-    
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:receiveDateString forKey:key];
-    [self.userDefaults synchronize];
     
 }
 
@@ -764,6 +678,9 @@
     
     [STMCoreObjectsController dataLoadingFinished];
     
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+
     [self startDefantomization];
 
     if (self.fetchCompletionHandler) {
@@ -805,6 +722,29 @@
 
 #pragma mark - STMDataSyncingSubscriber
 
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    return predicate;
+    
+}
+
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
     
     self.isSendingData = YES;
@@ -822,7 +762,7 @@
         }
         
         if (success) {
-            [self bunchOfObjectsSended];
+            [self bunchOfObjectsSent];
         }
         
         [self.dataSyncingDelegate setSynced:success
@@ -846,6 +786,32 @@
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED];
 
+    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+                                          numType:STMLogMessageTypeInfo];
+
+}
+
+- (void)bunchOfObjectsSent {
+
+    [self saveSendDate];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
+    
+}
+
+
+#pragma mark - save dates
+
+- (void)saveReceiveDate {
+    
+    if (!self.session.uid) return;
+    
+    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+    
+    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+    
+    [self.userDefaults setObject:receiveDateString forKey:key];
+    [self.userDefaults synchronize];
+    
 }
 
 - (void)saveSendDate {
@@ -858,17 +824,6 @@
     [self.userDefaults setObject:sendDateString forKey:key];
     [self.userDefaults synchronize];
     
-}
-
-- (void)bunchOfObjectsSended {
-
-    [self saveSendDate];
-    [self postObjectsSendedNotification];
-
-}
-
-- (void)postObjectsSendedNotification {
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENDED];
 }
 
 

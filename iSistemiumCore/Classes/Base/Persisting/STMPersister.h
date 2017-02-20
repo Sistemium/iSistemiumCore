@@ -10,7 +10,7 @@
 #import "STMPersistingSync.h"
 #import "STMDocument.h"
 
-#import "STMModeller.h"
+#import "STMModeller+Interceptable.h"
 #import "STMFmdb.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -7,9 +7,9 @@
 //
 
 #import "STMCoreTracker.h"
-#import "STMCoreDataModel.h"
 #import "STMCheckinDelegate.h"
-
+#import <CoreLocation/CoreLocation.h>
+#import "STMCoreLocation.h"
 
 @interface STMCoreLocationTracker : STMCoreTracker
 

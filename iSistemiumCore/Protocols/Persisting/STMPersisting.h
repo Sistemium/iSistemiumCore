@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
     STMStorageTypeInMemory
 };
 
+#define STMPersistingKeyPrimary @"id"
 #define STMPersistingKeyVersion @"deviceTs"
 #define STMPersistingKeyCreationTimestamp @"deviceCts"
 #define STMPersistingKeyPhantom @"isFantom"
@@ -27,15 +28,16 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
 #define STMPersistingOptionFantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"
+#define STMPersistingOptionLtsNow STMPersistingOptionLts:[STMFunctions stringFromNow]
 #define STMPersistingOptionReturnSaved @"returnSaved"
 #define STMPersistingOptionForceStorage @"forceStorage"
 #define STMPersistingOptionPageSize @"pageSize"
+#define STMPersistingOptionStartPage @"startPage"
 #define STMPersistingOptionOffset @"offset"
 #define STMPersistingOptionOrder @"sortBy"
 #define STMPersistingOptionOrderDirection @"direction"
 #define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
 #define STMPersistingOptionSetTs @"setTs"
-
 #define STMPersistingOptionOrderDirectionDescValue @"DESC"
 #define STMPersistingOptionOrderDirectionAscValue @"ASC"
 

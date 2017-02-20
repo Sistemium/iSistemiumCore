@@ -13,13 +13,11 @@
 
 @interface STMCoreController ()
 
-@property (nonatomic,weak) id <STMPersistingObserving, STMPersistingSync> persistenceDelegate;
-
 @end
 
 @implementation STMCoreController
 
-+ (STMCoreSession *)session {
++ (id <STMSession>)session {
     return [STMCoreSessionManager sharedManager].currentSession;
 }
 
@@ -28,7 +26,7 @@
 }
 
 + (instancetype)sharedInstance {
-    return [[self session] controllerWithName:NSStringFromClass(self)];
+    return (STMCoreController*)[[self session] controllerWithClass:self.class];
 }
 
 - (instancetype)initWithPersistenceDelegate:(id)persistenceDelegate {
@@ -42,7 +40,7 @@
     
 }
 
-#warning have to remove document property after full implementation of persister
+// TODO: to remove document property after full implementation of persister
 + (STMDocument *)document {
     return [self session].document;
 }

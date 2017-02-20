@@ -14,6 +14,9 @@
 #import "STMFakePersisting.h"
 
 #define SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION @"Expect no errors"
+#define SCRIPT_MESSAGING_TEST_TIMEOUT 2
+#define SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS \
+[self waitForExpectationsWithTimeout:SCRIPT_MESSAGING_TEST_TIMEOUT handler:nil]
 
 @interface ScriptMessagingTestsExpectation : NSObject
 
@@ -29,7 +32,7 @@
 
 @property (nonatomic, strong) STMModeller *modeller;
 @property (nonatomic, strong) STMScriptMessageHandler *scriptMessenger;
-@property (nonatomic, strong) id <STMScriptMessaging> scriptMessagingDelegate;
+@property (nonatomic, weak) id <STMScriptMessaging> scriptMessagingDelegate;
 @property (nonatomic, strong) STMFakePersisting *fakePerster;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, ScriptMessagingTestsExpectation *> *expectations;
@@ -210,7 +213,7 @@
     // Now wait because STMScriptMessageHandler is using async promises
     //
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
 }
 
@@ -264,7 +267,7 @@
     // Now wait because STMScriptMessageHandler is using async promises
     //
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
 }
 
 - (void)testDestroy {
@@ -283,7 +286,7 @@
     [self doDestroyRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
                     expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
 
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
 
     [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid} forKey:@"data" inDictionary:body]
                    expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
@@ -297,7 +300,7 @@
     // Now wait
     //
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
 }
 
@@ -346,7 +349,7 @@
     
     [self mergeEntityName:entityName data:testArray];
 
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
     // TODO: test that merge with no LTS doesn't trigger subscription
     
@@ -360,7 +363,7 @@
     // Now wait because STMScriptMessageHandler is using async promises
     //
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
 }
 

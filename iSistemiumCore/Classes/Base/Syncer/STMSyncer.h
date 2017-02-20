@@ -6,22 +6,17 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreController.h"
 
-#import "STMSessionManagement.h"
-#import "STMRequestAuthenticatable.h"
 #import "STMSocketConnection.h"
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
 
-#import "STMCoreController.h"
-
 @interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
 @property (nonatomic, weak) id <STMSession> session;
 
-@property (nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) id <STMDataDownloading> dataDownloadingDelegate;
 @property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;

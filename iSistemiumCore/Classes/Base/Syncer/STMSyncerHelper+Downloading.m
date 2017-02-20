@@ -92,15 +92,33 @@
 
 - (void)dataReceivedSuccessfully:(BOOL)success entityName:(NSString *)entityName result:(NSArray *)result offset:(NSString *)offset pageSize:(NSUInteger)pageSize error:(NSError *)error {
     
-    if (success) {
-        
-        [self parseFindAllAckResponseData:result entityName:entityName offset:offset pageSize:pageSize];
-        
-    } else {
-        
-        [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
-        
+    if (!success) {
+        return [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
     }
+    
+    if (!entityName) {
+        return [self receivingDidFinishWithError:@"called parseFindAllAckResponseData with empty entityName"];
+    }
+    
+    if (!result.count) {
+        NSLog(@"    %@: have no new data", entityName);
+        return [self doneDownloadingEntityName:entityName];
+    }
+    
+    if (!offset) {
+        NSLog(@"    %@: receive data w/o offset", entityName);
+        return [self doneDownloadingEntityName:entityName];
+    }
+    
+    [self.persistenceDelegate mergeManyAsync:entityName attributeArray:result options:@{STMPersistingOptionLtsNow} completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+        
+        if (!success) {
+            return [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
+        }
+        
+        [self findAllResultMergedWithSuccess:result entityName:entityName offset:offset pageSize:pageSize];
+        
+    }];
 
 }
 
@@ -175,38 +193,6 @@
 
 
 #pragma mark findAll ack handler
-
-- (void)parseFindAllAckResponseData:(NSArray *)responseData entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
-    
-    if (!entityName) {
-        return [self receivingDidFinishWithError:@"called parseFindAllAckResponseData with empty entityName"];
-    }
-        
-    if (!responseData.count) {
-        NSLog(@"    %@: have no new data", entityName);
-        return [self doneDownloadingEntityName:entityName];
-    }
-        
-    if (!offset) {
-        NSLog(@"    %@: receive data w/o offset", entityName);
-        return [self doneDownloadingEntityName:entityName];
-    }
-    
-    NSDictionary *options = @{STMPersistingOptionLts: [STMFunctions stringFromNow]};
-    
-    [self.persistenceDelegate mergeMany:entityName attributeArray:responseData options:options]
-    .thenInBackground(^(NSArray *data){
-        
-        [self findAllResultMergedWithSuccess:data entityName:entityName offset:offset pageSize:pageSize];
-        
-    }).catch(^(NSError *error){
-        
-        [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
-        
-    });
-    
-}
-
 
 - (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     

@@ -162,6 +162,16 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
     }
     
     STMFakePersistingIfInMemoryDB(nil) {
+        
+        attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
+        
+        if (*error) return nil;
+        
+        if (!attributes) {
+            [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
+            return nil;
+        }
+        
         attributes = [self.data[entityName] addObject:attributes options:options];
         [self notifyObservingEntityName:entityName ofUpdated:attributes options:options];
         return attributes;
@@ -193,6 +203,15 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
 - (NSArray *) mergeManySync:(NSString *)entityName attributeArray:(NSArray <NSDictionary*> *)attributeArray options:(STMPersistingOptions)options error:(NSError *__autoreleasing *)error {
     
     STMFakePersistingIfInMemoryDB(nil) {
+        attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
+        
+        if (*error) return nil;
+        
+        if (!attributeArray) {
+            [STMFunctions error:error withMessage:@"Emtpy response from the interceptor"];
+            return nil;
+        }
+        
         attributeArray = [self.data[entityName] addObjectsFromArray:attributeArray options:options];
         [self notifyObservingEntityName:entityName ofUpdatedArray:attributeArray options:options];
         return attributeArray;

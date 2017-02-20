@@ -44,7 +44,7 @@
         
         self.defantomizingDelegate = [[STMSyncerHelper alloc] init];
         self.defantomizingDelegate.defantomizingOwner = self;
-        self.defantomizingDelegate.persistenceFantomsDelegate = [STMPersisterFantoms persisterFantomsWithPersistenceDelegate:self.persister];
+        self.defantomizingDelegate.persistenceFantomsDelegate = [STMPersisterFantoms controllerWithPersistenceDelegate:self.persister];
 
     }
     

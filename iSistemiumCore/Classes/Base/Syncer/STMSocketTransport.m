@@ -90,6 +90,8 @@
     [self.logger saveLogMessageWithText:CurrentMethodName
                                 numType:STMLogMessageTypeInfo];
 
+    [self.owner socketWillClosed];
+
     [self.socket disconnect];
     [self flushSocket];
     
@@ -574,18 +576,11 @@
 - (void)socketLostConnection:(NSString *)infoString {
     
     NSLogMethodName;
+
+    [self.logger saveLogMessageWithText:infoString
+                                numType:STMLogMessageTypeInfo];
     
     [self checkReachabilityAndSocketStatus];
-
-//    STMSyncer *syncer = [self syncer];
-//    
-//    if (syncer.syncerState == STMSyncerSendData || syncer.syncerState == STMSyncerSendDataOnce) {
-//        
-//        NSString *errorString = [NSString stringWithFormat:@"%@: socket not connected while sending data", infoString];
-//        [self sendFinishedWithError:errorString
-//                          abortSync:@(YES)];
-//        
-//    }
     
     [self.owner socketLostConnection];
     

@@ -8,8 +8,13 @@
 
 #import "STMFunctions.h"
 
+// Don't import any STM headers
+// This class is only for generic methods
+
 #import "STMCoreSessionManager.h"
 #import "STMLogger.h"
+
+// FIXME: move STM-dependent methods somewhere
 
 #import <CommonCrypto/CommonDigest.h>
 #import <sys/sysctl.h>
@@ -988,29 +993,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
-+ (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    
-    NSMutableArray *subpredicates = @[].mutableCopy;
-    
-    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
-        
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
-                                                                           forGroup:@"syncer"];
-        
-        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
-        
-    }
-    
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
-    
-    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
-    
-    return predicate;
-    
-}
-
 
 #pragma mark - JSON representation
 
@@ -1322,6 +1304,14 @@ vm_size_t freeMemory(void) {
                                                    range:NSMakeRange(0, path.length)];
     NSString *substr = [path substringWithRange:match.range];
     return substr;
+}
+
++ (BOOL)isNotNullAndTrue:(id)value {
+    return ![value isEqual:[NSNull null]] && [value boolValue];
+}
+
++ (BOOL)isNotNull:(id)value {
+    return value && ![value isEqual:[NSNull null]];
 }
 
 @end

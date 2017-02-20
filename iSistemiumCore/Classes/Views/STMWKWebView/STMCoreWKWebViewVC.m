@@ -206,6 +206,7 @@ STMImagePickerOwnerProtocol>
 - (void)reloadWebView {
     
     [self hideNavBar];
+    [self.scriptMessageHandler cancelSubscriptions];
     
     if ([self webViewAppManifestURI]) {
         

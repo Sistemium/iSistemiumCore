@@ -29,19 +29,23 @@
     return [super sharedInstance];
 }
 
-- (instancetype)init {
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
     
-    self = [super init];
-    [self addObservers];
+    if (self.persistenceDelegate) {
+        [self removeObservers];
+    }
     
-    NSLogMethodName;
-    return self;
+    [super setPersistenceDelegate:persistenceDelegate];
+    
+    if (persistenceDelegate) {
+        [self addObservers];
+    }
     
 }
 
 - (void)addObservers {
     
-    self.entitySubscriptionID = [self.class.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
+    self.entitySubscriptionID = [self.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
         
         [self flushSelf];
         [self postNotificationName:STMEC_HAS_CHANGES];
@@ -187,14 +191,19 @@
     
 }
 
+
 + (NSDictionary *)entityWithName:(NSString *)name {
+    NSError *error = nil;
+    return [[self sharedInstance] entityWithName:name error:&error];
+}
+
+- (NSDictionary *)entityWithName:(NSString *)name error:(NSError **)error {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
-    NSError *error = nil;
-    NSDictionary *entity = [[self persistenceDelegate] findAllSync:NSStringFromClass([STMEntity class])
-                                                         predicate:predicate
-                                                           options:nil
-                                                             error:&error].lastObject;
+    NSDictionary *entity = [self.persistenceDelegate findAllSync:NSStringFromClass([STMEntity class])
+                                                       predicate:predicate
+                                                         options:nil
+                                                           error:error].lastObject;
     
     return entity;
         
@@ -227,7 +236,7 @@
         [self.session.logger saveLogMessageWithText:message type:@"error"];
 
         NSError *error;
-        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"SELF IN %@", duplicates];
+        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"xid IN %@", [duplicates valueForKeyPath:@"xid"]];
 
         NSMutableArray *newStcEntitiesArray = [self stcEntitiesArray].mutableCopy;
         [newStcEntitiesArray removeObjectsInArray:duplicates];
@@ -237,7 +246,7 @@
                                          predicate:duplicatesPredicate
                                            options:@{STMPersistingOptionRecordstatuses:@(NO)}
                                              error:&error];
-        
+
     }];
 
     if (!totalDuplicates) {

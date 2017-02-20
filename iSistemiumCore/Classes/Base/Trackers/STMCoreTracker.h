@@ -6,15 +6,11 @@
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreLocation/CoreLocation.h>
+#import "STMCoreObject.h"
 #import "STMSessionManagement.h"
-#import "STMDocument.h"
-#import "STMFunctions.h"
 
-@interface STMCoreTracker : NSObject
+@interface STMCoreTracker : STMCoreObject
 
-@property (nonatomic, strong) STMDocument *document;
 @property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 @property (nonatomic, strong) NSString *group;

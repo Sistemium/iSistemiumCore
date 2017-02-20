@@ -129,6 +129,8 @@
     
     NSDictionary *options = @{STMPersistingOptionReturnSaved : @NO};
     
+    STMPTStartedAt
+    
     [self measureBlock:^{
         
         for (int i = 0; i<numberOfLogs;i++){
@@ -146,6 +148,8 @@
         }
         
     }];
+    
+    NSLog(@"testMergeSyncSpeed merged %lu items per second", @(10.0 * numberOfLogs / STMPTSecondsAfterStartedAt).integerValue);
     
 }
 

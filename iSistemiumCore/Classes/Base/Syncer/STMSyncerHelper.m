@@ -11,18 +11,6 @@
 
 @implementation STMSyncerHelper
 
-- (instancetype)initWithPersistenceDelegate:(id)persistenceDelegate {
-    
-    self = [super init];
-    if (self) {
-        self.persistenceDelegate = persistenceDelegate;
-    }
-    return self;
-    
-}
-
-#pragma mark - Private Properties
-
 @synthesize dataDownloadingOwner = _dataDownloadingOwner;
 
 @end

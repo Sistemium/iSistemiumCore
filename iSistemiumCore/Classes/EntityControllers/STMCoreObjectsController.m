@@ -303,20 +303,6 @@
 
 #pragma mark - flushing
 
-#warning should use some syncer method
-+ (NSPredicate *)notUnsyncedPredicateForEntityName:(NSString*)entityName {
-    
-    BOOL isInSyncList = [STMEntityController.uploadableEntitiesNames containsObject:entityName];
-    
-    if (!isInSyncList) return nil;
-    
-    NSPredicate *predicate1 = [NSCompoundPredicate notPredicateWithSubpredicate:[NSPredicate predicateWithFormat:@"lts < deviceTs"]];
-    
-    NSPredicate *predicate2 = [NSPredicate predicateWithFormat:@"deviceTs == nil"];
-    
-    return [[NSCompoundPredicate alloc] initWithType:NSOrPredicateType
-                                       subpredicates:@[predicate1, predicate2]];
-}
 
 + (void)checkObjectsForFlushing {
     
@@ -332,6 +318,8 @@
         return;
         
     }
+    
+    if (!self.session.syncer) return;
 
     NSDate *startFlushing = [NSDate date];
     
@@ -366,10 +354,13 @@
         NSError *error;
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
-        NSPredicate *notUnsyncedPredicate = [self notUnsyncedPredicateForEntityName:entityName];
+        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:entityName];
+        
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
-        if (notUnsyncedPredicate) [subpredicates addObject:notUnsyncedPredicate];
+        if (unsyncedPredicate) {
+            [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
+        }
         
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
@@ -393,18 +384,15 @@
 
 + (void)dataLoadingFinished {
     
+#warning If we are called here in the end of a background fetch, then something wrong would happen if we've got some pictures to process because the completion handler doesn't wait us to finish processing pictures.
+    
     [STMCorePicturesController checkPhotos];
-//    [self checkObjectsForFlushing];
     
 #ifdef DEBUG
     [self logTotalNumberOfObjectsInStorages];
 #else
 
 #endif
-    
-    [[self document] saveDocument:^(BOOL success) {
-
-    }];
 
 }
 

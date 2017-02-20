@@ -119,12 +119,30 @@
     
 }
 
+- (instancetype)init {
+    self.beforeMergeInterceptors = [NSMutableDictionary dictionary];
+    return self;
+}
 
 - (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
-    if (!object) {
-        return @{};
-    }
+    if (!object) return @{};
+    
+    __block NSDictionary *result;
+    
+    if (!object.managedObjectContext) return [self fillDictionaryForObject:object withNulls:withNulls withBinaryData:withBinaryData];
+        
+    [object.managedObjectContext performBlockAndWait:^{
+    
+        result = [self fillDictionaryForObject:object withNulls:withNulls withBinaryData:withBinaryData];
+    
+    }];
+    
+    return result;
+    
+}
+
+- (NSDictionary *)fillDictionaryForObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     NSMutableDictionary *propertiesDictionary = @{}.mutableCopy;
     
@@ -139,10 +157,7 @@
     [propertiesDictionary addEntriesFromDictionary:[object propertiesForKeys:ownKeys withNulls:withNulls withBinaryData:withBinaryData]];
     [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
-    //    NSLog(@"--------------- updated object %@", propertiesDictionary[@"deviceAts"]);
-    
-    return propertiesDictionary;
-    
+    return propertiesDictionary.copy;
 }
 
 @end

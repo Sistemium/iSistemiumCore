@@ -20,7 +20,6 @@
 
 #import "STMAuthNC.h"
 
-//#import "STMSocketController.h"
 #import "STMSoundController.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -103,9 +102,7 @@
     id <STMSession> session = [self sessionManager].currentSession;
     
     if (session.status == STMSessionRunning) {
-        
-        [[session syncer] setSyncerState:STMSyncerSendData];
-        
+        [[session syncer] sendData];
     }
     
 }
@@ -270,7 +267,7 @@
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = @"applicationPerformFetchWithCompletionHandler";
-    [logger saveLogMessageWithText:logMessage];
+    [logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
     
     __block UIBackgroundTaskIdentifier bgTask;
     
@@ -290,15 +287,12 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
 
-    if ([self syncer].transportIsReady) {
-
-        [[self syncer] setSyncerState:STMSyncerReceiveData
-               fetchCompletionHandler:completionHandler];
-
+    STMSyncer *syncer = [self syncer];
+    
+    if (syncer.transportIsReady) {
+        [syncer receiveDataWithFetchCompletionHandler:completionHandler];
     } else {
-        
-        [[self syncer] checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
-        
+        [syncer checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
     }
     
 }
@@ -308,7 +302,7 @@
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"application didReceiveRemoteNotification userInfo: %@", userInfo];
-    [logger saveLogMessageWithText:logMessage];
+    [logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
 
     __block UIBackgroundTaskIdentifier bgTask;
     
@@ -363,7 +357,7 @@
 
     if (timeRemaining != DBL_MAX) {
         
-        timeRemaining -= 10; // is 10 sec enough for closing socket?
+        timeRemaining -= 5; // should be enough to close socket
         
         NSTimeInterval delayInterval = timeRemaining >= 0 ? timeRemaining : 0;
         
@@ -410,48 +404,25 @@
         
     }
 
-    if (userInfo[@"syncer"]) {
-        
-#warning - is it used? may be rm it and use remoteCommends instead
-        if ([userInfo[@"syncer"] isEqualToString:@"upload"]) {
-            [[self syncer] setSyncerState:STMSyncerSendDataOnce fetchCompletionHandler:^(UIBackgroundFetchResult result) {
-                
-                if (!handlerCompleted) {
-
-                    handlerCompleted = YES;
-
-                    NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:1", NSStringFromSelector(_cmd)];
-                    [self tryCatchFetchResultHandler:handler
-                                          withResult:result
-                                          methodName:methodName];
-
-                }
-                
-            }];
-        }
-
-        meaningfulUserInfo = YES;
-        
-    }
-        
     if (!meaningfulUserInfo) {
         
         [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-        [[self syncer] setSyncerState:STMSyncerReceiveData fetchCompletionHandler:^(UIBackgroundFetchResult result) {
-            
+
+        [[self syncer] receiveDataWithFetchCompletionHandler:^(UIBackgroundFetchResult result) {
+
             if (!handlerCompleted) {
                 
                 handlerCompleted = YES;
-
+                
                 NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:2", NSStringFromSelector(_cmd)];
                 [self tryCatchFetchResultHandler:handler
                                       withResult:result
                                       methodName:methodName];
 
             }
-            
+
         }];
-        
+
     }
 
 }

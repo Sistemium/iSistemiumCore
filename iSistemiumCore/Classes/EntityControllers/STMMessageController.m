@@ -353,10 +353,6 @@
             [self markMessageAsRead:message];
         }
         
-        [self.document saveDocument:^(BOOL success) {
-//            if (success) self.syncer.syncerState = STMSyncerSendDataOnce;
-        }];
-
     }
     
 }

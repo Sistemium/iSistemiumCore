@@ -154,6 +154,9 @@
         
         NSSet *unmatchedOptions = [subscription.options keysOfEntriesPassingTest:^BOOL(NSString *optionName, id optionValue, BOOL *stop) {
             if ([optionValue isKindOfClass:NSNumber.class]) {
+//                if (![optionValue respondsToSelector:@selector(boolValue)] || ![options[optionName] respondsToSelector:@selector(boolValue)]) {
+//                    return [optionValue isEqual:options[optionName]];
+//                }
                 return [optionValue boolValue] != [(NSNumber *)options[optionName] boolValue];
             }
             return [optionValue isEqual:options[optionName]];

@@ -6,24 +6,19 @@
 //  Copyright (c) 2013 Maxim V. Grigoriev. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-#import <CoreLocation/CoreLocation.h>
+#import "STMCoreController.h"
 #import "STMSessionManagement.h"
-#import "STMCoreDataModel.h"
+#import "STMPersistingIntercepting.h"
 
-@interface STMCoreSettingsController : NSObject <STMSettingsController>
+#define STM_SETTING_NAME @"STMSetting"
 
-+ (STMCoreSettingsController *)initWithSettings:(NSDictionary *)startSettings;
+@interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
+
++ (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
-+ (NSDictionary *)settingWithName:(NSString *)name forGroup:(NSString *)group;
 
-- (NSDictionary *)defaultSettings;
-- (NSString *)normalizeValue:(NSString *)value forKey:(NSString *)key;
-- (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
-
-- (NSMutableDictionary *)currentSettingsForGroup:(NSString *)group;
+- (id)normalizeValue:(id)value forKey:(NSString *)key;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
 - (BOOL)isBool:(NSString *)value;
@@ -32,11 +27,7 @@
 
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;
 
-
-@property (nonatomic, strong) NSMutableDictionary *startSettings;
 @property (nonatomic, weak) id <STMSession> session;
-@property (nonatomic, strong) NSMutableArray *groupNames;
 @property (nonatomic, strong) NSArray *currentSettings;
-
 
 @end
