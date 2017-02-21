@@ -393,7 +393,7 @@
     NSError *error = nil;
     [self.persistenceDelegate mergeSync:NSStringFromClass([STMSetting class])
                              attributes:setting
-                                options:@{STMPersistingOptionLts : [STMFunctions stringFromNow]}
+                                options:@{STMPersistingOptionLtsNow}
                                   error:&error];
 
 }

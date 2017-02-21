@@ -43,12 +43,6 @@
 
         }
 
-        NSString *oldDbPath = [documentDirectory stringByAppendingPathComponent:fileName];
-        
-        if ([fm fileExistsAtPath:oldDbPath]) {
-            [fm removeItemAtPath:oldDbPath error:&error];
-        }
-
     }
     
     NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];

@@ -103,7 +103,12 @@
     return [self fakePersistingWithOptions:@{STMFakePersistingOptionInMemoryDB}];
 }
 
+
 - (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count {
+    return [self sampleDataOf:entityName count:count options:nil];
+}
+
+- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count options:(NSDictionary *)options {
     
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
     
@@ -114,13 +119,19 @@
         
         NSString *name = [NSString stringWithFormat:@"%@ at %@ - %@", entityName, now, @(i)];
         
-        [result addObject:@{
-                            @"ownerXid": self.ownerXid,
-                            @"name": name,
-                            @"text": name,
-                            @"type": @"debug",
-                            @"source": source
-                            }];
+        NSMutableDictionary *item = @{
+                                      @"ownerXid": self.ownerXid,
+                                      @"name": name,
+                                      @"text": name,
+                                      @"type": @"debug",
+                                      @"source": source
+                                      }.mutableCopy;
+        
+        if (options[@"generateId"]) {
+            item[STMPersistingKeyPrimary] = [STMFunctions uuidString];
+        }
+        
+        [result addObject:item.copy];
     }
     
     return result.copy;

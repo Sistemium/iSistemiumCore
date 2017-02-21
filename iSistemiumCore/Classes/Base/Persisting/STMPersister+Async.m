@@ -2,7 +2,7 @@
 //  STMPersister+Async.m
 //  iSisSales
 //
-//  Generated with HandlebarsGenerator on Thu, 09 Feb 2017 20:43:36 GMT
+//  Generated with HandlebarsGenerator
 //  Don't edit this file directly!
 //
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
@@ -21,9 +21,13 @@
 
         NSError *error;
         NSDictionary * result = [self findSync:entityName identifier:identifier options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -33,9 +37,13 @@
 
         NSError *error;
         NSArray * result = [self findAllSync:entityName predicate:predicate options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -45,9 +53,13 @@
 
         NSError *error;
         NSDictionary * result = [self mergeSync:entityName attributes:attributes options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -57,9 +69,13 @@
 
         NSError *error;
         NSArray * result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -69,9 +85,13 @@
 
         NSError *error;
         [self destroySync:entityName identifier:identifier options:options error:&error];
-        if (completionHandler) completionHandler(!error, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -81,9 +101,13 @@
 
         NSError *error;
         NSUInteger result = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 
@@ -93,9 +117,13 @@
 
         NSError *error;
         NSDictionary * result = [self updateSync:entityName attributes:attributes options:options error:&error];
-        if (completionHandler) completionHandler(!error, result, error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error, result, error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 

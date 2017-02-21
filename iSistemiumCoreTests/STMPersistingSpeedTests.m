@@ -121,6 +121,47 @@
     
 }
 
+
+- (void)testMergeAsyncSpeed{
+
+    NSString *entityName = @"STMLogMessage";
+    int numberOfLogs = 1000;
+    int numberOfExpectations = 10;
+    NSArray *data = [self sampleDataOf:entityName count:numberOfLogs options:@{@"generateId":@YES}];
+
+    STMPTStartedAt
+    
+    [self measureMetrics:[[self class] defaultPerformanceMetrics] automaticallyStartMeasuring:NO forBlock:^{
+        
+        [self startMeasuring];
+        
+        for (int i=0; i<numberOfExpectations; i++) {
+        
+            XCTestExpectation *expectation = [self expectationWithDescription:@"wait for async complete"];
+
+            [self.persister mergeManyAsync:entityName attributeArray:data options:@{STMPersistingOptionReturnSaved:@YES} completionHandler:^(BOOL success, NSArray *result, NSError *error) {
+                XCTAssertNil(error);
+                [expectation fulfill];
+                NSError *error2;
+                [self.persister findAllSync:entityName predicate:nil options:@{STMPersistingOptionPageSize:@(100)} error:&error2];
+                XCTAssertNil(error2);
+            }];
+            
+        }
+        
+        [self waitForExpectationsWithTimeout:numberOfExpectations handler:^(NSError * _Nullable error) {
+            [self stopMeasuring];
+            NSLog(@"Measure step");
+        }];
+        
+    }];
+    
+    NSLog(@"testMergeAsyncSpeed merged %lu items per second", @(10.0 * numberOfExpectations * numberOfLogs / STMPTSecondsAfterStartedAt).integerValue);
+    
+
+}
+
+
 - (void)testMergeSyncSpeed{
     
     NSString *entityName = @"STMLogMessage";

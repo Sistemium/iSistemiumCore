@@ -22,11 +22,6 @@
 
 @implementation STMPersister (CoreData)
 
-#pragma mark methods to remove from STMCoreObjectsController
-
-- (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
-    return [STMCoreObjectsController ownObjectKeysForEntityName:entityName];
-}
 
 #pragma mark - Modelling override
 
@@ -58,18 +53,18 @@
     NSArray *nameExplode = [name componentsSeparatedByString:@"."];
     NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:nameExplode[1]];
     
-    NSDictionary *serverDataModel = STMEntityController.stcEntities;
-    STMEntity *entityModel = serverDataModel[entityName];
+    NSDictionary *serverDataModel = [STMEntityController stcEntities];
+    NSDictionary *entityModel = serverDataModel[entityName];
     
     if (!entityModel) {
         NSLog(@"dataModel have no relationship's entity with name %@", entityName);
         return NO;
     }
     
-    NSString *roleOwner = entityModel.roleOwner;
+    NSString *roleOwner = entityModel[@"roleOwner"];
     NSString *roleOwnerEntityName = [STMFunctions addPrefixToEntityName:roleOwner];
-    NSString *roleName = entityModel.roleName;
-    NSDictionary *ownerRelationships = [STMCoreObjectsController ownObjectRelationshipsForEntityName:roleOwnerEntityName];
+    NSString *roleName = entityModel[@"roleName"];
+    NSDictionary *ownerRelationships = [self objectRelationshipsForEntityName:roleOwnerEntityName isToMany:nil];
     NSString *destinationEntityName = ownerRelationships[roleName];
     NSString *destination = [STMFunctions removePrefixFromEntityName:destinationEntityName];
     NSDictionary *properties = dictionary[@"properties"];
@@ -279,7 +274,7 @@
     }
     
     NSError *fetchError;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request
+    NSArray *result = [self.document.managedObjectContext executeFetchRequest:request
                                                                           error:&fetchError];
     
     if (result) {
@@ -371,7 +366,7 @@
     request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
     request.predicate = [NSPredicate predicateWithFormat:@"xid == %@", xidData];
     
-    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
+    NSArray *fetchResult = [self.document.managedObjectContext executeFetchRequest:request error:nil];
     
     if (fetchResult.firstObject) return fetchResult.firstObject;
     

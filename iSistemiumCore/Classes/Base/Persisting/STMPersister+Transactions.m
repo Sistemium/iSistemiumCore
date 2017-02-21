@@ -296,9 +296,15 @@
 @implementation STMPersister (Transactions)
 
 
-- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
+- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
  
     [self.fmdb.queue inDeferredTransaction:^(FMDatabase *db, BOOL *rollback) {
+        
+        if (db.hadError) {
+            [STMFunctions error:error withMessage:db.lastErrorMessage];
+            NSLog(@"execute error: %@", [*error localizedDescription]);
+            return;
+        }
         
         STMPersisterTransaction *transaction = [STMPersisterTransaction persistingTransactionWithFMDatabase:db stmFMDB:self.fmdb persister:self];
         
@@ -320,7 +326,7 @@
     
     __block NSArray *result;
     
-    [self.fmdb.pool inDatabase:^(FMDatabase *db) {
+    [self.fmdb.queue inDatabase:^(FMDatabase *db) {
         
         STMPersisterTransaction *transaction = [STMPersisterTransaction persistingTransactionWithFMDatabase:db stmFMDB:self.fmdb persister:self];
         

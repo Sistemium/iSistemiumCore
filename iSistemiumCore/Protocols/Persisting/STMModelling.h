@@ -51,6 +51,7 @@
                                       identifier:(NSString *)identifier;
 
 - (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object;
+- (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object withRelations:(BOOL)withRelations;
 - (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object;

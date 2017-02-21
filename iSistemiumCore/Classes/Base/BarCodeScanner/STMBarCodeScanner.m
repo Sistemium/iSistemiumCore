@@ -151,7 +151,7 @@
     
     if (!_barCodeTypesRC) {
         
-        NSManagedObjectContext *context = [[STMCoreSessionManager sharedManager].currentSession document].managedObjectContext;
+        NSManagedObjectContext *context = [STMCoreSessionManager sharedManager].currentSession.document.managedObjectContext;
         
         if (context) {
             

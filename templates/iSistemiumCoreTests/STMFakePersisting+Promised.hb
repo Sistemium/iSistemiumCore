@@ -2,7 +2,7 @@
 //  {{file.className}}+{{file.categoryName}}.m
 //  iSisSales
 //
-//  Generated with HandlebarsGenerator on {{meta.date}}
+//  Generated with HandlebarsGenerator
 //  Don't edit this file directly!
 //
 //  Copyright © 2017 Sistemium UAB. All rights reserved.

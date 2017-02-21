@@ -2,7 +2,7 @@
 //  STMFakePersisting+Async.m
 //  iSisSales
 //
-//  Generated with HandlebarsGenerator on Thu, 09 Feb 2017 19:04:13 GMT
+//  Generated with HandlebarsGenerator
 //  Don't edit this file directly!
 //
 //  Copyright © 2017 Sistemium UAB. All rights reserved.

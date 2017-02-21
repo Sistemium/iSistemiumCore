@@ -96,9 +96,9 @@ static void *persistenceFantomsDelegateVar;
     
     for (NSString *entityName in entityNamesWithResolveFantoms) {
         
-        STMEntity *entity = [STMEntityController stcEntities][entityName];
+        NSDictionary *entity = [STMEntityController stcEntities][entityName];
         
-        if (!entity.url) {
+        if (![STMFunctions isNotNull:entity[@"url"]]) {
             
             NSLog(@"have no url for entity name: %@, fantoms will not to be resolved", entityName);
             continue;

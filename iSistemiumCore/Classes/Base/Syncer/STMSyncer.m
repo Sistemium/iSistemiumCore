@@ -264,6 +264,7 @@
         [[self.session logger] saveLogMessageWithText:@"Syncer has no socketURL"
                                               numType:STMLogMessageTypeError];
         
+        // FIXME: spinner screen remains 
         return [self.authController logout];
         
     }
@@ -376,7 +377,7 @@
     
     NSString *stcEntityName = NSStringFromClass([STMEntity class]);
     
-    STMEntity *entity = stcEntities[stcEntityName];
+    NSDictionary *entity = stcEntities[stcEntityName];
 
     if (!entity) {
         
@@ -386,13 +387,23 @@
                                      @"url": self.entityResource
                                      };
         
-        [self.persistenceDelegate mergeSync:stcEntityName attributes:attributes options:nil error:&error];
+        [self.persistenceDelegate mergeSync:stcEntityName
+                                 attributes:attributes
+                                    options:@{STMPersistingOptionLtsNow}
+                                      error:&error];
         
-    } else if (![entity.url isEqualToString:self.entityResource]) {
+    } else if ([entity[@"url"] isKindOfClass:[NSString class]] && ![entity[@"url"] isEqualToString:self.entityResource]) {
         
-        NSLog(@"change STMEntity url from %@ to %@", entity.url, self.entityResource);
+        NSLog(@"change STMEntity url from %@ to %@", entity[@"url"], self.entityResource);
         
-        entity.url = self.entityResource;
+        NSMutableDictionary *attributes = entity.mutableCopy;
+        attributes[@"url"] = self.entityResource;
+        
+        NSError *error = nil;
+        [self.persistenceDelegate mergeSync:stcEntityName
+                                 attributes:attributes
+                                    options:@{STMPersistingOptionLtsNow}
+                                      error:&error];
         
     }
     
@@ -786,8 +797,8 @@
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED];
 
-    [[self.session logger] saveLogMessageWithText:CurrentMethodName
-                                          numType:STMLogMessageTypeInfo];
+//    [[self.session logger] saveLogMessageWithText:CurrentMethodName
+//                                          numType:STMLogMessageTypeInfo];
 
 }
 

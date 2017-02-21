@@ -24,9 +24,7 @@
     NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister fileName:fmdbFileName];
-    persister.document = [STMDocument documentWithUID:uid
-                                               iSisDB:iSisDB
-                                        dataModelName:modelName];
+//    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
     if (completionHandler) completionHandler(YES);
@@ -119,7 +117,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     
@@ -157,7 +155,7 @@
         
         return YES;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     
@@ -190,7 +188,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     return count;
     
@@ -206,7 +204,7 @@
         
         return !*error;
         
-    }];
+    } error:error];
     
     if (*error) return nil;
     

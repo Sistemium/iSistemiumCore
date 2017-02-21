@@ -32,7 +32,7 @@
         
     } else {
         
-//        STMDocument *document = [[[STMCoreSessionManager sharedManager] currentSession] document];
+//        STMDocument *document = [[STMCoreSessionManager sharedManager] currentSession].document;
 //        
 //        CLS_LOG(@"entityForName method — context is nil");
 //        CLS_LOG(@"document %@", document);

@@ -8,7 +8,6 @@
 
 #import "STMModeller+Private.h"
 #import "STMFunctions.h"
-#import "STMCoreObjectsController.h"
 
 @implementation STMModeller (Private)
 
@@ -149,7 +148,7 @@
     if (object.xid) propertiesDictionary[@"id"] = [STMFunctions UUIDStringFromUUIDData:(NSData *)object.xid];
     if (object.deviceTs) propertiesDictionary[@"ts"] = [STMFunctions stringFromDate:(NSDate *)object.deviceTs];
     
-    NSArray *ownKeys = [STMCoreObjectsController ownObjectKeysForEntityName:object.entity.name].allObjects;
+    NSArray *ownKeys = [self ownObjectKeysForEntityName:object.entity.name].allObjects;
     NSArray *ownRelationships = [self toOneRelationshipsForEntityName:object.entity.name].allKeys;
     
     ownKeys = [ownKeys arrayByAddingObjectsFromArray:@[STMPersistingOptionLts]];
@@ -158,6 +157,27 @@
     [propertiesDictionary addEntriesFromDictionary:[object relationshipXidsForKeys:ownRelationships withNulls:withNulls]];
     
     return propertiesDictionary.copy;
+}
+
+- (NSArray *)coreEntityKeys {
+    
+    return self.entitiesByName[@"STMDatum"].propertiesByName.allKeys;
+    
+}
+
+- (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
+    
+    if (!entityName) {
+        return nil;
+    }
+    
+    NSEntityDescription *objectEntity = self.entitiesByName[entityName];
+    
+    NSMutableSet *objectKeys = [NSMutableSet setWithArray:objectEntity.attributesByName.allKeys];
+    [objectKeys minusSet:[NSSet setWithArray:[self coreEntityKeys]]];
+
+    return objectKeys;
+    
 }
 
 @end

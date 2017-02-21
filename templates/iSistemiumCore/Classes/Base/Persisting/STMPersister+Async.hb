@@ -2,7 +2,7 @@
 //  {{file.className}}+{{file.categoryName}}.m
 //  iSisSales
 //
-//  Generated with HandlebarsGenerator on {{meta.date}}
+//  Generated with HandlebarsGenerator
 //  Don't edit this file directly!
 //
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
@@ -22,9 +22,13 @@
 
         NSError *error;
         {{#if noResultCallback}}{{else}}{{resultType}} result = {{/if}}[self {{methodName}}Sync:entityName {{parameterName}}:{{parameterName}} options:options error:&error];
-        if (completionHandler) completionHandler(!error,{{#if noResultCallback}}{{else}} result,{{/if}} error);
+        if (completionHandler) {
+            [[NSBlockOperation blockOperationWithBlock: ^{
+                completionHandler(!error,{{#if noResultCallback}}{{else}} result,{{/if}} error);
+            }] start];
+        }
 
-   });
+    });
 
 }
 {{/each}}
