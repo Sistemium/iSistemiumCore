@@ -365,7 +365,7 @@
         
         NSTimeInterval delayInterval = timeRemaining >= 0 ? timeRemaining : 0;
         
-        logMessage = [NSString stringWithFormat:@"socket will be closed in %@ sec due to background condition", @(timeRemaining)];
+        logMessage = [NSString stringWithFormat:@"socket will be closed in %@ sec (%@) due to background condition", @(delayInterval), [NSDate dateWithTimeIntervalSinceNow:delayInterval]];
         [logger saveLogMessageWithText:logMessage
                                numType:STMLogMessageTypeInfo];
 
