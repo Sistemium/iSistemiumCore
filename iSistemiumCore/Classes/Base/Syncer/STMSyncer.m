@@ -201,7 +201,7 @@
 - (void)checkAppState {
     
     if (!self.isUsingNetwork && [UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-        [self closeSocketInBackground];
+//        [self closeSocketInBackground];
     }
     
 }
