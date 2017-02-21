@@ -147,6 +147,8 @@
         
         NSSet *keys = [[self persistenceDelegate] ownObjectKeysForEntityName:entityName];
         
+        BOOL haveUpdates = NO;
+        
         for (NSString *key in keys) {
             
             SEL selector = NSSelectorFromString(key);
@@ -165,6 +167,7 @@
 //                    NSLog(@"value %@", value);
                     
                     clientData[key] = value;
+                    haveUpdates = YES;
                     
                 }
                 
@@ -172,10 +175,14 @@
             
         }
         
-        [[self persistenceDelegate] mergeAsync:entityName
-                                    attributes:clientData
-                                       options:nil
-                             completionHandler:nil];
+        if (haveUpdates) {
+
+            [[self persistenceDelegate] mergeAsync:entityName
+                                        attributes:clientData
+                                           options:nil
+                                 completionHandler:nil];
+
+        }
 
     }
     
