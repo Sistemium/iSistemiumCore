@@ -576,6 +576,19 @@
     
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
 
+        id errorHeader = headers[@"error"];
+        
+        if ([errorHeader respondsToSelector:@selector(integerValue)]) {
+            switch ([errorHeader integerValue]) {
+                case 404:
+                case 403:
+                    success = NO;
+                    error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                default:
+                    break;
+            }
+        }
+        
         [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:success attributes:result error:error];
         
     }];
