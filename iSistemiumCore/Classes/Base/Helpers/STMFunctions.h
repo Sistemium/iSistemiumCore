@@ -140,6 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)isNotNullAndTrue:(id)value;
 + (BOOL)isNotNull:(id)value;
++ (BOOL)isNullBoth:(id)value1 and:(id)value2;
+
 
 NS_ASSUME_NONNULL_END
 
