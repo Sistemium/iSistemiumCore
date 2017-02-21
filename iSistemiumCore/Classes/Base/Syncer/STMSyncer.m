@@ -674,9 +674,11 @@
 - (void)dataDownloadingFinished {
     
     if (self.needRepeatDownload) {
+        
         NSLog(@"dataDownloadingFinished and needRepeatDownload");
         self.needRepeatDownload = NO;
         return [self receiveData];
+        
     }
     
     NSLogMethodName;

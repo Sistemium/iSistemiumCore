@@ -145,6 +145,8 @@
 - (void)syncerReceiveFinished {
     
     [self updateSyncInfo];
+    [self hideProgressBar];
+
     [self performSelector:@selector(hideNumberOfObjects)
                withObject:nil
                afterDelay:2];
@@ -172,12 +174,15 @@
 - (void)defantomizingProgressBarStart:(NSNotification *)notification {
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        
         [self setColorForSyncImageView];
 
         self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
         [UIApplication sharedApplication].idleTimerDisabled = YES;
+        
         self.progressBar.hidden = NO;
         self.progressBar.progress = 0.0;
+        
     });
     
 }

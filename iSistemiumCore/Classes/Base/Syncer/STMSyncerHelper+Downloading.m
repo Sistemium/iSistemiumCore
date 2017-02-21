@@ -59,7 +59,7 @@
             
             if ([STMEntityController entityWithName:@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
             
-            [STMEntityController.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
+            [[STMEntityController stcEntities] enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
                 if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
             }];
             
