@@ -117,6 +117,7 @@
 }
 
 - (void)testObserveLtsCoreData {
+    if (!self.realPersister.document) return;
     if (self.fakePersistingOptions) return;
     [self observeLtsTestStorageType:STMStorageTypeCoreData];
 }
