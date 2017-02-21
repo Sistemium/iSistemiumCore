@@ -27,6 +27,15 @@
 
 #import "STMUserDefaults.h"
 
+
+@interface STMCoreAppDelegate()
+
+@property (nonatomic, strong) NSMutableArray *fetchCompletionHandlers;
+
+
+@end
+
+
 @implementation STMCoreAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -264,6 +273,8 @@
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     
+    [self.fetchCompletionHandlers addObject:completionHandler];
+
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = @"applicationPerformFetchWithCompletionHandler";
@@ -299,6 +310,8 @@
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
     
+    [self.fetchCompletionHandlers addObject:handler];
+
     STMLogger *logger = [STMLogger sharedLogger];
     
     NSString *logMessage = [NSString stringWithFormat:@"application didReceiveRemoteNotification userInfo: %@", userInfo];
@@ -569,6 +582,15 @@
 
 - (STMSyncer *)syncer {
     return (STMSyncer *)[self sessionManager].currentSession.syncer;
+}
+
+- (NSMutableArray *)fetchCompletionHandlers {
+    
+    if (!_fetchCompletionHandlers) {
+        _fetchCompletionHandlers = @[].mutableCopy;
+    }
+    return _fetchCompletionHandlers;
+    
 }
 
 
