@@ -18,16 +18,12 @@
 
 + (NSArray *)coreEntityKeys;
 
-
 + (void)dataLoadingFinished;
 
-+ (STMDatum *)newObjectForEntityName:(NSString *)entityName
-                            isFantom:(BOOL)isFantom;
++ (STMDatum *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom;
 
 + (NSDictionary *)objectForIdentifier:(NSString *)identifier;
 + (NSDictionary *)objectForIdentifier:(NSString *)identifier entityName:(NSString**)name;
-
-+ (STMDatum *)newObjectForEntityName:(NSString *)entityName;
 
 + (void)logTotalNumberOfObjectsInStorages;
 + (BOOL)isWaitingToSyncForObject:(NSManagedObject *)object;

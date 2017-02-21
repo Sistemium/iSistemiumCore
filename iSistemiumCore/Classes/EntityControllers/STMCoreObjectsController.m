@@ -28,74 +28,13 @@
 
 
 @interface STMCoreObjectsController()
-
-@property (nonatomic, strong) NSMutableDictionary *entitiesOwnKeys;
-@property (nonatomic, strong) NSMutableDictionary *entitiesOwnRelationships;
-@property (nonatomic, strong) NSMutableDictionary *entitiesToOneRelationships;
-@property (nonatomic, strong) NSMutableDictionary *entitiesToManyRelationships;
 @property (nonatomic, strong) NSArray *coreEntityKeys;
-@property (nonatomic, strong) NSArray *coreEntityRelationships;
 @property (nonatomic) BOOL isInFlushingProcess;
 
 @end
 
 
 @implementation STMCoreObjectsController
-
-
-- (NSMutableDictionary *)entitiesOwnKeys {
-    
-    if (!_entitiesOwnKeys) {
-        _entitiesOwnKeys = [@{} mutableCopy];
-    }
-    return _entitiesOwnKeys;
-    
-}
-
-- (NSMutableDictionary *)entitiesOwnRelationships {
-    
-    if (!_entitiesOwnRelationships) {
-        _entitiesOwnRelationships = [@{} mutableCopy];
-    }
-    return _entitiesOwnRelationships;
-    
-}
-
-- (NSMutableDictionary *)entitiesToOneRelationships {
-    
-    if (!_entitiesToOneRelationships) {
-        _entitiesToOneRelationships = [@{} mutableCopy];
-    }
-    return _entitiesToOneRelationships;
-    
-}
-
-- (NSMutableDictionary *)entitiesToManyRelationships {
-    
-    if (!_entitiesToManyRelationships) {
-        _entitiesToManyRelationships = [@{} mutableCopy];
-    }
-    return _entitiesToManyRelationships;
-    
-}
-
-- (instancetype)init {
-    
-    self = [super init];
-    if (self) {
-        [self addObservers];
-    }
-    return self;
-    
-}
-
-- (void)addObservers {
-
-}
-
-- (void)removeObservers {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
 
 #pragma mark - singleton
 
@@ -112,28 +51,6 @@
     
 }
 
-
-#pragma mark - recieved objects management
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    
-    [object removeObserver:self forKeyPath:keyPath];
-    
-    if ([object isKindOfClass:[NSManagedObject class]]) {
-        
-        id oldValue = [change valueForKey:NSKeyValueChangeOldKey];
-        
-        if ([oldValue isKindOfClass:[NSDate class]]) {
-            
-            [(NSManagedObject *)object setValue:oldValue forKey:keyPath];
-            
-        } else {
-//            CLS_LOG(@"observeValueForKeyPath oldValue class %@ != NSDate / did crashed here earlier", [oldValue class]);
-        }
-        
-    }
-
-}
 
 #pragma mark - info methods
 
@@ -185,16 +102,8 @@
 }
 
 
-+ (STMDatum *)newObjectForEntityName:(NSString *)entityName {
-    return [self newObjectForEntityName:entityName andXid:nil isFantom:YES];
-}
-
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName isFantom:(BOOL)isFantom {
     return [self newObjectForEntityName:entityName andXid:nil isFantom:isFantom];
-}
-
-+ (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData {
-    return [self newObjectForEntityName:entityName andXid:xidData isFantom:YES];
 }
 
 + (STMDatum *)newObjectForEntityName:(NSString *)entityName andXid:(NSData *)xidData isFantom:(BOOL)isFantom {
