@@ -127,7 +127,7 @@
     NSString *entityName = @"STMLogMessage";
     int numberOfLogs = 1000;
     int numberOfExpectations = 10;
-    NSArray *data = [self sampleDataOf:entityName count:numberOfLogs];
+    NSArray *data = [self sampleDataOf:entityName count:numberOfLogs options:@{@"generateId":@YES}];
 
     STMPTStartedAt
     
@@ -144,7 +144,7 @@
                 [expectation fulfill];
                 NSError *error2;
                 [self.persister findAllSync:entityName predicate:nil options:@{STMPersistingOptionPageSize:@(100)} error:&error2];
-                XCTAssertNil(error);
+                XCTAssertNil(error2);
             }];
             
         }
