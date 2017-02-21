@@ -106,6 +106,8 @@
 
 - (void)defantomize:(NSDictionary *)fantomDic success:(BOOL)success entityName:(NSString *)entityName result:(NSDictionary *)result error:(NSError *)error {
     
+    [self.defantomizing.queued removeObject:fantomDic];
+    
     if (!success) {
         return [self defantomizingObject:fantomDic error:error.localizedDescription];
     }
