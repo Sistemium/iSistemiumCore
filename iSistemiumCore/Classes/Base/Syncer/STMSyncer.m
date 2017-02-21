@@ -8,6 +8,8 @@
 
 #import "STMSyncer.h"
 
+#import "STMCoreAppDelegate.h"
+
 #import "STMEntityController.h"
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
@@ -30,9 +32,6 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isDefantomizing;
 @property (nonatomic) BOOL isUsingNetwork;
-
-@property (nonatomic, strong) void (^fetchCompletionHandler) (UIBackgroundFetchResult result);
-@property (nonatomic) UIBackgroundFetchResult fetchResult;
 
 @property (nonatomic) BOOL needRepeatDownload;
 
@@ -425,14 +424,6 @@
     if (self.isRunning) [self.socketTransport checkSocket];
 }
 
-- (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    [self.socketTransport checkSocket];
-
-}
-
 - (void)closeSocketInBackground {
     
     [STMSyncer cancelPreviousPerformRequestsWithTarget:self
@@ -644,14 +635,6 @@
     
 }
 
-- (void)receiveDataWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult))handler {
-    
-    self.fetchCompletionHandler = handler;
-    self.fetchResult = UIBackgroundFetchResultNewData;
-    [self receiveData];
-
-}
-
 - (void)receiveData {
     
     if (!self.isRunning) return;
@@ -696,12 +679,9 @@
 
     [self startDefantomization];
 
-    if (self.fetchCompletionHandler) {
-        
-        self.fetchCompletionHandler(self.fetchResult);
-        self.fetchCompletionHandler = nil;
-        
-    }
+    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)[UIApplication sharedApplication].delegate;
+    
+    [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
 
 }
 
