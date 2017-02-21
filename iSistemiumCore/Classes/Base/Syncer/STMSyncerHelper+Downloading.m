@@ -16,10 +16,15 @@
 #import "STMLogger.h"
 #import "STMFunctions.h"
 
+// TODO: this could depend on device
+#define STM_DOWNLOADING_IN_PROGRESS_MAX 4
+
 @interface STMDataDownloadingState ()
 
-@property (nonatomic, strong) NSMutableArray *entitySyncNames;
+@property (nonatomic, strong) NSMutableArray <NSString *> *entitySyncNames;
 @property (nonatomic, strong) NSMutableArray <NSString *> *pendingEntities;
+@property (nonatomic, strong) NSMutableSet <NSString *> *inProgressEntities;
+@property (nonatomic) NSUInteger inProgressMax;
 
 @end
 
@@ -31,15 +36,6 @@
 @implementation STMSyncerHelper (Downloading)
 
 @dynamic dataDownloadingOwner;
-
-#pragma mark - variables
-
-
-- (NSDictionary *)stcEntities {
-    
-    return [STMEntityController stcEntities];
-    
-}
 
 #pragma mark - STMDataDownloading
 
@@ -55,13 +51,15 @@
         
         STMDataDownloadingState *downloadingState = [[STMDataDownloadingState alloc] init];
 
+        downloadingState.inProgressMax = STM_DOWNLOADING_IN_PROGRESS_MAX;
+        
         if (!entitiesNames) {
             
             NSMutableOrderedSet *entitiesNames = [NSMutableOrderedSet orderedSetWithObject:@"STMEntity"];
             
-            if (self.stcEntities[@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
+            if ([STMEntityController entityWithName:@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
             
-            [self.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
+            [STMEntityController.stcEntities enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
                 if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
             }];
             
@@ -81,8 +79,7 @@
 
         NSLog(@"will download %@ entities", @(downloadingState.entitySyncNames.count));
         
-        [self popPendingEntity];
-        [self popPendingEntity];
+        downloadingState.inProgressEntities = [NSMutableSet set];
         [self popPendingEntity];
         
         return downloadingState;
@@ -92,8 +89,21 @@
 
 
 - (void)popPendingEntity {
+    
     NSString *nextEntity = [STMFunctions popArray:self.downloadingState.pendingEntities];
-    if (nextEntity) [self tryDownloadEntityName:nextEntity];
+    
+    if (!nextEntity) return;
+        
+    @synchronized (self) {
+        [self.downloadingState.inProgressEntities addObject:nextEntity];
+    }
+    
+    [self tryDownloadEntityName:nextEntity];
+    
+    if (self.downloadingState.inProgressEntities.count < self.downloadingState.inProgressMax) {
+        [self popPendingEntity];
+    }
+    
 }
 
 - (void)stopDownloading {
@@ -150,9 +160,7 @@
 
     NSLog(@"tryDownloadEntityName: %@", entityName);
     
-    NSDictionary *entity = self.stcEntities[entityName];
-    
-    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entity[@"name"]][@"eTag"];
+    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entityName][@"eTag"];
     
     if (!lastKnownEtag || [lastKnownEtag isEqual:[NSNull null]]) lastKnownEtag = @"*";
                            
@@ -170,19 +178,20 @@
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
     }
     
+    STMDataDownloadingState *state = self.downloadingState;
+    
     @synchronized (self) {
         
-        [self.downloadingState.entitySyncNames removeObject:entityName];
+        [state.entitySyncNames removeObject:entityName];
+        [state.inProgressEntities removeObject:entityName];
         
-        NSUInteger remainCount = self.downloadingState.entitySyncNames.count;
-        NSLog(@"remain %@ entities to receive", @(remainCount));
+        NSUInteger remainCount = state.entitySyncNames.count;
+        NSLog(@"remain %@ entities to receive with %@ in progress", @(remainCount), @(state.inProgressEntities.count));
         
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
                                     userInfo:@{@"countdownValue": @(remainCount)}];
         
-        if (self.downloadingState && self.downloadingState.entitySyncNames.count) {
-            return [self popPendingEntity];
-        }
+        if (state && remainCount) return [self popPendingEntity];
         
     }
     
@@ -220,9 +229,7 @@
         
         NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
         
-        NSDictionary *entity = self.stcEntities[entityName];
-        
-        [STMClientEntityController clientEntityWithName:entity[@"name"] setETag:offset];
+        [STMClientEntityController clientEntityWithName:entityName setETag:offset];
         
         [self doneDownloadingEntityName:entityName];
         
