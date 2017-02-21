@@ -244,27 +244,17 @@
     if (self.isRunning) return;
         
     self.settings = nil;
-    
-    BOOL success = [self checkStcEntities];
         
-    if (!success) {
-        
-        return [[self.session logger] saveLogMessageWithText:@"checkStcEntities fail"
-                                                   numType:STMLogMessageTypeError];
-        
+    if (![self checkStcEntities]) {
+        return [self.session.logger saveLogMessageWithText:@"checkStcEntities fail" numType:STMLogMessageTypeError];
     }
     
     if (!self.socketUrlString) {
         
+        [self.session.logger saveLogMessageWithText:self.settings.description numType:STMLogMessageTypeInfo];
+        [self.session.logger saveLogMessageWithText:@"Syncer has no socketURL" numType:STMLogMessageTypeError];
         
-        [[self.session logger] saveLogMessageWithText:self.settings.description
-                                              numType:STMLogMessageTypeInfo];
-        
-        [[self.session logger] saveLogMessageWithText:@"Syncer has no socketURL"
-                                              numType:STMLogMessageTypeError];
-        
-        // FIXME: spinner screen remains 
-        return [self.authController logout];
+        return;
         
     }
     
@@ -279,8 +269,7 @@
     self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self];
 
     if (!self.socketTransport) {
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
-        return [self.authController logout];
+        return [self.session.logger saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
     }
     
     self.isRunning = YES;
