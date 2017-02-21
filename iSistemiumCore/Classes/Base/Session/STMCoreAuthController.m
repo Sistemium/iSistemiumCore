@@ -601,18 +601,9 @@
                          startSettings:startSettings
                defaultSettingsFileName:@"settings"];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(sessionNotAuthorized)
-                                                 name:@"notAuthorized"
-                                               object:sessionManager.currentSession.syncer];
 
 }
 
-- (void)sessionNotAuthorized {
-    
-    [self logout];
-    
-}
 
 #pragma mark - STMRequestAuthenticatable
 
