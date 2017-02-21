@@ -65,8 +65,8 @@
     return [self appDelegate].deviceTokenError;
 }
 
-+ (NSDate *)lastAuth {
-    return [STMCoreAuthController authController].lastAuth;
++ (NSString *)lastAuth {
+    return [STMFunctions stringFromDate:[STMCoreAuthController authController].lastAuth];
 }
 
 + (NSString *)locationServiceStatus {
