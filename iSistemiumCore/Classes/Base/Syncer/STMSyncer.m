@@ -584,6 +584,7 @@
                 case 403:
                     success = NO;
                     error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                    break;
                 default:
                     break;
             }
