@@ -158,15 +158,17 @@
 // next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
                 IMP imp = [self methodForSelector:selector];
                 id (*func)(id, SEL) = (void *)imp;
-                id value = func(self, selector);
+                id currentValue = func(self, selector);
                 
-                if (![value isEqual:clientData[key]]) {
+                id storedValue = clientData[key];
+                
+                if (![currentValue isEqual:storedValue]) {
 
-//                    NSLog(@"%@ was changed", key);
-//                    NSLog(@"client value %@", clientData[key]);
-//                    NSLog(@"value %@", value);
+                    NSLog(@"%@ was changed", key);
+                    NSLog(@"client value %@", storedValue);
+                    NSLog(@"new value %@", currentValue);
                     
-                    clientData[key] = value;
+                    clientData[key] = currentValue;
                     haveUpdates = YES;
                     
                 }
