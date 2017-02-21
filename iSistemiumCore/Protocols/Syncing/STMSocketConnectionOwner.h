@@ -11,6 +11,8 @@
 @protocol STMSocketConnectionOwner <NSObject>
 
 - (NSTimeInterval)timeout;
+
+- (void)socketAuthorizationError:(NSError *)error;
 - (void)socketReceiveAuthorization;
 - (void)socketWillClosed;
 - (void)socketLostConnection;

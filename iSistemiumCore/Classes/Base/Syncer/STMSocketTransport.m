@@ -509,12 +509,9 @@
 
 - (void)notAuthorizedWithError:(NSString *)errorString {
     
-    NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ not authorized\n%@", self.socket, self.socket.sid, errorString];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeWarning];
-    
-//    [self sharedInstance].isAuthorized = NO;
-    [[STMCoreAuthController authController] logout];
+    NSString *logMessage = [NSString stringWithFormat:@"socket connection %@ not authorized: %@", self.socket.sid, errorString];
+    self.isAuthorized = NO;
+    [self.owner socketAuthorizationError:[STMFunctions errorWithMessage:logMessage]];
     
 }
 

@@ -317,6 +317,12 @@
 
 #pragma mark - STMSocketConnectionOwner protocol
 
+
+- (void)socketAuthorizationError:(NSError *)error {
+
+    
+}
+
 - (void)socketReceiveAuthorization {
     
     NSLogMethodName;
