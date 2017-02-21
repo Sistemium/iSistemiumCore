@@ -218,16 +218,6 @@
     
 }
 
-- (void)closeSocketInBackground {
-    
-    STMLogger *logger = [STMLogger sharedLogger];
-    
-    [logger saveLogMessageWithText:@"close socket in background" numType:STMLogMessageTypeInfo];
-    
-    [self closeSocket];
-    
-}
-
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
     
     [self socketSendEvent:event withValue:value completionHandler:nil];

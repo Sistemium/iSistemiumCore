@@ -29,7 +29,6 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 @property (nonatomic) BOOL isReady;
 
 - (void)closeSocket;
-- (void)closeSocketInBackground;
 - (void)checkSocket;
 
 - (void)socketSendEvent:(STMSocketEvent)event

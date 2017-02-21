@@ -430,7 +430,9 @@
                                               selector:@selector(closeSocketInBackground)
                                                 object:nil];
 
-    [self.socketTransport closeSocketInBackground];
+    [self.session.logger saveLogMessageWithText:@"close socket in background" numType:STMLogMessageTypeInfo];
+
+    [self.socketTransport closeSocket];
     
 }
 
