@@ -300,10 +300,10 @@
     
     STMSyncer *syncer = [self syncer];
     
-    if (syncer.transportIsReady) {
-        [syncer receiveDataWithFetchCompletionHandler:completionHandler];
+    if (syncer.transportIsReady) {        
+        [syncer receiveData];
     } else {
-        [syncer checkSocketForBackgroundFetchWithFetchCompletionHandler:completionHandler];
+        [syncer checkSocket];
     }
     
 }

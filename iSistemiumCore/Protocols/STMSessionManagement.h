@@ -59,7 +59,6 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 - (void)sendData; // only used for checkClientData — may be do it some other way
 - (void)receiveData;
-- (void)receiveDataWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
 - (void)sendEventViaSocket:(STMSocketEvent)event withValue:(id)value;
 

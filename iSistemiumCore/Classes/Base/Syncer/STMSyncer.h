@@ -29,7 +29,6 @@
 
 
 - (void)checkSocket;
-- (void)checkSocketForBackgroundFetchWithFetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 
 - (void)closeSocketInBackground;
 
