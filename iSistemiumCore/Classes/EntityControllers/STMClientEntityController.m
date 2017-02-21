@@ -25,17 +25,16 @@
     
     NSError *error = nil;
     
-//    NSDictionary *result =
     [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
                                attributes:clientEntity
                                   options:nil
                                     error:&error];
     
-//    NSLog(@"clientEntity set eTag %@ result: %@", eTag, result);
-    
 }
 
 + (NSDictionary *)clientEntityWithName:(NSString *)name {
+    
+    name = [STMFunctions removePrefixFromEntityName:name];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     

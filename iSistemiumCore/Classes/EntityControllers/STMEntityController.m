@@ -97,15 +97,6 @@
                                                               options:options
                                                                 error:&error];
 
-//        result = [STMFunctions mapArray:result withBlock:^id _Nonnull(id  _Nonnull value) {
-//            
-//            STMEntity *entity = (STMEntity *)[[self.class persistenceDelegate] newObjectForEntityName:STM_ENTITY_NAME];
-//            [[self.class persistenceDelegate] setObjectData:value toObject:entity];
-//            
-//            return entity;
-//            
-//        }];
-        
         _entitiesArray = (result.count > 0) ? result : nil;
 
     }
@@ -222,6 +213,8 @@
 }
 
 - (NSDictionary *)entityWithName:(NSString *)name error:(NSError **)error {
+    
+    name = [STMFunctions removePrefixFromEntityName:name];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
     NSDictionary *entity = [self.persistenceDelegate findAllSync:NSStringFromClass([STMEntity class])
