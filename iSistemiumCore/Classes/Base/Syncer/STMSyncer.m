@@ -566,30 +566,18 @@
 
 #pragma mark STMDefantomizingOwner
 
-- (void)defantomizeObject:(NSDictionary *)fantomDic {
-    
+- (void)defantomizeEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+
     if (!self.isDefantomizing) {
         return;
     }
     
-    NSString *entityName = fantomDic[@"entityName"];
-    NSString *fantomId = fantomDic[@"id"];
-    
     entityName = [STMFunctions addPrefixToEntityName:entityName];
     
-    __block BOOL blockIsComplete = NO;
-    
-    [self.socketTransport findAsync:entityName identifier:fantomId options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+    [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
 
-        if (blockIsComplete) {
-            NSLog(@"completionHandler for %@ already complete", entityName);
-            return;
-        }
+        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:success attributes:result error:error];
         
-        blockIsComplete = YES;
-
-        [self.defantomizingDelegate defantomize:fantomDic success:success entityName:entityName result:result error:error];
-                
     }];
 
 }
