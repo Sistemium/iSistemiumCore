@@ -56,9 +56,9 @@
 
 - (void)startDefantomization {
 
-    STMSyncerHelperDefantomizing *defantomizing = [[STMSyncerHelperDefantomizing alloc] init];;
-
-    self.defantomizing = defantomizing;
+    if (!self.defantomizing) {
+        self.defantomizing = [[STMSyncerHelperDefantomizing alloc] init];
+    }
     
     for (NSString *entityName in [STMEntityController entityNamesWithResolveFantoms]) {
         
@@ -77,21 +77,24 @@
         NSLog(@"%@ %@ fantom(s)", @(results.count), entityName);
         
         for (NSDictionary *fantomId in results) {
-            [defantomizing.queued addObject:@{@"entityName":entityName, @"id":fantomId}];
+            
+            [self.defantomizing.queued addObject:@{@"entityName"    : entityName,
+                                                   @"id"            : fantomId}];
+            
         }
      
     }
     
-    defantomizing.fantomsCount = defantomizing.queued.count;
-    if (!defantomizing.fantomsCount) return [self defantomizingFinished];
+    self.defantomizing.fantomsCount = self.defantomizing.queued.count;
+    if (!self.defantomizing.fantomsCount) return [self defantomizingFinished];
         
     NSLog(@"DEFANTOMIZING_START");
     
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_START
-                                userInfo:@{@"fantomsCount": @(defantomizing.fantomsCount)}];
+                                userInfo:@{@"fantomsCount": @(self.defantomizing.fantomsCount)}];
     
     
-    for (NSDictionary *fantomDic in defantomizing.queued) {
+    for (NSDictionary *fantomDic in self.defantomizing.queued) {
         [self.defantomizingOwner defantomizeObject:fantomDic];
     }
     
