@@ -974,13 +974,8 @@
     
     if (self.session.status == STMSessionRunning) {
         [self initAllTabs];
+        [self removeSpinner];
     }
-    
-}
-
-- (void)syncerInitSuccessfully {
-    
-    [self removeSpinner];
     
 }
 
@@ -1078,11 +1073,6 @@
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
              object:[STMCoreAuthController authController]];
-    
-    [nc addObserver:self
-           selector:@selector(syncerInitSuccessfully)
-               name:NOTIFICATION_SYNCER_INIT_SUCCESSFULLY
-             object:self.session.syncer];
     
 //    [nc addObserver:self
 //           selector:@selector(showUnreadMessageCount)
