@@ -22,6 +22,8 @@
 @property (nonatomic, strong) NSData *deviceToken;
 @property (nonatomic, strong) NSString *deviceTokenError;
 
+- (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result;
+
 - (NSString *)currentNotificationTypes;
 
 - (void)testCrash;

@@ -287,9 +287,9 @@
         [self backgroundTask:bgTask endedInApplication:application];
         
         NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
-        [self tryCatchFetchResultHandler:completionHandler
-                              withResult:UIBackgroundFetchResultFailed
-                              methodName:methodName];
+        
+        [self completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultFailed
+                                             methodName:methodName];
         
     }];
     
@@ -297,7 +297,7 @@
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationPerformFetchWithCompletionHandler"
                                                         object:application];
-
+    
     STMSyncer *syncer = [self syncer];
     
     if (syncer.transportIsReady) {
@@ -328,26 +328,17 @@
         if (!handlerCompleted) {
 
             NSString *methodName = [NSString stringWithFormat:@"%@ in beginBackgroundTaskWithExpirationHandler:", NSStringFromSelector(_cmd)];
-            [self tryCatchFetchResultHandler:handler
-                                  withResult:UIBackgroundFetchResultFailed
-                                  methodName:methodName];
-
+            
+            [self completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultFailed
+                                                 methodName:methodName];
+            
         }
         
     }];
     
     [self backgroundTask:bgTask startedInApplication:application];
     
-    [self routeNotificationUserInfo:userInfo completionHandler:^(UIBackgroundFetchResult result) {
-        
-        handlerCompleted = YES;
-
-        NSString *methodName = [NSString stringWithFormat:@"%@ in routeNotificationUserInfo:completionHandler:", NSStringFromSelector(_cmd)];
-        [self tryCatchFetchResultHandler:handler
-                              withResult:result
-                              methodName:methodName];
-
-    }];
+    [self routeNotificationUserInfo:userInfo];
     
 //    [self showTestLocalNotification];
 
@@ -401,13 +392,8 @@
 
 #pragma mark -
 
-- (void)routeNotificationUserInfo:(NSDictionary *)userInfo completionHandler:(void (^)(UIBackgroundFetchResult result)) handler {
+- (void)routeNotificationUserInfo:(NSDictionary *)userInfo {
     
-    __block BOOL handlerCompleted = NO;
-
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    UIApplication *app = [UIApplication sharedApplication];
-
     BOOL meaningfulUserInfo = NO;
     
     if (userInfo[@"remoteCommands"]) {
@@ -419,23 +405,11 @@
 
     if (!meaningfulUserInfo) {
         
-        [nc postNotificationName:@"applicationDidReceiveRemoteNotification" object:app userInfo:userInfo];
-
-        [[self syncer] receiveDataWithFetchCompletionHandler:^(UIBackgroundFetchResult result) {
-
-            if (!handlerCompleted) {
-                
-                handlerCompleted = YES;
-                
-                NSString *methodName = [NSString stringWithFormat:@"%@ in setSyncerState:fetchCompletionHandler:2", NSStringFromSelector(_cmd)];
-                [self tryCatchFetchResultHandler:handler
-                                      withResult:result
-                                      methodName:methodName];
-
-            }
-
-        }];
-
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationDidReceiveRemoteNotification"
+                                                            object:[UIApplication sharedApplication]
+                                                          userInfo:userInfo];
+        [[self syncer] receiveData];
+        
     }
 
 }
@@ -456,6 +430,25 @@
         
     }
     
+}
+- (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result methodName:(NSString *)methodName {
+    
+    NSArray *handlers = self.fetchCompletionHandlers.copy;
+    [self.fetchCompletionHandlers removeObjectsInArray:handlers];
+
+    if (!methodName) methodName = [NSString stringWithFormat:@"%@", NSStringFromSelector(_cmd)];
+    
+    for (void (^fetchCompletionHandler) (UIBackgroundFetchResult result) in handlers) {
+        
+        [self tryCatchFetchResultHandler:fetchCompletionHandler
+                              withResult:result
+                              methodName:methodName];
+        
+    }
+    
+}
+- (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result {
+    [self completeFetchCompletionHandlersWithResult:result methodName:nil];
 }
 
 - (void)setupWindow {
