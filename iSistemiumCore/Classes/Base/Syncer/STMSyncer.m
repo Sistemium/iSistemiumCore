@@ -320,6 +320,11 @@
 
 - (void)socketAuthorizationError:(NSError *)error {
 
+    [self.session.logger saveLogMessageWithText:error.localizedDescription numType:STMLogMessageTypeError];
+  
+    [self.socketTransport closeSocket];
+    
+    [NSTimer scheduledTimerWithTimeInterval:self.timeout target:self selector:@selector(checkSocket) userInfo:nil repeats:NO];
     
 }
 
