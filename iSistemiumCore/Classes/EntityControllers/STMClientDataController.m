@@ -164,6 +164,8 @@
                 
                 if (![currentValue isEqual:storedValue]) {
 
+                    if ([STMFunctions isNullBoth:currentValue and:storedValue]) continue;
+
                     NSLog(@"%@ was changed", key);
                     NSLog(@"client value %@", storedValue);
                     NSLog(@"new value %@", currentValue);
