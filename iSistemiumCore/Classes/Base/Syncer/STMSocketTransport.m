@@ -300,8 +300,6 @@
     
     [self startDelayedAuthorizationCheck];
     
-    // TODO: Maybe we need here persistence delegate
-    
     NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
@@ -316,7 +314,7 @@
     STMSocketEvent eventNum = STMSocketEventAuthorization;
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
     
-    [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:0 callback:^(NSArray *data) {
+    [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:self.timeout callback:^(NSArray *data) {
         [self receiveAckWithData:data forEventNum:eventNum];
     }];
 
@@ -375,6 +373,10 @@
 
 - (void)receiveAuthorizationAckWithData:(NSArray *)data {
     
+    if ([data.firstObject isEqual:@"NO ACK"]) {
+        return [self notAuthorizedWithError:@"receiveAuthorizationAckWithData authorization timeout"];
+    }
+
     NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", self.socket, self.socket.sid, data];
 
     [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
@@ -382,7 +384,7 @@
     if (![data.firstObject isKindOfClass:[NSDictionary class]]) {
         return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
     }
-        
+    
     NSDictionary *dataDic = data.firstObject;
     BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
     
