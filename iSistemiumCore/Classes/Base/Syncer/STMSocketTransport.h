@@ -6,13 +6,13 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreObject.h"
 #import "STMSocketConnection.h"
 
 #import "iSistemiumCore-Swift.h"
 @import SocketIO;
 
-@interface STMSocketTransport : NSObject <STMSocketConnection>
+@interface STMSocketTransport : STMCoreObject <STMSocketConnection>
 
 + (instancetype)transportWithUrl:(NSString *)socketUrlString
                andEntityResource:(NSString *)entityResource
