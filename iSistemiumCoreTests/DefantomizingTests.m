@@ -135,54 +135,40 @@
 
 #pragma mark - STMDefantomizingOwner
 
-- (void)defantomizeObject:(NSDictionary *)fantomDic {
+- (void)defantomizeEntityName:(NSString *)entityName identifier:(NSString *)identifier {
     
-    NSString *pk = fantomDic[@"id"];
+    XCTestExpectation *expectation = self.expectations[identifier];
     
-    XCTestExpectation *expectation = self.expectations[pk];
-    
-    NSString *entityName = [STMFunctions addPrefixToEntityName:fantomDic[@"entityName"]];
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
     
     NSError *error = nil;
 
     if ([expectation.description isEqualToString:GOOD_FANTOM]) {
     
-        NSMutableDictionary *object = self.fantomObjects[pk].mutableCopy;
+        NSMutableDictionary *object = self.fantomObjects[identifier].mutableCopy;
         [object removeObjectForKey:@"isFantom"];
 
-        [self.defantomizingDelegate defantomize:fantomDic
-                                        success:YES
-                                     entityName:entityName
-                                         result:object
-                                          error:error];
-
+        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:YES attributes:object error:error];
+        
         [expectation fulfill];
         
-        [self.expectations removeObjectForKey:pk];
+        [self.expectations removeObjectForKey:identifier];
         
     } else if ([expectation.description isEqualToString:BAD_FANTOM_DELETE]) {
         
         error = [STMFunctions errorWithMessage:@"response got error: 404"];
         
-        [self.defantomizingDelegate defantomize:fantomDic
-                                        success:NO
-                                     entityName:entityName
-                                         result:nil
-                                          error:error];
+        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
         
         [expectation fulfill];
         
-        [self.expectations removeObjectForKey:pk];
+        [self.expectations removeObjectForKey:identifier];
 
     } else if ([expectation.description isEqualToString:BAD_FANTOM]) {
         
         error = [STMFunctions errorWithMessage:@"response got error"];
         
-        [self.defantomizingDelegate defantomize:fantomDic
-                                        success:NO
-                                     entityName:entityName
-                                         result:nil
-                                          error:error];
+        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
         
         [expectation fulfill];
         
