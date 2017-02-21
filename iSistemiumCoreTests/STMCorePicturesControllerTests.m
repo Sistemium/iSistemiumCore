@@ -28,6 +28,10 @@
     
     [STMGarbageCollector searchUnusedImages];
     
+#warning the test is removing real pictures because operating InMemory
+    
+    // FIXME: remember unusedImageFiles at start of the test and ignore them later
+    
     XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 0);
     
     [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
