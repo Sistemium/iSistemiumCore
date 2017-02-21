@@ -7,14 +7,21 @@
 //
 
 #import "STMSyncerHelper.h"
+#import "STMSyncerHelper+Defantomizing.h"
 
 @interface STMDataDownloadingState : STMCoreObject <STMDataSyncingState>
 
 @end
 
+@interface STMSyncerHelperDefantomizing : NSObject
+
+@end
 
 @interface STMSyncerHelper ()
 
 @property (nonatomic,strong) STMDataDownloadingState *downloadingState;
+@property (nonatomic,weak) id <STMDefantomizingOwner> defantomizingOwner;
+
+@property (nonatomic, strong) STMSyncerHelperDefantomizing *defantomizing;
 
 @end

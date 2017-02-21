@@ -12,5 +12,7 @@
 @implementation STMSyncerHelper
 
 @synthesize dataDownloadingOwner = _dataDownloadingOwner;
+@synthesize defantomizingOwner = _defantomizingOwner;
+@synthesize persistenceFantomsDelegate = _persistenceFantomsDelegate;
 
 @end
