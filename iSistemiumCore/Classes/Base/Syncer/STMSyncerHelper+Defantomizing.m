@@ -14,7 +14,7 @@
 
 @interface STMSyncerHelperDefantomizing ()
 
-@property (nonatomic,strong) NSMutableArray *failToResolveIds;
+@property (nonatomic,strong) NSMutableSet *failToResolveIds;
 @property (atomic) NSUInteger fantomsCount;
 @property (nonatomic,strong) NSMutableArray *pending;
 @property (nonatomic,strong) NSMutableArray *queued;
@@ -29,7 +29,7 @@
     self = [super init];
     
     if (self) {
-        self.failToResolveIds = [NSMutableArray array];
+        self.failToResolveIds = [NSMutableSet set];
         self.pending = [NSMutableArray array];
         self.queued = [NSMutableArray array];
     }
@@ -51,6 +51,7 @@
 @dynamic defantomizingOwner;
 @dynamic persistenceFantomsDelegate;
 
+
 #pragma mark - defantomizing
 
 - (void)startDefantomization {
@@ -68,7 +69,8 @@
             continue;
         }
 
-        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsIdsSync:entityName excludingIds:defantomizing.failToResolveIds];
+        NSArray *results = [self.persistenceFantomsDelegate findAllFantomsIdsSync:entityName
+                                                                     excludingIds:self.defantomizing.failToResolveIds.allObjects];
                 
         if (!results.count) continue;
             
