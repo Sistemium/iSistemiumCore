@@ -10,6 +10,8 @@
 
 @protocol STMNotifications <NSObject>
 
+- (NSNotificationCenter *)notificationCenter;
+
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName;
 
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName
