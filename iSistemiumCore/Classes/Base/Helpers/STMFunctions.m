@@ -522,6 +522,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)hexStringFromData:(NSData *)data {
  
+    if (!data) return nil;
+    
     NSUInteger dataLength = [data length];
     NSMutableString *string = [NSMutableString string];
     const unsigned char *dataBytes = [data bytes];
