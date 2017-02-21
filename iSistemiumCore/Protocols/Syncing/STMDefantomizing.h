@@ -1,15 +1,19 @@
 //
 //  STMDefantomizing.h
-//  iSisSales
+//  iSistemiumCore
 //
 //  Created by Alexander Levin on 30/01/2017.
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "STMDefantomizingOwner.h"
 #import "STMPersistingFantoms.h"
+
+@protocol STMDefantomizingOwner <NSObject>
+
+- (void)defantomizeEntityName:(NSString *)entityName identifier:(NSString *)identifier;
+- (void)defantomizingFinished;
+
+@end
 
 
 @protocol STMDefantomizing <NSObject>
@@ -20,11 +24,11 @@
 - (void)startDefantomization;
 - (void)stopDefantomization;
 
-- (void)defantomize:(NSDictionary *)fantomDic
-            success:(BOOL)success
-         entityName:(NSString *)entityName
-             result:(NSDictionary *)result
-              error:(NSError *)error;
+- (void)defantomizedEntityName:(NSString *)entityName
+                    identifier:(NSString *)identifier
+                       success:(BOOL)success
+                    attributes:(NSDictionary *)attributes
+                         error:(NSError *)error;
 
 
 @end
