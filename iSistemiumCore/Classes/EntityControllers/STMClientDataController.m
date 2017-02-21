@@ -166,9 +166,9 @@
 
                     if ([STMFunctions isNullBoth:currentValue and:storedValue]) continue;
 
-                    NSLog(@"%@ was changed", key);
-                    NSLog(@"client value %@", storedValue);
-                    NSLog(@"new value %@", currentValue);
+//                    NSLog(@"%@ was changed", key);
+//                    NSLog(@"client value %@", storedValue);
+//                    NSLog(@"new value %@", currentValue);
                     
                     clientData[key] = currentValue;
                     haveUpdates = YES;
