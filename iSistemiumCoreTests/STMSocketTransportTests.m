@@ -229,4 +229,8 @@
     return TEST_SOCKET_TIMEOUT;
 }
 
+- (void)socketAuthorizationError:(NSError *)error {
+    // TODO: test socketAuthorizationError
+}
+
 @end
