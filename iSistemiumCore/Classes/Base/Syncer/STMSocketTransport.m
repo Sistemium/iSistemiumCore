@@ -298,8 +298,6 @@
 
 - (void)connectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     
-    [self startDelayedAuthorizationCheck];
-    
     NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
@@ -396,11 +394,9 @@
     logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
     
     [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
-    [self cancelDelayedAuthorizationCheck];
-    [self.owner socketReceiveAuthorization];
-    [self postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
-    [self checkAppState];
 
+    [self.owner socketReceiveAuthorization];
+    [self checkAppState];
     
 }
 
@@ -445,59 +441,6 @@
 
 
 #pragma mark - authorization check
-
-- (void)startDelayedAuthorizationCheck {
-
-    [self cancelDelayedAuthorizationCheck];
-
-    SEL checkAuthSel = @selector(checkAuthorization);
-    
-    [self performSelector:checkAuthSel
-               withObject:nil
-               afterDelay:CHECK_SOCKET_AUTHORIZATION_DELAY];
-    
-}
-
-- (void)cancelDelayedAuthorizationCheck {
-
-    SEL checkAuthSel = @selector(checkAuthorization);
-    
-    [STMSocketTransport cancelPreviousPerformRequestsWithTarget:self
-                                                       selector:checkAuthSel
-                                                         object:nil];
-
-}
-
-- (void)checkAuthorization {
-    
-    NSLogMethodName;
-
-    NSString *logMessage = [NSString stringWithFormat:@"checkAuthorizationForSocket: %@ %@", self.socket, self.socket.sid];
-    [self.logger saveLogMessageWithText:logMessage
-                           numType:STMLogMessageTypeInfo];
-
-    if (self.socket.status != SocketIOClientStatusConnected) {
-        return [self.logger saveLogMessageWithText:@"socket is not connected" numType:STMLogMessageTypeInfo];
-    }
-
-    if (self.isAuthorized) {
-
-        logMessage = @"socket is authorized";
-        [self.logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeInfo];
-
-    } else {
-
-        logMessage = @"socket is connected but don't receive authorization ack, reconnecting";
-        [self.logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeError];
-
-        [self reconnectSocket];
-
-    }
-
-    
-}
 
 - (void)notAuthorizedWithError:(NSString *)errorString {
     

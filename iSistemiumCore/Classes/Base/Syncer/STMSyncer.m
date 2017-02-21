@@ -332,6 +332,8 @@
     
     NSLogMethodName;
     
+    [self postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
+
     [self subscribeToUnsyncedObjects];
 
     [self initTimer];
