@@ -59,6 +59,11 @@
         }
             
         self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionStopped;
+        
+        self.settingsController = nil;
+        self.trackers = nil;
+        self.logger = nil;
+        self.syncer = nil;
                 
         [self.manager sessionStopped:self];
         

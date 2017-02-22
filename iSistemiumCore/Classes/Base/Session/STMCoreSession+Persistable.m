@@ -63,24 +63,23 @@
     
     [self removePersistenceObservers];
     
+    STMDocument *document = self.document;
+    
     // TODO: do document closing in STMPersister
     
-    if (self.document.documentState == UIDocumentStateNormal) {
+    self.document = nil;
+    self.persistenceDelegate = nil;
+    
+    if (document && document.documentState == UIDocumentStateNormal) {
         
         [self.document saveDocument:^(BOOL success) {
-            
             if (completionHandler) completionHandler(success);
-            
-            self.document = nil;
-            self.persistenceDelegate = nil;
-            self.settingsController = nil;
-            self.trackers = nil;
-            self.logger = nil;
-            self.syncer = nil;
-            
         }];
         
+    } else {
+        if (completionHandler) completionHandler(YES);
     }
+    
 }
 
 #pragma mark Private methods
