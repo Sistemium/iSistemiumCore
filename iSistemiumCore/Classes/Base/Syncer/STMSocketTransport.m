@@ -73,7 +73,7 @@
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
     self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
-                                                     config:@{@"voipEnabled"         : @YES,
+                                                     config:@{@"voipEnabled"        : @YES,
                                                               @"log"                : @NO,
                                                               @"forceWebsockets"    : @NO,
                                                               @"path"               : path,
@@ -220,7 +220,9 @@
 
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
     
-    [self socketSendEvent:event withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
+    [self socketSendEvent:event
+                withValue:value
+        completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
     
 }
 
@@ -228,40 +230,54 @@
     
     [self logSendEvent:event withValue:value];
     
+    NSString *errorMessage = nil;
+    
     if (!self.isReady) {
         
-        NSString *errorMessage = @"socket not connected while sendEvent";
-        
+        errorMessage = @"socket not connected while sendEvent";
         [self socketLostConnection:errorMessage];
-        
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
+        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
+        return;
         
     }
         
     if (event == STMSocketEventJSData) {
         
         if (![value isKindOfClass:[NSDictionary class]]) {
-            return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData value is not NSDictionary"]);
+            
+            errorMessage = @"STMSocketEventJSData value is not NSDictionary";
+            completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
+            return;
+            
         }
             
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
         
-        return [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
             
             if ([data.firstObject isEqual:@"NO ACK"]) {
-                return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
+                
+                completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
+                return;
+                
             }
             
             completionHandler(YES, data, nil);
         
         }];
         
+        return;
+        
     }
         
     NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
     
     if (!value || !primaryKey) {
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData !value || !primaryKey"]);
+        
+        errorMessage = @"STMSocketEventJSData !value || !primaryKey";
+        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
+        return;
+        
     }
         
     NSDictionary *dataDic = @{primaryKey : value};
@@ -271,12 +287,16 @@
     NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
     
     if (!dataDic) {
-        NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
-        NSLog(message);
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+        
+        errorMessage = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
+        NSLog(errorMessage);
+        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
+        return;
+        
     }
     
-    [self.socket emit:eventStringValue with:@[dataDic]];
+    [self.socket emit:eventStringValue
+                 with:@[dataDic]];
     
 }
 
@@ -357,29 +377,45 @@
 
 - (void)receiveAuthorizationAckWithData:(NSArray *)data {
     
+    NSString *errorMessage = nil;
+    
     if ([data.firstObject isEqual:@"NO ACK"]) {
-        return [self notAuthorizedWithError:@"receiveAuthorizationAckWithData authorization timeout"];
+        
+        errorMessage = @"receiveAuthorizationAckWithData authorization timeout";
+        [self notAuthorizedWithError:errorMessage];
+        return;
+        
     }
 
     NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", self.socket, self.socket.sid, data];
 
-    [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeInfo];
 
     if (![data.firstObject isKindOfClass:[NSDictionary class]]) {
-        return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
+        
+        errorMessage = @"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary";
+        [self notAuthorizedWithError:errorMessage];
+        return;
+        
     }
     
     NSDictionary *dataDic = data.firstObject;
     BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
     
     if (!isAuthorized) {
-        return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
+        
+        errorMessage = @"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO";
+        [self notAuthorizedWithError:errorMessage];
+        return;
+        
     }
         
     self.isAuthorized = YES;
     logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
     
-    [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
+    [self.logger saveLogMessageWithText:logMessage
+                                numType:STMLogMessageTypeInfo];
 
     [self.owner socketReceiveAuthorization];
     [self checkAppState];
@@ -390,7 +426,8 @@
     
     NSString *appState = [STMFunctions appStateString];
     
-    [self socketSendEvent:STMSocketEventStatusChange withValue:appState];
+    [self socketSendEvent:STMSocketEventStatusChange
+                withValue:appState];
     
     if (![appState isEqualToString:@"UIApplicationStateActive"]) return;
         
@@ -402,7 +439,8 @@
     
     NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
     
-    [self socketSendEvent:STMSocketEventStatusChange withValue:value];
+    [self socketSendEvent:STMSocketEventStatusChange
+                withValue:value];
 
 }
 

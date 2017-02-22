@@ -85,14 +85,19 @@
         [session dismissSession];
     }
     
-    NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
+    NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName
+                                                         withSchemaName:@"settings_schema"];
     
     session = [[[self sessionClass] alloc] init];
     session.defaultSettings = validSettings[@"values"];
     session.settingsControls = validSettings[@"controls"];
     session.manager = self;
 
-    session = [session initWithUID:uid iSisDB:iSisDB authDelegate:authDelegate trackers:trackers startSettings:startSettings];
+    session = [session initWithUID:uid
+                            iSisDB:iSisDB
+                      authDelegate:authDelegate
+                          trackers:trackers
+                     startSettings:startSettings];
 
     self.sessions[uid] = session;
 

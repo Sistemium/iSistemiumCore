@@ -37,9 +37,11 @@
     }
     
     STMPersister *persister = [STMPersister persisterWithModelName:dataModelName uid:self.uid iSisDB:self.iSisDB completionHandler:^(BOOL success) {
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [self persisterCompleteInitializationWithSuccess:success];
         });
+        
     }];
 
     self.persistenceDelegate = persister;
@@ -52,11 +54,13 @@
     entityNameInterceptor.entityName = STM_ENTITY_NAME;
     entityNameInterceptor.propertyName = @"name";
     
-    [persister beforeMergeEntityName:entityNameInterceptor.entityName interceptor:entityNameInterceptor];
+    [persister beforeMergeEntityName:entityNameInterceptor.entityName
+                         interceptor:entityNameInterceptor];
     
     [self addPersistenceObservers];
 
     return self;
+    
 }
 
 - (void)removePersistable:(void (^)(BOOL success))completionHandler {

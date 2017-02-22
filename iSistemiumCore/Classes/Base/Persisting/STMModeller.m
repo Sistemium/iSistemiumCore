@@ -23,11 +23,13 @@
     return [[self alloc] initWithModel:model];
 }
 
-
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName {
-    NSString *path = [[NSBundle mainBundle] pathForResource:modelName ofType:@"momd"];
     
-    if (!path) path = [[NSBundle mainBundle] pathForResource:modelName ofType:@"mom"];
+    NSString *path = [[NSBundle mainBundle] pathForResource:modelName
+                                                     ofType:@"momd"];
+    
+    if (!path) path = [[NSBundle mainBundle] pathForResource:modelName
+                                                      ofType:@"mom"];
     
     if (path) {
         
@@ -39,6 +41,7 @@
         
     NSLog(@"there is no path for data model with name %@", modelName);
     return nil;
+    
 }
 
 - (instancetype)initWithModelName:(NSString *)modelName {
@@ -53,9 +56,11 @@
     NSMutableDictionary *cache = @{}.mutableCopy;
     
     for (NSString *entityKey in self.entitiesByName) {
+        
         NSEntityDescription *entity = self.entitiesByName[entityKey];
-        cache[entityKey] = @{@"fields": entity.attributesByName,
-                             @"relationships": entity.relationshipsByName};
+        cache[entityKey] = @{@"fields"          : entity.attributesByName,
+                             @"relationships"   : entity.relationshipsByName};
+        
     }
     
     self.allEntitiesCache = cache.copy;
@@ -66,6 +71,7 @@
     
     return self;
 }
+
 
 #pragma mark - STMModelling
 
@@ -116,7 +122,12 @@
 }
 
 - (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade {
-    return [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:cascade optional:nil];
+    
+    return [self objectRelationshipsForEntityName:entityName
+                                         isToMany:isToMany
+                                          cascade:cascade
+                                         optional:nil];
+    
 }
 
 - (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade optional:(NSNumber *)optional {
@@ -137,7 +148,9 @@
         
             if (!isToMany || relationship.isToMany == isToMany.boolValue) {
                 
-                if (!cascade || ([cascade boolValue] && relationship.deleteRule == NSCascadeDeleteRule) || (![cascade boolValue] && relationship.deleteRule != NSCascadeDeleteRule)){
+                BOOL isDeleteRule = (relationship.deleteRule == NSCascadeDeleteRule);
+                
+                if (!cascade || (cascade.boolValue && isDeleteRule) || (!cascade.boolValue && !isDeleteRule)){
                     result[relationshipName] = relationship;
                 }
                 
@@ -157,7 +170,9 @@
 
 - (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany{
     
-    NSDictionary *relationships = [self objectRelationshipsForEntityName:entityName isToMany:isToMany cascade:nil];
+    NSDictionary *relationships = [self objectRelationshipsForEntityName:entityName
+                                                                isToMany:isToMany
+                                                                 cascade:nil];
     
     return [STMFunctions mapDictionary:relationships withBlock:^id _Nonnull(NSRelationshipDescription *value, NSString *key) {
         return value.destinationEntity.name;
@@ -166,7 +181,11 @@
 }
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object {
-    return [self setObjectData:objectData toObject:object withRelations:YES];
+    
+    return [self setObjectData:objectData
+                      toObject:object
+                 withRelations:YES];
+    
 }
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(STMDatum *)object withRelations:(BOOL)withRelations{
@@ -182,14 +201,26 @@
         id value = objectData[key];
         
         if ([key isEqualToString:@"id"] && value) {
+            
             if ([(NSString*)value length] == 36) {
                 [object setValue:[STMFunctions xidDataFromXidString:value] forKey:@"xid"];
             }
+            
         } else if ([ownObjectKeys containsObject:key]) {
             
             NSDictionary *entityAttributes = entity.attributesByName;
             
-            value = (![value isKindOfClass:[NSNull class]]) ? [STMModeller typeConversionForValue:value key:key entityAttributes:entityAttributes] : nil;
+            if ([STMFunctions isNotNull:value]) {
+                
+                value = [STMModeller typeConversionForValue:value
+                                                        key:key
+                                           entityAttributes:entityAttributes];
+                
+            } else {
+                
+                value = nil;
+                
+            }
             
             [object setValue:value forKey:key];
             
@@ -206,11 +237,18 @@
                 
                 if (destinationEntityName && destinationObjectXid) {
                     
-                    STMDatum *destinationObject = (STMDatum*) [self newObjectForEntityName:destinationEntityName];
+                    STMDatum *destinationObject = (STMDatum *)[self newObjectForEntityName:destinationEntityName];
                     
-                    NSDictionary *destinationObjectData = [STMSessionManager.sharedManager.currentSession.persistenceDelegate findSync:destinationEntityName identifier:destinationObjectXid options:nil error:nil];
+                    NSObject <STMPersistingFullStack> *persistenceDelegate = [STMSessionManager sharedManager].currentSession.persistenceDelegate;
                     
-                    [self setObjectData:destinationObjectData toObject:destinationObject withRelations:false];
+                    NSDictionary *destinationObjectData = [persistenceDelegate findSync:destinationEntityName
+                                                                             identifier:destinationObjectXid
+                                                                                options:nil
+                                                                                  error:nil];
+                    
+                    [self setObjectData:destinationObjectData
+                               toObject:destinationObject
+                          withRelations:false];
 //=======
 //                    NSString *destinationObjectXid = [value isEqual:[NSNull null]] ? nil : value;
 //                    

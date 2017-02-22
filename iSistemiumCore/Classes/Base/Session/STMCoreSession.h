@@ -25,7 +25,7 @@
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, weak) STMDocument *document;
-@property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingFullStack> *persistenceDelegate;
 
 @property (nonatomic, strong) STMLogger *logger;
 @property (nonatomic, weak) id <STMSessionManager> manager;
