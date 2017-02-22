@@ -18,7 +18,6 @@
 
 @interface STMCorePicturesController()
 
-@property (nonatomic, strong) NSOperationQueue *uploadQueue;
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
 @property (nonatomic) BOOL waitingForDownloadPicture;
 
@@ -65,18 +64,6 @@
         _hrefDictionary = [NSMutableDictionary dictionary];
     }
     return _hrefDictionary;
-    
-}
-
-- (NSOperationQueue *)uploadQueue {
-    
-    if (!_uploadQueue) {
-        
-        _uploadQueue = [[NSOperationQueue alloc] init];
-        
-    }
-    
-    return _uploadQueue;
     
 }
 
