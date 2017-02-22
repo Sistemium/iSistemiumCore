@@ -28,7 +28,7 @@
     
     if (![fm fileExistsAtPath:fmdbFolderPath]) {
         
-        NSDictionary *attributes = @{NSFileProtectionKey : NSFileProtectionNone};
+        NSDictionary *attributes = ATTRIBUTE_FILE_PROTECTION_NONE;
         
         NSError *error = nil;
         BOOL result = [fm createDirectoryAtPath:fmdbFolderPath

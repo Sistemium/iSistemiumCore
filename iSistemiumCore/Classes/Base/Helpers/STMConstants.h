@@ -99,6 +99,10 @@
 #define FREE_SPACE_THRESHOLD 500
 
 
+// file protection
+
+#define ATTRIBUTE_FILE_PROTECTION_NONE @{NSFileProtectionKey : NSFileProtectionNone}
+
 // Script message's names
 
 #define WK_MESSAGE_ERROR_CATCHER @"errorCatcher"
