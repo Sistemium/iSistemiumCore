@@ -572,11 +572,7 @@
 
 - (void)defantomizeEntityName:(NSString *)entityName identifier:(NSString *)identifier {
 
-    if (!self.isDefantomizing) {
-        return;
-    }
-    
-    entityName = [STMFunctions addPrefixToEntityName:entityName];
+    if (!self.isDefantomizing) return [self.defantomizingDelegate stopDefantomization];
     
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
 
