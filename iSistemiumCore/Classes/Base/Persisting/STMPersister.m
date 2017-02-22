@@ -19,7 +19,9 @@
 
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
 
-    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
+#warning - is it good to call init two times?
+//    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
+    STMPersister *persister = [[STMPersister alloc] initWithModelName:modelName];
     
     NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
     
