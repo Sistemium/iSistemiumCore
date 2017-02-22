@@ -48,6 +48,7 @@
     NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
+    self.dbPath = dbPath;
     
     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE;
     
@@ -60,6 +61,11 @@
     
     return self;
     
+}
+
+
+- (void)deleteFile {
+    [[NSFileManager defaultManager] removeItemAtPath:self.dbPath error:nil];
 }
 
 

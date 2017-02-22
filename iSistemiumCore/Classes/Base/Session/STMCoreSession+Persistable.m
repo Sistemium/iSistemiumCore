@@ -63,6 +63,9 @@
     
     [self removePersistenceObservers];
     
+    // Uncomment if you want to rebuild db with logoff-logon
+    // [[(STMPersister *)self.persistenceDelegate fmdb] deleteFile];
+
     STMDocument *document = self.document;
     
     // TODO: do document closing in STMPersister

@@ -25,7 +25,7 @@
 @property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, XCTestExpectation *> *expectations;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSDictionary *> *fantomObjects;
-
+@property (nonatomic, strong) NSOperationQueue *operationQueue;
 
 @end
 
@@ -39,6 +39,8 @@
 - (void)setUp {
     
     [super setUp];
+    
+    self.operationQueue = [NSOperationQueue mainQueue];
 
     if (!self.defantomizingDelegate) {
         
@@ -145,39 +147,51 @@
 
     if ([expectation.description isEqualToString:GOOD_FANTOM]) {
     
-        NSMutableDictionary *object = self.fantomObjects[identifier].mutableCopy;
-        [object removeObjectForKey:@"isFantom"];
+        NSMutableDictionary *attributes = self.fantomObjects[identifier].mutableCopy;
+        [attributes removeObjectForKey:@"isFantom"];
 
-        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:YES attributes:object error:error];
+        [self.operationQueue addOperationWithBlock:^{
+            
+            [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:YES attributes:attributes error:error];
+            [expectation fulfill];
+            
+            [self.expectations removeObjectForKey:identifier];
+            
+            XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+
+        }];
         
-        [expectation fulfill];
         
-        [self.expectations removeObjectForKey:identifier];
         
     } else if ([expectation.description isEqualToString:BAD_FANTOM_DELETE]) {
         
         error = [STMFunctions errorWithMessage:@"response got error: 404"];
         
-        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
-        
-        [expectation fulfill];
-        
-        [self.expectations removeObjectForKey:identifier];
+        [self.operationQueue addOperationWithBlock:^{
 
+            [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
+            
+            [expectation fulfill];
+            
+            [self.expectations removeObjectForKey:identifier];
+            
+            XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+            
+        }];
+        
     } else if ([expectation.description isEqualToString:BAD_FANTOM]) {
         
         error = [STMFunctions errorWithMessage:@"response got error"];
         
-        [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
-        
-        [expectation fulfill];
-        
-        //[self.expectations removeObjectForKey:pk];
+        [self.operationQueue addOperationWithBlock:^{
+            [self.defantomizingDelegate defantomizedEntityName:entityName identifier:identifier success:NO attributes:nil error:error];
+            
+            [expectation fulfill];
+            
+            XCTAssertEqual(self.expectations.count, [self fantomsCount]);
+        }];
         
     }
-    
-    XCTAssertEqual(self.expectations.count, [self fantomsCount]);
-    
     
 }
 

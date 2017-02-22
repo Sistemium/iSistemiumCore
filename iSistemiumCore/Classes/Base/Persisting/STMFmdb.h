@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)hasTable:(NSString *)name;
 
+- (void)deleteFile;
+
 NS_ASSUME_NONNULL_END
 
 @end
