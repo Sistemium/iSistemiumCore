@@ -220,7 +220,7 @@
 
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
     
-    [self socketSendEvent:event withValue:value completionHandler:nil];
+    [self socketSendEvent:event withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
     
 }
 
@@ -234,63 +234,49 @@
         
         [self socketLostConnection:errorMessage];
         
-        NSError *error;
-        [STMFunctions error:&error withMessage:errorMessage];
-        
-        if (completionHandler) {
-            completionHandler(NO, nil, error);
-        }
-        
-        return;
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
         
     }
         
     if (event == STMSocketEventJSData) {
         
-        if (![value isKindOfClass:[NSDictionary class]]) return;
+        if (![value isKindOfClass:[NSDictionary class]]) {
+            return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData value is not NSDictionary"]);
+        }
             
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
         
-        [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        return [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
             
             if ([data.firstObject isEqual:@"NO ACK"]) {
-                
-                NSError *error = nil;
-                [STMFunctions error:&error withMessage:@"ack timeout"];
-                
-                completionHandler(NO, nil, error);
-                
-            } else {
-                
-                completionHandler(YES, data, nil);
-                
+                return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
             }
             
+            completionHandler(YES, data, nil);
+        
         }];
-
-        
-    } else {
-        
-        NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
-        
-        if (!value || !primaryKey) return;
-            
-        NSDictionary *dataDic = @{primaryKey : value};
-        
-        dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-        
-        NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-        
-        if (dataDic) {
-            
-            [self.socket emit:eventStringValue
-                         with:@[dataDic]];
-            
-        } else {
-            NSLog(@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue);
-        }
         
     }
+        
+    NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
+    
+    if (!value || !primaryKey) {
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData !value || !primaryKey"]);
+    }
+        
+    NSDictionary *dataDic = @{primaryKey : value};
+    
+    dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+    
+    NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
+    
+    if (!dataDic) {
+        NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
+        NSLog(message);
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+    }
+    
+    [self.socket emit:eventStringValue with:@[dataDic]];
     
 }
 
