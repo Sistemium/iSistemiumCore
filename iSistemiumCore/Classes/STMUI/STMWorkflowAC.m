@@ -10,11 +10,5 @@
 
 @implementation STMWorkflowAC
 
-+ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle{
-    return [super.class
-     alertControllerWithTitle:title
-     message:message
-     preferredStyle:preferredStyle];
-}
 
 @end

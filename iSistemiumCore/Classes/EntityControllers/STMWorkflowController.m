@@ -32,7 +32,6 @@
                                   alertControllerWithTitle:nil
                                   message:title
                                   preferredStyle:UIAlertControllerStyleActionSheet];
-    actionSheet.title = title;
     
     NSArray *processingRoutes = [self availableRoutesForProcessing:processing inWorkflow:workflow];
     

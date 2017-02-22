@@ -13,6 +13,4 @@
 @property (nonatomic, strong) NSString *workflow;
 @property (nonatomic, strong) NSString *processing;
 
-+ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle;
-
 @end
