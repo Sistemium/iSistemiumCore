@@ -412,7 +412,7 @@
         
     }
 
-    completionHandler(haveUnsyncedParent, optionalUnsyncedParents.copy);
+    completionHandler(haveUnsyncedParent, optionalUnsyncedParents.mutableCopy);
     
 }
 
@@ -541,7 +541,7 @@
             
             if (copyOfPendingObjects.count > 0) {
                 
-                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects.copy;
+                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects.mutableCopy;
                 
             } else {
                 
@@ -551,7 +551,7 @@
             
         }];
         
-        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity.copy;
+        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity.mutableCopy;
         
     }
     
