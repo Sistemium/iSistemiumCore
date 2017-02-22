@@ -35,10 +35,23 @@
     
     if (path) {
         
-        NSMappingModel *mappingModel = [self checkDataModelsWithBundlePath:path];
+        NSError *error = nil;
+        NSMappingModel *mappingModel = [self checkDataModelsWithBundlePath:path
+                                                                     error:&error];
         
         if (mappingModel) {
+            
             [self parseMappingModel:mappingModel];
+            
+        } else {
+            
+            if (error) {
+                NSLog(@"can't create mapping model, have to create db's tables from blank");
+            } else {
+                NSLog(@"documentsModel was empty or can't create it or the same as bundleModel, should use the last one");
+                //TODO: have to handle each of this three cases
+            }
+            
         }
         
         NSManagedObjectModel *model = [self modelWithPath:path];
@@ -171,7 +184,7 @@
     NSLog(@"undefinedEntityMappings %@", undefinedEntityMappings);
 }
 
-+ (NSMappingModel *)checkDataModelsWithBundlePath:(NSString *)bundlePath {
++ (NSMappingModel *)checkDataModelsWithBundlePath:(NSString *)bundlePath error:(NSError **)error {
     
     NSString *modelDirInDocuments = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:@"model"];
 
@@ -206,14 +219,12 @@
 //    [self copyModelToPath:modelDirInDocuments
 //                 fromPath:bundlePath];
     
-    NSError *error = nil;
-    
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:documentsModel
                                                                      destinationModel:bundleModel
-                                                                                error:&error];
+                                                                                error:error];
     
     if (!mappingModel) {
-        NSLog(@"mappingModel error: %@, userInfo: %@", error.localizedDescription, error.userInfo);
+        NSLog(@"mappingModel error: %@, userInfo: %@", [*error localizedDescription], [*error userInfo]);
     }
 
     return mappingModel;
