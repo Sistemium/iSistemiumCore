@@ -35,11 +35,9 @@
     
     if (path) {
         
-        [self copyModelToDocumentsFromPath:path];
+        [self checkDataModelsWithBundlePath:path];
         
-        NSURL *url = [NSURL fileURLWithPath:path];
-        
-        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        NSManagedObjectModel *model = [self modelWithPath:path];
         
         return model;
         
@@ -50,82 +48,27 @@
     
 }
 
-+ (void)copyModelToDocumentsFromPath:(NSString *)modelPath {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
++ (void)checkDataModelsWithBundlePath:(NSString *)bundlePath {
     
     NSString *modelDirInDocuments = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:@"model"];
-    
-    if (![fm fileExistsAtPath:modelDirInDocuments]) {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:modelDirInDocuments
-                    withIntermediateDirectories:YES
-                                     attributes:ATTRIBUTE_FILE_PROTECTION_NONE
-                                          error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"can't create directory at path: %@, error: %@", modelDirInDocuments, error.localizedDescription);
-            return;
-            
-        }
-        
-    }
-    
-    NSString *modelInDocuments = [modelDirInDocuments stringByAppendingPathComponent:modelPath.lastPathComponent];
-    
-    if (![fm fileExistsAtPath:modelInDocuments]) {
-        
-        NSError *error = nil;
-        BOOL result = [fm copyItemAtPath:modelPath
-                                  toPath:modelInDocuments
-                                   error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"can't copy model, error: %@", error.localizedDescription);
-            return;
-            
-        } else {
-            
-            NSLog(@"model copy successfully");
-            
-        }
-        
-        NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:modelDirInDocuments];
-        
-        for (NSString *thePath in dirEnum) {
 
-            NSError *error = nil;
-            
-            NSString *fullPath = [modelDirInDocuments stringByAppendingPathComponent:thePath];
-            
-            BOOL result = [fm setAttributes:ATTRIBUTE_FILE_PROTECTION_NONE
-                               ofItemAtPath:fullPath
-                                      error:&error];
-            
-            if (!result) {
-                
-                NSLog(@"can't set attributes to %@, error: %@", fullPath, error.localizedDescription);
-                break;
-                
-            } else {
-                
-                NSLog(@"set attributes to %@", thePath);
-                
-            }
-            
-        }
+    if (![STMFunctions dirExistsOrCreateAtPath:modelDirInDocuments]) return;
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *documentsModelPath = [modelDirInDocuments stringByAppendingPathComponent:bundlePath.lastPathComponent];
+    
+    NSManagedObjectModel *documentsModel = ([fm fileExistsAtPath:documentsModelPath]) ? [self modelWithPath:documentsModelPath] : nil;
+    
+    if (!documentsModel) {
+        
+        [self copyModelToPath:modelDirInDocuments
+                     fromPath:bundlePath];
         return;
-
+        
     }
     
-    NSURL *url = [NSURL fileURLWithPath:modelPath];
-    NSManagedObjectModel *bundleModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
-    
-    url = [NSURL fileURLWithPath:modelInDocuments];
-    NSManagedObjectModel *documentsModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    NSManagedObjectModel *bundleModel = [self modelWithPath:bundlePath];
     
     if ([bundleModel isEqual:documentsModel]) {
         
@@ -137,6 +80,63 @@
         
     }
 
+}
+
++ (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath {
+    
+    if (!modelPath) return nil;
+    
+    NSURL *url = [NSURL fileURLWithPath:modelPath];
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+
+    return model;
+    
+}
+
++ (BOOL)copyModelToPath:(NSString *)newPath fromPath:(NSString *)modelPath {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *modelInDocuments = [newPath stringByAppendingPathComponent:modelPath.lastPathComponent];
+    
+    if ([fm fileExistsAtPath:modelInDocuments]) {
+        if (![STMFunctions flushDirAtPath:newPath]) return NO;
+    }
+    
+    NSError *error = nil;
+    BOOL result = [fm copyItemAtPath:modelPath
+                              toPath:modelInDocuments
+                               error:&error];
+    
+    if (!result) {
+        
+        NSLog(@"can't copy model, error: %@", error.localizedDescription);
+        return NO;
+        
+    } else {
+        
+        NSLog(@"model copy successfully");
+        
+    }
+    
+    result = [STMFunctions enumerateDirAtPath:newPath withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
+        
+        BOOL enumResult = [fm setAttributes:ATTRIBUTE_FILE_PROTECTION_NONE
+                               ofItemAtPath:path
+                                      error:error];
+        
+        if (!enumResult) {
+            NSLog(@"can't set attributes to %@, error: %@", path, [*error localizedDescription]);
+        } else {
+            NSLog(@"set attributes to %@", path);
+        }
+        
+        return enumResult;
+
+    }];
+    
+    return result;
+    
 }
 
 - (instancetype)initWithModelName:(NSString *)modelName {
