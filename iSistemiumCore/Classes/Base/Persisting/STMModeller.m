@@ -15,9 +15,11 @@
 
 #import "STMSessionManager.h"
 
+
 @implementation STMModeller
 
 @synthesize concreteEntities = _concreteEntities;
+
 
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
     return [[self alloc] initWithModel:model];
@@ -33,6 +35,8 @@
     
     if (path) {
         
+        [self copyModelToDocumentsFromPath:path];
+        
         NSURL *url = [NSURL fileURLWithPath:path];
         
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
@@ -44,6 +48,95 @@
     NSLog(@"there is no path for data model with name %@", modelName);
     return nil;
     
+}
+
++ (void)copyModelToDocumentsFromPath:(NSString *)modelPath {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *modelDirInDocuments = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:@"model"];
+    
+    if (![fm fileExistsAtPath:modelDirInDocuments]) {
+        
+        NSError *error = nil;
+        BOOL result = [fm createDirectoryAtPath:modelDirInDocuments
+                    withIntermediateDirectories:YES
+                                     attributes:ATTRIBUTE_FILE_PROTECTION_NONE
+                                          error:&error];
+        
+        if (!result) {
+            
+            NSLog(@"can't create directory at path: %@, error: %@", modelDirInDocuments, error.localizedDescription);
+            return;
+            
+        }
+        
+    }
+    
+    NSString *modelInDocuments = [modelDirInDocuments stringByAppendingPathComponent:modelPath.lastPathComponent];
+    
+    if (![fm fileExistsAtPath:modelInDocuments]) {
+        
+        NSError *error = nil;
+        BOOL result = [fm copyItemAtPath:modelPath
+                                  toPath:modelInDocuments
+                                   error:&error];
+        
+        if (!result) {
+            
+            NSLog(@"can't copy model, error: %@", error.localizedDescription);
+            return;
+            
+        } else {
+            
+            NSLog(@"model copy successfully");
+            
+        }
+        
+        NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:modelDirInDocuments];
+        
+        for (NSString *thePath in dirEnum) {
+
+            NSError *error = nil;
+            
+            NSString *fullPath = [modelDirInDocuments stringByAppendingPathComponent:thePath];
+            
+            BOOL result = [fm setAttributes:ATTRIBUTE_FILE_PROTECTION_NONE
+                               ofItemAtPath:fullPath
+                                      error:&error];
+            
+            if (!result) {
+                
+                NSLog(@"can't set attributes to %@, error: %@", fullPath, error.localizedDescription);
+                break;
+                
+            } else {
+                
+                NSLog(@"set attributes to %@", thePath);
+                
+            }
+            
+        }
+        return;
+
+    }
+    
+    NSURL *url = [NSURL fileURLWithPath:modelPath];
+    NSManagedObjectModel *bundleModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    
+    url = [NSURL fileURLWithPath:modelInDocuments];
+    NSManagedObjectModel *documentsModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    
+    if ([bundleModel isEqual:documentsModel]) {
+        
+        NSLog(@"model have no changes");
+        
+    } else {
+        
+        NSLog(@"!!! model have changes, old should be replaced with new one !!!");
+        
+    }
+
 }
 
 - (instancetype)initWithModelName:(NSString *)modelName {
