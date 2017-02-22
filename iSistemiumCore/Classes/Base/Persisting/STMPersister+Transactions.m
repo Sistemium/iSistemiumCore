@@ -216,7 +216,7 @@
             
         case STMStorageTypeFMDB:{
             
-            result = [super updateWithoutSave:entityName attributes:attributesToUpdate options:options error:error];
+            result = [super updateWithoutSave:entityName attributes:attributesToUpdate.copy options:options error:error];
             break;
             
         }
@@ -227,7 +227,7 @@
             options = [self fixMergeOptions:options entityName:entityName];
             
             [self.coreDataContext performBlockAndWait:^{
-                result = [self.persister update:entityName attributes:attributesToUpdate options:options error:error inManagedObjectContext:self.coreDataContext];
+                result = [self.persister update:entityName attributes:attributesToUpdate.copy options:options error:error inManagedObjectContext:self.coreDataContext];
             }];
             
             break;
@@ -238,7 +238,7 @@
     
     }
     
-    return result;
+    return result.copy;
 
 }
 

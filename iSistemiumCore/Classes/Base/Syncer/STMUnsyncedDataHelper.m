@@ -288,11 +288,11 @@
                         alteredObject[key] = [NSNull null];
                     }];
                     
-                    resultObject[@"object"] = alteredObject;
+                    resultObject[@"object"] = alteredObject.copy;
 
                 } else {
                     
-                    resultObject[@"object"] = unsyncedObject;
+                    resultObject[@"object"] = unsyncedObject.copy;
                     
                 }
                 
@@ -302,7 +302,7 @@
         
     }
     
-    return resultObject;
+    return resultObject.copy;
 
 }
 
@@ -412,7 +412,7 @@
         
     }
 
-    completionHandler(haveUnsyncedParent, optionalUnsyncedParents);
+    completionHandler(haveUnsyncedParent, optionalUnsyncedParents.copy);
     
 }
 
@@ -541,7 +541,7 @@
             
             if (copyOfPendingObjects.count > 0) {
                 
-                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects;
+                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects.copy;
                 
             } else {
                 
@@ -551,7 +551,7 @@
             
         }];
         
-        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity;
+        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity.copy;
         
     }
     

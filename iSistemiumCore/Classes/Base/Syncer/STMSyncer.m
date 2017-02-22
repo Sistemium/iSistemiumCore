@@ -402,7 +402,7 @@
         
         NSError *error = nil;
         [self.persistenceDelegate mergeSync:stcEntityName
-                                 attributes:attributes
+                                 attributes:attributes.copy
                                     options:@{STMPersistingOptionLtsNow}
                                       error:&error];
         

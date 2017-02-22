@@ -125,7 +125,7 @@
                           ofUpdated:result ? result : attributes
                             options:options];
     
-    return result;
+    return result.copy;
 
 }
 

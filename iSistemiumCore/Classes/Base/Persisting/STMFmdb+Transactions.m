@@ -67,7 +67,7 @@
     
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
     
-    NSString *pk = [self mergeInto:tableName dictionary:savingAttributes error:error];
+    NSString *pk = [self mergeInto:tableName dictionary:savingAttributes.copy error:error];
     
     if (!pk || !returnSaved) return nil;
     
