@@ -163,7 +163,7 @@
                      ofUpdatedArray:result.count ? result : attributeArray
                             options:options];
     
-    return result;
+    return result.copy;
     
 }
 

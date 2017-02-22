@@ -145,7 +145,7 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
         
     }
     
-    return subpredicatesDics;
+    return subpredicatesDics.copy;
     
 }
 
@@ -239,7 +239,7 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
         
     }
     
-    return subpredicatesDics;
+    return subpredicatesDics.copy;
     
 }
 
