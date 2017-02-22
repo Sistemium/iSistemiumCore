@@ -87,6 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)devicePlatform;
 + (NSString *)currentAppVersion;
 
++ (BOOL)dirExistsOrCreateAtPath:(NSString *)dirPath;
++ (BOOL)flushDirAtPath:(NSString *)dirPath;
++ (BOOL)enumerateDirAtPath:(NSString *)dirPath
+                 withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock;
 + (NSURL *)documentsDirectoryURL;
 + (NSString *)documentsDirectory;
 + (NSString *)absolutePathForPath:(nullable NSString *)path;

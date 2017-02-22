@@ -831,6 +831,78 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
+
+#pragma mark - some methods with paths/dirs/files handling
+
++ (BOOL)dirExistsOrCreateAtPath:(NSString *)dirPath {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    if (![fm fileExistsAtPath:dirPath]) {
+        
+        NSError *error = nil;
+        BOOL result = [fm createDirectoryAtPath:dirPath
+                    withIntermediateDirectories:YES
+                                     attributes:ATTRIBUTE_FILE_PROTECTION_NONE
+                                          error:&error];
+        
+        if (!result) {
+            
+            NSLog(@"can't create directory at path: %@, error: %@", dirPath, error.localizedDescription);
+            return NO;
+            
+        }
+        
+    }
+    
+    return YES;
+    
+}
+
++ (BOOL)flushDirAtPath:(NSString *)dirPath {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    BOOL returnResult = [self enumerateDirAtPath:dirPath withBlock:^BOOL(NSString *path, NSError *__autoreleasing *error) {
+        
+        BOOL result = [fm removeItemAtPath:path
+                                     error:error];
+        
+        if (!result) {
+            NSLog(@"can't flush dir at path %@, error: %@", path, [*error localizedDescription]);
+        }
+        
+        return result;
+        
+    }];
+    
+    return returnResult;
+    
+}
+
++ (BOOL)enumerateDirAtPath:(NSString *)dirPath withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:dirPath];
+    
+    BOOL result = YES;
+    NSError *error = nil;
+    
+    for (NSString *thePath in dirEnum) {
+        
+        NSString *fullPath = [dirPath stringByAppendingPathComponent:thePath];
+        
+        result = enumDirBlock(fullPath, &error);
+        
+        if (!result) break;
+        
+    }
+    
+    return result;
+    
+}
+
 + (NSURL *)documentsDirectoryURL {
     return [NSURL fileURLWithPath:[self documentsDirectory]];
 }
@@ -903,6 +975,9 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 + (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path {
     return (path) ? [NSTemporaryDirectory() stringByAppendingPathComponent:(NSString *)path] : NSTemporaryDirectory();
 }
+
+
+#pragma mark -
 
 + (UIColor *)colorForColorString:(NSString *)colorSting {
     
