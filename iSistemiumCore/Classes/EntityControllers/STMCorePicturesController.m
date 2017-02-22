@@ -105,7 +105,7 @@
         }
     }
     
-    return result;
+    return result.copy;
     
 }
 
@@ -220,13 +220,13 @@
 
 + (void)startCheckingPicturesPaths {
     
-    NSMutableArray *result = [STMCorePicturesController allPictures].mutableCopy;
+    NSArray *allPictures = [STMCorePicturesController allPictures];
     
-    if (result.count <= 0) return;
+    if (!allPictures.count) return;
 
     NSLogMethodName;
 
-    for (STMCorePicture *picture in result) {
+    for (STMCorePicture *picture in allPictures) {
         
         if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
             
