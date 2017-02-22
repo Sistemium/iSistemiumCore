@@ -255,80 +255,11 @@
             }
             
         } else {
-            
-            if (pathComponents.count > 1) {
-                [self imagePathsConvertingFromAbsoluteToRelativeForPicture:picture];
-                
-                NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
-                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
-                [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options];
-            }
-            
+            NSLog(@"something wrong here, this message should not be displayed");
         }
         
     }
     
-}
-
-+ (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(STMCorePicture *)picture {
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    
-    NSString *newImagePath = [self convertImagePath:picture.imagePath];
-    NSString *newResizedImagePath = [self convertImagePath:picture.resizedImagePath];
-    
-    if (newImagePath) {
-
-        NSLog(@"set new imagePath for picture %@", picture.xid);
-        picture.imagePath = newImagePath;
-
-        if (newResizedImagePath) {
-            
-            NSLog(@"set new resizedImagePath for picture %@", picture.xid);
-            picture.resizedImagePath = newResizedImagePath;
-            
-        } else {
-            
-            NSLog(@"! new resizedImagePath for picture %@", picture.xid);
-
-            if ([fileManager fileExistsAtPath:(NSString * _Nonnull)picture.resizedImagePath]) {
-                [fileManager removeItemAtPath:(NSString * _Nonnull)picture.resizedImagePath error:nil];
-            }
-
-            NSLog(@"save new resizedImage file for picture %@", picture.xid);
-            NSData *imageData = [NSData dataWithContentsOfFile:[[self imagesCachePath] stringByAppendingPathComponent:newImagePath]];
-            
-            [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
-                            forPicture:picture
-                         fromImageData:imageData];
-            
-        }
-        
-    } else {
-
-        NSLog(@"! new imagePath for picture %@", picture.xid);
-
-        if (picture.href) {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and have href for picture %@, flush picture and download data again", picture.xid];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            
-            [self removeImageFilesForPicture:picture];
-            [self hrefProcessingForObject:picture];
-            
-        } else {
-
-            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and no href for picture %@, will be deleted", picture.xid];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            
-            [self deletePicture:picture];
-            
-        }
-
-    }
-
 }
 
 + (NSString *)convertImagePath:(NSString *)path {
