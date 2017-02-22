@@ -35,7 +35,9 @@
         
         NSURL *url = [NSURL fileURLWithPath:path];
         
-        return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        
+        return model;
         
     }
         
