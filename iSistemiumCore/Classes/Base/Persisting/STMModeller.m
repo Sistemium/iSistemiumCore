@@ -184,6 +184,9 @@
     NSLog(@"undefinedEntityMappings %@", undefinedEntityMappings);
 }
 
+
+#pragma mark - check data models
+
 + (NSMappingModel *)checkDataModelsWithBundlePath:(NSString *)bundlePath error:(NSError **)error {
     
     NSString *modelDirInDocuments = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:@"model"];
@@ -287,6 +290,9 @@
     return result;
     
 }
+
+
+#pragma mark - init methods
 
 - (instancetype)initWithModelName:(NSString *)modelName {
     return [self initWithModel:[self.class modelWithName:modelName]];
