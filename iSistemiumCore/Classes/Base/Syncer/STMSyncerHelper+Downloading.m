@@ -42,6 +42,7 @@
 
 @property (nonatomic,strong) STMDownloadingQueue *queue;
 @property (nonatomic,strong) NSDate *startedAt;
+@property (atomic) NSTimeInterval finishedOperationsTotalLength;
 
 @end
 
@@ -101,12 +102,11 @@
 @end
 
 
-#pragma mark - Category implementation
-
-
 @implementation STMDataDownloadingState
 @end
 
+
+#pragma mark - Category implementation
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -137,6 +137,7 @@
         state.queue.suspended = YES;
         
         state.startedAt = [NSDate date];
+        state.finishedOperationsTotalLength = 0;
         
         if (!entitiesNames) {
             
@@ -210,12 +211,11 @@
 }
 
 
-#pragma mark - private methods
+#pragma mark - Category private methods
 
 
 - (void)logErrorMessage:(NSString *)errorMessage {
     
-    // TODO: need a method in owner's protocol
     [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage numType:STMLogMessageTypeError];
     
 }
@@ -236,7 +236,9 @@
     STMDownloadingOperation *operation = [queue operationForEntityName:entityName];
     
     [operation finish];
-        
+    
+    self.downloadingState.finishedOperationsTotalLength += operation.finishedIn;
+    
     NSUInteger remainCount = queue.operationCount;
     
     NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, operation.printableFinishedIn, @(remainCount));
@@ -257,15 +259,15 @@
         [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
     }
     
-    NSLog(@"receivingDidFinish in %@", [STMFunctions printableTimeInterval:-[self.downloadingState.startedAt timeIntervalSinceNow]]);
+    NSString *finishedIn = [STMFunctions printableTimeInterval:-[self.downloadingState.startedAt timeIntervalSinceNow]];
+    NSString *operationsTotal = [STMFunctions printableTimeInterval:self.downloadingState.finishedOperationsTotalLength];
+    
+    NSLog(@"receivingDidFinish in %@ operations total is %@", finishedIn, operationsTotal);
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
     
 }
-
-
-#pragma mark findAll ack handler
 
 
 - (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
