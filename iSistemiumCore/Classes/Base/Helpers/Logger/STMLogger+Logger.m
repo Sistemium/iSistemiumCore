@@ -117,6 +117,26 @@
 
 #pragma mark - STMLogger Protocol
 
+- (void)saveImportantMessage:(NSString *)text {
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeImportant];
+}
+
+- (void)saveErrorMessage:(NSString *)text {
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeError];
+}
+
+- (void)saveWarningMessage:(NSString *)text {
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeWarning];
+}
+
+- (void)saveInfoMessage:(NSString *)text {
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeInfo];
+}
+
+- (void)saveDebugMessage:(NSString *)text {
+    [self saveLogMessageWithText:text numType:STMLogMessageTypeDebug];
+}
+
 - (void)saveLogMessageWithText:(NSString *)text
                        numType:(STMLogMessageType)numType {
     
