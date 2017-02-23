@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "STMOperation.h"
 
+#define STM_OPERATION_MAX_CONCURRENT_DEFAULT 25
+
 @interface STMOperationQueue : NSOperationQueue
 
 + (instancetype)queueWithDispatchQueue:(dispatch_queue_t)dispatchQueue;

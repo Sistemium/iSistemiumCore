@@ -24,6 +24,7 @@
 
     self = [self init];
     
+    self.maxConcurrentOperationCount = STM_OPERATION_MAX_CONCURRENT_DEFAULT;
     if (dispatchQueue) self.underlyingQueue = dispatchQueue;
     
     return self;
