@@ -18,18 +18,16 @@
 
 #import "STMOperationQueue.h"
 
-// TODO: this could depend on device
-#define STM_DOWNLOADING_MAX_CONCURRENT STM_OPERATION_MAX_CONCURRENT_DEFAULT
+
+#pragma mark Private Classes
 
 
 @interface STMDownloadingOperation : STMOperation
 
 @property (nonatomic,strong) NSString *entityName;
-@property (nonatomic,strong) NSString *identifier;
-
-- (instancetype)initWithEntityName:(NSString *)entityName;
 
 @end
+
 
 
 @interface STMDownloadingQueue : STMOperationQueue
@@ -39,25 +37,13 @@
 @end
 
 
-#pragma mark STMDownloadingQueue
 
+@interface STMDataDownloadingState ()
 
-@implementation STMDownloadingQueue
-
-- (void)downloadEntityName:(NSString *)entityName {
-    [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
-}
-
-- (STMDownloadingOperation *)operationForEntityName:(NSString *)entityName {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entityName == %@", entityName];
-    
-    return [self.operations filteredArrayUsingPredicate:predicate].firstObject;
-}
+@property (nonatomic, strong) STMDownloadingQueue *queue;
 
 @end
 
-
-#pragma mark STMDownloadingOperation
 
 
 @implementation STMDownloadingOperation
@@ -89,19 +75,28 @@
 @end
 
 
-#pragma mark - Category implementation
 
+@implementation STMDownloadingQueue
 
-@interface STMDataDownloadingState ()
+- (void)downloadEntityName:(NSString *)entityName {
+    [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
+}
 
-@property (nonatomic, strong) STMDownloadingQueue *queue;
+- (STMDownloadingOperation *)operationForEntityName:(NSString *)entityName {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entityName == %@", entityName];
+    
+    return [self.operations filteredArrayUsingPredicate:predicate].firstObject;
+}
 
 @end
 
+
+#pragma mark - Category implementation
 
 
 @implementation STMDataDownloadingState
 @end
+
 
 
 @implementation STMSyncerHelper (Downloading)
@@ -127,7 +122,7 @@
         self.downloadingState = state;
         
         state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue
-                                                    maxConcurrent:STM_DOWNLOADING_MAX_CONCURRENT];
+                                                    maxConcurrent:STM_OPERATION_MAX_CONCURRENT_DEFAULT];
         state.queue.owner = self;
         state.queue.suspended = YES;
         
