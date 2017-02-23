@@ -19,7 +19,7 @@
 #import "STMOperationQueue.h"
 
 // TODO: this could depend on device
-#define STM_DOWNLOADING_MAX_CONCURRENT 2
+#define STM_DOWNLOADING_MAX_CONCURRENT STM_OPERATION_MAX_CONCURRENT_DEFAULT
 
 
 @interface STMDownloadingOperation : STMOperation
