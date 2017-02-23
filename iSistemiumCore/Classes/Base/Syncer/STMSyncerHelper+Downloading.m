@@ -144,7 +144,7 @@
                 if ([STMFunctions isNotNull:entity[@"url"]]) [names addObject:name];
             }];
             
-            entitiesNames = names.reversedOrderedSet.array.copy;
+            entitiesNames = names.array.copy;
             
         }
 
