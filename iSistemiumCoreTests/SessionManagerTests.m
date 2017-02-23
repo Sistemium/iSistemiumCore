@@ -39,6 +39,10 @@
     [super tearDown];
 }
 
+- (BOOL)haveAuthSession {
+    return [STMCoreAuthController authController].controllerState == STMAuthSuccess;
+}
+
 - (void)testSessionManager {
     
     NSDate *startedAt = [NSDate date];
@@ -46,8 +50,6 @@
 
     self.sessionManager = [STMCoreSessionManager sharedManager];
     
-    self.haveAuthSession = [STMCoreAuthController authController].controllerState == STMAuthSuccess;
-
     NSUInteger count = self.haveAuthSession ? 1 : 0;
     
     XCTAssertNotNil(self.sessionManager);
