@@ -118,11 +118,6 @@
     
 }
 
-- (instancetype)init {
-    self.beforeMergeInterceptors = [NSMutableDictionary dictionary];
-    return self;
-}
-
 - (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     if (!object) return @{};

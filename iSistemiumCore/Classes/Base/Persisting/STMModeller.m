@@ -310,9 +310,15 @@
     return [self initWithModel:[self.class modelWithName:modelName]];
 }
 
+- (instancetype)init {
+    self = [super init];
+    self.beforeMergeInterceptors = [NSMutableDictionary dictionary];
+    return self;
+}
+
 - (instancetype)initWithModel:(NSManagedObjectModel *)model{
     
-    self = [super init];
+    self = [self init];
     
     self.managedObjectModel = model;
     NSMutableDictionary *cache = @{}.mutableCopy;
