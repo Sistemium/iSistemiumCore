@@ -188,7 +188,7 @@
     
     NSString *modelDirInDocuments = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:@"model"];
 
-    if (![STMFunctions dirExistsOrCreateAtPath:modelDirInDocuments]) return nil;
+    if (![STMFunctions dirExistsOrCreateItAtPath:modelDirInDocuments]) return nil;
 
     NSFileManager *fm = [NSFileManager defaultManager];
     

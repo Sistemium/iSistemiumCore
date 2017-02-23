@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)devicePlatform;
 + (NSString *)currentAppVersion;
 
-+ (BOOL)dirExistsOrCreateAtPath:(NSString *)dirPath;
++ (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath;
 + (BOOL)flushDirAtPath:(NSString *)dirPath;
 + (BOOL)enumerateDirAtPath:(NSString *)dirPath
                  withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock;

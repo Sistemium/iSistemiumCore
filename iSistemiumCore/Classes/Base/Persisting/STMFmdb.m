@@ -24,26 +24,7 @@
     
     NSString *fmdbFolderPath = [documentDirectory stringByAppendingPathComponent:@"fmdb"];
     
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    if (![fm fileExistsAtPath:fmdbFolderPath]) {
-        
-        NSDictionary *attributes = ATTRIBUTE_FILE_PROTECTION_NONE;
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:fmdbFolderPath
-                    withIntermediateDirectories:NO
-                                     attributes:attributes
-                                          error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"create fmdb folder error: %@", error.localizedDescription);
-            return nil;
-
-        }
-
-    }
+    if (![STMFunctions dirExistsOrCreateItAtPath:fmdbFolderPath]) return nil;
     
     NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];
     

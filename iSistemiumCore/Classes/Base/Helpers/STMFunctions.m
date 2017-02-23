@@ -834,7 +834,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some methods with paths/dirs/files handling
 
-+ (BOOL)dirExistsOrCreateAtPath:(NSString *)dirPath {
++ (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
