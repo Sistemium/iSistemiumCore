@@ -1325,5 +1325,17 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval {
+    
+    if (timeInterval > 10) {
+        return [NSString stringWithFormat:@"%lus", (long)@(timeInterval).integerValue];
+    } else if (timeInterval > 2) {
+        return [NSString stringWithFormat:@"%.01fs", timeInterval];
+    } else {
+        return [NSString stringWithFormat:@"%lums", (long)@(timeInterval*1000).integerValue ];
+    }
+    
+}
+
 
 @end

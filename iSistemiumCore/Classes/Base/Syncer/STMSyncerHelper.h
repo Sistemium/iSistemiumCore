@@ -13,6 +13,8 @@
 
 @interface STMSyncerHelper : STMCoreController
 
+@property (nonatomic,strong) dispatch_queue_t dispatchQueue;
+
 @end
 
 
