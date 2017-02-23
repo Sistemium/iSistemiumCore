@@ -270,7 +270,7 @@
     
     result = [STMFunctions enumerateDirAtPath:newPath withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
         
-        BOOL enumResult = [fm setAttributes:ATTRIBUTE_FILE_PROTECTION_NONE
+        BOOL enumResult = [fm setAttributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
                                ofItemAtPath:path
                                       error:error];
         

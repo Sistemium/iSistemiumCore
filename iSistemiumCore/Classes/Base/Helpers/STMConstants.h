@@ -101,7 +101,7 @@
 
 // file protection
 
-#define ATTRIBUTE_FILE_PROTECTION_NONE @{NSFileProtectionKey : NSFileProtectionNone}
+#define ATTRIBUTE_FILE_PROTECTION_NONE NSFileProtectionKey:NSFileProtectionNone
 
 // Script message's names
 

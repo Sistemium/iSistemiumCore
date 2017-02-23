@@ -843,7 +843,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         NSError *error = nil;
         BOOL result = [fm createDirectoryAtPath:dirPath
                     withIntermediateDirectories:YES
-                                     attributes:ATTRIBUTE_FILE_PROTECTION_NONE
+                                     attributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
                                           error:&error];
         
         if (!result) {
