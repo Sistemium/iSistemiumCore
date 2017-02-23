@@ -17,6 +17,7 @@
 @property (nonatomic,strong) NSDate *startedAt;
 @property (nonatomic) NSTimeInterval finishedIn;
 
+@property (atomic) NSUInteger iterationsCount;
 @property (atomic) NSUInteger finishedOperationsCount;
 @property (atomic) NSTimeInterval finishedOperationsDuration;
 
@@ -38,11 +39,16 @@
 }
 
 - (instancetype)init {
+    
     self = [super init];
-    self.finishedOperationsDuration = 0;
+    self.finishedIn = 0;
+    self.iterationsCount = 0;
     self.finishedOperationsCount = 0;
+    self.finishedOperationsDuration = 0;
     self.maxConcurrentOperationCount = STM_OPERATION_MAX_CONCURRENT_DEFAULT;
+    
     return self;
+    
 }
 
 - (instancetype)initWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
@@ -84,7 +90,7 @@
         [object removeObserver:self forKeyPath:KEYPATH_IS_FINISHED];
         
         if (!self.operationCount) {
-            self.finishedIn = -[self.startedAt timeIntervalSinceNow];
+            self.finishedIn += -[self.startedAt timeIntervalSinceNow];
         }
         
     }
@@ -96,6 +102,7 @@
     
     if (self.suspended && !willBeSuspended) {
         self.startedAt = [NSDate date];
+        self.iterationsCount ++;
     }
     
     [super setSuspended:willBeSuspended];

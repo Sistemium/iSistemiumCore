@@ -14,6 +14,7 @@
 @interface STMOperationQueue : NSOperationQueue
 
 @property (readonly) NSDate *startedAt;
+@property (readonly) NSUInteger iterationsCount;
 
 @property (readonly) NSTimeInterval finishedIn;
 @property (readonly) NSTimeInterval finishedOperationsDuration;
