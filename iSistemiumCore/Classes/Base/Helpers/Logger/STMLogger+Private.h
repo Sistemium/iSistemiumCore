@@ -22,10 +22,4 @@
 @property (nonatomic, strong) NSString *uploadLogType;
 
 
-//@property (nonatomic, strong) NSMutableArray <NSDictionary *> *lastLogMessagesArray;
-//@property (nonatomic, strong) NSMutableArray <NSDictionary *> *possiblePatternArray;
-//
-//@property (nonatomic) BOOL patternDetected;
-//
-
 @end
