@@ -241,9 +241,10 @@
     NSLog(@"!!! model have changes, old should be replaced with new one !!!");
     
 #warning - maybe copy new model to Documents only after successful creating of db with the new model
-//    [self copyModelToPath:modelDirInDocuments
-//                 fromPath:bundlePath];
     
+    [self copyModelToPath:modelDirInDocuments
+                 fromPath:bundlePath];
+
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:documentsModel
                                                                      destinationModel:bundleModel
                                                                                 error:error];
