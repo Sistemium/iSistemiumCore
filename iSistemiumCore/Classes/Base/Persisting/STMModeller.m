@@ -27,11 +27,7 @@
 
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName {
     
-    NSString *path = [[NSBundle mainBundle] pathForResource:modelName
-                                                     ofType:@"momd"];
-    
-    if (!path) path = [[NSBundle mainBundle] pathForResource:modelName
-                                                      ofType:@"mom"];
+    NSString *path = [self pathForBundleModelWithName:modelName];
     
     if (path) {
         
@@ -62,6 +58,18 @@
         
     NSLog(@"there is no path for data model with name %@", modelName);
     return nil;
+    
+}
+
++ (NSString *)pathForBundleModelWithName:(NSString *)modelName {
+    
+    NSString *path = [[NSBundle mainBundle] pathForResource:modelName
+                                                     ofType:@"momd"];
+    
+    if (!path) path = [[NSBundle mainBundle] pathForResource:modelName
+                                                      ofType:@"mom"];
+
+    return path;
     
 }
 
