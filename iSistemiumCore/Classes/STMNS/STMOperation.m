@@ -7,6 +7,7 @@
 //
 
 #import "STMOperation.h"
+#import "STMFunctions.h"
 
 @implementation STMOperation {
     BOOL _executing;
@@ -35,6 +36,8 @@
     _executing = YES;
     [self didChangeValueForKey:@"isExecuting"];
     
+    self.startedAt = [NSDate date];
+    
 }
 
 - (BOOL)isExecuting {
@@ -47,6 +50,8 @@
 
 - (void)finish {
     
+    self.finishedIn = -[self.startedAt timeIntervalSinceNow];
+    
     [self willChangeValueForKey:@"isExecuting"];
     _executing = NO;
     [self didChangeValueForKey:@"isExecuting"];
@@ -55,6 +60,10 @@
     _finished = YES;
     [self didChangeValueForKey:@"isFinished"];
     
+}
+
+- (NSString *)printableFinishedIn {
+    return [STMFunctions printableTimeInterval:self.finishedIn];
 }
 
 @end
