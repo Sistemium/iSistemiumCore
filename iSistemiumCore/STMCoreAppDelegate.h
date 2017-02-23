@@ -21,6 +21,7 @@
 
 @property (nonatomic, strong) NSData *deviceToken;
 @property (nonatomic, strong) NSString *deviceTokenError;
+@property (nonatomic) BOOL haveFetchCompletionHandlers;
 
 - (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result;
 

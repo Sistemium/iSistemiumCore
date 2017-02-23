@@ -37,6 +37,12 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 
 @protocol STMLogger <NSObject>
 
+- (void)importantMessage:(NSString *)text;
+- (void)errorMessage:(NSString *)text;
+- (void)warningMessage:(NSString *)text;
+- (void)infoMessage:(NSString *)text;
+- (void)debugMessage:(NSString *)text;
+
 - (void)saveLogMessageWithText:(NSString *)text;
 - (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type;
 - (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType;

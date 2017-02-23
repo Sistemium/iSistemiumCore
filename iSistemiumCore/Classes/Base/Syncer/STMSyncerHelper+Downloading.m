@@ -41,8 +41,6 @@
 @interface STMDataDownloadingState ()
 
 @property (nonatomic,strong) STMDownloadingQueue *queue;
-@property (nonatomic,strong) NSDate *startedAt;
-@property (atomic) NSTimeInterval finishedOperationsTotalLength;
 
 @end
 
@@ -135,9 +133,6 @@
                                                     maxConcurrent:STM_OPERATION_MAX_CONCURRENT_DEFAULT];
         state.queue.owner = self;
         state.queue.suspended = YES;
-        
-        state.startedAt = [NSDate date];
-        state.finishedOperationsTotalLength = 0;
         
         if (!entitiesNames) {
             
@@ -237,8 +232,6 @@
     
     [operation finish];
     
-    self.downloadingState.finishedOperationsTotalLength += operation.finishedIn;
-    
     NSUInteger remainCount = queue.operationCount;
     
     NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, operation.printableFinishedIn, @(remainCount));
@@ -259,10 +252,13 @@
         [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
     }
     
-    NSString *finishedIn = [STMFunctions printableTimeInterval:-[self.downloadingState.startedAt timeIntervalSinceNow]];
-    NSString *operationsTotal = [STMFunctions printableTimeInterval:self.downloadingState.finishedOperationsTotalLength];
+    STMOperationQueue *queue = self.downloadingState.queue;
     
-    NSLog(@"receivingDidFinish in %@ operations total is %@", finishedIn, operationsTotal);
+    NSString *finishedIn = queue.printableFinishedIn;
+    NSString *duration = queue.printableFinishedOperationsDuration;
+    NSUInteger initialCount = queue.finishedOperationsCount;
+    
+    NSLog(@"receivingDidFinish in %@ (%@ total of %@ operations)", finishedIn, duration, @(initialCount));
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];

@@ -254,7 +254,9 @@
 
 - (void)defantomizingFinished {
     
-    NSLog(@"DEFANTOMIZING_FINISHED");
+    STMOperationQueue *queue = self.defantomizing.operationQueue;
+    
+    NSLog(@"DEFANTOMIZING_FINISHED in %@ with %@ iterations", queue.printableFinishedIn, @(queue.iterationsCount));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_FINISH userInfo:nil];
     
