@@ -40,7 +40,8 @@
 
 @interface STMDataDownloadingState ()
 
-@property (nonatomic, strong) STMDownloadingQueue *queue;
+@property (nonatomic,strong) STMDownloadingQueue *queue;
+@property (nonatomic,strong) NSDate *startedAt;
 
 @end
 
@@ -48,15 +49,18 @@
 
 @implementation STMDownloadingOperation
 
+
 - (STMDownloadingQueue *)dowlonadingQueue {
     return (STMDownloadingQueue *)self.queue;
 }
+
 
 - (instancetype)initWithEntityName:(NSString *)entityName {
     self = [self init];
     self.entityName = entityName;
     return self;
 }
+
 
 - (void)start {
     
@@ -72,21 +76,27 @@
     
 }
 
+
 @end
 
 
 
 @implementation STMDownloadingQueue
 
+
 - (void)downloadEntityName:(NSString *)entityName {
     [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
 }
 
+
 - (STMDownloadingOperation *)operationForEntityName:(NSString *)entityName {
+    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entityName == %@", entityName];
     
     return [self.operations filteredArrayUsingPredicate:predicate].firstObject;
+    
 }
+
 
 @end
 
@@ -125,6 +135,8 @@
                                                     maxConcurrent:STM_OPERATION_MAX_CONCURRENT_DEFAULT];
         state.queue.owner = self;
         state.queue.suspended = YES;
+        
+        state.startedAt = [NSDate date];
         
         if (!entitiesNames) {
             
@@ -221,12 +233,13 @@
     }
     
     STMDownloadingQueue *queue = self.downloadingState.queue;
+    STMDownloadingOperation *operation = [queue operationForEntityName:entityName];
     
-    [[queue operationForEntityName:entityName] finish];
+    [operation finish];
         
     NSUInteger remainCount = queue.operationCount;
     
-    NSLog(@"remain %@ entities to receive", @(remainCount));
+    NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, operation.printableFinishedIn, @(remainCount));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
                                 userInfo:@{@"countdownValue": @(remainCount)}];
@@ -242,10 +255,9 @@
     
     if (errorString) {
         [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
-    } else {
-        // Don't LogMethodName because don't want 'error' to appear in console upon success finish
-        NSLog(@"receivingDidFinish");
     }
+    
+    NSLog(@"receivingDidFinish in %@", [STMFunctions printableTimeInterval:-[self.downloadingState.startedAt timeIntervalSinceNow]]);
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
@@ -258,7 +270,7 @@
 
 - (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
-    NSLog(@"    %@: get %@ objects", entityName, @(result.count));
+    NSLog(@"    %@: got %@ objects", entityName, @(result.count));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
                                 userInfo:@{@"count": @(result.count),
