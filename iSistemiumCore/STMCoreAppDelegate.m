@@ -586,6 +586,10 @@
     
 }
 
+- (BOOL)haveFetchCompletionHandlers {
+    return self.fetchCompletionHandlers.count;
+}
+
 
 #pragma mark - Crashlytics
 
