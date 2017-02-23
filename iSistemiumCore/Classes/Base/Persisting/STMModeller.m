@@ -65,6 +65,20 @@
     
 }
 
++ (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath {
+    
+    if (!modelPath) return nil;
+    
+    NSURL *url = [NSURL fileURLWithPath:modelPath];
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    
+    return model;
+    
+}
+
+
+#pragma mark - parse mapping model
+
 + (void)parseMappingModel:(NSMappingModel *)mappingModel {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType != %d", NSCopyEntityMappingType];
@@ -231,17 +245,6 @@
     }
 
     return mappingModel;
-    
-}
-
-+ (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath {
-    
-    if (!modelPath) return nil;
-    
-    NSURL *url = [NSURL fileURLWithPath:modelPath];
-    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
-
-    return model;
     
 }
 
