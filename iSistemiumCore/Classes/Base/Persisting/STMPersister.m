@@ -127,7 +127,7 @@
                           ofUpdated:result ? result : attributes
                             options:options];
     
-    return result;
+    return result.copy;
 
 }
 
@@ -165,7 +165,7 @@
                      ofUpdatedArray:result.count ? result : attributeArray
                             options:options];
     
-    return result;
+    return result.copy;
     
 }
 

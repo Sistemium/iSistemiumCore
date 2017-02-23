@@ -1150,7 +1150,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         
     }
     
-    return validDictionary;
+    return validDictionary.copy;
     
 }
 
