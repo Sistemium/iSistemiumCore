@@ -32,6 +32,7 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isDefantomizing;
 @property (nonatomic) BOOL isUsingNetwork;
+@property (nonatomic) BOOL haveToCloseSocketAfterFetch;
 
 @property (nonatomic) BOOL needRepeatDownload;
 
@@ -192,16 +193,19 @@
     if (!self.isUsingNetwork) {
         
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        [self checkAppState];
+        [self checkSyncerState];
         
     }
 
 }
 
-- (void)checkAppState {
-    
-    if (!self.isUsingNetwork && [UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-//        [self closeSocketInBackground];
+- (void)checkSyncerState {
+
+    if (self.haveToCloseSocketAfterFetch) {
+        
+        self.haveToCloseSocketAfterFetch = NO;
+        [self closeSocketInBackgroundAfterFetch];
+        
     }
     
 }
@@ -432,9 +436,24 @@
                                               selector:@selector(closeSocketInBackground)
                                                 object:nil];
 
-    [self.session.logger saveLogMessageWithText:@"close socket in background" numType:STMLogMessageTypeInfo];
+    [self.session.logger saveLogMessageWithText:@"close socket in background"
+                                        numType:STMLogMessageTypeInfo];
 
     [self.socketTransport closeSocket];
+    
+}
+
+- (void)closeSocketInBackgroundAfterFetch {
+    
+    UIApplication *app = [UIApplication sharedApplication];
+
+    if (app.applicationState != UIApplicationStateBackground) return;
+
+    if (self.isUsingNetwork) {
+        self.haveToCloseSocketAfterFetch = YES;
+    } else {
+        [self closeSocketInBackground];
+    }
     
 }
 
@@ -681,10 +700,16 @@
 
     [self startDefantomization];
 
-    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)[UIApplication sharedApplication].delegate;
+    UIApplication *app = [UIApplication sharedApplication];
+    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)app.delegate;
     
-    [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
-
+    if (appDelegate.haveFetchCompletionHandlers) {
+    
+        [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
+        [self closeSocketInBackgroundAfterFetch];
+        
+    }
+    
 }
 
 - (void)receiveData:(NSString *)entityName offset:(NSString *)offset {
