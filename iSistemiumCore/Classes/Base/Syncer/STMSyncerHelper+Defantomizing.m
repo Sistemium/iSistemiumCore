@@ -93,7 +93,7 @@
 
 + (instancetype)defantomizingWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
 
-    STMSyncerHelperDefantomizing *instance = [[self.class alloc] init];
+    STMSyncerHelperDefantomizing *instance = [[self alloc] init];
     
     if (instance) {
         instance.failToResolveIds = [NSMutableSet set];
@@ -128,6 +128,7 @@
         
         if (!defantomizing) {
             defantomizing = [STMSyncerHelperDefantomizing defantomizingWithDispatchQueue:self.dispatchQueue];
+            defantomizing.operationQueue.owner = self;
         }
         
         if (defantomizing.operationQueue.operationCount) return;
