@@ -42,7 +42,7 @@
         
         NSString *xidString = parameters[@"id"];
         
-        if (!xidString) {
+        if (!xidString || [xidString isKindOfClass:NSNull.class]) {
             return [self rejectWithErrorMessage:@"empty xid"];
         }
             
@@ -188,7 +188,7 @@
     
 }
 
-- (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)getPicture:(NSDictionary *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
     NSData *imageData = [NSData dataWithContentsOfFile:[[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath]
@@ -202,7 +202,7 @@
               jsCallbackFunction:jsCallbackFunction];
         
     } else {
-        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture[@"xid"]];
         [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
         
@@ -223,9 +223,9 @@
     
     NSString *entityName;
     
-    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid entityName:&entityName];
+    NSDictionary *picture = [STMCoreObjectsController objectForIdentifier:getPictureXid entityName:&entityName];
     
-    if (!object) {
+    if (!picture) {
         
         [self getPictureWithXid:getPictureXid
                           error:[NSString stringWithFormat:@"no picture with xid %@", getPictureXid]];
@@ -233,46 +233,43 @@
         
     }
     
-    STMCorePicture *picture = (STMCorePicture *)[self.persistenceDelegate newObjectForEntityName:entityName];
-    [self.persistenceDelegate setObjectData:object toObject:picture withRelations:true];
-    
     if ([getPictureSize isEqualToString:@"thumbnail"]) {
         
-        if (picture.thumbnailPath) {
+        if (picture[@"thumbnailPath"] && ![picture[@"thumbnailPath"] isKindOfClass:NSNull.class]) {
             
             [self getPicture:picture
-               withImagePath:picture.thumbnailPath
+               withImagePath:picture[@"thumbnailPath"]
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:picture withEntityName:entityName];
         }
         
     } else if ([getPictureSize isEqualToString:@"resized"]) {
         
-        if (picture.resizedImagePath) {
+        if (picture[@"resizedImagePath"] && ![picture[@"resizedImagePath"] isKindOfClass:NSNull.class]) {
             
             [self getPicture:picture
-               withImagePath:picture.resizedImagePath
+               withImagePath:picture[@"resizedImagePath"]
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:picture withEntityName:entityName];
         }
         
     } else if ([getPictureSize isEqualToString:@"full"]) {
         
-        if (picture.imagePath) {
+        if (picture[@"imagePath"] && ![picture[@"imagePath"] isKindOfClass:NSNull.class]) {
             
             [self getPicture:picture
-               withImagePath:picture.imagePath
+               withImagePath:picture[@"imagePath"]
                   parameters:parameters
           jsCallbackFunction:callbackFunction];
             
         } else {
-            [self downloadPicture:picture];
+            [self downloadPicture:picture withEntityName:entityName];
         }
         
     } else {
@@ -284,17 +281,17 @@
     
 }
 
-- (void)downloadPicture:(STMCorePicture *)picture {
+- (void)downloadPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
     
-    if (picture.href) {
+    if (picture[@"href"] && ![picture[@"href"] isKindOfClass:NSNull.class]) {
         
         [self addObserversForPicture:picture];
         
-        [STMCorePicturesController downloadConnectionForObject:picture];
+        [STMCorePicturesController downloadConnectionForPicture:picture withEntityName:entityName];
         
     } else {
         
-        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
+        NSString *getPictureXid = picture[@"id"];
         
         [self getPictureWithXid:getPictureXid
                           error:@"picture have not imagePath and href"];
@@ -305,13 +302,13 @@
 
 - (void)pictureWasDownloaded:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMCorePicture class]]) {
+    if ([notification.userInfo isKindOfClass:[NSDictionary class]]) {
         
-        STMCorePicture *picture = notification.object;
+        NSDictionary *picture = notification.userInfo;
         
         [self removeObserversForPicture:picture];
         
-        [self handleGetPictureParameters:self.getPictureMessageParameters[[STMFunctions UUIDStringFromUUIDData:picture.xid]]];
+        [self handleGetPictureParameters:self.getPictureMessageParameters[picture[@"id"]]];
         
     }
     
@@ -319,34 +316,38 @@
 
 - (void)pictureDownloadError:(NSNotification *)notification {
     
-    STMCorePicture *picture = notification.object;
-    
-    [self removeObserversForPicture:picture];
-    
-    NSString *errorString = notification.userInfo[@"error"];
-    
-    NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
-    
-    [self getPictureWithXid:getPictureXid
-                      error:errorString];
+    if ([notification.userInfo isKindOfClass:[NSDictionary class]]) {
+        
+        NSDictionary *picture = notification.userInfo;
+        
+        [self removeObserversForPicture:picture];
+        
+        NSString *errorString = notification.userInfo[@"error"];
+        
+        NSString *getPictureXid = picture[@"id"];
+        
+        [self getPictureWithXid:getPictureXid
+                          error:errorString];
+        
+    }
     
 }
 
-- (void)addObserversForPicture:(STMCorePicture *)picture {
+- (void)addObserversForPicture:(NSDictionary *)picture {
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureWasDownloaded:)
                                                  name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                               object:picture];
+                                               object:[STMCorePicturesController sharedController]];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(pictureDownloadError:)
                                                  name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                               object:picture];
+                                               object:[STMCorePicturesController sharedController]];
     
 }
 
-- (void)removeObserversForPicture:(STMCorePicture *)picture {
+- (void)removeObserversForPicture:(NSDictionary *)picture {
     
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:NOTIFICATION_PICTURE_WAS_DOWNLOADED

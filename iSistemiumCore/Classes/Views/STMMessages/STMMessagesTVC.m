@@ -345,7 +345,7 @@
     
     if ([notification.object isKindOfClass:[STMMessagePicture class]]) {
         
-        STMMessagePicture *messagePicture = (STMMessagePicture *)notification.object;
+        STMMessagePicture *messagePicture = (STMMessagePicture *)notification.userInfo;
         
         NSIndexPath *indexPath = [self.resultsController indexPathForObject:(STMMessage *)messagePicture.message];
         if (indexPath) [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
