@@ -9,14 +9,14 @@
 #import <Foundation/Foundation.h>
 #import "STMSessionManagement.h"
 
-
 #define MESSAGE_DELAY_TO_CHECK_PATTERN 1
 
 
 @interface STMLogger : NSObject
 
++ (STMLogger *)sharedLogger;
+
 @property (nonatomic, weak) id <STMSession> session;
-@property (nonatomic, weak) UITableView *tableView;
 
 @property (nonatomic) NSUInteger patternDepth;
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *lastLogMessagesArray;

@@ -7,10 +7,9 @@
 //
 
 #import "STMLogger.h"
+#import "STMLogging.h"
 
 @interface STMLogger (Logger) <STMLogger>
-
-+ (STMLogger *)sharedLogger;
 
 + (void)requestInfo:(NSString *)xidString;
 + (void)requestObjects:(NSDictionary *)parameters;

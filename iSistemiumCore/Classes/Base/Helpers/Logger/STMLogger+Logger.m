@@ -16,19 +16,6 @@
 
 #pragma mark - Category methods
 
-+ (STMLogger *)sharedLogger {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedLogger = nil;
-    
-    dispatch_once(&pred, ^{
-        _sharedLogger = [[self alloc] init];
-    });
-    
-    return _sharedLogger;
-    
-}
-
 + (void)requestInfo:(NSString *)xidString {
     [[self sharedLogger] requestInfo:xidString];
 }
