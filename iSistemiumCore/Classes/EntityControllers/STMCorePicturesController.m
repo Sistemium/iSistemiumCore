@@ -668,7 +668,7 @@
     
     if (!href || [href isKindOfClass:NSNull.class] || ![self.class.pictureEntitiesNames containsObject:entityName]) return;
         
-    if (picture[@"imagePath"]) return [self didProcessHref:href];
+    if (picture[@"imagePath"] && ![picture[@"imagePath"] isKindOfClass:NSNull.class]) return [self didProcessHref:href];
     
     self.waitingForDownloadPicture = YES;
     
