@@ -22,7 +22,6 @@
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
 @property (nonatomic) BOOL waitingForDownloadPicture;
 
-@property (nonatomic, readonly) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSString *imagesCachePath;

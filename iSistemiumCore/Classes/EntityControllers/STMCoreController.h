@@ -19,6 +19,10 @@
 
 @property (nonatomic,weak) id <STMPersistingFullStack> persistenceDelegate;
 
+// TODO: maybe a better idea to subclass with STMCoreSessionController and mode session there
+@property (nonatomic,weak) id <STMSession> session;
+@property (readonly) id <STMLogger> logger;
+
 + (id <STMSession>)session;
 
 + (STMDocument *)document;

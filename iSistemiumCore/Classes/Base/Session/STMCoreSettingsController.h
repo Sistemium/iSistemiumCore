@@ -27,7 +27,6 @@
 
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;
 
-@property (nonatomic, weak) id <STMSession> session;
 @property (nonatomic, strong) NSArray *currentSettings;
 
 @end

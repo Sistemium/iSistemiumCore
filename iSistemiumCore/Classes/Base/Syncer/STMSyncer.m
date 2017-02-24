@@ -83,10 +83,9 @@
 
 - (void)setSession:(id <STMSession>)session {
     
-    if (session != _session) {
-        _session = session;
-        if (session) [self startSyncer];
-    }
+    [super setSession:session];
+    
+    if (session) [self startSyncer];
     
 }
 

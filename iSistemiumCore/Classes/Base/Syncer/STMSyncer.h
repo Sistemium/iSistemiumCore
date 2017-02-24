@@ -15,8 +15,6 @@
 
 @interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
-@property (nonatomic, weak) id <STMSession> session;
-
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) id <STMDataDownloading> dataDownloadingDelegate;
 @property (nonatomic, strong) id <STMDefantomizing> defantomizingDelegate;
