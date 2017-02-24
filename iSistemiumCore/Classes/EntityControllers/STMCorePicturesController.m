@@ -679,25 +679,13 @@
 
 - (void)downloadConnectionForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
 
-    [self downloadImagesEntityName:entityName attributes:picture]
-    .then(^ (NSDictionary *attributes){
-        NSLog(@"downloadConnectionForObject done: %@", picture[@"href"]);
-        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                               object:self
-                                             userInfo:picture];
-    })
-    .catch(^ (NSError *error){
-        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                               object:picture
-                                             userInfo:@{@"error" : error.localizedDescription}];
-        NSLog(@"downloadImagesOfEntityName error '%@' updating %@", error, picture);
-    });
+    [self downloadImagesEntityName:entityName attributes:picture];
 
 }
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes {
     
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         
         NSString *href = attributes[@"href"];
         
@@ -739,7 +727,19 @@
 
         }];
 
-    }];
+    }]
+    .then(^(NSDictionary *success) {
+        NSLog(@"downloadConnectionForObject done: %@", success[@"href"]);
+        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                               object:self
+                                             userInfo:success];
+    })
+    .catch(^(NSError *error) {
+        NSLog(@"downloadImagesOfEntityName error '%@' updating %@", error, attributes);
+        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                               object:attributes
+                                             userInfo:@{@"error" : error.localizedDescription}];
+    });
     
 }
 
