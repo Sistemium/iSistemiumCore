@@ -144,6 +144,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval;
 
++ (NSDictionary *)callerInfo;
+
+
 NS_ASSUME_NONNULL_END
 
 

@@ -1337,5 +1337,46 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (NSDictionary *)callerInfo {
+    
+    // http://stackoverflow.com/a/9603733
+    
+    NSMutableDictionary *result = @{}.mutableCopy;
+
+    NSUInteger sourceIndex = 2;
+    
+    NSArray *callStackSymbols = [NSThread callStackSymbols];
+    
+    if (callStackSymbols.count <= sourceIndex) {
+        return result;
+    }
+    
+    NSString *sourceString = callStackSymbols[sourceIndex];
+    
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [sourceString componentsSeparatedByCharactersInSet:separatorSet].mutableCopy;
+    [array removeObject:@""];
+    
+    NSUInteger classIndex = 3;
+    NSUInteger functionIndex = 4;
+    
+    if (array.count <= classIndex) {
+        return result;
+    }
+
+    NSString *classCaller = array[classIndex];
+    result[@"class"] = classCaller ? classCaller : @"";
+
+    if (array.count <= functionIndex) {
+        return result;
+    }
+
+    NSString *functionCaller = array[functionIndex];
+    result[@"function"] = functionCaller ? functionCaller : @"";
+    
+    return result;
+    
+}
+
 
 @end
