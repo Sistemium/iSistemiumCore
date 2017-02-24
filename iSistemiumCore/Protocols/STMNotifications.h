@@ -33,6 +33,9 @@
                    selector:(SEL)aSelector
                      object:(id)anObject;
 
+- (void)unObserveNotification:(NSNotificationName)notificationName
+                       object:(id)anObject;
+
 - (void)removeObservers;
 
 - (void)removeObserver:(id)anObserver;
