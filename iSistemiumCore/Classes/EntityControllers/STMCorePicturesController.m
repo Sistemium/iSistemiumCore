@@ -255,13 +255,8 @@
                 
             } else {
                 
-<<<<<<< HEAD
                 NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", attributes[@"id"]];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-=======
-                NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
->>>>>>> persisting
+                [[self sharedController].logger errorMessage:logMessage];
                 [self deletePicture:picture];
                 
             }
