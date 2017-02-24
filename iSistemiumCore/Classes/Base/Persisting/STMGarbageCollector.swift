@@ -29,7 +29,7 @@ extension Set {
                     searchUnusedImages()
                     if unusedImageFiles.count > 0 {
                         let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
-                        STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
+                        STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in unusedImageFiles{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)

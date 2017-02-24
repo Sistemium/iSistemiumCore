@@ -957,14 +957,14 @@
                 } else {
                     
                     [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
-                                                                type:@"error"];
+                                                             numType:STMLogMessageTypeError];
                     
                 }
                 
             } else {
                 
                 [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
-                                                            type:@"error"];
+                                                         numType:STMLogMessageTypeError];
                 
             }
             

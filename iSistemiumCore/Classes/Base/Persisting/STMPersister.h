@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) STMFmdb *fmdb;
 @property (nonatomic, strong) STMDocument *document;
+@property (nonatomic,strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype)persisterWithModelName:(NSString *)modelName
                                    uid:(NSString *)uid

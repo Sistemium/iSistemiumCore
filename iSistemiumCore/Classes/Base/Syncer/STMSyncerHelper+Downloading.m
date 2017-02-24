@@ -61,9 +61,7 @@
 }
 
 
-- (void)start {
-    
-    [super start];
+- (void)main {
     
     NSLog(@"start downloadEntityName: %@", self.entityName);
     
@@ -129,8 +127,7 @@
         STMDataDownloadingState *state = [[STMDataDownloadingState alloc] init];
         self.downloadingState = state;
         
-        state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue
-                                                    maxConcurrent:STM_OPERATION_MAX_CONCURRENT_DEFAULT];
+        state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue];
         state.queue.owner = self;
         state.queue.suspended = YES;
         
@@ -152,7 +149,7 @@
         
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
 
-        NSLog(@"will download %@ entities", @(state.queue.operationCount));
+        NSLog(@"will download %@ entities with %@ concurrent", @(state.queue.operationCount), @(state.queue.maxConcurrentOperationCount));
         
         state.queue.suspended = NO;
         
@@ -184,12 +181,12 @@
     }
     
     if (!result.count) {
-        NSLog(@"    %@: have no new data", entityName);
+//        NSLog(@"    %@: have no new data", entityName);
         return [self doneDownloadingEntityName:entityName];
     }
     
     if (!offset) {
-        NSLog(@"    %@: receive data w/o offset", entityName);
+//        NSLog(@"    %@: receive data w/o offset", entityName);
         return [self doneDownloadingEntityName:entityName];
     }
     
@@ -210,9 +207,7 @@
 
 
 - (void)logErrorMessage:(NSString *)errorMessage {
-    
-    [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage numType:STMLogMessageTypeError];
-    
+    [self.logger errorMessage:errorMessage];
 }
 
 
@@ -277,7 +272,7 @@
     
     if (result.count < pageSize) {
         
-        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
+//        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
         
         [STMClientEntityController clientEntityWithName:entityName setETag:offset];
         

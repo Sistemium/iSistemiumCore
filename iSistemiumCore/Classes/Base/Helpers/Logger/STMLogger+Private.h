@@ -21,5 +21,6 @@
 
 @property (nonatomic, strong) NSString *uploadLogType;
 
+@property (nonatomic, weak) UITableView *tableView;
 
 @end

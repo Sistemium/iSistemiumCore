@@ -30,7 +30,7 @@
 }
 
 + (void)loggingErrorMessage:(NSString *)logMessage {
-    [STMLogger.sharedLogger saveLogMessageWithText:logMessage type:@"error"];
+    [STMLogger.sharedLogger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
 }
 
 + (void)receiveRemoteCommands:(NSDictionary *)remoteCommands {

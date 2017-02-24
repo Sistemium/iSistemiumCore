@@ -37,3 +37,27 @@ void ExtendNSLog(const char *file, int lineNumber, const char *functionName, NSS
     fprintf(stderr, "%s / %s:%d - %s", [date UTF8String], [fileName UTF8String], lineNumber, [body UTF8String]);
     
 }
+
+void NSLogMessage(NSDictionary *callerInfo, NSString *format, ...) {
+    
+    va_list ap;
+    va_start (ap, format);
+    
+    if (![format hasSuffix: @"\n"]) {
+        format = [format stringByAppendingString: @"\n"];
+    }
+    
+    NSString *body = [[NSString alloc] initWithFormat:format arguments:ap];
+    
+    va_end (ap);
+    
+    NSString *date = [NSDateFormatter localizedStringFromDate:[NSDate date]
+                                                    dateStyle:NSDateFormatterNoStyle
+                                                    timeStyle:NSDateFormatterMediumStyle];
+    
+    NSString *callerClass = callerInfo[@"class"];
+    NSString *callerFunction = callerInfo[@"function"];
+    
+    fprintf(stderr, "%s / [%s %s] - %s", date.UTF8String, callerClass.UTF8String, callerFunction.UTF8String, body.UTF8String);
+
+}

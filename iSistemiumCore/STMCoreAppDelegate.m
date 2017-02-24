@@ -106,7 +106,7 @@
     
     NSString *msg = [NSString stringWithFormat:@"%@", remoteNotification[@"aps"][@"alert"]];
     NSString *logMessage = [NSString stringWithFormat:@"didReceiveRemoteNotification: %@", msg];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:nil];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
     
     id <STMSession> session = [self sessionManager].currentSession;
     
@@ -252,7 +252,7 @@
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"applicationDidReceiveMemoryWarning" type:@"important"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"applicationDidReceiveMemoryWarning" numType:STMLogMessageTypeImportant];
     [STMFunctions logMemoryStat];
     
 }

@@ -154,7 +154,7 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:(NSString *)url.path]) {
 
         NSString *logMessage = [NSString stringWithFormat:@"delete old document with filename: %@ for uid: %@", url.lastPathComponent, uid];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
         
         [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
         
@@ -165,7 +165,7 @@
     url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@", filename, @"sqlite"]];
 
     NSString *logMessage = [NSString stringWithFormat:@"prepare document with filename: %@ for uid: %@", url.lastPathComponent, uid];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"info"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
 
     STMDocument *document = [STMDocument initWithFileURL:url andDataModelName:dataModelName];
     document.uid = uid;

@@ -83,10 +83,9 @@
 
 - (void)setSession:(id <STMSession>)session {
     
-    if (session != _session) {
-        _session = session;
-        if (session) [self startSyncer];
-    }
+    [super setSession:session];
+    
+    if (session) [self startSyncer];
     
 }
 
@@ -336,7 +335,7 @@
     
     NSLogMethodName;
     
-    [self postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
 
     [self subscribeToUnsyncedObjects];
 
@@ -484,8 +483,8 @@
     
     self.syncTimer = [self newSyncTimer];
     
-    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
-                                 forMode:NSRunLoopCommonModes];
+    [[NSRunLoop mainRunLoop] addTimer:self.syncTimer
+                              forMode:NSRunLoopCommonModes];
     
 }
 
@@ -531,7 +530,7 @@
     
     if (![entitiesNames isKindOfClass:[NSArray class]]) {
         NSString *logMessage = @"receiveEntities: argument is not an array";
-        return [self.session.logger saveLogMessageWithText:logMessage type:@"error"];
+        return [self.session.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
     }
         
     NSArray *existingNames = [STMFunctions mapArray:entitiesNames withBlock:^NSString *(NSString *name) {

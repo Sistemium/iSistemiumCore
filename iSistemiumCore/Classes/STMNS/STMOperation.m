@@ -32,11 +32,14 @@
 
 - (void)start {
     
+    [self main];
+
     [self willChangeValueForKey:@"isExecuting"];
+
     _executing = YES;
-    [self didChangeValueForKey:@"isExecuting"];
-    
     self.startedAt = [NSDate date];
+
+    [self didChangeValueForKey:@"isExecuting"];
     
 }
 
