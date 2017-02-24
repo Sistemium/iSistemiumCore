@@ -152,7 +152,9 @@
 
 + (void)noWarningPerformSelector:(SEL)selector withObject:(id)object onReceiver:(id)receiver {
 
-    [receiver performSelector:selector withObject:object afterDelay:0];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [receiver performSelector:selector withObject:object afterDelay:0];
+    }];
     
 //    IMP imp = [receiver methodForSelector:selector];
 //    
