@@ -6,12 +6,14 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "STMCoreObject.h"
 #import <WebKit/WebKit.h>
 
 #import "STMCoreWKWebViewVC.h"
 #import "STMScriptMessaging.h"
 #import "STMPersistingObserving.h"
+#import "STMOperationQueue.h"
+
 
 @interface STMScriptMessagingSubscription : NSObject
 
@@ -21,7 +23,8 @@
 
 @end
 
-@interface STMScriptMessageHandler : NSObject <STMScriptMessaging>
+
+@interface STMScriptMessageHandler : STMCoreObject <STMScriptMessaging>
 
 @property (nonatomic, weak) id <STMScriptMessagingOwner> owner;
 
@@ -30,8 +33,6 @@
 @property (nonatomic, strong) NSMutableArray <NSDictionary *> *subscribedObjects;
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
-@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving, STMModelling> persistenceDelegate;
-@property (nonatomic, strong) NSMutableDictionary *getPictureCallbackJSFunctions;
-@property (nonatomic, strong) NSMutableDictionary *getPictureMessageParameters;
+@property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving, STMModelling, STMPersistingSync> persistenceDelegate;
 
 @end

@@ -117,19 +117,17 @@
 
 #pragma mark - class methods
 
-+ (STMCorePhoto *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData {
++ (NSDictionary *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData {
 	
     if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
         
-        STMCorePhoto *photoObject = (STMCorePhoto *) [[self.class persistenceDelegate] newObjectForEntityName:entityName];
+        NSString *xid = [STMFunctions uuidString];
         
-        NSData *xid = [STMFunctions UUIDDataFromNSUUID:[NSUUID UUID]];
+        NSMutableDictionary *photoObject = @{@"id":xid}.mutableCopy;
         
-        photoObject.xid = xid;
+        [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject withEntityName:entityName andUpload:YES];
         
-        [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject andUpload:YES];
-        
-        return photoObject;
+        return photoObject.copy;
         
     } else {
         

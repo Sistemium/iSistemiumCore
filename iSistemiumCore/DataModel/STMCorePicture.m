@@ -17,8 +17,8 @@
     if (self.isDeleted) {
         
         [self checkPictureClass];
-        
-        [STMCorePicturesController removeImageFilesForPicture:self];
+#warning We need destroy interceptor for deleting images
+//        [STMCorePicturesController removeImageFilesForPicture:self];
         
     }
     

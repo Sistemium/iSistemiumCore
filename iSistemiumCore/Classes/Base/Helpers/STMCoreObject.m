@@ -60,6 +60,10 @@
     [self.notificationCenter removeObserver:anObserver];
 }
 
+- (void)unObserveNotification:(NSNotificationName)notificationName object:(id)anObject {
+    [self.notificationCenter removeObserver:self name:notificationName object:anObject];
+}
+
 - (void)dealloc {
     [self removeObservers];
 }
