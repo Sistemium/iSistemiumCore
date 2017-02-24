@@ -65,8 +65,10 @@
     return [NSProcessInfo processInfo].processorCount * 3;
 }
 
-- (void)addOperation:(STMOperation *)op {
-    op.queue = self;
+- (void)addOperation:(NSOperation *)op {
+    if ([op respondsToSelector:@selector(setQueue:)]) {
+        [op performSelector:@selector(setQueue:) withObject:self];
+    }
     [op addObserver:self forKeyPath:KEYPATH_IS_FINISHED options:NSKeyValueObservingOptionNew context:nil];
     [super addOperation:op];
 }
