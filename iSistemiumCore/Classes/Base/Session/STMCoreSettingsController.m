@@ -48,7 +48,7 @@
 
 - (void)setSession:(id<STMSession>)session {
     
-    _session = session;
+    [super setSession:session];
     
     [self checkSettings];
     

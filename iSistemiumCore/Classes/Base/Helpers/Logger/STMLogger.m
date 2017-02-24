@@ -19,6 +19,20 @@
 #pragma mark - initializers
 
 
+
++ (STMLogger *)sharedLogger {
+    
+    static dispatch_once_t pred = 0;
+    __strong static id _sharedLogger = nil;
+    
+    dispatch_once(&pred, ^{
+        _sharedLogger = [[self alloc] init];
+    });
+    
+    return _sharedLogger;
+    
+}
+
 - (instancetype)init {
     
     self = [super init];

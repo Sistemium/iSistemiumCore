@@ -40,8 +40,7 @@
     if (!socketUrlString || !entityResource || !owner) {
         
         NSString *logMessage = [NSString stringWithFormat:@"have not enough parameters to init socket transport"];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeError];
+        [logger errorMessage:logMessage];
 
         return nil;
         
@@ -52,7 +51,7 @@
     socketTransport.socketUrl = socketUrlString;
     socketTransport.entityResource = entityResource;
     socketTransport.owner = owner;
-    socketTransport.logger = [STMLogger sharedLogger];
+    socketTransport.logger = logger;
     
     [socketTransport startSocket];
     
@@ -66,8 +65,7 @@
 
 - (void)startSocket {
     
-    [self.logger saveLogMessageWithText:CurrentMethodName
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:CurrentMethodName];
 
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
@@ -87,8 +85,7 @@
 
 - (void)closeSocket {
     
-    [self.logger saveLogMessageWithText:CurrentMethodName
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:CurrentMethodName];
 
     [self.owner socketWillClosed];
 
@@ -118,8 +115,7 @@
     [self.socket removeAllHandlers];
     
     NSString *logMessage = [NSString stringWithFormat:@"addEventObserversToSocket %@", self.socket];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
     
     
 #ifdef DEBUG
@@ -292,8 +288,7 @@
     [dataDic addEntriesFromDictionary:authDic];
     
     NSString *logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, self.socket, self.socket.sid];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
     
     STMSocketEvent eventNum = STMSocketEventAuthorization;
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
@@ -363,7 +358,7 @@
 
     NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", self.socket, self.socket.sid, data];
 
-    [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
 
     if (![data.firstObject isKindOfClass:[NSDictionary class]]) {
         return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
@@ -379,7 +374,7 @@
     self.isAuthorized = YES;
     logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
     
-    [self.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
 
     [self.owner socketReceiveAuthorization];
     [self checkAppState];
@@ -447,8 +442,7 @@
             
             if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
                 
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"socket is not connected but host is reachable, reconnect it"
-                                                         numType:STMLogMessageTypeImportant];
+                [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
                 
                 [self closeSocket];
                 [self startSocket];
@@ -469,8 +463,7 @@
     
     NSLogMethodName;
 
-    [self.logger saveLogMessageWithText:infoString
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:infoString];
     
     [self checkReachabilityAndSocketStatus];
     

@@ -61,4 +61,8 @@
     return [STMUserDefaults standardUserDefaults];
 }
 
+- (id)logger {
+    return self.session.logger;
+}
+
 @end
