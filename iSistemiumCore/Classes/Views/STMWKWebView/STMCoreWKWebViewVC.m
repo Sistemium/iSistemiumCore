@@ -1228,16 +1228,12 @@ int counter = 0;
     
     CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
     
-    STMCorePhoto *photoObject = [STMCorePhotosController newPhotoObjectWithEntityName:self.photoEntityName
+    NSDictionary *photoObject = [STMCorePhotosController newPhotoObjectWithEntityName:self.photoEntityName
                                                                             photoData:UIImageJPEGRepresentation(image, jpgQuality)];
     
     if (photoObject) {
         
-        [self.persistenceDelegate setObjectData:self.photoData toObject:photoObject withRelations:true];
-        
-        NSDictionary *photoObjectDic = [self.persistenceDelegate dictionaryFromManagedObject:photoObject];
-        
-        [self.persistenceDelegate merge:photoObject.entity.name attributes:photoObjectDic options:nil].then(^(NSDictionary * result){
+        [self.persistenceDelegate merge:@"STMCorePhoto" attributes:photoObject options:nil].then(^(NSDictionary * result){
             [self callbackWithData:@[result]
                         parameters:self.takePhotoMessageParameters
                 jsCallbackFunction:self.takePhotoCallbackJSFunction];
