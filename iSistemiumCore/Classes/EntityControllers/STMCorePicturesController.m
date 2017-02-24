@@ -511,6 +511,7 @@
         
     pc.hrefDictionary[href] = object;
     
+    // TODO: calculate and show estimated time remainig to load the rest of pictures
     if (pc.downloadingPictures) {
         [pc downloadNextPicture];
     } else if ([[pc instantLoadPicturesEntityNames] containsObject:entityName]) {
