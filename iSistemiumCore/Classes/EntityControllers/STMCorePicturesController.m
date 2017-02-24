@@ -95,14 +95,14 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
-//    for (NSString *entityName in [self pictureEntitiesNames]) {
-//        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
-//        for (NSDictionary *object in objects){
-//            NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
-//            [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-//            [result addObject:managedObject];
-//        }
-//    }
+    for (NSString *entityName in [self pictureEntitiesNames]) {
+        NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
+        for (NSDictionary *object in objects){
+            NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
+            [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
+            [result addObject:managedObject];
+        }
+    }
     
     return result.copy;
     
