@@ -183,18 +183,26 @@
         
         for (NSDictionary *logMessageDic in result) {
             
-            NSLog(@"Log %@: %@", logMessageDic[@"type"], logMessageDic[@"text"]);
+            [self nsLogMessageWithType:logMessageDic[@"type"]
+                                  text:logMessageDic[@"text"]
+                            callerInfo:callerInfo];
             
             [self saveLogMessageDic:logMessageDic];
             
         }
         
     } else {
-        
-        NSLog(@"Log %@: %@", type, text);
 
+        [self nsLogMessageWithType:type
+                              text:text
+                        callerInfo:callerInfo];
+        
     }
     
+}
+
+- (void)nsLogMessageWithType:(NSString *)type text:(NSString *)text callerInfo:(NSDictionary *)callerInfo {
+    NSLogM(callerInfo, @"Log %@: %@", type, text);
 }
 
 - (void)saveLogMessageDic:(NSDictionary *)logMessageDic {
