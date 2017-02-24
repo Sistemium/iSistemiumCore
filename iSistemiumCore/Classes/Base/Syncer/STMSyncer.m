@@ -335,7 +335,7 @@
     
     NSLogMethodName;
     
-    [self postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
 
     [self subscribeToUnsyncedObjects];
 
@@ -483,8 +483,8 @@
     
     self.syncTimer = [self newSyncTimer];
     
-    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
-                                 forMode:NSRunLoopCommonModes];
+    [[NSRunLoop mainRunLoop] addTimer:self.syncTimer
+                              forMode:NSRunLoopCommonModes];
     
 }
 
