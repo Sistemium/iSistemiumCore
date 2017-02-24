@@ -25,7 +25,6 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 - (void)debugMessage:(NSString *)text;
 
 - (void)saveLogMessageWithText:(NSString *)text;
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type;
 - (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType;
 - (void)saveLogMessageDictionaryToDocument;
 

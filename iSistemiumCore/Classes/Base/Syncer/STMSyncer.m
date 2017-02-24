@@ -530,7 +530,7 @@
     
     if (![entitiesNames isKindOfClass:[NSArray class]]) {
         NSString *logMessage = @"receiveEntities: argument is not an array";
-        return [self.session.logger saveLogMessageWithText:logMessage type:@"error"];
+        return [self.session.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
     }
         
     NSArray *existingNames = [STMFunctions mapArray:entitiesNames withBlock:^NSString *(NSString *name) {

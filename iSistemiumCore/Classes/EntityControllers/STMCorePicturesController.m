@@ -261,7 +261,7 @@
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
                 [self deletePicture:picture];
                 
             }
@@ -461,7 +461,7 @@
     
     if (counter > 0) {
 		NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
-		[[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+		[[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
     }
     
 }
@@ -521,7 +521,7 @@
     if (!result) {
         
         NSString *logMessage = [NSString stringWithFormat:@"have problem while save image files %@", fileName];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
 
     }
 
@@ -575,7 +575,7 @@
     
     if (!result) {
         NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, resizedImagePath, error.localizedDescription];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         return NO;
 	}
 

@@ -167,7 +167,7 @@
         self.locationManager.desiredAccuracy = currentAccuracy;
 
         NSString *logMessage = [NSString stringWithFormat:@"change desired accuracy to %f", currentAccuracy];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
         
     }
     
@@ -623,7 +623,7 @@
         }
 
         NSString *logMessage = [NSString stringWithFormat:@"set desired accuracy to %f", _locationManager.desiredAccuracy];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
         
     }
     
@@ -674,7 +674,7 @@
             if ([CLLocationManager locationServicesEnabled]) {
                 [self startUpdatingLocation];
             } else {
-                [[self.session logger] saveLogMessageWithText:@"location tracking disabled" type:@"error"];
+                [[self.session logger] saveLogMessageWithText:@"location tracking disabled" numType:STMLogMessageTypeError];
                 [super stopTracking];
             }
             

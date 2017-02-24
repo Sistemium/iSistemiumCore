@@ -843,7 +843,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     if (paths.count > 1 || [documentDirectory isEqualToString:@""]) {
         
         NSString *logMessage = [NSString stringWithFormat:@"documentDirectoryPaths %@", paths];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
 
         NSArray <NSURL *> *urls = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
         NSURL *documentDirectoryUrl = urls.lastObject;
