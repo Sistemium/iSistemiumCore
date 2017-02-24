@@ -91,7 +91,7 @@
 @implementation STMSyncerHelperDefantomizing
 
 
-+ (instancetype)withDispatchQueue:(dispatch_queue_t)dispatchQueue {
++ (instancetype)defantomizingWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
 
     STMSyncerHelperDefantomizing *instance = [[self.class alloc] init];
     
@@ -127,7 +127,7 @@
         defantomizing = self.defantomizing;
         
         if (!defantomizing) {
-            defantomizing = [STMSyncerHelperDefantomizing withDispatchQueue:self.dispatchQueue];
+            defantomizing = [STMSyncerHelperDefantomizing defantomizingWithDispatchQueue:self.dispatchQueue];
         }
         
         if (defantomizing.operationQueue.operationCount) return;
