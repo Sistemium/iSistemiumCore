@@ -45,7 +45,7 @@
     self.iterationsCount = 0;
     self.finishedOperationsCount = 0;
     self.finishedOperationsDuration = 0;
-    self.maxConcurrentOperationCount = STM_OPERATION_MAX_CONCURRENT_DEFAULT;
+    self.maxConcurrentOperationCount = [self maxConcurrentForCurrentDevice];
     
     return self;
     
@@ -61,6 +61,9 @@
     
 }
 
+- (NSUInteger)maxConcurrentForCurrentDevice {
+    return [NSProcessInfo processInfo].processorCount * 3;
+}
 
 - (void)addOperation:(STMOperation *)op {
     op.queue = self;

@@ -51,12 +51,8 @@
 }
 
 
-- (void)start {
-    
-    [super start];
-    
+- (void)main {
     [self.defantomizingQueue.owner.defantomizingOwner defantomizeEntityName:self.entityName identifier:self.identifier];
-    
 }
 
 
@@ -95,19 +91,16 @@
 @implementation STMSyncerHelperDefantomizing
 
 
-- (instancetype)initWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
++ (instancetype)withDispatchQueue:(dispatch_queue_t)dispatchQueue {
 
-    self = [super init];
+    STMSyncerHelperDefantomizing *instance = [[self.class alloc] init];
     
-    if (self) {
-        
-        self.failToResolveIds = [NSMutableSet set];
-        self.operationQueue = [STMDefantomizingQueue queueWithDispatchQueue:dispatchQueue
-                                                              maxConcurrent:STM_DEFANTOMIZING_MAX_CONCURRENT];
-        
+    if (instance) {
+        instance.failToResolveIds = [NSMutableSet set];
+        instance.operationQueue = [STMDefantomizingQueue queueWithDispatchQueue:dispatchQueue];
     }
     
-    return self;
+    return instance;
     
 }
 
@@ -131,11 +124,14 @@
     
     @synchronized (self) {
         
-        defantomizing = self.defantomizing ? self.defantomizing : [[STMSyncerHelperDefantomizing alloc] initWithDispatchQueue:self.dispatchQueue];
+        defantomizing = self.defantomizing;
+        
+        if (!defantomizing) {
+            defantomizing = [STMSyncerHelperDefantomizing withDispatchQueue:self.dispatchQueue];
+        }
         
         if (defantomizing.operationQueue.operationCount) return;
         
-        defantomizing.operationQueue.owner = self;
         defantomizing.operationQueue.suspended = YES;
         
         self.defantomizing = defantomizing;
