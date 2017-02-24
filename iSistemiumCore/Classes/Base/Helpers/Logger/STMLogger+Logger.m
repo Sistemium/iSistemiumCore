@@ -176,8 +176,11 @@
     
     if ([uploadTypes containsObject:type]) {
         
-        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"  : text,
-                                                                  @"type"  : type}];
+        NSString *callerInfoString = [NSString stringWithFormat:@"[%@ %@]", callerInfo[@"class"], callerInfo[@"function"]];
+        
+        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"   : text,
+                                                                  @"type"   : type,
+                                                                  @"source" : callerInfoString}];
         
         if (!result) return;
         
