@@ -24,6 +24,7 @@
 @property (nonatomic) BOOL isAuthorized;
 @property (nonatomic) NSTimeInterval timeout;
 
+@property (nonatomic,strong) dispatch_queue_t handleQueue;
 
 @end
 
@@ -70,12 +71,19 @@
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-    self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
-                                                     config:@{@"voipEnabled"         : @YES,
-                                                              @"log"                : @NO,
-                                                              @"forceWebsockets"    : @NO,
-                                                              @"path"               : path,
-                                                              @"reconnects"         : @YES}];
+    self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    
+    NSDictionary *config = @{
+                             @"handleQueue"        : self.handleQueue,
+                             @"doubleEncodeUTF8"   : @YES,
+                             @"voipEnabled"        : @YES,
+                             @"log"                : @NO,
+                             @"forceWebsockets"    : @NO,
+                             @"path"               : path,
+                             @"reconnects"         : @YES
+                             };
+    
+    self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl config:config];
 
     [self addEventObservers];
     
