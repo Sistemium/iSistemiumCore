@@ -105,50 +105,67 @@
 #pragma mark - STMLogger Protocol
 
 - (void)importantMessage:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeImportant];
+    
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeImportant
+                      callerInfo:[STMFunctions callerInfo]];
+    
 }
 
 - (void)errorMessage:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeError];
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeError
+                      callerInfo:[STMFunctions callerInfo]];
+    
 }
 
 - (void)warningMessage:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeWarning];
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeWarning
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
 - (void)infoMessage:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeInfo];
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeInfo
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
 - (void)debugMessage:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeDebug];
-}
-
-- (void)saveLogMessageWithText:(NSString *)text
-                       numType:(STMLogMessageType)numType {
-    
-    NSString *stringType = [self stringTypeForNumType:numType];
     
     [self saveLogMessageWithText:text
-                            type:stringType];
-    
+                         numType:STMLogMessageTypeDebug
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
 - (void)saveLogMessageWithText:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeInfo];
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeInfo
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type {
-    [self saveLogMessageWithText:text type:type owner:nil];
+- (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType {
+    
+    [self saveLogMessageWithText:text
+                         numType:numType
+                      callerInfo:[STMFunctions callerInfo]];
+    
 }
 
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type owner:(STMDatum *)owner {
+- (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType callerInfo:(NSDictionary *)callerInfo {
     
     if (!text) return;
     
-    // owner is unused property
-    owner = nil; // have to check owner.managedObjectsContext before use it
-    
+    NSString *type = [self stringTypeForNumType:numType];
+
     if (![[self availableTypes] containsObject:type]) type = @"info";
     
 #ifdef DEBUG
@@ -161,7 +178,7 @@
         
         NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"  : text,
                                                                   @"type"  : type}];
-
+        
         if (!result) return;
         
         for (NSDictionary *logMessageDic in result) {
