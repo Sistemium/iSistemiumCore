@@ -11,18 +11,21 @@
 #import "STMConstants.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
+#import "STMOperationQueue.h"
 
 @interface STMCorePicturesController()
 
 @property (nonatomic, strong) NSOperationQueue *uploadQueue;
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
-@property (nonatomic) BOOL waitingForDownloadPicture;
+@property (nonatomic,readonly) BOOL waitingForDownloadPicture;
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSString *imagesCachePath;
 
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
+
+@property (nonatomic,strong) STMOperationQueue *downloadQueue;
 
 @end
 
@@ -39,8 +42,20 @@
     return [[self sharedController] persistenceDelegate];
 }
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.downloadQueue = [[STMOperationQueue alloc] init];
+        self.downloadQueue.maxConcurrentOperationCount = 1;
+    }
+    return self;
+}
+
 #pragma mark - instance properties
 
+- (BOOL)waitingForDownloadPicture {
+    return !!self.downloadQueue.operationCount;
+}
 
 - (void)setDownloadingPictures:(BOOL)downloadingPictures {
     
