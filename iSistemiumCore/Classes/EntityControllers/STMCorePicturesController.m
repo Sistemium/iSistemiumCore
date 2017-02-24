@@ -661,54 +661,70 @@
     [[self sharedController] downloadConnectionForPicture:picture withEntityName:entityName];
 }
 
+
 - (void)downloadConnectionForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
 
-    NSString *href = picture[@"href"];
-    
-    if (!href || [href isKindOfClass:NSNull.class] || ![self.class.pictureEntitiesNames containsObject:entityName]) return;
-        
-    if (picture[@"imagePath"] && ![picture[@"imagePath"] isKindOfClass:NSNull.class]) return [self didProcessHref:href];
-    
-    self.waitingForDownloadPicture = YES;
-    
-    NSURL *url = [NSURL URLWithString:href];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    
-    NSLog(@"downloadConnectionForObject start: %@", href);
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                               
-        self.waitingForDownloadPicture = NO;
-        
-        if (connectionError) {
-            
-            NSLog(@"error %@ in %@", connectionError.description, entityName);
-            
-            [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                                   object:picture
-                                                 userInfo:@{@"error" : connectionError.description}];
+    [self downloadImagesEntityName:entityName attributes:picture]
+    .then(^ (NSDictionary *attributes){
+        NSLog(@"downloadConnectionForObject done: %@", picture[@"href"]);
+        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                               object:self
+                                             userInfo:picture];
+    })
+    .catch(^ (NSError *error){
+        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                               object:picture
+                                             userInfo:@{@"error" : error.localizedDescription}];
+        NSLog(@"downloadImagesOfEntityName error '%@' updating %@", error, picture);
+    });
 
-        } else {
-            
-            NSMutableDictionary *mutPict = picture.mutableCopy;
-            
-            [self.class setImagesFromData:data forPicture:mutPict withEntityName:entityName andUpload:NO];
-            
-            NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
-            
-            [self.persistenceDelegate update:entityName attributes:mutPict.copy options:options].then(^(NSDictionary *result){
-                NSLog(@"downloadConnectionForObject saved: %@", href);
-                [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:self userInfo:result];
-            }).catch(^(NSError *error){
-                NSLog(@"Error: %@", error);
-            });
+}
 
+- (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes {
+    
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+        
+        NSString *href = attributes[@"href"];
+        
+        if (![STMFunctions isNotNull:href] || ![self.class.pictureEntitiesNames containsObject:entityName]) {
+            return resolve([STMFunctions errorWithMessage:@"no href or not a Picture"]);
         }
         
-        [self didProcessHref:href];
+        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) {
+            [self didProcessHref:href];
+            return resolve(attributes);
+        }
         
-    }];
+        NSURL *url = [NSURL URLWithString:href];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        
+        NSLog(@"downloadImagesOfEntityName start: %@", href);
+        
+        [NSURLConnection sendAsynchronousRequest:request queue:self.downloadQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+            
+            [self didProcessHref:href];
+            
+            if (connectionError) {
+                NSLog(@"downloadImagesOfEntityName error '%@' with %@", connectionError.description, attributes);
+                return resolve(connectionError);
+            }
+                
+            NSMutableDictionary *pictureWithPaths = attributes.mutableCopy;
+            
+            [self.class setImagesFromData:data forPicture:pictureWithPaths withEntityName:entityName andUpload:NO];
+            
+            NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
+            
+            NSDictionary *options = @{
+                                      STMPersistingOptionFieldstoUpdate: attributesToUpdate,
+                                      STMPersistingOptionSetTs: @NO
+                                      };
+            
+            resolve([self.persistenceDelegate update:entityName attributes:pictureWithPaths.copy options:options]);
 
+        }];
+
+    }];
     
 }
 

@@ -33,4 +33,6 @@
 
 + (BOOL)setThumbnailForPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data ;
 
+- (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
+
 @end
