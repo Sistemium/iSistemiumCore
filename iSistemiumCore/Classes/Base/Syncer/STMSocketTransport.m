@@ -311,7 +311,8 @@
 }
 
 - (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    [self.owner socketLostConnection];
+    // May be it's too early to report lost connection because we'll reconnect soon
+    // [self.owner socketLostConnection];
 }
 
 - (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
