@@ -16,8 +16,7 @@
 
 + (instancetype)sharedController;
 
-+ (
-   NSDictionary *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData;
++ (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData;
 
 - (STMCoreLocationTracker *)locationTracker;
 

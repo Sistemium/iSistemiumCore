@@ -1228,8 +1228,8 @@ int counter = 0;
     
     CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
     
-    NSDictionary *photoObject = [STMCorePhotosController newPhotoObjectWithEntityName:self.photoEntityName
-                                                                            photoData:UIImageJPEGRepresentation(image, jpgQuality)];
+    NSDictionary *photoObject = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName
+                                                                        photoData:UIImageJPEGRepresentation(image, jpgQuality)];
     
     if (photoObject) {
         

@@ -117,7 +117,7 @@
 
 #pragma mark - class methods
 
-+ (NSDictionary *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData {
++ (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData {
 	
     if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
         

@@ -222,7 +222,7 @@
         [self startCheckingPicturesPaths];
         
         [self checkBrokenPhotos];
-        [self checkUploadedPhotos];
+        [self checkNotUploadedPhotos];
         
 #warning counts large downloaded images as unused
         
@@ -250,7 +250,7 @@
         NSString *entityName = picture[@"entityName"];
         NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
         
-        if ((attributes[@"thumbnailPath"] == nil || [attributes[@"thumbnailPath"] isKindOfClass:NSNull.class]) && attributes[@"thumbnailHref"] != nil && ![attributes[@"thumbnailHref"] isKindOfClass:NSNull.class]){
+        if (![STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"thumbnailHref"]]){
             
             NSString* thumbnailHref = attributes[@"thumbnailHref"];
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
@@ -275,9 +275,9 @@
         
         if (pathComponents.count == 0) {
             
-            if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
+            if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
-                [self hrefProcessingForObject:picture.mutableCopy];
+                [self hrefProcessingForObject:picture.copy];
                 
             } else {
                 
@@ -402,7 +402,7 @@
             
             if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
                 
-                [self hrefProcessingForObject:picture.mutableCopy];
+                [self hrefProcessingForObject:picture];
                 
             } else {
                 
@@ -452,15 +452,14 @@
     
 }
 
-+ (void)checkUploadedPhotos {
++ (void)checkNotUploadedPhotos {
 
-    int counter = 0;
+    NSUInteger counter = 0;
 
     NSPredicate *notUploaded = [NSPredicate predicateWithFormat:@"href == nil"];
+    STMCorePicturesController *controller = [self sharedController];
     
-    NSArray *result = [[self sharedController] allPicturesWithPredicate:notUploaded];
-    
-    for (NSDictionary *picture in result) {
+    for (NSDictionary *picture in [controller allPicturesWithPredicate:notUploaded].copy) {
         
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
@@ -469,33 +468,37 @@
             
         NSError *error = nil;
         NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
-        NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
+        NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
-        if (photoData && photoData.length > 0) {
+        if (imageData && imageData.length > 0) {
             
-            [[self sharedController] addUploadOperationForPicture:attributes.mutableCopy withEntityName:entityName data:photoData];
+            [controller uploadImageEntityName:entityName attributes:attributes data:imageData];
             counter++;
             
-        } else if (!error) {
-                
-            NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, photoData %@, length %lu — object will be deleted", entityName, photoData, (unsigned long)photoData.length];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            [self deletePicture:picture];
+            return;
+            
+        }
+        
+        
+        if (error) {
+            
+            NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
+            [[self sharedController].logger errorMessage:logMessage];
             
         } else {
             
-            NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
+            NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, imageData %@, length %lu — object will be deleted", entityName, imageData, (unsigned long)imageData.length];
+            
+            [controller.logger errorMessage:logMessage];
+            
+            [self deletePicture:picture];
             
         }
         
     }
     
     if (counter > 0) {
-		NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
-		[[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
+		[controller.logger importantMessage:[NSString stringWithFormat:@"Sending %@ photos",@(counter)]];
     }
     
 }
@@ -530,12 +533,8 @@
     NSString *xid = picture[@"id"];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
-    if ([entityName isEqualToString:@"STMCorePhoto"]) {
-        
-        if (shouldUpload) {
-            [[self sharedController] addUploadOperationForPicture:picture withEntityName:entityName data:data];
-        }
-
+    if (shouldUpload) {
+        [[self sharedController] uploadImageEntityName:entityName attributes:picture data:data];
     }
     
     if (!fileName) return;
@@ -746,7 +745,7 @@
 
 }
 
-- (void)addUploadOperationForPicture:(NSMutableDictionary *)picture withEntityName:(NSString *)entityName data:(NSData *)data {
+- (void)uploadImageEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes data:(NSData *)data {
 
     NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
     NSString *url = [[appSettings valueForKey:@"IMS.url"] stringByAppendingString:@"?folder="];
@@ -767,65 +766,55 @@
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
     [request setHTTPBody:data];
     
-    [NSURLConnection sendAsynchronousRequest:request
-                                       queue:[NSOperationQueue mainQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
-        if (!error) {
-                
-            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-            
-            if (statusCode == 200) {
-                
-                NSError *localError = nil;
-                
-                NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                           options:0
-                                                                             error:&localError];
-                
-                if (dictionary) {
-
-                    NSArray *picturesDicts = dictionary[@"pictures"];
-
-                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
-                                                                           options:0
-                                                                             error:&localError];
-                    
-                    if (picturesJson) {
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            
-                            for (NSDictionary *dict in picturesDicts){
-                                if ([dict[@"name"] isEqual:@"original"]){
-                                    picture[@"href"] = dict[@"src"];
-                                }
-                            }
-                            
-                            NSString *info = [[NSString alloc] initWithData:picturesJson
-                                                                   encoding:NSUTF8StringEncoding];
-                            
-                            picture[@"picturesInfo"] = [info stringByReplacingOccurrencesOfString:@"\\/"
-                                                                                   withString:@"/"];
-                            
-                            NSLog(@"%@", picture[@"picturesInfo"]);
-                                                                                    
-                        });
-
-                    } else {
-                        NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                    }
-                    
-                } else {
-                    NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                }
-                
-            } else {
-                NSLog(@"Request error, statusCode: %ld", (long)statusCode);
-            }
-            
-        } else {
-            NSLog(@"connectionError %@", error.localizedDescription);
+       if (error) {
+           NSLog(@"connectionError %@", error.localizedDescription);
+           return;
+       }
+        
+        NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+        
+        if (statusCode != 200) {
+            NSLog(@"Request error, statusCode: %ld", (long)statusCode);
+            return;
         }
+            
+        NSError *localError = nil;
+        
+        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&localError];
+        
+        if (!dictionary) {
+            NSLog(@"error in json serialization: %@", localError.localizedDescription);
+            return;
+        }
+
+        NSArray *picturesDicts = dictionary[@"pictures"];
+
+        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:0 error:&localError];
+        
+        if (!picturesJson) {
+            NSLog(@"error in json serialization: %@", localError.localizedDescription);
+            return;
+        }
+        
+        NSMutableDictionary *picture = attributes.mutableCopy;
+        
+        for (NSDictionary *dict in picturesDicts){
+            if ([dict[@"name"] isEqual:@"original"]){
+                picture[@"href"] = dict[@"src"];
+            }
+        }
+        
+        NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
+        
+        picture[@"picturesInfo"] = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        
+        NSLog(@"%@", picture[@"picturesInfo"]);
+        
+        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo"]};
+        
+        [self.persistenceDelegate update:entityName attributes:picture options:fieldstoUpdate];
 
     }];
 
