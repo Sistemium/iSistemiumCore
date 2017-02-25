@@ -71,7 +71,9 @@
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-    self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    if (!self.handleQueue) {
+        self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    }
     
     NSDictionary *config = @{
                              @"handleQueue"        : self.handleQueue,
@@ -245,7 +247,9 @@
             
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
         
-        return [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        OnAckCallback *onAck = [self.socket emitWithAck:eventStringValue with:@[value]];
+        
+        return [onAck timingOutAfter:self.timeout callback:^(NSArray *data) {
             
             if ([data.firstObject isEqual:@"NO ACK"]) {
                 return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
