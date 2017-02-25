@@ -69,7 +69,7 @@ XCTestExpectation *expectation;
     
     XCTAssertNil(error);
     
-    [STMCorePicturesController downloadConnectionForPicture:picture withEntityName:entityName];
+    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture];
     
     [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
         

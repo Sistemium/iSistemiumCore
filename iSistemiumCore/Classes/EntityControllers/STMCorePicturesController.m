@@ -505,26 +505,22 @@
 
 + (void)hrefProcessingForObject:(NSDictionary *)object {
     
+    STMCorePicturesController *controlller = [self sharedController];
+
     NSString *entityName = object[@"entityName"];
     NSMutableDictionary *attributes = [object[@"attributes"] mutableCopy];
-    
     NSString *href = attributes[@"href"];
     
-    if (!href || [href isKindOfClass:NSNull.class]) return;
+    if (![STMFunctions isNotNull:href]) return;
         
-    if (![[self sharedController].pictureEntitiesNames containsObject:entityName]) return;
-        
-    STMCorePicturesController *pc = [self sharedController];
+    if (![controlller.pictureEntitiesNames containsObject:entityName]) return;
     
-    if ([pc.hrefDictionary objectForKey:href]) return;
+    if (controlller.hrefDictionary[href]) return;
         
-    pc.hrefDictionary[href] = object;
+    controlller.hrefDictionary[href] = object;
     
-    // TODO: calculate and show estimated time remainig to load the rest of pictures
-    if (pc.downloadingPictures) {
-        [pc downloadNextPicture];
-    } else if ([pc.instantLoadEntityNames containsObject:entityName]) {
-        [self downloadConnectionForPicture:attributes withEntityName:entityName];
+    if ([controlller.instantLoadEntityNames containsObject:entityName]) {
+        [controlller downloadImagesEntityName:entityName attributes:attributes];
     }
 
 }
@@ -659,8 +655,8 @@
 
 - (void)downloadNextPicture {
     
-    if (!self.downloadingPictures || self.waitingForDownloadPicture) return;
-        
+    if (!self.downloadingPictures) return;
+    
     NSDictionary *picture = self.hrefDictionary.allValues.firstObject;
     
     NSString *entityName = picture[@"entityName"];
@@ -668,8 +664,8 @@
     
     if (attributes) {
         
-        [self downloadConnectionForPicture:attributes withEntityName:entityName];
-        
+        [self downloadImagesEntityName:entityName attributes:attributes];
+
     } else {
         
         self.downloadingPictures = NO;
@@ -684,16 +680,6 @@
 
 }
 
-+ (void)downloadConnectionForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
-    [[self sharedController] downloadConnectionForPicture:picture withEntityName:entityName];
-}
-
-
-- (void)downloadConnectionForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
-
-    [self downloadImagesEntityName:entityName attributes:picture];
-
-}
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes {
     
