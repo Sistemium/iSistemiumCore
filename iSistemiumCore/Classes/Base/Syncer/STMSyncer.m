@@ -555,11 +555,11 @@
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
         if (error) {
-            NSLog(@"sendFindWithValue entityName %@ error: %@", entityName, error);
+            NSLog(@"error: %@ %@", entityName, error);
             return;
         }
         
-        NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
+        NSLog(@"success: %@ %@", entityName, identifier);
         
         [self.persistenceDelegate mergeAsync:entityName attributes:result options:@{STMPersistingOptionLtsNow} completionHandler:nil];
         
@@ -824,12 +824,14 @@
     
     if (!self.session.uid) return;
     
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:receiveDateString forKey:key];
-    [self.userDefaults synchronize];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+        
+        NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+        
+        [self.userDefaults setObject:receiveDateString forKey:key];
+        [self.userDefaults synchronize];
+    }];
     
 }
 
@@ -837,11 +839,13 @@
     
     if (!self.session) return;
     
-    NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
-    NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:sendDateString forKey:key];
-    [self.userDefaults synchronize];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
+        NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+        
+        [self.userDefaults setObject:sendDateString forKey:key];
+        [self.userDefaults synchronize];
+    }];
     
 }
 

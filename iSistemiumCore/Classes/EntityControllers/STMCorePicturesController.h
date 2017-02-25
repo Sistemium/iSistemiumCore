@@ -24,9 +24,8 @@
 + (void)checkPhotos;
 
 + (void)hrefProcessingForObject:(NSDictionary *)object;
-+ (void)downloadConnectionForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName;
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(NSMutableDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
++ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
 + (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data;
 
 + (void)removeImageFilesForPicture:(NSDictionary *)picture;

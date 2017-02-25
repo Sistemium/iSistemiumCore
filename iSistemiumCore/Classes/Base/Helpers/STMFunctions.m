@@ -1339,6 +1339,8 @@ vm_size_t freeMemory(void) {
 
 + (NSDictionary *)callerInfo {
     
+#warning - have to check this method's result if app build for release
+
     // http://stackoverflow.com/a/9603733
     
     NSMutableDictionary *result = @{}.mutableCopy;
@@ -1358,21 +1360,20 @@ vm_size_t freeMemory(void) {
     [array removeObject:@""];
     
     NSUInteger classIndex = 3;
-    NSUInteger functionIndex = 4;
     
     if (array.count <= classIndex) {
         return result;
     }
 
-    NSString *classCaller = array[classIndex];
-    result[@"class"] = classCaller ? classCaller : @"";
+    result[@"class"] = array[classIndex];
+
+    NSUInteger functionIndex = 4;
 
     if (array.count <= functionIndex) {
         return result;
     }
 
-    NSString *functionCaller = array[functionIndex];
-    result[@"function"] = functionCaller ? functionCaller : @"";
+    result[@"function"] = array[functionIndex];
     
     return result;
     

@@ -71,7 +71,9 @@
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-    self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    if (!self.handleQueue) {
+        self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    }
     
     NSDictionary *config = @{
                              @"handleQueue"        : self.handleQueue,
@@ -91,16 +93,19 @@
     
 }
 
+
 - (void)closeSocket {
     
     [self.logger infoMessage:CurrentMethodName];
-
-    [self.owner socketWillClosed];
-
+    [self.socket removeAllHandlers];
     [self.socket disconnect];
-    [self flushSocket];
+    [self.owner socketWillClosed];
+    
+    self.socket = nil;
+    self.isAuthorized = NO;
     
 }
+
 
 - (void)reconnectSocket {
     
@@ -109,14 +114,6 @@
     
 }
 
-- (void)flushSocket {
-    
-    [self.socket removeAllHandlers];
-
-    self.socket = nil;
-    self.isAuthorized = NO;
-    
-}
 
 - (void)addEventObservers {
     
@@ -250,7 +247,9 @@
             
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
         
-        return [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        OnAckCallback *onAck = [self.socket emitWithAck:eventStringValue with:@[value]];
+        
+        return [onAck timingOutAfter:self.timeout callback:^(NSArray *data) {
             
             if ([data.firstObject isEqual:@"NO ACK"]) {
                 return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
@@ -312,7 +311,8 @@
 }
 
 - (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    [self.owner socketLostConnection];
+    // May be it's too early to report lost connection because we'll reconnect soon
+    // [self.owner socketLostConnection];
 }
 
 - (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
@@ -451,9 +451,7 @@
             if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
                 
                 [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
-                
-                [self closeSocket];
-                [self startSocket];
+                [self reconnectSocket];
                 
             }
             

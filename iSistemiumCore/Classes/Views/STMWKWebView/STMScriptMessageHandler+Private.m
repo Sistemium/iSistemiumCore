@@ -208,7 +208,7 @@
     NSString *pictureId = parameters[@"id"];
     NSString *callbackFunction = parameters[@"callback"];
     NSString *pictureSize = parameters[@"size"];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"data.id == %@", pictureId];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id == %@", pictureId];
     
     NSDictionary *picture = [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
     
@@ -232,7 +232,7 @@
         return [self.owner callbackWithError:error parameters:parameters];
     }
     
-    picture = picture[@"data"];
+    picture = picture[@"attributes"];
     attribute = picture[attribute];
     
     if (![STMFunctions isNotNull:attribute]) {

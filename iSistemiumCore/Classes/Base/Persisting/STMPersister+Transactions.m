@@ -16,9 +16,6 @@
 
 @property (nonatomic,weak) STMPersister *persister;
 
-+ (instancetype)persistingTransactionWithFMDatabase:(FMDatabase*)database stmFMDB:(STMFmdb *)stmFMDB persister:(STMPersister *)persister;
-- (instancetype)initWithFMDatabase:(FMDatabase*)database stmFMDB:(STMFmdb *)stmFMDB persister:(STMPersister *)persister;
-
 @end
 
 @interface STMPersisterTransaction()
