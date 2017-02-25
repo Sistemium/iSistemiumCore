@@ -1143,20 +1143,11 @@ int counter = 0;
 
 - (NSString *)stringValueForImageSourceType:(UIImagePickerControllerSourceType)imageSourceType {
     
-    switch (imageSourceType) {
-        case UIImagePickerControllerSourceTypePhotoLibrary: {
-            return @"PhotoLibrary";
-            break;
-        }
-        case UIImagePickerControllerSourceTypeCamera: {
-            return @"Camera";
-            break;
-        }
-        case UIImagePickerControllerSourceTypeSavedPhotosAlbum: {
-            return @"PhotosAlbum";
-            break;
-        }
-    }
+    return @{
+             @(UIImagePickerControllerSourceTypePhotoLibrary): @"PhotoLibrary",
+             @(UIImagePickerControllerSourceTypeCamera): @"Camera",
+             @(UIImagePickerControllerSourceTypeSavedPhotosAlbum): @"PhotosAlbum"
+             }[@(imageSourceType)];
     
 }
 
