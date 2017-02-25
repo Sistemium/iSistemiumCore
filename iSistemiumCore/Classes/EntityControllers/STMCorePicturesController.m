@@ -704,16 +704,13 @@
         NSURL *url = [NSURL URLWithString:href];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];
         
-        NSLog(@"downloadImagesOfEntityName start: %@", href);
+        NSLog(@"start: %@", href);
         
         [NSURLConnection sendAsynchronousRequest:request queue:self.downloadQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
             
             [self didProcessHref:href];
             
-            if (connectionError) {
-                NSLog(@"downloadImagesOfEntityName error '%@' with %@", connectionError.description, attributes);
-                return resolve(connectionError);
-            }
+            if (connectionError) return resolve(connectionError);
                 
             NSMutableDictionary *pictureWithPaths = attributes.mutableCopy;
             
@@ -732,16 +729,17 @@
 
     }]
     .then(^(NSDictionary *success) {
-        NSLog(@"downloadConnectionForObject done: %@", success[@"href"]);
-        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                               object:self
-                                             userInfo:success];
+        
+        NSLog(@"success: %@ %@", entityName, success[@"href"]);
+        [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED userInfo:success];
+   
     })
     .catch(^(NSError *error) {
-        NSLog(@"downloadImagesOfEntityName error '%@' updating %@", error, attributes);
-        [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                               object:attributes
-                                             userInfo:@{@"error" : error.localizedDescription}];
+        
+        NSLog(@"error: %@ %@", entityName, error);
+        [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                    userInfo:@{@"error" : error.localizedDescription}];
+   
     });
     
 }

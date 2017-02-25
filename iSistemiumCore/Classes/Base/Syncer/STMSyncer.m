@@ -555,11 +555,11 @@
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
         if (error) {
-            NSLog(@"sendFindWithValue entityName %@ error: %@", entityName, error);
+            NSLog(@"error: %@ %@", entityName, error);
             return;
         }
         
-        NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
+        NSLog(@"success: %@ %@", entityName, identifier);
         
         [self.persistenceDelegate mergeAsync:entityName attributes:result options:@{STMPersistingOptionLtsNow} completionHandler:nil];
         
