@@ -91,16 +91,19 @@
     
 }
 
+
 - (void)closeSocket {
     
     [self.logger infoMessage:CurrentMethodName];
-
-    [self.owner socketWillClosed];
-
+    [self.socket removeAllHandlers];
     [self.socket disconnect];
-    [self flushSocket];
+    [self.owner socketWillClosed];
+    
+    self.socket = nil;
+    self.isAuthorized = NO;
     
 }
+
 
 - (void)reconnectSocket {
     
@@ -109,14 +112,6 @@
     
 }
 
-- (void)flushSocket {
-    
-    [self.socket removeAllHandlers];
-
-    self.socket = nil;
-    self.isAuthorized = NO;
-    
-}
 
 - (void)addEventObservers {
     
@@ -451,9 +446,7 @@
             if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
                 
                 [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
-                
-                [self closeSocket];
-                [self startSocket];
+                [self reconnectSocket];
                 
             }
             
