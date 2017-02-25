@@ -393,9 +393,7 @@
     
     NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil"];
     
-    NSArray *result = [controller allPicturesWithPredicate:anyNilPaths];
-    
-    for (NSDictionary *picture in result) {
+    for (NSDictionary *picture in [controller allPicturesWithPredicate:anyNilPaths]) {
         
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
