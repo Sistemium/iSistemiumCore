@@ -27,6 +27,11 @@
 
 @property (nonatomic,strong) STMOperationQueue *downloadQueue;
 
+@property (readonly) NSSet <NSString *> *pictureEntitiesNames;
+@property (readonly) NSArray <NSString *> *photoEntitiesNames;
+@property (readonly) NSArray <NSString *> *instantLoadEntityNames;
+@property (readonly) NSArray <NSDictionary *> *allPictures;
+
 @end
 
 
@@ -90,26 +95,28 @@
     
 }
 
-+ (NSSet <NSString *> *)pictureEntitiesNames {
-    
-    return [[self persistenceDelegate] hierarchyForEntityName:@"STMCorePicture"];
-    
++ (NSArray *)allPictures {
+    return [self sharedController].allPictures;
 }
 
-+ (NSArray *)allPictures {
-    
+- (NSSet <NSString *> *)pictureEntitiesNames {
+    return [self.persistenceDelegate hierarchyForEntityName:@"STMCorePicture"];
+}
+
+- (NSArray *)allPictures {
+
     return [self allPicturesWithPredicate:nil];
     
 }
 
-+ (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
+- (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
     
     NSMutableArray *result = @[].mutableCopy;
     
-    for (NSString *entityName in [self pictureEntitiesNames]) {
+    for (NSString *entityName in self.pictureEntitiesNames) {
         NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
         [result addObjectsFromArray:[STMFunctions mapArray:objects withBlock:^id _Nonnull(id  _Nonnull value) {
-            return @{@"entityName":entityName, @"data":value};
+            return @{@"entityName":entityName, @"attributes":value};
         }]];
     }
     
@@ -121,15 +128,17 @@
     return @[@"STMVisitPhoto",@"STMOutletPhoto"];
 }
 
-- (NSArray *)instantLoadPicturesEntityNames {
+- (NSArray *)instantLoadEntityNames {
     return @[@"STMMessagePicture"];
 }
 
 - (NSArray *)nonloadedPictures {
     
-    NSArray *predicateArray = [[self photoEntitiesNames] arrayByAddingObjectsFromArray:[self instantLoadPicturesEntityNames]];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (entity.name IN %@) AND (href != %@) AND (thumbnailPath == %@)", predicateArray,nil,nil];
-    return [[self.class allPictures] filteredArrayUsingPredicate:predicate];
+    NSString *loadablePictures = @"NOT (entityName IN %@) AND (attributes.href != nil) AND (attributes.thumbnailPath == nil)";
+    NSArray *excludingPhotosAndInstant = [self.photoEntitiesNames arrayByAddingObjectsFromArray:self.instantLoadEntityNames];
+    NSPredicate *nonloadedPicturesPredicate = [NSPredicate predicateWithFormat:loadablePictures, excludingPhotosAndInstant];
+    
+    return [self.allPictures filteredArrayUsingPredicate:nonloadedPicturesPredicate];
     
 }
 
@@ -141,7 +150,7 @@
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
         
-        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:[self.class pictureEntitiesNames].allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
+        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
             
             _nonloadedPicturesCount = [self nonloadedPictures].count;
             
@@ -239,7 +248,7 @@
     for (NSDictionary *picture in allPictures) {
         
         NSString *entityName = picture[@"entityName"];
-        NSMutableDictionary *attributes = [picture[@"data"] mutableCopy];
+        NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
         
         if ((attributes[@"thumbnailPath"] == nil || [attributes[@"thumbnailPath"] isKindOfClass:NSNull.class]) && attributes[@"thumbnailHref"] != nil && ![attributes[@"thumbnailHref"] isKindOfClass:NSNull.class]){
             
@@ -286,7 +295,7 @@
                 
                 [self imagePathsConvertingFromAbsoluteToRelativeForPicture:mutPicture];
                 
-                attributes = mutPicture[@"data"];
+                attributes = mutPicture[@"attributes"];
                 
                 NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
                 [self.persistenceDelegate update:entityName attributes:attributes options:options];
@@ -302,7 +311,7 @@
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
-    NSMutableDictionary *attributes = [picture[@"data"] mutableCopy];
+    NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
     
     NSString *newImagePath = [self convertImagePath:attributes[@"imagePath"]];
     NSString *newResizedImagePath = [self convertImagePath:attributes[@"resizedImagePath"]];
@@ -333,7 +342,7 @@
                          fromImageData:imageData];
             
         }
-        picture[@"data"] = attributes.copy;
+        picture[@"attributes"] = attributes.copy;
         
     } else {
 
@@ -380,14 +389,14 @@
 
 + (void)checkBrokenPhotos {
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
+    NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil"];
     
-    NSArray *result = [self.class allPicturesWithPredicate:predicate];
+    NSArray *result = [[self sharedController] allPicturesWithPredicate:anyNilPaths];
     
     for (NSDictionary *picture in result) {
         
         NSString *entityName = picture[@"entityName"];
-        NSDictionary *attributes = picture[@"data"];
+        NSDictionary *attributes = picture[@"attributes"];
         
         if (!attributes[@"imagePath"] || [attributes[@"imagePath"] isKindOfClass:NSNull.class]) {
             
@@ -447,16 +456,16 @@
 
     int counter = 0;
 
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
+    NSPredicate *notUploaded = [NSPredicate predicateWithFormat:@"href == nil"];
     
-    NSArray *result = [self.class allPicturesWithPredicate:predicate];
+    NSArray *result = [[self sharedController] allPicturesWithPredicate:notUploaded];
     
     for (NSDictionary *picture in result) {
         
         NSString *entityName = picture[@"entityName"];
-        NSDictionary *attributes = picture[@"data"];
+        NSDictionary *attributes = picture[@"attributes"];
         
-        if (attributes[@"imagePath"] && ![attributes[@"imagePath"] isKindOfClass:NSNull.class]) continue;
+        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
         NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
@@ -497,13 +506,13 @@
 + (void)hrefProcessingForObject:(NSDictionary *)object {
     
     NSString *entityName = object[@"entityName"];
-    NSMutableDictionary *attributes = [object[@"data"] mutableCopy];
+    NSMutableDictionary *attributes = [object[@"attributes"] mutableCopy];
     
     NSString *href = attributes[@"href"];
     
     if (!href || [href isKindOfClass:NSNull.class]) return;
         
-    if (![[self pictureEntitiesNames] containsObject:entityName]) return;
+    if (![[self sharedController].pictureEntitiesNames containsObject:entityName]) return;
         
     STMCorePicturesController *pc = [self sharedController];
     
@@ -514,7 +523,7 @@
     // TODO: calculate and show estimated time remainig to load the rest of pictures
     if (pc.downloadingPictures) {
         [pc downloadNextPicture];
-    } else if ([[pc instantLoadPicturesEntityNames] containsObject:entityName]) {
+    } else if ([pc.instantLoadEntityNames containsObject:entityName]) {
         [self downloadConnectionForPicture:attributes withEntityName:entityName];
     }
 
@@ -655,7 +664,7 @@
     NSDictionary *picture = self.hrefDictionary.allValues.firstObject;
     
     NSString *entityName = picture[@"entityName"];
-    NSMutableDictionary *attributes = picture[@"data"];
+    NSMutableDictionary *attributes = picture[@"attributes"];
     
     if (attributes) {
         
@@ -692,7 +701,7 @@
         
         NSString *href = attributes[@"href"];
         
-        if (![STMFunctions isNotNull:href] || ![self.class.pictureEntitiesNames containsObject:entityName]) {
+        if (![STMFunctions isNotNull:href] || ![self.pictureEntitiesNames containsObject:entityName]) {
             return resolve([STMFunctions errorWithMessage:@"no href or not a Picture"]);
         }
         
@@ -844,7 +853,7 @@
 //    NSLog(@"delete picture %@", picture);
     
     NSString *entityName = picture[@"entityName"];
-    NSDictionary *attributes = picture[@"data"];
+    NSDictionary *attributes = picture[@"attributes"];
     
     [self removeImageFilesForPicture:attributes];
     

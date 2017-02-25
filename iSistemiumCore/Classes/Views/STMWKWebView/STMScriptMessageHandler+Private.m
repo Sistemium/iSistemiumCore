@@ -232,7 +232,7 @@
         return [self.owner callbackWithError:error parameters:parameters];
     }
     
-    picture = picture[@"data"];
+    picture = picture[@"attributes"];
     attribute = picture[attribute];
     
     if (![STMFunctions isNotNull:attribute]) {

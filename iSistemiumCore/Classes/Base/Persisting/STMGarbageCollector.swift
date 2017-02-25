@@ -66,7 +66,7 @@ extension Set {
         let allImages = STMCorePicturesController.allPictures() as! Array<Dictionary<String,Any>>;
         for image in allImages{
             
-            let data = image["data"] as! Dictionary<String,Any>
+            let data = image["attributes"] as! Dictionary<String,Any>
             
             if let path = data["imagePath"] as? String{
                 usedImageFiles.insert(path)
