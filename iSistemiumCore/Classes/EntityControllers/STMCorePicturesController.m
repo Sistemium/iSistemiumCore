@@ -400,9 +400,11 @@
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
         
-        if (!attributes[@"imagePath"] || [attributes[@"imagePath"] isKindOfClass:NSNull.class]) {
+        if (![STMFunctions isNotNull:attributes[@"imagePath"]]) {
             
-            if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
+            // TODO: check if any of the picture's files are in place and update picture
+            
+            if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
                 [self hrefProcessingForObject:picture];
                 
