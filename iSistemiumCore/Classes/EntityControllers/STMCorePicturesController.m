@@ -389,9 +389,11 @@
 
 + (void)checkBrokenPhotos {
     
+    STMCorePicturesController *controller = [self sharedController];
+    
     NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil"];
     
-    NSArray *result = [[self sharedController] allPicturesWithPredicate:anyNilPaths];
+    NSArray *result = [controller allPicturesWithPredicate:anyNilPaths];
     
     for (NSDictionary *picture in result) {
         
@@ -422,13 +424,15 @@
         
         if (photoData && photoData.length > 0) {
             
-            [self setImagesFromData:photoData forPicture:attributes.mutableCopy withEntityName:entityName andUpload:NO];
+            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:self userInfo:picture];
-                
-            });
+            if (!attributes) continue;
+            
+            [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+                [controller postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                                  userInfo:[STMFunctions setValue:result forKey:@"attributes" inDictionary:picture]];
+            }];
+            
             
         } else if (error) {
             
@@ -528,31 +532,32 @@
 
 }
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(NSMutableDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
++ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
     
-    NSString *xid = picture[@"id"];
+    NSString *xid = picture[STMPersistingKeyPrimary];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
     if (shouldUpload) {
         [[self sharedController] uploadImageEntityName:entityName attributes:picture data:data];
     }
     
-    if (!fileName) return;
+    if (!fileName) return nil;
         
     BOOL result = YES;
+    NSMutableDictionary *mutablePicture = picture.mutableCopy;
     
-    result = (result && [self saveImageFile:fileName forPicture:picture fromImageData:data]);
-    result = (result && [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:picture fromImageData:data]);
+    result = result && [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data];
+    result = result && [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data];
     
-    result = (result && [self setThumbnailForPicture:picture fromImageData:data]);
+    result = result && [self setThumbnailForPicture:mutablePicture fromImageData:data];
     
     if (!result) {
-        
         NSString *logMessage = [NSString stringWithFormat:@"have problem while save image files %@", fileName];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
-
+        [[STMLogger sharedLogger] errorMessage:logMessage];
+        return nil;
     }
-
+    
+    return mutablePicture.copy;
     
 }
 
@@ -706,9 +711,7 @@
             
             if (connectionError) return resolve(connectionError);
                 
-            NSMutableDictionary *pictureWithPaths = attributes.mutableCopy;
-            
-            [self.class setImagesFromData:data forPicture:pictureWithPaths withEntityName:entityName andUpload:NO];
+            NSDictionary *pictureWithPaths = [self.class setImagesFromData:data forPicture:attributes withEntityName:entityName andUpload:NO];
             
             NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
             
@@ -814,7 +817,13 @@
         
         NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo"]};
         
-        [self.persistenceDelegate update:entityName attributes:picture options:fieldstoUpdate];
+        [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            if (result) return;
+            [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
+            if (error) {
+                NSLog(@"error: %@", error);
+            }
+        }];
 
     }];
 

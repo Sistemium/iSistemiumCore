@@ -119,22 +119,15 @@
 
 + (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData {
 	
-    if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
-        
-        NSString *xid = [STMFunctions uuidString];
-        
-        NSMutableDictionary *photoObject = @{@"id":xid}.mutableCopy;
-        
-        [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject withEntityName:entityName andUpload:YES];
-        
-        return photoObject.copy;
-        
-    } else {
-        
+    if (![NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] || !photoData.length) {
         NSLog(@"have no entity with name %@ or photoData is empty", entityName);
         return nil;
-        
     }
+    
+    return [STMCorePicturesController setImagesFromData:photoData
+                                             forPicture:@{@"id": [STMFunctions uuidString]}
+                                         withEntityName:entityName
+                                              andUpload:YES];
     
 }
 

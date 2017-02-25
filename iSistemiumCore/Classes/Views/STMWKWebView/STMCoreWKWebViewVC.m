@@ -57,8 +57,8 @@ STMImagePickerOwnerProtocol>
 @property (nonatomic, strong) NSString *takePhotoCallbackJSFunction;
 
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
-@property (nonatomic, strong) NSDictionary *takePhotoMessageParameters;
 
+@property (nonatomic, strong) NSDictionary *takePhotoMessageParameters;
 @property (nonatomic, strong) NSString *photoEntityName;
 @property (nonatomic, strong) NSDictionary *photoData;
 
@@ -803,63 +803,47 @@ STMImagePickerOwnerProtocol>
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
     
-    if (!self.waitingPhoto) {
+    if (self.waitingPhoto) return;
         
-        NSDictionary *parameters = message.body;
+    NSDictionary *parameters = message.body;
+    
+    NSString *entityName = parameters[@"entityName"];
+    self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
+    
+    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
+        NSString *error = [NSString stringWithFormat:@"local data model have not entity with name %@", entityName];
+        return [self callbackWithError:error parameters:parameters];
+    }
         
-        NSString *entityName = parameters[@"entityName"];
-        self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
+    self.waitingPhoto = YES;
+    
+    self.takePhotoMessageParameters = parameters;
+    self.takePhotoCallbackJSFunction = parameters[@"callback"];
+    self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
+    
+    UIImagePickerControllerSourceType imageSource = -1;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         
-        BOOL hasTable = [self.persistenceDelegate isConcreteEntityName:self.photoEntityName];
+        imageSource = UIImagePickerControllerSourceTypeCamera;
         
-        if (hasTable) {
-            
-            self.waitingPhoto = YES;
-            
-            self.takePhotoMessageParameters = parameters;
-            self.takePhotoCallbackJSFunction = parameters[@"callback"];
-            self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
-            
-            if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-                
-                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                           withObject:@(UIImagePickerControllerSourceTypeCamera)
-                           afterDelay:0];
-                
-            } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-                
-                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                           withObject:@(UIImagePickerControllerSourceTypePhotoLibrary)
-                           afterDelay:0];
-                
-            } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
-                
-                [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:)
-                           withObject:@(UIImagePickerControllerSourceTypeSavedPhotosAlbum)
-                           afterDelay:0];
-                
-            } else {
-                
-                self.waitingPhoto = NO;
-                
-                NSString *message = @"have no one available source types";
-                [self callbackWithError:message
-                             parameters:self.takePhotoMessageParameters];
-                //                [self callbackWithData:message
-                //                            parameters:self.takePhotoMessageParameters
-                //                    jsCallbackFunction:self.takePhotoCallbackJSFunction];
-                
-            }
-            
-        } else {
-            
-            NSString *error = [NSString stringWithFormat:@"local data model have not entity with name %@", self.photoEntityName];
-            [self callbackWithError:error
-                         parameters:parameters];
-            
-        }
+    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+        
+        imageSource = UIImagePickerControllerSourceTypePhotoLibrary;
+        
+    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+        
+        imageSource = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        
+    } else {
+        
+        self.waitingPhoto = NO;
+        return [self callbackWithError:@"have no one available source types"
+                            parameters:self.takePhotoMessageParameters];
         
     }
+    
+    [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:) withObject:@(imageSource) afterDelay:0];
     
 }
 
@@ -1150,11 +1134,8 @@ int counter = 0;
         self.waitingPhoto = NO;
         
         NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-        //        [self callbackWithData:message
-        //                    parameters:self.takePhotoMessageParameters
-        //            jsCallbackFunction:self.takePhotoCallbackJSFunction];
-        [self callbackWithError:message
-                     parameters:self.takePhotoMessageParameters];
+
+        [self callbackWithError:message parameters:self.takePhotoMessageParameters];
         
     }
     
@@ -1228,25 +1209,29 @@ int counter = 0;
     
     CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
     
-    NSDictionary *photoObject = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName
-                                                                        photoData:UIImageJPEGRepresentation(image, jpgQuality)];
+    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
     
-    if (photoObject) {
-        
-        [self.persistenceDelegate merge:@"STMCorePhoto" attributes:photoObject options:nil].then(^(NSDictionary * result){
-            [self callbackWithData:@[result]
-                        parameters:self.takePhotoMessageParameters
-                jsCallbackFunction:self.takePhotoCallbackJSFunction];
-        })
-        .catch(^(NSError *error){
-            NSLog(error.localizedDescription);
-        });
-        
-    } else {
-        
-        
-        
+    if (!attributes) {
+        self.waitingPhoto = NO;
+        return [self callbackWithError:@"no photo object" parameters:self.takePhotoMessageParameters];
     }
+    
+    [attributes addEntriesFromDictionary:self.photoData];
+    
+    [self.persistenceDelegate merge:self.photoEntityName attributes:attributes.copy options:nil]
+    .then(^(NSDictionary * result) {
+        [self callbackWithData:@[result]
+                    parameters:self.takePhotoMessageParameters
+            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+    })
+    .catch(^(NSError *error) {
+        NSLog(error.localizedDescription);
+        [self callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
+    })
+    .always(^(){
+        self.waitingPhoto = NO;
+    });
+
     
 }
 

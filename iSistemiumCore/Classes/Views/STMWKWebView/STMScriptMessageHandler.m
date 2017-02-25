@@ -42,12 +42,8 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        NSDictionary *parameters = message.body;
-        [self handleGetPictureParameters:parameters];
-        
-    });
+    NSDictionary *parameters = message.body;
+    [self handleGetPictureParameters:parameters];
     
 }
 
