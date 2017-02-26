@@ -29,36 +29,28 @@
     
     NSString *path = [self pathForBundleModelWithName:modelName];
     
-    if (path) {
-        
-        NSError *error = nil;
-        NSMappingModel *mappingModel = [self checkDataModelsWithBundlePath:path
-                                                                     error:&error];
-        
-        if (mappingModel) {
-            
-            [self parseMappingModel:mappingModel];
-            
-        } else {
-            
-            if (error) {
-                NSLog(@"can't create mapping model, have to create db's tables from blank");
-            } else {
-                NSLog(@"documentsModel was empty or can't create it or the same as bundleModel, should use the last one");
-                //TODO: have to handle each of this three cases
-            }
-            
-        }
-        
-        NSManagedObjectModel *model = [self modelWithPath:path];
-        
-        return model;
-        
+    if (!path) {
+        NSLog(@"there is no path for data model with name %@", modelName);
+        return nil;
     }
-        
-    NSLog(@"there is no path for data model with name %@", modelName);
-    return nil;
+
+    NSError *error = nil;
+    NSMappingModel *mappingModel = [self checkDataModelsWithBundlePath:path error:&error];
+
+    if (error) {
+        NSLog(@"can't create mapping model, have to create db's tables from blank");
+        return nil;
+    }
     
+    if (!mappingModel) {
+        NSLog(@"documentsModel was empty or can't create it or the same as bundleModel, should use the last one");
+        return nil;
+    }
+    
+    [self parseMappingModel:mappingModel];
+
+    return [self modelWithPath:path];
+
 }
 
 + (NSString *)pathForBundleModelWithName:(NSString *)modelName {
@@ -506,7 +498,8 @@
                 if (destinationEntityName && destinationObjectXid) {
                     
                     STMDatum *destinationObject = (STMDatum *)[self newObjectForEntityName:destinationEntityName];
-                    
+
+                    // FIXME: Modeller should not depend on SessionManger
                     NSObject <STMPersistingFullStack> *persistenceDelegate = [STMSessionManager sharedManager].currentSession.persistenceDelegate;
                     
                     NSDictionary *destinationObjectData = [persistenceDelegate findSync:destinationEntityName
