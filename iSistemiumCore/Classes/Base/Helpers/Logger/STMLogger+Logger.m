@@ -16,19 +16,6 @@
 
 #pragma mark - Category methods
 
-+ (STMLogger *)sharedLogger {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedLogger = nil;
-    
-    dispatch_once(&pred, ^{
-        _sharedLogger = [[self alloc] init];
-    });
-    
-    return _sharedLogger;
-    
-}
-
 + (void)requestInfo:(NSString *)xidString {
     [[self sharedLogger] requestInfo:xidString];
 }
@@ -117,31 +104,68 @@
 
 #pragma mark - STMLogger Protocol
 
-- (void)saveLogMessageWithText:(NSString *)text
-                       numType:(STMLogMessageType)numType {
-    
-    NSString *stringType = [self stringTypeForNumType:numType];
+- (void)importantMessage:(NSString *)text {
     
     [self saveLogMessageWithText:text
-                            type:stringType];
+                         numType:STMLogMessageTypeImportant
+                      callerInfo:[STMFunctions callerInfo]];
     
+}
+
+- (void)errorMessage:(NSString *)text {
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeError
+                      callerInfo:[STMFunctions callerInfo]];
+    
+}
+
+- (void)warningMessage:(NSString *)text {
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeWarning
+                      callerInfo:[STMFunctions callerInfo]];
+
+}
+
+- (void)infoMessage:(NSString *)text {
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeInfo
+                      callerInfo:[STMFunctions callerInfo]];
+
+}
+
+- (void)debugMessage:(NSString *)text {
+    
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeDebug
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
 - (void)saveLogMessageWithText:(NSString *)text {
-    [self saveLogMessageWithText:text numType:STMLogMessageTypeInfo];
+
+    [self saveLogMessageWithText:text
+                         numType:STMLogMessageTypeInfo
+                      callerInfo:[STMFunctions callerInfo]];
+
 }
 
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type {
-    [self saveLogMessageWithText:text type:type owner:nil];
+- (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType {
+    
+    [self saveLogMessageWithText:text
+                         numType:numType
+                      callerInfo:[STMFunctions callerInfo]];
+    
 }
 
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type owner:(STMDatum *)owner {
+- (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType callerInfo:(NSDictionary *)callerInfo {
     
     if (!text) return;
     
-    // owner is unused property
-    owner = nil; // have to check owner.managedObjectsContext before use it
-    
+    NSString *type = [self stringTypeForNumType:numType];
+
     if (![[self availableTypes] containsObject:type]) type = @"info";
     
 #ifdef DEBUG
@@ -152,25 +176,36 @@
     
     if ([uploadTypes containsObject:type]) {
         
-        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"  : text,
-                                                                  @"type"  : type}];
-
+        NSString *callerInfoString = [NSString stringWithFormat:@"[%@ %@]", callerInfo[@"class"], callerInfo[@"function"]];
+        
+        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"   : text,
+                                                                  @"type"   : type,
+                                                                  @"source" : callerInfoString}];
+        
         if (!result) return;
         
         for (NSDictionary *logMessageDic in result) {
             
-            NSLog(@"Log %@: %@", logMessageDic[@"type"], logMessageDic[@"text"]);
+            [self nsLogMessageWithType:logMessageDic[@"type"]
+                                  text:logMessageDic[@"text"]
+                            callerInfo:callerInfo];
             
             [self saveLogMessageDic:logMessageDic];
             
         }
         
     } else {
-        
-        NSLog(@"Log %@: %@", type, text);
 
+        [self nsLogMessageWithType:type
+                              text:text
+                        callerInfo:callerInfo];
+        
     }
     
+}
+
+- (void)nsLogMessageWithType:(NSString *)type text:(NSString *)text callerInfo:(NSDictionary *)callerInfo {
+    NSLogM(callerInfo, @"Log %@: %@", type, text);
 }
 
 - (void)saveLogMessageDic:(NSDictionary *)logMessageDic {

@@ -306,7 +306,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackingStart", self.group] object:self];
             self.tracking = YES;
             NSString *logMessage = [NSString stringWithFormat:@"Session #%@: start tracking %@", self.session.uid, self.group];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
             
         } else {
             NSLog(@"Session #%@: %@ tracker already started", self.session.uid, self.group);
@@ -327,7 +327,7 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:[NSString stringWithFormat:@"%@TrackingStop", self.group] object:self];
         self.tracking = NO;
         NSString *logMessage = [NSString stringWithFormat:@"Session #%@: stop tracking %@", self.session.uid, self.group];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
 
     } else {
         NSLog(@"Session #%@: %@ tracker already stopped", self.session.uid, self.group);

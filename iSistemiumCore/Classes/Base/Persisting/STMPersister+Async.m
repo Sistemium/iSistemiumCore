@@ -10,21 +10,19 @@
 
 #import "STMPersister+Async.h"
 
-#define STM_PERSISTER_DISPATCH_QUEUE DISPATCH_QUEUE_PRIORITY_DEFAULT
-
 
 @implementation STMPersister (Async)
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSDictionary * result = [self findSync:entityName identifier:identifier options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -33,14 +31,14 @@
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(STMPersistingAsyncArrayResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSArray * result = [self findAllSync:entityName predicate:predicate options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -49,14 +47,14 @@
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSDictionary * result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -65,14 +63,14 @@
 
 - (void)mergeManyAsync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options completionHandler:(STMPersistingAsyncArrayResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSArray * result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -81,14 +79,14 @@
 
 - (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandler:(STMPersistingAsyncNoResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         [self destroySync:entityName identifier:identifier options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, error);
-            }] start];
+            });
         }
 
     });
@@ -97,14 +95,14 @@
 
 - (void)destroyAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandler:(STMPersistingAsyncIntegerResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSUInteger result = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -113,14 +111,14 @@
 
 - (void)updateAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandler:(STMPersistingAsyncDictionaryResultCallback)completionHandler {
 
-    dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+    dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
         NSDictionary * result = [self updateSync:entityName attributes:attributes options:options error:&error];
         if (completionHandler) {
-            [[NSBlockOperation blockOperationWithBlock: ^{
+            dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
-            }] start];
+            });
         }
 
     });
@@ -134,7 +132,7 @@
 - (AnyPromise *)find:(NSString *)entityName identifier:(NSString *)identifier options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSDictionary * result = [self findSync:entityName identifier:identifier options:options error:&error];
@@ -153,7 +151,7 @@
 - (AnyPromise *)findAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSArray * result = [self findAllSync:entityName predicate:predicate options:options error:&error];
@@ -172,7 +170,7 @@
 - (AnyPromise *)merge:(NSString *)entityName attributes:(NSDictionary *)attributes options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSDictionary * result = [self mergeSync:entityName attributes:attributes options:options error:&error];
@@ -191,7 +189,7 @@
 - (AnyPromise *)mergeMany:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSArray * result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
@@ -210,7 +208,7 @@
 - (AnyPromise *)destroy:(NSString *)entityName identifier:(NSString *)identifier options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             BOOL result = [self destroySync:entityName identifier:identifier options:options error:&error];
@@ -229,7 +227,7 @@
 - (AnyPromise *)destroyAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSUInteger result = [self destroyAllSync:entityName predicate:predicate options:options error:&error];
@@ -248,7 +246,7 @@
 - (AnyPromise *)update:(NSString *)entityName attributes:(NSDictionary *)attributes options:(STMPersistingOptions)options {
 
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
-        dispatch_async(dispatch_get_global_queue(STM_PERSISTER_DISPATCH_QUEUE, 0), ^{
+        dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
             NSDictionary * result = [self updateSync:entityName attributes:attributes options:options error:&error];

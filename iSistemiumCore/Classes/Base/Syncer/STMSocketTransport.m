@@ -24,6 +24,7 @@
 @property (nonatomic) BOOL isAuthorized;
 @property (nonatomic) NSTimeInterval timeout;
 
+@property (nonatomic,strong) dispatch_queue_t handleQueue;
 
 @end
 
@@ -40,8 +41,7 @@
     if (!socketUrlString || !entityResource || !owner) {
         
         NSString *logMessage = [NSString stringWithFormat:@"have not enough parameters to init socket transport"];
-        [logger saveLogMessageWithText:logMessage
-                               numType:STMLogMessageTypeError];
+        [logger errorMessage:logMessage];
 
         return nil;
         
@@ -52,7 +52,7 @@
     socketTransport.socketUrl = socketUrlString;
     socketTransport.entityResource = entityResource;
     socketTransport.owner = owner;
-    socketTransport.logger = [STMLogger sharedLogger];
+    socketTransport.logger = logger;
     
     [socketTransport startSocket];
     
@@ -66,18 +66,26 @@
 
 - (void)startSocket {
     
-    [self.logger saveLogMessageWithText:CurrentMethodName
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:CurrentMethodName];
 
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
-    self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl
-                                                     config:@{@"voipEnabled"        : @YES,
-                                                              @"log"                : @NO,
-                                                              @"forceWebsockets"    : @NO,
-                                                              @"path"               : path,
-                                                              @"reconnects"         : @YES}];
+    if (!self.handleQueue) {
+        self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport", DISPATCH_QUEUE_CONCURRENT);
+    }
+    
+    NSDictionary *config = @{
+                             @"handleQueue"        : self.handleQueue,
+                             @"doubleEncodeUTF8"   : @YES,
+                             @"voipEnabled"        : @YES,
+                             @"log"                : @NO,
+                             @"forceWebsockets"    : @NO,
+                             @"path"               : path,
+                             @"reconnects"         : @YES
+                             };
+    
+    self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl config:config];
 
     [self addEventObservers];
     
@@ -85,17 +93,19 @@
     
 }
 
+
 - (void)closeSocket {
     
-    [self.logger saveLogMessageWithText:CurrentMethodName
-                                numType:STMLogMessageTypeInfo];
-
-    [self.owner socketWillClosed];
-
+    [self.logger infoMessage:CurrentMethodName];
+    [self.socket removeAllHandlers];
     [self.socket disconnect];
-    [self flushSocket];
+    [self.owner socketWillClosed];
+    
+    self.socket = nil;
+    self.isAuthorized = NO;
     
 }
+
 
 - (void)reconnectSocket {
     
@@ -104,22 +114,13 @@
     
 }
 
-- (void)flushSocket {
-    
-    [self.socket removeAllHandlers];
-
-    self.socket = nil;
-    self.isAuthorized = NO;
-    
-}
 
 - (void)addEventObservers {
     
     [self.socket removeAllHandlers];
     
     NSString *logMessage = [NSString stringWithFormat:@"addEventObserversToSocket %@", self.socket];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
     
     
 #ifdef DEBUG
@@ -220,9 +221,7 @@
 
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
     
-    [self socketSendEvent:event
-                withValue:value
-        completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
+    [self socketSendEvent:event withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
     
 }
 
@@ -230,54 +229,42 @@
     
     [self logSendEvent:event withValue:value];
     
-    NSString *errorMessage = nil;
-    
     if (!self.isReady) {
         
-        errorMessage = @"socket not connected while sendEvent";
+        NSString *errorMessage = @"socket not connected while sendEvent";
+        
         [self socketLostConnection:errorMessage];
-        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
-        return;
+        
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
         
     }
         
     if (event == STMSocketEventJSData) {
         
         if (![value isKindOfClass:[NSDictionary class]]) {
-            
-            errorMessage = @"STMSocketEventJSData value is not NSDictionary";
-            completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
-            return;
-            
+            return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData value is not NSDictionary"]);
         }
             
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
         
-        [[self.socket emitWithAck:eventStringValue with:@[value]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        OnAckCallback *onAck = [self.socket emitWithAck:eventStringValue with:@[value]];
+        
+        return [onAck timingOutAfter:self.timeout callback:^(NSArray *data) {
             
             if ([data.firstObject isEqual:@"NO ACK"]) {
-                
-                completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
-                return;
-                
+                return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
             }
             
             completionHandler(YES, data, nil);
         
         }];
         
-        return;
-        
     }
         
     NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
     
     if (!value || !primaryKey) {
-        
-        errorMessage = @"STMSocketEventJSData !value || !primaryKey";
-        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
-        return;
-        
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData !value || !primaryKey"]);
     }
         
     NSDictionary *dataDic = @{primaryKey : value};
@@ -287,16 +274,12 @@
     NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
     
     if (!dataDic) {
-        
-        errorMessage = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
-        NSLog(errorMessage);
-        completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
-        return;
-        
+        NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
+        NSLog(message);
+        return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
     }
     
-    [self.socket emit:eventStringValue
-                 with:@[dataDic]];
+    [self.socket emit:eventStringValue with:@[dataDic]];
     
 }
 
@@ -312,8 +295,7 @@
     [dataDic addEntriesFromDictionary:authDic];
     
     NSString *logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, self.socket, self.socket.sid];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
     
     STMSocketEvent eventNum = STMSocketEventAuthorization;
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
@@ -329,7 +311,8 @@
 }
 
 - (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    [self.owner socketLostConnection];
+    // May be it's too early to report lost connection because we'll reconnect soon
+    // [self.owner socketLostConnection];
 }
 
 - (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
@@ -377,45 +360,29 @@
 
 - (void)receiveAuthorizationAckWithData:(NSArray *)data {
     
-    NSString *errorMessage = nil;
-    
     if ([data.firstObject isEqual:@"NO ACK"]) {
-        
-        errorMessage = @"receiveAuthorizationAckWithData authorization timeout";
-        [self notAuthorizedWithError:errorMessage];
-        return;
-        
+        return [self notAuthorizedWithError:@"receiveAuthorizationAckWithData authorization timeout"];
     }
 
     NSString *logMessage = [NSString stringWithFormat:@"socket %@ %@ receiveAuthorizationAckWithData %@", self.socket, self.socket.sid, data];
 
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
 
     if (![data.firstObject isKindOfClass:[NSDictionary class]]) {
-        
-        errorMessage = @"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary";
-        [self notAuthorizedWithError:errorMessage];
-        return;
-        
+        return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
     }
     
     NSDictionary *dataDic = data.firstObject;
     BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
     
     if (!isAuthorized) {
-        
-        errorMessage = @"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO";
-        [self notAuthorizedWithError:errorMessage];
-        return;
-        
+        return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
     }
         
     self.isAuthorized = YES;
     logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
     
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:logMessage];
 
     [self.owner socketReceiveAuthorization];
     [self checkAppState];
@@ -426,8 +393,7 @@
     
     NSString *appState = [STMFunctions appStateString];
     
-    [self socketSendEvent:STMSocketEventStatusChange
-                withValue:appState];
+    [self socketSendEvent:STMSocketEventStatusChange withValue:appState];
     
     if (![appState isEqualToString:@"UIApplicationStateActive"]) return;
         
@@ -439,8 +405,7 @@
     
     NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
     
-    [self socketSendEvent:STMSocketEventStatusChange
-                withValue:value];
+    [self socketSendEvent:STMSocketEventStatusChange withValue:value];
 
 }
 
@@ -485,11 +450,8 @@
             
             if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
                 
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"socket is not connected but host is reachable, reconnect it"
-                                                         numType:STMLogMessageTypeImportant];
-                
-                [self closeSocket];
-                [self startSocket];
+                [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
+                [self reconnectSocket];
                 
             }
             
@@ -507,8 +469,7 @@
     
     NSLogMethodName;
 
-    [self.logger saveLogMessageWithText:infoString
-                                numType:STMLogMessageTypeInfo];
+    [self.logger infoMessage:infoString];
     
     [self checkReachabilityAndSocketStatus];
     

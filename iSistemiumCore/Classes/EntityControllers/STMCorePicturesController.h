@@ -7,7 +7,6 @@
 //
 
 #import "STMCoreController.h"
-#import "STMCorePicture.h"
 
 @interface STMCorePicturesController : STMCoreController
 
@@ -18,21 +17,21 @@
 
 + (NSArray *)allPictures;
 
-
 + (CGFloat)jpgQuality;
 
 + (NSString *)imagesCachePath;
 
 + (void)checkPhotos;
 
-+ (void)hrefProcessingForObject:(NSManagedObject *)object;
-+ (void)downloadConnectionForObject:(NSManagedObject *)object;
++ (void)hrefProcessingForObject:(NSDictionary *)object;
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(STMCorePicture *)picture andUpload:(BOOL)shouldUpload;
-+ (BOOL)saveImageFile:(NSString *)fileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data;
++ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
++ (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data;
 
-+ (void)removeImageFilesForPicture:(STMCorePicture *)picture;
++ (void)removeImageFilesForPicture:(NSDictionary *)picture;
 
-+ (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data ;
++ (BOOL)setThumbnailForPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data ;
+
+- (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
 
 @end

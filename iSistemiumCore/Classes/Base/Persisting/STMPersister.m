@@ -36,6 +36,14 @@
 }
 
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.dispatchQueue = dispatch_queue_create("com.sistemium.STMPersisterDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+    }
+    return self;
+}
+
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
                                             predicate:(NSPredicate *)predicate
                                              callback:(STMPersistingObservingSubscriptionCallback)callback {

@@ -71,18 +71,21 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     STMAssertSQLFilter(predicate, @"([avatarPictureId] IS NOT NULL)");
     
-    NSSet *set = [NSSet setWithObjects:@"error", @"important", nil];
-    
-    predicate = [NSPredicate predicateWithFormat:@"type IN %@", set];
-    
-    STMAssertSQLFilter(predicate, @"([type] IN ('error','important'))");
-    
-    NSArray *array = set.allObjects;
+    NSArray *array = @[@"error", @"important"];
     
     predicate = [NSPredicate predicateWithFormat:@"type IN %@", array];
-    
-    STMAssertSQLFilter(predicate, @"([type] IN ('error','important'))");
 
+    STMAssertSQLFilter(predicate, @"([type] IN ('error','important'))");
+    
+    predicate = [NSPredicate predicateWithFormat:@"type IN %@", [NSSet setWithArray:array]];
+    
+    NSString *sql = [self.predicateToSQL SQLFilterForPredicate:predicate];
+    
+    BOOL equalsDirectly = [sql isEqualToString:@"([type] IN ('error','important'))"];
+    BOOL equalsReversed = [sql isEqualToString:@"([type] IN ('important','error'))"];
+    
+    XCTAssertTrue(equalsDirectly || equalsReversed);
+    
     predicate = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", @[@{@"id":@"xid"}, @{@"id":@"xid"}]];
     
     STMAssertSQLFilter(predicate, @"NOT (id IN ('xid','xid'))");

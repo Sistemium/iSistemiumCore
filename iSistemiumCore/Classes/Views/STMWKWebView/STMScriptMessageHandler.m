@@ -18,8 +18,6 @@
     id result = [self init];
     self.owner = owner;
     _subscriptions = [NSMutableDictionary dictionary];
-    _getPictureCallbackJSFunctions = @{}.mutableCopy;
-    _getPictureMessageParameters = @{}.mutableCopy;
     return result;
 }
 
@@ -44,12 +42,8 @@
 
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        NSDictionary *parameters = message.body;
-        [self handleGetPictureParameters:parameters];
-        
-    });
+    NSDictionary *parameters = message.body;
+    [self handleGetPictureParameters:parameters];
     
 }
 

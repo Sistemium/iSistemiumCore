@@ -117,26 +117,17 @@
 
 #pragma mark - class methods
 
-+ (STMCorePhoto *)newPhotoObjectWithEntityName:(NSString *)entityName photoData:(NSData *)photoData {
++ (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData {
 	
-    if ([NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] && photoData.length > 0) {
-        
-        STMCorePhoto *photoObject = (STMCorePhoto *) [[self.class persistenceDelegate] newObjectForEntityName:entityName];
-        
-        NSData *xid = [STMFunctions UUIDDataFromNSUUID:[NSUUID UUID]];
-        
-        photoObject.xid = xid;
-        
-        [STMCorePicturesController setImagesFromData:photoData forPicture:photoObject andUpload:YES];
-        
-        return photoObject;
-        
-    } else {
-        
+    if (![NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] || !photoData.length) {
         NSLog(@"have no entity with name %@ or photoData is empty", entityName);
         return nil;
-        
     }
+    
+    return [STMCorePicturesController setImagesFromData:photoData
+                                             forPicture:@{@"id": [STMFunctions uuidString]}
+                                         withEntityName:entityName
+                                              andUpload:YES];
     
 }
 

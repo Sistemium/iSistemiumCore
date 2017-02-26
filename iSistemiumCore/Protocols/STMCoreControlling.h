@@ -14,4 +14,6 @@
 
 + (instancetype)sharedInstance;
 
+@property (nonatomic,weak) id session;
+
 @end

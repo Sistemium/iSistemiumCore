@@ -16,15 +16,84 @@
 #import "STMLogger.h"
 #import "STMFunctions.h"
 
-// TODO: this could depend on device
-#define STM_DOWNLOADING_IN_PROGRESS_MAX 4
+#import "STMOperationQueue.h"
+
+
+#pragma mark Private Classes
+
+
+@interface STMDownloadingOperation : STMOperation
+
+@property (nonatomic,strong) NSString *entityName;
+
+@end
+
+
+
+@interface STMDownloadingQueue : STMOperationQueue
+
+@property (nonatomic,weak) STMSyncerHelper *owner;
+
+@end
+
+
 
 @interface STMDataDownloadingState ()
 
-@property (nonatomic, strong) NSMutableArray <NSString *> *entitySyncNames;
-@property (nonatomic, strong) NSMutableArray <NSString *> *pendingEntities;
-@property (nonatomic, strong) NSMutableSet <NSString *> *inProgressEntities;
-@property (nonatomic) NSUInteger inProgressMax;
+@property (nonatomic,strong) STMDownloadingQueue *queue;
+
+@end
+
+
+
+@implementation STMDownloadingOperation
+
+
+- (STMDownloadingQueue *)dowlonadingQueue {
+    return (STMDownloadingQueue *)self.queue;
+}
+
+
+- (instancetype)initWithEntityName:(NSString *)entityName {
+    self = [self init];
+    self.entityName = entityName;
+    return self;
+}
+
+
+- (void)main {
+    
+    NSLog(@"start downloadEntityName: %@", self.entityName);
+    
+    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:self.entityName][@"eTag"];
+    
+    if (![STMFunctions isNotNull:lastKnownEtag]) lastKnownEtag = @"*";
+    
+    [self.dowlonadingQueue.owner.dataDownloadingOwner receiveData:self.entityName offset:lastKnownEtag];
+    
+}
+
+
+@end
+
+
+
+@implementation STMDownloadingQueue
+
+
+- (void)downloadEntityName:(NSString *)entityName {
+    [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
+}
+
+
+- (STMDownloadingOperation *)operationForEntityName:(NSString *)entityName {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entityName == %@", entityName];
+    
+    return [self.operations filteredArrayUsingPredicate:predicate].firstObject;
+    
+}
+
 
 @end
 
@@ -33,15 +102,21 @@
 @end
 
 
+#pragma mark - Category implementation
+
+
 @implementation STMSyncerHelper (Downloading)
 
 @dynamic dataDownloadingOwner;
 
-#pragma mark - STMDataDownloading
+
+#pragma mark - STMDataDownloading protocol
+
 
 - (id <STMDataSyncingState>)startDownloading {
     return [self startDownloading:nil];
 }
+
 
 - (id <STMDataSyncingState>)startDownloading:(NSArray <NSString *> *)entitiesNames {
     
@@ -49,69 +124,51 @@
         
         if (self.downloadingState) return self.downloadingState;
         
-        STMDataDownloadingState *downloadingState = [[STMDataDownloadingState alloc] init];
-
-        downloadingState.inProgressMax = STM_DOWNLOADING_IN_PROGRESS_MAX;
+        STMDataDownloadingState *state = [[STMDataDownloadingState alloc] init];
+        self.downloadingState = state;
+        
+        state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue];
+        state.queue.owner = self;
+        state.queue.suspended = YES;
         
         if (!entitiesNames) {
             
-            NSMutableOrderedSet *entitiesNames = [NSMutableOrderedSet orderedSetWithObject:@"STMEntity"];
+            NSMutableOrderedSet *names = [NSMutableOrderedSet orderedSetWithObject:STM_ENTITY_NAME];
             
-            if ([STMEntityController entityWithName:@"STMSetting"]) [entitiesNames addObject:@"STMSetting"];
+            if ([STMEntityController entityWithName:@"STMSetting"]) [names addObject:@"STMSetting"];
             
             [[STMEntityController stcEntities] enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
-                if ([STMFunctions isNotNull:entity[@"url"]]) [entitiesNames addObject:name];
+                if ([STMFunctions isNotNull:entity[@"url"]]) [names addObject:name];
             }];
             
-            downloadingState.entitySyncNames = entitiesNames.reversedOrderedSet.array.mutableCopy;
-            
-        } else {
-            
-            downloadingState.entitySyncNames = entitiesNames.mutableCopy;
+            entitiesNames = names.array.copy;
             
         }
-        
-        downloadingState.pendingEntities = downloadingState.entitySyncNames.mutableCopy;
 
-        self.downloadingState = downloadingState;
+        for (NSString *entityName in entitiesNames) [state.queue downloadEntityName:entityName];
         
         [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_RECEIVE_STARTED];
 
-        NSLog(@"will download %@ entities", @(downloadingState.entitySyncNames.count));
+        NSLog(@"will download %@ entities with %@ concurrent", @(state.queue.operationCount), @(state.queue.maxConcurrentOperationCount));
         
-        downloadingState.inProgressEntities = [NSMutableSet set];
-        [self popPendingEntity];
+        state.queue.suspended = NO;
         
-        return downloadingState;
+        return state;
+        
     }
     
 }
 
-
-- (void)popPendingEntity {
-    
-    NSString *nextEntity = [STMFunctions popArray:self.downloadingState.pendingEntities];
-    
-    if (!nextEntity) return;
-        
-    @synchronized (self) {
-        [self.downloadingState.inProgressEntities addObject:nextEntity];
-    }
-    
-    [self tryDownloadEntityName:nextEntity];
-    
-    if (self.downloadingState.inProgressEntities.count < self.downloadingState.inProgressMax) {
-        [self popPendingEntity];
-    }
-    
-}
 
 - (void)stopDownloading {
     
     NSLogMethodName;
+    
+    [self.downloadingState.queue cancelAllOperations];
     [self receivingDidFinishWithError:nil];
     
 }
+
 
 - (void)dataReceivedSuccessfully:(BOOL)success entityName:(NSString *)entityName result:(NSArray *)result offset:(NSString *)offset pageSize:(NSUInteger)pageSize error:(NSError *)error {
     
@@ -124,16 +181,16 @@
     }
     
     if (!result.count) {
-        NSLog(@"    %@: have no new data", entityName);
+//        NSLog(@"    %@: have no new data", entityName);
         return [self doneDownloadingEntityName:entityName];
     }
     
     if (!offset) {
-        NSLog(@"    %@: receive data w/o offset", entityName);
+//        NSLog(@"    %@: receive data w/o offset", entityName);
         return [self doneDownloadingEntityName:entityName];
     }
     
-    [self.persistenceDelegate mergeManyAsync:entityName attributeArray:result options:@{STMPersistingOptionLtsNow} completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+    [self.persistenceDelegate mergeManyAsync:entityName attributeArray:result options:@{STMPersistingOptionLtsNow} completionHandler:^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) {
         
         if (!success) {
             return [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
@@ -146,31 +203,18 @@
 }
 
 
-#pragma mark - private methods
+#pragma mark - Category private methods
 
 
 - (void)logErrorMessage:(NSString *)errorMessage {
-    
-    // TODO: need a method in owner's protocol
-    [[STMLogger sharedLogger] saveLogMessageWithText:errorMessage numType:STMLogMessageTypeError];
-    
+    [self.logger errorMessage:errorMessage];
 }
 
-- (void)tryDownloadEntityName:(NSString *)entityName {
-
-    NSLog(@"tryDownloadEntityName: %@", entityName);
-    
-    NSString *lastKnownEtag = [STMClientEntityController clientEntityWithName:entityName][@"eTag"];
-    
-    if (!lastKnownEtag || [lastKnownEtag isEqual:[NSNull null]]) lastKnownEtag = @"*";
-                           
-    [self.dataDownloadingOwner receiveData:entityName offset:lastKnownEtag];
-    
-}
 
 - (void)doneDownloadingEntityName:(NSString *)entityName {
     [self doneDownloadingEntityName:entityName errorMessage:nil];
 }
+
 
 - (void)doneDownloadingEntityName:(NSString *)entityName errorMessage:(NSString *)errorMessage {
     
@@ -178,34 +222,38 @@
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
     }
     
-    STMDataDownloadingState *state = self.downloadingState;
+    STMDownloadingQueue *queue = self.downloadingState.queue;
+    STMDownloadingOperation *operation = [queue operationForEntityName:entityName];
     
-    @synchronized (self) {
-        
-        [state.entitySyncNames removeObject:entityName];
-        [state.inProgressEntities removeObject:entityName];
-        
-        NSUInteger remainCount = state.entitySyncNames.count;
-        NSLog(@"remain %@ entities to receive with %@ in progress", @(remainCount), @(state.inProgressEntities.count));
-        
-        [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
-                                    userInfo:@{@"countdownValue": @(remainCount)}];
-        
-        if (state && remainCount) return [self popPendingEntity];
-        
-    }
+    [operation finish];
+    
+    NSUInteger remainCount = queue.operationCount;
+    
+    NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, operation.printableFinishedIn, @(remainCount));
+    
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+                                userInfo:@{@"countdownValue": @(remainCount)}];
+    
+    if (remainCount) return;
     
     [self receivingDidFinishWithError:nil];
     
 }
 
+
 - (void)receivingDidFinishWithError:(NSString *)errorString {
     
     if (errorString) {
         [self logErrorMessage:[NSString stringWithFormat:@"receivingDidFinishWithError: %@", errorString]];
-    } else {
-        NSLog(@"receivingDidFinish");
     }
+    
+    STMOperationQueue *queue = self.downloadingState.queue;
+    
+    NSString *finishedIn = queue.printableFinishedIn;
+    NSString *duration = queue.printableFinishedOperationsDuration;
+    NSUInteger initialCount = queue.finishedOperationsCount;
+    
+    NSLog(@"receivingDidFinish in %@ (%@ total of %@ operations)", finishedIn, duration, @(initialCount));
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
@@ -213,12 +261,9 @@
 }
 
 
-
-#pragma mark findAll ack handler
-
 - (void)findAllResultMergedWithSuccess:(NSArray *)result entityName:(NSString *)entityName offset:(NSString *)offset pageSize:(NSUInteger)pageSize {
     
-    NSLog(@"    %@: get %@ objects", entityName, @(result.count));
+    NSLog(@"    %@: got %@ objects", entityName, @(result.count));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
                                 userInfo:@{@"count": @(result.count),
@@ -227,7 +272,7 @@
     
     if (result.count < pageSize) {
         
-        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
+//        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
         
         [STMClientEntityController clientEntityWithName:entityName setETag:offset];
         

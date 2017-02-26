@@ -613,7 +613,7 @@
     self.deviceInfo = deviceInfo;
     
     NSString *logMessage = [NSString stringWithFormat:@"Connect scanner: %@", [deviceInfo getName]];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
     
     [self.iOSScanHelper postSetPostambleDevice:deviceInfo Postamble:@"" Target:nil Response:nil];
     
@@ -634,7 +634,7 @@
     self.deviceInfo = nil;
     
     NSString *logMessage = [NSString stringWithFormat:@"Disconnect scanner: %@", [deviceRemoved getName]];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
     
     if ([self.delegate respondsToSelector:@selector(deviceRemovalForBarCodeScanner:)]) {
         [self.delegate deviceRemovalForBarCodeScanner:self];

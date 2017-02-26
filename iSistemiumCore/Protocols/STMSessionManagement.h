@@ -15,7 +15,7 @@
 #import "STMSocketConnection.h"
 #import "STMNotifications.h"
 #import "STMDataSyncingSubscriber.h"
-
+#import "STMLogging.h"
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -25,30 +25,6 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionStopped,
     STMSessionRemoving
 };
-
-typedef NS_ENUM(NSInteger, STMLogMessageType) {
-    STMLogMessageTypeImportant,
-    STMLogMessageTypeError,
-    STMLogMessageTypeWarning,
-    STMLogMessageTypeInfo,
-    STMLogMessageTypeDebug
-};
-
-
-@protocol STMLogger <NSObject>
-
-- (void)saveLogMessageWithText:(NSString *)text;
-- (void)saveLogMessageWithText:(NSString *)text type:(NSString *)type;
-- (void)saveLogMessageWithText:(NSString *)text numType:(STMLogMessageType)numType;
-- (void)saveLogMessageDictionaryToDocument;
-
-- (void)saveLogMessageWithText:(NSString *)text
-                          type:(NSString *)type
-                         owner:(STMDatum *)owner;
-
-@property (nonatomic, weak) UITableView *tableView;
-
-@end
 
 
 @protocol STMSyncer <NSObject>
@@ -89,7 +65,7 @@ typedef NS_ENUM(NSInteger, STMLogMessageType) {
 @property (nonatomic) STMSessionStatus status;
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
-@property (nonatomic, strong) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
+@property (readonly) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
 
 - (id <STMSession>)initWithUID:(NSString *)uid

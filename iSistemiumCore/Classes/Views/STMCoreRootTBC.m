@@ -516,7 +516,7 @@
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"stcTabs wrong format at index %lu", (unsigned long)index];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         
     }
 
@@ -622,7 +622,7 @@
 - (void)initAuthTab {
 
     NSString *logMessage = @"init auth tab";
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"debug"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeDebug];
 
     [self prepareTabs];
     
@@ -633,7 +633,7 @@
 - (void)initAllTabs {
     
     NSString *logMessage = @"init all tabs";
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"debug"];
+    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeDebug];
 
     [self prepareTabs];
     [self showUnreadMessageCount];

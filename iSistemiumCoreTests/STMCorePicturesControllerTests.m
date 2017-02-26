@@ -24,6 +24,9 @@
     return YES;
 }
 
+NSDictionary *picture;
+XCTestExpectation *expectation;
+
 - (void)testDownloadConnectionForObject {
     
     [STMGarbageCollector searchUnusedImages];
@@ -40,20 +43,19 @@
     
     NSString *xid = [STMFunctions uuidString];
     
-    __block XCTestExpectation *expectation = [self expectationWithDescription:@"Downloading picture"];
+    expectation = [self expectationWithDescription:@"Downloading picture"];
     
-    STMVisitPhoto *picture = (STMVisitPhoto*) [self.persister newObjectForEntityName:@"STMVisitPhoto"];
+    NSString* entityName = @"STMVisitPhoto";
     
-    [nc addObserver:expectation
-           selector:@selector(fulfill)
+    picture = @{@"id":xid,
+                              @"href":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/largeImage.png",
+                              @"thumbnailHref":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png",
+                              };
+    
+    [nc addObserver:self
+           selector:@selector(receiveTestNotification:)
                name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-             object:picture];
-    
-    picture.xid = [STMFunctions xidDataFromXidString:xid];
-    
-    picture.href = @"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/largeImage.png";
-    
-    picture.thumbnailHref = @"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png";
+             object:[STMCorePicturesController sharedController]];
     
     NSString *expectedImagePath = [xid stringByAppendingString:@".jpg"];
     
@@ -62,14 +64,12 @@
     NSString *expectedThumbnailPath = [@"thumbnail_" stringByAppendingString:expectedImagePath];
     
     NSError *error;
-    
-    NSDictionary *picDict = [self.persister dictionaryFromManagedObject:picture];
-    
-    [self.persister mergeSync:@"STMVisitPhoto" attributes:picDict options:nil error:&error];
+
+    picture = [self.persister mergeSync:entityName attributes:picture options:nil error:&error];
     
     XCTAssertNil(error);
     
-    [STMCorePicturesController downloadConnectionForObject:picture];
+    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture];
     
     [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
         
@@ -77,7 +77,7 @@
         
         [[NSNotificationCenter defaultCenter] removeObserver:expectation];
         
-        NSDictionary *rez = [self.persister findSync:@"STMVisitPhoto" identifier:xid options:nil error:&error];
+        NSDictionary *rez = [self.persister findSync:entityName identifier:xid options:nil error:&error];
         
         XCTAssertNil(error);
         
@@ -91,7 +91,7 @@
         
         XCTAssertEqualObjects(rez[@"thumbnailPath"], expectedThumbnailPath);
         
-        [self.persister destroySync:@"STMVisitPhoto" identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
+        [self.persister destroySync:entityName identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
         
         // Need to set real persister because there are real pictures
         [STMCorePicturesController sharedController].persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
@@ -112,6 +112,16 @@
         }];
         
     }];
+    
+}
+
+-(void)receiveTestNotification:(NSNotification*)notification{
+    
+    NSDictionary *receivedPicture = notification.userInfo;
+
+    if (receivedPicture[@"id"] == picture[@"id"]) {
+        [expectation fulfill];
+    }
     
 }
 

@@ -32,6 +32,7 @@
 @property (nonatomic) BOOL isRunning;
 @property (nonatomic) BOOL isDefantomizing;
 @property (nonatomic) BOOL isUsingNetwork;
+@property (nonatomic) BOOL haveToCloseSocketAfterFetch;
 
 @property (nonatomic) BOOL needRepeatDownload;
 
@@ -82,10 +83,9 @@
 
 - (void)setSession:(id <STMSession>)session {
     
-    if (session != _session) {
-        _session = session;
-        if (session) [self startSyncer];
-    }
+    [super setSession:session];
+    
+    if (session) [self startSyncer];
     
 }
 
@@ -192,16 +192,19 @@
     if (!self.isUsingNetwork) {
         
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        [self checkAppState];
+        [self checkSyncerState];
         
     }
 
 }
 
-- (void)checkAppState {
-    
-    if (!self.isUsingNetwork && [UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-//        [self closeSocketInBackground];
+- (void)checkSyncerState {
+
+    if (self.haveToCloseSocketAfterFetch) {
+        
+        self.haveToCloseSocketAfterFetch = NO;
+        [self closeSocketInBackgroundAfterFetch];
+        
     }
     
 }
@@ -332,7 +335,7 @@
     
     NSLogMethodName;
     
-    [self postNotificationName:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
+    [self postAsyncMainQueueNotification:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
 
     [self subscribeToUnsyncedObjects];
 
@@ -432,9 +435,24 @@
                                               selector:@selector(closeSocketInBackground)
                                                 object:nil];
 
-    [self.session.logger saveLogMessageWithText:@"close socket in background" numType:STMLogMessageTypeInfo];
+    [self.session.logger saveLogMessageWithText:@"close socket in background"
+                                        numType:STMLogMessageTypeInfo];
 
     [self.socketTransport closeSocket];
+    
+}
+
+- (void)closeSocketInBackgroundAfterFetch {
+    
+    UIApplication *app = [UIApplication sharedApplication];
+
+    if (app.applicationState != UIApplicationStateBackground) return;
+
+    if (self.isUsingNetwork) {
+        self.haveToCloseSocketAfterFetch = YES;
+    } else {
+        [self closeSocketInBackground];
+    }
     
 }
 
@@ -465,8 +483,8 @@
     
     self.syncTimer = [self newSyncTimer];
     
-    [[NSRunLoop currentRunLoop] addTimer:self.syncTimer
-                                 forMode:NSRunLoopCommonModes];
+    [[NSRunLoop mainRunLoop] addTimer:self.syncTimer
+                              forMode:NSRunLoopCommonModes];
     
 }
 
@@ -512,7 +530,7 @@
     
     if (![entitiesNames isKindOfClass:[NSArray class]]) {
         NSString *logMessage = @"receiveEntities: argument is not an array";
-        return [self.session.logger saveLogMessageWithText:logMessage type:@"error"];
+        return [self.session.logger saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
     }
         
     NSArray *existingNames = [STMFunctions mapArray:entitiesNames withBlock:^NSString *(NSString *name) {
@@ -537,11 +555,11 @@
     [self.socketTransport findAsync:entityName identifier:identifier options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
         
         if (error) {
-            NSLog(@"sendFindWithValue entityName %@ error: %@", entityName, error);
+            NSLog(@"error: %@ %@", entityName, error);
             return;
         }
         
-        NSLog(@"sendFindWithValue success: %@ %@", entityName, identifier);
+        NSLog(@"success: %@ %@", entityName, identifier);
         
         [self.persistenceDelegate mergeAsync:entityName attributes:result options:@{STMPersistingOptionLtsNow} completionHandler:nil];
         
@@ -681,10 +699,16 @@
 
     [self startDefantomization];
 
-    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)[UIApplication sharedApplication].delegate;
+    UIApplication *app = [UIApplication sharedApplication];
+    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)app.delegate;
     
-    [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
-
+    if (appDelegate.haveFetchCompletionHandlers) {
+    
+        [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
+        [self closeSocketInBackgroundAfterFetch];
+        
+    }
+    
 }
 
 - (void)receiveData:(NSString *)entityName offset:(NSString *)offset {
@@ -800,12 +824,14 @@
     
     if (!self.session.uid) return;
     
-    NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-    
-    NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:receiveDateString forKey:key];
-    [self.userDefaults synchronize];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
+        
+        NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+        
+        [self.userDefaults setObject:receiveDateString forKey:key];
+        [self.userDefaults synchronize];
+    }];
     
 }
 
@@ -813,11 +839,13 @@
     
     if (!self.session) return;
     
-    NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
-    NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-    
-    [self.userDefaults setObject:sendDateString forKey:key];
-    [self.userDefaults synchronize];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
+        NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+        
+        [self.userDefaults setObject:sendDateString forKey:key];
+        [self.userDefaults synchronize];
+    }];
     
 }
 

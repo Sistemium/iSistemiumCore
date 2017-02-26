@@ -15,4 +15,12 @@
 @synthesize defantomizingOwner = _defantomizingOwner;
 @synthesize persistenceFantomsDelegate = _persistenceFantomsDelegate;
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.dispatchQueue = dispatch_queue_create("com.sistemium.STMSyncerHelperDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+    }
+    return self;
+}
+
 @end

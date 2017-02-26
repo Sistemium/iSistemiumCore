@@ -34,7 +34,9 @@
 }
 
 - (void)initController:(Class)controllerClass {
-    self.controllers[NSStringFromClass(controllerClass)] = [controllerClass controllerWithPersistenceDelegate:self.persistenceDelegate];
+    id <STMCoreControlling> controller = [controllerClass controllerWithPersistenceDelegate:self.persistenceDelegate];
+    self.controllers[NSStringFromClass(controllerClass)] = controller;
+    controller.session = self;
 }
 
 - (id)controllerWithClass:(Class)controllerClass {

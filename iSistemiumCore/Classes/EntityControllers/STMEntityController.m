@@ -250,7 +250,7 @@
         NSArray *duplicates = [result subarrayWithRange:NSMakeRange(1, result.count - 1)];
 
         NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", name, @(duplicates.count)];
-        [self.session.logger saveLogMessageWithText:message type:@"error"];
+        [self.session.logger saveLogMessageWithText:message numType:STMLogMessageTypeError];
 
         NSError *error;
         NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"xid IN %@", [duplicates valueForKeyPath:@"xid"]];

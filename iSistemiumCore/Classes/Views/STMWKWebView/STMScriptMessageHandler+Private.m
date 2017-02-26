@@ -42,7 +42,7 @@
         
         NSString *xidString = parameters[@"id"];
         
-        if (!xidString) {
+        if (!xidString || [xidString isKindOfClass:NSNull.class]) {
             return [self rejectWithErrorMessage:@"empty xid"];
         }
             
@@ -188,190 +188,75 @@
     
 }
 
-- (void)getPicture:(STMCorePicture *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)getPicture:(NSDictionary *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
-    NSData *imageData = [NSData dataWithContentsOfFile:[[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath]
-                                               options:0
-                                                 error:&error];
+    NSString *path = [[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath];
+    NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
     
-    if (imageData) {
-        
-        [self getPictureSendData:imageData
-                      parameters:parameters
-              jsCallbackFunction:jsCallbackFunction];
-        
-    } else {
-        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
-        [self getPictureWithXid:getPictureXid
-                          error:[NSString stringWithFormat:@"read file error: %@", error.localizedDescription]];
-        
+    if (!imageData) {
+        NSString *errorMessage = [NSString stringWithFormat:@"read file error: %@", error.localizedDescription];
+        return [self.owner callbackWithError:errorMessage parameters:parameters];
     }
+    
+    [self getPictureSendData:imageData parameters:parameters jsCallbackFunction:jsCallbackFunction];
     
 }
 
 - (void)handleGetPictureParameters:(NSDictionary *)parameters {
     
-    NSString *getPictureXid = parameters[@"id"];
-    
+    NSString *pictureId = parameters[@"id"];
     NSString *callbackFunction = parameters[@"callback"];
-    if (getPictureXid) self.getPictureCallbackJSFunctions[getPictureXid] = callbackFunction;
+    NSString *pictureSize = parameters[@"size"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id == %@", pictureId];
     
-    if (getPictureXid) self.getPictureMessageParameters[getPictureXid] = parameters;
+    NSDictionary *picture = [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
     
-    NSString *getPictureSize = parameters[@"size"];
-    
-    NSString *entityName;
-    
-    NSDictionary *object = [STMCoreObjectsController objectForIdentifier:getPictureXid entityName:&entityName];
-    
-    if (!object) {
-        
-        [self getPictureWithXid:getPictureXid
-                          error:[NSString stringWithFormat:@"no picture with xid %@", getPictureXid]];
-        return;
-        
+    if (!picture) {
+        NSString *error = [NSString stringWithFormat:@"no picture with xid %@", pictureId];
+        return [self.owner callbackWithError:error parameters:parameters];
     }
     
-    STMCorePicture *picture = (STMCorePicture *)[self.persistenceDelegate newObjectForEntityName:entityName];
-    [self.persistenceDelegate setObjectData:object toObject:picture withRelations:true];
+    NSString *entityName = picture[@"entityName"];
     
-    if ([getPictureSize isEqualToString:@"thumbnail"]) {
-        
-        if (picture.thumbnailPath) {
-            
-            [self getPicture:picture
-               withImagePath:picture.thumbnailPath
-                  parameters:parameters
-          jsCallbackFunction:callbackFunction];
-            
-        } else {
-            [self downloadPicture:picture];
-        }
-        
-    } else if ([getPictureSize isEqualToString:@"resized"]) {
-        
-        if (picture.resizedImagePath) {
-            
-            [self getPicture:picture
-               withImagePath:picture.resizedImagePath
-                  parameters:parameters
-          jsCallbackFunction:callbackFunction];
-            
-        } else {
-            [self downloadPicture:picture];
-        }
-        
-    } else if ([getPictureSize isEqualToString:@"full"]) {
-        
-        if (picture.imagePath) {
-            
-            [self getPicture:picture
-               withImagePath:picture.imagePath
-                  parameters:parameters
-          jsCallbackFunction:callbackFunction];
-            
-        } else {
-            [self downloadPicture:picture];
-        }
-        
-    } else {
-        
-        [self getPictureWithXid:getPictureXid
-                          error:@"size parameter is not correct"];
-        
+    NSDictionary *paths = @{
+                            @"thumbnail": @"thumbnailPath",
+                            @"resized"  : @"resizedImagePath",
+                            @"full"     : @"imagePath"
+                            };
+    
+    NSString *attribute = paths[pictureSize];
+    
+    if (!attribute) {
+        NSString *error = [NSString stringWithFormat:@"unknown size '%@'", pictureSize];
+        return [self.owner callbackWithError:error parameters:parameters];
     }
     
-}
-
-- (void)downloadPicture:(STMCorePicture *)picture {
+    picture = picture[@"attributes"];
+    attribute = picture[attribute];
     
-    if (picture.href) {
-        
-        [self addObserversForPicture:picture];
-        
-        [STMCorePicturesController downloadConnectionForObject:picture];
-        
-    } else {
-        
-        NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
-        
-        [self getPictureWithXid:getPictureXid
-                          error:@"picture have not imagePath and href"];
-        
+    if (![STMFunctions isNotNull:attribute]) {
+        return [self downloadPicture:picture withEntityName:entityName parameters:parameters];
     }
     
+    [self getPicture:picture withImagePath:attribute parameters:parameters jsCallbackFunction:callbackFunction];
+    
 }
 
-- (void)pictureWasDownloaded:(NSNotification *)notification {
+- (void)downloadPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName parameters:(NSDictionary *)parameters {
     
-    if ([notification.object isKindOfClass:[STMCorePicture class]]) {
-        
-        STMCorePicture *picture = notification.object;
-        
-        [self removeObserversForPicture:picture];
-        
-        [self handleGetPictureParameters:self.getPictureMessageParameters[[STMFunctions UUIDStringFromUUIDData:picture.xid]]];
-        
+    if (![STMFunctions isNotNull:picture[@"href"]]) {
+        return [self.owner callbackWithError:@"picture has no imagePath and href" parameters:parameters];
     }
-    
-}
-
-- (void)pictureDownloadError:(NSNotification *)notification {
-    
-    STMCorePicture *picture = notification.object;
-    
-    [self removeObserversForPicture:picture];
-    
-    NSString *errorString = notification.userInfo[@"error"];
-    
-    NSString *getPictureXid = [STMFunctions UUIDStringFromUUIDData:picture.xid];
-    
-    [self getPictureWithXid:getPictureXid
-                      error:errorString];
-    
-}
-
-- (void)addObserversForPicture:(STMCorePicture *)picture {
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(pictureWasDownloaded:)
-                                                 name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                               object:picture];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(pictureDownloadError:)
-                                                 name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                               object:picture];
-    
-}
-
-- (void)removeObserversForPicture:(STMCorePicture *)picture {
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                                  object:picture];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                                  object:picture];
-    
-}
-
-- (void)getPictureWithXid:(NSString *)xid error:(NSString *)errorString {
-    
-    NSDictionary *parameters = (xid) ? self.getPictureMessageParameters[xid] : @{};
-    
-    [self.owner callbackWithError:errorString
-                 parameters:parameters];
-    
-    if (xid) {
         
-        [self.getPictureCallbackJSFunctions removeObjectForKey:xid];
-        [self.getPictureMessageParameters removeObjectForKey:xid];
-        
-    }
-    
+    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture]
+    .then(^ (NSDictionary *downloadedPicture){
+        [self handleGetPictureParameters:parameters];
+    })
+    .catch(^ (NSError *error) {
+        [self.owner callbackWithError:error.localizedDescription parameters:parameters];
+    });
+
 }
 
 #pragma mark - subscribe entities from WKWebView

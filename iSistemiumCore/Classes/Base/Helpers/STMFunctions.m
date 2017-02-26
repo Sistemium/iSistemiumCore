@@ -915,7 +915,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     if (paths.count > 1 || [documentDirectory isEqualToString:@""]) {
         
         NSString *logMessage = [NSString stringWithFormat:@"documentDirectoryPaths %@", paths];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
 
         NSArray <NSURL *> *urls = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
         NSURL *documentDirectoryUrl = urls.lastObject;
@@ -1397,6 +1397,60 @@ vm_size_t freeMemory(void) {
     BOOL isNullSecond = ![self isNotNull:value2];
     
     return isNullFirst && isNullSecond;
+    
+}
+
++ (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval {
+    
+    if (timeInterval > 10) {
+        return [NSString stringWithFormat:@"%lus", (long)@(timeInterval).integerValue];
+    } else if (timeInterval > 2) {
+        return [NSString stringWithFormat:@"%.01fs", timeInterval];
+    } else {
+        return [NSString stringWithFormat:@"%lums", (long)@(timeInterval*1000).integerValue ];
+    }
+    
+}
+
++ (NSDictionary *)callerInfo {
+    
+#warning - have to check this method's result if app build for release
+
+    // http://stackoverflow.com/a/9603733
+    
+    NSMutableDictionary *result = @{}.mutableCopy;
+
+    NSUInteger sourceIndex = 2;
+    
+    NSArray *callStackSymbols = [NSThread callStackSymbols];
+    
+    if (callStackSymbols.count <= sourceIndex) {
+        return result;
+    }
+    
+    NSString *sourceString = callStackSymbols[sourceIndex];
+    
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [sourceString componentsSeparatedByCharactersInSet:separatorSet].mutableCopy;
+    [array removeObject:@""];
+    
+    NSUInteger classIndex = 3;
+    
+    if (array.count <= classIndex) {
+        return result;
+    }
+
+    result[@"class"] = array[classIndex];
+
+    NSUInteger functionIndex = 4;
+
+    if (array.count <= functionIndex) {
+        return result;
+    }
+
+    result[@"function"] = array[functionIndex];
+    
+    return result;
     
 }
 

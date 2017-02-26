@@ -11,22 +11,26 @@
 #import "STMConstants.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
-#import "STMVisitPhoto.h"
-#import "STMOutletPhoto.h"
-#import "STMMessagePicture.h"
-
+#import "STMOperationQueue.h"
 
 @interface STMCorePicturesController()
 
+@property (nonatomic, strong) NSOperationQueue *uploadQueue;
 @property (nonatomic, strong) NSMutableDictionary *hrefDictionary;
-@property (nonatomic) BOOL waitingForDownloadPicture;
+@property (nonatomic,readonly) BOOL waitingForDownloadPicture;
 
-@property (nonatomic, readonly) STMCoreSession *session;
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) NSString *imagesCachePath;
 
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
+
+@property (nonatomic,strong) STMOperationQueue *downloadQueue;
+
+@property (readonly) NSSet <NSString *> *pictureEntitiesNames;
+@property (readonly) NSArray <NSString *> *photoEntitiesNames;
+@property (readonly) NSArray <NSString *> *instantLoadEntityNames;
+@property (readonly) NSArray <NSDictionary *> *allPictures;
 
 @end
 
@@ -43,8 +47,20 @@
     return [[self sharedController] persistenceDelegate];
 }
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.downloadQueue = [[STMOperationQueue alloc] init];
+        self.downloadQueue.maxConcurrentOperationCount = 1;
+    }
+    return self;
+}
+
 #pragma mark - instance properties
 
+- (BOOL)waitingForDownloadPicture {
+    return !!self.downloadQueue.operationCount;
+}
 
 - (void)setDownloadingPictures:(BOOL)downloadingPictures {
     
@@ -67,29 +83,41 @@
     
 }
 
-+ (NSSet <NSString *> *)pictureEntitiesNames {
+- (NSOperationQueue *)uploadQueue {
     
-    return [[self persistenceDelegate] hierarchyForEntityName:@"STMCorePicture"];
+    if (!_uploadQueue) {
+        
+        _uploadQueue = [[NSOperationQueue alloc] init];
+        
+    }
+    
+    return _uploadQueue;
     
 }
 
 + (NSArray *)allPictures {
-    
+    return [self sharedController].allPictures;
+}
+
+- (NSSet <NSString *> *)pictureEntitiesNames {
+    return [self.persistenceDelegate hierarchyForEntityName:@"STMCorePicture"];
+}
+
+- (NSArray *)allPictures {
+
     return [self allPicturesWithPredicate:nil];
     
 }
 
-+ (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
+- (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
     
     NSMutableArray *result = @[].mutableCopy;
     
-    for (NSString *entityName in [self pictureEntitiesNames]) {
+    for (NSString *entityName in self.pictureEntitiesNames) {
         NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
-        for (NSDictionary *object in objects){
-            NSManagedObject *managedObject = [self.persistenceDelegate newObjectForEntityName:entityName];
-            [self.persistenceDelegate setObjectData:object toObject:managedObject withRelations:true];
-            [result addObject:managedObject];
-        }
+        [result addObjectsFromArray:[STMFunctions mapArray:objects withBlock:^id _Nonnull(id  _Nonnull value) {
+            return @{@"entityName":entityName, @"attributes":value};
+        }]];
     }
     
     return result.copy;
@@ -97,18 +125,20 @@
 }
 
 - (NSArray *)photoEntitiesNames {
-    return @[NSStringFromClass([STMVisitPhoto class]),NSStringFromClass([STMOutletPhoto class])];
+    return @[@"STMVisitPhoto",@"STMOutletPhoto"];
 }
 
-- (NSArray *)instantLoadPicturesEntityNames {
-    return @[NSStringFromClass([STMMessagePicture class])];
+- (NSArray *)instantLoadEntityNames {
+    return @[@"STMMessagePicture"];
 }
 
 - (NSArray *)nonloadedPictures {
     
-    NSArray *predicateArray = [[self photoEntitiesNames] arrayByAddingObjectsFromArray:[self instantLoadPicturesEntityNames]];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT (entity.name IN %@) AND (href != %@) AND (thumbnailPath == %@)", predicateArray,nil,nil];
-    return [[self.class allPictures] filteredArrayUsingPredicate:predicate];
+    NSString *loadablePictures = @"NOT (entityName IN %@) AND (attributes.href != nil) AND (attributes.thumbnailPath == nil)";
+    NSArray *excludingPhotosAndInstant = [self.photoEntitiesNames arrayByAddingObjectsFromArray:self.instantLoadEntityNames];
+    NSPredicate *nonloadedPicturesPredicate = [NSPredicate predicateWithFormat:loadablePictures, excludingPhotosAndInstant];
+    
+    return [self.allPictures filteredArrayUsingPredicate:nonloadedPicturesPredicate];
     
 }
 
@@ -120,7 +150,7 @@
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
         
-        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:[self.class pictureEntitiesNames].allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
+        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
             
             _nonloadedPicturesCount = [self nonloadedPictures].count;
             
@@ -192,7 +222,9 @@
         [self startCheckingPicturesPaths];
         
         [self checkBrokenPhotos];
-        [self checkUploadedPhotos];
+        [self checkNotUploadedPhotos];
+        
+#warning counts large downloaded images as unused
         
         NSLog(@"checkPhotos finish");
     });
@@ -213,53 +245,130 @@
 
     NSLogMethodName;
 
-    for (STMCorePicture *picture in allPictures) {
+    for (NSDictionary *picture in allPictures) {
         
-        if (picture.thumbnailPath == nil && picture.thumbnailHref != nil){
+        NSString *entityName = picture[@"entityName"];
+        NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
+        
+        if (![STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"thumbnailHref"]]){
             
-            NSString* thumbnailHref = picture.thumbnailHref;
+            NSString* thumbnailHref = attributes[@"thumbnailHref"];
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
             NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
-            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:picture fromImageData:thumbnailData];
-            
-            NSDictionary *picDict = [self.persistenceDelegate dictionaryFromManagedObject:picture];
+            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:attributes fromImageData:thumbnailData];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
-            [self.persistenceDelegate update:picture.entity.name attributes:picDict options:options]
+            [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
             .then(^(NSDictionary * result){
-                NSLog(@"thumbnail set %@ id: %@", picture.entity.name, result[@"id"]);
+                NSLog(@"thumbnail set %@ id: %@", entityName, attributes[STMPersistingKeyPrimary]);
             })
             .catch(^(NSError *error){
-                NSLog(@"thumbnail set %@ id: %@ error:", picture.entity.name, picDict[@"id"], error.localizedDescription);
+                NSLog(@"thumbnail set %@ id: %@ error:",entityName, attributes[STMPersistingKeyPrimary], [error localizedDescription]);
             });
             
             continue;
         }
         
-        NSArray *pathComponents = [picture.imagePath pathComponents];
+        NSArray *pathComponents = ![attributes[@"imagePath"] isKindOfClass:NSNull.class] ? [attributes[@"imagePath"] pathComponents] : nil;
         
         if (pathComponents.count == 0) {
             
-            if (picture.href) {
+            if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
-                [self hrefProcessingForObject:picture];
+                [self hrefProcessingForObject:picture.copy];
                 
             } else {
                 
-                NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", picture.xid];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+                NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", attributes[@"id"]];
+                [[self sharedController].logger errorMessage:logMessage];
                 [self deletePicture:picture];
                 
             }
             
         } else {
-            NSLog(@"something wrong here, this message should not be displayed");
+            
+            if (pathComponents.count > 1) {
+                
+                NSMutableDictionary *mutPicture = picture.mutableCopy;
+                
+                [self imagePathsConvertingFromAbsoluteToRelativeForPicture:mutPicture];
+                
+                attributes = mutPicture[@"attributes"];
+                
+                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
+                [self.persistenceDelegate update:entityName attributes:attributes options:options];
+            }
+            
         }
         
     }
     
+}
+
++ (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
+    
+    NSString *newImagePath = [self convertImagePath:attributes[@"imagePath"]];
+    NSString *newResizedImagePath = [self convertImagePath:attributes[@"resizedImagePath"]];
+    
+    if (newImagePath) {
+
+        NSLog(@"set new imagePath for picture %@", attributes[@"id"]);
+        attributes[@"imagePath"] = newImagePath;
+
+        if (newResizedImagePath) {
+            
+            NSLog(@"set new resizedImagePath for picture %@", attributes[@"id"]);
+            attributes[@"resizedImagePath"] = newResizedImagePath;
+            
+        } else {
+            
+            NSLog(@"! new resizedImagePath for picture %@", attributes[@"id"]);
+
+            if ([fileManager fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
+                [fileManager removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
+            }
+
+            NSLog(@"save new resizedImage file for picture %@", attributes[@"id"]);
+            NSData *imageData = [NSData dataWithContentsOfFile:[[self imagesCachePath] stringByAppendingPathComponent:newImagePath]];
+            
+            [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
+                            forPicture:attributes
+                         fromImageData:imageData];
+            
+        }
+        picture[@"attributes"] = attributes.copy;
+        
+    } else {
+
+        NSLog(@"! new imagePath for picture %@", attributes[@"id"]);
+
+        if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
+            
+            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and have href for picture %@, flush picture and download data again", attributes[@"id"]];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
+            
+            [self removeImageFilesForPicture:attributes.copy];
+            [self hrefProcessingForObject:picture];
+            
+        } else {
+
+            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and no href for picture %@, will be deleted", attributes[@"id"]];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
+                                                     numType:STMLogMessageTypeError];
+            
+            [self deletePicture:picture.copy];
+            
+        }
+
+    }
+
 }
 
 + (NSString *)convertImagePath:(NSString *)path {
@@ -280,15 +389,20 @@
 
 + (void)checkBrokenPhotos {
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"thumbnailPath == %@ OR imagePath == %@", nil, nil];
+    STMCorePicturesController *controller = [self sharedController];
     
-    NSArray *result = [self.class allPicturesWithPredicate:predicate];
+    NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil"];
     
-    for (STMCorePicture *picture in result) {
+    NSArray *result = [controller allPicturesWithPredicate:anyNilPaths];
+    
+    for (NSDictionary *picture in result) {
         
-        if (!picture.imagePath) {
+        NSString *entityName = picture[@"entityName"];
+        NSDictionary *attributes = picture[@"attributes"];
+        
+        if (!attributes[@"imagePath"] || [attributes[@"imagePath"] isKindOfClass:NSNull.class]) {
             
-            if (picture.href) {
+            if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
                 
                 [self hrefProcessingForObject:picture];
                 
@@ -305,27 +419,29 @@
         }
             
         NSError *error = nil;
-        NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:picture.imagePath];
+        NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:picture[@"imagePath"]];
         NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (photoData && photoData.length > 0) {
             
-            [self setImagesFromData:photoData forPicture:picture andUpload:NO];
+            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:picture];
-                
-            });
+            if (!attributes) continue;
+            
+            [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+                [controller postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+                                                  userInfo:[STMFunctions setValue:result forKey:@"attributes" inDictionary:picture]];
+            }];
+            
             
         } else if (error) {
             
-            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", picture.imagePath, error.localizedDescription];
+            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", picture[@"imagePath"], error.localizedDescription];
             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
             
-        } else if (picture.href) {
+        } else if (picture[@"href"] && ![picture[@"href"] isKindOfClass:NSNull.class]) {
             
-            [self hrefProcessingForObject:picture];
+            [self hrefProcessingForObject:picture.mutableCopy];
             
         } else {
             
@@ -340,47 +456,53 @@
     
 }
 
-+ (void)checkUploadedPhotos {
++ (void)checkNotUploadedPhotos {
 
-    int counter = 0;
+    NSUInteger counter = 0;
 
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href == %@", nil];
+    NSPredicate *notUploaded = [NSPredicate predicateWithFormat:@"href == nil"];
+    STMCorePicturesController *controller = [self sharedController];
     
-    NSArray *result = [self.class allPicturesWithPredicate:predicate];
-    
-    for (STMCorePicture *picture in result) {
+    for (NSDictionary *picture in [controller allPicturesWithPredicate:notUploaded].copy) {
         
-        if (!picture.hasChanges && picture.imagePath) continue;
+        NSString *entityName = picture[@"entityName"];
+        NSDictionary *attributes = picture[@"attributes"];
+        
+        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
-        NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:picture.imagePath];
-        NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
+        NSString *path = [[self imagesCachePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
-        if (photoData && photoData.length > 0) {
+        if (imageData && imageData.length > 0) {
             
-            [[self sharedController] addUploadOperationForPicture:picture data:photoData];
+            [controller uploadImageEntityName:entityName attributes:attributes data:imageData];
             counter++;
             
-        } else if (!error) {
-                
-            NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, photoData %@, length %lu — object will be deleted", picture, photoData, (unsigned long)photoData.length];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            [self deletePicture:picture];
+            return;
+            
+        }
+        
+        
+        if (error) {
+            
+            NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
+            [[self sharedController].logger errorMessage:logMessage];
             
         } else {
             
-            NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
+            NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, imageData %@, length %lu — object will be deleted", entityName, imageData, (unsigned long)imageData.length];
+            
+            [controller.logger errorMessage:logMessage];
+            
+            [self deletePicture:picture];
             
         }
         
     }
     
     if (counter > 0) {
-		NSString *logMessage = [NSString stringWithFormat:@"Sending %i photos",counter];
-		[[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"important"];
+		[controller.logger importantMessage:[NSString stringWithFormat:@"Sending %@ photos",@(counter)]];
     }
     
 }
@@ -388,66 +510,58 @@
 
 #pragma mark - other methods
 
-+ (void)hrefProcessingForObject:(NSManagedObject *)object {
++ (void)hrefProcessingForObject:(NSDictionary *)object {
     
-    NSString *href = [object valueForKey:@"href"];
+    STMCorePicturesController *controlller = [self sharedController];
+
+    NSString *entityName = object[@"entityName"];
+    NSMutableDictionary *attributes = [object[@"attributes"] mutableCopy];
+    NSString *href = attributes[@"href"];
     
-    if (!href) return;
+    if (![STMFunctions isNotNull:href]) return;
         
-    if (![object isKindOfClass:[STMCorePicture class]]) return;
-        
-    STMCorePicturesController *pc = [self sharedController];
+    if (![controlller.pictureEntitiesNames containsObject:entityName]) return;
     
-    if ([pc.hrefDictionary objectForKey:href]) return;
+    if (controlller.hrefDictionary[href]) return;
         
-    pc.hrefDictionary[href] = object;
+    controlller.hrefDictionary[href] = object;
     
-    if (pc.downloadingPictures) {
-        [pc downloadNextPicture];
-    } else if ([[pc instantLoadPicturesEntityNames] containsObject:NSStringFromClass([object class])]) {
-        [self downloadConnectionForObject:object];
+    if ([controlller.instantLoadEntityNames containsObject:entityName]) {
+        [controlller downloadImagesEntityName:entityName attributes:attributes];
     }
 
 }
 
-+ (void)setImagesFromData:(NSData *)data forPicture:(STMCorePicture *)picture andUpload:(BOOL)shouldUpload {
++ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
     
-    NSData *weakData = data;
-    STMCorePicture *weakPicture = picture;
-    
-    NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
+    NSString *xid = picture[STMPersistingKeyPrimary];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
-    if ([picture isKindOfClass:[STMCorePhoto class]]) {
-        
-        if (shouldUpload) {
-            [[self sharedController] addUploadOperationForPicture:picture data:weakData];
-        }
-
-    } else if ([picture isKindOfClass:[STMCorePicture class]]) {
-        
+    if (shouldUpload) {
+        [[self sharedController] uploadImageEntityName:entityName attributes:picture data:data];
     }
     
-    if (!fileName) return;
+    if (!fileName) return nil;
         
     BOOL result = YES;
+    NSMutableDictionary *mutablePicture = picture.mutableCopy;
     
-    result = (result && [self saveImageFile:fileName forPicture:weakPicture fromImageData:weakData]);
-    result = (result && [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:weakPicture fromImageData:weakData]);
+    result = result && [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data];
+    result = result && [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data];
     
-    [self setThumbnailForPicture:weakPicture fromImageData:weakData];
+    result = result && [self setThumbnailForPicture:mutablePicture fromImageData:data];
     
     if (!result) {
-        
         NSString *logMessage = [NSString stringWithFormat:@"have problem while save image files %@", fileName];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
-
+        [[STMLogger sharedLogger] errorMessage:logMessage];
+        return nil;
     }
-
+    
+    return mutablePicture.copy;
     
 }
 
-+ (BOOL)saveImageFile:(NSString *)fileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
++ (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data {
     
     UIImage *image = [UIImage imageWithData:data];
     CGFloat maxDimension = MAX(image.size.height, image.size.width);
@@ -474,13 +588,13 @@
         
     }
     
-    picture.imagePath = fileName;
+    picture[@"imagePath"] = fileName;
 
     return result;
     
 }
 
-+ (BOOL)saveResizedImageFile:(NSString *)resizedFileName forPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
++ (BOOL)saveResizedImageFile:(NSString *)resizedFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data {
 
     NSString *resizedImagePath = [[self imagesCachePath] stringByAppendingPathComponent:resizedFileName];
     
@@ -494,19 +608,19 @@
     
     if (!result) {
         NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, resizedImagePath, error.localizedDescription];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage type:@"error"];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         return NO;
 	}
 
-    picture.resizedImagePath = resizedFileName;
+    picture[@"resizedImagePath"] = resizedFileName;
 
     return result;
 
 }
 
-+ (void)setThumbnailForPicture:(STMCorePicture *)picture fromImageData:(NSData *)data {
++ (BOOL)setThumbnailForPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data {
     
-    NSString *xid = (picture.xid) ? [STMFunctions UUIDStringFromUUIDData:(NSData *)picture.xid] : nil;
+    NSString *xid = picture[@"id"];
     NSString *fileName = [NSString stringWithFormat:@"thumbnail_%@.jpg",xid];
     
     UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
@@ -521,13 +635,16 @@
     
     if (result) {
         
-        picture.thumbnailPath = fileName;
+        picture[@"thumbnailPath"] = fileName;
+        
+        return YES;
         
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"saveImageThumbnailFile %@ writeToFile %@ error: %@", fileName, imagePath, error.localizedDescription];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
+        return NO;
         
     }
     
@@ -542,14 +659,17 @@
 
 - (void)downloadNextPicture {
     
-    if (!self.downloadingPictures || self.waitingForDownloadPicture) return;
-        
-    NSManagedObject *object = self.hrefDictionary.allValues.firstObject;
+    if (!self.downloadingPictures) return;
     
-    if (object) {
+    NSDictionary *picture = self.hrefDictionary.allValues.firstObject;
+    
+    NSString *entityName = picture[@"entityName"];
+    NSMutableDictionary *attributes = picture[@"attributes"];
+    
+    if (attributes) {
         
-        [self downloadConnectionForObject:object];
-        
+        [self downloadImagesEntityName:entityName attributes:attributes];
+
     } else {
         
         self.downloadingPictures = NO;
@@ -564,67 +684,60 @@
 
 }
 
-+ (void)downloadConnectionForObject:(NSManagedObject *)object {
-    [[self sharedController] downloadConnectionForObject:object];
-}
 
-- (void)downloadConnectionForObject:(NSManagedObject *)object {
-
-    NSError *error = nil;
+- (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes {
     
-    if (!object) {
-        NSLog(@"existingObjectWithID %@ error: %@", object, error.localizedDescription);
-        return;
-    }
-
-    NSString *href = [object valueForKey:@"href"];
-    
-    if (!href) return;
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         
-    if ([object valueForKey:@"imagePath"]) return [self didProcessHref:href];
-    
-    self.waitingForDownloadPicture = YES;
-    
-    NSURL *url = [NSURL URLWithString:href];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    
-    NSLog(@"downloadConnectionForObject start: %@", href);
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                               
-        self.waitingForDownloadPicture = NO;
+        NSString *href = attributes[@"href"];
         
-        if (connectionError) {
-            
-            NSLog(@"error %@ in %@", connectionError.description, [object valueForKey:@"name"]);
-            
-            [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
-                                                   object:object
-                                                 userInfo:@{@"error" : connectionError.description}];
-
-        } else {
-            
-            if (![object isKindOfClass:[STMCorePicture class]]) return;
-            
-            [[self class] setImagesFromData:data forPicture:(STMCorePicture *)object andUpload:NO];
-            
-            NSDictionary* dictObject = [self.persistenceDelegate dictionaryFromManagedObject:object];
-            
-            NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
-            
-            [self.persistenceDelegate update:object.entity.name attributes:dictObject options:options].then(^(NSArray *result){
-                NSLog(@"downloadConnectionForObject saved: %@", href);
-                [self.notificationCenter postNotificationName:NOTIFICATION_PICTURE_WAS_DOWNLOADED object:object];
-            }).catch(^(NSError *error){
-                NSLog(@"Error: %@", error);
-            });
-
+        if (![STMFunctions isNotNull:href] || ![self.pictureEntitiesNames containsObject:entityName]) {
+            return resolve([STMFunctions errorWithMessage:@"no href or not a Picture"]);
         }
         
-        [self didProcessHref:href];
+        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) {
+            [self didProcessHref:href];
+            return resolve(attributes);
+        }
         
-    }];
+        NSURL *url = [NSURL URLWithString:href];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        
+        NSLog(@"start: %@", href);
+        
+        [NSURLConnection sendAsynchronousRequest:request queue:self.downloadQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+            
+            [self didProcessHref:href];
+            
+            if (connectionError) return resolve(connectionError);
+                
+            NSDictionary *pictureWithPaths = [self.class setImagesFromData:data forPicture:attributes withEntityName:entityName andUpload:NO];
+            
+            NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
+            
+            NSDictionary *options = @{
+                                      STMPersistingOptionFieldstoUpdate: attributesToUpdate,
+                                      STMPersistingOptionSetTs: @NO
+                                      };
+            
+            resolve([self.persistenceDelegate update:entityName attributes:pictureWithPaths.copy options:options]);
 
+        }];
+
+    }]
+    .then(^(NSDictionary *success) {
+        
+        NSLog(@"success: %@ %@", entityName, success[@"href"]);
+        [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED userInfo:success];
+   
+    })
+    .catch(^(NSError *error) {
+        
+        NSLog(@"error: %@ %@", entityName, error);
+        [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
+                                    userInfo:@{@"error" : error.localizedDescription}];
+   
+    });
     
 }
 
@@ -635,12 +748,10 @@
 
 }
 
-- (void)addUploadOperationForPicture:(STMCorePicture *)picture data:(NSData *)data {
+- (void)uploadImageEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes data:(NSData *)data {
 
     NSDictionary *appSettings = [self.session.settingsController currentSettingsForGroup:@"appSettings"];
     NSString *url = [[appSettings valueForKey:@"IMS.url"] stringByAppendingString:@"?folder="];
-    
-    NSString *entityName = picture.entity.name;
     
     NSDate *currentDate = [NSDate date];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -658,65 +769,61 @@
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
     [request setHTTPBody:data];
     
-    [NSURLConnection sendAsynchronousRequest:request
-                                       queue:[NSOperationQueue mainQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
-        if (!error) {
-                
-            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-            
-            if (statusCode == 200) {
-                
-                NSError *localError = nil;
-                
-                NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                           options:0
-                                                                             error:&localError];
-                
-                if (dictionary) {
-
-                    NSArray *picturesDicts = dictionary[@"pictures"];
-
-                    NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts
-                                                                           options:0
-                                                                             error:&localError];
-                    
-                    if (picturesJson) {
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            
-                            for (NSDictionary *dict in picturesDicts){
-                                if ([dict[@"name"] isEqual:@"original"]){
-                                    picture.href = dict[@"src"];
-                                }
-                            }
-                            
-                            NSString *info = [[NSString alloc] initWithData:picturesJson
-                                                                   encoding:NSUTF8StringEncoding];
-                            
-                            picture.picturesInfo = [info stringByReplacingOccurrencesOfString:@"\\/"
-                                                                                   withString:@"/"];
-                            
-                            NSLog(@"%@", picture.picturesInfo);
-                                                                                    
-                        });
-
-                    } else {
-                        NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                    }
-                    
-                } else {
-                    NSLog(@"error in json serialization: %@", localError.localizedDescription);
-                }
-                
-            } else {
-                NSLog(@"Request error, statusCode: %ld", (long)statusCode);
-            }
-            
-        } else {
-            NSLog(@"connectionError %@", error.localizedDescription);
+       if (error) {
+           NSLog(@"connectionError %@", error.localizedDescription);
+           return;
+       }
+        
+        NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+        
+        if (statusCode != 200) {
+            NSLog(@"Request error, statusCode: %ld", (long)statusCode);
+            return;
         }
+            
+        NSError *localError = nil;
+        
+        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&localError];
+        
+        if (!dictionary) {
+            NSLog(@"error in json serialization: %@", localError.localizedDescription);
+            return;
+        }
+
+        NSArray *picturesDicts = dictionary[@"pictures"];
+
+        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:0 error:&localError];
+        
+        if (!picturesJson) {
+            NSLog(@"error in json serialization: %@", localError.localizedDescription);
+            return;
+        }
+        
+        NSMutableDictionary *picture = attributes.mutableCopy;
+        
+        for (NSDictionary *dict in picturesDicts){
+            if ([dict[@"name"] isEqual:@"original"]){
+                picture[@"href"] = dict[@"src"];
+            }
+        }
+        
+        NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
+        
+        picture[@"picturesInfo"] = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        
+        NSLog(@"%@", picture[@"picturesInfo"]);
+        
+        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo"]};
+        
+        [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            if (result) return;
+            [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
+            if (error) {
+                NSLog(@"error: %@", error);
+            }
+        }];
 
     }];
 
@@ -725,24 +832,27 @@
 
 #pragma mark
 
-+ (void)deletePicture:(STMCorePicture *)picture {
++ (void)deletePicture:(NSDictionary *)picture {
 
 //    NSLog(@"delete picture %@", picture);
     
-    [self removeImageFilesForPicture:picture];
+    NSString *entityName = picture[@"entityName"];
+    NSDictionary *attributes = picture[@"attributes"];
+    
+    [self removeImageFilesForPicture:attributes];
     
     NSError *error;
 
-    [self.persistenceDelegate destroySync:picture.entity.name
-                               identifier:[STMFunctions hexStringFromData:picture.xid]
+    [self.persistenceDelegate destroySync:entityName
+                               identifier:[STMFunctions hexStringFromData:attributes[@"id"]]
                                   options:nil error:&error];
     
 }
 
-+ (void)removeImageFilesForPicture:(STMCorePicture *)picture {
++ (void)removeImageFilesForPicture:(NSDictionary *)picture {
     
-    if (picture.imagePath) [self removeImageFile:picture.imagePath];
-    if (picture.resizedImagePath) [self removeImageFile:picture.resizedImagePath];
+    if (picture[@"imagePath"] && ![picture[@"imagePath"] isKindOfClass:NSNull.class]) [self removeImageFile:picture[@"imagePath"]];
+    if (picture[@"resizedImagePath"] && ![picture[@"resizedImagePath"] isKindOfClass:NSNull.class]) [self removeImageFile:picture[@"resizedImagePath"]];
     
 }
 

@@ -146,6 +146,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isNotNull:(id)value;
 + (BOOL)isNullBoth:(id)value1 and:(id)value2;
 
++ (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval;
+
++ (NSDictionary *)callerInfo;
+
 
 NS_ASSUME_NONNULL_END
 

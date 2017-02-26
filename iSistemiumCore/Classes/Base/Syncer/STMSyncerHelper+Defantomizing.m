@@ -12,36 +12,49 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 #import "STMLazyDictionary.h"
+#import "STMOperationQueue.h"
+
+#define STM_DEFANTOMIZING_MAX_CONCURRENT 25
 
 
-#define STM_DEFANTOMIZING_QUEUE_MAX_CONCURRENT 25
 
-@interface STMDefantomizingOperation : NSOperation
+@interface STMDefantomizingOperation : STMOperation
 
-@property (nonatomic,weak) id <STMDefantomizingOwner> owner;
 @property (nonatomic,strong) NSString *entityName;
 @property (nonatomic,strong) NSString *identifier;
 
-- (instancetype)initWithEntityName:(NSString *)entityName identifier:(NSString *)identifier owner:(id <STMDefantomizingOwner>)owner;
+@end
+
+
+
+@interface STMDefantomizingQueue : STMOperationQueue
+
+@property (nonatomic,weak) STMSyncerHelper *owner;
 
 @end
 
 
-@interface STMDefantomizingQueue : NSOperationQueue
 
-@property (nonatomic,weak) id <STMDefantomizingOwner> owner;
-
-- (STMDefantomizingOperation *)operationForEntityName:(NSString *)entityName identifier:(NSString *)identifier;
-- (void)addDefantomizationOfEntityName:(NSString *)entityName identifier:(NSString *)identifier;
-
-@end
+@implementation STMDefantomizingOperation
 
 
-@interface STMSyncerHelperDefantomizing ()
+- (STMDefantomizingQueue *)defantomizingQueue {
+    return (STMDefantomizingQueue *)self.queue;
+}
 
-@property (nonatomic,strong) NSMutableSet *failToResolveIds;
-@property (nonatomic,strong) STMDefantomizingQueue *operationQueue;
-@property (nonatomic,strong) dispatch_queue_t dispatchQueue;
+
+- (instancetype)initWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
+    self = [self init];
+    self.identifier = identifier;
+    self.entityName = entityName;
+    return self;
+}
+
+
+- (void)main {
+    [self.defantomizingQueue.owner.defantomizingOwner defantomizeEntityName:self.entityName identifier:self.identifier];
+}
+
 
 @end
 
@@ -49,9 +62,11 @@
 
 @implementation STMDefantomizingQueue
 
+
 - (void)addDefantomizationOfEntityName:(NSString *)entityName identifier:(NSString *)identifier {
-    [self addOperation:[[STMDefantomizingOperation alloc] initWithEntityName:entityName identifier:identifier owner:self.owner]];
+    [self addOperation:[[STMDefantomizingOperation asynchronousOperation] initWithEntityName:entityName identifier:identifier]];
 }
+
 
 - (STMDefantomizingOperation *)operationForEntityName:(NSString *)entityName identifier:(NSString *)identifier {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"entityName == %@ AND identifier == %@", entityName, identifier];
@@ -59,85 +74,39 @@
     return [self.operations filteredArrayUsingPredicate:predicate].firstObject;
 }
 
-@end
-
-@implementation STMDefantomizingOperation {
-    BOOL _executing;
-    BOOL _finished;
-}
-
-+ (instancetype)defantomizationEntityName:(NSString *)entityName identifier:(NSString *)identifier owner:(id <STMDefantomizingOwner>)owner {
-    return [[self alloc] initWithEntityName:entityName identifier:identifier owner:owner];
-}
-
-- (instancetype)initWithEntityName:(NSString *)entityName identifier:(NSString *)identifier owner:(id <STMDefantomizingOwner>)owner {
-    self = [self init];
-    self.identifier = identifier;
-    self.entityName = entityName;
-    self.owner = owner;
-    return self;
-}
-
-- (BOOL)asynchronous {
-    return YES;
-}
-
-- (void)start {
-    
-    [self willChangeValueForKey:@"isExecuting"];
-    _executing = YES;
-    [self didChangeValueForKey:@"isExecuting"];
-    
-    [self.owner defantomizeEntityName:self.entityName identifier:self.identifier];
-    
-}
-
-- (BOOL)isExecuting {
-    return _executing;
-}
-
-- (BOOL)isFinished {
-    return _finished;
-}
-
-- (void)finish {
-    
-    [self willChangeValueForKey:@"isExecuting"];
-    _executing = NO;
-    [self didChangeValueForKey:@"isExecuting"];
-    
-    [self willChangeValueForKey:@"isFinished"];
-    _finished = YES;
-    [self didChangeValueForKey:@"isFinished"];
-    
-}
 
 @end
+
+
+
+@interface STMSyncerHelperDefantomizing ()
+
+@property (nonatomic,strong) NSMutableSet *failToResolveIds;
+@property (nonatomic,strong) STMDefantomizingQueue *operationQueue;
+
+@end
+
 
 
 @implementation STMSyncerHelperDefantomizing
 
-- (instancetype)init {
 
-    self = [super init];
++ (instancetype)defantomizingWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
+
+    STMSyncerHelperDefantomizing *instance = [[self alloc] init];
     
-    if (self) {
-        self.failToResolveIds = [NSMutableSet set];
-        
-        self.dispatchQueue = dispatch_queue_create("STMSyncerHelperDefantomizing", DISPATCH_QUEUE_CONCURRENT);
-        STMDefantomizingQueue *operationQueue = [[STMDefantomizingQueue alloc] init];
-        
-        operationQueue.maxConcurrentOperationCount = STM_DEFANTOMIZING_QUEUE_MAX_CONCURRENT;
-        operationQueue.underlyingQueue = self.dispatchQueue;
-        
-        self.operationQueue = operationQueue;
+    if (instance) {
+        instance.failToResolveIds = [NSMutableSet set];
+        instance.operationQueue = [STMDefantomizingQueue queueWithDispatchQueue:dispatchQueue];
     }
     
-    return self;
+    return instance;
     
 }
 
+
 @end
+
 
 
 @implementation STMSyncerHelper (Defantomizing)
@@ -145,7 +114,9 @@
 @dynamic defantomizingOwner;
 @dynamic persistenceFantomsDelegate;
 
+
 #pragma mark - defantomizing
+
 
 - (void)startDefantomization {
 
@@ -153,11 +124,15 @@
     
     @synchronized (self) {
         
-        defantomizing = self.defantomizing ? self.defantomizing : [[STMSyncerHelperDefantomizing alloc] init];
+        defantomizing = self.defantomizing;
+        
+        if (!defantomizing) {
+            defantomizing = [STMSyncerHelperDefantomizing defantomizingWithDispatchQueue:self.dispatchQueue];
+            defantomizing.operationQueue.owner = self;
+        }
         
         if (defantomizing.operationQueue.operationCount) return;
         
-        defantomizing.operationQueue.owner = self.defantomizingOwner;
         defantomizing.operationQueue.suspended = YES;
         
         self.defantomizing = defantomizing;
@@ -197,11 +172,13 @@
     
 }
 
+
 - (void)stopDefantomization {
     // TODO: implement cancellation in STMDefantomizingOperation
     [self.defantomizing.operationQueue cancelAllOperations];
     [self defantomizingFinished];
 }
+
 
 - (void)defantomizedEntityName:(NSString *)entityName identifier:(NSString *)identifier success:(BOOL)success attributes:(NSDictionary *)attributes error:(NSError *)error {
     
@@ -210,7 +187,7 @@
     }
     
     if (!entityName) {
-        return [self defantomizedEntityName:entityName identifier:identifier errorString:@"SyncerHelper defantimize got empty entityName"];
+        return [self defantomizedEntityName:entityName identifier:identifier errorString:@"SyncerHelper defantomize got empty entityName"];
     }
     
     [self.persistenceFantomsDelegate mergeFantomAsync:entityName attributes:attributes callback:^
@@ -229,6 +206,7 @@
 
 
 #pragma mark - Private helpers
+
 
 - (void)defantomizedEntityName:(NSString *)entityName identifier:(NSString *)identifier errorString:(NSString *)errorString {
     
@@ -270,9 +248,12 @@
     
 }
 
+
 - (void)defantomizingFinished {
     
-    NSLog(@"DEFANTOMIZING_FINISHED");
+    STMOperationQueue *queue = self.defantomizing.operationQueue;
+    
+    NSLog(@"DEFANTOMIZING_FINISHED in %@ with %@ iterations", queue.printableFinishedIn, @(queue.iterationsCount));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_FINISH userInfo:nil];
     

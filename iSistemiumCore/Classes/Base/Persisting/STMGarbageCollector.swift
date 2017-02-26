@@ -18,7 +18,6 @@ extension Set {
 @objc class STMGarbageCollector:NSObject{
     
     static var unusedImageFiles = Set<String>()
-    static var outOfDateImages = Set<STMCorePicture>()
     
     static func removeUnusedImages() -> AnyPromise{
         
@@ -30,7 +29,7 @@ extension Set {
                     searchUnusedImages()
                     if unusedImageFiles.count > 0 {
                         let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
-                        STMLogger.shared().saveLogMessage(withText: logMessage, type:"important")
+                        STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in unusedImageFiles{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
@@ -64,15 +63,18 @@ extension Set {
             }
         }
         
-        let allImages = STMCorePicturesController.allPictures() as! Array<STMCorePicture>;
+        let allImages = STMCorePicturesController.allPictures() as! Array<Dictionary<String,Any>>;
         for image in allImages{
-            if let path = image.imagePath{
+            
+            let data = image["attributes"] as! Dictionary<String,Any>
+            
+            if let path = data["imagePath"] as? String{
                 usedImageFiles.insert(path)
             }
-            if let resizedPath = image.resizedImagePath{
+            if let resizedPath = data["resizedImagePath"] as? String{
                 usedImageFiles.insert(resizedPath)
             }
-            if let thumbnailPath = image.thumbnailPath{
+            if let thumbnailPath = data["thumbnailPath"] as? String{
                 usedImageFiles.insert(thumbnailPath)
             }
         }
@@ -82,9 +84,6 @@ extension Set {
     
     static func removeOutOfDateImages(){
         do {
-            if (!Thread.isMainThread){
-                CLSLogv("removeOutOfDateImages called not from main thread", getVaList([""]))
-            }
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             
             let stcEntities:Dictionary<String, NSDictionary>
@@ -111,26 +110,28 @@ extension Set {
                 
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
                 
-                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil)
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,String>>
                 
                 images = images.filter{photoPredicate.evaluate(with: $0)};
                 
-                for image in images as! Array<STMCorePicture>{
+                for var image in images{
                     
-                    let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image.deviceAts)")
+                    let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image["deviceAts"])")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
-                    if let imagePath = image.imagePath{
+                    if let imagePath = image["imagePath"]{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
-                        image.imagePath = nil
+                        image["imagePath"] = nil
                     }
                     
-                    if let resizedImagePath = image.resizedImagePath{
+                    if let resizedImagePath = image["resizedImagePath"]{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
-                        image.resizedImagePath = nil
+                        image["resizedImagePath"] = nil
                     }
                     
                 }
+                
+                try STMCoreSessionManager.shared().currentSession.persistenceDelegate.mergeManySync(key, attributeArray: images, options: nil)
                 
             }
             
