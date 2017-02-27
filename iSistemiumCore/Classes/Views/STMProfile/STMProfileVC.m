@@ -1065,7 +1065,7 @@
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_STARTED
-             object:self.syncer];
+             object:nil];
 
 //    [nc addObserver:self
 //           selector:@selector(updateUploadSyncProgressBar)
@@ -1075,7 +1075,7 @@
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_FINISHED
-             object:self.syncer];
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(syncerReceiveStarted)
