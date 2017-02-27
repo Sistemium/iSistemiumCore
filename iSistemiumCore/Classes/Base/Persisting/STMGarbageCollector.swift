@@ -103,14 +103,14 @@ extension Set {
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
-                let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil")
+                let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil OR thumbnailPath != nil")
                 let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [limitDate, limitDate])
                 
                 let subpredicates = [photoIsUploaded, photoIsSynced, photoHaveFiles, photoIsOutOfDate]
                 
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
                 
-                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,String>>
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,Any>>
                 
                 images = images.filter{photoPredicate.evaluate(with: $0)};
                 
@@ -119,12 +119,12 @@ extension Set {
                     let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image["deviceAts"])")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
-                    if let imagePath = image["imagePath"]{
+                    if let imagePath = image["imagePath"] as? String{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
                         image["imagePath"] = nil
                     }
                     
-                    if let resizedImagePath = image["resizedImagePath"]{
+                    if let resizedImagePath = image["resizedImagePath"] as? String{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
                         image["resizedImagePath"] = nil
                     }
