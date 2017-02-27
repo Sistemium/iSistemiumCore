@@ -813,7 +813,7 @@
 - (void)bunchOfObjectsSent {
 
     [self saveSendDate];
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
+//    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
     
 }
 

@@ -1067,10 +1067,10 @@
                name:NOTIFICATION_SYNCER_SEND_STARTED
              object:self.syncer];
 
-    [nc addObserver:self
-           selector:@selector(updateUploadSyncProgressBar)
-               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
-             object:self.syncer];
+//    [nc addObserver:self
+//           selector:@selector(updateUploadSyncProgressBar)
+//               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
+//             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
