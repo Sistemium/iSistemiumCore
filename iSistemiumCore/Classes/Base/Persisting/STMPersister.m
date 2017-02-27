@@ -24,7 +24,7 @@
     NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister fileName:fmdbFileName];
-    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB dataModelName:modelName];
+//    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
     if (completionHandler) completionHandler(YES);
