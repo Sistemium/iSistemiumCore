@@ -18,6 +18,7 @@
 
 @end
 
+#define STMIsNull(a,b) a ? a : b
 
 @interface STMFunctions : NSObject
 
