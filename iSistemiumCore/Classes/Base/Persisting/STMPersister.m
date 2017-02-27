@@ -19,14 +19,12 @@
 
 + (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB completionHandler:(void (^)(BOOL success))completionHandler {
 
-#warning - is it good to call init two times?
-//    STMPersister *persister = [[[STMPersister alloc] init] initWithModelName:modelName];
-    STMPersister *persister = [[STMPersister alloc] initWithModelName:modelName];
+    STMPersister *persister = [[self.class alloc] initWithModelName:modelName];
     
     NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister fileName:fmdbFileName];
-//    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB dataModelName:modelName];
+    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
     if (completionHandler) completionHandler(YES);
