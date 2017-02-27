@@ -73,6 +73,10 @@
     
 }
 
+- (void)cancel {
+    [super cancel];
+    NSLog(@"entityName: %@", self.entityName);
+}
 
 @end
 
@@ -229,7 +233,7 @@
     
     NSUInteger remainCount = queue.operationCount;
     
-    NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, operation.printableFinishedIn, @(remainCount));
+    NSLog(@"doneWith %@ in %@ remain %@ to receive", entityName, STMIsNull(operation.printableFinishedIn,@"(cancelled)"), @(remainCount));
     
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
                                 userInfo:@{@"countdownValue": @(remainCount)}];
@@ -248,6 +252,10 @@
     }
     
     STMOperationQueue *queue = self.downloadingState.queue;
+    
+    if (!queue) {
+        return [self logErrorMessage:@"receivingDidFinish with nil queue"];
+    }
     
     NSString *finishedIn = queue.printableFinishedIn;
     NSString *duration = queue.printableFinishedOperationsDuration;
@@ -272,17 +280,19 @@
     
     if (result.count < pageSize) {
         
-//        NSLog(@"    %@: pageRowCount < pageSize / No more content", entityName);
-        
         [STMClientEntityController clientEntityWithName:entityName setETag:offset];
         
-        [self doneDownloadingEntityName:entityName];
-        
-    } else {
-        
-        [self.dataDownloadingOwner receiveData:entityName offset:offset];
+        return [self doneDownloadingEntityName:entityName];
         
     }
+    
+    STMOperation *op = [self.downloadingState.queue operationForEntityName:entityName];
+    
+    if (!op) return [self.logger warningMessage:@"no operation"];
+
+    if (op.isCancelled) return [self.logger warningMessage:@"operation is cancelled"];
+    
+    [self.dataDownloadingOwner receiveData:entityName offset:offset];
     
 }
 
