@@ -32,14 +32,20 @@
 
 - (void)start {
     
-    [self main];
+    if (self.isCancelled) {
+        NSLog(@"operation cancelled");
+        return [self finish];
+    }
+        
+    self.startedAt = [NSDate date];
 
     [self willChangeValueForKey:@"isExecuting"];
 
     _executing = YES;
-    self.startedAt = [NSDate date];
-
+    
     [self didChangeValueForKey:@"isExecuting"];
+    
+    [self main];
     
 }
 
@@ -53,20 +59,31 @@
 
 - (void)finish {
     
-    self.finishedIn = -[self.startedAt timeIntervalSinceNow];
+    if (self.startedAt) {
+        self.finishedIn = -[self.startedAt timeIntervalSinceNow];
+    }
     
-    [self willChangeValueForKey:@"isExecuting"];
-    _executing = NO;
-    [self didChangeValueForKey:@"isExecuting"];
+    if (_executing) {
+        [self willChangeValueForKey:@"isExecuting"];
+        _executing = NO;
+        [self didChangeValueForKey:@"isExecuting"];
+    }
     
-    [self willChangeValueForKey:@"isFinished"];
-    _finished = YES;
-    [self didChangeValueForKey:@"isFinished"];
+    if (!_finished && !self.isCancelled) {
+        [self willChangeValueForKey:@"isFinished"];
+        _finished = YES;
+        [self didChangeValueForKey:@"isFinished"];
+    }
     
 }
 
 - (NSString *)printableFinishedIn {
     return [STMFunctions printableTimeInterval:self.finishedIn];
+}
+
+- (void)cancel {
+    [super cancel];
+    [self finish];
 }
 
 @end
