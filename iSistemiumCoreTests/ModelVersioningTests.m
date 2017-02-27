@@ -202,10 +202,11 @@
     
     NSLog(@"!!! model have changes, old should be replaced with new one !!!");
     
-#warning - maybe copy new model to Documents only after successful creating of db with the new model
+    // copy new model to the current user's documents near the user's fmdb file only after successful creating of db with the new model
+    // different users have different fmdb.db files each with corresponding model copy file
     
-    [self copyModelToPath:modelDirInDocuments
-                 fromPath:bundlePath];
+//    [self copyModelToPath:modelDirInDocuments
+//                 fromPath:bundlePath];
     
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:documentsModel destinationModel:bundleModel error:error];
     
