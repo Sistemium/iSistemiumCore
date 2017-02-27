@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "<CoreData/CoreData.h"
+#import <CoreData/CoreData.h>
 #import "STMFunctions.h"
 
 @interface ModelVersioningTests : XCTestCase
