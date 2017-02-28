@@ -101,6 +101,9 @@
 
 @implementation STMFiling
 
+@synthesize directoring = _directoring;
+
+
 #pragma mark - STMFiling
 
 - (NSString *)persistencePath:(NSString *)folderName {
