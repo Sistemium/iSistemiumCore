@@ -144,6 +144,21 @@
 
 - (void)testDirectoring {
     
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *userPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:TEST_UID];
+    NSString *sharedPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:SHARED_PATH];
+    
+    XCTAssertEqualObjects(userPath, [self.directoring userDocuments]);
+    XCTAssertEqualObjects(sharedPath, [self.directoring sharedDocuments]);
+    
+    BOOL isDir = NO;
+    BOOL result = [fm fileExistsAtPath:userPath
+                           isDirectory:&isDir];
+    
+    XCTAssertEqual(result, YES);
+    XCTAssertEqual(isDir, YES);
+    
 }
 
 
