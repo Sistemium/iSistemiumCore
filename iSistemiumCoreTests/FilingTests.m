@@ -206,6 +206,32 @@
     
 }
 
+- (void)testFiling {
+    
+    NSString *rootPersistencePath = [[self.directoring userDocuments] stringByAppendingPathComponent:PERSISTENCE_PATH];
+    NSString *persistencePath = [self.filing persistencePath:nil];
+    XCTAssertEqualObjects(rootPersistencePath, persistencePath);
+    
+    NSString *rootPicturesPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:PICTURES_PATH];
+    NSString *picturesPath = [self.filing picturesPath:nil];
+    XCTAssertEqualObjects(rootPicturesPath, picturesPath);
+
+    NSString *rootWebViewsPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:WEBVIEWS_PATH];
+    NSString *webViewsPath = [self.filing webViewsPath:nil];
+    XCTAssertEqualObjects(rootWebViewsPath, webViewsPath);
+
+    NSString *testPath = @"testPath";
+    
+    persistencePath = [rootPersistencePath stringByAppendingPathComponent:testPath];
+    XCTAssertEqualObjects(persistencePath, [self.filing persistencePath:testPath]);
+    
+    picturesPath = [rootPicturesPath stringByAppendingPathComponent:testPath];
+    XCTAssertEqualObjects(picturesPath, [self.filing picturesPath:testPath]);
+    
+    webViewsPath = [rootWebViewsPath stringByAppendingPathComponent:testPath];
+    XCTAssertEqualObjects(webViewsPath, [self.filing webViewsPath:testPath]);
+    
+}
 
 
 @end
