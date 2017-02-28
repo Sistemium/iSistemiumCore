@@ -19,8 +19,6 @@
 
 + (CGFloat)jpgQuality;
 
-+ (NSString *)imagesCachePath;
-
 + (void)checkPhotos;
 
 + (void)hrefProcessingForObject:(NSDictionary *)object;
@@ -28,5 +26,7 @@
 + (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
+
+- (NSString *)imagesCachePathForEntityName:(NSString *)entityName;
 
 @end
