@@ -172,16 +172,20 @@
 
 - (void)tearDown {
 
-    NSFileManager *fm = [NSFileManager defaultManager];
-
     NSString *orgPath = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG];
 
     NSError *error = nil;
-    BOOL result = [fm removeItemAtPath:orgPath
-                                 error:&error];
+
+    BOOL result = [self.filing removeItemAtPath:orgPath
+                                          error:&error];
     
-    XCTAssertEqual(result, YES);
+    XCTAssertTrue(result);
     XCTAssertNil(error);
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    result = [fm fileExistsAtPath:orgPath];
+    
+    XCTAssertFalse(result);
     
     [super tearDown];
     
