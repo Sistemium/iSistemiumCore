@@ -33,6 +33,7 @@
 - (NSString *)webViewsPath:(NSString *)folderName;
 
 - (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath;
+- (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error;
 
 - (NSString *)bundledModelFile:(NSString *)name;
 
