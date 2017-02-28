@@ -12,6 +12,7 @@
 
 @optional
 
+- (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid;
 - (NSString *)userDocuments;
 - (NSString *)sharedDocuments;
 - (NSBundle *)bundle;
