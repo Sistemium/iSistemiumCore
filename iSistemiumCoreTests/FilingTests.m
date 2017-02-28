@@ -107,19 +107,43 @@
 #pragma mark - STMFiling
 
 - (NSString *)persistencePath:(NSString *)folderName {
-    return nil;
+    
+    NSString *persistencePath = [[self.directoring userDocuments] stringByAppendingPathComponent:PERSISTENCE_PATH];
+    NSString *resultPath = [persistencePath stringByAppendingPathComponent:folderName];
+    
+    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+
 }
 
 - (NSString *)picturesPath:(NSString *)folderName {
-    return nil;
+
+    NSString *picturesPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:PICTURES_PATH];
+    NSString *resultPath = [picturesPath stringByAppendingPathComponent:folderName];
+    
+    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+
 }
 
 - (NSString *)webViewsPath:(NSString *)folderName {
-    return nil;
+
+    NSString *webViewsPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:WEBVIEWS_PATH];
+    NSString *resultPath = [webViewsPath stringByAppendingPathComponent:folderName];
+    
+    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+
 }
 
 - (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath {
-    return nil;
+    return YES;
+}
+
+- (BOOL)removeItemAtPath:(NSString *)path error:(NSError *__autoreleasing *)error {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    BOOL result = [fm removeItemAtPath:path
+                                 error:error];
+    return result;
+    
 }
 
 - (NSString *)bundledModelFile:(NSString *)name {
