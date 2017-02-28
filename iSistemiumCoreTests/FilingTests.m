@@ -13,10 +13,12 @@
 
 #define TEST_ORG @"testOrg"
 #define TEST_UID @"testUid"
+
 #define SHARED_PATH @"shared"
 #define PERSISTENCE_PATH @"persistence"
 #define PICTURES_PATH @"pictures"
 #define WEBVIEWS_PATH @"webViews"
+#define TEST_PATH @"testPath"
 
 #define TEST_DATA_MODEL_NAME @"testModel"
 
@@ -210,53 +212,91 @@
 
 - (void)testDirectoring {
     
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
     NSString *userPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:TEST_UID];
     NSString *sharedPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:SHARED_PATH];
     
     XCTAssertEqualObjects(userPath, [self.directoring userDocuments]);
     XCTAssertEqualObjects(sharedPath, [self.directoring sharedDocuments]);
     
+    [self checkDirExists:userPath];
+    
+}
+
+- (void)checkDirExists:(NSString *)dirPath {
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+
     BOOL isDir = NO;
-    BOOL result = [fm fileExistsAtPath:userPath
+    BOOL result = [fm fileExistsAtPath:dirPath
                            isDirectory:&isDir];
     
     XCTAssertEqual(result, YES);
     XCTAssertEqual(isDir, YES);
-    
+
 }
 
 - (void)testFiling {
     
+    [self persistencePathTest];
+    [self picturesPathTest];
+    [self webViewsPathTest];
+    
+    [self dataModelTesting];
+    
+}
+
+- (void)persistencePathTest {
+    
     NSString *rootPersistencePath = [[self.directoring userDocuments] stringByAppendingPathComponent:PERSISTENCE_PATH];
     NSString *persistencePath = [self.filing persistencePath:nil];
     XCTAssertEqualObjects(rootPersistencePath, persistencePath);
+
+    [self checkDirExists:persistencePath];
+    
+    persistencePath = [rootPersistencePath stringByAppendingPathComponent:TEST_PATH];
+    XCTAssertEqualObjects(persistencePath, [self.filing persistencePath:TEST_PATH]);
+
+    [self checkDirExists:persistencePath];
+
+}
+
+- (void)picturesPathTest {
     
     NSString *rootPicturesPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:PICTURES_PATH];
     NSString *picturesPath = [self.filing picturesPath:nil];
     XCTAssertEqualObjects(rootPicturesPath, picturesPath);
 
+    [self checkDirExists:picturesPath];
+
+    picturesPath = [rootPicturesPath stringByAppendingPathComponent:TEST_PATH];
+    XCTAssertEqualObjects(picturesPath, [self.filing picturesPath:TEST_PATH]);
+
+    [self checkDirExists:picturesPath];
+
+}
+
+- (void)webViewsPathTest {
+    
     NSString *rootWebViewsPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:WEBVIEWS_PATH];
     NSString *webViewsPath = [self.filing webViewsPath:nil];
     XCTAssertEqualObjects(rootWebViewsPath, webViewsPath);
 
-    NSString *testPath = @"testPath";
-    
-    persistencePath = [rootPersistencePath stringByAppendingPathComponent:testPath];
-    XCTAssertEqualObjects(persistencePath, [self.filing persistencePath:testPath]);
+    [self checkDirExists:webViewsPath];
+
+    webViewsPath = [rootWebViewsPath stringByAppendingPathComponent:TEST_PATH];
+    XCTAssertEqualObjects(webViewsPath, [self.filing webViewsPath:TEST_PATH]);
+
+    [self checkDirExists:webViewsPath];
+
+}
 
 - (void)dataModelTesting {
     
-    picturesPath = [rootPicturesPath stringByAppendingPathComponent:testPath];
-    XCTAssertEqualObjects(picturesPath, [self.filing picturesPath:testPath]);
     NSString *modelPath = [self.filing bundledModelFile:TEST_DATA_MODEL_NAME];
     NSString *testPath = [[NSBundle mainBundle].bundlePath stringByAppendingPathComponent:TEST_DATA_MODEL_NAME];
 
     BOOL result = [modelPath hasPrefix:testPath];
     
-    webViewsPath = [rootWebViewsPath stringByAppendingPathComponent:testPath];
-    XCTAssertEqualObjects(webViewsPath, [self.filing webViewsPath:testPath]);
     XCTAssertTrue(result);
     
 }
