@@ -861,6 +861,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (BOOL)flushDirAtPath:(NSString *)dirPath {
     
+    // remove all files/dirs inside dirPath excluding dirPath
+    
     NSFileManager *fm = [NSFileManager defaultManager];
     
     BOOL returnResult = [self enumerateDirAtPath:dirPath withBlock:^BOOL(NSString *path, NSError *__autoreleasing *error) {
