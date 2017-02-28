@@ -162,7 +162,11 @@
     
     self.directoring = [[STMDirectoring alloc] initWithOrg:TEST_ORG
                                                     userId:TEST_UID];
-    self.filing = [[STMFiling alloc] init];
+    
+    STMFiling *filing = [[STMFiling alloc] init];
+    filing.directoring = self.directoring;
+
+    self.filing = filing;
     
 }
 
