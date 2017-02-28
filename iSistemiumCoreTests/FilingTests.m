@@ -18,6 +18,10 @@
 
 @interface FilingTests : XCTestCase
 
+@property (nonatomic, strong) id <STMDirectoring> directoring;
+@property (nonatomic, strong) id <STMFiling> filing;
+
+
 @end
 
 
@@ -125,6 +129,10 @@
 - (void)setUp {
     
     [super setUp];
+    
+    self.directoring = [[STMDirectoring alloc] initWithOrg:TEST_ORG
+                                                    userId:TEST_UID];
+    self.filing = [[STMFiling alloc] init];
     
 }
 
