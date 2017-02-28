@@ -147,7 +147,22 @@
 }
 
 - (NSString *)bundledModelFile:(NSString *)name {
-    return nil;
+    
+    NSString *path = [[NSBundle mainBundle] pathForResource:name
+                                                     ofType:@"momd"];
+    
+    if (!path) path = [[NSBundle mainBundle] pathForResource:name
+                                                      ofType:@"mom"];
+    
+    if (!path) {
+        
+        NSLog(@"there is no path for data model with name %@", name);
+        return nil;
+        
+    }
+    
+    return path;
+
 }
 
 
