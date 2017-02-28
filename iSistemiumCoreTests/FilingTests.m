@@ -94,6 +94,29 @@
 
 @implementation STMFiling
 
+#pragma mark - STMFiling
+
+- (NSString *)persistencePath:(NSString *)folderName {
+    return nil;
+}
+
+- (NSString *)picturesPath:(NSString *)folderName {
+    return nil;
+}
+
+- (NSString *)webViewsPath:(NSString *)folderName {
+    return nil;
+}
+
+- (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath {
+    return nil;
+}
+
+- (NSString *)bundledModelFile:(NSString *)name {
+    return nil;
+}
+
+
 @end
 
 
