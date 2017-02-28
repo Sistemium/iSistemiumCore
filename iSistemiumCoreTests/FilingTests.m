@@ -18,6 +18,8 @@
 #define PICTURES_PATH @"pictures"
 #define WEBVIEWS_PATH @"webViews"
 
+#define TEST_DATA_MODEL_NAME @"testModel"
+
 
 @interface FilingTests : XCTestCase
 
@@ -243,12 +245,19 @@
     
     persistencePath = [rootPersistencePath stringByAppendingPathComponent:testPath];
     XCTAssertEqualObjects(persistencePath, [self.filing persistencePath:testPath]);
+
+- (void)dataModelTesting {
     
     picturesPath = [rootPicturesPath stringByAppendingPathComponent:testPath];
     XCTAssertEqualObjects(picturesPath, [self.filing picturesPath:testPath]);
+    NSString *modelPath = [self.filing bundledModelFile:TEST_DATA_MODEL_NAME];
+    NSString *testPath = [[NSBundle mainBundle].bundlePath stringByAppendingPathComponent:TEST_DATA_MODEL_NAME];
+
+    BOOL result = [modelPath hasPrefix:testPath];
     
     webViewsPath = [rootWebViewsPath stringByAppendingPathComponent:testPath];
     XCTAssertEqualObjects(webViewsPath, [self.filing webViewsPath:testPath]);
+    XCTAssertTrue(result);
     
 }
 
