@@ -138,6 +138,17 @@
 
 - (void)tearDown {
 
+    NSFileManager *fm = [NSFileManager defaultManager];
+
+    NSString *orgPath = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG];
+
+    NSError *error = nil;
+    BOOL result = [fm removeItemAtPath:orgPath
+                                 error:&error];
+    
+    XCTAssertEqual(result, YES);
+    XCTAssertNil(error);
+    
     [super tearDown];
     
 }
