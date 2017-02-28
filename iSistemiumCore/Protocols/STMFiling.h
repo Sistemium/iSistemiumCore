@@ -31,7 +31,6 @@
 - (NSString *)persistencePath:(NSString *)folderName;
 - (NSString *)picturesPath:(NSString *)folderName;
 - (NSString *)webViewsPath:(NSString *)folderName;
-- (NSString *)persistencePath:(NSString *)folderName;
 
 - (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath;
 
