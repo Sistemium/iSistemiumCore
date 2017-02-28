@@ -14,6 +14,9 @@
 #define TEST_ORG @"testOrg"
 #define TEST_UID @"testUid"
 #define SHARED_PATH @"shared"
+#define PERSISTENCE_PATH @"persistence"
+#define PICTURES_PATH @"pictures"
+#define WEBVIEWS_PATH @"webViews"
 
 
 @interface FilingTests : XCTestCase
