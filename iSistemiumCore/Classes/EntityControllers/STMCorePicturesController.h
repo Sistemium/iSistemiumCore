@@ -21,6 +21,8 @@
 
 + (void)checkPhotos;
 
++ (void)checkBrokenPhotos;
+
 + (void)hrefProcessingForObject:(NSDictionary *)object;
 
 + (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;

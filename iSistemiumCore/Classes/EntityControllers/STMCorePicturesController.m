@@ -266,7 +266,10 @@
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
             NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
-            if (thumbnailData) [STMCorePicturesController setThumbnailForPicture:attributes fromImageData:thumbnailData withEntityName:entityName];
+            NSString *xid = attributes[STMPersistingKeyPrimary];
+            NSString *fileName = [xid stringByAppendingString:@".jpg"];
+            
+            if (thumbnailData) [STMCorePicturesController saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:attributes fromImageData:thumbnailData withEntityName:entityName];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
@@ -439,16 +442,57 @@
     
     STMCorePicturesController *controller = [self sharedController];
     
-    NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil"];
+    NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil OR resizedImagePath == nil"];
     
     for (NSDictionary *picture in [controller allPicturesWithPredicate:anyNilPaths]) {
         
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
         
-        if (![STMFunctions isNotNull:attributes[@"imagePath"]]) {
+        NSString *xid = attributes[STMPersistingKeyPrimary];
+        NSString *fileName = [xid stringByAppendingString:@".jpg"];
+        NSString *resizedFileName = [@"resized_" stringByAppendingString:fileName];
+        NSString *thumbnailFileName = [@"thumbnail_" stringByAppendingString:fileName];
+        
+        NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:fileName];
+        NSString *resizedImagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:resizedFileName];
+        NSString *thumbnailPath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:thumbnailFileName];
+        
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        
+        NSError *error;
+        
+        NSMutableDictionary *mutAttributes = [attributes mutableCopy];
+        if ([fileManager fileExistsAtPath:imagePath isDirectory:nil] && ![fileName isEqualToString:mutAttributes[@"imagePath"]]) {
+        
+            mutAttributes[@"imagePath"] = fileName;
             
-            // TODO: check if any of the picture's files are in place and update picture
+            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+        
+        }
+        
+        if ([fileManager fileExistsAtPath:resizedImagePath isDirectory:nil] && ![resizedFileName isEqualToString:mutAttributes[@"resizedImagePath"]]) {
+            
+            mutAttributes[@"resizedImagePath"] = resizedFileName;
+            
+            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+            
+        }
+        
+        if ([fileManager fileExistsAtPath:thumbnailPath isDirectory:nil] && ![thumbnailFileName isEqualToString:mutAttributes[@"thumbnailPath"]]) {
+            
+            mutAttributes[@"thumbnailPath"] = thumbnailFileName;
+            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+            
+        }
+        
+        if (error){
+            continue;
+        }
+        
+        attributes = mutAttributes.copy;
+        
+        if (![STMFunctions isNotNull:attributes[@"imagePath"]]) {
             
             if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
@@ -465,16 +509,20 @@
             continue;
             
         }
+        
+        if ([STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]]){
+            continue;
+        }
             
-        NSError *error = nil;
+        error = nil;
         NSString *path = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:picture[@"imagePath"]];
         NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (photoData && photoData.length > 0) {
             
-            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
+            attributes = [self setImagesFromData:photoData forPicture:picture withEntityName:entityName andUpload:NO];
             
-            if (!attributes) continue;
+            if (!picture) continue;
             
             [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
                 [controller postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
@@ -597,7 +645,7 @@
     result = result && [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     result = result && [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
-    result = result && [self setThumbnailForPicture:mutablePicture fromImageData:data withEntityName:entityName];
+    result = result && [self saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
     if (!result) {
         NSString *logMessage = [NSString stringWithFormat:@"have problem while save image files %@", fileName];
@@ -666,15 +714,12 @@
 
 }
 
-+ (BOOL)setThumbnailForPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
-    
-    NSString *xid = picture[@"id"];
-    NSString *fileName = [NSString stringWithFormat:@"thumbnail_%@.jpg",xid];
++ (BOOL)saveThumbnailImageFile:(NSString *)thumbnailFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
     UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);
     
-    NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:fileName];
+    NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:thumbnailFileName];
     
     NSError *error = nil;
     BOOL result = [thumbnail writeToFile:imagePath
@@ -683,13 +728,13 @@
     
     if (result) {
         
-        picture[@"thumbnailPath"] = fileName;
+        picture[@"thumbnailPath"] = thumbnailFileName;
         
         return YES;
         
     } else {
         
-        NSString *logMessage = [NSString stringWithFormat:@"saveImageThumbnailFile %@ writeToFile %@ error: %@", fileName, imagePath, error.localizedDescription];
+        NSString *logMessage = [NSString stringWithFormat:@"saveImageThumbnailFile %@ writeToFile %@ error: %@", thumbnailFileName, imagePath, error.localizedDescription];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
         return NO;

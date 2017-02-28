@@ -481,6 +481,7 @@
     
     [self.unusedPicturesButton setTitleColor:ACTIVE_BLUE_COLOR forState:UIControlStateNormal];
     [self.unusedPicturesButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    self.unusedPicturesButton.hidden = YES;
     
 }
 
@@ -1230,6 +1231,7 @@
     [self updateSyncDatesLabels];
     [self setupNonloadedPicturesButton];
     [self updateNonloadedPicturesInfo];
+    [STMCorePicturesController checkBrokenPhotos];
     [self setupUnusedPicturesButton];
     [self updateUnusedPicturesInfo];
     
