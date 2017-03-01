@@ -286,27 +286,15 @@
 
 - (void)testDirectoring {
     
-    NSString *userPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:TEST_UID];
-    NSString *sharedPath = [[[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG] stringByAppendingPathComponent:SHARED_PATH];
+    NSString *orgPath = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:TEST_ORG];
+    NSString *userPath = [orgPath stringByAppendingPathComponent:TEST_UID];
+    NSString *sharedPath = [orgPath stringByAppendingPathComponent:SHARED_PATH];
     
     XCTAssertEqualObjects(userPath, [self.directoring userDocuments]);
     XCTAssertEqualObjects(sharedPath, [self.directoring sharedDocuments]);
     
     [self checkDirExists:userPath];
     
-}
-
-- (void)checkDirExists:(NSString *)dirPath {
-
-    NSFileManager *fm = [NSFileManager defaultManager];
-
-    BOOL isDir = NO;
-    BOOL result = [fm fileExistsAtPath:dirPath
-                           isDirectory:&isDir];
-    
-    XCTAssertEqual(result, YES);
-    XCTAssertEqual(isDir, YES);
-
 }
 
 - (void)testFiling {
@@ -316,6 +304,19 @@
     [self webViewsPathTest];
     
     [self dataModelTesting];
+    
+}
+
+- (void)checkDirExists:(NSString *)dirPath {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    BOOL isDir = NO;
+    BOOL result = [fm fileExistsAtPath:dirPath
+                           isDirectory:&isDir];
+    
+    XCTAssertEqual(result, YES);
+    XCTAssertEqual(isDir, YES);
     
 }
 
