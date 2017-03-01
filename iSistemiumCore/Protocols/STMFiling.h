@@ -32,8 +32,12 @@
 - (NSString *)picturesPath:(NSString *)folderName;
 - (NSString *)webViewsPath:(NSString *)folderName;
 
-- (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath;
-- (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error;
+- (BOOL)copyItemAtPath:(NSString *)sourcePath
+                toPath:(NSString *)destinationPath
+                 error:(NSError **)error;
+
+- (BOOL)removeItemAtPath:(NSString *)path
+                   error:(NSError **)error;
 
 - (NSString *)bundledModelFile:(NSString *)name;
 
