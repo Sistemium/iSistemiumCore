@@ -362,6 +362,43 @@
     
     XCTAssertTrue(result);
     
+    NSString *userModelPath = [self.filing persistencePath:nil];
+    
+    NSError *error = nil;
+    result = [self.filing copyItemAtPath:modelPath
+                                  toPath:userModelPath
+                                   error:&error];
+    
+    XCTAssertTrue(result);
+    XCTAssertNil(error);
+    
+#if !TARGET_OS_SIMULATOR
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+
+    result = [STMFunctions enumerateDirAtPath:userModelPath withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
+       
+        NSDictionary *checkAttribute = @{ATTRIBUTE_FILE_PROTECTION_NONE};
+        NSFileAttributeKey checkKey = checkAttribute.allKeys.firstObject;
+        NSFileAttributeType checkValue = checkAttribute.allValues.firstObject;
+        
+        NSDictionary <NSFileAttributeKey, id> *attributes = [fm attributesOfItemAtPath:path
+                                                                                 error:error];
+
+        XCTAssertNil(*error);
+        
+        BOOL enumResult = [checkValue isEqual:attributes[checkKey]];
+        
+        XCTAssertTrue(enumResult);
+        
+        return enumResult;
+        
+    }];
+    
+    XCTAssertTrue(result);
+
+#endif
+    
 }
 
 
