@@ -439,6 +439,18 @@
     result = [userDataModel isEqual:bundledDataModel];
     XCTAssertFalse(result);
     
+    [self copyBundledDataModelToUsersDocs:TEST_CHANGED_DATA_MODEL_NAME];
+
+    userDataModelPath = [self.filing userModelFile:TEST_CHANGED_DATA_MODEL_NAME];
+    
+    result = [fm fileExistsAtPath:userDataModelPath];
+    XCTAssertTrue(result);
+
+    userDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:userDataModelPath]];
+
+    result = [userDataModel isEqual:bundledDataModel];
+    XCTAssertTrue(result);
+
 }
 
 - (void)copyBundledDataModelToUsersDocs:(NSString *)bundledDataModelName {
