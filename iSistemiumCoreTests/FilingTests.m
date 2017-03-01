@@ -23,6 +23,8 @@
 #define TEST_DATA_MODEL_NAME @"testModel"
 
 
+#pragma mark - interfaces
+
 @interface FilingTests : XCTestCase
 
 @property (nonatomic, strong) id <STMDirectoring> directoring;
@@ -42,6 +44,13 @@
 
 @end
 
+
+@interface STMFiling : NSObject <STMFiling>
+
+@end
+
+
+#pragma mark -
 
 @implementation STMDirectoring
 
@@ -98,10 +107,7 @@
 @end
 
 
-@interface STMFiling : NSObject <STMFiling>
-
-@end
-
+#pragma mark -
 
 @implementation STMFiling
 
@@ -236,6 +242,8 @@
 @end
 
 
+#pragma mark -
+
 @implementation FilingTests
 
 - (void)setUp {
@@ -272,6 +280,9 @@
     [super tearDown];
     
 }
+
+
+#pragma mark - tests
 
 - (void)testDirectoring {
     
