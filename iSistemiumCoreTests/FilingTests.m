@@ -137,8 +137,71 @@
 
 }
 
-- (BOOL)copyFile:(NSString *)filePath toPath:(NSString *)newPath {
-    return YES;
+- (BOOL)copyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath error:(NSError **)error {
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    BOOL sourceIsDir = NO;
+    
+    if (![fm fileExistsAtPath:sourcePath isDirectory:&sourceIsDir]) {
+        return NO;
+    }
+    
+    if ([fm fileExistsAtPath:destinationPath]) {
+        if (![self removeItemAtPath:destinationPath error:error]) return NO;
+    }
+    
+    BOOL result = [fm copyItemAtPath:sourcePath
+                              toPath:destinationPath
+                               error:error];
+    
+    if (!result) {
+        
+        NSLog(@"copyItemAtPath: %@ toPath: %@ error: %@", [*error localizedDescription]);
+        return NO;
+        
+    }
+    
+    result = [self setAttributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
+                    ofItemAtPath:destinationPath
+                           error:error];
+    
+    if (!result) {
+        return NO;
+    }
+    
+    __block NSError *localError = nil;
+    
+    result = [STMFunctions enumerateDirAtPath:destinationPath withBlock:^BOOL(NSString *path, NSError **enumError) {
+        
+        localError = *enumError; // ???
+        
+        return [self setAttributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
+                      ofItemAtPath:path
+                             error:enumError];
+        
+    }];
+    
+    *error = localError; // ???
+    
+    return result;
+
+}
+
+- (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+
+    BOOL result = [fm setAttributes:attributes
+                       ofItemAtPath:path
+                              error:error];
+    
+    if (!result) {
+        NSLog(@"set attribute NSFileProtectionNone ofItemAtPath: %@ error: %@", path, [*error localizedDescription]);
+    }
+
+    return result;
+    
 }
 
 - (BOOL)removeItemAtPath:(NSString *)path error:(NSError *__autoreleasing *)error {
