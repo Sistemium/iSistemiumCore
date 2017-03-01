@@ -384,6 +384,7 @@
     XCTAssertTrue(result);
     XCTAssertNil(error);
     
+// simulator does not have NSFileProtectionKey
 #if !TARGET_OS_SIMULATOR
 
     NSFileManager *fm = [NSFileManager defaultManager];
