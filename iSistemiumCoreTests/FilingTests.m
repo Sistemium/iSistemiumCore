@@ -398,9 +398,54 @@
 
 - (void)dataModelTesting {
     
-    NSString *modelPath = [self.filing bundledModelFile:TEST_DATA_MODEL_NAME];
-    NSString *testPath = [[self.directoring bundle].bundlePath stringByAppendingPathComponent:TEST_DATA_MODEL_NAME];
+    [self firstTimeDataModelCheck];
+    [self compareBundledAndUserDataModels];
+    
+}
 
+- (void)firstTimeDataModelCheck {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *userDataModelPath = [self.filing userModelFile:TEST_DATA_MODEL_NAME];
+    
+    BOOL result = [fm fileExistsAtPath:userDataModelPath];
+    
+    XCTAssertFalse(result);
+    
+    [self copyBundledDataModelToUsersDocs:TEST_DATA_MODEL_NAME];
+    
+}
+
+- (void)compareBundledAndUserDataModels {
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *userDataModelPath = [self.filing userModelFile:TEST_DATA_MODEL_NAME];
+    
+    BOOL result = [fm fileExistsAtPath:userDataModelPath];
+    XCTAssertTrue(result);
+    
+// for tests here use TEST_CHANGED_DATA_MODEL_NAME as bundled dataModel's name
+    
+    NSString *bundledDataModelPath = [self.filing bundledModelFile:TEST_CHANGED_DATA_MODEL_NAME];
+
+    result = [fm fileExistsAtPath:bundledDataModelPath];
+    XCTAssertTrue(result);
+
+    NSManagedObjectModel *userDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:userDataModelPath]];
+    NSManagedObjectModel *bundledDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:bundledDataModelPath]];
+    
+    result = [userDataModel isEqual:bundledDataModel];
+    XCTAssertFalse(result);
+    
+}
+
+- (void)copyBundledDataModelToUsersDocs:(NSString *)bundledDataModelName {
+    
+    NSString *modelPath = [self.filing bundledModelFile:bundledDataModelName];
+    NSString *testPath = [[self.directoring bundle].bundlePath stringByAppendingPathComponent:bundledDataModelName];
+    
     BOOL result = [modelPath hasPrefix:testPath];
     
     XCTAssertTrue(result);
@@ -415,20 +460,26 @@
     XCTAssertTrue(result);
     XCTAssertNil(error);
     
-// simulator does not have NSFileProtectionKey
+    [self checkPathForProtectionNone:persistencePath];
+    
+}
+
+- (void)checkPathForProtectionNone:(NSString *)pathToCheck {
+    
+    // simulator does not have NSFileProtectionKey
 #if !TARGET_OS_SIMULATOR
-
+    
     NSFileManager *fm = [NSFileManager defaultManager];
-
-    result = [STMFunctions enumerateDirAtPath:userModelPath withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
-       
+    
+    result = [STMFunctions enumerateDirAtPath:pathToCheck withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
+        
         NSDictionary *checkAttribute = @{ATTRIBUTE_FILE_PROTECTION_NONE};
         NSFileAttributeKey checkKey = checkAttribute.allKeys.firstObject;
         NSFileAttributeType checkValue = checkAttribute.allValues.firstObject;
         
         NSDictionary <NSFileAttributeKey, id> *attributes = [fm attributesOfItemAtPath:path
                                                                                  error:error];
-
+        
         XCTAssertNil(*error);
         
         BOOL enumResult = [checkValue isEqual:attributes[checkKey]];
@@ -440,9 +491,9 @@
     }];
     
     XCTAssertTrue(result);
-
-#endif
     
+#endif
+
 }
 
 
