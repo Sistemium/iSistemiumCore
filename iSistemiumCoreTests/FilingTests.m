@@ -103,6 +103,10 @@
 
 }
 
+- (NSBundle *)bundle {
+    return [STMFunctions currentTestTarget] ? [NSBundle bundleForClass:[self class]] : [NSBundle mainBundle];
+}
+
 
 @end
 
@@ -221,11 +225,13 @@
 
 - (NSString *)bundledModelFile:(NSString *)name {
     
-    NSString *path = [[NSBundle mainBundle] pathForResource:name
-                                                     ofType:@"momd"];
+    NSBundle *bundle = [self.directoring bundle];
     
-    if (!path) path = [[NSBundle mainBundle] pathForResource:name
-                                                      ofType:@"mom"];
+    NSString *path = [bundle pathForResource:name
+                                      ofType:@"momd"];
+    
+    if (!path) path = [bundle pathForResource:name
+                                       ofType:@"mom"];
     
     if (!path) {
         
@@ -368,7 +374,7 @@
 - (void)dataModelTesting {
     
     NSString *modelPath = [self.filing bundledModelFile:TEST_DATA_MODEL_NAME];
-    NSString *testPath = [[NSBundle mainBundle].bundlePath stringByAppendingPathComponent:TEST_DATA_MODEL_NAME];
+    NSString *testPath = [[self.directoring bundle].bundlePath stringByAppendingPathComponent:TEST_DATA_MODEL_NAME];
 
     BOOL result = [modelPath hasPrefix:testPath];
     
