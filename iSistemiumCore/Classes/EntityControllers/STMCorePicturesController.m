@@ -822,6 +822,7 @@
         
         NSLog(@"success: %@ %@", entityName, success[@"href"]);
         [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED userInfo:success];
+        return success;
    
     })
     .catch(^(NSError *error) {
@@ -829,6 +830,7 @@
         NSLog(@"error: %@ %@", entityName, error);
         [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_DOWNLOAD_ERROR
                                     userInfo:@{@"error" : error.localizedDescription}];
+        return error;
    
     });
     
