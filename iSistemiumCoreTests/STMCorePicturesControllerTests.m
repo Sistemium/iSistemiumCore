@@ -24,9 +24,6 @@
     return YES;
 }
 
-NSDictionary *picture;
-XCTestExpectation *expectation;
-
 - (void)testDownloadConnectionForObject {
     
     [STMGarbageCollector searchUnusedImages];
@@ -39,23 +36,16 @@ XCTestExpectation *expectation;
     
     [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    
     NSString *xid = [STMFunctions uuidString];
     
-    expectation = [self expectationWithDescription:@"Downloading picture"];
+    __block XCTestExpectation *expectation = [self expectationWithDescription:@"Downloading picture"];
     
     NSString* entityName = @"STMVisitPhoto";
     
-    picture = @{@"id":xid,
+    NSDictionary *picture = @{@"id":xid,
                               @"href":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/largeImage.png",
                               @"thumbnailHref":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png",
                               };
-    
-    [nc addObserver:self
-           selector:@selector(receiveTestNotification:)
-               name:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-             object:[STMCorePicturesController sharedController]];
     
     NSString *expectedImagePath = [xid stringByAppendingString:@".jpg"];
     
@@ -69,7 +59,10 @@ XCTestExpectation *expectation;
     
     XCTAssertNil(error);
     
-    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture];
+    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture].then(^(NSDictionary *picture){
+        XCTAssertNotNil(picture);
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
         
@@ -112,16 +105,6 @@ XCTestExpectation *expectation;
         }];
         
     }];
-    
-}
-
--(void)receiveTestNotification:(NSNotification*)notification{
-    
-    NSDictionary *receivedPicture = notification.userInfo;
-
-    if (receivedPicture[@"id"] == picture[@"id"]) {
-        [expectation fulfill];
-    }
     
 }
 
