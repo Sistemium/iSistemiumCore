@@ -8,8 +8,11 @@
 
 #import <XCTest/XCTest.h>
 
+#import <CoreData/CoreData.h>
+
 #import "STMFiling.h"
 #import "STMFunctions.h"
+
 
 #define TEST_ORG @"testOrg"
 #define TEST_UID @"testUid"
