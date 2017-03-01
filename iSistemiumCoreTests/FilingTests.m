@@ -244,6 +244,27 @@
 
 }
 
+- (NSString *)userModelFile:(NSString *)name {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *momdPath = [[[self persistencePath:nil] stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"momd"];
+    
+    if ([fm fileExistsAtPath:momdPath]) {
+        return momdPath;
+    }
+
+    NSString *momPath = [[[self persistencePath:nil] stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"mom"];
+
+    if ([fm fileExistsAtPath:momPath]) {
+        return momPath;
+    }
+
+    NSLog(@"there is no path in user's folder for data model with name %@", name);
+    return nil;
+
+}
+
 
 @end
 
