@@ -402,11 +402,11 @@
     
     XCTAssertTrue(result);
     
-    NSString *userModelPath = [self.filing persistencePath:nil];
+    NSString *persistencePath = [self.filing persistencePath:nil];
     
     NSError *error = nil;
     result = [self.filing copyItemAtPath:modelPath
-                                  toPath:userModelPath
+                                  toPath:persistencePath
                                    error:&error];
     
     XCTAssertTrue(result);
