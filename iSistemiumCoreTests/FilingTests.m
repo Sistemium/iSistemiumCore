@@ -421,6 +421,7 @@
 
     NSFileManager *fm = [NSFileManager defaultManager];
     
+// check userDataModel exists
     NSString *userDataModelPath = [self.filing userModelFile:TEST_DATA_MODEL_NAME];
     
     BOOL result = [fm fileExistsAtPath:userDataModelPath];
@@ -433,19 +434,25 @@
     result = [fm fileExistsAtPath:bundledDataModelPath];
     XCTAssertTrue(result);
 
+// compare user's and bundled data models
     NSManagedObjectModel *userDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:userDataModelPath]];
     NSManagedObjectModel *bundledDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:bundledDataModelPath]];
     
     result = [userDataModel isEqual:bundledDataModel];
     XCTAssertFalse(result);
     
+//TODO: here we can get NSMappingModel
+    
+// copy bundeled to user
     [self copyBundledDataModelToUsersDocs:TEST_CHANGED_DATA_MODEL_NAME];
 
+// check new user's data model
     userDataModelPath = [self.filing userModelFile:TEST_CHANGED_DATA_MODEL_NAME];
     
     result = [fm fileExistsAtPath:userDataModelPath];
     XCTAssertTrue(result);
 
+// compare bundeled and new user's data model
     userDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:userDataModelPath]];
 
     result = [userDataModel isEqual:bundledDataModel];
