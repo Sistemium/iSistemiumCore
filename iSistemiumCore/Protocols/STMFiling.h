@@ -40,6 +40,7 @@
                    error:(NSError **)error;
 
 - (NSString *)bundledModelFile:(NSString *)name;
+- (NSString *)userModelFile:(NSString *)name;
 
 
 @end
