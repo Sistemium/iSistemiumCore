@@ -21,6 +21,7 @@
 #define TEST_PATH @"testPath"
 
 #define TEST_DATA_MODEL_NAME @"testModel"
+#define TEST_CHANGED_DATA_MODEL_NAME @"testModelChanged"
 
 
 #pragma mark - interfaces
