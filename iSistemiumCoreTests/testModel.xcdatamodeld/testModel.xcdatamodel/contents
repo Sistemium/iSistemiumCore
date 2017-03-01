@@ -4,8 +4,18 @@
         <attribute name="attribute" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="attribute1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="attribute2" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="toMany" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TestEntity3" inverseName="toMany" inverseEntity="TestEntity3" syncable="YES"/>
+        <relationship name="toOne" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity2" inverseName="toMany" inverseEntity="TestEntity2" syncable="YES"/>
+    </entity>
+    <entity name="TestEntity2" representedClassName="TestEntity2" syncable="YES" codeGenerationType="class">
+        <relationship name="toMany" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TestEntity1" inverseName="toOne" inverseEntity="TestEntity1" syncable="YES"/>
+    </entity>
+    <entity name="TestEntity3" representedClassName="TestEntity3" syncable="YES" codeGenerationType="class">
+        <relationship name="toMany" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TestEntity1" inverseName="toMany" inverseEntity="TestEntity1" syncable="YES"/>
     </entity>
     <elements>
-        <element name="TestEntity1" positionX="-8541" positionY="-864" width="128" height="88"/>
+        <element name="TestEntity1" positionX="-8541" positionY="-864" width="128" height="118"/>
+        <element name="TestEntity3" positionX="-8748" positionY="-745" width="128" height="58"/>
+        <element name="TestEntity2" positionX="-8316" positionY="-837" width="128" height="58"/>
     </elements>
 </model>
