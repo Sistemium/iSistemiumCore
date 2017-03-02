@@ -244,6 +244,10 @@
     
 }
 
+- (void)finishUnsyncedProcess {
+    NSLogMethodName;
+}
+
 
 #pragma mark - downloading test
 

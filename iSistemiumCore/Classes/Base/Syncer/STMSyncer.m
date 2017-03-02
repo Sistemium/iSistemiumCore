@@ -793,6 +793,10 @@
 
 }
 
+- (void)finishUnsyncedProcess {
+    self.isSendingData = NO;
+}
+
 - (void)sendStarted {
 
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_STARTED];

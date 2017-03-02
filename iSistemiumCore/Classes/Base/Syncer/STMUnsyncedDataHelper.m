@@ -203,6 +203,8 @@
     self.pendingObjectsByEntity = @{}.mutableCopy;
     self.syncedPendingObjectsByEntity = @{}.mutableCopy;
     
+    [self.subscriberDelegate finishUnsyncedProcess];
+    
 }
 
 
