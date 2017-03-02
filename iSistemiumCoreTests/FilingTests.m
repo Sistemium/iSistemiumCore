@@ -441,7 +441,22 @@
     result = [userDataModel isEqual:bundledDataModel];
     XCTAssertFalse(result);
     
-//TODO: here we can get NSMappingModel
+// check mappingModel
+/*
+ 
+ for example:
+    mapping model can not be created if we change property type
+    
+    here the error if TestEntity1.attribute1 type changed from String to Binary Data:
+ 
+        mappingModel error: The operation couldn’t be completed. (Cocoa error 134190.), 
+        userInfo: {
+            entity = TestEntity1;
+            property = attribute1;
+            reason = "Source and destination attribute types are incompatible";
+        }
+ 
+*/
     NSError *error = nil;
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:userDataModel
                                                                      destinationModel:bundledDataModel
