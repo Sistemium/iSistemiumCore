@@ -1170,7 +1170,7 @@
     
     [nc addObserver:self
            selector:@selector(updateUnusedPicturesInfo)
-               name:@"unusedImageRemoved"
+               name:NOTIFICATION_PICTURE_UNUSED_CHANGE
              object:nil];
     
     [nc addObserver:self
@@ -1231,9 +1231,7 @@
     [self updateSyncDatesLabels];
     [self setupNonloadedPicturesButton];
     [self updateNonloadedPicturesInfo];
-    [STMCorePicturesController checkBrokenPhotos];
     [self setupUnusedPicturesButton];
-    [self updateUnusedPicturesInfo];
     
     [self addObservers];
     [self startReachability];

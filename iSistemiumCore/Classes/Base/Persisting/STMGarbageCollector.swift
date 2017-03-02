@@ -34,7 +34,7 @@ extension Set {
                     for unusedImage in unusedImageFiles{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
-                        NotificationCenter.default.post(name: Notification.Name(rawValue: "unusedImageRemoved"), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
                 } catch let error as NSError {
                     err = error

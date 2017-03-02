@@ -462,12 +462,14 @@
         
         NSError *error;
         
+        BOOL brokenPhotoFound = false;
+        
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
         if ([fileManager fileExistsAtPath:imagePath isDirectory:nil] && ![fileName isEqualToString:mutAttributes[@"imagePath"]]) {
         
             mutAttributes[@"imagePath"] = fileName;
             
-            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+            brokenPhotoFound = true;
         
         }
         
@@ -475,22 +477,31 @@
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
             
-            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+            brokenPhotoFound = true;
             
         }
         
         if ([fileManager fileExistsAtPath:thumbnailPath isDirectory:nil] && ![thumbnailFileName isEqualToString:mutAttributes[@"thumbnailPath"]]) {
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
-            mutAttributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error].mutableCopy;
+            
+            brokenPhotoFound = true;
             
         }
         
-        if (error){
-            continue;
+        if (brokenPhotoFound){
+            
+            attributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error];
+            
+            if (!error && ([STMFunctions isNotNull:attributes[@"imagePath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]] && [STMFunctions isNotNull:attributes[@"thumbnailPath"]])){
+                continue;
+            }
+            
+            if (error){
+                continue;
+            }
         }
         
-        attributes = mutAttributes.copy;
         
         if (![STMFunctions isNotNull:attributes[@"imagePath"]]) {
             
@@ -549,6 +560,8 @@
         }
 
     }
+    
+    [self.sharedController postAsyncMainQueueNotification:NOTIFICATION_PICTURE_UNUSED_CHANGE];
     
 }
 
