@@ -442,7 +442,17 @@
     XCTAssertFalse(result);
     
 //TODO: here we can get NSMappingModel
+    NSError *error = nil;
+    NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:userDataModel
+                                                                     destinationModel:bundledDataModel
+                                                                                error:&error];
+    if (!mappingModel) {
+        NSLog(@"mappingModel error: %@, userInfo: %@", error.localizedDescription, error.userInfo);
+    }
+    XCTAssertNotNil(mappingModel);
     
+    [self parseMappingModel:mappingModel];
+
 // copy bundeled to user
     [self copyBundledDataModelToUsersDocs:TEST_CHANGED_DATA_MODEL_NAME];
 
