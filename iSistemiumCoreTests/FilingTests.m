@@ -435,8 +435,8 @@
     XCTAssertTrue(result);
 
 // compare user's and bundled data models
-    NSManagedObjectModel *userDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:userDataModelPath]];
-    NSManagedObjectModel *bundledDataModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:[NSURL URLWithString:bundledDataModelPath]];
+    NSManagedObjectModel *userDataModel = [self modelWithPath:userDataModelPath];
+    NSManagedObjectModel *bundledDataModel = [self modelWithPath:bundledDataModelPath];
     
     result = [userDataModel isEqual:bundledDataModel];
     XCTAssertFalse(result);
@@ -458,6 +458,16 @@
     result = [userDataModel isEqual:bundledDataModel];
     XCTAssertTrue(result);
 
+}
+
+- (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath {
+    
+    if (!modelPath) return nil;
+    
+    NSURL *url = [NSURL fileURLWithPath:modelPath];
+    
+    return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    
 }
 
 - (void)copyBundledDataModelToUsersDocs:(NSString *)bundledDataModelName {
