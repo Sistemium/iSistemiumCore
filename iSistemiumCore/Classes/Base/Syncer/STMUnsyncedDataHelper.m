@@ -119,9 +119,9 @@
     
 }
 
-- (NSUInteger)numberOfUnsyncedObjects {
-    return 0;
-}
+//- (NSUInteger)numberOfUnsyncedObjects {
+//    return 0;
+//}
 
 
 #pragma mark - Private helpers

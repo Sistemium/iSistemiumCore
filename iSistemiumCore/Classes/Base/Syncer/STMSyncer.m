@@ -772,9 +772,9 @@
         
 //        NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
         
-        if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
-            self.isSendingData = NO;
-        }
+//        if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+//            self.isSendingData = NO;
+//        }
         
         if (error) {
             NSLog(@"updateResource error: %@", error.localizedDescription);
