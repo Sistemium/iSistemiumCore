@@ -56,13 +56,15 @@
 
 - (void)setCurrentSessionUID:(NSString *)currentSessionUID {
     
-    if ([[self.sessions allKeys] containsObject:currentSessionUID] || !currentSessionUID) {
+    if (!currentSessionUID || self.sessions[currentSessionUID]) {
         
         if (_currentSessionUID != currentSessionUID) {
             
             _currentSessionUID = currentSessionUID;
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged"
-                                                                object:(self.sessions)[_currentSessionUID]];
+            
+// this notification is never observe
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged"
+//                                                                object:currentSessionUID ? self.sessions[currentSessionUID] : nil];
             
         }
         

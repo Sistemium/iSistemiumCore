@@ -687,7 +687,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return result.copy;
 }
 
-+ (id)popArray:(NSMutableArray *)array {
++ (nullable id)popArray:(NSMutableArray *)array {
     @synchronized (array) {
         id result = array.lastObject;
         if (result) [array removeLastObject];
@@ -773,7 +773,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
-+ (NSString *)MD5FromString:(NSString *)string {
++ (NSString *)MD5FromString:(nullable NSString *)string {
 
     if (string) {
         
@@ -798,7 +798,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     } else {
         
-        return nil;
+        return @"";
         
     }
     
@@ -912,7 +912,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 + (NSString *)documentsDirectory {
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentDirectory = (paths.count > 0) ? paths[0] : nil;
+    NSString *documentDirectory = (paths.count > 0) ? paths[0] : @"";
     
     if (paths.count > 1 || [documentDirectory isEqualToString:@""]) {
         
@@ -998,7 +998,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         
     } else {
         
-        return nil;
+        return [UIColor blackColor];
         
     }
     
@@ -1374,7 +1374,7 @@ vm_size_t freeMemory(void) {
     return result.copy;
 }
 
-+ (NSString *)currentTestTarget {
++ (nullable NSString *)currentTestTarget {
     
     NSString *pattern = @"(?<=\\/tmp\\/)[^-]*";
     NSString *path = [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"];
@@ -1396,7 +1396,7 @@ vm_size_t freeMemory(void) {
     return ![value isEqual:[NSNull null]] && [value boolValue];
 }
 
-+ (BOOL)isNotNull:(id)value {
++ (BOOL)isNotNull:(nullable id)value {
     return value && ![value isEqual:[NSNull null]];
 }
 

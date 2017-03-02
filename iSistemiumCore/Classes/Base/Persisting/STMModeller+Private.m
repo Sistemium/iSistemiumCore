@@ -163,7 +163,7 @@
 - (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
     
     if (!entityName) {
-        return nil;
+        return [NSSet set];
     }
     
     NSEntityDescription *objectEntity = self.entitiesByName[entityName];

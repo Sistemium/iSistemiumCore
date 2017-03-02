@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)dayWithDayOfWeekFromDate:(NSDate *)date;
 
-+ (NSString *)MD5FromString:(NSString *)string;
++ (NSString *)MD5FromString:(nullable NSString *)string;
 
 + (NSString *)devicePlatform;
 + (NSString *)currentAppVersion;
@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)uppercaseFirst:(NSString *)inputString;
 + (NSString *)lowercaseFirst:(NSString *)inputString;
 
-+ (id)popArray:(NSMutableArray *)array;
++ (nullable id)popArray:(NSMutableArray *)array;
 + (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array;
 + (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array;
 
@@ -140,10 +140,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
 
-+ (NSString *)currentTestTarget;
++ (nullable NSString *)currentTestTarget;
 
 + (BOOL)isNotNullAndTrue:(id)value;
-+ (BOOL)isNotNull:(id)value;
++ (BOOL)isNotNull:(nullable id)value;
 + (BOOL)isNullBoth:(id)value1 and:(id)value2;
 
 + (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval;

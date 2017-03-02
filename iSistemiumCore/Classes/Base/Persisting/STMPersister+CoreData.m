@@ -264,7 +264,8 @@
         
     } else {
         
-        errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
+        // this errorMessage's value is never read
+//        errorMessage = [NSString stringWithFormat:@"%@: property or method '%@' not found, sort by 'id' instead", entityName, orderBy];
         
         sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id"
                                                        ascending:ascending
@@ -275,7 +276,7 @@
     
     NSError *fetchError;
     NSArray *result = [self.document.managedObjectContext executeFetchRequest:request
-                                                                          error:&fetchError];
+                                                                        error:&fetchError];
     
     if (result) {
         
