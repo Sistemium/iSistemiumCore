@@ -16,6 +16,8 @@
 #import "STMNotifications.h"
 #import "STMDataSyncingSubscriber.h"
 #import "STMLogging.h"
+#import "STMFiling.h"
+
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -63,10 +65,14 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;
+
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (readonly) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
+
+@property (nonatomic, strong) id <STMDirectoring> directoring;
+@property (nonatomic, strong) id <STMFiling> filing;
 
 - (id <STMSession>)initWithUID:(NSString *)uid
                         iSisDB:(NSString *)iSisDB

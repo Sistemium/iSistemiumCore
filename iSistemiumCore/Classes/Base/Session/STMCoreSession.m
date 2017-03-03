@@ -12,6 +12,9 @@
 @implementation STMCoreSession
 
 @synthesize syncer =_syncer;
+@synthesize directoring = _directoring;
+@synthesize filing = _filing;
+
 
 - (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
     
