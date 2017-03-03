@@ -23,10 +23,6 @@
 
 @implementation STMCoreSessionFiler
 
-@synthesize directoring = _directoring;
-@synthesize fileManager = _fileManager;
-
-
 #pragma mark - STMDirectoring protocol
 
 - (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid {
@@ -121,6 +117,13 @@
 
 #pragma mark - STMFiling protocol
 
+@synthesize directoring = _directoring;
+@synthesize fileManager = _fileManager;
+
+- (NSFileManager *)fileManager {
+    return [NSFileManager defaultManager];
+}
+
 - (NSString *)persistenceBasePath {
     
     return [self.directoring basePath:[self.directoring userDocuments]
@@ -165,21 +168,19 @@
 
 - (BOOL)copyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath error:(NSError **)error {
     
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
     BOOL sourceIsDir = NO;
     
-    if (![fm fileExistsAtPath:sourcePath isDirectory:&sourceIsDir]) {
+    if (![self.fileManager fileExistsAtPath:sourcePath isDirectory:&sourceIsDir]) {
         return NO;
     }
     
-    if ([fm fileExistsAtPath:destinationPath]) {
+    if ([self.fileManager fileExistsAtPath:destinationPath]) {
         if (![self removeItemAtPath:destinationPath error:error]) return NO;
     }
     
-    BOOL result = [fm copyItemAtPath:sourcePath
-                              toPath:destinationPath
-                               error:error];
+    BOOL result = [self.fileManager copyItemAtPath:sourcePath
+                                            toPath:destinationPath
+                                             error:error];
     
     if (!result) {
         
@@ -216,9 +217,8 @@
 
 - (BOOL)removeItemAtPath:(NSString *)path error:(NSError *__autoreleasing *)error {
     
-    NSFileManager *fm = [NSFileManager defaultManager];
-    BOOL result = [fm removeItemAtPath:path
-                                 error:error];
+    BOOL result = [self.fileManager removeItemAtPath:path
+                                               error:error];
     return result;
     
 }
@@ -246,17 +246,15 @@
 
 - (NSString *)userModelFile:(NSString *)name {
     
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
     NSString *momdPath = [[[self persistencePath:nil] stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"momd"];
     
-    if ([fm fileExistsAtPath:momdPath]) {
+    if ([self.fileManager fileExistsAtPath:momdPath]) {
         return momdPath;
     }
     
     NSString *momPath = [[[self persistencePath:nil] stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"mom"];
     
-    if ([fm fileExistsAtPath:momPath]) {
+    if ([self.fileManager fileExistsAtPath:momPath]) {
         return momPath;
     }
     
