@@ -20,9 +20,9 @@
     
     self = [self init];
     
-    NSString *persistencePath = [filing persistenceBasePath];
+    NSString *fmdbPath = [filing persistencePath:@"fmdb"];
     
-    NSString *dbPath = [persistencePath stringByAppendingPathComponent:fileName];
+    NSString *dbPath = [fmdbPath stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
