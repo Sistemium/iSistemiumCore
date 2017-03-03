@@ -841,7 +841,7 @@
 
 - (void)saveSendDate {
     
-    if (!self.session) return;
+    if (!self.session.uid) return;
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
