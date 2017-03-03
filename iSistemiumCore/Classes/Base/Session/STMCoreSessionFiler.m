@@ -77,6 +77,10 @@
 
 - (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
     
+#warning - every time we asked for userDocuments, sharedDocuments, persistencePath, picturesPath and webViewsPath we will call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:], have to taking it into account, it may be slow
+    // for example, the picturesController will save bunch of pictures we have to store picturesPath in it's property
+    // may be we need to think something else about it
+    
     NSString *resultPath = [basePath stringByAppendingPathComponent:path];
     return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
     
