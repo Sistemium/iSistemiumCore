@@ -87,7 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)devicePlatform;
 + (NSString *)currentAppVersion;
 
-+ (NSURL *)documentsDirectoryURL;
 + (NSString *)documentsDirectory;
 + (NSString *)absolutePathForPath:(nullable NSString *)path;
 + (NSString *)absoluteDocumentsPathForPath:(nullable NSString *)path;

@@ -834,10 +834,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some methods with paths/dirs/files handling
 
-+ (NSURL *)documentsDirectoryURL {
-    return [NSURL fileURLWithPath:[self documentsDirectory]];
-}
-
 + (NSString *)documentsDirectory {
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
