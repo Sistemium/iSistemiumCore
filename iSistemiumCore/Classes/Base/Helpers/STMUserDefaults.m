@@ -8,7 +8,7 @@
 
 #import "STMUserDefaults.h"
 
-#import "STMFunctions.h"
+#import "STMCoreSessionManager.h"
 #import "STMLogger.h"
 
 
@@ -18,7 +18,7 @@
 @interface STMUserDefaults()
 
 @property (nonatomic, strong) NSMutableDictionary *defaultsDic;
-@property (nonatomic, strong) NSURL *defaultsUrl;
+@property (nonatomic, strong) NSString *defaultsPath;
 
 
 @end
@@ -49,15 +49,16 @@
     
 }
 
-- (NSURL *)defaultsUrl {
+- (id <STMSession>)session {
+    return [STMCoreSessionManager sharedManager].currentSession;
+}
+
+- (NSString *)defaultsPath {
     
-    if (!_defaultsUrl) {
-        
-        NSURL *documentsUrl = [STMFunctions documentsDirectoryURL];
-        _defaultsUrl = [documentsUrl URLByAppendingPathComponent:STM_USER_DEFAULTS_URL];
-        
+    if (!_defaultsPath) {
+        _defaultsPath = [[self session].directoring userDocuments];
     }
-    return _defaultsUrl;
+    return _defaultsPath;
     
 }
 
@@ -74,9 +75,9 @@
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
-    if (self.defaultsUrl.path) {
+    if (self.defaultsPath) {
         
-        if (![fileManager fileExistsAtPath:(NSString *)self.defaultsUrl.path]) {
+        if (![fileManager fileExistsAtPath:(NSString *)self.defaultsPath]) {
             
             self.defaultsDic = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation].mutableCopy;
             
@@ -86,9 +87,9 @@
             
             NSError *error = nil;
 
-            NSData *defaultsData = [NSData dataWithContentsOfURL:self.defaultsUrl
-                                                         options:0
-                                                           error:&error];
+            NSData *defaultsData = [NSData dataWithContentsOfFile:self.defaultsPath
+                                                          options:0
+                                                            error:&error];
             
             if (defaultsData) {
                 
@@ -110,11 +111,11 @@
 
             } else {
 
-                NSString *logMessage = [NSString stringWithFormat:@"can't load defaults from url %@, flush userDefaults", self.defaultsUrl];
                 [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                          numType:STMLogMessageTypeError];
                 [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
                                                          numType:STMLogMessageTypeError];
+                NSString *logMessage = [NSString stringWithFormat:@"can't load defaults from path %@, flush userDefaults", self.defaultsPath];
                 
                 [self flushUserDefaults];
                 
@@ -144,18 +145,18 @@
     
     NSError *error;
     
-    BOOL writeResult = [defaultsData writeToURL:self.defaultsUrl
-                                        options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                          error:&error];
+    BOOL writeResult = [defaultsData writeToFile:self.defaultsPath
+                                         options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                           error:&error];
     
     if (!writeResult) {
         
-        NSString *logMessage = [NSString stringWithFormat:@"can't write defaults to url %@", self.defaultsUrl];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
 
         [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
                                                  numType:STMLogMessageTypeError];
+        NSString *logMessage = [NSString stringWithFormat:@"can't write defaults to path %@", self.defaultsPath];
 
     }
 
