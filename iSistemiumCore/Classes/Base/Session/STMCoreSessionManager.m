@@ -72,7 +72,7 @@
     
 }
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
+- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB accountOrg:(NSString *)accountOrg authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
     
     if (!uid) {
         NSLog(@"no uid");
@@ -97,6 +97,7 @@
 
     session = [session initWithUID:uid
                             iSisDB:iSisDB
+                        accountOrg:accountOrg
                       authDelegate:authDelegate
                           trackers:trackers
                      startSettings:startSettings];

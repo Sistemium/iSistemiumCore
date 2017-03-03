@@ -76,6 +76,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 - (id <STMSession>)initWithUID:(NSString *)uid
                         iSisDB:(NSString *)iSisDB
+                    accountOrg:(NSString *)accountOrg
                   authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                       trackers:(NSArray *)trackers
                  startSettings:(NSDictionary *)startSettings;
@@ -96,6 +97,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 - (id <STMSession>)startSessionForUID:(NSString *)uid
                                iSisDB:(NSString *)iSisDB
+                           accountOrg:(NSString *)accountOrg
                          authDelegate:(id <STMRequestAuthenticatable>)authDelegate
                              trackers:(NSArray *)trackers
                         startSettings:(NSDictionary *)startSettings

@@ -22,6 +22,7 @@
 @property (nonatomic, weak) id <STMRequestAuthenticatable> authDelegate;
 @property (nonatomic, strong) NSString *uid;
 @property (nonatomic, strong) NSString *iSisDB;
+@property (nonatomic, strong) NSString *accountOrg;
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, weak) STMDocument *document;

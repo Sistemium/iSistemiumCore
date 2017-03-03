@@ -16,7 +16,7 @@
 @synthesize filing = _filing;
 
 
-- (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+- (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB accountOrg:(NSString *)accountOrg authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
     
     if (!uid) {
         NSLog(@"no uid");
@@ -25,6 +25,7 @@
     
     self.uid = uid;
     self.iSisDB = iSisDB;
+    self.accountOrg = accountOrg;
     self.status = STMSessionStarting;
     self.startSettings = startSettings;
     self.authDelegate = authDelegate;
