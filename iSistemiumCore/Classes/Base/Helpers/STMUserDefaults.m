@@ -102,8 +102,7 @@
                 } else {
                     
                     NSString *logMessage = [NSString stringWithFormat:@"load userDefaults from file: unarchiveObject is not NSDictionary class, flush userDefaults"];
-                    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                             numType:STMLogMessageTypeError];
+                    [[STMLogger sharedLogger] errorMessage:logMessage];
                     
                     [self flushUserDefaults];
                     
@@ -111,11 +110,9 @@
 
             } else {
 
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                         numType:STMLogMessageTypeError];
-                [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
-                                                         numType:STMLogMessageTypeError];
                 NSString *logMessage = [NSString stringWithFormat:@"can't load defaults from path %@, flush userDefaults", self.defaultsPath];
+                [[STMLogger sharedLogger] errorMessage:logMessage];
+                [[STMLogger sharedLogger] errorMessage:error.localizedDescription];
                 
                 [self flushUserDefaults];
                 
@@ -125,8 +122,7 @@
         
     } else {
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"defaults url.path is null"
-                                                 numType:STMLogMessageTypeError];
+        [[STMLogger sharedLogger] errorMessage:@"defaults url.path is null"];
         
     }
     
@@ -151,12 +147,9 @@
     
     if (!writeResult) {
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
-
-        [[STMLogger sharedLogger] saveLogMessageWithText:error.localizedDescription
-                                                 numType:STMLogMessageTypeError];
         NSString *logMessage = [NSString stringWithFormat:@"can't write defaults to path %@", self.defaultsPath];
+        [[STMLogger sharedLogger] errorMessage:logMessage];
+        [[STMLogger sharedLogger] errorMessage:error.localizedDescription];
 
     }
 
