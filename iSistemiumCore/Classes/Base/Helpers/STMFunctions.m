@@ -834,29 +834,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some methods with paths/dirs/files handling
 
-+ (BOOL)flushDirAtPath:(NSString *)dirPath {
-    
-    // remove all files/dirs inside dirPath excluding dirPath
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    BOOL returnResult = [self enumerateDirAtPath:dirPath withBlock:^BOOL(NSString *path, NSError *__autoreleasing *error) {
-        
-        BOOL result = [fm removeItemAtPath:path
-                                     error:error];
-        
-        if (!result) {
-            NSLog(@"can't flush dir at path %@, error: %@", path, [*error localizedDescription]);
-        }
-        
-        return result;
-        
-    }];
-    
-    return returnResult;
-    
-}
-
 + (BOOL)enumerateDirAtPath:(NSString *)dirPath withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock {
     
     NSFileManager *fm = [NSFileManager defaultManager];
