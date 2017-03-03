@@ -15,6 +15,10 @@
 
 - (NSString *)userDocuments;
 - (NSString *)sharedDocuments;
+
+- (NSString *)basePath:(NSString *)basePath
+              withPath:(NSString *)path;
+
 - (NSBundle *)bundle;
 
 
