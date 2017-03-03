@@ -8,6 +8,8 @@
 
 #import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
+#import "STMCoreSessionFiler.h"
+
 
 @implementation STMCoreSession
 
@@ -31,6 +33,15 @@
     self.authDelegate = authDelegate;
     self.startTrackers = trackers;
     self.controllers = [NSMutableDictionary dictionary];
+
+#warning - iSisDB ? iSisDB : uid — already used in two places, may be make some method/property for this
+    
+    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:accountOrg
+                                                                   userId:iSisDB ? iSisDB : uid];
+    self.directoring = filer;
+    
+    filer.directoring = self.directoring;
+    self.filing = filer;
     
     [self addObservers];
 
