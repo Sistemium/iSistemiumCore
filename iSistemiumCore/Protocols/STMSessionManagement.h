@@ -102,7 +102,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
               defaultSettingsFileName:(NSString *)defualtSettingsFileName;
 
 - (void)stopSessionForUID:(NSString *)uid;
-- (void)sessionStopped:(id)session;
+- (void)sessionStopped:(id <STMSession>)session;
 - (void)cleanStoppedSessions;
 - (void)removeSessionForUID:(NSString *)uid;
 
