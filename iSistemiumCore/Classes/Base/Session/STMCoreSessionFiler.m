@@ -27,7 +27,7 @@
 @synthesize fileManager = _fileManager;
 
 
-#pragma mark - STMDirectoring
+#pragma mark - STMDirectoring protocol
 
 - (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid {
     
@@ -82,7 +82,7 @@
     // may be we need to think something else about it
     
     NSString *resultPath = [basePath stringByAppendingPathComponent:path];
-    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
     
 }
 
@@ -91,28 +91,35 @@
 }
 
 
-#pragma mark - STMFiling
+#pragma mark - directoring private methods
 
-- (NSString *)persistencePath:(NSString *)folderName {
+- (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
     
-    return [self.directoring basePath:[self persistenceBasePath]
-                             withPath:folderName];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    if (![fm fileExistsAtPath:dirPath]) {
+        
+        NSError *error = nil;
+        BOOL result = [fm createDirectoryAtPath:dirPath
+                    withIntermediateDirectories:YES
+                                     attributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
+                                          error:&error];
+        
+        if (!result) {
+            
+            NSLog(@"can't create directory at path: %@, error: %@", dirPath, error.localizedDescription);
+            return NO;
+            
+        }
+        
+    }
+    
+    return YES;
     
 }
 
-- (NSString *)picturesPath:(NSString *)folderName {
-    
-    return [self.directoring basePath:[self picturesBasePath]
-                             withPath:folderName];
-    
-}
 
-- (NSString *)webViewsPath:(NSString *)folderName {
-    
-    return [self.directoring basePath:[self webViewsBasePath]
-                             withPath:folderName];
-    
-}
+#pragma mark - STMFiling protocol
 
 - (NSString *)persistenceBasePath {
     
@@ -132,6 +139,27 @@
     
     return [self.directoring basePath:[self.directoring sharedDocuments]
                              withPath:WEBVIEWS_PATH];
+    
+}
+
+- (NSString *)persistencePath:(NSString *)folderName {
+    
+    return [self.directoring basePath:[self persistenceBasePath]
+                             withPath:folderName];
+    
+}
+
+- (NSString *)picturesPath:(NSString *)folderName {
+    
+    return [self.directoring basePath:[self picturesBasePath]
+                             withPath:folderName];
+    
+}
+
+- (NSString *)webViewsPath:(NSString *)folderName {
+    
+    return [self.directoring basePath:[self webViewsBasePath]
+                             withPath:folderName];
     
 }
 

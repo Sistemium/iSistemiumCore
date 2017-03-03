@@ -834,31 +834,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some methods with paths/dirs/files handling
 
-+ (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    if (![fm fileExistsAtPath:dirPath]) {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:dirPath
-                    withIntermediateDirectories:YES
-                                     attributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
-                                          error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"can't create directory at path: %@, error: %@", dirPath, error.localizedDescription);
-            return NO;
-            
-        }
-        
-    }
-    
-    return YES;
-    
-}
-
 + (BOOL)flushDirAtPath:(NSString *)dirPath {
     
     // remove all files/dirs inside dirPath excluding dirPath
