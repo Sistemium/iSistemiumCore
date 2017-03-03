@@ -18,20 +18,5 @@
 
 + (instancetype)sharedManager;
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid
-                               iSisDB:(NSString *)iSisDB
-                        authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                            trackers:(NSArray *)trackers
-                            startSettings:(NSDictionary *)startSettings
-                    defaultSettingsFileName:(NSString *)defaultSettingsFileName;
-
-- (void)stopSessionForUID:(NSString *)uid;
-
-- (void)sessionStopped:(id <STMSession>)session;
-
-- (void)cleanStoppedSessions;
-
-- (void)removeSessionForUID:(NSString *)uid;
-
 
 @end
