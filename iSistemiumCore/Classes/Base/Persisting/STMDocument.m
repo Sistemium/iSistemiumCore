@@ -142,7 +142,8 @@
 
 + (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB filing:(id <STMFiling>)filing dataModelName:(NSString *)dataModelName {
 
-    NSURL *documentDirectoryUrl = [STMFunctions documentsDirectoryURL];
+    NSString *persistencePath = [filing persistencePath:@"document"];
+    NSURL *documentDirectoryUrl = [NSURL URLWithString:persistancePath];
     NSString *documentID = (iSisDB) ? iSisDB : uid;
 
     NSString *prefix = [NSBundle mainBundle].bundleIdentifier;
