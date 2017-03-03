@@ -56,23 +56,29 @@
     
     _org = org;
     
-    self.orgPath = [self.documentsPath stringByAppendingPathComponent:org];
-    
-    [STMFunctions dirExistsOrCreateItAtPath:self.orgPath];
-    
+    self.orgPath = [self basePath:self.documentsPath
+                         withPath:org];
+
 }
 
 - (NSString *)userDocuments {
     
-    NSString *userPath = [self.orgPath stringByAppendingPathComponent:self.uid];
-    return [STMFunctions dirExistsOrCreateItAtPath:userPath] ? userPath : nil;
+    return [self basePath:self.orgPath
+                 withPath:self.uid];
     
 }
 
 - (NSString *)sharedDocuments {
     
-    NSString *sharedPath = [self.orgPath stringByAppendingPathComponent:SHARED_PATH];
-    return [STMFunctions dirExistsOrCreateItAtPath:sharedPath] ? sharedPath : nil;
+    return [self basePath:self.orgPath
+                 withPath:SHARED_PATH];
+    
+}
+
+- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
+    
+    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
+    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
     
 }
 
@@ -85,50 +91,43 @@
 
 - (NSString *)persistencePath:(NSString *)folderName {
     
-    return [self basePath:[self persistenceBasePath]
-                 withPath:folderName];
+    return [self.directoring basePath:[self persistenceBasePath]
+                             withPath:folderName];
     
 }
 
 - (NSString *)picturesPath:(NSString *)folderName {
     
-    return [self basePath:[self picturesBasePath]
-                 withPath:folderName];
+    return [self.directoring basePath:[self picturesBasePath]
+                             withPath:folderName];
     
 }
 
 - (NSString *)webViewsPath:(NSString *)folderName {
     
-    return [self basePath:[self webViewsBasePath]
-                 withPath:folderName];
+    return [self.directoring basePath:[self webViewsBasePath]
+                             withPath:folderName];
     
 }
 
 - (NSString *)persistenceBasePath {
     
-    return [self basePath:[self.directoring userDocuments]
-                 withPath:PERSISTENCE_PATH];
+    return [self.directoring basePath:[self.directoring userDocuments]
+                             withPath:PERSISTENCE_PATH];
     
 }
 
 - (NSString *)picturesBasePath {
     
-    return [self basePath:[self.directoring sharedDocuments]
-                 withPath:PICTURES_PATH];
+    return [self.directoring basePath:[self.directoring sharedDocuments]
+                             withPath:PICTURES_PATH];
     
 }
 
 - (NSString *)webViewsBasePath {
     
-    return [self basePath:[self.directoring sharedDocuments]
-                 withPath:WEBVIEWS_PATH];
-    
-}
-
-- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
-    
-    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
-    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    return [self.directoring basePath:[self.directoring sharedDocuments]
+                             withPath:WEBVIEWS_PATH];
     
 }
 
