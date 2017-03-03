@@ -30,6 +30,10 @@
 @property (nonatomic, weak) id <STMDirectoring> directoring;
 @property (nonatomic, weak) NSFileManager *fileManager;
 
+- (NSString *)persistenceBasePath;
+- (NSString *)picturesBasePath;
+- (NSString *)webViewsBasePath;
+
 - (NSString *)persistencePath:(NSString *)folderName;
 - (NSString *)picturesPath:(NSString *)folderName;
 - (NSString *)webViewsPath:(NSString *)folderName;
