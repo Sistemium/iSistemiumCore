@@ -7,6 +7,9 @@
 //
 
 #import "STMScriptMessageHandler+Private.h"
+#import "STMImagePickerController.h"
+#import "STMCorePicturesController.h"
+#import "STMCorePhotosController.h"
 
 @implementation STMScriptMessagingSubscription
 
@@ -16,7 +19,7 @@
 
 - (instancetype)initWithOwner:(id <STMScriptMessagingOwner>)owner{
     id result = [self init];
-    self.owner = owner;
+    self.owner = (UIViewController<STMScriptMessagingOwner>*) owner;
     _subscriptions = [NSMutableDictionary dictionary];
     return result;
 }
@@ -37,6 +40,61 @@
     if ([persistenceDelegate conformsToProtocol:@protocol(STMModelling)]) {
         _modellingDelegate = persistenceDelegate;
     }
+    
+}
+
+- (STMSpinnerView *)spinnerView {
+    
+    if (!_spinnerView) {
+        _spinnerView = [STMSpinnerView spinnerViewWithFrame:self.owner.view.frame];
+    }
+    return _spinnerView;
+    
+}
+
+- (void)handleTakePhotoMessage:(WKScriptMessage *)message {
+    
+    if (self.waitingPhoto) return;
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *entityName = parameters[@"entityName"];
+    self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
+    
+    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
+        NSString *error = [NSString stringWithFormat:@"local data model have not entity with name %@", entityName];
+        return [self.owner callbackWithError:error parameters:parameters];
+    }
+    
+    self.waitingPhoto = YES;
+    
+    self.takePhotoMessageParameters = parameters;
+    self.takePhotoCallbackJSFunction = parameters[@"callback"];
+    self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
+    
+    UIImagePickerControllerSourceType imageSource = -1;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        
+        imageSource = UIImagePickerControllerSourceTypeCamera;
+        
+    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+        
+        imageSource = UIImagePickerControllerSourceTypePhotoLibrary;
+        
+    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+        
+        imageSource = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        
+    } else {
+        
+        self.waitingPhoto = NO;
+        return [self.owner callbackWithError:@"have no one available source types"
+                            parameters:self.takePhotoMessageParameters];
+        
+    }
+    
+    [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:) withObject:@(imageSource) afterDelay:0];
     
 }
 
@@ -151,6 +209,115 @@
     
     NSLog(@"unsubscribeViewController: %@", self.owner);
     [self flushSubscribedViewController];
+    
+}
+
+#pragma mark - STMImagePickerOwnerProtocol
+
+- (void)checkImagePickerWithSourceTypeNumber:(NSNumber *)sourceTypeNumber {
+    
+    NSUInteger imageSourceType = sourceTypeNumber.integerValue;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:imageSourceType]) {
+        
+        [self showImagePickerForSourceType:imageSourceType];
+        
+    } else {
+        
+        NSString *imageSourceTypeString = [self stringValueForImageSourceType:imageSourceType];
+        
+        self.waitingPhoto = NO;
+        
+        NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
+        
+        [self.owner callbackWithError:message parameters:self.takePhotoMessageParameters];
+        
+    }
+    
+}
+
+- (NSString *)stringValueForImageSourceType:(UIImagePickerControllerSourceType)imageSourceType {
+    
+    return @{
+             @(UIImagePickerControllerSourceTypePhotoLibrary): @"PhotoLibrary",
+             @(UIImagePickerControllerSourceTypeCamera): @"Camera",
+             @(UIImagePickerControllerSourceTypeSavedPhotosAlbum): @"PhotosAlbum"
+             }[@(imageSourceType)];
+    
+}
+
+- (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType {
+    
+    STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
+    imagePickerController.ownerVC = self;
+    
+    [self.owner.tabBarController presentViewController:imagePickerController animated:YES completion:^{
+        [self.owner.view addSubview:self.spinnerView];
+    }];
+    
+}
+
+- (BOOL)shouldWaitForLocation {
+    return NO;
+}
+
+- (void)saveImage:(UIImage *)image withLocation:(CLLocation *)location {
+    [self saveImage:image];
+}
+
+- (void)saveImage:(UIImage *)image andWaitForLocation:(BOOL)waitForLocation {
+    [self saveImage:image];
+}
+
+- (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
+    
+    [self.spinnerView removeFromSuperview];
+    self.spinnerView = nil;
+    
+    self.waitingPhoto = NO;
+    
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    
+    [self imagePickerWasDissmised:picker];
+    
+    //    [self callbackWithData:@[@"imagePickerControllerDidCancel"]
+    //                parameters:self.takePhotoMessageParameters
+    //        jsCallbackFunction:self.takePhotoCallbackJSFunction];
+    
+    [self.owner callbackWithError:@"imagePickerControllerDidCancel"
+                 parameters:self.takePhotoMessageParameters];
+    
+}
+
+- (void)saveImage:(UIImage *)image {
+    
+    CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
+    
+    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
+    
+    if (!attributes) {
+        self.waitingPhoto = NO;
+        return [self.owner callbackWithError:@"no photo object" parameters:self.takePhotoMessageParameters];
+    }
+    
+    [attributes addEntriesFromDictionary:self.photoData];
+    
+    [self.persistenceDelegate merge:self.photoEntityName attributes:attributes.copy options:nil]
+    .then(^(NSDictionary * result) {
+        [self.owner callbackWithData:@[result]
+                    parameters:self.takePhotoMessageParameters
+            jsCallbackFunction:self.takePhotoCallbackJSFunction];
+    })
+    .catch(^(NSError *error) {
+        NSLog(error.localizedDescription);
+        [self.owner callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
+    })
+    .always(^(){
+        self.waitingPhoto = NO;
+    });
+    
     
 }
 
