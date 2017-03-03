@@ -16,7 +16,7 @@
 
 @implementation STMFmdb
 
-- (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName{
+- (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing fileName:(NSString *)fileName{
     
     self = [self init];
     

@@ -13,6 +13,9 @@
 #import "STMModeller+Interceptable.h"
 #import "STMFmdb.h"
 
+#import "STMFiling.h"
+
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface STMPersister : STMModeller <STMPersistingSync>
@@ -24,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)persisterWithModelName:(NSString *)modelName
                                    uid:(NSString *)uid
                                 iSisDB:(NSString *)iSisDB
+                                filing:(id <STMFiling>)filing
                      completionHandler:(void (^ _Nullable)(BOOL success))completionHandler;
 
 @end

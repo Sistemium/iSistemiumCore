@@ -7,17 +7,22 @@
 //
 
 #import "STMModelling.h"
+#import "STMFiling.h"
+
 
 @interface STMFmdb : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
 
-- (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName;
+- (instancetype)initWithModelling:(id <STMModelling>)modelling
+                           filing:(id <STMFiling>)filing
+                         fileName:(NSString *)fileName;
 
 - (BOOL)hasTable:(NSString *)name;
 
 - (void)deleteFile;
 
 NS_ASSUME_NONNULL_END
+
 
 @end
