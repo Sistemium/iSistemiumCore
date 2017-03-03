@@ -97,7 +97,6 @@
     
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
 
-        [STMGarbageCollector searchUnusedImages];
     }
     
 }
@@ -204,7 +203,7 @@
     [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
                             withValue:logMessage];
 
-    [STMGarbageCollector removeOutOfDateImages];
+    [STMGarbageCollector.sharedInstance removeOutOfDateImages];
 //    [self showTestLocalNotification];
     
 }

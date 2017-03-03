@@ -522,14 +522,15 @@
 
 - (void)updateUnusedPicturesInfo {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([STMGarbageCollector.unusedImageFiles count] == 0) {
+        if ([STMGarbageCollector.sharedInstance.unusedImageFiles count] == 0) {
             self.unusedPicturesButton.hidden = YES;
         }else{
-            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImageFiles count]];
+            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.sharedInstance.unusedImageFiles count]];
             NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
             NSString *unusedCount = [NSString stringWithFormat:@"%@UNUSED", pluralString];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.sharedInstance.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.sharedInstance.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+            self.unusedPicturesButton.hidden = NO;
         }
     });
     
@@ -727,7 +728,7 @@
         case 4:
             if (buttonIndex == 0) {
                 
-                [STMGarbageCollector removeUnusedImages];
+                [STMGarbageCollector.sharedInstance removeUnusedImages];
                 self.unusedPicturesButton.enabled = NO;
                 [self updateUnusedPicturesInfo];
                 
@@ -767,7 +768,7 @@
 
         case 4:
             if (buttonIndex == 0) {
-                [STMGarbageCollector removeUnusedImages];
+                [STMGarbageCollector.sharedInstance removeUnusedImages];
                 self.unusedPicturesButton.enabled = NO;
                 [self updateUnusedPicturesInfo];
             }

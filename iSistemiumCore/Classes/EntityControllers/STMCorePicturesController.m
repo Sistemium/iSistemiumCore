@@ -462,14 +462,15 @@
         
         NSError *error;
         
-        BOOL brokenPhotoFound = false;
+        NSMutableArray *fieldsToUpdate = @[].mutableCopy;
         
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
+        
         if ([fileManager fileExistsAtPath:imagePath isDirectory:nil] && ![fileName isEqualToString:mutAttributes[@"imagePath"]]) {
         
             mutAttributes[@"imagePath"] = fileName;
             
-            brokenPhotoFound = true;
+            [fieldsToUpdate addObject:@"imagePath"];
         
         }
         
@@ -477,7 +478,7 @@
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
             
-            brokenPhotoFound = true;
+            [fieldsToUpdate addObject:@"resizedImagePath"];
             
         }
         
@@ -485,21 +486,18 @@
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
             
-            brokenPhotoFound = true;
+            [fieldsToUpdate addObject:@"thumbnailPath"];
             
         }
         
-        if (brokenPhotoFound){
+        if (fieldsToUpdate.count > 0){
             
-            attributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO} error:&error];
+            attributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fieldsToUpdate.copy} error:&error];
             
             if (!error && ([STMFunctions isNotNull:attributes[@"imagePath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]] && [STMFunctions isNotNull:attributes[@"thumbnailPath"]])){
                 continue;
             }
             
-            if (error){
-                continue;
-            }
         }
         
         

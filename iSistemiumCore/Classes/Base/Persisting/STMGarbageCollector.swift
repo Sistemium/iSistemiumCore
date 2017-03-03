@@ -17,21 +17,38 @@ extension Set {
 
 @objc class STMGarbageCollector:NSObject{
     
-    static var unusedImageFiles = Set<String>()
+    static let sharedInstance = STMGarbageCollector()
     
-    static func removeUnusedImages() -> AnyPromise{
+    private override init() {}
+    
+    private var _unusedImageFiles:Set<String>?
+    
+    var unusedImageFiles : Set<String>{
+        get{
+            if _unusedImageFiles == nil{
+                searchUnusedImages()
+            }
+            return _unusedImageFiles!
+        }
+        
+        set{
+            _unusedImageFiles = newValue
+        }
+    }
+    
+    func removeUnusedImages() -> AnyPromise{
         
         return AnyPromise.promiseWithResolverBlock({ resolve in
             
-            DispatchQueue.global(qos: .default).async{
+            DispatchQueue.global(qos: .default).async{[unowned self] in
                 var err:NSError? = nil
                 do {
-                    searchUnusedImages()
-                    if unusedImageFiles.count > 0 {
-                        let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
+                    self.searchUnusedImages()
+                    if self.unusedImageFiles.count > 0 {
+                        let logMessage = String(format: "Deleting %i images",self.unusedImageFiles.count)
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
-                    for unusedImage in unusedImageFiles{
+                    for unusedImage in self.unusedImageFiles{
                         try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
@@ -48,7 +65,7 @@ extension Set {
         
     }
     
-    static func searchUnusedImages(){
+    func searchUnusedImages(){
         unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
@@ -82,7 +99,7 @@ extension Set {
         unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
     }
     
-    static func removeOutOfDateImages(){
+    func removeOutOfDateImages(){
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             
