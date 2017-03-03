@@ -140,7 +140,7 @@
     
 }
 
-+ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB dataModelName:(NSString *)dataModelName {
++ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB filing:(id <STMFiling>)filing dataModelName:(NSString *)dataModelName {
 
     NSURL *documentDirectoryUrl = [STMFunctions documentsDirectoryURL];
     NSString *documentID = (iSisDB) ? iSisDB : uid;
