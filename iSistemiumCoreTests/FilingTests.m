@@ -126,29 +126,51 @@
 
 - (NSString *)persistencePath:(NSString *)folderName {
     
-    NSString *persistencePath = [[self.directoring userDocuments] stringByAppendingPathComponent:PERSISTENCE_PATH];
-    NSString *resultPath = [persistencePath stringByAppendingPathComponent:folderName];
+    return [self basePath:[self persistenceBasePath]
+                 withPath:folderName];
     
-    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
-
 }
 
 - (NSString *)picturesPath:(NSString *)folderName {
-
-    NSString *picturesPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:PICTURES_PATH];
-    NSString *resultPath = [picturesPath stringByAppendingPathComponent:folderName];
     
-    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
-
+    return [self basePath:[self picturesBasePath]
+                 withPath:folderName];
+    
 }
 
 - (NSString *)webViewsPath:(NSString *)folderName {
-
-    NSString *webViewsPath = [[self.directoring sharedDocuments] stringByAppendingPathComponent:WEBVIEWS_PATH];
-    NSString *resultPath = [webViewsPath stringByAppendingPathComponent:folderName];
     
-    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    return [self basePath:[self webViewsBasePath]
+                 withPath:folderName];
+    
+}
 
+- (NSString *)persistenceBasePath {
+    
+    return [self basePath:[self.directoring userDocuments]
+                 withPath:PERSISTENCE_PATH];
+    
+}
+
+- (NSString *)picturesBasePath {
+    
+    return [self basePath:[self.directoring sharedDocuments]
+                 withPath:PICTURES_PATH];
+    
+}
+
+- (NSString *)webViewsBasePath {
+    
+    return [self basePath:[self.directoring sharedDocuments]
+                 withPath:WEBVIEWS_PATH];
+    
+}
+
+- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
+    
+    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
+    return [STMFunctions dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    
 }
 
 - (BOOL)copyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath error:(NSError **)error {
