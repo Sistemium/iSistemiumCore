@@ -834,29 +834,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 #pragma mark - some methods with paths/dirs/files handling
 
-+ (BOOL)enumerateDirAtPath:(NSString *)dirPath withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:dirPath];
-    
-    BOOL result = YES;
-    NSError *error = nil;
-    
-    for (NSString *thePath in dirEnum) {
-        
-        NSString *fullPath = [dirPath stringByAppendingPathComponent:thePath];
-        
-        result = enumDirBlock(fullPath, &error);
-        
-        if (!result) break;
-        
-    }
-    
-    return result;
-    
-}
-
 + (NSURL *)documentsDirectoryURL {
     return [NSURL fileURLWithPath:[self documentsDirectory]];
 }

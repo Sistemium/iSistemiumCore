@@ -198,7 +198,7 @@
     
     __block NSError *localError = nil;
     
-    result = [STMFunctions enumerateDirAtPath:destinationPath withBlock:^BOOL(NSString *path, NSError **enumError) {
+    result = [self enumerateDirAtPath:destinationPath withBlock:^BOOL(NSString *path, NSError **enumError) {
         
         localError = *enumError; // ???
         
@@ -209,22 +209,6 @@
     }];
     
     *error = localError; // ???
-    
-    return result;
-    
-}
-
-- (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    BOOL result = [fm setAttributes:attributes
-                       ofItemAtPath:path
-                              error:error];
-    
-    if (!result) {
-        NSLog(@"set attribute NSFileProtectionNone ofItemAtPath: %@ error: %@", path, [*error localizedDescription]);
-    }
     
     return result;
     
@@ -278,6 +262,44 @@
     
     NSLog(@"there is no path in user's folder for data model with name %@", name);
     return nil;
+    
+}
+
+
+#pragma mark - filing private methods
+
+- (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
+    
+    BOOL result = [self.fileManager setAttributes:attributes
+                                     ofItemAtPath:path
+                                            error:error];
+    
+    if (!result) {
+        NSLog(@"set attribute NSFileProtectionNone ofItemAtPath: %@ error: %@", path, [*error localizedDescription]);
+    }
+    
+    return result;
+    
+}
+
+- (BOOL)enumerateDirAtPath:(NSString *)dirPath withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock {
+    
+    NSDirectoryEnumerator *dirEnum = [self.fileManager enumeratorAtPath:dirPath];
+    
+    BOOL result = YES;
+    NSError *error = nil;
+    
+    for (NSString *thePath in dirEnum) {
+        
+        NSString *fullPath = [dirPath stringByAppendingPathComponent:thePath];
+        
+        result = enumDirBlock(fullPath, &error);
+        
+        if (!result) break;
+        
+    }
+    
+    return result;
     
 }
 
