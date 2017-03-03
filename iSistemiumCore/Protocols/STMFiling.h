@@ -10,9 +10,9 @@
 
 @protocol STMDirectoring <NSObject>
 
-@optional
+- (instancetype)initWithOrg:(NSString *)org
+                     userId:(NSString *)uid;
 
-- (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid;
 - (NSString *)userDocuments;
 - (NSString *)sharedDocuments;
 - (NSBundle *)bundle;
@@ -22,8 +22,6 @@
 
 
 @protocol STMFiling <NSObject>
-
-@optional
 
 @property (nonatomic, weak) id <STMDirectoring> directoring;
 @property (nonatomic, weak) NSFileManager *fileManager;
