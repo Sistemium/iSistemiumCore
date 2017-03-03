@@ -20,13 +20,9 @@
     
     self = [self init];
     
-    NSString *documentDirectory = [STMFunctions documentsDirectory];
+    NSString *persistencePath = [filing persistenceBasePath];
     
-    NSString *fmdbFolderPath = [documentDirectory stringByAppendingPathComponent:@"fmdb"];
-    
-    if (![STMFunctions dirExistsOrCreateItAtPath:fmdbFolderPath]) return nil;
-    
-    NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];
+    NSString *dbPath = [persistencePath stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
