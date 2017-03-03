@@ -8,11 +8,11 @@
 
 #import "STMUserDefaults.h"
 
-#import "STMCoreSessionManager.h"
+#import "STMFunctions.h"
 #import "STMLogger.h"
 
 
-#define STM_USER_DEFAULTS_URL @"stmUserDefaults"
+#define STM_USER_DEFAULTS_PATH @"stmUserDefaults"
 
 
 @interface STMUserDefaults()
@@ -49,14 +49,10 @@
     
 }
 
-- (id <STMSession>)session {
-    return [STMCoreSessionManager sharedManager].currentSession;
-}
-
 - (NSString *)defaultsPath {
     
     if (!_defaultsPath) {
-        _defaultsPath = [[self session].directoring userDocuments];
+        _defaultsPath = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:STM_USER_DEFAULTS_PATH];
     }
     return _defaultsPath;
     
@@ -122,7 +118,7 @@
         
     } else {
         
-        [[STMLogger sharedLogger] errorMessage:@"defaults url.path is null"];
+        [[STMLogger sharedLogger] errorMessage:@"defaults path is null"];
         
     }
     
@@ -136,6 +132,13 @@
 }
 
 - (BOOL)synchronize {
+    
+    if (!self.defaultsPath) {
+        
+        [[STMLogger sharedLogger] errorMessage:@"defaults path is null"];
+        return NO;
+        
+    }
     
     NSData *defaultsData = [NSKeyedArchiver archivedDataWithRootObject:self.defaultsDic];
     
