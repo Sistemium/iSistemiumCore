@@ -263,23 +263,6 @@
     
 }
 
-
-#pragma mark - filing private methods
-
-- (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
-    
-    BOOL result = [self.fileManager setAttributes:attributes
-                                     ofItemAtPath:path
-                                            error:error];
-    
-    if (!result) {
-        NSLog(@"set attribute NSFileProtectionNone ofItemAtPath: %@ error: %@", path, [*error localizedDescription]);
-    }
-    
-    return result;
-    
-}
-
 - (BOOL)enumerateDirAtPath:(NSString *)dirPath withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock {
     
     NSDirectoryEnumerator *dirEnum = [self.fileManager enumeratorAtPath:dirPath];
@@ -295,6 +278,23 @@
         
         if (!result) break;
         
+    }
+    
+    return result;
+    
+}
+
+
+#pragma mark - filing private methods
+
+- (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
+    
+    BOOL result = [self.fileManager setAttributes:attributes
+                                     ofItemAtPath:path
+                                            error:error];
+    
+    if (!result) {
+        NSLog(@"set attribute NSFileProtectionNone ofItemAtPath: %@ error: %@", path, [*error localizedDescription]);
     }
     
     return result;

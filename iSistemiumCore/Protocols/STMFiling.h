@@ -48,5 +48,7 @@
 - (NSString *)bundledModelFile:(NSString *)name;
 - (NSString *)userModelFile:(NSString *)name;
 
+- (BOOL)enumerateDirAtPath:(NSString *)dirPath
+                 withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock;
 
 @end
