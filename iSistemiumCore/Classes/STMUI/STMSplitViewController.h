@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "STMTabBarItemControllable.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 
 @interface STMSplitViewController : UISplitViewController <STMTabBarItemControllable>

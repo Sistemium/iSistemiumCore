@@ -13,9 +13,15 @@
 
 @interface STMImagePickerController : UIImagePickerController
 
-@property (nonatomic, strong) UIViewController <STMImagePickerOwnerProtocol> *ownerVC;
+@property (nonatomic, strong) id <STMImagePickerOwnerProtocol> ownerVC;
 
 - (instancetype)initWithSourceType:(UIImagePickerControllerSourceType)sourceType;
+
+- (void)setFrameForCameraOverlayView:(UIView *)cameraOverlayView;
+
+- (IBAction)cameraButtonPressed:(id)sender;
+- (IBAction)cancelButtonPressed:(id)sender;
+- (IBAction)photoLibraryButtonPressed:(id)sender;
 
 
 @end

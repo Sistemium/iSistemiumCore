@@ -1,0 +1,53 @@
+//
+//  STMPersisting.h
+//  iSisSales
+//
+//  Created by Alexander Levin on 29/01/2017.
+//  Copyright © 2017 Sistemium UAB. All rights reserved.
+//
+
+#ifndef STMPersisting_h
+#define STMPersisting_h
+
+typedef NS_ENUM(NSInteger, STMStorageType) {
+    STMStorageTypeFMDB,
+    STMStorageTypeCoreData,
+    STMStorageTypeAbstract,
+    STMStorageTypeNone,
+    STMStorageTypeInMemory
+};
+
+#define STMPersistingKeyPrimary @"id"
+#define STMPersistingKeyVersion @"deviceTs"
+#define STMPersistingKeyCreationTimestamp @"deviceCts"
+#define STMPersistingKeyPhantom @"isFantom"
+
+
+#define STMPersistingOptions NSDictionary *
+
+#define STMPersistingOptionRecordstatuses @"createRecordStatuses"
+#define STMPersistingOptionFantoms @"fantoms"
+#define STMPersistingOptionLts @"lts"
+#define STMPersistingOptionLtsNow STMPersistingOptionLts:[STMFunctions stringFromNow]
+#define STMPersistingOptionReturnSaved @"returnSaved"
+#define STMPersistingOptionForceStorage @"forceStorage"
+#define STMPersistingOptionPageSize @"pageSize"
+#define STMPersistingOptionStartPage @"startPage"
+#define STMPersistingOptionOffset @"offset"
+#define STMPersistingOptionOrder @"sortBy"
+#define STMPersistingOptionOrderDirection @"direction"
+#define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
+#define STMPersistingOptionSetTs @"setTs"
+#define STMPersistingOptionOrderDirectionDescValue @"DESC"
+#define STMPersistingOptionOrderDirectionAscValue @"ASC"
+
+#define STMPersistingOptionOrderDirectionDesc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionDescValue
+
+#define STMPersistingOptionOrderDirectionAsc \
+STMPersistingOptionOrderDirection:STMPersistingOptionOrderDirectionAscValue
+
+#define STMPersistingOptionForceStorageCoreData STMPersistingOptionForceStorage:@(STMStorageTypeCoreData)
+#define STMPersistingOptionForceStorageFMDB STMPersistingOptionForceStorage:@(STMStorageTypeFMDB)
+
+#endif /* STMPersisting_h */

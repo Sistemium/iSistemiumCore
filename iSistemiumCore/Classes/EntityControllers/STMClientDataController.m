@@ -8,22 +8,32 @@
 
 #import <AdSupport/AdSupport.h>
 
-#import "STMAppDelegate.h"
+#import "STMKeychain.h"
+
+#import "STMCoreAppDelegate.h"
 #import "STMClientDataController.h"
 #import "STMClientData.h"
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 #import "STMSetting.h"
 #import "STMFunctions.h"
-#import "STMObjectsController.h"
+#import "STMCoreObjectsController.h"
+#import "STMCoreSession.h"
+
+#define DEVICE_UUID_KEY @"deviceUUID"
+
 
 @implementation STMClientDataController
 
 
-+ (STMAppDelegate *)appDelegate {
-    return (STMAppDelegate *)[UIApplication sharedApplication].delegate;
++ (STMCoreAppDelegate *)appDelegate {
+    return (STMCoreAppDelegate *)[UIApplication sharedApplication].delegate;
 }
 
 #pragma mark - clientData properties
+
++ (NSString *)bundleIdentifier {
+    return BUNDLE_DISPLAY_NAME;
+}
 
 + (NSString *)appVersion {
     return BUILD_VERSION;
@@ -47,24 +57,24 @@
     return [[UIDevice currentDevice] name];
 }
 
-+ (NSData *)deviceToken {
-    return [self appDelegate].deviceToken;
++ (NSString *)deviceToken {
+    return [STMFunctions hexStringFromData:[self appDelegate].deviceToken];
 }
 
 +(NSString *)deviceTokenError {
     return [self appDelegate].deviceTokenError;
 }
 
-+ (NSDate *)lastAuth {
-    return [STMAuthController authController].lastAuth;
++ (NSString *)lastAuth {
+    return [STMFunctions stringFromDate:[STMCoreAuthController authController].lastAuth];
 }
 
 + (NSString *)locationServiceStatus {
-    return [[self session].locationTracker locationServiceStatus];
+    return [(STMCoreSession *)self.session locationTracker].locationServiceStatus;
 }
 
 + (NSString *)tokenHash {
-    return [STMAuthController authController].tokenHash;
+    return [STMCoreAuthController authController].tokenHash;
 }
 
 + (NSString *)notificationTypes {
@@ -79,24 +89,31 @@
     return [UIDevice currentDevice].systemVersion;
 }
 
-+ (NSData *)deviceUUID {
++ (NSString *)deviceUUID {
     
-//    NSUUID *identifierForVendor = [UIDevice currentDevice].identifierForVendor;
-//    uuid_t uuid;
-//    [identifierForVendor getUUIDBytes:uuid];
-//    
-//    NSLog(@"identifierForVendor %@", identifierForVendor);
+    NSData *deviceUUID = [STMKeychain loadValueForKey:DEVICE_UUID_KEY];
     
-    NSUUID *advertisingIdentifier = [ASIdentifierManager sharedManager].advertisingIdentifier;
-    uuid_t uuid;
-    [advertisingIdentifier getUUIDBytes:uuid];
-    
-//    NSLog(@"advertisingIdentifier %@", advertisingIdentifier);
+    if (!deviceUUID || deviceUUID.length == 0) {
+        
+        NSUUID *advertisingIdentifier = [ASIdentifierManager sharedManager].advertisingIdentifier;
+        
+        if ([advertisingIdentifier.UUIDString isEqualToString:@"00000000-0000-0000-0000-000000000000"]) {
+            
+            NSUUID *identifierForVendor = [UIDevice currentDevice].identifierForVendor;
+            deviceUUID = [STMFunctions UUIDDataFromNSUUID:identifierForVendor];
 
-    NSData *deviceUUID = [NSData dataWithBytes:uuid length:16];
+        } else {
+            
+            deviceUUID = [STMFunctions UUIDDataFromNSUUID:advertisingIdentifier];
+
+        }
+        
+        [STMKeychain saveValue:deviceUUID forKey:DEVICE_UUID_KEY];
+        
+    }
     
-    return deviceUUID;
-    
+    return [STMFunctions UUIDStringFromUUIDData:deviceUUID].uppercaseString;
+
 }
 
 + (NSNumber *)freeDiskSpace {
@@ -122,11 +139,15 @@
 
 + (void)checkClientData {
 
-    STMClientData *clientData = [self clientData];
+    NSMutableDictionary *clientData = [self clientData].mutableCopy;
     
     if (clientData) {
+    
+        NSString *entityName = NSStringFromClass([STMClientData class]);
         
-        NSSet *keys = [STMObjectsController ownObjectKeysForEntityName:NSStringFromClass([STMClientData class])];
+        NSSet *keys = [[self persistenceDelegate] ownObjectKeysForEntityName:entityName];
+        
+        BOOL haveUpdates = NO;
         
         for (NSString *key in keys) {
             
@@ -137,86 +158,102 @@
 // next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
                 IMP imp = [self methodForSelector:selector];
                 id (*func)(id, SEL) = (void *)imp;
-                id value = func(self, selector);
+                id currentValue = func(self, selector);
                 
-                if (![value isEqual:[clientData valueForKey:key]]) {
+                id storedValue = clientData[key];
+                
+                if (![currentValue isEqual:storedValue]) {
+
+                    if ([STMFunctions isNullBoth:currentValue and:storedValue]) continue;
 
 //                    NSLog(@"%@ was changed", key);
-//                    NSLog(@"client value %@", [clientData valueForKey:key]);
-//                    NSLog(@"value %@", value);
+//                    NSLog(@"client value %@", storedValue);
+//                    NSLog(@"new value %@", currentValue);
                     
-                    [clientData setValue:value forKey:key];
+                    clientData[key] = currentValue;
+                    haveUpdates = YES;
                     
                 }
                 
             }
             
         }
+        
+        if (haveUpdates) {
+
+            [[self persistenceDelegate] mergeAsync:entityName
+                                        attributes:clientData
+                                           options:nil
+                                 completionHandler:nil];
+
+        }
 
     }
-    
-    [[self document] saveDocument:^(BOOL success) {}];
     
 //    NSLog(@"clientData %@", clientData);
 
 }
 
-+ (STMClientData *)clientData {
++ (NSDictionary *)clientData {
+
+    NSString *entityName = NSStringFromClass([STMClientData class]);
     
-    if ([self document].managedObjectContext) {
-        
-        NSString *entityName = NSStringFromClass([STMClientData class]);
-        
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-        
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        STMClientData *clientData = [fetchResult lastObject];
-        
-        if (!clientData) {
-            clientData = (STMClientData *)[STMObjectsController newObjectForEntityName:entityName isFantom:NO];
-        }
-        
-        return clientData;
-        
-    } else {
-        
-        return nil;
-        
-    }
+    NSError *error = nil;
+    NSArray *fetchResult = [[self persistenceDelegate] findAllSync:entityName
+                                                         predicate:nil
+                                                           options:nil
+                                                             error:&error];;
+    NSDictionary *clientData = fetchResult.lastObject;
+    
+    if (!clientData) clientData = @{};
+    
+    return clientData;
     
 }
 
 + (void)checkAppVersion {
     
-    if ([self document].managedObjectContext) {
+    if (self.document.managedObjectContext) {
         
-        STMClientData *clientData = [self clientData];
+        NSMutableDictionary *clientData = [self clientData].mutableCopy;
         
         if (clientData) {
             
             NSString *buildVersion = BUILD_VERSION;
-            if (![clientData.appVersion isEqualToString:buildVersion]) {
-                clientData.appVersion = buildVersion;
+            
+            if (![clientData[@"appVersion"] isEqualToString:buildVersion]) {
+                
+                clientData[@"appVersion"] = buildVersion;
+                
+                [[self persistenceDelegate] mergeAsync:NSStringFromClass([STMClientData class])
+                                            attributes:clientData
+                                               options:nil
+                                     completionHandler:nil];
+
             }
             
             NSString *entityName = NSStringFromClass([STMSetting class]);
             
-            NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-            request.predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
             
-            NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-            STMSetting *availableVersionSetting = [fetchResult lastObject];
+            [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
             
-            if (availableVersionSetting) {
+                [self.document.managedObjectContext performBlockAndWait:^{
                 
-                NSNumber *availableVersion = @([availableVersionSetting.value integerValue]);
-                NSNumber *currentVersion = @([clientData.appVersion integerValue]);
+                    NSDictionary *availableVersionSetting = result.lastObject;
+                    
+                    if (availableVersionSetting) {
+                        
+                        NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
+                        NSNumber *currentVersion = @([clientData[@"appVersion"] integerValue]);
+                        
+                        [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
+                        
+                    }
+
+                }];
                 
-                [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
-                
-            }
+            }];
             
         }
         
@@ -229,37 +266,37 @@
     if ([availableVersion compare:currentVersion] == NSOrderedDescending) {
         
         NSString *entityName = NSStringFromClass([STMSetting class]);
-
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-        request.predicate = [NSPredicate predicateWithFormat:@"name == %@", @"appDownloadUrl"];
         
-        NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:nil];
-        STMSetting *appDownloadUrlSetting = [fetchResult lastObject];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"appDownloadUrl"];
         
-        if (appDownloadUrlSetting) {
+        [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+           
+            NSDictionary *appDownloadUrlSetting = result.lastObject;
             
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            [defaults setObject:@YES forKey:@"newAppVersionAvailable"];
-            [defaults setObject:availableVersion forKey:@"availableVersion"];
-            [defaults setObject:appDownloadUrlSetting.value forKey:@"appDownloadUrl"];
-            [defaults synchronize];
+            if (appDownloadUrlSetting) {
+                
+                [self.userDefaults setObject:@YES forKey:@"newAppVersionAvailable"];
+                [self.userDefaults setObject:availableVersion forKey:@"availableVersion"];
+                [self.userDefaults setObject:appDownloadUrlSetting[@"value"] forKey:@"appDownloadUrl"];
+                [self.userDefaults synchronize];
+                
+                NSDictionary *userInfo = @{@"availableVersion"  : availableVersion,
+                                           @"appDownloadUrl"    : appDownloadUrlSetting[@"value"]};
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_NEW_VERSION_AVAILABLE
+                                                                    object:nil
+                                                                  userInfo:userInfo];
+                
+            }
             
-            NSDictionary *userInfo = @{@"availableVersion": availableVersion, @"appDownloadUrl":appDownloadUrlSetting.value};
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"newAppVersionAvailable"
-                                                                object:nil
-                                                              userInfo:userInfo];
-            
-        }
+        }];
         
     } else {
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:@NO forKey:@"newAppVersionAvailable"];
-        [defaults removeObjectForKey:@"availableVersion"];
-        [defaults removeObjectForKey:@"appDownloadUrl"];
-        [defaults synchronize];
+        [self.userDefaults setObject:@NO forKey:@"newAppVersionAvailable"];
+        [self.userDefaults removeObjectForKey:@"availableVersion"];
+        [self.userDefaults removeObjectForKey:@"appDownloadUrl"];
+        [self.userDefaults synchronize];
         
     }
 

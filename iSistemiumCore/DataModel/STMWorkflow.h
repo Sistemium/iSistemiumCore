@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "STMDatum.h"
 
-#warning should override
-@class STMEntity/*, STMMessage*/;
+@class STMEntity, STMMessage;
 
 NS_ASSUME_NONNULL_BEGIN
 

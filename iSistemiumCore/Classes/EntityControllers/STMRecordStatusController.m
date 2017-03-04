@@ -7,57 +7,64 @@
 //
 
 #import "STMRecordStatusController.h"
-#import "STMObjectsController.h"
 
 
 @implementation STMRecordStatusController
 
-+ (STMRecordStatus *)existingRecordStatusForXid:(NSData *)objectXid {
++ (NSDictionary *)existingRecordStatusForXid:(NSString *)objectXid {
     
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
+    NSError* error;
     
-    NSError *error;
-    NSArray *fetchResult = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.objectXid == %@", objectXid];
     
-    STMRecordStatus *recordStatus = [fetchResult lastObject];
+    NSArray* recordStatus = [[self persistenceDelegate] findAllSync:STM_RECORDSTATUS_NAME predicate:predicate options:nil error:&error];
     
-    return recordStatus;
-    
-}
-
-+ (STMRecordStatus *)recordStatusForObject:(NSManagedObject *)object {
-    
-    NSData *objectXid = [object valueForKey:@"xid"];
-    
-    STMRecordStatus *recordStatus = [self existingRecordStatusForXid:objectXid];
-    
-    if (!recordStatus) {
-        
-        recordStatus = (STMRecordStatus *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMRecordStatus class]) isFantom:NO];
-        recordStatus.objectXid = objectXid;
-        
+    if (error){
+        return nil;
     }
     
-    return recordStatus;
+    if ([recordStatus count] > 0){
+        return recordStatus.firstObject;
+    }
+    
+    return nil;
     
 }
 
 + (NSArray *)recordStatusesForXids:(NSArray *)xids {
     
-    STMFetchRequest *request = [[STMFetchRequest alloc] initWithEntityName:NSStringFromClass([STMRecordStatus class])];
-    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"objectXid IN %@", xids];
     
-    request.sortDescriptors = @[sortDescriptor];
-    request.predicate = predicate;
-    
     NSError *error;
-    NSArray *recordStatuses = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSArray *recordStatuses = [[self persistenceDelegate] findAllSync:STM_RECORDSTATUS_NAME predicate:predicate options:nil error:&error];
 
     return recordStatuses;
     
+}
+
+
+#pragma mark - PersistingMergeInterceptor protocol
+
+
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction {
+    
+    if ([options[STMPersistingOptionRecordstatuses] isEqual:@NO]) return attributes;
+    
+    if ([STMFunctions isNotNullAndTrue:attributes[@"isRemoved"]]) {
+        
+        NSString *objectXid = attributes[@"objectXid"];
+        NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];
+        NSPredicate *predicate = [transaction.modellingDelegate primaryKeyPredicateEntityName:entityNameToDestroy values:@[objectXid]];
+        
+        if (predicate && [transaction.modellingDelegate isConcreteEntityName:entityNameToDestroy]) {
+            [transaction destroyWithoutSave:entityNameToDestroy predicate:predicate options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
+        }
+        
+    }
+    
+    if ([STMFunctions isNotNullAndTrue:attributes[@"isTemporary"]]) return nil;
+
+    return attributes;
 }
 
 @end

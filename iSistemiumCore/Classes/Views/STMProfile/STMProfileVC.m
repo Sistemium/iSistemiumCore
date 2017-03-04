@@ -8,23 +8,24 @@
 
 #import "STMProfileVC.h"
 
-#import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSessionManager.h"
+#import "STMCoreSession.h"
 
-#import "STMLocationTracker.h"
-#import "STMSyncer.h"
+#import "STMCoreLocationTracker.h"
 #import "STMEntityController.h"
-#import "STMPicturesController.h"
-#import "STMSocketController.h"
+#import "STMCorePicturesController.h"
 
-#import "STMAuthController.h"
-#import "STMRootTBC.h"
+#import "STMCoreAuthController.h"
+#import "STMCoreRootTBC.h"
 
-#import "STMUI.h"
+#import "STMCoreUI.h"
 #import "STMFunctions.h"
 
 #import <Reachability/Reachability.h>
 
+#import "iSistemiumCore-Swift.h"
+
+#import "STMUserDefaults.h"
 
 @interface STMProfileVC () <UIAlertViewDelegate, UIActionSheetDelegate>
 
@@ -45,6 +46,8 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *nonloadedPicturesButton;
 
+@property (weak, nonatomic) IBOutlet UIButton *unusedPicturesButton;
+
 @property (weak, nonatomic) IBOutlet UIImageView *uploadImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *downloadImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *lastLocationImageView;
@@ -57,14 +60,16 @@
 @property (nonatomic, strong) Reachability *internetReachability;
 
 @property (nonatomic) BOOL downloadAlertWasShown;
-@property (nonatomic) BOOL newsReceiving;
 
-@property (nonatomic, strong) STMSpinnerView *spinner;
+@property (nonatomic, strong) STMSpinnerView *sendSpinner;
+@property (nonatomic, strong) STMSpinnerView *receiveSpinner;
 
 @property (nonatomic, strong) UIAlertView *locationDisabledAlert;
 @property (nonatomic) BOOL locationDisabledAlertIsShown;
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
+
+@property (nonatomic) NSUInteger fantomsCount;
 
 
 @end
@@ -72,16 +77,20 @@
 
 @implementation STMProfileVC
 
-- (STMLocationTracker *)locationTracker {
-    return [(STMSession *)[STMSessionManager sharedManager].currentSession locationTracker];
+- (STMCoreLocationTracker *)locationTracker {
+    return [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 }
 
-- (STMSyncer *)syncer {
-    return [[STMSessionManager sharedManager].currentSession syncer];
+- (id <STMSyncer>)syncer {
+    return [STMCoreSessionManager sharedManager].currentSession.syncer;
 }
 
-- (STMSettingsController *)settingsController {
-    return [[STMSessionManager sharedManager].currentSession settingsController];
+- (id <STMSettingsController>)settingsController {
+    return [[STMCoreSessionManager sharedManager].currentSession settingsController];
+}
+
+- (id <STMCoreUserDefaults>)userDefaults {
+    return [STMUserDefaults standardUserDefaults];
 }
 
 - (NSString *)requestLocationServiceAuthorization {
@@ -114,63 +123,90 @@
     
 }
 
-- (void)syncerStatusChanged:(NSNotification *)notification {
+- (void)hideProgressBar {
     
-    if ([notification.object isKindOfClass:[STMSyncer class]]) {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        STMSyncer *syncer = notification.object;
+        self.progressBar.hidden = YES;
+        [UIApplication sharedApplication].idleTimerDisabled = NO;
         
-        STMSyncerState fromState = [notification.userInfo[@"from"] intValue];
-        
-        if (syncer.syncerState == STMSyncerIdle) {
-            
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                
-                sleep(1);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    self.progressBar.hidden = YES;
-                    
-                });
-                
-            });
-            
-            if (!self.downloadAlertWasShown) [self showDownloadAlert];
-            
-        } else {
-            
-            self.progressBar.hidden = NO;
-            self.totalEntityCount = 1;
-            
-        }
-        
-        if (fromState == STMSyncerReceiveData) {
-            
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                
-                sleep(5);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
-                    [self hideNumberOfObjects];
-                    
-                });
-                
-            });
-            
-        }
-        
-    }
+    }];
+    
+}
+
+- (void)syncerReceiveStarted {
+    
+    self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
 
     [self updateSyncInfo];
     
 }
 
+- (void)syncerReceiveFinished {
+    
+    [self updateSyncInfo];
+    [self hideProgressBar];
+
+    [self performSelector:@selector(hideNumberOfObjects)
+               withObject:nil
+               afterDelay:2];
+    
+}
+
 - (void)updateSyncInfo {
     
-    [self updateSyncDatesLabels];
-    [self updateCloudImages];
-    [self updateNonloadedPicturesInfo];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self updateSyncDatesLabels];
+        [self updateCloudImages];
+        [self updateNonloadedPicturesInfo];
+        
+    });
+    
+}
 
+- (void)updateUploadSyncProgressBar {
+
+    // TODO: should be implemented later
+
+}
+
+- (void)defantomizingProgressBarStart:(NSNotification *)notification {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self setColorForSyncImageView];
+
+        self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+        [UIApplication sharedApplication].idleTimerDisabled = YES;
+        
+        self.progressBar.hidden = NO;
+        self.progressBar.progress = 0.0;
+        
+    });
+    
+}
+
+- (void)defantomizingProgressBarUpdate:(NSNotification *)notification {
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSUInteger currentFantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
+        self.progressBar.hidden = NO;
+        self.progressBar.progress = (self.fantomsCount - currentFantomsCount) / (float)self.fantomsCount;
+    });
+}
+
+- (void)defantomizingProgressBarFinish {
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        [self hideProgressBar];
+        [self setColorForSyncImageView];
+        
+    }];
+    
+    if (!self.downloadAlertWasShown) [self showDownloadAlert];
+    
 }
 
 
@@ -178,53 +214,97 @@
 
 - (void)updateCloudImages {
     
-    [self setImageForSyncImageView];
-    [self setColorForSyncImageView];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self setImageForSyncImageView];
+        [self setColorForSyncImageView];
+        
+    });
     
 }
 
 - (void)setImageForSyncImageView {
     
-    STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfUnsyncedObjects] > 0);
-
-    [self.spinner removeFromSuperview];
-    
     NSString *imageName = nil;
     
-    if ([STMSocketController socketIsAvailable]) {
-        
-        switch (syncer.syncerState) {
-            case STMSyncerIdle: {
-                imageName = (hasObjectsToUpload) ? @"Upload To Cloud-100" : @"Download From Cloud-100";
-                break;
-            }
-            case STMSyncerSendData:
-            case STMSyncerSendDataOnce: {
-                imageName = @"Upload To Cloud-100";
-                self.spinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds indicatorStyle:UIActivityIndicatorViewStyleGray backgroundColor:[UIColor whiteColor] alfa:1];
-                [self.uploadImageView addSubview:self.spinner];
-                break;
-            }
-            case STMSyncerReceiveData: {
-                imageName = @"Download From Cloud-100";
-                self.spinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds indicatorStyle:UIActivityIndicatorViewStyleGray backgroundColor:[UIColor whiteColor] alfa:1];
-                [self.downloadImageView addSubview:self.spinner];
-                break;
-            }
-            default: {
-                imageName = @"Download From Cloud-100";
-                break;
-            }
-        }
+    if (self.syncer.transportIsReady) {
 
+        imageName = @"Download From Cloud-100";
+        [self checkSpinnerStates];
+        
     } else {
         
         imageName = @"No connection Cloud-100";
         
     }
     
-    self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    });
+}
+
+- (void)checkSpinnerStates {
+    
+    (self.syncer.isSendingData) ? [self startSendSpinner] : [self stopSendSpinner];
+    (self.syncer.isReceivingData) ? [self startReceiveSpinner] : [self stopReceiveSpinner];
+
+}
+
+- (void)startSendSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        if (!self.sendSpinner) {
+            
+            self.sendSpinner = [STMSpinnerView spinnerViewWithFrame:self.uploadImageView.bounds
+                                                     indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                    backgroundColor:[UIColor whiteColor]
+                                                               alfa:1];
+            [self.uploadImageView addSubview:self.sendSpinner];
+            
+        }
+
+    });
+
+}
+
+- (void)startReceiveSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        if (!self.receiveSpinner) {
+            
+            self.receiveSpinner = [STMSpinnerView spinnerViewWithFrame:self.downloadImageView.bounds
+                                                        indicatorStyle:UIActivityIndicatorViewStyleGray
+                                                       backgroundColor:[UIColor whiteColor]
+                                                                  alfa:1];
+            [self.downloadImageView addSubview:self.receiveSpinner];
+
+        }
+        
+    });
+    
+}
+
+- (void)stopSendSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.sendSpinner removeFromSuperview];
+        self.sendSpinner = nil;
+        
+    });
+    
+}
+
+- (void)stopReceiveSpinner {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.receiveSpinner removeFromSuperview];
+        self.receiveSpinner = nil;
+        
+    });
     
 }
 
@@ -232,39 +312,40 @@
     
     [self removeGestureRecognizersFromCloudImages];
     
-    STMSyncer *syncer = [self syncer];
-    BOOL hasObjectsToUpload = ([syncer numbersOfUnsyncedObjects] > 0);
+    BOOL hasObjectsToUpload = NO;// ([syncer numbersOfAllUnsyncedObjects] > 0);
     UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
     SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
     
     NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
     
-    if (networkStatus == NotReachable || ![STMSocketController socketIsAvailable]) {
+    if (networkStatus == NotReachable || !self.syncer.transportIsReady) {
         
         color = [color colorWithAlphaComponent:0.3];
         [self.syncImageView setTintColor:color];
         
     } else {
         
-        if (syncer.syncerState == STMSyncerIdle) {
-            
+//        if (self.syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
+        
             [self.syncImageView setTintColor:color];
             
-            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:cloudTapSelector];
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                  action:cloudTapSelector];
             [self.syncImageView addGestureRecognizer:tap];
             
             if (hasObjectsToUpload) {
                 
-                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(uploadCloudLongPressed:)];
+                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                                                                        action:@selector(uploadCloudLongPressed:)];
                 [self.syncImageView addGestureRecognizer:longPress];
                 
             }
             
-        } else {
-            
-            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
-            
-        }
+//        } else {
+//            
+//            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
+//            
+//        }
         
     }
     
@@ -289,9 +370,7 @@
         UILongPressGestureRecognizer *longPressGesture = (UILongPressGestureRecognizer *)sender;
         
         if (longPressGesture.state == UIGestureRecognizerStateBegan) {
-            
-            [self syncer].syncerState = STMSyncerSendData;
-            
+            [self.syncer sendData];
         }
         
     }
@@ -299,73 +378,43 @@
 }
 
 - (void)uploadCloudTapped {
-    [self syncer].syncerState = STMSyncerSendDataOnce;
+    [self.syncer sendData];
 }
 
 - (void)downloadCloudTapped {
-    
-//    [[self syncer] afterSendFurcation];
-    [self syncer].syncerState = STMSyncerReceiveData;
-    
+    [self.syncer receiveData];
 }
 
 
 #pragma mark -
 
-- (void)syncerNewsHaveObjects:(NSNotification *)notification {
-    
-    self.newsReceiving = YES;
-    self.totalEntityCount = [(notification.userInfo)[@"totalNumberOfObjects"] floatValue];
-    
-}
-
 - (void)entitiesReceivingDidFinish {
-
-    self.newsReceiving = NO;
     self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
-    
 }
 
 - (void)entityCountdownChange:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSyncer class]] && !self.newsReceiving) {
-        
-        float countdownValue = [(notification.userInfo)[@"countdownValue"] floatValue];
-        self.progressBar.progress = (self.totalEntityCount - countdownValue) / self.totalEntityCount;
-        
-    }
+    float countdownValue = [(notification.userInfo)[@"countdownValue"] floatValue];
+    self.progressBar.hidden = NO;
+    self.progressBar.progress = (self.totalEntityCount - countdownValue) / self.totalEntityCount;
     
 }
 
 - (void)getBunchOfObjects:(NSNotification *)notification {
     
-    if ([notification.object isKindOfClass:[STMSyncer class]]) {
-        
-        NSNumber *numberOfObjects = notification.userInfo[@"count"];
-        
-        numberOfObjects = @(self.previousNumberOfObjects + numberOfObjects.intValue);
-        
-        NSString *pluralType = [STMFunctions pluralTypeForCount:numberOfObjects.intValue];
-        NSString *numberOfObjectsString = [pluralType stringByAppendingString:@"OBJECTS"];
-        
-        NSString *receiveString = ([pluralType isEqualToString:@"1"]) ? NSLocalizedString(@"RECEIVE1", nil) : NSLocalizedString(@"RECEIVE", nil);
-        
-        self.numberOfObjectLabel.text = [NSString stringWithFormat:@"%@ %@ %@", receiveString, numberOfObjects, NSLocalizedString(numberOfObjectsString, nil)];
-        
-        self.previousNumberOfObjects = numberOfObjects.intValue;
-        
-        if (self.newsReceiving) {
-            
-            self.progressBar.progress = numberOfObjects.floatValue / self.totalEntityCount;
-            
-        }
-        
-    }
+    NSNumber *numberOfObjects = notification.userInfo[@"count"];
     
-}
-
-- (void)syncerDidChangeContent:(NSNotification *)notification {
-    [self updateCloudImages];
+    numberOfObjects = @(self.previousNumberOfObjects + numberOfObjects.intValue);
+    
+    NSString *pluralType = [STMFunctions pluralTypeForCount:numberOfObjects.intValue];
+    NSString *numberOfObjectsString = [pluralType stringByAppendingString:@"OBJECTS"];
+    
+    NSString *receiveString = ([pluralType isEqualToString:@"1"]) ? NSLocalizedString(@"RECEIVE1", nil) : NSLocalizedString(@"RECEIVE", nil);
+    
+    self.numberOfObjectLabel.text = [NSString stringWithFormat:@"%@ %@ %@", receiveString, numberOfObjects, NSLocalizedString(numberOfObjectsString, nil)];
+    
+    self.previousNumberOfObjects = numberOfObjects.intValue;
+    
 }
 
 - (void)socketAuthorizationSuccess {
@@ -374,13 +423,12 @@
 
 - (void)hideNumberOfObjects {
     
-    if ([[[STMSessionManager sharedManager].currentSession syncer] syncerState] != STMSyncerReceiveData) {
+    dispatch_async(dispatch_get_main_queue(), ^{
         
         self.previousNumberOfObjects = 0;
         self.numberOfObjectLabel.text = @"";
         
-    }
-    
+    });
 }
 
 - (void)showUpdateButton {
@@ -407,28 +455,18 @@
 
 - (void)updateSyncDatesLabels {
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *userID = [STMCoreAuthController authController].userID;
     
-    NSString *key = [@"sendDate" stringByAppendingString:[STMAuthController authController].userID];
-    NSString *sendDateString = [defaults objectForKey:key];
+    if (!userID) return;
     
-    key = [@"receiveDate" stringByAppendingString:[STMAuthController authController].userID];
-    NSString *receiveDateString = [defaults objectForKey:key];
+    NSString *key = [@"sendDate" stringByAppendingString:userID];
+    NSString *sendDateString = [self.userDefaults objectForKey:key];
+    
+    key = [@"receiveDate" stringByAppendingString:userID];
+    NSString *receiveDateString = [self.userDefaults objectForKey:key];
     
     self.sendDateLabel.text = (sendDateString) ? sendDateString : nil;
     self.receiveDateLabel.text = (receiveDateString) ? receiveDateString : nil;
-
-//    if (sendDateString) {
-//        self.sendDateLabel.text = [NSLocalizedString(@"SEND DATE", nil) stringByAppendingString:sendDateString];
-//    } else {
-//        self.sendDateLabel.text = nil;
-//    }
-//    
-//    if (receiveDateString) {
-//        self.receiveDateLabel.text = [NSLocalizedString(@"RECEIVE DATE", nil) stringByAppendingString:receiveDateString];
-//    } else {
-//        self.receiveDateLabel.text = nil;
-//    }
     
 }
 
@@ -439,11 +477,18 @@
     
 }
 
+- (void)setupUnusedPicturesButton {
+    
+    [self.unusedPicturesButton setTitleColor:ACTIVE_BLUE_COLOR forState:UIControlStateNormal];
+    [self.unusedPicturesButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    
+}
+
 - (void)updateNonloadedPicturesInfo {
 
-    self.nonloadedPicturesButton.enabled = ([self syncer].syncerState == STMSyncerIdle);
+    self.nonloadedPicturesButton.enabled = YES;
     
-    NSUInteger unloadedPicturesCount = [[STMPicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
     NSString *title = @"";
     NSString *badgeValue = nil;
@@ -461,7 +506,7 @@
         self.downloadAlertWasShown = NO;
         self.nonloadedPicturesButton.enabled = NO;
         
-        [STMPicturesController sharedController].downloadingPictures = NO;
+        [STMCorePicturesController sharedController].downloadingPictures = NO;
         [UIApplication sharedApplication].idleTimerDisabled = NO;
 
     }
@@ -469,8 +514,23 @@
     [self.nonloadedPicturesButton setTitle:title forState:UIControlStateNormal];
     self.navigationController.tabBarItem.badgeValue = badgeValue;
     
-    UIColor *titleColor = [STMPicturesController sharedController].downloadingPictures ? ACTIVE_BLUE_COLOR : [UIColor redColor];
+    UIColor *titleColor = [STMCorePicturesController sharedController].downloadingPictures ? ACTIVE_BLUE_COLOR : [UIColor redColor];
     [self.nonloadedPicturesButton setTitleColor:titleColor forState:UIControlStateNormal];
+    
+}
+
+- (void)updateUnusedPicturesInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([STMGarbageCollector.unusedImageFiles count] == 0) {
+            self.unusedPicturesButton.hidden = YES;
+        }else{
+            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImageFiles count]];
+            NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
+            NSString *unusedCount = [NSString stringWithFormat:@"%@UNUSED", pluralString];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+        }
+    });
     
 }
 
@@ -486,7 +546,7 @@
         actionSheet.title = NSLocalizedString(@"UNLOADED PICTURES", nil);
         actionSheet.delegate = self;
 
-        if ([STMPicturesController sharedController].downloadingPictures) {
+        if ([STMCorePicturesController sharedController].downloadingPictures) {
         
             actionSheet.tag = 2;
             [actionSheet addButtonWithTitle:NSLocalizedString(@"DOWNLOAD STOP", nil)];
@@ -504,6 +564,19 @@
         
     }];
 
+}
+- (IBAction)unusedPicturesButtonPressed:(id)sender {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        UIActionSheet *actionSheet = [[UIActionSheet alloc] init];
+        actionSheet.tag = 4;
+        actionSheet.title = NSLocalizedString(@"UNUSED PICTURES", nil);
+        actionSheet.delegate = self;
+        actionSheet.destructiveButtonIndex = [actionSheet addButtonWithTitle:NSLocalizedString(@"DELETE", nil)];
+        [actionSheet addButtonWithTitle:NSLocalizedString(@"CLOSE", nil)];
+        [actionSheet showInView:self.view];
+        
+    }];
 }
 
 - (void)checkDownloadingConditions {
@@ -534,8 +607,8 @@
 
 - (void)startPicturesDownloading {
     
-    [STMPicturesController checkPhotos];
-    [STMPicturesController sharedController].downloadingPictures = YES;
+    [STMCorePicturesController checkPhotos];
+    [STMCorePicturesController sharedController].downloadingPictures = YES;
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 
     [self updateNonloadedPicturesInfo];
@@ -544,7 +617,7 @@
 
 - (void)stopPicturesDownloading {
     
-    [STMPicturesController sharedController].downloadingPictures = NO;
+    [STMCorePicturesController sharedController].downloadingPictures = NO;
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     
     [self updateNonloadedPicturesInfo];
@@ -553,7 +626,7 @@
 
 - (void)showDownloadAlert {
     
-    NSUInteger unloadedPicturesCount = [[STMPicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
     
     if (unloadedPicturesCount > 0) {
         
@@ -614,7 +687,7 @@
 
 - (void)enableWWANDownloading {
     
-    STMSettingsController *settingsController = [[STMSessionManager sharedManager].currentSession settingsController];
+    id <STMSettingsController> settingsController = [[STMCoreSessionManager sharedManager].currentSession settingsController];
 
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
@@ -650,6 +723,16 @@
 
             }
             break;
+        case 4:
+            if (buttonIndex == 0) {
+                
+                [STMGarbageCollector removeUnusedImages];
+                self.unusedPicturesButton.enabled = NO;
+                [self updateUnusedPicturesInfo];
+                
+            }
+            
+            break;
 
         default:
             break;
@@ -665,7 +748,7 @@
             
         case 1:
             if (buttonIndex == 1) {
-                [[STMAuthController authController] logout];
+                [[STMCoreAuthController authController] logout];
             }
             break;
 
@@ -679,6 +762,15 @@
             if (buttonIndex == 1) {
                 [self showEnableWWANActionSheet];
             }
+            break;
+
+        case 4:
+            if (buttonIndex == 0) {
+                [STMGarbageCollector removeUnusedImages];
+                self.unusedPicturesButton.enabled = NO;
+                [self updateUnusedPicturesInfo];
+            }
+            
             break;
 
         default:
@@ -709,9 +801,12 @@
 
 - (void)setupLabels {
     
-    self.nameLabel.text = [STMAuthController authController].userName;
-    self.phoneNumberLabel.text = [STMAuthController authController].phoneNumber;
-    self.progressBar.hidden = ([[STMSessionManager sharedManager].currentSession syncer].syncerState == STMSyncerIdle);
+    self.nameLabel.text = [STMCoreAuthController authController].userName;
+    self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
+
+    BOOL syncerIsIdle = YES;
+    self.progressBar.hidden = syncerIsIdle;
+    [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     
     self.locationWarningLabel.text = @"";
     
@@ -737,7 +832,7 @@
 
     if (![self.requestLocationServiceAuthorization isEqualToString:@"noRequest"]) {
 
-        BOOL isDriver = [[STMSettingsController stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
+        BOOL isDriver = [[STMCoreSettingsController stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
         
         self.lastLocationImageView.hidden = NO;
         [self setupLastLocationLabel];
@@ -838,6 +933,8 @@
             [self showLocationDisabledAlert];
         }
 
+    } else {
+        [self showLocationDisabledAlert];
     }
 
 }
@@ -965,56 +1062,54 @@
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     
-    STMSyncer *syncer = [self syncer];
-    
-    [nc addObserver:self
-           selector:@selector(syncerStatusChanged:)
-               name:@"syncStatusChanged"
-             object:syncer];
-    
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
-               name:@"sendFinished"
-             object:syncer];
+               name:NOTIFICATION_SYNCER_SEND_STARTED
+             object:self.syncer];
 
     [nc addObserver:self
+           selector:@selector(updateUploadSyncProgressBar)
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
+             object:self.syncer];
+    
+    [nc addObserver:self
            selector:@selector(updateSyncInfo)
-               name:@"bunchOfObjectsSended"
-             object:syncer];
+               name:NOTIFICATION_SYNCER_SEND_FINISHED
+             object:self.syncer];
+
+    [nc addObserver:self
+           selector:@selector(syncerReceiveStarted)
+               name:NOTIFICATION_SYNCER_RECEIVE_STARTED
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(getBunchOfObjects:)
+               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(syncerReceiveFinished)
+               name:NOTIFICATION_SYNCER_RECEIVE_FINISHED
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(entityCountdownChange:)
-               name:@"entityCountdownChange"
-             object:syncer];
-
-    [nc addObserver:self
-           selector:@selector(syncerNewsHaveObjects:)
-               name:@"syncerNewsHaveObjects"
-             object:syncer];
+               name:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
+             object:nil];
     
     [nc addObserver:self
            selector:@selector(entitiesReceivingDidFinish)
-               name:@"entitiesReceivingDidFinish"
-             object:syncer];
-    
-    [nc addObserver:self
-           selector:@selector(getBunchOfObjects:)
-               name:NOTIFICATION_SYNCER_GET_BUNCH_OF_OBJECTS
-             object:syncer];
-    
-    [nc addObserver:self
-           selector:@selector(syncerDidChangeContent:)
-               name:@"syncerDidChangeContent"
+               name:NOTIFICATION_SYNCER_RECEIVED_ENTITIES
              object:nil];
     
     [nc addObserver:self
            selector:@selector(socketAuthorizationSuccess)
-               name:@"socketAuthorizationSuccess"
+               name:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS
              object:nil];
     
     [nc addObserver:self
            selector:@selector(newAppVersionAvailable:)
-               name:@"newAppVersionAvailable"
+               name:NOTIFICATION_NEW_VERSION_AVAILABLE
              object:nil];
     
     [nc addObserver:self
@@ -1055,7 +1150,7 @@
     [nc addObserver:self
            selector:@selector(nonloadedPicturesCountDidChange)
                name:@"nonloadedPicturesCountDidChange"
-             object:[STMPicturesController sharedController]];
+             object:[STMCorePicturesController sharedController]];
     
     [nc addObserver:self
            selector:@selector(settingsChanged:)
@@ -1072,12 +1167,32 @@
                name:NOTIFICATION_SESSION_STATUS_CHANGED
              object:nil];
     
+    [nc addObserver:self
+           selector:@selector(updateUnusedPicturesInfo)
+               name:@"unusedImageRemoved"
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarStart:)
+               name:NOTIFICATION_DEFANTOMIZING_START
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarUpdate:)
+               name:NOTIFICATION_DEFANTOMIZING_UPDATE
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(defantomizingProgressBarFinish)
+               name:NOTIFICATION_DEFANTOMIZING_FINISH
+             object:nil];
+
 }
 
 - (void)sessionStatusChanged {
     
     
-    if ([[[STMSessionManager sharedManager].currentSession status] isEqualToString:@"running"]) {
+    if ([STMCoreSessionManager sharedManager].currentSession.status == STMSessionRunning) {
     
         [self updateCloudImages];
         [self updateSyncDatesLabels];
@@ -1115,6 +1230,8 @@
     [self updateSyncDatesLabels];
     [self setupNonloadedPicturesButton];
     [self updateNonloadedPicturesInfo];
+    [self setupUnusedPicturesButton];
+    [self updateUnusedPicturesInfo];
     
     [self addObservers];
     [self startReachability];
@@ -1135,11 +1252,11 @@
     
     [super viewWillAppear:animated];
     
-    if ([STMRootTBC sharedRootVC].newAppVersionAvailable) {
-        [[STMRootTBC sharedRootVC] newAppVersionAvailable:nil];
+    if ([STMCoreRootTBC sharedRootVC].newAppVersionAvailable) {
+        [[STMCoreRootTBC sharedRootVC] newAppVersionAvailable:nil];
     }
     
-    if ([STMPicturesController sharedController].downloadingPictures) {
+    if ([STMCorePicturesController sharedController].downloadingPictures) {
         [UIApplication sharedApplication].idleTimerDisabled = YES;
     }
     

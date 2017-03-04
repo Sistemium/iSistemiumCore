@@ -1,9 +1,10 @@
 {
     "STMAuth"               : "STMAuth",
     "STMLogs"               : null,
+    "STMMessages"           : "STMMessages",
     "STMProfile"            : "STMProfile",
+    "STMScannerInfo"        : "STMScannerInfo",
     "STMSettings"           : "STMSettings",
     "STMWebView"            : "STMWebView",
-    "STMWKWebView"          : "STMWKWebView",
-    "STMScannerInfo"        : "STMScannerInfo"
+    "STMWKWebView"          : "STMWKWebView"
 }

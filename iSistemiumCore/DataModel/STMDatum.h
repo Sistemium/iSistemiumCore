@@ -15,8 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface STMDatum : NSManagedObject
 
 - (NSString *)currentChecksum;
-- (NSDictionary *)propertiesForKeys:(NSArray *)keys;
-- (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys;
+
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls;
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData;
+
+- (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys withNulls:(BOOL)withNulls;
+
+- (BOOL)isWaitingToSync;
 
 
 @end

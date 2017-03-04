@@ -6,10 +6,9 @@
 //  Copyright (c) 2013 Maxim Grigoriev. All rights reserved.
 //
 
-#import "STMSettingsController.h"
 #import "STMSettingsTVC.h"
-#import "STMSessionManager.h"
-#import "STMSession.h"
+#import "STMCoreSessionManager.h"
+#import "STMCoreSession.h"
 #import "STMSetting.h"
 #import "STMSettingsData.h"
 
@@ -60,7 +59,7 @@
 
 - (id <STMSession>)session {
     
-    return [STMSessionManager sharedManager].currentSession;
+    return [STMCoreSessionManager sharedManager].currentSession;
     
 }
 
@@ -77,15 +76,13 @@
 - (STMSetting *)settingObjectForIndexPath:(NSIndexPath *)indexPath {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.group == %@ && SELF.name == %@", [self groupNames][indexPath.section], [self settingNameForIndexPath:indexPath]];
-    return [[[self.session.settingsController currentSettings] filteredArrayUsingPredicate:predicate] lastObject];
+    return [self.session.settingsController.currentSettings filteredArrayUsingPredicate:predicate].lastObject;
     
 }
 
 - (NSArray *)groupNames {
     
-//    return [[self controlsSettings] valueForKey:@"groupNames"];
-    
-    return [(STMSettingsController *)[self.session settingsController] groupNames];
+    return [[self.session settingsController] groupNames];
     
 }
 
@@ -511,9 +508,8 @@
 
     self.title = NSLocalizedString(@"SETTINGS", @"");
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsChanged:) name:@"settingsChanged" object:self.session];
+    [self.session addObserver:self selector:@selector(settingsChanged:) name:STM_SESSION_SETTINGS_CHANGED];
 
-    
 }
 
 //- (void)viewWillAppear:(BOOL)animated {
@@ -533,7 +529,7 @@
     
     if ([STMFunctions shouldHandleMemoryWarningFromVC:self]) {
         
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"settingsChanged" object:self.session];
+        [self.session removeObserver:self];
         [STMFunctions nilifyViewForVC:self];
         
     }

@@ -1,8 +1,8 @@
 //
 //  STMClientData+CoreDataProperties.h
-//  iSistemium
+//  iSistemiumCore
 //
-//  Created by Maxim Grigoriev on 08/02/16.
+//  Created by Maxim Grigoriev on 01/07/16.
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -22,10 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSDate *deviceCts;
 @property (nullable, nonatomic, retain) NSString *deviceName;
 @property (nullable, nonatomic, retain) NSString *devicePlatform;
-@property (nullable, nonatomic, retain) NSData *deviceToken;
+@property (nullable, nonatomic, retain) NSString *deviceToken;
 @property (nullable, nonatomic, retain) NSString *deviceTokenError;
 @property (nullable, nonatomic, retain) NSDate *deviceTs;
-@property (nullable, nonatomic, retain) NSData *deviceUUID;
+@property (nullable, nonatomic, retain) NSString *deviceUUID;
 @property (nullable, nonatomic, retain) NSNumber *freeDiskSpace;
 @property (nullable, nonatomic, retain) NSNumber *id;
 @property (nullable, nonatomic, retain) NSNumber *isFantom;
@@ -35,11 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSString *notificationTypes;
 @property (nullable, nonatomic, retain) NSData *ownerXid;
 @property (nullable, nonatomic, retain) NSString *source;
-@property (nullable, nonatomic, retain) NSDate *sqts;
-@property (nullable, nonatomic, retain) NSDate *sts;
 @property (nullable, nonatomic, retain) NSString *systemVersion;
+@property (nullable, nonatomic, retain) NSString *target;
 @property (nullable, nonatomic, retain) NSString *tokenHash;
 @property (nullable, nonatomic, retain) NSData *xid;
+@property (nullable, nonatomic, retain) NSString *bundleIdentifier;
 
 @end
 

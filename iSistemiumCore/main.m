@@ -8,12 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "STMAppDelegate.h"
-#import "STMApplication.h"
+#import "STMCoreAppDelegate.h"
+#import "STMCoreApplication.h"
 
 int main(int argc, char * argv[])
 {
     @autoreleasepool {
-        return UIApplicationMain(argc, argv, NSStringFromClass([STMApplication class]), NSStringFromClass([STMAppDelegate class]));
+        return UIApplicationMain(argc, argv, NSStringFromClass([STMCoreApplication class]), NSStringFromClass([STMCoreAppDelegate class]));
     }
 }

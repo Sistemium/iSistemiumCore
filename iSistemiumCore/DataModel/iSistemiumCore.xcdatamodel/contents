@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10171" systemVersion="15E65" minimumToolsVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10174" systemVersion="15F34" minimumToolsVersion="Automatic">
     <entity name="STMBarCodeScan" representedClassName="STMBarCodeScan" syncable="YES">
         <attribute name="code" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
@@ -10,9 +10,9 @@
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
         <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="STMBarCodeType" representedClassName="STMBarCodeType" syncable="YES">
@@ -25,10 +25,9 @@
         <attribute name="mask" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="symbology" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
@@ -42,14 +41,14 @@
         <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="STMClientData" representedClassName="STMClientData" syncable="YES">
         <attribute name="appVersion" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="buildType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="bundleIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bundleVersion" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
@@ -67,10 +66,9 @@
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="notificationTypes" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="systemVersion" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="tokenHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
@@ -84,45 +82,11 @@
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
-    <entity name="STMDatum" representedClassName="STMDatum" syncable="YES">
-        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
-        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
-        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-    </entity>
-    <entity name="STMEntity" representedClassName="STMEntity" syncable="YES">
-        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
-        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="eTag" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
-        <attribute name="isUploadable" optional="YES" attributeType="Boolean" syncable="YES"/>
-        <attribute name="lifeTime" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
-        <attribute name="lifeTimeDateField" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="roleName" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="roleOwner" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="workflow" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <relationship name="wf" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMWorkflow" inverseName="entities" inverseEntity="STMWorkflow" syncable="YES"/>
-    </entity>
-    <entity name="STMLocation" representedClassName="STMLocation" syncable="YES">
+    <entity name="STMCoreLocation" representedClassName="STMCoreLocation" syncable="YES">
         <attribute name="altitude" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="course" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
@@ -136,34 +100,18 @@
         <attribute name="longitude" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="speed" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="verticalAccuracy" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="STMPhoto" inverseName="location" inverseEntity="STMPhoto" syncable="YES"/>
+        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="STMCorePhoto" inverseName="location" inverseEntity="STMCorePhoto" syncable="YES"/>
     </entity>
-    <entity name="STMLogMessage" representedClassName="STMLogMessage" syncable="YES">
-        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
-        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
-        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
-        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="text" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    <entity name="STMCorePhoto" representedClassName="STMCorePhoto" parentEntity="STMCorePicture" syncable="YES">
+        <relationship name="location" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMCoreLocation" inverseName="photos" inverseEntity="STMCoreLocation" syncable="YES"/>
     </entity>
-    <entity name="STMPhoto" representedClassName="STMPhoto" isAbstract="YES" parentEntity="STMPicture" syncable="YES">
-        <relationship name="location" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMLocation" inverseName="photos" inverseEntity="STMLocation" syncable="YES"/>
-    </entity>
-    <entity name="STMPicture" representedClassName="STMPicture" isAbstract="YES" syncable="YES">
+    <entity name="STMCorePicture" representedClassName="STMCorePicture" isAbstract="YES" syncable="YES">
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
         <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
@@ -178,10 +126,107 @@
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="picturesInfo" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="resizedImagePath" optional="YES" attributeType="String" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="thumbnailHref" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="STMDatum" representedClassName="STMDatum" syncable="YES">
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="STMEntity" representedClassName="STMEntity" syncable="YES">
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="eTag" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="isResolveFantoms" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isUploadable" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lifeTime" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="lifeTimeDateField" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="roleName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="roleOwner" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="workflow" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="wf" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMWorkflow" inverseName="entities" inverseEntity="STMWorkflow" syncable="YES"/>
+    </entity>
+    <entity name="STMEntityTemplate" syncable="YES">
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="STMJson" representedClassName="STMJson" syncable="YES">
+        <attribute name="code" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="data" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="STMLogMessage" representedClassName="STMLogMessage" syncable="YES">
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="text" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="STMMessage" representedClassName="STMMessage" syncable="YES">
+        <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="cts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="deviceCts" optional="YES" attributeType="Date" indexed="YES" syncable="YES"/>
+        <attribute name="deviceTs" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" indexed="YES" syncable="YES"/>
+        <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
+        <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="processing" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="processingMessage" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="schedule" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="showOnEnterForeground" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="subject" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="pictures" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="STMMessagePicture" inverseName="message" inverseEntity="STMMessagePicture" syncable="YES"/>
+        <relationship name="workflow" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMWorkflow" inverseName="messages" inverseEntity="STMWorkflow" syncable="YES"/>
+    </entity>
+    <entity name="STMMessagePicture" representedClassName="STMMessagePicture" parentEntity="STMCorePicture" syncable="YES">
+        <attribute name="ord" optional="YES" attributeType="Integer 64" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="message" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMMessage" inverseName="pictures" inverseEntity="STMMessage" syncable="YES"/>
     </entity>
     <entity name="STMRecordStatus" representedClassName="STMRecordStatus" syncable="YES">
         <attribute name="commentText" optional="YES" attributeType="String" syncable="YES"/>
@@ -193,11 +238,11 @@
         <attribute name="isRemoved" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isTemporary" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectXid" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="STMSetting" representedClassName="STMSetting" syncable="YES">
@@ -210,9 +255,8 @@
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="value" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
@@ -225,27 +269,31 @@
         <attribute name="isFantom" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <attribute name="lts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="ownerXid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="sqts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="sts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="source" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="target" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="workflow" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="xid" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="entities" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="STMEntity" inverseName="wf" inverseEntity="STMEntity" syncable="YES"/>
+        <relationship name="messages" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="STMMessage" inverseName="workflow" inverseEntity="STMMessage" syncable="YES"/>
     </entity>
     <elements>
-        <element name="STMBarCodeScan" positionX="-180" positionY="-540" width="128" height="238"/>
-        <element name="STMBarCodeType" positionX="-335" positionY="-565" width="128" height="268"/>
-        <element name="STMBatteryStatus" positionX="-1008" positionY="-957" width="128" height="238"/>
-        <element name="STMClientData" positionX="-855" positionY="-957" width="128" height="418"/>
-        <element name="STMClientEntity" positionX="-344" positionY="-955" width="128" height="238"/>
-        <element name="STMDatum" positionX="-1154" positionY="-955" width="128" height="163"/>
-        <element name="STMEntity" positionX="-182" positionY="-952" width="128" height="358"/>
-        <element name="STMLocation" positionX="-695" positionY="-657" width="128" height="360"/>
-        <element name="STMLogMessage" positionX="-1008" positionY="-684" width="128" height="238"/>
-        <element name="STMPhoto" positionX="-522" positionY="-585" width="128" height="58"/>
-        <element name="STMPicture" positionX="-522" positionY="-954" width="128" height="313"/>
-        <element name="STMRecordStatus" positionX="-693" positionY="-954" width="128" height="268"/>
-        <element name="STMSetting" positionX="-1154" positionY="-694" width="128" height="253"/>
-        <element name="STMWorkflow" positionX="7" positionY="-954" width="128" height="255"/>
+        <element name="STMBarCodeScan" positionX="639" positionY="405" width="128" height="240"/>
+        <element name="STMBarCodeType" positionX="477" positionY="405" width="128" height="255"/>
+        <element name="STMBatteryStatus" positionX="-2" positionY="396" width="128" height="225"/>
+        <element name="STMClientData" positionX="315" positionY="405" width="128" height="418"/>
+        <element name="STMClientEntity" positionX="160" positionY="405" width="128" height="225"/>
+        <element name="STMCoreLocation" positionX="34" positionY="-9" width="128" height="345"/>
+        <element name="STMCorePhoto" positionX="36" positionY="-132" width="128" height="60"/>
+        <element name="STMCorePicture" positionX="34" positionY="-468" width="128" height="315"/>
+        <element name="STMDatum" positionX="-531" positionY="-135" width="128" height="135"/>
+        <element name="STMEntity" positionX="-695" positionY="-27" width="128" height="360"/>
+        <element name="STMEntityTemplate" positionX="-171" positionY="435" width="128" height="195"/>
+        <element name="STMJson" positionX="-315" positionY="399" width="128" height="240"/>
+        <element name="STMLogMessage" positionX="196" positionY="90" width="128" height="225"/>
+        <element name="STMMessage" positionX="385" positionY="30" width="128" height="330"/>
+        <element name="STMMessagePicture" positionX="223" positionY="-153" width="128" height="75"/>
+        <element name="STMRecordStatus" positionX="-126" positionY="-135" width="128" height="270"/>
+        <element name="STMSetting" positionX="-297" positionY="-144" width="128" height="240"/>
+        <element name="STMWorkflow" positionX="-486" positionY="69" width="128" height="255"/>
     </elements>
 </model>

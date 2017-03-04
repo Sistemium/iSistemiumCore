@@ -9,15 +9,15 @@
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 
 #import "STMDocument.h"
-#import "STMSessionManager.h"
+#import "STMCoreSessionManager.h"
 
-#import "STMAuthController.h"
+#import "STMCoreAuthController.h"
 
-#import "STMUI.h"
-#import "STMNS.h"
+#import "STMCoreUI.h"
+#import "STMCoreNS.h"
 
 #import "STMConstants.h"
 #import "STMFunctions.h"

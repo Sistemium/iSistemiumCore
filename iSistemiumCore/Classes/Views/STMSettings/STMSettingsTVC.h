@@ -11,7 +11,7 @@
 
 @interface STMSettingsTVC : UITableViewController
 
-@property (nonatomic, strong) id <STMSession> session;
+@property (nonatomic, weak) id <STMSession> session;
 
 @end
 

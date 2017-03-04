@@ -7,7 +7,7 @@
 //
 
 #import "STMFetchRequest.h"
-#import "STMNS.h"
+#import "STMCoreNS.h"
 
 @interface STMFetchRequest()
 

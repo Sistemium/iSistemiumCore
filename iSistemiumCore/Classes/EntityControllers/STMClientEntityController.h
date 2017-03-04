@@ -6,11 +6,15 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
+#import "STMClientEntity.h"
 
-@interface STMClientEntityController : STMController
+@interface STMClientEntityController : STMCoreController
 
-+ (STMClientEntity *)clientEntityWithName:(NSString *)name;
++ (NSDictionary *)clientEntityWithName:(NSString *)name;
+
++ (void)clientEntityWithName:(NSString *)name
+                     setETag:(NSString *)eTag;
 
 
 @end

@@ -7,14 +7,26 @@
 //
 
 #import "STMLocationController.h"
-#import "STMObjectsController.h"
+
+#import "STMCoreObjectsController.h"
+#import "STMCoreSessionManager.h"
 
 
 @implementation STMLocationController
 
-+ (STMLocation *)locationObjectFromCLLocation:(CLLocation *)location {
++ (NSString *)locationConcreteName {
+    return NSStringFromClass([[self session] locationClass]);
+}
+
++ (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location {
+
+    if (!location) return nil;
     
-    STMLocation *locationObject = (STMLocation *)[STMObjectsController newObjectForEntityName:NSStringFromClass([STMLocation class]) isFantom:NO];
+    STMCoreLocation *locationObject = (STMCoreLocation *)[[self session].persistenceDelegate newObjectForEntityName:[self locationConcreteName]];
+    
+    locationObject.isFantom = @(NO);
+    locationObject.xid = [STMFunctions xidDataFromXidString:[[[NSUUID alloc] init] UUIDString]];
+
     locationObject.latitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.latitude).decimalValue];
     locationObject.longitude = [NSDecimalNumber decimalNumberWithDecimal:@(location.coordinate.longitude).decimalValue];
     locationObject.horizontalAccuracy = [NSDecimalNumber decimalNumberWithDecimal:@(location.horizontalAccuracy).decimalValue];
@@ -27,7 +39,7 @@
     
 }
 
-+ (CLLocation *)locationFromLocationObject:(STMLocation *)locationObject {
++ (CLLocation *)locationFromLocationObject:(STMCoreLocation *)locationObject {
     
     CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([locationObject.latitude doubleValue], [locationObject.longitude doubleValue]);
     CLLocation *location = [[CLLocation alloc] initWithCoordinate:coordinate

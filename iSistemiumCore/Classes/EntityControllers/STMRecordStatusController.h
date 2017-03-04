@@ -6,13 +6,15 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
+#import "STMPersistingIntercepting.h"
 
+#define STM_RECORDSTATUS_NAME @"STMRecordStatus"
 
-@interface STMRecordStatusController : STMController
+@interface STMRecordStatusController : STMCoreController <STMPersistingMergeInterceptor>
 
-+ (STMRecordStatus *)existingRecordStatusForXid:(NSData *)objectXid;
-+ (STMRecordStatus *)recordStatusForObject:(NSManagedObject *)object;
++ (NSDictionary *)existingRecordStatusForXid:(NSString *)objectXid;
 + (NSArray *)recordStatusesForXids:(NSArray *)xids;
+
 
 @end

@@ -7,13 +7,22 @@
 //
 
 #import "STMEntityController.h"
-#import "STMObjectsController.h"
+
+#import "STMCoreAuthController.h"
+
+#define STMEC_HAS_CHANGES @"STMEntityController has changes"
+
 
 @interface STMEntityController()
 
-@property (nonatomic, strong) NSArray *entitiesArray;
-@property (nonatomic, strong) NSArray *uploadableEntitiesNames;
-@property (nonatomic, strong) NSDictionary *stcEntities;
+@property (nonatomic, strong) NSArray <NSDictionary *> *entitiesArray;
+@property (nonatomic, strong) NSArray <NSString *> *uploadableEntitiesNames;
+@property (nonatomic, strong) NSDictionary <NSString *, NSDictionary *> *stcEntities;
+
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
+
++ (STMEntityController *)sharedInstance;
+
 
 @end
 
@@ -21,51 +30,53 @@
 @implementation STMEntityController
 
 + (STMEntityController *)sharedInstance {
-    
-    static dispatch_once_t pred = 0;
-    __strong static id _sharedInstance = nil;
-    
-    dispatch_once(&pred, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    
-    return _sharedInstance;
-    
+    return [super sharedInstance];
 }
 
-- (instancetype)init {
+- (void)setPersistenceDelegate:(id)persistenceDelegate {
     
-    self = [super init];
+    if (self.persistenceDelegate) {
+        [self removeObservers];
+    }
     
-    if (self) [self addObservers];
-    return self;
+    [super setPersistenceDelegate:persistenceDelegate];
+    
+    if (persistenceDelegate) {
+        [self addObservers];
+    }
     
 }
 
 - (void)addObservers {
     
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    
-    [nc addObserver:self
-           selector:@selector(authStateChanged)
-               name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+    self.entitySubscriptionID = [self.persistenceDelegate observeEntity:STM_ENTITY_NAME predicate:nil callback:^(NSArray *data) {
+        
+        [self flushSelf];
+        [self postNotificationName:STMEC_HAS_CHANGES];
+        
+        NSLog(@"checkStcEntities got called back with %@ items", @(data.count));
+        
+    }];
 
 }
 
 - (void)removeObservers {
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self.class.persistenceDelegate cancelSubscription:self.entitySubscriptionID];
+    self.entitySubscriptionID = nil;
+    
+    [super removeObservers];
     
 }
 
-- (void)authStateChanged {
++ (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector {
     
-    if ([STMAuthController authController].controllerState != STMAuthSuccess) {
-        [self flushSelf];
-    }
+    [[self sharedInstance] addObserver:anObject
+                              selector:selector
+                                  name:STMEC_HAS_CHANGES];
     
 }
+
 
 - (void)flushSelf {
     
@@ -75,16 +86,16 @@
     
 }
 
-- (NSArray *)entitiesArray {
+- (NSArray <NSDictionary *> *)entitiesArray {
     
     if (!_entitiesArray) {
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
-        request.predicate = [STMPredicate predicateWithNoFantoms];
-        
         NSError *error;
-        NSArray *result = [[STMEntityController document].managedObjectContext executeFetchRequest:request error:&error];
+        NSDictionary *options = @{STMPersistingOptionOrder:@"name"};
+        NSArray *result = [self.class.persistenceDelegate findAllSync:STM_ENTITY_NAME
+                                                            predicate:nil
+                                                              options:options
+                                                                error:&error];
 
         _entitiesArray = (result.count > 0) ? result : nil;
 
@@ -93,22 +104,23 @@
     
 }
 
-- (NSDictionary *)stcEntities {
+- (NSDictionary <NSString *, NSDictionary *> *)stcEntities {
     
     if (!_stcEntities) {
         
         NSMutableDictionary *stcEntities = [NSMutableDictionary dictionary];
         
-        NSArray *stcEntitiesArray = self.entitiesArray.copy;
-        
-        for (STMEntity *entity in stcEntitiesArray) {
+        for (NSDictionary *entity in self.entitiesArray) {
             
-            NSString *capFirstLetter = (entity.name) ? [[entity.name substringToIndex:1] capitalizedString] : nil;
+            NSString *entityName = entity[@"name"];
             
-            NSString *capEntityName = [entity.name stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
+            NSString *capFirstLetter = (entityName) ? [entityName substringToIndex:1].capitalizedString : nil;
+            
+            NSString *capEntityName = [entityName stringByReplacingCharactersInRange:NSMakeRange(0,1)
+                                                                    withString:capFirstLetter];
             
             if (capEntityName) {
-                stcEntities[[ISISTEMIUM_PREFIX stringByAppendingString:capEntityName]] = entity;
+                stcEntities[[STMFunctions addPrefixToEntityName:capEntityName]] = entity;
             }
             
         }
@@ -120,17 +132,15 @@
     
 }
 
-- (NSArray *)uploadableEntitiesNames {
+- (NSArray <NSString *> *)uploadableEntitiesNames {
     
     if (!_uploadableEntitiesNames) {
         
-        NSMutableDictionary *stcEntities = [self.stcEntities mutableCopy];
-        
-        NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-            return ([[obj valueForKey:@"isUploadable"] boolValue] == YES);
+        NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+            return ([STMFunctions isNotNullAndTrue:obj[@"isUploadable"]]);
         }];
         
-        _uploadableEntitiesNames = filteredKeys.allObjects;
+        _uploadableEntitiesNames = [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
 
     }
     return _uploadableEntitiesNames;
@@ -144,7 +154,7 @@
     [[self sharedInstance] flushSelf];
 }
 
-+ (NSDictionary *)stcEntities {
++ (NSDictionary <NSString *, NSDictionary *> *)stcEntities {
     return [self sharedInstance].stcEntities;
 }
 
@@ -156,11 +166,27 @@
     return [self sharedInstance].uploadableEntitiesNames;
 }
 
-+ (NSSet *)entityNamesWithLifeTime {
++ (NSString *)resourceForEntity:(NSString *)entityName {
     
-    NSMutableDictionary *stcEntities = [[self stcEntities] mutableCopy];
+    NSDictionary *entity = [self stcEntities][entityName];
+
+    return [STMFunctions isNotNull:entity[@"url"]] ? entity[@"url"] : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, entity[@"name"]];
+
+}
+
++ (NSArray <NSString *> *)entityNamesWithResolveFantoms {
     
-    NSSet *filteredKeys = [stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+    NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        return ([STMFunctions isNotNullAndTrue:obj[@"isResolveFantoms"]] && [STMFunctions isNotNull:obj[@"url"]]);
+    }];
+    
+    return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
+    
+}
+
++ (NSSet <NSString *> *)entityNamesWithLifeTime {
+    
+    NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
         return ([[obj valueForKey:@"lifeTime"] doubleValue] > 0);
     }];
     
@@ -168,128 +194,82 @@
     
 }
 
-+ (NSArray *)entitiesWithLifeTime {
-    
-    NSArray *stcEntitiesArray = [self stcEntitiesArray];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime.intValue > 0"];
-    NSArray *result = [stcEntitiesArray filteredArrayUsingPredicate:predicate];
-    
-    return result;
-    
-}
-
-+ (STMEntity *)entityWithName:(NSString *)name {
-    
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES selector:@selector(caseInsensitiveCompare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
++ (NSArray <NSDictionary *> *)entitiesWithLifeTime {
     
     NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"lifeTime > 0"];
     
-    return [result lastObject];
+    return [self.persistenceDelegate findAllSync:STM_ENTITY_NAME predicate:predicate options:nil error:&error];
     
 }
 
-+ (void)deleteEntityWithName:(NSString *)name {
+
++ (NSDictionary *)entityWithName:(NSString *)name {
     
-    __weak STMEntity *entityToDelete = ([self stcEntities])[name];
+    NSError *error = nil;
+    return [[self sharedInstance] entityWithName:name
+                                           error:&error];
     
-    if (entityToDelete) {
-        
-        __weak NSManagedObjectContext *context = entityToDelete.managedObjectContext;
-        
-        [context performBlock:^{
-            
-            [context deleteObject:entityToDelete];
-            
-        }];
-        
-    } else {
-        
-        NSString *logMessage = [NSString stringWithFormat:@"where is no entity with name %@ to delete", name];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
-        
-    }
+}
+
+- (NSDictionary *)entityWithName:(NSString *)name error:(NSError **)error {
     
+    name = [STMFunctions removePrefixFromEntityName:name];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+    NSDictionary *entity = [self.persistenceDelegate findAllSync:NSStringFromClass([STMEntity class])
+                                                       predicate:predicate
+                                                         options:nil
+                                                           error:error].lastObject;
+    
+    return entity;
+        
 }
 
 + (void)checkEntitiesForDuplicates {
     
-/* next two lines is for generating duplicates
- 
-    NSArray *entitiesArray = [self stcEntitiesArray];
-    NSLog(@"entitiesArray.count %d", entitiesArray.count);
- 
-*/
-    NSString *entityName = NSStringFromClass([STMEntity class]);
-    NSString *property = @"name";
+    NSArray *names = [[self stcEntitiesArray] valueForKeyPath:@"name"];
+    __block NSUInteger totalDuplicates = 0;
     
-    STMEntityDescription *entity = [STMEntityDescription entityForName:entityName inManagedObjectContext:self.document.managedObjectContext];
-    
-    NSPropertyDescription *entityProperty = entity.propertiesByName[property];
-    
-    if (entityProperty) {
+    [names enumerateObjectsUsingBlock:^(NSString *name, NSUInteger idx, BOOL *stop) {
         
-        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        NSPredicate *byName = [NSPredicate predicateWithFormat:@"name == %@", name];
+        NSArray *result = [[self stcEntitiesArray] filteredArrayUsingPredicate:byName];
         
-        NSExpression *expression = [NSExpression expressionForKeyPath:property];
-        NSExpression *countExpression = [NSExpression expressionForFunction:@"count:" arguments:@[expression]];
-        NSExpressionDescription *ed = [[NSExpressionDescription alloc] init];
-        ed.expression = countExpression;
-        ed.expressionResultType = NSInteger64AttributeType;
-        ed.name = @"count";
+        if (result.count < 2) return;
         
-        request.propertiesToFetch = @[entityProperty, ed];
-        request.propertiesToGroupBy = @[entityProperty];
-        request.resultType = NSDictionaryResultType;
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:property ascending:YES]];
+        totalDuplicates += result.count - 1;
         
-        NSArray *result = [self.document.managedObjectContext executeFetchRequest:request error:nil];
+        NSArray *sortDescriptors = @[
+            [NSSortDescriptor sortDescriptorWithKey:@"isFantom" ascending:NO],
+            [NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:NO]
+        ];
         
-        result = [result filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"count > 1"]];
+        result = [result sortedArrayUsingDescriptors:sortDescriptors];
+        
+        NSArray *duplicates = [result subarrayWithRange:NSMakeRange(1, result.count - 1)];
 
-        if (result.count > 0) {
-            
-            for (NSDictionary *entity in result) {
-                
-                NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", entity[property], entity[ed.name]];
-                [[STMLogger sharedLogger] saveLogMessageWithText:message type:@"error"];
-                
-                [self removeDuplicatesWithName:entity[property]];
-                
-            }
-            
-        } else {
-            [[STMLogger sharedLogger] saveLogMessageWithText:@"stc.entity duplicates not found"];
-        }
-        
-    }
-    
-}
+        NSString *message = [NSString stringWithFormat:@"Entity %@ have %@ duplicates", name, @(duplicates.count)];
+        [self.session.logger saveLogMessageWithText:message numType:STMLogMessageTypeError];
 
-+ (void)removeDuplicatesWithName:(NSString *)name {
-    
-    NSLog(@"remove entity duplicates for %@", name);
-    
-    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMEntity class])];
-    
-    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-    request.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
-    
-    NSError *error;
-    NSArray *result = [[self document].managedObjectContext executeFetchRequest:request error:&error];
-    
-    STMEntity *actualEntity = [result lastObject];
-    NSMutableArray *mutableResult = result.mutableCopy;
-    [mutableResult removeObject:actualEntity];
-    
-    for (STMEntity *entity in mutableResult) {
-        [STMObjectsController removeObject:entity];
+        NSError *error;
+        NSPredicate *duplicatesPredicate = [NSPredicate predicateWithFormat:@"xid IN %@", [duplicates valueForKeyPath:@"xid"]];
+
+        NSMutableArray *newStcEntitiesArray = [self stcEntitiesArray].mutableCopy;
+        [newStcEntitiesArray removeObjectsInArray:duplicates];
+        [self sharedInstance].entitiesArray = newStcEntitiesArray;
+
+        [[self persistenceDelegate] destroyAllSync:STM_ENTITY_NAME
+                                         predicate:duplicatesPredicate
+                                           options:@{STMPersistingOptionRecordstatuses:@(NO)}
+                                             error:&error];
+
+    }];
+
+    if (!totalDuplicates) {
+        [self.session.logger saveLogMessageWithText:@"stc.entity duplicates not found"];
     }
-    
-    [[self document] saveDocument:^(BOOL success) {}];
-    
+
 }
 
 

@@ -21,7 +21,7 @@
     
     if (!_document) {
         
-        _document = (STMDocument *)[STMSessionManager sharedManager].currentSession.document;
+        _document = (STMDocument *)[STMCoreSessionManager sharedManager].currentSession.document;
         
     }
     
@@ -95,7 +95,7 @@
 
 - (void)authControllerStateChanged {
     
-    if ([STMAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
         self.resultsController = nil;
     }
     
@@ -413,7 +413,7 @@
     
     [super viewDidLoad];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authControllerStateChanged) name:@"authControllerStateChanged" object:[STMAuthController authController]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authControllerStateChanged) name:@"authControllerStateChanged" object:[STMCoreAuthController authController]];
     
     [self customInit];
     

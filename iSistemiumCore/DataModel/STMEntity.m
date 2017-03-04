@@ -1,15 +1,24 @@
 //
-//  STMEntity.m
-//  iSistemium
+//  STMEntity+CoreDataClass.m
+//  iSisSales
 //
-//  Created by Maxim Grigoriev on 30/10/15.
-//  Copyright © 2015 Sistemium UAB. All rights reserved.
+//  Created by Edgar Jan Vuicik on 12/10/2016.
+//  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import "STMDataModel.h"
+#import "STMEntity.h"
+#import "STMWorkflow.h"
+
+#import "STMCoreDataModel.h"
+
+#import "STMCoreAuthController.h"
 
 
 @implementation STMEntity
+
+- (NSString *)resource {
+    return (self.url) ? (NSString *)self.url : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, self.name];
+}
 
 - (void)willSave {
     

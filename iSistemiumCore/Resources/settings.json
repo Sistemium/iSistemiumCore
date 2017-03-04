@@ -17,11 +17,6 @@
            "data":
            [
                 {
-                    "name": "socketUrl",
-                    "value": "",
-                    "control": "textField"
-                },
-                {
                     "name": "objectsLifeTime",
                     "value": 72,
                     "control": "slider",
@@ -208,30 +203,30 @@
       "data":
       [
         {
-          "name": "fetchLimit",
-          "value": 50,
-          "control": "slider",
-          "min": 10,
-          "max": 200,
-          "step": 10
+            "name": "fetchLimit",
+            "value": 50,
+            "control": "slider",
+            "min": 10,
+            "max": 200,
+            "step": 10
         },
         {
-          "name": "syncInterval",
-          "value": 600,
-          "control": "slider",
-          "min": 10,
-          "max": 3600,
-          "step": 60
+            "name": "syncInterval",
+            "value": 600,
+            "control": "slider",
+            "min": 10,
+            "max": 3600,
+            "step": 60
         },
         {
-          "name": "restServerURI",
-          "value": "",
-          "control": "textField"
+            "name": "socketUrl",
+            "value": "",
+            "control": "textField"
         },
         {
-           "name": "API.url",
-           "value": "",
-           "control": "textField"
+            "name": "entityResource",
+            "value": "",
+            "control": "textField"
         },
         {
             "name": "xmlNamespace",
@@ -244,20 +239,20 @@
             "control": "textField"
         },
         {
-           "name": "http.timeout.foreground",
-           "value": 30,
-           "control": "slider",
-           "min": 1,
-           "max": 60,
-           "step": 5
+            "name": "http.timeout.foreground",
+            "value": 30,
+            "control": "slider",
+            "min": 1,
+            "max": 60,
+            "step": 5
         },
         {
-           "name": "http.timeout.background",
-           "value": 15,
-           "control": "slider",
-           "min": 1,
-           "max": 60,
-           "step": 5
+            "name": "http.timeout.background",
+            "value": 15,
+            "control": "slider",
+            "min": 1,
+            "max": 60,
+            "step": 5
         },
       ]
     }

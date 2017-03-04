@@ -63,8 +63,12 @@
 
 - (void)authControllerStateChanged {
     
-    switch ([STMAuthController authController].controllerState) {
+    switch ([STMCoreAuthController authController].controllerState) {
             
+        case STMAuthStarted:
+            
+            break;
+
         case STMAuthEnterPhoneNumber:
             [self setViewControllers:@[self.phoneVC] animated:YES];
             
@@ -144,7 +148,7 @@
 
 - (void)showActionPopoverFromTabBarItem {
     
-    if ([STMRootTBC sharedRootVC].newAppVersionAvailable) {
+    if ([STMCoreRootTBC sharedRootVC].newAppVersionAvailable) {
         
 //        UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:NSLocalizedString(@"UPDATE", nil), nil];
 //        
@@ -182,12 +186,12 @@
     [nc addObserver:self
            selector:@selector(authControllerStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
     
     [nc addObserver:self
            selector:@selector(authControllerError:)
                name:@"authControllerError"
-             object:[STMAuthController authController]];
+             object:[STMCoreAuthController authController]];
 
 }
 

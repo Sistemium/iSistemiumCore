@@ -8,9 +8,7 @@
 
 #import "STMWorkflow.h"
 #import "STMEntity.h"
-
-#warning should override
-//#import "STMMessage.h"
+#import "STMMessage.h"
 
 @implementation STMWorkflow
 

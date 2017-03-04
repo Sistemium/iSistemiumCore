@@ -8,10 +8,11 @@
 
 #import "STMDatum.h"
 
-#import "STMDataModel.h"
+#import "STMCoreDataModel.h"
 #import "STMFunctions.h"
-#import "STMObjectsController.h"
-
+#import "STMCoreObjectsController.h"
+#import "STMEntityController.h"
+#import "STMUserDefaults.h"
 
 @implementation STMDatum
 
@@ -23,12 +24,7 @@
                                                  selector:@selector(objectContextWillSave:)
                                                      name:NSManagedObjectContextWillSaveNotification
                                                    object:nil];
-        
-        //        [[NSNotificationCenter defaultCenter] addObserver:(id)[self class]
-        //                                                 selector:@selector(objectContextObjectsDidChange:)
-        //                                                     name:NSManagedObjectContextObjectsDidChangeNotification
-        //                                                   object:nil];
-        
+
     }
     
 }
@@ -46,62 +42,48 @@
     
 }
 
-//+ (void)objectContextObjectsDidChange:(NSNotification *)notification {
-//
-//    NSManagedObjectContext *context = [notification object];
-//
-//    if (context.parentContext) {
-//
-//        NSSet *modifiedObjects = [context.insertedObjects setByAddingObjectsFromSet:context.updatedObjects];
-//        [modifiedObjects makeObjectsPerformSelector:@selector(setLastModifiedTimestamp)];
-//
-//    }
-//
-//}
-
-- (void)setLastModifiedTimestamp{
-    
-//    if ([self isKindOfClass:[STMShipmentRoutePoint class]] || [self isKindOfClass:[STMShippingLocation class]]) {
-//        
-//        NSLog(@"%@", NSStringFromClass([self class]));
-//        NSLog(@"%@", self.xid);
-//        NSLog(@"changedValues %@", self.changedValues);
-//        NSLog(@"changedValuesForCurrentEvent %@", self.changedValuesForCurrentEvent);
-//        NSLog(@"------------------------");
-//        
-//    }
+- (void)setLastModifiedTimestamp {
     
     NSDictionary *changedValues = self.changedValues;
     
-    if (![changedValues.allKeys containsObject:@"lts"]) { //?????
+    BOOL ltsIsChanged = [changedValues objectForKey:@"lts"] ? YES : NO;
+
+    if (ltsIsChanged) return;
+
+    NSArray *excludeProperties = [self excludeProperties];
+    
+    NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
+    [changedKeysArray removeObjectsInArray:excludeProperties];
+    
+    for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
+        if (relationship.isToMany) [changedKeysArray removeObject:relationship.name];
+    }
+    
+    NSDate *currentDate = [NSDate date];
+    
+    if ([self.entity.propertiesByName objectForKey:@"deviceAts"]) {
+
+        BOOL onlyDeviceAtsChanged = (changedValues.count == 1 && [changedValues objectForKey:@"deviceAts"]);
+
+        if (!onlyDeviceAtsChanged) {
         
-        NSArray *excludeProperties = [self excludeProperties];
-        
-        NSMutableArray *changedKeysArray = changedValues.allKeys.mutableCopy;
-        [changedKeysArray removeObjectsInArray:excludeProperties];
-        
-        NSMutableArray *relationshipsToMany = [NSMutableArray array];
-        
-        for (NSRelationshipDescription *relationship in self.entity.relationshipsByName.allValues) {
-            if (relationship.isToMany) [relationshipsToMany addObject:relationship.name];
+//        [self setPrimitiveValue:currentDate forKey:@"deviceAts"];
+            
+            [self setValue:currentDate forKey:@"deviceAts"];
+            
+//            NSLog(@"setLastModifiedTimestamp %@ %@", self.entity.name, [self valueForKey:@"deviceAts"]);
+
         }
         
-        [changedKeysArray removeObjectsInArray:relationshipsToMany];
+    }
+    
+    if (changedKeysArray.count > 0) {
         
-        if (changedKeysArray.count > 0) {
-            
-            if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
-            
-            NSDate *currentDate = [NSDate date];
-            
-//            self.deviceTs = currentDate;
-            
-            [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
-            
-            self.sqts = (self.lts) ? self.deviceTs : self.deviceCts;
-            
-        }
+        if (self.isFantom.boolValue) [self setPrimitiveValue:@(NO) forKey:@"isFantom"];
         
+        [self setPrimitiveValue:currentDate forKey:@"deviceTs"];
+        self.deviceTs = currentDate;
+
     }
     
 }
@@ -128,8 +110,9 @@
         NSDate *ts = [NSDate date];
         [self setPrimitiveValue:ts forKey:@"deviceCts"];
         [self setPrimitiveValue:ts forKey:@"deviceTs"];
+        [self setPrimitiveValue:ts forKey:@"deviceAts"];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         NSNumber *largestId = [defaults objectForKey:@"largestId"];
         
         if (!largestId) {
@@ -187,7 +170,7 @@
     [keysArray removeObjectsInArray:excludeProperties];
     keysArray = [keysArray sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)].mutableCopy;
 
-    NSDictionary *properties = [self propertiesForKeys:keysArray];
+    NSDictionary *properties = [self propertiesForKeys:keysArray withNulls:NO];
 
     NSMutableArray *relationshipsToOne = [NSMutableArray array];
     
@@ -198,7 +181,7 @@
     [relationshipsToOne removeObjectsInArray:excludeProperties];
     relationshipsToOne = [relationshipsToOne sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)].mutableCopy;
     
-    NSDictionary *relationships = [self relationshipXidsForKeys:relationshipsToOne];
+    NSDictionary *relationships = [self relationshipXidsForKeys:relationshipsToOne withNulls:NO];
     
     NSMutableArray *checkValues = @[].mutableCopy;
     
@@ -227,25 +210,30 @@
     
     dispatch_once(&onceToken, ^{
         
-        NSArray *coreEntityKeys = [STMObjectsController coreEntityKeys];
+        NSArray *coreEntityKeys = [STMCoreObjectsController coreEntityKeys];
         
         excludeProperties = [coreEntityKeys arrayByAddingObjectsFromArray:@[@"imagePath",
                                                                             @"resizedImagePath",
                                                                             @"calculatedSum",
-                                                                            @"imageThumbnail"]];
+                                                                            @"thumbnailPath",
+                                                                            @"deviceAts"]];
     });
 
     return excludeProperties;
     
 }
 
-- (NSDictionary *)propertiesForKeys:(NSArray *)keys {
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {
+    return [self propertiesForKeys:keys withNulls:withNulls withBinaryData:YES];
+}
+
+- (NSDictionary *)propertiesForKeys:(NSArray *)keys withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     NSMutableDictionary *propertiesDictionary = [NSMutableDictionary dictionary];
     
     for (NSString *key in keys) {
         
-        if ([self.entity.propertiesByName.allKeys containsObject:key]) {
+        if ([self.entity.propertiesByName objectForKey:key]) {
             
             id value = [self valueForKey:key];
             
@@ -253,7 +241,7 @@
                 
                 if ([value isKindOfClass:[NSDate class]]) {
                     
-                    value = [[STMFunctions dateFormatter] stringFromDate:value];
+                    value = [STMFunctions stringFromDate:value];
                     
                 } else if ([value isKindOfClass:[NSData class]]) {
                     
@@ -261,15 +249,25 @@
                         
                         value = [STMFunctions UUIDStringFromUUIDData:value];
                         
+                    } else if ([key isEqualToString:@"deviceToken"]) {
+                      
+                        value = [STMFunctions hexStringFromData:value];
+                        
                     } else {
                         
-                        value = [STMFunctions hexStringFromData:value];
+                        value = (withBinaryData) ? [STMFunctions base64HexStringFromData:value] : @"";
                         
                     }
                     
                 }
                 
                 propertiesDictionary[key] = [NSString stringWithFormat:@"%@", value];
+                
+            } else {
+                
+                if (withNulls) {
+                    propertiesDictionary[key] = [NSNull null];
+                }
                 
             }
             
@@ -278,10 +276,10 @@
     }
     
     return propertiesDictionary;
-    
+
 }
 
-- (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys {
+- (NSDictionary *)relationshipXidsForKeys:(NSArray *)keys withNulls:(BOOL)withNulls {
     
     NSMutableDictionary *relationshipsDictionary = [NSMutableDictionary dictionary];
 
@@ -292,15 +290,23 @@
         if (![relationshipDescription isToMany]) {
             
             STMDatum *relationshipObject = [self valueForKey:key];
-            
+        
+            NSString *dictKey = [key stringByAppendingString:RELATIONSHIP_SUFFIX];
+
             if (relationshipObject) {
                 
                 NSData *xidData = relationshipObject.xid;
                 
                 if (xidData.length != 0) {
-                    relationshipsDictionary[key] = [STMFunctions UUIDStringFromUUIDData:xidData];
+                    relationshipsDictionary[dictKey] = [STMFunctions UUIDStringFromUUIDData:xidData];
                 }
                 
+            } else {
+                
+                if (withNulls) {
+                    relationshipsDictionary[dictKey] = [NSNull null];
+                }
+
             }
             
         }
@@ -309,6 +315,23 @@
     
     return relationshipsDictionary;
 
+}
+
+- (BOOL)isWaitingToSync {
+    
+    if (self.entity.name) {
+        
+        BOOL isInSyncList = [[STMEntityController uploadableEntitiesNames] containsObject:(NSString * _Nonnull)self.entity.name];
+        
+        NSDate *lts = [self valueForKey:STMPersistingOptionLts];
+        NSDate *deviceTs = [self valueForKey:@"deviceTs"];
+        
+        return (isInSyncList && lts && [lts compare:deviceTs] == NSOrderedAscending);
+        
+    } else {
+        return NO;
+    }
+    
 }
 
 

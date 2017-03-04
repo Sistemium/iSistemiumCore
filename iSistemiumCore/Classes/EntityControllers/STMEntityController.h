@@ -6,24 +6,32 @@
 //  Copyright (c) 2014 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
+#import "STMEntity.h"
+
+#define STM_ENTITY_NAME @"STMEntity"
 
 
-@interface STMEntityController : STMController
+@interface STMEntityController : STMCoreController
 
 + (void)flushSelf;
 
-+ (NSDictionary *)stcEntities;
++ (NSDictionary <NSString *, NSDictionary *> *)stcEntities;
+
++ (NSString *)resourceForEntity:(NSString *)entityName;
 
 + (void)checkEntitiesForDuplicates;
 
-+ (NSSet *)entityNamesWithLifeTime;
-+ (NSArray *)entitiesWithLifeTime;
++ (NSArray <NSString *> *)entityNamesWithResolveFantoms;
+
++ (NSSet <NSString *> *)entityNamesWithLifeTime;
++ (NSArray <NSDictionary *> *)entitiesWithLifeTime;
 
 + (NSArray *)uploadableEntitiesNames;
 
-+ (STMEntity *)entityWithName:(NSString *)name;
++ (NSDictionary *)entityWithName:(NSString *)name;
 
-+ (void)deleteEntityWithName:(NSString *)name;
++ (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector;
+
 
 @end

@@ -1,8 +1,8 @@
 
 Podfile.lock
-
 /Pods/*
-
 iSistemiumCore/Frameworks/ScanAPI/*
-
 *.xcbkptlist
+.DS_Store
+.idea
+node_modules

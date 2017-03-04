@@ -6,12 +6,14 @@
 //  Copyright (c) 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMController.h"
+#import "STMCoreController.h"
+#import "STMCoreLocation.h"
+#import <CoreLocation/CoreLocation.h>
 
-@interface STMLocationController : STMController
+@interface STMLocationController : STMCoreController
 
-+ (STMLocation *)locationObjectFromCLLocation:(CLLocation *)location;
-+ (CLLocation *)locationFromLocationObject:(STMLocation *)locationObject;
++ (STMCoreLocation *)locationObjectFromCLLocation:(CLLocation *)location;
++ (CLLocation *)locationFromLocationObject:(STMCoreLocation *)locationObject;
 
 
 @end
