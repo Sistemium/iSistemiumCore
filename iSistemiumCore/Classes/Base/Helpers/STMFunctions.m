@@ -862,10 +862,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return (path) ? [[self documentsDirectory] stringByAppendingPathComponent:(NSString *)path] : [self documentsDirectory];
 }
 
-+ (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path {
-    return (path) ? [NSTemporaryDirectory() stringByAppendingPathComponent:(NSString *)path] : NSTemporaryDirectory();
-}
-
 
 #pragma mark -
 
