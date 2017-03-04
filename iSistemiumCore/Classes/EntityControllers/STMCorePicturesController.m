@@ -169,37 +169,8 @@
 - (NSString *)imagesCachePath {
     
     if (!_imagesCachePath) {
-        
-        NSFileManager *fm = [NSFileManager defaultManager];
-        
-        NSString *imagesCachePath = [STMFunctions absoluteDataCachePathForPath:IMAGES_CACHE_PATH];
-        
-        if ([fm fileExistsAtPath:imagesCachePath]) {
-            
-            _imagesCachePath = imagesCachePath;
-            
-        } else {
-            
-            NSError *error = nil;
-            BOOL result = [fm createDirectoryAtPath:imagesCachePath
-                        withIntermediateDirectories:YES
-                                         attributes:nil
-                                              error:&error];
-            
-            if (result) {
-                
-                _imagesCachePath = imagesCachePath;
-                
-            } else {
-                
-                NSLog(@"can not create imagesCachePath: %@", error.localizedDescription);
-                
-            }
-            
-        }
-        
+        _imagesCachePath = [self.session.filing picturesBasePath];
     }
-    
     return _imagesCachePath;
 
 }
