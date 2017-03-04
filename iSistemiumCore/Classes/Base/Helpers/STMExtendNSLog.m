@@ -58,7 +58,9 @@ void ExtendNSLog(const char *file, int lineNumber, const char *functionName, NSS
 //
 //    }
 
-    fprintf(stderr, "%s / [%s %s]:%d - %s", date.UTF8String, fileName.UTF8String, functionString.UTF8String, lineNumber, body.UTF8String);
+//    fprintf(stderr, "%s / [%s %s]:%d - %s", date.UTF8String, fileName.UTF8String, functionString.UTF8String, lineNumber, body.UTF8String);
+
+    fprintf(stderr, "%s / %s:%d - %s", date.UTF8String, fileName.UTF8String, lineNumber, body.UTF8String);
 
 }
 
