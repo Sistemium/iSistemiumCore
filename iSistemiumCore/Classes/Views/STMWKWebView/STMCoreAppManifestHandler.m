@@ -608,7 +608,7 @@
                                                                  error:&error];
         
         NSString *relativePath = [self completeRelativePathForPath:LOCAL_HTML_DIR];
-        NSString *completeTempPath = [STMFunctions absoluteTemporaryPathForPath:relativePath];
+        NSString *completeTempPath = [[self session].filing temporaryDirectoryPathWithPath:relativePath];
         
         if (indexHTMLString && [fm fileExistsAtPath:completeTempPath]) {
             
