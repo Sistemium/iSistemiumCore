@@ -91,8 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)documentsDirectory;
 + (NSString *)absolutePathForPath:(nullable NSString *)path;
 + (NSString *)absoluteDocumentsPathForPath:(nullable NSString *)path;
-+ (NSString *)absoluteDataCachePath;
-+ (NSString *)absoluteDataCachePathForPath:(nullable NSString *)path;
 + (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path;
 
 + (UIColor *)colorForColorString:(NSString *)colorSting;

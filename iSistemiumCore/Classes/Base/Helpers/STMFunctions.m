@@ -862,43 +862,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return (path) ? [[self documentsDirectory] stringByAppendingPathComponent:(NSString *)path] : [self documentsDirectory];
 }
 
-+ (NSString *)absoluteDataCachePath {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    NSString *dataCachePath = [[self documentsDirectory] stringByAppendingPathComponent:DATA_CACHE_PATH];
-    
-    if ([fm fileExistsAtPath:dataCachePath]) {
-        
-        return dataCachePath;
-        
-    } else {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:dataCachePath
-                    withIntermediateDirectories:YES
-                                     attributes:nil
-                                          error:&error];
-
-        if (result) {
-            
-            return dataCachePath;
-            
-        } else {
-            
-            NSLog(@"can not create dataCachePath: %@", error.localizedDescription);
-            return nil;
-            
-        }
-        
-    }
-    
-}
-
-+ (NSString *)absoluteDataCachePathForPath:(nullable NSString *)path {
-    return (path) ? [[self absoluteDataCachePath] stringByAppendingPathComponent:(NSString *)path] : [self absoluteDataCachePath];
-}
-
 + (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path {
     return (path) ? [NSTemporaryDirectory() stringByAppendingPathComponent:(NSString *)path] : NSTemporaryDirectory();
 }
