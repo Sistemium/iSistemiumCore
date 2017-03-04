@@ -53,12 +53,17 @@
 
 #pragma mark - directories
 
+- (NSString *)basePath {
+    return (SYSTEM_VERSION < 9.0) ? [STMFunctions documentsDirectory] : [[self session].filing webViewsBasePath];
+}
+
 - (NSString *)webViewLocalDirForPath:(NSString *)dirPath createIfNotExist:(BOOL)createIfNotExist shoudCleanBeforeUse:(BOOL)cleanBeforeUse {
     
     NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    completePath = (SYSTEM_VERSION < 9.0) ? [STMFunctions absoluteDocumentsPathForPath:completePath] : [STMFunctions absoluteDataCachePathForPath:completePath];
-    
+    completePath = [[self session].directoring basePath:[self basePath]
+                                               withPath:completePath];
+
     NSFileManager *fm = [NSFileManager defaultManager];
     
     BOOL isDir;
@@ -655,7 +660,7 @@
             } else {
                 
                 [self.owner loadUrl:[NSURL fileURLWithPath:indexHTMLPath]
-                          atBaseDir:[STMFunctions absoluteDataCachePath]];
+                          atBaseDir:[self basePath]];
                 
             }
             
