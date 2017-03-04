@@ -166,6 +166,14 @@
     
 }
 
+- (NSString *)temporaryDirectoryPathWithPath:(NSString *)path {
+    
+    return [self.directoring basePath:NSTemporaryDirectory()
+                             withPath:path];
+    
+}
+
+
 - (BOOL)copyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath error:(NSError **)error {
     
     BOOL sourceIsDir = NO;

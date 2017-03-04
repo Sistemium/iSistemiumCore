@@ -38,6 +38,8 @@
 - (NSString *)picturesPath:(NSString *)folderName;
 - (NSString *)webViewsPath:(NSString *)folderName;
 
+- (NSString *)temporaryDirectoryPathWithPath:(NSString *)path;
+
 - (BOOL)copyItemAtPath:(NSString *)sourcePath
                 toPath:(NSString *)destinationPath
                  error:(NSError **)error;
