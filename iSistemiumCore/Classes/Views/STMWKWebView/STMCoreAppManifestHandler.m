@@ -7,8 +7,8 @@
 //
 
 #import "STMCoreAppManifestHandler.h"
-#import "STMCoreAuthController.h"
 
+#import "STMCoreSessionManager.h"
 
 #define LOCAL_HTML_DIR @"localHTML"
 #define UPDATE_DIR @"update"
@@ -33,6 +33,10 @@
 
 
 @implementation STMCoreAppManifestHandler
+
+- (STMCoreSession *)session {
+    return [STMCoreSessionManager sharedManager].currentSession;
+}
 
 - (NSString *)completeRelativePathForPath:(NSString *)path {
     
@@ -138,7 +142,7 @@
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                          timeoutInterval:15];
     
-    request = [[STMCoreAuthController authController] authenticateRequest:request];
+    request = [[self session].authDelegate authenticateRequest:request];
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     
