@@ -51,8 +51,8 @@
 #define DATE_FORMAT_WITH_MILLISECONDS @"yyyy-MM-dd HH:mm:ss.SSS"
 #define DATE_FORMAT_WITHOUT_TIME @"yyyy-MM-dd"
 
-#define DATA_CACHE_PATH @"dataCache"
-#define IMAGES_CACHE_PATH @"images"
+//#define DATA_CACHE_PATH @"dataCache"
+//#define IMAGES_CACHE_PATH @"images"
 
 #define RELATIONSHIP_SUFFIX @"Id"
 
