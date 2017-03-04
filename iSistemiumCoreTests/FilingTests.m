@@ -302,7 +302,7 @@
     
     NSFileManager *fm = [NSFileManager defaultManager];
     
-    result = [self.filing enumerateDirAtPath:pathToCheck withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
+    BOOL result = [self.filing enumerateDirAtPath:pathToCheck withBlock:^BOOL(NSString * _Nonnull path, NSError * _Nullable __autoreleasing * _Nullable error) {
         
         NSDictionary *checkAttribute = @{ATTRIBUTE_FILE_PROTECTION_NONE};
         NSFileAttributeKey checkKey = checkAttribute.allKeys.firstObject;
