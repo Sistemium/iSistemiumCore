@@ -85,31 +85,26 @@
 
 - (void)dismissSession {
     
-    if (self.status == STMSessionStopped) {
+    if (self.status != STMSessionStopped) return;
         
-        [self removeObservers];
+    [self removeObservers];
+    
+    // TODO: move to +Persistable
+    if (self.document.documentState == UIDocumentStateClosed) return;
         
-        // TODO: move to +Persistable
-        if (self.document.documentState != UIDocumentStateClosed) {
+    [self.document closeWithCompletionHandler:^(BOOL success) {
+        
+        if (!success) return;
             
-            [self.document closeWithCompletionHandler:^(BOOL success) {
-                
-                if (success) {
-                    
-                    for (STMCoreTracker *tracker in self.trackers.allValues) {
-                        [tracker prepareToDestroy];
-                    }
-                    [self.syncer prepareToDestroy];
-                    [self.document.managedObjectContext reset];
-                    [self.manager removeSessionForUID:self.uid];
-                    
-                }
-                
-            }];
-            
+        for (STMCoreTracker *tracker in self.trackers.allValues) {
+            [tracker prepareToDestroy];
         }
         
-    }
+        [self.syncer prepareToDestroy];
+        [self.document.managedObjectContext reset];
+        [self.manager removeSessionForUID:self.uid];
+        
+    }];
     
 }
 
