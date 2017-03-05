@@ -79,13 +79,8 @@
     
     NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
 
-    NSString *createLtsTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_check_lts BEFORE UPDATE OF lts ON %@ FOR EACH ROW WHEN OLD.deviceTs > OLD.lts BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.deviceTs <> NEW.lts; END";
-    
-    NSString *fantomIndexFormat = @"CREATE INDEX IF NOT EXISTS %@_isFantom on %@ (isFantom);";
-    
     NSString *cascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
     
-    NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
     
     for (NSString *entityName in modelling.entitiesByName){
         
@@ -94,18 +89,12 @@
             continue;
         }
         
-        
         NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
         BOOL tableExisted = [self.database tableExists:tableName];
         
         if (!tableExisted) {
-            
             [self executeDDL:[self createTableDDL:tableName]];
-            [self executeDDL:[NSString stringWithFormat:fantomIndexFormat, tableName, tableName]];
-            [self executeDDL:[NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName]];
-            [self executeDDL:[NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName]];
-            
         }
         
         NSArray *columnAttributes = [modelling fieldsForEntityName:entityName].allValues;
@@ -151,6 +140,13 @@
     
 }
 
++ (NSString *)ltsTriggerFormat {
+    
+    NSString *format = @"CREATE TRIGGER IF NOT EXISTS %%@_check_lts BEFORE UPDATE OF %@ ON %%@ FOR EACH ROW WHEN OLD.%@ > OLD.%@ BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.%@ <> NEW.%@; END";
+    
+    return [NSString stringWithFormat:format, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts];
+    
+}
 
 - (NSString *)createTableDDL:(NSString *)tableName {
     
@@ -168,7 +164,18 @@
 
     [builtInColumns addObject:[self columnDDL:STMPersistingKeyPhantom datatype:SQLiteInt constraints:nil]];
 
-    return [NSString stringWithFormat:format, [self quoted:tableName], [builtInColumns componentsJoinedByString:@", "]];
+    NSMutableArray *clauses = [NSMutableArray array];
+    
+    [clauses addObject:[NSString stringWithFormat:format, [self quoted:tableName], [builtInColumns componentsJoinedByString:@", "]]];
+    
+    [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyPhantom]];
+    
+    NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
+
+    [clauses addObject:[NSString stringWithFormat:[self.class ltsTriggerFormat], tableName, tableName]];
+    [clauses addObject:[NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName]];
+
+    return [clauses componentsJoinedByString:SQLiteStatementSeparator];
     
 }
 
