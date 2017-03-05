@@ -21,6 +21,5 @@
 @property (nonatomic, strong) NSString *sharedDocuments;
 
 @property (nonatomic, weak) id <STMDirectoring> directoring;
-@property (nonatomic, weak) NSFileManager *fileManager;
 
 @end
