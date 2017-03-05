@@ -11,6 +11,7 @@
 #import "STMFmdb+Transactions.h"
 #import "STMFunctions.h"
 #import "STMPredicateToSQL.h"
+#import "STMFmdbSchema.h"
 
 #import <sqlite3.h>
 
@@ -33,7 +34,7 @@
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
 
     [self.queue inDatabase:^(FMDatabase *database){
-        self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
+        self.columnsByTable = [[STMFmdbSchema fmdbSchemaForDatabase:database] createTablesWithModelling:modelling];
     }];
     
     return self;

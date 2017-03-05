@@ -1,18 +1,39 @@
 //
-//  STMFmdb+Private.m
+//  STMFmdbSchema.m
 //  iSisSales
 //
-//  Created by Alexander Levin on 27/01/2017.
+//  Created by Alexander Levin on 05/03/2017.
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMFmdb+Private.h"
+#import "STMFmdbSchema.h"
 #import "STMFunctions.h"
-#import "STMPersisting.h"
+#import "STMPredicateToSQL.h"
 
-#define ExecDDL(ddlString) [self executeDDL:ddlString inDatabase:database]
 
-@implementation STMFmdb (Private)
+
+@interface STMFmdbSchema()
+
+@property (nonatomic,weak) FMDatabase *database;
+
+@end
+
+
+
+@implementation STMFmdbSchema
+
+
++ (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database {
+    return [[self alloc] initWithDatabase:database];
+}
+
+
+- (instancetype)initWithDatabase:(FMDatabase *)database {
+    self = [self init];
+    self.database = database;
+    return self;
+}
+
 
 - (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute {
     
@@ -40,7 +61,8 @@
     
 }
 
-- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling inDatabase:(FMDatabase *)database {
+
+- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
     
     NSDictionary <NSString *, NSEntityDescription *> *entities = modelling.entitiesByName;
     
@@ -129,33 +151,33 @@
         
         sql_stmt = [sql_stmt stringByAppendingString:@" ); "];
         
-        ExecDDL(sql_stmt);
+        [self executeDDL:sql_stmt];
         
         sql_stmt = [NSString stringWithFormat:fantomIndexFormat, tableName, tableName];
-        ExecDDL(sql_stmt);
+        [self executeDDL:sql_stmt];
         
         sql_stmt = [NSString stringWithFormat:createLtsTriggerFormat, tableName, tableName, tableName];
-        ExecDDL(sql_stmt);
+        [self executeDDL:sql_stmt];
         
         sql_stmt = [NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName];
-        ExecDDL(sql_stmt);
+        [self executeDDL:sql_stmt];
         
         for (NSString* entityKey in [modelling toOneRelationshipsForEntityName:entityName].allKeys){
             NSString *fkColumn = [entityKey stringByAppendingString:RELATIONSHIP_SUFFIX];
             
             sql_stmt = [NSString stringWithFormat:createIndexFormat, tableName, entityKey, tableName, fkColumn];
             
-            ExecDDL(sql_stmt);
+            [self executeDDL:sql_stmt];
             
             NSString *fkTable = [STMFunctions removePrefixFromEntityName:[modelling toOneRelationshipsForEntityName:entityName][entityKey]];
             
             sql_stmt = [NSString stringWithFormat:createFantomTriggerFormat, tableName, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
             
-            ExecDDL(sql_stmt);
+            [self executeDDL:sql_stmt];
             
             sql_stmt = [NSString stringWithFormat:updateFantomTriggerFormat, tableName, fkColumn, fkColumn, tableName, fkColumn, fkTable, fkColumn, fkTable, fkColumn];
             
-            ExecDDL(sql_stmt);
+            [self executeDDL:sql_stmt];
             
         }
         
@@ -169,7 +191,7 @@
             
             sql_stmt = [NSString stringWithFormat:createCascadeTriggerFormat, tableName, relationKey,tableName, relationKey,tableName, childTableName, fkColumn];
             
-            ExecDDL(sql_stmt);
+            [self executeDDL:sql_stmt];
             
         }
         
@@ -180,8 +202,8 @@
             if (!atribute.indexed || [ignoredAttributes containsObject:columnName]) continue;
             
             sql_stmt = [NSString stringWithFormat:createIndexFormat, tableName, atribute.name, tableName, atribute.name];
-
-            ExecDDL(sql_stmt);
+            
+            [self executeDDL:sql_stmt];
             
         }
         
@@ -191,12 +213,14 @@
     
 }
 
-- (BOOL)executeDDL:(NSString *)ddl inDatabase:(FMDatabase *)database{
-    BOOL res = [database executeStatements:ddl];
+
+- (BOOL)executeDDL:(NSString *)ddl {
+    BOOL res = [self.database executeStatements:ddl];
     if (!res) {
         NSLog(@"%@ (%@)", ddl, res ? @"YES" : @"NO");
     }
     return res;
 }
+
 
 @end

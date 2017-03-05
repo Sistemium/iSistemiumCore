@@ -10,8 +10,6 @@
 #import "FMDB.h"
 #import "STMPredicateToSQL.h"
 
-CF_ASSUME_NONNULL_BEGIN
-
 @interface STMFmdb()
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
@@ -23,13 +21,3 @@ CF_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface STMFmdb (Private)
-
-- (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute;
-
-- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling
-                                inDatabase:(FMDatabase *)database;
-
-CF_ASSUME_NONNULL_END
-
-@end
