@@ -81,6 +81,7 @@
 
     NSString *cascadeTriggerFormat = @"DROP TRIGGER IF EXISTS %@_cascade_%@; CREATE TRIGGER IF NOT EXISTS %@_cascade_%@ BEFORE DELETE ON %@ FOR EACH ROW BEGIN DELETE FROM %@ WHERE %@ = OLD.id; END";
     
+    // TODO: create only the new tables of the modelMapping, not all the modelling.entitiesByName
     
     for (NSString *entityName in modelling.entitiesByName){
         
@@ -102,10 +103,13 @@
         
         columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
         
+        // it is noticeable faster (on a real device) to create columns with one statement with the table
+        // but for now columns creation is separated to simplify code
+        
         for (NSAttributeDescription *attribute in columnAttributes) {
             [columns addObject:attribute.name];
             // if the column exists we get an error
-            // tableExisted check will replaced by modelMapping
+            // TODO: add only new columns from modelMapping
             if (!tableExisted) {
                 [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
             }
@@ -121,6 +125,13 @@
         }
         
         columnsDictionary[tableName] = columns.copy;
+        
+        
+        // The cascade triggers should be created for new columns of modelMapping
+        // but since a cascade trigger is created on an inverseRelationship entity
+        // we have to be sure the inverseRelationship table is created at the moment
+        // TODO: create all the tables first, then iterate through the tables again to add relationships with cascade triggers
+        // and the following code should be moved to addRelationshipDDL:tableName:
         
         NSDictionary <NSString *, NSRelationshipDescription*> *cascadeRelations = [modelling objectRelationshipsForEntityName:entityName isToMany:@(YES) cascade:@YES];
         
