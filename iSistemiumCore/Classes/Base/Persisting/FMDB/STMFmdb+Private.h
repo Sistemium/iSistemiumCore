@@ -25,9 +25,6 @@ CF_ASSUME_NONNULL_BEGIN
 
 @interface STMFmdb (Private)
 
-@property (nonatomic, strong) NSDictionary * columnsByTable;
-@property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
-
 - (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute;
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling

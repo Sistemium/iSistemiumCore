@@ -14,9 +14,6 @@
 
 @implementation STMFmdb (Private)
 
-@dynamic columnsByTable;
-@dynamic predicateToSQL;
-
 - (NSString *)sqliteTypeForAttribute:(NSAttributeDescription *)attribute {
     
     switch (attribute.attributeType) {
