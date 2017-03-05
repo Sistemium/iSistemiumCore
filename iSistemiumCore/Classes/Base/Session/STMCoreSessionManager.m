@@ -72,7 +72,9 @@
     
 }
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB accountOrg:(NSString *)accountOrg authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
+- (id <STMSession>)startSessionWithAuthDelegate:(id<STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
+    
+    NSString *uid = authDelegate.userID;
     
     if (!uid) {
         NSLog(@"no uid");
@@ -95,12 +97,9 @@
     session.settingsControls = validSettings[@"controls"];
     session.manager = self;
 
-    session = [session initWithUID:uid
-                            iSisDB:iSisDB
-                        accountOrg:accountOrg
-                      authDelegate:authDelegate
-                          trackers:trackers
-                     startSettings:startSettings];
+    session = [session initWithAuthDelegate:authDelegate
+                                   trackers:trackers
+                              startSettings:startSettings];
 
     self.sessions[uid] = session;
 

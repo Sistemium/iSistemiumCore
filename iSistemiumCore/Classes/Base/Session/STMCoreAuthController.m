@@ -594,13 +594,10 @@
     
     STMCoreSessionManager *sessionManager = [self sessionManager];
 
-    [sessionManager startSessionForUID:self.userID
-                                iSisDB:self.iSisDB
-                            accountOrg:self.accountOrg
-                          authDelegate:self
-                              trackers:trackers
-                         startSettings:startSettings
-               defaultSettingsFileName:@"settings"];
+    [sessionManager startSessionWithAuthDelegate:self
+                                        trackers:trackers
+                                   startSettings:startSettings
+                         defaultSettingsFileName:@"settings"];
 
 
 }

@@ -17,7 +17,9 @@
 @synthesize filing = _filing;
 
 
-- (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB accountOrg:(NSString *)accountOrg authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+- (instancetype)initWithAuthDelegate:(id<STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+    
+    NSString *uid = authDelegate.userID;
     
     if (!uid) {
         NSLog(@"no uid");
@@ -25,15 +27,14 @@
     }
     
     self.uid = uid;
-    self.accountOrg = accountOrg;
     self.status = STMSessionStarting;
     self.startSettings = startSettings;
     self.authDelegate = authDelegate;
     self.startTrackers = trackers;
     self.controllers = [NSMutableDictionary dictionary];
 
-    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:accountOrg
-                                                                   userId:iSisDB ? iSisDB : uid];
+    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg
+                                                                   userId:STMIsNull(authDelegate.iSisDB, uid)];
     
     self.filing = filer;
     
@@ -164,14 +165,6 @@
 
 
 - (void)applicationDidEnterBackground {
-    
-}
-
-- (void)setAuthDelegate:(id<STMRequestAuthenticatable>)authDelegate {
-    
-    if (_authDelegate != authDelegate) {
-        _authDelegate = authDelegate;
-    }
     
 }
 

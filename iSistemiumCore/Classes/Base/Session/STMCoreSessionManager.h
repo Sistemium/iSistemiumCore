@@ -9,8 +9,14 @@
 #import <Foundation/Foundation.h>
 #import "STMSessionManagement.h"
 #import "STMCoreSession.h"
+#import "STMCoreAuth.h"
 
 @interface STMCoreSessionManager : NSObject <STMSessionManager>
+
+- (id <STMSession>)startSessionWithAuthDelegate:(id <STMCoreAuth>)authDelegate
+                                       trackers:(NSArray *)trackers
+                                  startSettings:(NSDictionary *)startSettings
+                        defaultSettingsFileName:(NSString *)defualtSettingsFileName;
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, STMCoreSession *> *sessions;
 @property (nonatomic, weak) id <STMSession> currentSession;

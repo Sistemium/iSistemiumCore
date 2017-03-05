@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "STMCoreControlling.h"
 
-#import "STMRequestAuthenticatable.h"
 #import "STMDocument.h"
 #import "STMPersistingFullStack.h"
 #import "STMSocketConnection.h"
@@ -17,7 +16,6 @@
 #import "STMDataSyncingSubscriber.h"
 #import "STMLogging.h"
 #import "STMFiling.h"
-
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -72,13 +70,6 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 @property (nonatomic, strong) id <STMFiling> filing;
 
-- (id <STMSession>)initWithUID:(NSString *)uid
-                        iSisDB:(NSString *)iSisDB
-                    accountOrg:(NSString *)accountOrg
-                  authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                      trackers:(NSArray *)trackers
-                 startSettings:(NSDictionary *)startSettings;
-
 - (BOOL)isRunningTests;
 
 - (id <STMCoreControlling>)controllerWithClass:(Class)controllerClass;
@@ -92,14 +83,6 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 
 @protocol STMSessionManager <NSObject>
-
-- (id <STMSession>)startSessionForUID:(NSString *)uid
-                               iSisDB:(NSString *)iSisDB
-                           accountOrg:(NSString *)accountOrg
-                         authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                             trackers:(NSArray *)trackers
-                        startSettings:(NSDictionary *)startSettings
-              defaultSettingsFileName:(NSString *)defualtSettingsFileName;
 
 - (void)stopSessionForUID:(NSString *)uid;
 - (void)sessionStopped:(id <STMSession>)session;
