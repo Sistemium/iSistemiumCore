@@ -23,17 +23,16 @@
 #define TEST_CHANGED_DATA_MODEL_NAME @"testModelChanged"
 
 
-@interface STMDirectoring : STMCoreSessionFiler
+@interface STMTestDirectoring : STMCoreSessionFiler
 
 @end
 
 
-@implementation STMDirectoring
+@implementation STMTestDirectoring
 
 - (NSBundle *)bundle {
     return [STMFunctions currentTestTarget] ? [NSBundle bundleForClass:[self class]] : [NSBundle mainBundle];
 }
-
 
 @end
 
@@ -57,14 +56,8 @@
     
     [super setUp];
     
-    self.directoring = [[STMDirectoring alloc] initWithOrg:TEST_ORG
-                                                    userId:TEST_UID];
-
-    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] init];
-    filer.directoring = self.directoring;
-    
-    self.filing = filer;
-    
+    self.directoring = [[STMTestDirectoring alloc] initWithOrg:TEST_ORG userId:TEST_UID];
+    self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:self.directoring];
     
 }
 
