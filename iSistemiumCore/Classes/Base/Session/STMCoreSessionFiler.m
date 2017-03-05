@@ -251,8 +251,8 @@
 
 - (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
     
-    // every time we asked for userDocuments, sharedDocuments, persistencePath, picturesPath and webViewsPath
-    // we will call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:]
+    // every time we ask for userDocuments, sharedDocuments, persistencePath, picturesPath or webViewsPath
+    // we call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:]
     // TODO: rewrite all these getters with some kind of lazy instantiation to speed up
     
     NSFileManager *fm = self.fileManager;
