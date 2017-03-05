@@ -107,7 +107,7 @@
 #pragma mark - init
 
 
-+ (instancetype)coreSessionfilingWithDirectoring:(id <STMDirectoring>)directoring {
++ (instancetype)coreSessionFilerWithDirectoring:(id <STMDirectoring>)directoring {
     return [[self alloc] initWithDirectoring:directoring];
 }
 
