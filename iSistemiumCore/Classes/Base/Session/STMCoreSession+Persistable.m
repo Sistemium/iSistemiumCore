@@ -24,7 +24,7 @@
 #import "STMSyncerHelper+Downloading.h"
 
 #import "STMPersisterFantoms.h"
-#import "STMSyncer.h"
+
 
 @implementation STMCoreSession (Persistable)
 
