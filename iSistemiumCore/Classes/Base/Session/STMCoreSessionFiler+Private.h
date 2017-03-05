@@ -13,6 +13,7 @@
 #define PICTURES_PATH @"pictures"
 #define WEBVIEWS_PATH @"webViews"
 
+#define ATTRIBUTE_FILE_PROTECTION_NONE NSFileProtectionKey:NSFileProtectionNone
 
 @interface STMCoreSessionFiler()
 
