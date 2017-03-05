@@ -25,7 +25,6 @@
     }
     
     self.uid = uid;
-    self.iSisDB = iSisDB;
     self.accountOrg = accountOrg;
     self.status = STMSessionStarting;
     self.startSettings = startSettings;
@@ -33,8 +32,6 @@
     self.startTrackers = trackers;
     self.controllers = [NSMutableDictionary dictionary];
 
-#warning - iSisDB ? iSisDB : uid — already used in two places, may be make some method/property for this
-    
     STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:accountOrg
                                                                    userId:iSisDB ? iSisDB : uid];
     

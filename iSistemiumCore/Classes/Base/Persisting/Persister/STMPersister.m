@@ -17,13 +17,11 @@
 
 @implementation STMPersister
 
-+ (instancetype)persisterWithModelName:(NSString *)modelName uid:(NSString *)uid iSisDB:(NSString *)iSisDB filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
++ (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
 
-    STMPersister *persister = [[self.class alloc] initWithModelName:modelName];
+    STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
-    NSString *fmdbFileName = [NSString stringWithFormat:@"%@-%@.db", @"fmdb", iSisDB?iSisDB:uid];
-    
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:fmdbFileName];
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:@"fmdb.db"];
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions

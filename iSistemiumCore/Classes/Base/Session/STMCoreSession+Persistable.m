@@ -36,7 +36,7 @@
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
     
-    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName uid:self.uid iSisDB:self.iSisDB filing:self.filing completionHandler:^(BOOL success) {
+    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName filing:self.filing completionHandler:^(BOOL success) {
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [self persisterCompleteInitializationWithSuccess:success];

@@ -62,8 +62,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @property (readonly) STMDocument *document; // have to remove document property after full implementation of persister
 
 @property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
-@property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *iSisDB;
+@property (nonatomic, readonly) NSString *uid;
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
