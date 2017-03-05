@@ -34,34 +34,6 @@
 }
 
 
-#pragma mark - directoring private methods
-
-- (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    if (![fm fileExistsAtPath:dirPath]) {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:dirPath
-                    withIntermediateDirectories:YES
-                                     attributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
-                                          error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"can't create directory at path: %@, error: %@", dirPath, error.localizedDescription);
-            return NO;
-            
-        }
-        
-    }
-    
-    return YES;
-    
-}
-
-
 #pragma mark - init
 
 
@@ -276,5 +248,25 @@
     
 }
 
+
+- (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
+    
+    NSFileManager *fm = self.fileManager;
+    
+    if ([fm fileExistsAtPath:dirPath]) return YES;
+        
+    NSError *error = nil;
+    BOOL result = [fm createDirectoryAtPath:dirPath
+                withIntermediateDirectories:YES
+                                 attributes:@{ATTRIBUTE_FILE_PROTECTION_NONE}
+                                      error:&error];
+    
+    if (!result) {
+        NSLog(@"can't create directory at path: %@, error: %@", dirPath, error.localizedDescription);
+    }
+    
+    return result;
+    
+}
 
 @end
