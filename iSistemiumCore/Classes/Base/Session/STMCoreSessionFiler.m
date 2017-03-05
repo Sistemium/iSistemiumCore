@@ -6,22 +6,8 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import "STMCoreSessionFiler.h"
-
+#import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
-
-
-@interface STMCoreSessionFiler()
-
-@property (nonatomic, strong) NSString *org;
-@property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *documentsPath;
-@property (nonatomic, strong) NSString *orgPath;
-
-@property (nonatomic, weak) id <STMDirectoring> directoring;
-@property (nonatomic, weak) NSFileManager *fileManager;
-
-@end
 
 
 @implementation STMCoreSessionFiler

@@ -6,15 +6,9 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 #import "STMFiling.h"
 
-
-#define SHARED_PATH @"shared"
-#define PERSISTENCE_PATH @"persistence"
-#define PICTURES_PATH @"pictures"
-#define WEBVIEWS_PATH @"webViews"
-
+// TODO: split away with STMDirectoring implementation, then rename to STMFiler because there's nothing about sessions here
 
 @interface STMCoreSessionFiler : NSObject <STMDirectoring, STMFiling>
 

@@ -10,7 +10,7 @@
 
 #import <CoreData/CoreData.h>
 
-#import "STMCoreSessionFiler.h"
+#import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
 
 
