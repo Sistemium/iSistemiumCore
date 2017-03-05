@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingKeyCreationTimestamp @"deviceCts"
 #define STMPersistingKeyPhantom @"isFantom"
 
+#define STMPersistingRelationshipSuffix @"Id"
 
 #define STMPersistingOptions NSDictionary *
 
