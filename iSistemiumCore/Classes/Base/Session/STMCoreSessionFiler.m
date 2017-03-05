@@ -16,44 +16,16 @@
 
 - (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid {
     
-    self = [super init];
+    self = [self init];
     
-    self.org = org;
-    self.uid = uid;
+    if (!self) return nil;
     
+    NSString *orgPath = [self basePath:[STMFunctions documentsDirectory] withPath:org];
+    
+    self.userDocuments = [self basePath:orgPath withPath:uid];
+    self.sharedDocuments = [self basePath:orgPath withPath:SHARED_PATH];
+
     return [self initWithDirectoring:self];
-    
-}
-
-- (NSString *)documentsPath {
-    
-    if (!_documentsPath) {
-        _documentsPath = [STMFunctions documentsDirectory];
-    }
-    return _documentsPath;
-    
-}
-
-- (void)setOrg:(NSString *)org {
-    
-    _org = org;
-    
-    self.orgPath = [self basePath:self.documentsPath
-                         withPath:org];
-
-}
-
-- (NSString *)userDocuments {
-    
-    return [self basePath:self.orgPath
-                 withPath:self.uid];
-    
-}
-
-- (NSString *)sharedDocuments {
-    
-    return [self basePath:self.orgPath
-                 withPath:SHARED_PATH];
     
 }
 
@@ -108,10 +80,6 @@
 
 
 - (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
-    
-#warning - every time we asked for userDocuments, sharedDocuments, persistencePath, picturesPath and webViewsPath we will call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:], have to taking it into account, it may be slow
-    // for example, the picturesController will save bunch of pictures we have to store picturesPath in it's property
-    // may be we need to think something else about it
     
     NSString *resultPath = [basePath stringByAppendingPathComponent:path];
     return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;

@@ -16,10 +16,8 @@
 
 @interface STMCoreSessionFiler()
 
-@property (nonatomic, strong) NSString *org;
-@property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *documentsPath;
-@property (nonatomic, strong) NSString *orgPath;
+@property (nonatomic, strong) NSString *userDocuments;
+@property (nonatomic, strong) NSString *sharedDocuments;
 
 @property (nonatomic, weak) id <STMDirectoring> directoring;
 @property (nonatomic, weak) NSFileManager *fileManager;

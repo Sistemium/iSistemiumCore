@@ -1,6 +1,6 @@
 //
 //  STMFiling.h
-//  iSisSales
+//  iSistemiumCore
 //
 //  Created by Maxim Grigoriev on 27/02/2017.
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
@@ -8,16 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol STMDirectoring <NSObject>
+@protocol STMDirectoring
 
-- (NSString *)userDocuments;
-- (NSString *)sharedDocuments;
-- (NSBundle *)bundle;
+@property (readonly) NSString *userDocuments;
+@property (readonly) NSString *sharedDocuments;
+@property (readonly) NSBundle *bundle;
 
 @end
 
 
-@protocol STMFiling <NSObject>
+@protocol STMFiling
 
 - (NSString *)basePath:(NSString *)basePath
               withPath:(NSString *)path;
