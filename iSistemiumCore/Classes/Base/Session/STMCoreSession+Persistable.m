@@ -106,8 +106,9 @@
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
     self.settingsController.session = self;
     
-    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
-    [(STMPersister *)self.persistenceDelegate beforeMergeEntityName:STM_RECORDSTATUS_NAME interceptor:(STMRecordStatusController *)[self controllerWithClass:STMRecordStatusController.class]];
+    [self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
+    [self.persistenceDelegate beforeMergeEntityName:STM_RECORDSTATUS_NAME
+                                        interceptor:(STMRecordStatusController *)[self controllerWithClass:STMRecordStatusController.class]];
     
     self.logger = [STMLogger sharedLogger];
     self.logger.session = self;
