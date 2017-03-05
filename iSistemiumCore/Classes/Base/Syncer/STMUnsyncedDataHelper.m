@@ -370,9 +370,9 @@
         
         if (parent) {
             
-            NSString *parentLts = parent[@"lts"];
+            NSString *parentLts = parent[STMPersistingOptionLts];
             
-            BOOL isEmptyLts = (!parentLts || [parentLts isEqualToString:@""]);
+            BOOL isEmptyLts = (![STMFunctions isNotNull:parentLts] || [parentLts isEqualToString:@""]);
             
             if (isEmptyLts) {
                 
