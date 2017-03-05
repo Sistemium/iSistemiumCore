@@ -18,8 +18,11 @@
 @property (nonatomic, strong) NSString *documentsPath;
 @property (nonatomic, strong) NSString *orgPath;
 
+@property (nonatomic, weak) id <STMDirectoring> directoring;
+@property (nonatomic, weak) NSFileManager *fileManager;
 
 @end
+
 
 @implementation STMCoreSessionFiler
 
@@ -29,13 +32,10 @@
     
     self = [super init];
     
-    if (self) {
-        
-        self.org = org;
-        self.uid = uid;
-        
-    }
-    return self;
+    self.org = org;
+    self.uid = uid;
+    
+    return [self initWithDirectoring:self];
     
 }
 
@@ -68,17 +68,6 @@
     
     return [self basePath:self.orgPath
                  withPath:SHARED_PATH];
-    
-}
-
-- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
-    
-#warning - every time we asked for userDocuments, sharedDocuments, persistencePath, picturesPath and webViewsPath we will call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:], have to taking it into account, it may be slow
-    // for example, the picturesController will save bunch of pictures we have to store picturesPath in it's property
-    // may be we need to think something else about it
-    
-    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
-    return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
     
 }
 
@@ -115,61 +104,81 @@
 }
 
 
+#pragma mark - init
+
+
++ (instancetype)coreSessionfilingWithDirectoring:(id <STMDirectoring>)directoring {
+    return [[self alloc] initWithDirectoring:directoring];
+}
+
+- (instancetype)initWithDirectoring:(id <STMDirectoring>)directoring {
+    self = [self init];
+    self.directoring = directoring;
+    return self;
+}
+
+
 #pragma mark - STMFiling protocol
 
-@synthesize directoring = _directoring;
-@synthesize fileManager = _fileManager;
 
-- (NSFileManager *)fileManager {
-    return [NSFileManager defaultManager];
+- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
+    
+#warning - every time we asked for userDocuments, sharedDocuments, persistencePath, picturesPath and webViewsPath we will call [fm fileExistsAtPath:] method inside [STMFunctions dirExistsOrCreateItAtPath:], have to taking it into account, it may be slow
+    // for example, the picturesController will save bunch of pictures we have to store picturesPath in it's property
+    // may be we need to think something else about it
+    
+    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
+    return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    
 }
+
 
 - (NSString *)persistenceBasePath {
     
-    return [self.directoring basePath:[self.directoring userDocuments]
-                             withPath:PERSISTENCE_PATH];
+    return [self basePath:[self.directoring userDocuments]
+                 withPath:PERSISTENCE_PATH];
     
 }
 
 - (NSString *)picturesBasePath {
     
-    return [self.directoring basePath:[self.directoring sharedDocuments]
-                             withPath:PICTURES_PATH];
+    return [self basePath:[self.directoring sharedDocuments]
+                 withPath:PICTURES_PATH];
     
 }
 
 - (NSString *)webViewsBasePath {
     
-    return [self.directoring basePath:[self.directoring sharedDocuments]
-                             withPath:WEBVIEWS_PATH];
+    return [self basePath:[self.directoring sharedDocuments]
+                 withPath:WEBVIEWS_PATH];
     
 }
 
 - (NSString *)persistencePath:(NSString *)folderName {
     
-    return [self.directoring basePath:[self persistenceBasePath]
-                             withPath:folderName];
+    return [self basePath:[self persistenceBasePath]
+                 withPath:folderName];
     
 }
 
 - (NSString *)picturesPath:(NSString *)folderName {
     
-    return [self.directoring basePath:[self picturesBasePath]
-                             withPath:folderName];
+    return [self basePath:[self picturesBasePath]
+                 withPath:folderName];
     
 }
 
 - (NSString *)webViewsPath:(NSString *)folderName {
     
-    return [self.directoring basePath:[self webViewsBasePath]
-                             withPath:folderName];
+    return [self basePath:[self webViewsBasePath]
+                 withPath:folderName];
     
 }
 
 - (NSString *)temporaryDirectoryPathWithPath:(NSString *)path {
     
-    return [self.directoring basePath:NSTemporaryDirectory()
-                             withPath:path];
+    return [self basePath:NSTemporaryDirectory()
+                 withPath:path];
     
 }
 
@@ -294,6 +303,10 @@
 
 
 #pragma mark - filing private methods
+
+- (NSFileManager *)fileManager {
+    return [NSFileManager defaultManager];
+}
 
 - (BOOL)setAttributes:(NSDictionary<NSFileAttributeKey, id> *)attributes ofItemAtPath:(NSString *)path error:(NSError **)error {
     

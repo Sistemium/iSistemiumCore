@@ -61,8 +61,8 @@
     
     NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    completePath = [[self session].directoring basePath:[self basePath]
-                                               withPath:completePath];
+    completePath = [[self session].filing basePath:[self basePath]
+                                          withPath:completePath];
 
     NSFileManager *fm = [NSFileManager defaultManager];
     

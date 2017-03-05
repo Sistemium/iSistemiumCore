@@ -71,7 +71,6 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @property (readonly) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
 
-@property (nonatomic, strong) id <STMDirectoring> directoring;
 @property (nonatomic, strong) id <STMFiling> filing;
 
 - (id <STMSession>)initWithUID:(NSString *)uid

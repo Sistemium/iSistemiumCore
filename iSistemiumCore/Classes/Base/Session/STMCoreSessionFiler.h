@@ -18,5 +18,9 @@
 
 @interface STMCoreSessionFiler : NSObject <STMDirectoring, STMFiling>
 
++ (instancetype)coreSessionfilingWithDirectoring:(id <STMDirectoring>)directoring;
+
+- (instancetype)initWithOrg:(NSString *)org
+                     userId:(NSString *)uid;
 
 @end

@@ -14,7 +14,6 @@
 @implementation STMCoreSession
 
 @synthesize syncer =_syncer;
-@synthesize directoring = _directoring;
 @synthesize filing = _filing;
 
 
@@ -38,9 +37,7 @@
     
     STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:accountOrg
                                                                    userId:iSisDB ? iSisDB : uid];
-    self.directoring = filer;
     
-    filer.directoring = self.directoring;
     self.filing = filer;
     
     [self addObservers];
