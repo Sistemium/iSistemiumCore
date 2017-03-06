@@ -585,11 +585,10 @@
     
     if (self.socketURL) {
         
-        NSMutableDictionary *tempDictionary = [startSettings mutableCopy];
-        [tempDictionary addEntriesFromDictionary:@{@"socketUrl":self.socketURL}];
-        
-        startSettings = tempDictionary;
-        
+        startSettings = [STMFunctions setValue:self.socketURL
+                                        forKey:@"socketUrl"
+                                  inDictionary:startSettings];
+
     }
     
     STMCoreSessionManager *sessionManager = [self sessionManager];
@@ -598,7 +597,6 @@
                                         trackers:trackers
                                    startSettings:startSettings
                          defaultSettingsFileName:@"settings"];
-
 
 }
 
