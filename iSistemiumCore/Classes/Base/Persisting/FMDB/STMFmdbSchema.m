@@ -134,17 +134,10 @@
     
 }
 
-+ (NSString *)ltsTriggerFormat {
-    
-    NSString *format = @"CREATE TRIGGER IF NOT EXISTS %%@_check_lts BEFORE UPDATE OF %@ ON %%@ FOR EACH ROW WHEN OLD.%@ > OLD.%@ BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.%@ <> NEW.%@; END";
-    
-    return [NSString stringWithFormat:format, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts];
-    
-}
 
 - (NSString *)createTableDDL:(NSString *)tableName {
     
-    NSString *format = @"CREATE TABLE IF NOT EXISTS %@ (%@)";
+    NSString *format = @"CREATE TABLE IF NOT EXISTS [%@] (%@)";
     
     NSMutableArray *builtInColumns = [NSMutableArray array];
     
@@ -160,14 +153,39 @@
 
     NSMutableArray *clauses = [NSMutableArray array];
     
-    [clauses addObject:[NSString stringWithFormat:format, [self quoted:tableName], [builtInColumns componentsJoinedByString:@", "]]];
+    // Add columns
+    
+    [clauses addObject:[NSString stringWithFormat:format, tableName, [builtInColumns componentsJoinedByString:@", "]]];
+    
+    // Index phantom column
     
     [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyPhantom]];
     
-    NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
-
-    [clauses addObject:[NSString stringWithFormat:[self.class ltsTriggerFormat], tableName, tableName]];
-    [clauses addObject:[NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName]];
+    // Check Lts trigger
+    
+    NSString *whenUpdated = [NSString stringWithFormat:@"OLD.%@ > OLD.%@", STMPersistingKeyVersion, STMPersistingOptionLts];
+    
+    NSString *abortChanges = [NSString stringWithFormat:@"SELECT RAISE(ABORT, 'ignored') WHERE OLD.%@ <> NEW.%@", STMPersistingKeyVersion, STMPersistingOptionLts];
+    
+    [clauses addObject:[self createTriggerDDL:@"check_lts"
+                                        event:[@"BEFORE UPDATE OF " stringByAppendingString:STMPersistingOptionLts]
+                                    tableName:tableName
+                                         body:abortChanges
+                                         when:whenUpdated]];
+    
+    // Check isRemoved trigger
+    
+    NSString *ignoreRemoved = [@[@"SELECT RAISE(IGNORE) FROM RecordStatus",
+                                 @"WHERE isRemoved = 1 AND objectXid = NEW.%@ LIMIT 1"
+                                 ] componentsJoinedByString:@" "];
+    
+    ignoreRemoved = [NSString stringWithFormat:ignoreRemoved, STMPersistingKeyPrimary];
+    
+    [clauses addObject:[self createTriggerDDL:@"isRemoved"
+                                        event:@"BEFORE INSERT"
+                                    tableName:tableName
+                                         body:ignoreRemoved
+                                         when:nil]];
 
     return [clauses componentsJoinedByString:SQLiteStatementSeparator];
     
