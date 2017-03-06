@@ -228,13 +228,17 @@
     
     if (relationship.deleteRule != NSCascadeDeleteRule) return nil;
 
-    NSString *cascadeTriggerFormat = [NSString stringWithFormat:@"DROP TRIGGER IF EXISTS %%@_cascade_%%@; CREATE TRIGGER IF NOT EXISTS %%@_cascade_%%@ BEFORE DELETE ON %%@ FOR EACH ROW BEGIN DELETE FROM %%@ WHERE %%@ = OLD.%@; END", STMPersistingKeyPrimary];
-    
     NSString *name = relationship.name;
     NSString *childTableName = [STMFunctions removePrefixFromEntityName:relationship.destinationEntity.name];
     NSString *fkColumn = [relationship.inverseRelationship.name stringByAppendingString:STMPersistingRelationshipSuffix];
+
+    NSString *body = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
     
-    return [NSString stringWithFormat:cascadeTriggerFormat, tableName, name, tableName, name, tableName, childTableName, fkColumn];
+    return [self createTriggerDDL:[@"cascade_" stringByAppendingString:name]
+                            event:@"BEFORE DELETE"
+                        tableName:tableName
+                             body:body
+                             when:nil];
 
 }
 
