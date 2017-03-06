@@ -54,7 +54,7 @@
 #pragma mark - directories
 
 - (NSString *)basePath {
-    return (SYSTEM_VERSION < 9.0) ? [STMFunctions documentsDirectory] : [[self session].filing webViewsBasePath];
+    return [[self session].filing webViewsBasePath];
 }
 
 - (NSString *)webViewLocalDirForPath:(NSString *)dirPath createIfNotExist:(BOOL)createIfNotExist shoudCleanBeforeUse:(BOOL)cleanBeforeUse {
