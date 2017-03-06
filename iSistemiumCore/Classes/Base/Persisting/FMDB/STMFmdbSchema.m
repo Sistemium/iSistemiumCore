@@ -241,8 +241,8 @@
     NSArray *formatParts = @[@"DROP TRIGGER IF EXISTS %%1$@_cascade_%%2$@;",
                              @"CREATE TRIGGER IF NOT EXISTS %%1$@_cascade_%%2$@",
                              @"BEFORE DELETE ON %%1$@",
-                             @"FOR EACH ROW BEGIN DELETE FROM %%@",
-                             @"WHERE %%@ = OLD.%@; END"];
+                             @"FOR EACH ROW BEGIN DELETE FROM %%3$@",
+                             @"WHERE %%4$@ = OLD.%@; END"];
     
     NSString *format = [formatParts componentsJoinedByString:@" "];
     
