@@ -256,15 +256,30 @@
     
     [clauses addObject:[self createIndexDDL:tableName columnName:columnName]];
 
-    // FIXME: too long line and too many parameters
-    NSString *phantomTriggerFormat = [NSString stringWithFormat:@"CREATE TRIGGER IF NOT EXISTS %%@_fantom_%%@ BEFORE %%@ ON %%@ FOR EACH ROW WHEN NEW.%%@ is not null BEGIN INSERT INTO %%@ (%@, %@, %@, %@) SELECT NEW.%%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %%@ WHERE %@ = NEW.%%@); END", STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingKeyPrimary];
     
-    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, parentName, @"INSERT", tableName, columnName, parentName, columnName, parentName, columnName]];
+    NSString *phantomFields = [NSString stringWithFormat:@"INSERT INTO [%@] (%@, %@, %@, %@)", parentName, STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingOptionLts, STMPersistingKeyVersion];
+    
+    NSString *phantomData = [NSString stringWithFormat:@"SELECT NEW.%@, 1, null, null", columnName];
+    
+    NSString *phantomSource = [NSString stringWithFormat:@"WHERE NOT EXISTS (SELECT * FROM %@ WHERE %@ = NEW.%@)", parentName, STMPersistingKeyPrimary, columnName];
+    
+    NSString *phantomCondition = [NSString stringWithFormat:@"NEW.%@ is not null", columnName];
     
     
-    NSString *action = [@"UPDATE OF " stringByAppendingString:columnName];
+    NSString *triggerBody = [@[phantomFields, phantomData, phantomSource] componentsJoinedByString:@" "];
     
-    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, [parentName stringByAppendingString:@"_update"], action, tableName, columnName, parentName, columnName, parentName, columnName]];
+    
+    [clauses addObject:[self createTriggerDDL:[@"phantom_" stringByAppendingString:columnName]
+                                        event:@"BEFORE INSERT"
+                                    tableName:tableName
+                                         body:triggerBody
+                                         when:phantomCondition]];
+
+    [clauses addObject:[self createTriggerDDL:[@"phantom_" stringByAppendingString:columnName]
+                                        event:[@"BEFORE UPDATE OF " stringByAppendingString:columnName]
+                                    tableName:tableName
+                                         body:triggerBody
+                                         when:phantomCondition]];
     
     
     return [clauses componentsJoinedByString:SQLiteStatementSeparator];
