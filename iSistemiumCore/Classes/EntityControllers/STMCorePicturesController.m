@@ -21,10 +21,6 @@
 
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
-@property (nonatomic, strong) NSString *imagesCachePath;
-
-@property (nonatomic, strong) NSDictionary *imagesCacheDirectory;
-
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
 
 @property (nonatomic,strong) STMOperationQueue *downloadQueue;
@@ -170,12 +166,8 @@
 
 - (NSString *)imagesCachePath {
     
-    if (!_imagesCachePath) {
-
-        _imagesCachePath = [self.session.filing picturesBasePath];
-    }
+    return [self.session.filing picturesBasePath];
     
-    return _imagesCachePath;
 }
 
 #pragma mark - class methods
@@ -284,38 +276,9 @@
     
 }
 
-- (NSDictionary *)imagesCacheDirectory{
-    
-    if (!_imagesCacheDirectory) {
-        
-        NSMutableDictionary *directories = @{}.mutableCopy;
-        
-        for (NSString *key in self.pictureEntitiesNames){
-            NSString *directory = [self.imagesCachePath stringByAppendingPathComponent:key];
-            
-            NSString *path = [self createPathIfNotExists:directory];
-            
-            if (path == nil) return @{};
-            
-            directories[key] = [self createPathIfNotExists:directory];
-            
-        }
-        
-        _imagesCacheDirectory = directories.copy;
-    }
-    
-    return _imagesCacheDirectory;
-}
-
 - (NSString *)imagesCachePathForEntityName:(NSString *)entityName{
     
-    if ([self.imagesCacheDirectory objectForKey:entityName]){
-        
-        return self.imagesCacheDirectory[entityName];
-        
-    }
-    
-    return nil;
+    return [self.session.filing picturesPath:entityName];
     
 }
 
