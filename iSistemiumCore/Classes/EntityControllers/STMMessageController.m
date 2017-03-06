@@ -111,19 +111,28 @@
     
     if (!_messagesResultsController) {
         
-        NSString *entityName = NSStringFromClass([STMMessage class]);
+        NSManagedObjectContext *context = [STMMessageController document].managedObjectContext;
         
-        STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:entityName];
-        request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+        if (context) {
         
-        NSFetchedResultsController *resultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                                            managedObjectContext:STMMessageController.document.managedObjectContext
-                                                                                              sectionNameKeyPath:nil
-                                                                                                       cacheName:nil];
-        resultsController.delegate = self;
-        [resultsController performFetch:nil];
+            NSString *entityName = NSStringFromClass([STMMessage class]);
+            
+            STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:entityName];
+            
+            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id"
+                                                                      ascending:YES
+                                                                       selector:@selector(compare:)]];
+            
+            NSFetchedResultsController *resultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                                                                                managedObjectContext:context
+                                                                                                  sectionNameKeyPath:nil
+                                                                                                           cacheName:nil];
+            resultsController.delegate = self;
+            [resultsController performFetch:nil];
+            
+            _messagesResultsController = resultsController;
 
-        _messagesResultsController = resultsController;
+        }
         
     }
     return _messagesResultsController;

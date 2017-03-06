@@ -56,13 +56,15 @@
 
 - (void)setCurrentSessionUID:(NSString *)currentSessionUID {
     
-    if ([[self.sessions allKeys] containsObject:currentSessionUID] || !currentSessionUID) {
+    if (!currentSessionUID || self.sessions[currentSessionUID]) {
         
         if (_currentSessionUID != currentSessionUID) {
             
             _currentSessionUID = currentSessionUID;
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged"
-                                                                object:(self.sessions)[_currentSessionUID]];
+            
+// this notification is never observe
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"currentSessionChanged"
+//                                                                object:currentSessionUID ? self.sessions[currentSessionUID] : nil];
             
         }
         
@@ -70,7 +72,9 @@
     
 }
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
+- (id <STMSession>)startSessionWithAuthDelegate:(id<STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings defaultSettingsFileName:(NSString *)defualtSettingsFileName {
+    
+    NSString *uid = authDelegate.userID;
     
     if (!uid) {
         NSLog(@"no uid");
@@ -85,14 +89,17 @@
         [session dismissSession];
     }
     
-    NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName withSchemaName:@"settings_schema"];
+    NSDictionary *validSettings = [STMSettingsData settingsFromFileName:defualtSettingsFileName
+                                                         withSchemaName:@"settings_schema"];
     
     session = [[[self sessionClass] alloc] init];
     session.defaultSettings = validSettings[@"values"];
     session.settingsControls = validSettings[@"controls"];
     session.manager = self;
 
-    session = [session initWithUID:uid iSisDB:iSisDB authDelegate:authDelegate trackers:trackers startSettings:startSettings];
+    session = [session initWithAuthDelegate:authDelegate
+                                   trackers:trackers
+                              startSettings:startSettings];
 
     self.sessions[uid] = session;
 

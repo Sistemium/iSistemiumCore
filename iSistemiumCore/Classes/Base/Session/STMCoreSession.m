@@ -8,12 +8,18 @@
 
 #import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
+#import "STMCoreSessionFiler.h"
+
 
 @implementation STMCoreSession
 
 @synthesize syncer =_syncer;
+@synthesize filing = _filing;
 
-- (instancetype)initWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB authDelegate:(id<STMRequestAuthenticatable>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+
+- (instancetype)initWithAuthDelegate:(id<STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+    
+    NSString *uid = authDelegate.userID;
     
     if (!uid) {
         NSLog(@"no uid");
@@ -21,12 +27,16 @@
     }
     
     self.uid = uid;
-    self.iSisDB = iSisDB;
     self.status = STMSessionStarting;
     self.startSettings = startSettings;
     self.authDelegate = authDelegate;
     self.startTrackers = trackers;
     self.controllers = [NSMutableDictionary dictionary];
+
+    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg
+                                                                   userId:STMIsNull(authDelegate.iSisDB, uid)];
+    
+    self.filing = filer;
     
     [self addObservers];
 
@@ -75,31 +85,26 @@
 
 - (void)dismissSession {
     
-    if (self.status == STMSessionStopped) {
+    if (self.status != STMSessionStopped) return;
         
-        [self removeObservers];
+    [self removeObservers];
+    
+    // TODO: move to +Persistable
+    if (self.document.documentState == UIDocumentStateClosed) return;
         
-        // TODO: move to +Persistable
-        if (self.document.documentState != UIDocumentStateClosed) {
+    [self.document closeWithCompletionHandler:^(BOOL success) {
+        
+        if (!success) return;
             
-            [self.document closeWithCompletionHandler:^(BOOL success) {
-                
-                if (success) {
-                    
-                    for (STMCoreTracker *tracker in self.trackers.allValues) {
-                        [tracker prepareToDestroy];
-                    }
-                    [self.syncer prepareToDestroy];
-                    [self.document.managedObjectContext reset];
-                    [self.manager removeSessionForUID:self.uid];
-                    
-                }
-                
-            }];
-            
+        for (STMCoreTracker *tracker in self.trackers.allValues) {
+            [tracker prepareToDestroy];
         }
         
-    }
+        [self.syncer prepareToDestroy];
+        [self.document.managedObjectContext reset];
+        [self.manager removeSessionForUID:self.uid];
+        
+    }];
     
 }
 
@@ -155,14 +160,6 @@
 
 
 - (void)applicationDidEnterBackground {
-    
-}
-
-- (void)setAuthDelegate:(id<STMRequestAuthenticatable>)authDelegate {
-    
-    if (_authDelegate != authDelegate) {
-        _authDelegate = authDelegate;
-    }
     
 }
 

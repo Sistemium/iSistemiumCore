@@ -171,47 +171,11 @@
 - (NSString *)imagesCachePath {
     
     if (!_imagesCachePath) {
-        
-        NSString *imagesCachePath = [STMFunctions absoluteDataCachePathForPath:IMAGES_CACHE_PATH];
-        
-        _imagesCachePath = [self createPathIfNotExists:imagesCachePath];
-        
+
+        _imagesCachePath = [self.session.filing picturesBasePath];
     }
     
     return _imagesCachePath;
-
-}
-
-- (NSString *)createPathIfNotExists:(NSString *)path {
-
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    if ([fm fileExistsAtPath:path]) {
-        
-        return path;
-        
-    } else {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:path
-                    withIntermediateDirectories:YES
-                                     attributes:nil
-                                          error:&error];
-        
-        if (result) {
-            
-            return path;
-            
-        } else {
-            
-            NSLog(@"can not create path: %@ error:%@",path, error.localizedDescription);
-            
-            return nil;
-            
-        }
-        
-    }
-    
 }
 
 #pragma mark - class methods

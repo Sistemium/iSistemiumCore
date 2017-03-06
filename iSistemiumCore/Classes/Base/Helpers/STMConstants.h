@@ -51,8 +51,8 @@
 #define DATE_FORMAT_WITH_MILLISECONDS @"yyyy-MM-dd HH:mm:ss.SSS"
 #define DATE_FORMAT_WITHOUT_TIME @"yyyy-MM-dd"
 
-#define DATA_CACHE_PATH @"dataCache"
-#define IMAGES_CACHE_PATH @"images"
+//#define DATA_CACHE_PATH @"dataCache"
+//#define IMAGES_CACHE_PATH @"images"
 
 #define RELATIONSHIP_SUFFIX @"Id"
 
@@ -66,7 +66,7 @@
 #define NOTIFICATION_SYNCER_RECEIVED_ENTITIES @"entitiesReceivingDidFinish"
 
 #define NOTIFICATION_SYNCER_SEND_STARTED @"sendStarted"
-#define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT @"bunchOfObjectsSent"
+//#define NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT @"bunchOfObjectsSent"
 #define NOTIFICATION_SYNCER_SEND_FINISHED @"sendFinished"
 
 #define NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE @"entityCountdownChange"
@@ -100,7 +100,6 @@
 #define FREE_SPACE_PRECISION_MiB 200
 #define FREE_SPACE_THRESHOLD 500
 
-
 // Script message's names
 
 #define WK_MESSAGE_ERROR_CATCHER @"errorCatcher"
@@ -125,7 +124,3 @@
 
 
 #endif
-
-#define DEFAULT_SOCKET_TIMEOUT 30
-#define CHECK_SOCKET_AUTHORIZATION_DELAY 15
-

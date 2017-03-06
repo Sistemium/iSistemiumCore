@@ -1067,17 +1067,17 @@
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_STARTED
-             object:self.syncer];
+             object:nil];
 
-    [nc addObserver:self
-           selector:@selector(updateUploadSyncProgressBar)
-               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
-             object:self.syncer];
+//    [nc addObserver:self
+//           selector:@selector(updateUploadSyncProgressBar)
+//               name:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT
+//             object:self.syncer];
     
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_FINISHED
-             object:self.syncer];
+             object:nil];
 
     [nc addObserver:self
            selector:@selector(syncerReceiveStarted)

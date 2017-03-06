@@ -94,12 +94,10 @@
     
     NSString *sessionUID = [STMFunctions uuidString];
     
-    STMCoreSession *session = [self.sessionManager startSessionForUID:sessionUID
-                                                               iSisDB:nil
-                                                         authDelegate:nil
-                                                             trackers:nil
-                                                        startSettings:nil
-                                              defaultSettingsFileName:nil];
+    STMCoreSession *session = [self.sessionManager startSessionWithAuthDelegate:nil
+                                                                       trackers:nil
+                                                                  startSettings:nil
+                                                        defaultSettingsFileName:nil];
     
     XCTAssertNotNil(session);
     XCTAssertEqual(self.sessionManager.currentSession, session);

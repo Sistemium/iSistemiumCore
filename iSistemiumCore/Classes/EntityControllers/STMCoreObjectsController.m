@@ -270,7 +270,7 @@
 
 + (void)logTotalNumberOfObjectsInStorages {
     
-    NSArray *entityNames = [self.persistenceDelegate entitiesByName].allKeys;
+    NSArray *entityNames = [[self.persistenceDelegate entitiesByName].allKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
     
     NSUInteger totalCountFMDB = 0;
     NSUInteger totalCountCoreData = 0;

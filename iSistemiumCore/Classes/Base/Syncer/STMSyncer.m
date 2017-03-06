@@ -772,9 +772,9 @@
         
 //        NSLog(@"synced entityName %@, item %@", entityName, itemData[@"id"]);
         
-        if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
-            self.isSendingData = NO;
-        }
+//        if ([self.dataSyncingDelegate numberOfUnsyncedObjects] == 0) {
+//            self.isSendingData = NO;
+//        }
         
         if (error) {
             NSLog(@"updateResource error: %@", error.localizedDescription);
@@ -791,6 +791,10 @@
         
     }];
 
+}
+
+- (void)finishUnsyncedProcess {
+    self.isSendingData = NO;
 }
 
 - (void)sendStarted {
@@ -813,7 +817,7 @@
 - (void)bunchOfObjectsSent {
 
     [self saveSendDate];
-    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
+//    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_SENT];
     
 }
 

@@ -585,22 +585,18 @@
     
     if (self.socketURL) {
         
-        NSMutableDictionary *tempDictionary = [startSettings mutableCopy];
-        [tempDictionary addEntriesFromDictionary:@{@"socketUrl":self.socketURL}];
-        
-        startSettings = tempDictionary;
-        
+        startSettings = [STMFunctions setValue:self.socketURL
+                                        forKey:@"socketUrl"
+                                  inDictionary:startSettings];
+
     }
     
     STMCoreSessionManager *sessionManager = [self sessionManager];
 
-    [sessionManager startSessionForUID:self.userID
-                                iSisDB:self.iSisDB
-                          authDelegate:self
-                              trackers:trackers
-                         startSettings:startSettings
-               defaultSettingsFileName:@"settings"];
-
+    [sessionManager startSessionWithAuthDelegate:self
+                                        trackers:trackers
+                                   startSettings:startSettings
+                         defaultSettingsFileName:@"settings"];
 
 }
 
