@@ -18,6 +18,11 @@
 
 #define SQLiteStatementSeparator @"; "
 
+#define SQLiteBeforeInsert @"BEFORE INSERT"
+#define SQLiteBeforeDelete @"BEFORE DELETE"
+#define SQLiteBeforeUpdateOf(column) [@"BEFORE UPDATE OF " stringByAppendingString:column]
+
+
 @interface STMFmdbSchema()
 
 @property (nonatomic,weak) FMDatabase *database;
@@ -168,7 +173,7 @@
     NSString *abortChanges = [NSString stringWithFormat:@"SELECT RAISE(ABORT, 'ignored') WHERE OLD.%@ <> NEW.%@", STMPersistingKeyVersion, STMPersistingOptionLts];
     
     [clauses addObject:[self createTriggerDDL:@"check_lts"
-                                        event:[@"BEFORE UPDATE OF " stringByAppendingString:STMPersistingOptionLts]
+                                        event:SQLiteBeforeUpdateOf(STMPersistingOptionLts)
                                     tableName:tableName
                                          body:abortChanges
                                          when:whenUpdated]];
@@ -182,7 +187,7 @@
     ignoreRemoved = [NSString stringWithFormat:ignoreRemoved, STMPersistingKeyPrimary];
     
     [clauses addObject:[self createTriggerDDL:@"isRemoved"
-                                        event:@"BEFORE INSERT"
+                                        event:SQLiteBeforeInsert
                                     tableName:tableName
                                          body:ignoreRemoved
                                          when:nil]];
@@ -253,7 +258,7 @@
     NSString *body = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
     
     return [self createTriggerDDL:[@"cascade_" stringByAppendingString:name]
-                            event:@"BEFORE DELETE"
+                            event:SQLiteBeforeDelete
                         tableName:tableName
                              body:body
                              when:nil];
@@ -285,23 +290,23 @@
     
     NSString *phantomSource = [NSString stringWithFormat:@"WHERE NOT EXISTS (SELECT * FROM %@ WHERE %@ = NEW.%@)", parentName, STMPersistingKeyPrimary, columnName];
     
-    NSString *phantomCondition = [NSString stringWithFormat:@"NEW.%@ is not null", columnName];
+    NSString *columnNotNull = [NSString stringWithFormat:@"NEW.%@ is not null", columnName];
     
     
-    NSString *triggerBody = [@[phantomFields, phantomData, phantomSource] componentsJoinedByString:@" "];
+    NSString *createPhantom = [@[phantomFields, phantomData, phantomSource] componentsJoinedByString:@" "];
     
     
     [clauses addObject:[self createTriggerDDL:[@"phantom_" stringByAppendingString:columnName]
-                                        event:@"BEFORE INSERT"
+                                        event:SQLiteBeforeInsert
                                     tableName:tableName
-                                         body:triggerBody
-                                         when:phantomCondition]];
+                                         body:createPhantom
+                                         when:columnNotNull]];
 
-    [clauses addObject:[self createTriggerDDL:[@"phantom_" stringByAppendingString:columnName]
-                                        event:[@"BEFORE UPDATE OF " stringByAppendingString:columnName]
+    [clauses addObject:[self createTriggerDDL:[@"phantom_update_" stringByAppendingString:columnName]
+                                        event:SQLiteBeforeUpdateOf(columnName)
                                     tableName:tableName
-                                         body:triggerBody
-                                         when:phantomCondition]];
+                                         body:createPhantom
+                                         when:columnNotNull]];
     
     
     return [clauses componentsJoinedByString:SQLiteStatementSeparator];
