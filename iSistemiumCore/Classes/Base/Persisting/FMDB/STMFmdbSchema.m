@@ -219,20 +219,13 @@
 
 - (NSString *)addAttributeDDL:(NSAttributeDescription *)attribute tableName:(NSString *)tableName {
     
-    NSString *dataType = [self sqliteTypeForAttributeType:attribute.attributeType];
-//    NSString *constraints = [attribute.userInfo valueForKey:@"UNIQUE"];
-//    
-//    if (constraints) {
-//        constraints = [NSString stringWithFormat:@"UNIQUE ON CONFLICT %@", constraints];
-//    }
+    NSMutableArray *clauses = [NSMutableArray array];
     
     NSString *columnName = attribute.name;
-    
+    NSString *dataType = [self sqliteTypeForAttributeType:attribute.attributeType];
     NSString *columnDDL = [self columnDDL:columnName datatype:dataType constraints:nil];
-    
-    NSString *format = @"ALTER TABLE %@ ADD COLUMN %@";
-    
-    NSMutableArray *clauses = [NSMutableArray arrayWithObject:[NSString stringWithFormat:format, tableName, columnDDL]];
+        
+    [clauses addObject:[NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@", tableName, columnDDL]];
     
     if (attribute.indexed) {
         [clauses addObject:[self createIndexDDL:tableName columnName:columnName]];
@@ -255,12 +248,12 @@
     NSString *childTableName = [STMFunctions removePrefixFromEntityName:relationship.destinationEntity.name];
     NSString *fkColumn = [relationship.inverseRelationship.name stringByAppendingString:STMPersistingRelationshipSuffix];
 
-    NSString *body = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
+    NSString *deleteChildren = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
     
     return [self createTriggerDDL:[@"cascade_" stringByAppendingString:name]
                             event:SQLiteBeforeDelete
                         tableName:tableName
-                             body:body
+                             body:deleteChildren
                              when:nil];
 
 }
@@ -272,17 +265,20 @@
         return nil;
     }
     
+    NSMutableArray *clauses = [NSMutableArray array];
+    
     NSString *columnName = [relationship.name stringByAppendingString:STMPersistingRelationshipSuffix];
     NSString *parentName = [STMFunctions removePrefixFromEntityName:relationship.destinationEntity.name];
     NSString *constraints = [NSString stringWithFormat:@"REFERENCES %@ ON DELETE SET NULL", parentName];
     NSString *columnDDL = [self columnDDL:columnName datatype:SQLiteText constraints:constraints];
-    NSString *format = @"ALTER TABLE %@ ADD COLUMN %@";
     
+    [clauses addObject:[NSString stringWithFormat: @"ALTER TABLE [%@] ADD COLUMN %@", tableName, columnDDL]];
     
-    NSMutableArray *clauses = [NSMutableArray arrayWithObject:[NSString stringWithFormat:format, tableName, columnDDL]];
+    // Index the column
     
     [clauses addObject:[self createIndexDDL:tableName columnName:columnName]];
 
+    // Create Phantom triggers
     
     NSString *phantomFields = [NSString stringWithFormat:@"INSERT INTO [%@] (%@, %@, %@, %@)", parentName, STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingOptionLts, STMPersistingKeyVersion];
     
