@@ -19,9 +19,6 @@
 
 @protocol STMFiling
 
-- (NSString *)basePath:(NSString *)basePath
-              withPath:(NSString *)path;
-
 - (NSString *)persistenceBasePath;
 - (NSString *)picturesBasePath;
 - (NSString *)webViewsBasePath;

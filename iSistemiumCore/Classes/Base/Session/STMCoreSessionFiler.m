@@ -50,15 +50,6 @@
 
 #pragma mark - STMFiling protocol
 
-
-- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
-    
-    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
-    return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
-    
-}
-
-
 - (NSString *)persistenceBasePath {
     
     return [self basePath:[self.directoring userDocuments]
@@ -248,6 +239,12 @@
     
 }
 
+- (NSString *)basePath:(NSString *)basePath withPath:(NSString *)path {
+    
+    NSString *resultPath = [basePath stringByAppendingPathComponent:path];
+    return [self dirExistsOrCreateItAtPath:resultPath] ? resultPath : nil;
+    
+}
 
 - (BOOL)dirExistsOrCreateItAtPath:(NSString *)dirPath {
     
@@ -272,5 +269,6 @@
     return result;
     
 }
+
 
 @end
