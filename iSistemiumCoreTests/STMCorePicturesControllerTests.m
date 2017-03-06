@@ -26,13 +26,11 @@
 
 - (void)testDownloadConnectionForObject {
     
-    [STMGarbageCollector searchUnusedImages];
-    
 #warning the test is removing real pictures because operating InMemory
     
     // FIXME: remember unusedImageFiles at start of the test and ignore them later
     
-    XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 0);
+    XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
     
     [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
     
@@ -89,19 +87,19 @@
         // Need to set real persister because there are real pictures
         [STMCorePicturesController sharedController].persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
         
-        [STMGarbageCollector searchUnusedImages];
+        [STMGarbageCollector.sharedInstance searchUnusedImages];
         
-        XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 3);
+        XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 3);
         
         expectation = [self expectationWithDescription:@"removingPictures"];
         
-        [STMGarbageCollector removeUnusedImages].then(^(NSError *error){
+        [STMGarbageCollector.sharedInstance removeUnusedImages].then(^(NSError *error){
             XCTAssertEqual(error, nil);
             [expectation fulfill];
         });
         
         [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
-            XCTAssertEqual(STMGarbageCollector.unusedImageFiles.count, 0);
+            XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
         }];
         
     }];
