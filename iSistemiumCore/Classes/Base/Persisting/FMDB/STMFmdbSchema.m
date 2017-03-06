@@ -290,5 +290,17 @@
 
 }
 
+- (NSString *)createTriggerDDL:(NSString *)name event:(NSString *)event tableName:(NSString *)tableName body:(NSString *)body when:(NSString *)when {
+    
+    when = when ? [@"WHEN " stringByAppendingString:when] : @"";
+    
+    NSArray *formats = @[[NSString stringWithFormat:@"CREATE TRIGGER IF NOT EXISTS %@_%@", tableName, name],
+                         [NSString stringWithFormat:@"%@ ON [%@] FOR EACH ROW %@", event, tableName, when],
+                         [NSString stringWithFormat:@"BEGIN %@; END", body]];
+    
+    return [formats componentsJoinedByString:@" "];
+    
+}
+
 
 @end
