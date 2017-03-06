@@ -169,12 +169,13 @@
     
     [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyPhantom]];
     
-    format = [@""    stringByAppendingString:@"CREATE TRIGGER IF NOT EXISTS %1$@_isRemoved "];
-    format = [format stringByAppendingString:@"BEFORE INSERT ON %1$@ FOR EACH ROW BEGIN "];
-    format = [format stringByAppendingString:@"SELECT RAISE(IGNORE) FROM RecordStatus "];
-    format = [format stringByAppendingString:@"WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END"];
+    NSArray *parts = @[@"CREATE TRIGGER IF NOT EXISTS %1$@_isRemoved",
+                       @"BEFORE INSERT ON %1$@ FOR EACH ROW BEGIN",
+                       @"SELECT RAISE(IGNORE) FROM RecordStatus",
+                       [NSString stringWithFormat:@"WHERE isRemoved = 1 AND objectXid = NEW.%@ LIMIT 1; END", STMPersistingKeyPrimary]
+                       ];
     
-    NSString *isRemovedTriggerFormat = format;
+    NSString *isRemovedTriggerFormat = [parts componentsJoinedByString:@" "];
 
 //    NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %1$@_isRemoved BEFORE INSERT ON %1$@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
 
