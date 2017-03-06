@@ -136,14 +136,9 @@
 
 + (NSString *)ltsTriggerFormat {
     
-    NSArray *formatParts = @[@"CREATE TRIGGER IF NOT EXISTS %%1$@_check_lts",
-                             @"BEFORE UPDATE OF %1$@ ON %%1$@ FOR EACH ROW",
-                             @"WHEN OLD.%2$@ > OLD.%1$@ BEGIN",
-                             @"SELECT RAISE(ABORT, 'ignored') WHERE OLD.%2$@ <> NEW.%1$@; END"];
+    NSString *format = @"CREATE TRIGGER IF NOT EXISTS %%@_check_lts BEFORE UPDATE OF %@ ON %%@ FOR EACH ROW WHEN OLD.%@ > OLD.%@ BEGIN SELECT RAISE(ABORT, 'ignored') WHERE OLD.%@ <> NEW.%@; END";
     
-    NSString *format = [formatParts componentsJoinedByString:@" "];
-    
-    return [NSString stringWithFormat:format, STMPersistingOptionLts, STMPersistingKeyVersion];
+    return [NSString stringWithFormat:format, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingOptionLts];
     
 }
 
@@ -169,24 +164,19 @@
     
     [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyPhantom]];
     
-    NSArray *parts = @[@"CREATE TRIGGER IF NOT EXISTS %1$@_isRemoved",
-                       @"BEFORE INSERT ON %1$@ FOR EACH ROW BEGIN",
-                       @"SELECT RAISE(IGNORE) FROM RecordStatus",
-                       [NSString stringWithFormat:@"WHERE isRemoved = 1 AND objectXid = NEW.%@ LIMIT 1; END", STMPersistingKeyPrimary]
-                       ];
-    
-    NSString *isRemovedTriggerFormat = [parts componentsJoinedByString:@" "];
+    NSString *isRemovedTriggerFormat = @"CREATE TRIGGER IF NOT EXISTS %@_isRemoved BEFORE INSERT ON %@ FOR EACH ROW BEGIN SELECT RAISE(IGNORE) FROM RecordStatus WHERE isRemoved = 1 AND objectXid = NEW.id LIMIT 1; END";
 
-    [clauses addObject:[NSString stringWithFormat:[self.class ltsTriggerFormat], tableName]];
-    [clauses addObject:[NSString stringWithFormat:isRemovedTriggerFormat, tableName]];
+    [clauses addObject:[NSString stringWithFormat:[self.class ltsTriggerFormat], tableName, tableName]];
+    [clauses addObject:[NSString stringWithFormat:isRemovedTriggerFormat, tableName, tableName]];
 
     return [clauses componentsJoinedByString:SQLiteStatementSeparator];
     
 }
 
+
 - (NSString *)createIndexDDL:(NSString *)tableName columnName:(NSString *)columnName {
-    NSString *format = @"CREATE INDEX IF NOT EXISTS %1$@_%2$@ on %1$@ (%2$@);";
-    return [NSString stringWithFormat:format, tableName, columnName];
+    NSString *format = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
+    return [NSString stringWithFormat:format, tableName, columnName, tableName, columnName];
 }
 
 - (NSString *)columnDDL:(NSString *)columnName datatype:(NSString *)datatype constraints:(NSString *)constraints {
@@ -238,21 +228,13 @@
     
     if (relationship.deleteRule != NSCascadeDeleteRule) return nil;
 
-    NSArray *formatParts = @[@"DROP TRIGGER IF EXISTS %%1$@_cascade_%%2$@;",
-                             @"CREATE TRIGGER IF NOT EXISTS %%1$@_cascade_%%2$@",
-                             @"BEFORE DELETE ON %%1$@",
-                             @"FOR EACH ROW BEGIN DELETE FROM %%3$@",
-                             @"WHERE %%4$@ = OLD.%@; END"];
+    NSString *cascadeTriggerFormat = [NSString stringWithFormat:@"DROP TRIGGER IF EXISTS %%@_cascade_%%@; CREATE TRIGGER IF NOT EXISTS %%@_cascade_%%@ BEFORE DELETE ON %%@ FOR EACH ROW BEGIN DELETE FROM %%@ WHERE %%@ = OLD.%@; END", STMPersistingKeyPrimary];
     
-    NSString *format = [formatParts componentsJoinedByString:@" "];
-    
-    NSString *cascadeTriggerFormat = [NSString stringWithFormat:format, STMPersistingKeyPrimary];
-
     NSString *name = relationship.name;
     NSString *childTableName = [STMFunctions removePrefixFromEntityName:relationship.destinationEntity.name];
     NSString *fkColumn = [relationship.inverseRelationship.name stringByAppendingString:STMPersistingRelationshipSuffix];
     
-    return [NSString stringWithFormat:cascadeTriggerFormat, tableName, name, childTableName, fkColumn];
+    return [NSString stringWithFormat:cascadeTriggerFormat, tableName, name, tableName, name, tableName, childTableName, fkColumn];
 
 }
 
@@ -275,29 +257,20 @@
     [clauses addObject:[self createIndexDDL:tableName columnName:columnName]];
 
     // FIXME: too long line and too many parameters
+    NSString *phantomTriggerFormat = [NSString stringWithFormat:@"CREATE TRIGGER IF NOT EXISTS %%@_fantom_%%@ BEFORE %%@ ON %%@ FOR EACH ROW WHEN NEW.%%@ is not null BEGIN INSERT INTO %%@ (%@, %@, %@, %@) SELECT NEW.%%@, 1, null, null WHERE NOT EXISTS (SELECT * FROM %%@ WHERE %@ = NEW.%%@); END", STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingOptionLts, STMPersistingKeyVersion, STMPersistingKeyPrimary];
     
-    NSArray *formatParts = @[@"CREATE TRIGGER IF NOT EXISTS %%1$@_fantom_%%2$@",
-                             @"BEFORE %%3$@ ON %%1$@ FOR EACH ROW",
-                             @"WHEN NEW.%%4$@ is not null",
-                             @"BEGIN INSERT INTO %%5$@ (%1$@, %@, %@, %@)",
-                             @"SELECT NEW.%%4$@, 1, null, null",
-                             @"WHERE NOT EXISTS (SELECT * FROM %%5$@ WHERE %1$@ = NEW.%%4$@); END"];
-    
-    format = [formatParts componentsJoinedByString:@" "];
-
-    NSString *phantomTriggerFormat = [NSString stringWithFormat:format, STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingOptionLts, STMPersistingKeyVersion];
-    
-    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, parentName, @"INSERT", columnName, parentName]];
+    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, parentName, @"INSERT", tableName, columnName, parentName, columnName, parentName, columnName]];
     
     
     NSString *action = [@"UPDATE OF " stringByAppendingString:columnName];
-
-    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, [parentName stringByAppendingString:@"_update"], action, columnName, parentName]];
+    
+    [clauses addObject:[NSString stringWithFormat:phantomTriggerFormat, tableName, [parentName stringByAppendingString:@"_update"], action, tableName, columnName, parentName, columnName, parentName, columnName]];
     
     
     return [clauses componentsJoinedByString:SQLiteStatementSeparator];
     
 }
+
 
 - (NSString *)quoted:(NSString *)aString {
     return [NSString stringWithFormat:@"[%@]", aString];
