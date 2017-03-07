@@ -85,50 +85,21 @@
     NSArray *builtInAttributes = [self builtInAttributes];
     NSArray *ignoredAttributes = [builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
     
+// handle added entities
     for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
     
         NSString *entityName = entityDescription.name;
-    
-        if ([modelMapping.destinationModeling storageForEntityName:entityName] != STMStorageTypeFMDB){
-            NSLog(@"STMFmdb ignore entity: %@", entityName);
-            continue;
-        }
 
-        NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+        NSArray *columns = [self addEntity:entityName
+                                  modeling:modelMapping.destinationModeling
+                         builtInAttributes:builtInAttributes
+                         ignoredAttributes:ignoredAttributes];
+
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-        BOOL tableExisted = [self.database tableExists:tableName];
-
-        if (!tableExisted) {
-            [self executeDDL:[self createTableDDL:tableName]];
-        }
-
-        NSArray *columnAttributes = [modelMapping.destinationModeling fieldsForEntityName:entityName].allValues;
-        NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
-        
-        columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
-
-        // it is noticeable faster (on a real device) to create columns with one statement with the table
-        // but for now columns creation is separated to simplify code
-        
-        NSArray *addedColumns = [self addColumns:columnAttributes
-                                         toTable:tableName
-                                    tableExisted:tableExisted];
-        
-        [columns addObjectsFromArray:addedColumns];
-        
-        NSArray *relationships = [modelMapping.destinationModeling objectRelationshipsForEntityName:entityName
-                                                                                           isToMany:nil
-                                                                                            cascade:nil].allValues;
-        
-        NSArray *addedRelationships = [self addRelationships:relationships
-                                                     toTable:tableName
-                                                tableExisted:tableExisted];
-        
-        [columns addObjectsFromArray:addedRelationships];
-        
-        columnsDictionary[tableName] = columns.copy;
+        columnsDictionary[tableName] = columns;
 
     }
+    
     
     NSLog(@"columnsDictionary %@", columnsDictionary);
     
