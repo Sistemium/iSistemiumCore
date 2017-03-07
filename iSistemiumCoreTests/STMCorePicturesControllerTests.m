@@ -45,11 +45,11 @@
                               @"thumbnailHref":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png",
                               };
     
-    NSString *expectedImagePath = [xid stringByAppendingString:@".jpg"];
+    NSString *expectedImagePath = [entityName stringByAppendingPathComponent:[xid stringByAppendingString:@".jpg"]];
     
-    NSString *expectedResizedImagePath = [@"resized_" stringByAppendingString:expectedImagePath];
+    NSString *expectedResizedImagePath = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
     
-    NSString *expectedThumbnailPath = [@"thumbnail_" stringByAppendingString:expectedImagePath];
+    NSString *expectedThumbnailPath = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
     
     NSError *error;
 
