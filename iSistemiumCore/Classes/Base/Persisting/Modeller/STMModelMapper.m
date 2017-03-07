@@ -26,6 +26,8 @@
 @synthesize addedEntities = _addedEntities;
 @synthesize removedEntities = _removedEntities;
 
+@synthesize addedProperties = _addedProperties;
+
 
 - (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
     
@@ -72,6 +74,31 @@
         _removedEntities = [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
     }
     return _removedEntities;
+    
+}
+
+- (NSDictionary <NSString *, NSArray <NSString *> *> *)addedProperties {
+    
+    if (!_addedProperties) {
+        
+        NSMutableDictionary <NSString *, NSArray <NSString *> *> *addedProperties = @{}.mutableCopy;
+        
+        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+        
+        for (NSEntityMapping *entityMapping in transformedEntities) {
+            
+            NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
+            
+            if (propertiesSet.count) {
+                addedProperties[entityMapping.destinationEntityName] = propertiesSet.allObjects;
+            }
+
+        }
+        
+        _addedProperties = addedProperties;
+        
+    }
+    return _addedProperties;
     
 }
 
