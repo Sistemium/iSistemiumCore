@@ -461,16 +461,18 @@
         }
             
         error = nil;
-        NSString *path = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:picture[@"imagePath"]];
+        NSString *path = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (photoData && photoData.length > 0) {
             
-            attributes = [self setImagesFromData:photoData forPicture:picture withEntityName:entityName andUpload:NO];
+            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
             
             if (!picture) continue;
             
-            [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            NSArray *fields = @[@"resizedImagePath",@"thumbnailPath",@"imagePath"];
+            
+            [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields}  completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
                 [controller postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                   userInfo:[STMFunctions setValue:result forKey:@"attributes" inDictionary:picture]];
             }];
@@ -478,10 +480,10 @@
             
         } else if (error) {
             
-            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", picture[@"imagePath"], error.localizedDescription];
+            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", attributes[@"imagePath"], error.localizedDescription];
             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
             
-        } else if (picture[@"href"] && ![picture[@"href"] isKindOfClass:NSNull.class]) {
+        } else if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
             
             [self hrefProcessingForObject:picture.mutableCopy];
             
