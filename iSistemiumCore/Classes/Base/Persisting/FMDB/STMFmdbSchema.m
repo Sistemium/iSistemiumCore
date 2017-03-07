@@ -78,6 +78,9 @@
     
 }
 
+
+#pragma mark - createTablesWithModelMapping
+
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
     NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
@@ -296,6 +299,9 @@
     return columns.copy;
 
 }
+
+
+#pragma mark - createTablesWithModelling
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
     
