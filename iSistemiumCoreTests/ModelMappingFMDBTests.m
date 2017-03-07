@@ -41,22 +41,32 @@
 - (void)testCreateAndMigrateFMDB {
     
     // Create a database as if it is first user's login using first test bundle
-    self.stmFMDB = [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:@"testModel"]
-                                               filing:self.filing
-                                             fileName:@"fmdb.db"];
+    NSManagedObjectModel *sourceModel = [self modelWithName:nil];
+    NSManagedObjectModel *destinationModel = [self modelWithName:@"testModel"];
+    
+    NSError *error = nil;
+    STMModelMapper *mapper = [[STMModelMapper alloc] initWithSourceModel:sourceModel
+                                                        destinationModel:destinationModel
+                                                                   error:&error];
+    
+    self.stmFMDB = [self fmdbWithModelMapping:mapper];
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
-        // Assert the tables are properly created with [db columnExists:inTableWithName:] declared in FMDatabaseAdditions.h
+        [self checkDb:db withModelMapping:mapper];
     }];
     
-    // TODO: some new STMFmdb's method that gets and applies modelMapping between the test models
+    // Create a database as if it is have new version of data model
+    sourceModel = [self modelWithName:@"testModel"];
+    destinationModel = [self modelWithName:@"testModelChanged"];
     
-    self.stmFMDB = [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:@"testModelChanged"]
-                                               filing:self.filing
-                                             fileName:@"fmdb.db"];
+    mapper = [[STMModelMapper alloc] initWithSourceModel:sourceModel
+                                        destinationModel:destinationModel
+                                                   error:&error];
+
+    self.stmFMDB = [self fmdbWithModelMapping:mapper];
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
-        // Assert the tables are properly migrated
+        [self checkDb:db withModelMapping:mapper];
     }];
     
 }
