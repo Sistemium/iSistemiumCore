@@ -610,7 +610,7 @@
     NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:fileName];
     
     NSError *error = nil;
-    BOOL result = [data writeToFile:imagePath
+    BOOL result = imagePath && data && [data writeToFile:imagePath
                             options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                               error:&error];
     
@@ -636,7 +636,7 @@
     NSData *resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
 
     NSError *error = nil;
-    BOOL result = [resizedImageData writeToFile:resizedImagePath
+    BOOL result = resizedImagePath && resizedImageData && [resizedImageData writeToFile:resizedImagePath
                                         options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                                           error:&error];
     
@@ -660,7 +660,7 @@
     NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:thumbnailFileName];
     
     NSError *error = nil;
-    BOOL result = [thumbnail writeToFile:imagePath
+    BOOL result = imagePath && thumbnail &&  [thumbnail writeToFile:imagePath
                                  options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
                                    error:&error];
     
