@@ -59,6 +59,13 @@
     
 }
 
+- (STMFmdb *)fmdbWithModelName:(NSString *)modelName {
+    
+    return [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:modelName]
+                                       filing:self.filing
+                                     fileName:@"fmdb.db"];
+}
+
 - (id <STMModelling>)modelerWithModelName:(NSString *)modelName {
     
     NSURL *url = [NSURL fileURLWithPath:[self.filing bundledModelFile:modelName]];
