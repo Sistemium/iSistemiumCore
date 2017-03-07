@@ -220,7 +220,7 @@
 
 - (BOOL)fileExistsAtPath:(NSString *)path{
 
-    return [self fileExistsAtPath:path];
+    return [self.fileManager fileExistsAtPath:path];
     
 }
 
