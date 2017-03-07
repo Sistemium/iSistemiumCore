@@ -20,6 +20,7 @@
 @property (nonatomic, strong, readonly) NSMigrationManager *migrationManager;
 
 @property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *addedEntities;
+@property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *removedEntities;
 
 @property (nonatomic, strong, readonly) id <STMModelling> sourceModeling;
 @property (nonatomic, strong, readonly) id <STMModelling> destinationModeling;

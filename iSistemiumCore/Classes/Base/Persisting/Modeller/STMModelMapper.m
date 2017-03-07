@@ -16,11 +16,15 @@
 
 @synthesize sourceModel = _sourceModel;
 @synthesize sourceModeling = _sourceModeling;
+
 @synthesize destinationModel = _destinationModel;
 @synthesize destinationModeling = _destinationModeling;
+
 @synthesize mappingModel = _mappingModel;
 @synthesize migrationManager = _migrationManager;
+
 @synthesize addedEntities = _addedEntities;
+@synthesize removedEntities = _removedEntities;
 
 
 - (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
@@ -62,13 +66,30 @@
 
 }
 
+- (NSArray <NSEntityDescription *> *)removedEntities {
+    
+    if (!_removedEntities) {
+        _removedEntities = [self mappingEntitiesWithType:NSRemoveEntityMappingType];
+    }
+    return _removedEntities;
+    
+}
+
+#pragma mark - private methods
+
 - (NSArray <NSEntityDescription *> *)mappingEntitiesWithType:(NSEntityMappingType)mappingType {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType == %d", mappingType];
     NSArray <NSEntityMapping *> *entityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
     
     NSArray <NSEntityDescription *> *result = [STMFunctions mapArray:entityMappings withBlock:^id _Nonnull(NSEntityMapping *  _Nonnull entityMapping) {
-        return [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+        
+        if (mappingType == NSRemoveEntityMappingType) {
+            return [self.migrationManager sourceEntityForEntityMapping:entityMapping];
+        } else {
+            return [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+        }
+        
     }];
     
     return result;
