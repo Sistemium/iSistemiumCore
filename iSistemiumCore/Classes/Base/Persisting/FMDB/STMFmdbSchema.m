@@ -146,6 +146,8 @@
 
     }
     
+    NSLog(@"columnsDictionary %@", columnsDictionary);
+    
     return columnsDictionary.copy;
     
 }
