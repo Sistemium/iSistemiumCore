@@ -11,7 +11,6 @@
 #import "STMFmdb+Private.h"
 #import "STMModeller.h"
 
-#import "FMDatabaseAdditions.h"
 
 @interface ModelMappingFMDBTests : XCTestCase <STMDirectoring>
 
