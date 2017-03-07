@@ -23,6 +23,10 @@ extension Set {
     
     private var _unusedImageFiles:Set<String>?
     
+    private lazy var filing:STMFiling = {
+        return STMCoreSessionManager.shared().currentSession.filing
+    }()
+    
     var unusedImageFiles : Set<String>{
         get{
             if _unusedImageFiles == nil{
@@ -49,7 +53,7 @@ extension Set {
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in self.unusedImageFiles{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
+                        try self.filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
@@ -70,6 +74,7 @@ extension Set {
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
         var imageFilePaths = Dictionary<String,String>()
+        
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
         while let element = enumerator?.nextObject() as? String {
@@ -84,15 +89,21 @@ extension Set {
         for image in allImages{
             
             let data = image["attributes"] as! Dictionary<String,Any>
-            
+        
             if let path = data["imagePath"] as? String{
-                usedImageFiles.insert(path)
+                if let name = NSURL(fileURLWithPath: path).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
             if let resizedPath = data["resizedImagePath"] as? String{
-                usedImageFiles.insert(resizedPath)
+                if let name = NSURL(fileURLWithPath: resizedPath).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
             if let thumbnailPath = data["thumbnailPath"] as? String{
-                usedImageFiles.insert(thumbnailPath)
+                if let name = NSURL(fileURLWithPath: thumbnailPath).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
@@ -137,12 +148,12 @@ extension Set {
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
                     if let imagePath = image["imagePath"] as? String{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
+                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
                         image["imagePath"] = nil
                     }
                     
                     if let resizedImagePath = image["resizedImagePath"] as? String{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
                         image["resizedImagePath"] = nil
                     }
                     
