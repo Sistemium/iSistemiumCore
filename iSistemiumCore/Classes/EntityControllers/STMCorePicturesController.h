@@ -27,6 +27,4 @@
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
 
-- (NSString *)imagesCachePathForEntityName:(NSString *)entityName;
-
 @end

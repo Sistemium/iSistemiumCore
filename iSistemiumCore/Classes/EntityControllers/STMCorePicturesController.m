@@ -265,12 +265,6 @@
     
 }
 
-- (NSString *)imagesCachePathForEntityName:(NSString *)entityName{
-    
-    return [self.session.filing picturesPath:entityName];
-    
-}
-
 + (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
     
     NSString *entityName = picture[@"entityName"];

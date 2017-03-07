@@ -10,6 +10,7 @@
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMCoreObjectsController.h"
 #import "STMCorePicturesController.h"
+#import "STMSessionManager.h"
 
 @implementation STMScriptMessageHandler (Private)
 
@@ -191,7 +192,7 @@
 - (void)getPictureWithEntityName:(NSString *)entityName withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
-    NSString *path = [[STMCorePicturesController.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:imagePath];
+    NSString *path = [[STMSessionManager.sharedManager.currentSession.filing picturesBasePath] stringByAppendingPathComponent:imagePath];
     NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
     
     if (!imageData) {
