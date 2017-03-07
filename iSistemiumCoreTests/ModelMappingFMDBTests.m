@@ -59,6 +59,14 @@
     
 }
 
+- (STMFmdb *)fmdbWithModelMapping:(id <STMModelMapping>)modelMapping {
+    
+    return [[STMFmdb alloc] initWithModelMapping:modelMapping
+                                          filing:self.filing
+                                        fileName:@"fmdb.db"];
+    
+}
+
 - (STMFmdb *)fmdbWithModelName:(NSString *)modelName {
     
     return [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:modelName]
