@@ -105,11 +105,25 @@
 }
 
 - (id <STMModelling>)modelerWithModelName:(NSString *)modelName {
+    return [STMModeller modellerWithModel:[self modelWithName:modelName]];
+}
+
+- (NSManagedObjectModel *)modelWithName:(NSString *)name {
     
-    NSURL *url = [NSURL fileURLWithPath:[self.filing bundledModelFile:modelName]];
-    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    NSManagedObjectModel *model = nil;
     
-    return [STMModeller modellerWithModel:model];
+    if (!name) {
+        
+        model = [[NSManagedObjectModel alloc] init];
+        
+    } else {
+        
+        NSURL *url = [NSURL fileURLWithPath:[self.filing bundledModelFile:name]];
+        model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+        
+    }
+
+    return model;
     
 }
 
