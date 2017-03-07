@@ -1,0 +1,28 @@
+//
+//  STMModelMapping.h
+//  iSisSales
+//
+//  Created by Maxim Grigoriev on 07/03/2017.
+//  Copyright © 2017 Sistemium UAB. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+#import <CoreData/CoreData.h>
+#import "STMModelling.h"
+
+
+@protocol STMModelMapping <NSObject>
+
+@property (nonatomic, strong, readonly) NSManagedObjectModel *sourceModel;
+@property (nonatomic, strong, readonly) NSManagedObjectModel *destinationModel;
+@property (nonatomic, strong, readonly) NSMappingModel *mappingModel;
+@property (nonatomic, strong, readonly) NSMigrationManager *migrationManager;
+
+@property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *addedEntities;
+
+@property (nonatomic, strong, readonly) id <STMModelling> sourceModeling;
+@property (nonatomic, strong, readonly) id <STMModelling> destinationModeling;
+
+
+@end
