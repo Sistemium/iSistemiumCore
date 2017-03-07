@@ -283,8 +283,6 @@
 
 + (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
     
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    
     NSString *entityName = picture[@"entityName"];
     
     NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
@@ -306,8 +304,8 @@
             
             NSLog(@"! new resizedImagePath for picture %@", attributes[@"id"]);
 
-            if ([fileManager fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
-                [fileManager removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
+            if ([self.session.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
+                [self.session.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
             }
 
             NSLog(@"save new resizedImage file for picture %@", attributes[@"id"]);
@@ -353,7 +351,7 @@
     NSString *lastPathComponent = [path lastPathComponent];
     NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:lastPathComponent];
     
-    if ([[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
+    if ([self.session.filing fileExistsAtPath:imagePath]) {
         return lastPathComponent;
     } else {
         return nil;
@@ -384,15 +382,13 @@
         NSString *resizedImagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:resizedFileName];
         NSString *thumbnailPath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:thumbnailFileName];
         
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        
         NSError *error;
         
         NSMutableArray *fieldsToUpdate = @[].mutableCopy;
         
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
         
-        if ([fileManager fileExistsAtPath:imagePath isDirectory:nil] && ![fileName isEqualToString:mutAttributes[@"imagePath"]]) {
+        if ([self.session.filing fileExistsAtPath:imagePath] && ![fileName isEqualToString:mutAttributes[@"imagePath"]]) {
         
             mutAttributes[@"imagePath"] = fileName;
             
@@ -400,7 +396,7 @@
         
         }
         
-        if ([fileManager fileExistsAtPath:resizedImagePath isDirectory:nil] && ![resizedFileName isEqualToString:mutAttributes[@"resizedImagePath"]]) {
+        if ([self.session.filing fileExistsAtPath:resizedImagePath] && ![resizedFileName isEqualToString:mutAttributes[@"resizedImagePath"]]) {
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
             
@@ -408,7 +404,7 @@
             
         }
         
-        if ([fileManager fileExistsAtPath:thumbnailPath isDirectory:nil] && ![thumbnailFileName isEqualToString:mutAttributes[@"thumbnailPath"]]) {
+        if ([self.session.filing fileExistsAtPath:thumbnailPath] && ![thumbnailFileName isEqualToString:mutAttributes[@"thumbnailPath"]]) {
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
             
@@ -903,13 +899,11 @@
 + (void)removeImageFile:(NSString *)filePath withEntityName:(NSString *)entityName{
     
     NSString *imagePath = [[self.sharedController imagesCachePathForEntityName:entityName] stringByAppendingPathComponent:filePath];
-    
-    NSFileManager *fileManager = [NSFileManager defaultManager];
 
-    if ([fileManager fileExistsAtPath:imagePath isDirectory:nil]) {
+    if ([self.session.filing fileExistsAtPath:imagePath]) {
 
         NSError *error;
-        BOOL success = [fileManager removeItemAtPath:imagePath error:&error];
+        BOOL success = [self.session.filing removeItemAtPath:imagePath error:&error];
         
         if (success) {
             
