@@ -23,6 +23,8 @@
 @property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *removedEntities;
 
 @property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSString *> *> *addedProperties;
+@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSString *> *> *removedProperties;
+
 @property (nonatomic, strong, readonly) id <STMModelling> sourceModeling;
 @property (nonatomic, strong, readonly) id <STMModelling> destinationModeling;
 

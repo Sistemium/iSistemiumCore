@@ -27,6 +27,7 @@
 @synthesize removedEntities = _removedEntities;
 
 @synthesize addedProperties = _addedProperties;
+@synthesize removedProperties = _removedProperties;
 
 
 - (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
@@ -101,6 +102,32 @@
     return _addedProperties;
     
 }
+
+- (NSDictionary <NSString *, NSArray <NSString *> *> *)removedProperties {
+    
+    if (!_removedProperties) {
+        
+        NSMutableDictionary <NSString *, NSArray <NSString *> *> *removedProperties = @{}.mutableCopy;
+        
+        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+        
+        for (NSEntityMapping *entityMapping in transformedEntities) {
+            
+            NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
+            
+            if (propertiesSet.count) {
+                removedProperties[entityMapping.destinationEntityName] = propertiesSet.allObjects;
+            }
+            
+        }
+        
+        _removedProperties = removedProperties;
+
+    }
+    return _removedProperties;
+    
+}
+
 
 #pragma mark - private methods
 
