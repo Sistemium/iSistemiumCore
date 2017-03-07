@@ -89,8 +89,6 @@
     
         NSString *entityName = entityDescription.name;
     
-// as we use added entities here, we use modelMapping.destinationModeling
-        
         if ([modelMapping.destinationModeling storageForEntityName:entityName] != STMStorageTypeFMDB){
             NSLog(@"STMFmdb ignore entity: %@", entityName);
             continue;
@@ -112,35 +110,21 @@
         // it is noticeable faster (on a real device) to create columns with one statement with the table
         // but for now columns creation is separated to simplify code
         
-        for (NSAttributeDescription *attribute in columnAttributes) {
-            
-            [columns addObject:attribute.name];
-            // if the column exists we get an error
-            // TODO: add only new columns from modelMapping
-            
-            if (!tableExisted) {
-                [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
-            }
-            
-        }
-
+        NSArray *addedColumns = [self addColumns:columnAttributes
+                                         toTable:tableName
+                                    tableExisted:tableExisted];
+        
+        [columns addObjectsFromArray:addedColumns];
+        
         NSArray *relationships = [modelMapping.destinationModeling objectRelationshipsForEntityName:entityName
                                                                                            isToMany:nil
                                                                                             cascade:nil].allValues;
-        for (NSRelationshipDescription *relationship in relationships) {
-            
-            if (relationship.isToMany) {
-                [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
-                continue;
-            }
-
-            [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
-            
-            if (!tableExisted) {
-                [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
-            }
-
-        }
+        
+        NSArray *addedRelationships = [self addRelationships:relationships
+                                                     toTable:tableName
+                                                tableExisted:tableExisted];
+        
+        [columns addObjectsFromArray:addedRelationships];
         
         columnsDictionary[tableName] = columns.copy;
 
@@ -150,6 +134,49 @@
     
     return columnsDictionary.copy;
     
+}
+
+- (NSArray <NSString *> *)addColumns:(NSArray <NSAttributeDescription *> *)columnAttributes toTable:(NSString *)tableName tableExisted:(BOOL)tableExisted {
+    
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
+
+    for (NSAttributeDescription *attribute in columnAttributes) {
+        
+        [columns addObject:attribute.name];
+        // if the column exists we get an error
+        // TODO: add only new columns from modelMapping
+        
+        if (!tableExisted) {
+            [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
+        }
+        
+    }
+    
+    return columns.copy;
+
+}
+
+- (NSArray <NSString *> *)addRelationships:(NSArray <NSRelationshipDescription *> *)relationships toTable:(NSString *)tableName tableExisted:(BOOL)tableExisted {
+    
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
+
+    for (NSRelationshipDescription *relationship in relationships) {
+        
+        if (relationship.isToMany) {
+            [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
+            continue;
+        }
+        
+        [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
+        
+        if (!tableExisted) {
+            [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
+        }
+        
+    }
+    
+    return columns.copy;
+
 }
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
