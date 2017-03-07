@@ -109,6 +109,52 @@
 
     }
     
+    NSDictionary *entitiesByName = [modelMapping.destinationModeling entitiesByName];
+    
+// handle added properties
+    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+        
+        NSEntityDescription *entityDescription = entitiesByName[key];
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
+        BOOL tableExisted = [self.database tableExists:tableName];
+
+        NSMutableArray *columns = [columnsDictionary[tableName] mutableCopy];
+        if (!columns) columns = @[].mutableCopy;
+
+        for (NSString *property in obj) {
+            
+            NSAttributeDescription *attributeDescription = entityDescription.attributesByName[property];
+            
+            if (attributeDescription) {
+                
+                NSArray *result = [self addColumns:@[attributeDescription]
+                                           toTable:tableName
+                                      tableExisted:tableExisted];
+                
+                [columns addObjectsFromArray:result];
+                continue;
+                
+            }
+
+            NSRelationshipDescription *relationshipDescription = entityDescription.relationshipsByName[property];
+            
+            if (relationshipDescription) {
+                
+                NSArray *result = [self addRelationships:@[relationshipDescription]
+                                                 toTable:tableName
+                                            tableExisted:tableExisted];
+                
+                [columns addObjectsFromArray:result];
+                continue;
+                
+            }
+
+        }
+        
+        columnsDictionary[tableName] = columns;
+        
+    }];
+    
     NSLog(@"columnsDictionary %@", columnsDictionary);
     
     return columnsDictionary.copy;
