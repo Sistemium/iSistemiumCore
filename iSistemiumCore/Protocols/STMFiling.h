@@ -42,4 +42,6 @@
 - (BOOL)enumerateDirAtPath:(NSString *)dirPath
                  withBlock:(BOOL (^)(NSString *path, NSError **error))enumDirBlock;
 
+- (BOOL)fileExistsAtPath:(NSString *)path;
+
 @end
