@@ -100,6 +100,14 @@
 
     }
     
+// handle removed entities
+    for (NSEntityDescription *entityDescription in modelMapping.removedEntities) {
+        
+        NSString *entityName = entityDescription.name;
+        NSLog(@"have to remove %@", entityName);
+#warning - need some method to remove tables
+
+    }
     
     NSLog(@"columnsDictionary %@", columnsDictionary);
     
