@@ -404,7 +404,7 @@
         
         NSLog(@"!!! add %@", entityMapping.destinationEntityName);
         
-        NSLog(@"destinationEntityForEntityMapping: %@", [migrationManager destinationEntityForEntityMapping:entityMapping]);
+//        NSLog(@"destinationEntityForEntityMapping: %@", [migrationManager destinationEntityForEntityMapping:entityMapping]);
         
     }
     
