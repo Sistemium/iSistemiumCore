@@ -136,6 +136,36 @@
     
 }
 
+- (NSArray <NSString *> *)addEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling builtInAttributes:(NSArray *)builtInAttributes ignoredAttributes:(NSArray *)ignoredAttributes {
+    
+    if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
+        
+        NSLog(@"STMFmdb ignore entity: %@", entityName);
+        return @[];
+        
+    }
+    
+    NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+    BOOL tableExisted = [self.database tableExists:tableName];
+    
+    if (!tableExisted) {
+        [self executeDDL:[self createTableDDL:tableName]];
+    }
+    
+    NSArray *propertiesColumns = [self processPropertiesForEntity:entityName
+                                                         modeling:modeling
+                                                        tableName:tableName
+                                                     tableExisted:tableExisted
+                                                builtInAttributes:builtInAttributes
+                                                ignoredAttributes:ignoredAttributes];
+    
+    [columns addObjectsFromArray:propertiesColumns];
+    
+    return columns.copy;
+    
+}
+
 - (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName tableExisted:(BOOL)tableExisted builtInAttributes:(NSArray *)builtInAttributes ignoredAttributes:(NSArray *)ignoredAttributes {
     
     NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
