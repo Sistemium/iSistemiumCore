@@ -10,6 +10,8 @@
 #import "STMCoreSessionFiler.h"
 #import "STMFmdb+Private.h"
 #import "STMModeller.h"
+#import "STMModelMapper.h"
+#import "STMFunctions.h"
 
 
 @interface ModelMappingFMDBTests : XCTestCase <STMDirectoring>
