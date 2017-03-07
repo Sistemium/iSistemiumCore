@@ -86,7 +86,7 @@
             BOOL result = [db columnExists:column inTableWithName:tableName];
             
             if (!result) {
-                NSLog(@"%@ have no column %@", column, tableName);
+                NSLog(@"%@ have no column %@", tableName, column);
             } else {
                 NSLog(@"%@ %@ OK", tableName, column);
             }
