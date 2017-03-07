@@ -59,6 +59,34 @@
     
 }
 
+- (void)checkDb:(FMDatabase *)db withModelMapping:(id <STMModelMapping>)modelMapping {
+    
+    NSArray <NSString *> *entitiesNames = modelMapping.destinationModeling.entitiesByName.allKeys;
+    
+    for (NSString *entityName in entitiesNames) {
+        
+        NSArray <NSString *> *fields = [modelMapping.destinationModeling fieldsForEntityName:entityName].allKeys;
+        
+        for (NSString *column in fields) {
+            
+            NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+            
+            BOOL result = [db columnExists:column inTableWithName:tableName];
+            
+            if (!result) {
+                NSLog(@"%@ have no column %@", column, tableName);
+            } else {
+                NSLog(@"%@ %@ OK", tableName, column);
+            }
+            
+            XCTAssertTrue(result);
+            
+        }
+        
+    }
+
+}
+
 - (STMFmdb *)fmdbWithModelMapping:(id <STMModelMapping>)modelMapping {
     
     return [[STMFmdb alloc] initWithModelMapping:modelMapping
