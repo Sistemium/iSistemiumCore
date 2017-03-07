@@ -45,9 +45,9 @@
         
         _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
                                                            destinationModel:destinationModel];
-        
+#ifdef DEBUG
         [self showMappingInfo];
-        
+#endif
     }
     
     return self;
@@ -101,12 +101,7 @@
 
 - (void)showMappingInfo {
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType == %d", NSCopyEntityMappingType];
-    NSArray <NSEntityMapping *> *copyEntityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
-    NSArray *copyEntitiesNames = [copyEntityMappings valueForKeyPath:@"name"];
-    NSLog(@"remaining entities: %@", [copyEntitiesNames componentsJoinedByString:@", "])
-    
-    predicate = [NSPredicate predicateWithFormat:@"mappingType != %d", NSCopyEntityMappingType];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType != %d", NSCopyEntityMappingType];
     NSArray *changedEntityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
     
     NSArray *entityMappingTypes = @[@(NSAddEntityMappingType),
