@@ -136,6 +136,38 @@
     
 }
 
+- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName tableExisted:(BOOL)tableExisted builtInAttributes:(NSArray *)builtInAttributes ignoredAttributes:(NSArray *)ignoredAttributes {
+    
+    NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+
+    NSArray *columnAttributes = [modeling fieldsForEntityName:entityName].allValues;
+    NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
+    
+    columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
+    
+    // it is noticeable faster (on a real device) to create columns with one statement with the table
+    // but for now columns creation is separated to simplify code
+    
+    NSArray *addedColumns = [self addColumns:columnAttributes
+                                     toTable:tableName
+                                tableExisted:tableExisted];
+    
+    [columns addObjectsFromArray:addedColumns];
+    
+    NSArray *relationships = [modeling objectRelationshipsForEntityName:entityName
+                                                               isToMany:nil
+                                                                cascade:nil].allValues;
+    
+    NSArray *addedRelationships = [self addRelationships:relationships
+                                                 toTable:tableName
+                                            tableExisted:tableExisted];
+    
+    [columns addObjectsFromArray:addedRelationships];
+
+    return columns.copy;
+    
+}
+
 - (NSArray <NSString *> *)addColumns:(NSArray <NSAttributeDescription *> *)columnAttributes toTable:(NSString *)tableName tableExisted:(BOOL)tableExisted {
     
     NSMutableArray <NSString *> *columns = @[].mutableCopy;
