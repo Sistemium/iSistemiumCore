@@ -60,7 +60,7 @@
 - (NSArray <NSEntityDescription *> *)addedEntities {
     
     if (!_addedEntities) {
-        _addedEntities = [self mappingEntitiesWithType:NSAddEntityMappingType];
+        _addedEntities = [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
     }
     return _addedEntities;
 
@@ -69,7 +69,7 @@
 - (NSArray <NSEntityDescription *> *)removedEntities {
     
     if (!_removedEntities) {
-        _removedEntities = [self mappingEntitiesWithType:NSRemoveEntityMappingType];
+        _removedEntities = [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
     }
     return _removedEntities;
     
@@ -77,10 +77,9 @@
 
 #pragma mark - private methods
 
-- (NSArray <NSEntityDescription *> *)mappingEntitiesWithType:(NSEntityMappingType)mappingType {
+- (NSArray <NSEntityDescription *> *)mappingEntitiesDescriptionsWithType:(NSEntityMappingType)mappingType {
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType == %d", mappingType];
-    NSArray <NSEntityMapping *> *entityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
+    NSArray <NSEntityMapping *> *entityMappings = [self mappingEntitiesWithType:mappingType];
     
     NSArray <NSEntityDescription *> *result = [STMFunctions mapArray:entityMappings withBlock:^id _Nonnull(NSEntityMapping *  _Nonnull entityMapping) {
         
@@ -95,6 +94,17 @@
     return result;
     
 }
+
+- (NSArray <NSEntityMapping *> *)mappingEntitiesWithType:(NSEntityMappingType)mappingType {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType == %d", mappingType];
+    NSArray <NSEntityMapping *> *entityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
+
+    return entityMappings;
+    
+}
+
+
 
 
 #pragma mark - info
