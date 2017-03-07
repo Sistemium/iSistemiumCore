@@ -54,13 +54,13 @@
 - (NSArray <NSEntityDescription *> *)addedEntities {
     
     if (!_addedEntities) {
-        _addedEntities = [self mappedEntitiesWithType:NSAddEntityMappingType];
+        _addedEntities = [self mappingEntitiesWithType:NSAddEntityMappingType];
     }
     return _addedEntities;
 
 }
 
-- (NSArray <NSEntityDescription *> *)mappedEntitiesWithType:(NSEntityMappingType)mappingType {
+- (NSArray <NSEntityDescription *> *)mappingEntitiesWithType:(NSEntityMappingType)mappingType {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType == %d", mappingType];
     NSArray <NSEntityMapping *> *entityMappings = [self.mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
