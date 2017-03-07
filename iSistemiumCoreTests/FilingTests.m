@@ -238,6 +238,14 @@
     
     [self parseMappingModel:mappingModel];
 
+    NSLog(@"mappingModel with empty and bundled model:");
+    
+    mappingModel = [NSMappingModel inferredMappingModelForSourceModel:[[NSManagedObjectModel alloc] init]
+                                                     destinationModel:bundledDataModel
+                                                                error:&error];
+    
+    [self parseMappingModel:mappingModel];
+
 // copy bundeled to user
     [self copyBundledDataModelToUsersDocs:TEST_CHANGED_DATA_MODEL_NAME];
 

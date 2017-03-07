@@ -167,7 +167,6 @@
 - (NSString *)imagesCachePath {
     
     return [self.session.filing picturesBasePath];
-    
 }
 
 #pragma mark - class methods
