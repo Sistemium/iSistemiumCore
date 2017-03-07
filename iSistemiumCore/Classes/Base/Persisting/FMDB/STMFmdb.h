@@ -7,12 +7,17 @@
 //
 
 #import "STMModelling.h"
+#import "STMModelMapping.h"
 #import "STMFiling.h"
 
 
 @interface STMFmdb : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
+
+- (instancetype)initWithModelMapping:(id <STMModelMapping>)modelMapping
+                              filing:(id <STMFiling>)filing
+                            fileName:(NSString *)fileName;
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling
                            filing:(id <STMFiling>)filing
