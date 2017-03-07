@@ -155,6 +155,37 @@
         
     }];
     
+// handle removed properties
+    
+    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+#warning - need some method to remove columns
+        
+        NSEntityDescription *entityDescription = entitiesByName[key];
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
+//        BOOL tableExisted = [self.database tableExists:tableName];
+        
+        for (NSString *property in obj) {
+            
+            NSAttributeDescription *attributeDescription = entityDescription.attributesByName[property];
+            
+            if (attributeDescription) {
+                NSLog(@"have to remove attribute %@ from %@", property, tableName);
+                continue;
+                
+            }
+            
+            NSRelationshipDescription *relationshipDescription = entityDescription.relationshipsByName[property];
+            
+            if (relationshipDescription) {
+                NSLog(@"have to remove relationship %@ from %@", property, tableName);
+                continue;
+                
+            }
+            
+        }
+        
+    }];
+    
     NSLog(@"columnsDictionary %@", columnsDictionary);
     
     return columnsDictionary.copy;
