@@ -9,10 +9,16 @@
 #import "FMDatabase.h"
 #import "STMModelling.h"
 
+#import "STMModelMapping.h"
+
+
 @interface STMFmdbSchema : NSObject
 
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database;
 
-- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling;
+- (NSDictionary *)createTablesWithModelling:(id <STMModelling>)modelling;
+
+- (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;
+
 
 @end

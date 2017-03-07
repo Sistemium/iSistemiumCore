@@ -33,18 +33,15 @@
 
 @implementation STMFmdbSchema
 
-
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database {
     return [[self alloc] initWithDatabase:database];
 }
-
 
 - (instancetype)initWithDatabase:(FMDatabase *)database {
     self = [self init];
     self.database = database;
     return self;
 }
-
 
 - (NSString *)sqliteTypeForAttributeType:(NSAttributeType)attributeType {
     
@@ -71,6 +68,87 @@
     
 }
 
+- (NSArray *)builtInAttributes {
+    
+    return @[STMPersistingKeyPrimary,
+             STMPersistingKeyCreationTimestamp,
+             STMPersistingKeyVersion,
+             STMPersistingOptionLts,
+             STMPersistingKeyPhantom];
+    
+}
+
+- (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
+
+    NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
+
+    NSArray *builtInAttributes = [self builtInAttributes];
+    NSArray *ignoredAttributes = [builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
+    
+    for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
+    
+        NSString *entityName = entityDescription.name;
+    
+// as we use added entities here, we use modelMapping.destinationModeling
+        
+        if ([modelMapping.destinationModeling storageForEntityName:entityName] != STMStorageTypeFMDB){
+            NSLog(@"STMFmdb ignore entity: %@", entityName);
+            continue;
+        }
+
+        NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        BOOL tableExisted = [self.database tableExists:tableName];
+
+        if (!tableExisted) {
+            [self executeDDL:[self createTableDDL:tableName]];
+        }
+
+        NSArray *columnAttributes = [modelMapping.destinationModeling fieldsForEntityName:entityName].allValues;
+        NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
+        
+        columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
+
+        // it is noticeable faster (on a real device) to create columns with one statement with the table
+        // but for now columns creation is separated to simplify code
+        
+        for (NSAttributeDescription *attribute in columnAttributes) {
+            
+            [columns addObject:attribute.name];
+            // if the column exists we get an error
+            // TODO: add only new columns from modelMapping
+            
+            if (!tableExisted) {
+                [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
+            }
+            
+        }
+
+        NSArray *relationships = [modelMapping.destinationModeling objectRelationshipsForEntityName:entityName
+                                                                                           isToMany:nil
+                                                                                            cascade:nil].allValues;
+        for (NSRelationshipDescription *relationship in relationships) {
+            
+            if (relationship.isToMany) {
+                [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
+                continue;
+            }
+
+            [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
+            
+            if (!tableExisted) {
+                [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
+            }
+
+        }
+        
+        columnsDictionary[tableName] = columns.copy;
+
+    }
+    
+    return columnsDictionary.copy;
+    
+}
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
     
