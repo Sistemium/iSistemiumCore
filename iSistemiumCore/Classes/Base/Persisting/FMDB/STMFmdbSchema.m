@@ -132,7 +132,6 @@
         
         NSEntityDescription *entityDescription = entitiesByName[key];
         NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
-        BOOL tableExisted = [self.database tableExists:tableName];
 
         NSMutableArray *columns = [columnsDictionary[tableName] mutableCopy];
         if (!columns) columns = @[].mutableCopy;
@@ -144,8 +143,7 @@
             if (attributeDescription) {
                 
                 NSArray *result = [self addColumns:@[attributeDescription]
-                                           toTable:tableName
-                                      tableExisted:tableExisted];
+                                           toTable:tableName];
                 
                 [columns addObjectsFromArray:result];
                 continue;
@@ -157,8 +155,7 @@
             if (relationshipDescription) {
                 
                 NSArray *result = [self addRelationships:@[relationshipDescription]
-                                                 toTable:tableName
-                                            tableExisted:tableExisted];
+                                                 toTable:tableName];
                 
                 [columns addObjectsFromArray:result];
                 continue;
@@ -227,8 +224,7 @@
     
     NSArray *propertiesColumns = [self processPropertiesForEntity:entityName
                                                          modeling:modeling
-                                                        tableName:tableName
-                                                     tableExisted:tableExisted];
+                                                        tableName:tableName];
     
     [columns addObjectsFromArray:propertiesColumns];
     
@@ -236,7 +232,7 @@
     
 }
 
-- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName tableExisted:(BOOL)tableExisted {
+- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName {
     
     NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
 
@@ -249,8 +245,7 @@
     // but for now columns creation is separated to simplify code
     
     NSArray *addedColumns = [self addColumns:columnAttributes
-                                     toTable:tableName
-                                tableExisted:tableExisted];
+                                     toTable:tableName];
     
     [columns addObjectsFromArray:addedColumns];
     
@@ -259,8 +254,7 @@
                                                                 cascade:nil].allValues;
     
     NSArray *addedRelationships = [self addRelationships:relationships
-                                                 toTable:tableName
-                                            tableExisted:tableExisted];
+                                                 toTable:tableName];
     
     [columns addObjectsFromArray:addedRelationships];
 
@@ -268,19 +262,14 @@
     
 }
 
-- (NSArray <NSString *> *)addColumns:(NSArray <NSAttributeDescription *> *)columnAttributes toTable:(NSString *)tableName tableExisted:(BOOL)tableExisted {
+- (NSArray <NSString *> *)addColumns:(NSArray <NSAttributeDescription *> *)columnAttributes toTable:(NSString *)tableName {
     
     NSMutableArray <NSString *> *columns = @[].mutableCopy;
 
     for (NSAttributeDescription *attribute in columnAttributes) {
         
         [columns addObject:attribute.name];
-        // if the column exists we get an error
-        // TODO: add only new columns from modelMapping
-        
-        if (!tableExisted) {
-            [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
-        }
+        [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
         
     }
     
@@ -288,7 +277,7 @@
 
 }
 
-- (NSArray <NSString *> *)addRelationships:(NSArray <NSRelationshipDescription *> *)relationships toTable:(NSString *)tableName tableExisted:(BOOL)tableExisted {
+- (NSArray <NSString *> *)addRelationships:(NSArray <NSRelationshipDescription *> *)relationships toTable:(NSString *)tableName {
     
     NSMutableArray <NSString *> *columns = @[].mutableCopy;
 
@@ -300,10 +289,7 @@
         }
         
         [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
-        
-        if (!tableExisted) {
-            [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
-        }
+        [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
         
     }
     
