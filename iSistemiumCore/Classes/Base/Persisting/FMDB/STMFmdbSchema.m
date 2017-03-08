@@ -27,6 +27,10 @@
 
 @property (nonatomic,weak) FMDatabase *database;
 
+@property (nonatomic, strong) NSArray *builtInAttributes;
+@property (nonatomic, strong) NSArray *ignoredAttributes;
+
+
 @end
 
 
@@ -70,11 +74,25 @@
 
 - (NSArray *)builtInAttributes {
     
-    return @[STMPersistingKeyPrimary,
-             STMPersistingKeyCreationTimestamp,
-             STMPersistingKeyVersion,
-             STMPersistingOptionLts,
-             STMPersistingKeyPhantom];
+    if (!_builtInAttributes) {
+     
+        _builtInAttributes = @[STMPersistingKeyPrimary,
+                               STMPersistingKeyCreationTimestamp,
+                               STMPersistingKeyVersion,
+                               STMPersistingOptionLts,
+                               STMPersistingKeyPhantom];
+        
+    }
+    return _builtInAttributes;
+    
+}
+
+- (NSArray *)ignoredAttributes {
+    
+    if (!_ignoredAttributes) {
+        _ignoredAttributes = [self.builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
+    }
+    return _ignoredAttributes;
     
 }
 
@@ -84,9 +102,6 @@
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
     NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
-
-    NSArray *builtInAttributes = [self builtInAttributes];
-    NSArray *ignoredAttributes = [builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
     
 // handle added entities
     for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
@@ -94,9 +109,7 @@
         NSString *entityName = entityDescription.name;
 
         NSArray *columns = [self addEntity:entityName
-                                  modeling:modelMapping.destinationModeling
-                         builtInAttributes:builtInAttributes
-                         ignoredAttributes:ignoredAttributes];
+                                  modeling:modelMapping.destinationModeling];
 
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
         columnsDictionary[tableName] = columns;
@@ -195,7 +208,7 @@
     
 }
 
-- (NSArray <NSString *> *)addEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling builtInAttributes:(NSArray *)builtInAttributes ignoredAttributes:(NSArray *)ignoredAttributes {
+- (NSArray <NSString *> *)addEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling {
     
     if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
         
@@ -204,7 +217,7 @@
         
     }
     
-    NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+    NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
     BOOL tableExisted = [self.database tableExists:tableName];
     
@@ -215,9 +228,7 @@
     NSArray *propertiesColumns = [self processPropertiesForEntity:entityName
                                                          modeling:modeling
                                                         tableName:tableName
-                                                     tableExisted:tableExisted
-                                                builtInAttributes:builtInAttributes
-                                                ignoredAttributes:ignoredAttributes];
+                                                     tableExisted:tableExisted];
     
     [columns addObjectsFromArray:propertiesColumns];
     
@@ -225,12 +236,12 @@
     
 }
 
-- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName tableExisted:(BOOL)tableExisted builtInAttributes:(NSArray *)builtInAttributes ignoredAttributes:(NSArray *)ignoredAttributes {
+- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName tableExisted:(BOOL)tableExisted {
     
-    NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+    NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
 
     NSArray *columnAttributes = [modeling fieldsForEntityName:entityName].allValues;
-    NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
+    NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", self.ignoredAttributes];
     
     columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
     
@@ -305,14 +316,6 @@
 
 - (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
     
-    NSArray *builtInAttributes = @[STMPersistingKeyPrimary,
-                                   STMPersistingKeyCreationTimestamp,
-                                   STMPersistingKeyVersion,
-                                   STMPersistingOptionLts,
-                                   STMPersistingKeyPhantom];
-    
-    NSArray *ignoredAttributes = [builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
-    
     NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
 
     // TODO: create only the new tables of the modelMapping, not all the modelling.entitiesByName
@@ -324,7 +327,7 @@
             continue;
         }
         
-        NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
+        NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
         BOOL tableExisted = [self.database tableExists:tableName];
         
@@ -333,7 +336,7 @@
         }
         
         NSArray *columnAttributes = [modelling fieldsForEntityName:entityName].allValues;
-        NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
+        NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", self.ignoredAttributes];
         
         columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
         
