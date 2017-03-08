@@ -7,8 +7,8 @@
 //
 
 #import "STMCoreAppManifestHandler.h"
-#import "STMCoreAuthController.h"
 
+#import "STMCoreSessionManager.h"
 
 #define LOCAL_HTML_DIR @"localHTML"
 #define UPDATE_DIR @"update"
@@ -34,6 +34,10 @@
 
 @implementation STMCoreAppManifestHandler
 
+- (STMCoreSession *)session {
+    return [STMCoreSessionManager sharedManager].currentSession;
+}
+
 - (NSString *)completeRelativePathForPath:(NSString *)path {
     
     if (!path) path = @"";
@@ -53,8 +57,8 @@
     
     NSString *completePath = [self completeRelativePathForPath:dirPath];
     
-    completePath = (SYSTEM_VERSION < 9.0) ? [STMFunctions absoluteDocumentsPathForPath:completePath] : [STMFunctions absoluteDataCachePathForPath:completePath];
-    
+    completePath = [[self session].filing webViewsPath:completePath];
+
     NSFileManager *fm = [NSFileManager defaultManager];
     
     BOOL isDir;
@@ -138,7 +142,7 @@
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                          timeoutInterval:15];
     
-    request = [[STMCoreAuthController authController] authenticateRequest:request];
+    request = [[self session].authDelegate authenticateRequest:request];
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     
@@ -599,7 +603,7 @@
                                                                  error:&error];
         
         NSString *relativePath = [self completeRelativePathForPath:LOCAL_HTML_DIR];
-        NSString *completeTempPath = [STMFunctions absoluteTemporaryPathForPath:relativePath];
+        NSString *completeTempPath = [[self session].filing temporaryDirectoryPathWithPath:relativePath];
         
         if (indexHTMLString && [fm fileExistsAtPath:completeTempPath]) {
             
@@ -651,7 +655,7 @@
             } else {
                 
                 [self.owner loadUrl:[NSURL fileURLWithPath:indexHTMLPath]
-                          atBaseDir:[STMFunctions absoluteDataCachePath]];
+                          atBaseDir:[[self session].filing webViewsBasePath]];
                 
             }
             

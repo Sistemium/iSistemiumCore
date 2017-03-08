@@ -11,41 +11,19 @@
 #import "STMFmdb+Transactions.h"
 #import "STMFunctions.h"
 #import "STMPredicateToSQL.h"
+#import "STMFmdbSchema.h"
 
 #import <sqlite3.h>
 
 @implementation STMFmdb
 
-- (instancetype)initWithModelling:(id <STMModelling>)modelling fileName:(NSString *)fileName{
+- (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing fileName:(NSString *)fileName{
     
     self = [self init];
     
-    NSString *documentDirectory = [STMFunctions documentsDirectory];
+    NSString *fmdbPath = [filing persistencePath:@"fmdb"];
     
-    NSString *fmdbFolderPath = [documentDirectory stringByAppendingPathComponent:@"fmdb"];
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    if (![fm fileExistsAtPath:fmdbFolderPath]) {
-        
-        NSDictionary *attributes = @{NSFileProtectionKey : NSFileProtectionNone};
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:fmdbFolderPath
-                    withIntermediateDirectories:NO
-                                     attributes:attributes
-                                          error:&error];
-        
-        if (!result) {
-            
-            NSLog(@"create fmdb folder error: %@", error.localizedDescription);
-            return nil;
-
-        }
-
-    }
-    
-    NSString *dbPath = [fmdbFolderPath stringByAppendingPathComponent:fileName];
+    NSString *dbPath = [fmdbPath stringByAppendingPathComponent:fileName];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
@@ -56,7 +34,7 @@
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
 
     [self.queue inDatabase:^(FMDatabase *database){
-        self.columnsByTable = [self createTablesWithModelling:modelling inDatabase:database];
+        self.columnsByTable = [[STMFmdbSchema fmdbSchemaForDatabase:database] createTablesWithModelling:modelling];
     }];
     
     return self;
@@ -65,6 +43,7 @@
 
 
 - (void)deleteFile {
+    // TODO: remove the method or rewrite with filing
     [[NSFileManager defaultManager] removeItemAtPath:self.dbPath error:nil];
 }
 

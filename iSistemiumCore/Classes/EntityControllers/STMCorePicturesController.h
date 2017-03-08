@@ -19,18 +19,11 @@
 
 + (CGFloat)jpgQuality;
 
-+ (NSString *)imagesCachePath;
-
 + (void)checkPhotos;
 
 + (void)hrefProcessingForObject:(NSDictionary *)object;
 
 + (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
-+ (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data;
-
-+ (void)removeImageFilesForPicture:(NSDictionary *)picture;
-
-+ (BOOL)setThumbnailForPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data ;
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
 

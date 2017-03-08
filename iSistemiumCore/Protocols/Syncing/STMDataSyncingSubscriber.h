@@ -16,4 +16,7 @@
 
 - (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName;
 
+- (void)finishUnsyncedProcess;
+
+
 @end

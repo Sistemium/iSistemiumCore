@@ -571,7 +571,11 @@
 - (NSArray *)enqueuePossiblePatternLogMessage:(NSDictionary *)logMessageDictionary {
     
     [self.possiblePatternArray addObject:logMessageDictionary];
-    
+
+    if (self.possiblePatternArray.count > self.lastLogMessagesArray.count) {
+        [self.possiblePatternArray removeObjectAtIndex:0];
+    }
+
     NSRange checkRange = NSMakeRange(self.lastLogMessagesArray.count - self.possiblePatternArray.count, self.possiblePatternArray.count);
     
     NSArray *arrayToCheck = [self.lastLogMessagesArray subarrayWithRange:checkRange];

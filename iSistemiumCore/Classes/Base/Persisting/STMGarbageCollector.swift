@@ -17,24 +17,45 @@ extension Set {
 
 @objc class STMGarbageCollector:NSObject{
     
-    static var unusedImageFiles = Set<String>()
+    static let sharedInstance = STMGarbageCollector()
     
-    static func removeUnusedImages() -> AnyPromise{
+    private override init() {}
+    
+    private var _unusedImageFiles:Set<String>?
+    
+    private lazy var filing:STMFiling = {
+        return STMCoreSessionManager.shared().currentSession.filing
+    }()
+    
+    var unusedImageFiles : Set<String>{
+        get{
+            if _unusedImageFiles == nil{
+                searchUnusedImages()
+            }
+            return _unusedImageFiles!
+        }
+        
+        set{
+            _unusedImageFiles = newValue
+        }
+    }
+    
+    func removeUnusedImages() -> AnyPromise{
         
         return AnyPromise.promiseWithResolverBlock({ resolve in
             
-            DispatchQueue.global(qos: .default).async{
+            DispatchQueue.global(qos: .default).async{[unowned self] in
                 var err:NSError? = nil
                 do {
-                    searchUnusedImages()
-                    if unusedImageFiles.count > 0 {
-                        let logMessage = String(format: "Deleting %i images",unusedImageFiles.count)
+                    self.searchUnusedImages()
+                    if self.unusedImageFiles.count > 0 {
+                        let logMessage = String(format: "Deleting %i images",self.unusedImageFiles.count)
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
-                    for unusedImage in unusedImageFiles{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
+                    for unusedImage in self.unusedImageFiles{
+                        try self.filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
-                        NotificationCenter.default.post(name: Notification.Name(rawValue: "unusedImageRemoved"), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
                 } catch let error as NSError {
                     err = error
@@ -48,11 +69,12 @@ extension Set {
         
     }
     
-    static func searchUnusedImages(){
+    func searchUnusedImages(){
         unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
         var imageFilePaths = Dictionary<String,String>()
+        
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
         while let element = enumerator?.nextObject() as? String {
@@ -67,22 +89,28 @@ extension Set {
         for image in allImages{
             
             let data = image["attributes"] as! Dictionary<String,Any>
-            
+        
             if let path = data["imagePath"] as? String{
-                usedImageFiles.insert(path)
+                if let name = NSURL(fileURLWithPath: path).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
             if let resizedPath = data["resizedImagePath"] as? String{
-                usedImageFiles.insert(resizedPath)
+                if let name = NSURL(fileURLWithPath: resizedPath).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
             if let thumbnailPath = data["thumbnailPath"] as? String{
-                usedImageFiles.insert(thumbnailPath)
+                if let name = NSURL(fileURLWithPath: thumbnailPath).lastPathComponent{
+                    usedImageFiles.insert(name)
+                }
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
         unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
     }
     
-    static func removeOutOfDateImages(){
+    func removeOutOfDateImages(){
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
             
@@ -103,14 +131,14 @@ extension Set {
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
-                let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil")
+                let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil OR thumbnailPath != nil")
                 let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [limitDate, limitDate])
                 
                 let subpredicates = [photoIsUploaded, photoIsSynced, photoHaveFiles, photoIsOutOfDate]
                 
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
                 
-                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,String>>
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,Any>>
                 
                 images = images.filter{photoPredicate.evaluate(with: $0)};
                 
@@ -119,13 +147,13 @@ extension Set {
                     let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image["deviceAts"])")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
-                    if let imagePath = image["imagePath"]{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
+                    if let imagePath = image["imagePath"] as? String{
+                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
                         image["imagePath"] = nil
                     }
                     
-                    if let resizedImagePath = image["resizedImagePath"]{
-                        try FileManager.default.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                    if let resizedImagePath = image["resizedImagePath"] as? String{
+                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
                         image["resizedImagePath"] = nil
                     }
                     

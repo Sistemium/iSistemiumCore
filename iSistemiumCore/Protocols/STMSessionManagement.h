@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "STMCoreControlling.h"
 
-#import "STMRequestAuthenticatable.h"
 #import "STMDocument.h"
 #import "STMPersistingFullStack.h"
 #import "STMSocketConnection.h"
 #import "STMNotifications.h"
 #import "STMDataSyncingSubscriber.h"
 #import "STMLogging.h"
+#import "STMFiling.h"
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -60,19 +60,15 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @property (readonly) STMDocument *document; // have to remove document property after full implementation of persister
 
 @property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
-@property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *iSisDB;
+@property (nonatomic, readonly) NSString *uid;
 @property (nonatomic) STMSessionStatus status;
+
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (readonly) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
 @property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
 
-- (id <STMSession>)initWithUID:(NSString *)uid
-                        iSisDB:(NSString *)iSisDB
-                  authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                      trackers:(NSArray *)trackers
-                 startSettings:(NSDictionary *)startSettings;
+@property (nonatomic, strong) id <STMFiling> filing;
 
 - (BOOL)isRunningTests;
 
@@ -88,15 +84,8 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 @protocol STMSessionManager <NSObject>
 
-- (id <STMSession>)startSessionForUID:(NSString *)uid
-                               iSisDB:(NSString *)iSisDB
-                         authDelegate:(id <STMRequestAuthenticatable>)authDelegate
-                             trackers:(NSArray *)trackers
-                        startSettings:(NSDictionary *)startSettings
-              defaultSettingsFileName:(NSString *)defualtSettingsFileName;
-
 - (void)stopSessionForUID:(NSString *)uid;
-- (void)sessionStopped:(id)session;
+- (void)sessionStopped:(id <STMSession>)session;
 - (void)cleanStoppedSessions;
 - (void)removeSessionForUID:(NSString *)uid;
 

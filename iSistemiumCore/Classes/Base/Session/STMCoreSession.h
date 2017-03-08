@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "STMRequestAuthenticatable.h"
+#import "STMCoreAuth.h"
 #import "STMSessionManagement.h"
 #import "STMDocument.h"
 #import "STMLogger.h"
@@ -19,13 +19,16 @@
 
 @interface STMCoreSession : STMCoreObject <STMSession>
 
-@property (nonatomic, weak) id <STMRequestAuthenticatable> authDelegate;
+- (id <STMSession>)initWithAuthDelegate:(id <STMCoreAuth>)authDelegate
+                               trackers:(NSArray *)trackers
+                          startSettings:(NSDictionary *)startSettings;
+
+@property (nonatomic, weak) id <STMCoreAuth> authDelegate;
 @property (nonatomic, strong) NSString *uid;
-@property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, weak) STMDocument *document;
-@property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingFullStack, STMPersistingIntercepting> *persistenceDelegate;
 
 @property (nonatomic, strong) STMLogger *logger;
 @property (nonatomic, weak) id <STMSessionManager> manager;

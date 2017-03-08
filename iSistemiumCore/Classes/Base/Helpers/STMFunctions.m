@@ -687,7 +687,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return result.copy;
 }
 
-+ (id)popArray:(NSMutableArray *)array {
++ (nullable id)popArray:(NSMutableArray *)array {
     @synchronized (array) {
         id result = array.lastObject;
         if (result) [array removeLastObject];
@@ -773,7 +773,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
-+ (NSString *)MD5FromString:(NSString *)string {
++ (NSString *)MD5FromString:(nullable NSString *)string {
 
     if (string) {
         
@@ -798,7 +798,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     } else {
         
-        return nil;
+        return @"";
         
     }
     
@@ -831,14 +831,13 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
 }
 
-+ (NSURL *)documentsDirectoryURL {
-    return [NSURL fileURLWithPath:[self documentsDirectory]];
-}
+
+#pragma mark - some methods with paths/dirs/files handling
 
 + (NSString *)documentsDirectory {
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentDirectory = (paths.count > 0) ? paths[0] : nil;
+    NSString *documentDirectory = (paths.count > 0) ? paths[0] : @"";
     
     if (paths.count > 1 || [documentDirectory isEqualToString:@""]) {
         
@@ -863,46 +862,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return (path) ? [[self documentsDirectory] stringByAppendingPathComponent:(NSString *)path] : [self documentsDirectory];
 }
 
-+ (NSString *)absoluteDataCachePath {
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    NSString *dataCachePath = [[self documentsDirectory] stringByAppendingPathComponent:DATA_CACHE_PATH];
-    
-    if ([fm fileExistsAtPath:dataCachePath]) {
-        
-        return dataCachePath;
-        
-    } else {
-        
-        NSError *error = nil;
-        BOOL result = [fm createDirectoryAtPath:dataCachePath
-                    withIntermediateDirectories:YES
-                                     attributes:nil
-                                          error:&error];
 
-        if (result) {
-            
-            return dataCachePath;
-            
-        } else {
-            
-            NSLog(@"can not create dataCachePath: %@", error.localizedDescription);
-            return nil;
-            
-        }
-        
-    }
-    
-}
-
-+ (NSString *)absoluteDataCachePathForPath:(nullable NSString *)path {
-    return (path) ? [[self absoluteDataCachePath] stringByAppendingPathComponent:(NSString *)path] : [self absoluteDataCachePath];
-}
-
-+ (NSString *)absoluteTemporaryPathForPath:(nullable NSString *)path {
-    return (path) ? [NSTemporaryDirectory() stringByAppendingPathComponent:(NSString *)path] : NSTemporaryDirectory();
-}
+#pragma mark -
 
 + (UIColor *)colorForColorString:(NSString *)colorSting {
     
@@ -921,7 +882,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
         
     } else {
         
-        return nil;
+        return [UIColor blackColor];
         
     }
     
@@ -1297,22 +1258,29 @@ vm_size_t freeMemory(void) {
     return result.copy;
 }
 
-+ (NSString *)currentTestTarget {
++ (nullable NSString *)currentTestTarget {
+    
     NSString *pattern = @"(?<=\\/tmp\\/)[^-]*";
     NSString *path = [[[NSProcessInfo processInfo] environment] valueForKey:@"XCTestConfigurationFilePath"];
+    
+    if (!path) {
+        return nil;
+    }
+    
     NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
     NSTextCheckingResult *match = [re firstMatchInString:path
                                                  options:0
                                                    range:NSMakeRange(0, path.length)];
     NSString *substr = [path substringWithRange:match.range];
     return substr;
+    
 }
 
 + (BOOL)isNotNullAndTrue:(id)value {
     return ![value isEqual:[NSNull null]] && [value boolValue];
 }
 
-+ (BOOL)isNotNull:(id)value {
++ (BOOL)isNotNull:(nullable id)value {
     return value && ![value isEqual:[NSNull null]];
 }
 

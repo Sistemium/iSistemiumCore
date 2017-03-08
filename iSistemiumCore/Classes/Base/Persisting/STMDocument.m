@@ -140,29 +140,17 @@
     
 }
 
-+ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB dataModelName:(NSString *)dataModelName {
++ (STMDocument *)documentWithUID:(NSString *)uid iSisDB:(NSString *)iSisDB filing:(id <STMFiling>)filing dataModelName:(NSString *)dataModelName {
 
-    NSURL *documentDirectoryUrl = [STMFunctions documentsDirectoryURL];
+    NSString *persistencePath = [filing persistencePath:@"document"];
+    NSURL *documentDirectoryUrl = [NSURL URLWithString:persistencePath];
     NSString *documentID = (iSisDB) ? iSisDB : uid;
 
     NSString *prefix = [NSBundle mainBundle].bundleIdentifier;
     prefix = (prefix) ? prefix : @"";
 
-//    from now we delete old document with STMDataModel data model and use new STMDataModel2
-    NSURL *url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@_%@.%@", prefix, documentID, @"sqlite"]];
-    
-    if ([[NSFileManager defaultManager] fileExistsAtPath:(NSString *)url.path]) {
-
-        NSString *logMessage = [NSString stringWithFormat:@"delete old document with filename: %@ for uid: %@", url.lastPathComponent, uid];
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
-        
-        [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
-        
-    }
-//    ———————————————————————
-    
     NSString *filename = [@[prefix, documentID, dataModelName] componentsJoinedByString:@"_"];
-    url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@", filename, @"sqlite"]];
+    NSURL *url = [documentDirectoryUrl URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.%@", filename, @"sqlite"]];
 
     NSString *logMessage = [NSString stringWithFormat:@"prepare document with filename: %@ for uid: %@", url.lastPathComponent, uid];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];

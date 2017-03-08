@@ -119,9 +119,9 @@
     
 }
 
-- (NSUInteger)numberOfUnsyncedObjects {
-    return 0;
-}
+//- (NSUInteger)numberOfUnsyncedObjects {
+//    return 0;
+//}
 
 
 #pragma mark - Private helpers
@@ -202,6 +202,8 @@
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
     self.pendingObjectsByEntity = @{}.mutableCopy;
     self.syncedPendingObjectsByEntity = @{}.mutableCopy;
+    
+    [self.subscriberDelegate finishUnsyncedProcess];
     
 }
 
@@ -368,9 +370,9 @@
         
         if (parent) {
             
-            NSString *parentLts = parent[@"lts"];
+            NSString *parentLts = parent[STMPersistingOptionLts];
             
-            BOOL isEmptyLts = (!parentLts || [parentLts isEqualToString:@""]);
+            BOOL isEmptyLts = (![STMFunctions isNotNull:parentLts] || [parentLts isEqualToString:@""]);
             
             if (isEmptyLts) {
                 

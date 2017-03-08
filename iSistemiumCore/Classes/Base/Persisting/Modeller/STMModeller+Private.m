@@ -118,11 +118,6 @@
     
 }
 
-- (instancetype)init {
-    self.beforeMergeInterceptors = [NSMutableDictionary dictionary];
-    return self;
-}
-
 - (NSDictionary *)dictionaryForJSWithObject:(STMDatum *)object withNulls:(BOOL)withNulls withBinaryData:(BOOL)withBinaryData {
     
     if (!object) return @{};
@@ -168,7 +163,7 @@
 - (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName {
     
     if (!entityName) {
-        return nil;
+        return [NSSet set];
     }
     
     NSEntityDescription *objectEntity = self.entitiesByName[entityName];
