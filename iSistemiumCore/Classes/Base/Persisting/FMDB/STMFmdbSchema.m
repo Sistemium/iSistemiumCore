@@ -234,7 +234,7 @@
 
 - (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName {
     
-    NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
 
     NSArray *columnAttributes = [modeling fieldsForEntityName:entityName].allValues;
     NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", self.ignoredAttributes];
