@@ -156,6 +156,15 @@
         NSLog(@"have to remove %@", entityName);
 #warning - need some method to remove tables
 
+        BOOL result = [self deleteEntity:entityName
+                                modeling:modelMapping.sourceModeling];
+        
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+
+        if (result) {
+            [columnsDictionary removeObjectForKey:tableName];
+        }
+        
     }
     
     NSDictionary *entitiesByName = [modelMapping.destinationModeling entitiesByName];
@@ -262,6 +271,26 @@
     [columns addObjectsFromArray:propertiesColumns];
     
     return columns.copy;
+    
+}
+
+- (BOOL)deleteEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling {
+    
+    if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
+        
+        NSLog(@"STMFmdb ignore delete entity: %@", entityName);
+        return NO;
+        
+    }
+
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+    BOOL tableExisted = [self.database tableExists:tableName];
+
+    if (tableExisted) {
+        return [self executeDDL:[self dropTable:tableName]];
+    }
+    
+    return NO;
     
 }
 
@@ -449,6 +478,9 @@
     
 }
 
+- (NSString *)dropTable:(NSString *)tableName {
+    return [NSString stringWithFormat:@"DROP TABLE %@", tableName];
+}
 
 - (NSString *)createIndexDDL:(NSString *)tableName columnName:(NSString *)columnName {
     NSString *format = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
