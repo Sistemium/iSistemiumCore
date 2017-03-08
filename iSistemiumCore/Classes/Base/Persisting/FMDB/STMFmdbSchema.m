@@ -134,8 +134,8 @@
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
-    NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
-    
+    NSMutableDictionary *columnsDictionary = [self currentDBScheme].mutableCopy;
+
 // handle added entities
     for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
     
@@ -154,7 +154,6 @@
         
         NSString *entityName = entityDescription.name;
         NSLog(@"have to remove %@", entityName);
-#warning - need some method to remove tables
 
         BOOL result = [self deleteEntity:entityName
                                 modeling:modelMapping.sourceModeling];
@@ -242,6 +241,7 @@
     }];
     
     NSLog(@"columnsDictionary %@", columnsDictionary);
+    NSLog(@"currentDBScheme %@", [self currentDBScheme]);
     
     return columnsDictionary.copy;
     
