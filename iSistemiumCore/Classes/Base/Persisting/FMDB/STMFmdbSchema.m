@@ -210,13 +210,16 @@
     }];
     
 // handle removed properties
-    
     [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
 #warning - need some method to remove columns
         
+// SQLite supports a limited subset of ALTER TABLE. The ALTER TABLE command in SQLite allows the user to rename a table or to add a new column to an existing table
+// http://www.sqlite.org/lang_altertable.html
+        
+// so we have to delete table and create the new one
+        
         NSEntityDescription *entityDescription = entitiesByName[key];
         NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
-//        BOOL tableExisted = [self.database tableExists:tableName];
         
         for (NSString *property in obj) {
             
