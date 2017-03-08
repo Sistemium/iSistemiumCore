@@ -96,6 +96,39 @@
     
 }
 
+- (NSDictionary *)currentDBScheme {
+    
+    NSMutableDictionary *result = @{}.mutableCopy;
+
+    FMResultSet *tablesSet = [self.database executeQuery:@"SELECT * FROM sqlite_master WHERE type='table' ORDER BY name"];
+    
+    while ([tablesSet next]) {
+        
+        NSString *tableName = [tablesSet stringForColumn:@"name"];
+        NSLog(@"%@", tableName);
+        
+        NSString *query = [NSString stringWithFormat:@"PRAGMA table_info('%@')", tableName];
+        FMResultSet *columnsSet = [self.database executeQuery:query];
+        
+        NSMutableArray *columns = @[].mutableCopy;
+        
+        while ([columnsSet next]) {
+            
+            NSString *columnName = [columnsSet stringForColumn:@"name"];
+            NSLog(@"    %@", columnName);
+
+            [columns addObject:columnName];
+            
+        }
+        
+        result[tableName] = columns;
+        
+    }
+
+    return result.copy;
+    
+}
+
 
 #pragma mark - createTablesWithModelMapping
 
