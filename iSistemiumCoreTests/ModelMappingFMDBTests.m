@@ -7,10 +7,14 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "STMCoreSessionFiler.h"
 #import "STMFmdb+Private.h"
+#import "STMFmdbSchema.h"
+
 #import "STMModeller.h"
 #import "STMModelMapper.h"
+
 #import "STMFunctions.h"
 
 
@@ -73,22 +77,38 @@
 
 - (void)checkDb:(FMDatabase *)db withModelMapping:(id <STMModelMapping>)modelMapping {
     
+// check all entities and properties in model have corresponding tables and columns in fmdb
+
+    NSLog(@"check all entities and properties in model have corresponding tables and columns in fmdb");
+    
     NSArray <NSString *> *entitiesNames = modelMapping.destinationModeling.entitiesByName.allKeys;
     
     for (NSString *entityName in entitiesNames) {
+        
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        
+        BOOL result = [db tableExists:tableName];
+
+        if (!result) {
+            NSLog(@"FMDB have no table %@", tableName);
+        } else {
+            NSLog(@"FMDB %@ OK", tableName);
+        }
+        
+        XCTAssertTrue(result);
+
+        if (!result) continue;
         
         NSArray <NSString *> *fields = [modelMapping.destinationModeling fieldsForEntityName:entityName].allKeys;
         
         for (NSString *column in fields) {
             
-            NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-            
-            BOOL result = [db columnExists:column inTableWithName:tableName];
+            result = [db columnExists:column inTableWithName:tableName];
             
             if (!result) {
-                NSLog(@"%@ have no column %@", tableName, column);
+                NSLog(@"FMDB %@ have no column %@", tableName, column);
             } else {
-                NSLog(@"%@ %@ OK", tableName, column);
+                NSLog(@"FMDB %@ %@ OK", tableName, column);
             }
             
             XCTAssertTrue(result);
@@ -96,7 +116,59 @@
         }
         
     }
+    
+// check fmdb have no tables and columns which not exists in model
+    
+    NSLog(@"check fmdb have no tables and columns which not exists in model");
 
+    NSDictionary <NSString *, NSArray <NSString *> *> *columnsByTable = self.stmFMDB.columnsByTable;
+
+    [columnsByTable enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray <NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+        
+        NSString *entityName = [STMFunctions addPrefixToEntityName:key];
+        
+        NSEntityDescription *entityDescription = modelMapping.destinationModeling.entitiesByName[entityName];
+        
+        BOOL result = (entityDescription != nil);
+        
+        if (!result) {
+            NSLog(@"FMDB have unused table %@", key);
+        } else {
+            NSLog(@"FMDB %@ OK", key);
+        }
+        
+        XCTAssertTrue(result);
+
+        for (NSString *column in obj) {
+            
+            if ([[STMFmdbSchema builtInAttributes] containsObject:column]) {
+                continue;
+            }
+            
+            NSString *propertyName = column;
+            
+            if ([column hasSuffix:RELATIONSHIP_SUFFIX]) {
+                
+                NSRange range = NSMakeRange(column.length - RELATIONSHIP_SUFFIX.length, RELATIONSHIP_SUFFIX.length);
+                propertyName = [column stringByReplacingCharactersInRange:range withString:@""];
+                
+            }
+            
+            NSPropertyDescription *propertyDescription = entityDescription.propertiesByName[propertyName];
+            result = (propertyDescription != nil);
+            
+            if (!result) {
+                NSLog(@"FMDB have unused column %@ in table %@", column, key);
+            } else {
+                NSLog(@"FMDB column %@ in %@ OK", column, key);
+            }
+
+            XCTAssertTrue(result);
+
+        }
+        
+    }];
+    
 }
 
 - (STMFmdb *)fmdbWithModelMapping:(id <STMModelMapping>)modelMapping {
