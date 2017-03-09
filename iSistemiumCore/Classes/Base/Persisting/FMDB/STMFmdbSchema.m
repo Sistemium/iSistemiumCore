@@ -219,27 +219,7 @@
         
 // so we have to delete table and create the new one
         
-        NSEntityDescription *entityDescription = entitiesByName[key];
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
         
-        for (NSString *property in obj) {
-            
-            NSAttributeDescription *attributeDescription = entityDescription.attributesByName[property];
-            
-            if (attributeDescription) {
-                NSLog(@"have to remove attribute %@ from %@", property, tableName);
-                continue;
-                
-            }
-            
-            NSRelationshipDescription *relationshipDescription = entityDescription.relationshipsByName[property];
-            
-            if (relationshipDescription) {
-                NSLog(@"have to remove relationship %@ from %@", property, tableName);
-                continue;
-                
-            }
-            
         }
         
     }];
