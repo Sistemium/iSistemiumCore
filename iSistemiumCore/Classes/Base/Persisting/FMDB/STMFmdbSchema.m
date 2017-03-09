@@ -41,6 +41,16 @@
     return [[self alloc] initWithDatabase:database];
 }
 
++ (NSArray *)builtInAttributes {
+    
+    return @[STMPersistingKeyPrimary,
+             STMPersistingKeyCreationTimestamp,
+             STMPersistingKeyVersion,
+             STMPersistingOptionLts,
+             STMPersistingKeyPhantom];
+    
+}
+
 - (instancetype)initWithDatabase:(FMDatabase *)database {
     self = [self init];
     self.database = database;
@@ -75,13 +85,7 @@
 - (NSArray *)builtInAttributes {
     
     if (!_builtInAttributes) {
-     
-        _builtInAttributes = @[STMPersistingKeyPrimary,
-                               STMPersistingKeyCreationTimestamp,
-                               STMPersistingKeyVersion,
-                               STMPersistingOptionLts,
-                               STMPersistingKeyPhantom];
-        
+        _builtInAttributes = [[self class] builtInAttributes];
     }
     return _builtInAttributes;
     
