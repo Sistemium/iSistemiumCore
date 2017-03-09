@@ -291,7 +291,10 @@
     BOOL tableExisted = [self.database tableExists:tableName];
 
     if (tableExisted) {
+        
+#warning - have to check table before dropping for triggers and something
         return [self executeDDL:[self dropTable:tableName]];
+        
     }
     
     return NO;
