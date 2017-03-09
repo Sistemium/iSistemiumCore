@@ -9,6 +9,12 @@
 import Foundation
 import Crashlytics
 
+extension Set {
+    func setmap<U>(transform: (Element) -> U) -> Set<U> {
+        return Set<U>(self.lazy.map(transform))
+    }
+}
+
 @objc class STMGarbageCollector:NSObject{
     
     static let sharedInstance = STMGarbageCollector()
@@ -55,7 +61,7 @@ import Crashlytics
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in self.unusedImageFiles{
-                        try self.filing.removeItem(atPath: self.filing.picturesBasePath() + "/" + unusedImage)
+                        try self.filing.removeItem(atPath: unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
@@ -75,13 +81,16 @@ import Crashlytics
         var unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
+        var imageFilePaths = Dictionary<String,String>()
         
-        let fileManager = FileManager.default
-        let enumerator = fileManager.enumerator(atPath: self.filing.picturesBasePath())
-        while let element = enumerator?.nextObject() as? String {
-            if element.hasSuffix(".jpg") {
-                allImageFiles.insert(element)
+        self.filing.enumerateDir(atPath: self.filing.picturesBasePath()) { (element, error) -> Bool in
+            if element!.hasSuffix(".jpg") {
+                let components = element!.components(separatedBy: "/")
+                let name = components[components.endIndex - 2] + "/" + components[components.endIndex - 1]
+                allImageFiles.insert(name)
+                imageFilePaths[name] = element
             }
+            return true
         }
         
         let allImages = STMCorePicturesController.allPictures() as! Array<Dictionary<String,Any>>;
@@ -100,6 +109,7 @@ import Crashlytics
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
+        unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
         
         self.unusedImageFiles = unusedImageFiles
     }
