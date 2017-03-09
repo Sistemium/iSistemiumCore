@@ -130,6 +130,17 @@
     return @[@"STMMessagePicture"];
 }
 
+- (id <STMFiling>)filing {
+    
+    if (!_filing){
+        
+        _filing = self.session.filing;
+        
+    }
+    
+    return _filing;
+}
+
 - (NSArray *)nonloadedPictures {
     
     NSString *loadablePictures = @"NOT (entityName IN %@) AND (attributes.href != nil) AND (attributes.thumbnailPath == nil)";
@@ -288,12 +299,12 @@
             
             NSLog(@"! new resizedImagePath for picture %@", attributes[@"id"]);
 
-            if ([self.session.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
-                [self.session.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
+            if ([self.sharedController.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
+                [self.sharedController.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
             }
 
             NSLog(@"save new resizedImage file for picture %@", attributes[@"id"]);
-            NSData *imageData = [NSData dataWithContentsOfFile:[[self.session.filing picturesBasePath] stringByAppendingPathComponent:newImagePath]];
+            NSData *imageData = [NSData dataWithContentsOfFile:[[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:newImagePath]];
             
             [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
                             forPicture:attributes
@@ -333,9 +344,9 @@
 + (NSString *)convertImagePath:(NSString *)path withEntityName:(NSString *)entityName{
     
     NSString *lastPathComponent = [path lastPathComponent];
-    NSString *imagePath = [[self.session.filing picturesPath:entityName] stringByAppendingPathComponent:lastPathComponent];
+    NSString *imagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:lastPathComponent];
     
-    if ([self.session.filing fileExistsAtPath:imagePath]) {
+    if ([self.sharedController.filing fileExistsAtPath:imagePath]) {
         return [entityName stringByAppendingPathComponent:lastPathComponent];
     } else {
         return nil;
@@ -362,9 +373,9 @@
         NSString *resizedFileName = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         NSString *thumbnailFileName = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         
-        NSString *imagePath = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:fileName];
-        NSString *resizedImagePath = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
-        NSString *thumbnailPath = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
+        NSString *imagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:fileName];
+        NSString *resizedImagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
+        NSString *thumbnailPath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
         
         NSError *error;
         
@@ -372,7 +383,7 @@
         
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
         
-        if ([self.session.filing fileExistsAtPath:imagePath] && ![STMFunctions isNotNull:mutAttributes[@"imagePath"]]) {
+        if ([self.sharedController.filing fileExistsAtPath:imagePath] && ![STMFunctions isNotNull:mutAttributes[@"imagePath"]]) {
         
             mutAttributes[@"imagePath"] = fileName;
             
@@ -380,7 +391,7 @@
         
         }
         
-        if ([self.session.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
+        if ([self.sharedController.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
             
@@ -388,7 +399,7 @@
             
         }
         
-        if ([self.session.filing fileExistsAtPath:thumbnailPath] && ![STMFunctions isNotNull:mutAttributes[@"thumbnailPath"]]) {
+        if ([self.sharedController.filing fileExistsAtPath:thumbnailPath] && ![STMFunctions isNotNull:mutAttributes[@"thumbnailPath"]]) {
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
             
@@ -440,7 +451,7 @@
         }
             
         error = nil;
-        NSString *path = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSString *path = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (photoData && photoData.length > 0) {
@@ -496,7 +507,7 @@
         if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
-        NSString *path = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSString *path = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (imageData && imageData.length > 0) {
@@ -600,7 +611,7 @@
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:fileName];
     
-    NSString *absoluteImagePath = [[self.session.filing picturesPath:entityName] stringByAppendingPathComponent:fileName];
+    NSString *absoluteImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:fileName];
     
     NSError *error = nil;
     BOOL result = absoluteImagePath && data && [data writeToFile:absoluteImagePath
@@ -625,7 +636,7 @@
     
     NSString *resizedImagePath = [entityName stringByAppendingPathComponent:resizedFileName];
 
-    NSString *absoluteResizedImagePath = [[self.session.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
+    NSString *absoluteResizedImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
     
     UIImage *resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(1024, 1024) allowRetina:NO];
     NSData *resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
@@ -654,7 +665,7 @@
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:thumbnailFileName];
     
-    NSString *absoluteImagePath = [[self.session.filing picturesPath:entityName] stringByAppendingPathComponent:thumbnailFileName];
+    NSString *absoluteImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:thumbnailFileName];
     
     NSError *error = nil;
     BOOL result = absoluteImagePath && thumbnail &&  [thumbnail writeToFile:absoluteImagePath
@@ -888,12 +899,12 @@
 
 + (void)removeImageFile:(NSString *)filePath withEntityName:(NSString *)entityName{
     
-    NSString *imagePath = [[self.session.filing picturesBasePath] stringByAppendingPathComponent:filePath];
+    NSString *imagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:filePath];
 
-    if ([self.session.filing fileExistsAtPath:imagePath]) {
+    if ([self.sharedController.filing fileExistsAtPath:imagePath]) {
 
         NSError *error;
-        BOOL success = [self.session.filing removeItemAtPath:imagePath error:&error];
+        BOOL success = [self.sharedController.filing removeItemAtPath:imagePath error:&error];
         
         if (success) {
             
