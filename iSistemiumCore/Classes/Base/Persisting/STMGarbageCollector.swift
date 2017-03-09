@@ -23,9 +23,17 @@ extension Set {
     
     private var _unusedImageFiles:Set<String>?
     
-    private lazy var filing:STMFiling = {
-        return STMCoreSessionManager.shared().currentSession.filing
-    }()
+    private var _filing:STMFiling?
+    
+    var filing:STMFiling{
+        get{
+            return _filing != nil ? _filing! : STMCoreSessionManager.shared().currentSession.filing
+        }
+        set{
+            _filing = newValue
+        }
+        
+    }
     
     var unusedImageFiles : Set<String>{
         get{
@@ -53,7 +61,7 @@ extension Set {
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in self.unusedImageFiles{
-                        try self.filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
+                        try self.filing.removeItem(atPath: unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
@@ -70,19 +78,19 @@ extension Set {
     }
     
     func searchUnusedImages(){
-        unusedImageFiles = Set<String>()
+        var unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
         var imageFilePaths = Dictionary<String,String>()
         
-        let fileManager = FileManager.default
-        let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
-        while let element = enumerator?.nextObject() as? String {
-            if element.hasSuffix(".jpg") {
-                let name = element.components(separatedBy: "/").last!
+        self.filing.enumerateDir(atPath: self.filing.picturesBasePath()) { (element, error) -> Bool in
+            if element!.hasSuffix(".jpg") {
+                let components = element!.components(separatedBy: "/")
+                let name = components[components.endIndex - 2] + "/" + components[components.endIndex - 1]
                 allImageFiles.insert(name)
                 imageFilePaths[name] = element
             }
+            return true
         }
         
         let allImages = STMCorePicturesController.allPictures() as! Array<Dictionary<String,Any>>;
@@ -91,23 +99,19 @@ extension Set {
             let data = image["attributes"] as! Dictionary<String,Any>
         
             if let path = data["imagePath"] as? String{
-                if let name = NSURL(fileURLWithPath: path).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(path)
             }
             if let resizedPath = data["resizedImagePath"] as? String{
-                if let name = NSURL(fileURLWithPath: resizedPath).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(resizedPath)
             }
             if let thumbnailPath = data["thumbnailPath"] as? String{
-                if let name = NSURL(fileURLWithPath: thumbnailPath).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(thumbnailPath)
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
         unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
+        
+        self.unusedImageFiles = unusedImageFiles
     }
     
     func removeOutOfDateImages(){

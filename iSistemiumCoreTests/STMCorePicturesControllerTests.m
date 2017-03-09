@@ -13,12 +13,24 @@
 #import "STMVisitPhoto.h"
 #import "iSistemiumCore-Swift.h"
 #import "STMCoreSessionManager.h"
+#import "STMCoreSessionFiler.h"
 
-@interface STMCorePicturesControllerTests : STMPersistingTests
+@interface STMCorePicturesControllerTests : STMPersistingTests <STMDirectoring>
+
+@property (nonatomic, strong) STMFmdb *stmFMDB;
+@property (nonatomic, strong) id <STMFiling> filing;
 
 @end
 
 @implementation STMCorePicturesControllerTests
+
+- (void)setUp {
+    [super setUp];
+    
+    if (!self.filing) {
+        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:self];
+    }
+}
 
 + (BOOL)needWaitSession {
     return YES;
@@ -26,13 +38,15 @@
 
 - (void)testDownloadConnectionForObject {
     
-#warning the test is removing real pictures because operating InMemory
-    
-    // FIXME: remember unusedImageFiles at start of the test and ignore them later
+    STMGarbageCollector.sharedInstance.filing = self.filing;
     
     XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
     
-    [STMCorePicturesController sharedController].persistenceDelegate = self.persister;
+    STMCorePicturesController.sharedController.persistenceDelegate = self.persister;
+    
+    STMCorePicturesController.sharedController.filing = self.filing;
+    
+    
     
     NSString *xid = [STMFunctions uuidString];
     
@@ -104,6 +118,21 @@
         
     }];
     
+}
+
+#pragma mark - STMDirectoring
+
+
+- (NSString *)userDocuments {
+    return NSTemporaryDirectory();
+}
+
+- (NSString *)sharedDocuments {
+    return NSTemporaryDirectory();
+}
+
+- (NSBundle *)bundle {
+    return [NSBundle bundleForClass:[self class]];
 }
 
 @end

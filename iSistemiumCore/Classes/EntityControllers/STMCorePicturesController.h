@@ -12,6 +12,7 @@
 
 @property (nonatomic) BOOL downloadingPictures;
 @property (nonatomic,readonly) NSUInteger nonloadedPicturesCount;
+@property (nonatomic, strong) id <STMFiling> filing;
 
 + (STMCorePicturesController *)sharedController;
 
