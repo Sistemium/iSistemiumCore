@@ -237,6 +237,8 @@
         
         columnsDictionary[tableName] = columns;
         
+#warning - have to inform corresponding clientEntity to set eTag to '*'
+        
     }];
     
     NSLog(@"columnsDictionary %@", columnsDictionary);
@@ -282,14 +284,13 @@
         
     }
 
+#warning - have to check table before dropping for triggers and something
+
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
     BOOL tableExisted = [self.database tableExists:tableName];
 
     if (tableExisted) {
-        
-#warning - have to check table before dropping for triggers and something
         return [self executeDDL:[self dropTable:tableName]];
-        
     }
     
     return NO;
