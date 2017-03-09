@@ -219,8 +219,23 @@
         
 // so we have to delete table and create the new one
         
+        NSString *entityName = key;
         
+// delete table
+        BOOL result = [self deleteEntity:entityName
+                                modeling:modelMapping.sourceModeling];
+        
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        
+        if (result) {
+            [columnsDictionary removeObjectForKey:tableName];
         }
+        
+// add table back
+        NSArray *columns = [self addEntity:entityName
+                                  modeling:modelMapping.destinationModeling];
+        
+        columnsDictionary[tableName] = columns;
         
     }];
     
