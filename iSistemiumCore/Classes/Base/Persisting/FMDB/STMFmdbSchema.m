@@ -157,8 +157,6 @@
     for (NSEntityDescription *entityDescription in modelMapping.removedEntities) {
         
         NSString *entityName = entityDescription.name;
-        NSLog(@"have to remove %@", entityName);
-
         BOOL result = [self deleteEntity:entityName
                                 modeling:modelMapping.sourceModeling];
         
