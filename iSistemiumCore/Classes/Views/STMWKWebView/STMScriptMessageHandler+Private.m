@@ -10,6 +10,7 @@
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMCoreObjectsController.h"
 #import "STMCorePicturesController.h"
+#import "STMSessionManager.h"
 
 @implementation STMScriptMessageHandler (Private)
 
@@ -188,10 +189,10 @@
     
 }
 
-- (void)getPicture:(NSDictionary *)picture withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+- (void)getPictureWithEntityName:(NSString *)entityName withImagePath:(NSString *)imagePath parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
     
     NSError *error = nil;
-    NSString *path = [[STMCorePicturesController imagesCachePath] stringByAppendingPathComponent:imagePath];
+    NSString *path = [[STMSessionManager.sharedManager.currentSession.filing picturesBasePath] stringByAppendingPathComponent:imagePath];
     NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
     
     if (!imageData) {
@@ -239,7 +240,7 @@
         return [self downloadPicture:picture withEntityName:entityName parameters:parameters];
     }
     
-    [self getPicture:picture withImagePath:attribute parameters:parameters jsCallbackFunction:callbackFunction];
+    [self getPictureWithEntityName:entityName withImagePath:attribute parameters:parameters jsCallbackFunction:callbackFunction];
     
 }
 

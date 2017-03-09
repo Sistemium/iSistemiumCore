@@ -424,7 +424,6 @@
     
 }
 
-
 - (NSString *)createTableDDL:(NSString *)tableName {
     
     NSString *format = @"CREATE TABLE IF NOT EXISTS [%@] (%@)";

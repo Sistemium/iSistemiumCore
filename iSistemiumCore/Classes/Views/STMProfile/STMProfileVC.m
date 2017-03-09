@@ -27,7 +27,7 @@
 
 #import "STMUserDefaults.h"
 
-@interface STMProfileVC () <UIAlertViewDelegate, UIActionSheetDelegate>
+@interface STMProfileVC ()
 
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
 @property (weak, nonatomic) IBOutlet UILabel *phoneNumberLabel;
@@ -64,7 +64,7 @@
 @property (nonatomic, strong) STMSpinnerView *sendSpinner;
 @property (nonatomic, strong) STMSpinnerView *receiveSpinner;
 
-@property (nonatomic, strong) UIAlertView *locationDisabledAlert;
+@property (nonatomic, strong) UIAlertController *locationDisabledAlert;
 @property (nonatomic) BOOL locationDisabledAlertIsShown;
 
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
@@ -111,13 +111,30 @@
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
 
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"LOGOUT", nil)
-                                                            message:NSLocalizedString(@"R U SURE TO LOGOUT", nil)
-                                                           delegate:self
-                                                  cancelButtonTitle:NSLocalizedString(@"CANCEL", nil)
-                                                  otherButtonTitles:NSLocalizedString(@"OK", nil), nil];
-        alertView.tag = 1;
-        [alertView show];
+        UIAlertController *alertController = [UIAlertController
+                                        alertControllerWithTitle:NSLocalizedString(@"LOGOUT", nil)
+                                        message:NSLocalizedString(@"R U SURE TO LOGOUT", nil)
+                                        preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *okAction = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction *action){
+                                       [[STMCoreAuthController authController] logout];
+                                   }];
+        
+        UIAlertAction *cancelAction = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"CANCEL", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction *action)
+                                   {
+
+                                   }];
+        
+        [alertController addAction:cancelAction];
+        [alertController addAction:okAction];
+        
+        [self presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -481,6 +498,7 @@
     
     [self.unusedPicturesButton setTitleColor:ACTIVE_BLUE_COLOR forState:UIControlStateNormal];
     [self.unusedPicturesButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    self.unusedPicturesButton.hidden = YES;
     
 }
 
@@ -521,14 +539,15 @@
 
 - (void)updateUnusedPicturesInfo {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([STMGarbageCollector.unusedImageFiles count] == 0) {
+        if ([STMGarbageCollector.sharedInstance.unusedImageFiles count] == 0) {
             self.unusedPicturesButton.hidden = YES;
         }else{
-            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.unusedImageFiles count]];
+            NSString *pluralString = [STMFunctions pluralTypeForCount:[STMGarbageCollector.sharedInstance.unusedImageFiles count]];
             NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
             NSString *unusedCount = [NSString stringWithFormat:@"%@UNUSED", pluralString];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
-            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.sharedInstance.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateNormal];
+            [self.unusedPicturesButton setTitle:[NSString stringWithFormat:NSLocalizedString(unusedCount, nil), (unsigned long) [STMGarbageCollector.sharedInstance.unusedImageFiles count], NSLocalizedString(picturesCount, nil)] forState:UIControlStateDisabled];
+            self.unusedPicturesButton.hidden = NO;
         }
     });
     
@@ -541,26 +560,65 @@
 - (IBAction)nonloadedPicturesButtonPressed:(id)sender {
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
-        UIActionSheet *actionSheet = [[UIActionSheet alloc] init];
-        actionSheet.title = NSLocalizedString(@"UNLOADED PICTURES", nil);
-        actionSheet.delegate = self;
-
-        if ([STMCorePicturesController sharedController].downloadingPictures) {
         
-            actionSheet.tag = 2;
-            [actionSheet addButtonWithTitle:NSLocalizedString(@"DOWNLOAD STOP", nil)];
-            [actionSheet addButtonWithTitle:NSLocalizedString(@"CLOSE", nil)];
+        UIAlertController *alertController = [UIAlertController
+                                              alertControllerWithTitle:nil
+                                              message:NSLocalizedString(@"UNLOADED PICTURES", nil)
+                                              preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        UIAlertAction *stopAction = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"DOWNLOAD STOP", nil)
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction *action){
+
+                                       [self stopPicturesDownloading];
+                                       
+                                   }];
+        
+        UIAlertAction *closeAction = [UIAlertAction
+                                    actionWithTitle:NSLocalizedString(@"CLOSE", nil)
+                                    style:UIAlertActionStyleDefault
+                                    handler:^(UIAlertAction *action)
+                                    {
+
+                                    }];
+        
+        UIAlertAction *downloadNowAction = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"DOWNLOAD NOW", nil)
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction *action){
+                                         
+                                         [self checkDownloadingConditions];
+                                         
+                                     }];
+        
+        UIAlertAction *downloadLaterAction = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"DOWNLOAD LATER", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction *action)
+                                      {
+                                          
+                                      }];
+        
+        if ([STMCorePicturesController sharedController].downloadingPictures) {
+
+            [alertController addAction:stopAction];
+            [alertController addAction:closeAction];
+            
 
         } else {
-
-            actionSheet.tag = 1;
-            [actionSheet addButtonWithTitle:NSLocalizedString(@"DOWNLOAD NOW", nil)];
-            [actionSheet addButtonWithTitle:NSLocalizedString(@"DOWNLOAD LATER", nil)];
+            
+            [alertController addAction:downloadNowAction];
+            [alertController addAction:downloadLaterAction];
 
         }
-
-        [actionSheet showInView:self.view];
+        
+        [alertController.popoverPresentationController setPermittedArrowDirections:0];
+        
+        alertController.popoverPresentationController.sourceView = self.view;
+        alertController.popoverPresentationController.sourceRect = self.view.bounds;
+        
+        [self presentViewController:alertController animated:YES completion:nil];
         
     }];
 
@@ -568,13 +626,39 @@
 - (IBAction)unusedPicturesButtonPressed:(id)sender {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        UIActionSheet *actionSheet = [[UIActionSheet alloc] init];
-        actionSheet.tag = 4;
-        actionSheet.title = NSLocalizedString(@"UNUSED PICTURES", nil);
-        actionSheet.delegate = self;
-        actionSheet.destructiveButtonIndex = [actionSheet addButtonWithTitle:NSLocalizedString(@"DELETE", nil)];
-        [actionSheet addButtonWithTitle:NSLocalizedString(@"CLOSE", nil)];
-        [actionSheet showInView:self.view];
+        UIAlertController *alertController = [UIAlertController
+                                              alertControllerWithTitle:nil
+                                              message:NSLocalizedString(@"UNUSED PICTURES", nil)
+                                              preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        UIAlertAction *deleteAction = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"DELETE", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction *action){
+                                         
+                                         [STMGarbageCollector.sharedInstance removeUnusedImages];
+                                         self.unusedPicturesButton.enabled = NO;
+                                         [self updateUnusedPicturesInfo];
+                                         
+                                     }];
+        
+        UIAlertAction *closeAction = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"CLOSE", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction *action)
+                                      {
+                                          
+                                      }];
+        
+        [alertController addAction:deleteAction];
+        [alertController addAction:closeAction];
+        
+        [alertController.popoverPresentationController setPermittedArrowDirections:0];
+        
+        alertController.popoverPresentationController.sourceView = self.view;
+        alertController.popoverPresentationController.sourceRect = self.view.bounds;
+        
+        [self presentViewController:alertController animated:YES completion:nil];
         
     }];
 }
@@ -635,14 +719,31 @@
         NSString *title = [NSString stringWithFormat:@"%lu %@ %@. %@", (unsigned long)unloadedPicturesCount, NSLocalizedString(picturesCount, nil), NSLocalizedString(@"WAITING FOR DOWNLOAD", nil), NSLocalizedString(@"DOWNLOAD IT NOW?", nil)];
 
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            
+            UIAlertController *alertController = [UIAlertController
+                                                  alertControllerWithTitle:NSLocalizedString(@"UNLOADED PICTURES", nil)
+                                                  message:title
+                                                  preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction *noAction = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"NO", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction *action){
 
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"UNLOADED PICTURES", nil)
-                                                            message:title
-                                                           delegate:self
-                                                  cancelButtonTitle:NSLocalizedString(@"NO", nil)
-                                                  otherButtonTitles:NSLocalizedString(@"YES", nil), nil];
-            alert.tag = 2;
-            [alert show];
+                                       }];
+            
+            UIAlertAction *yesAction = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"YES", nil)
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction *action)
+                                           {
+                                               [self checkDownloadingConditions];
+                                           }];
+            
+            [alertController addAction:noAction];
+            [alertController addAction:yesAction];
+            
+            [self presentViewController:alertController animated:YES completion:nil];
         
             self.downloadAlertWasShown = YES;
 
@@ -671,15 +772,41 @@
 - (void)showEnableWWANActionSheet {
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
-        UIActionSheet *actionSheet = [[UIActionSheet alloc] init];
-        actionSheet.delegate = self;
-        actionSheet.tag = 3;
-        actionSheet.title = NSLocalizedString(@"ENABLE WWAN MESSAGE", nil);
         
-        [actionSheet addButtonWithTitle:NSLocalizedString(@"ENABLE WWAN ALWAYS", nil)];
-        [actionSheet addButtonWithTitle:NSLocalizedString(@"ENABLE WWAN ONCE", nil)];
-        [actionSheet showInView:self.view];
+        UIAlertController *alertController = [UIAlertController
+                                              alertControllerWithTitle:nil
+                                              message:NSLocalizedString(@"ENABLE WWAN MESSAGE", nil)
+                                              preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        UIAlertAction *enableAlwaysAction = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ENABLE WWAN ALWAYS", nil)
+                                       style:UIAlertActionStyleDestructive
+                                       handler:^(UIAlertAction *action){
+                                           
+                                           [self enableWWANDownloading];
+                                           [self startPicturesDownloading];
+                                           
+                                       }];
+        
+        UIAlertAction *enableOnceAction = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"ENABLE WWAN ONCE", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction *action)
+                                      {
+                                          
+                                          [self startPicturesDownloading];
+                                          
+                                      }];
+        
+        [alertController addAction:enableAlwaysAction];
+        [alertController addAction:enableOnceAction];
+        
+        [alertController.popoverPresentationController setPermittedArrowDirections:0];
+        
+        alertController.popoverPresentationController.sourceView = self.view;
+        alertController.popoverPresentationController.sourceRect = self.view.bounds;
+        
+        [self presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -692,94 +819,6 @@
     [settingsController setNewSettings:@{@"enableDownloadViaWWAN": @(YES)} forGroup:@"appSettings"];
     
 }
-
-#pragma mark - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    
-    switch (actionSheet.tag) {
-
-        case 1:
-            if (buttonIndex == 0) {
-                [self checkDownloadingConditions];
-            }
-            break;
-            
-        case 2:
-            if (buttonIndex == 0) {
-                [self stopPicturesDownloading];
-            }
-            break;
-
-        case 3:
-            if (buttonIndex == 0) {
-                
-                [self enableWWANDownloading];
-                [self startPicturesDownloading];
-                
-            } else if (buttonIndex == 1) {
-
-                [self startPicturesDownloading];
-
-            }
-            break;
-        case 4:
-            if (buttonIndex == 0) {
-                
-                [STMGarbageCollector removeUnusedImages];
-                self.unusedPicturesButton.enabled = NO;
-                [self updateUnusedPicturesInfo];
-                
-            }
-            
-            break;
-
-        default:
-            break;
-    }
-    
-}
-
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    
-    switch (alertView.tag) {
-            
-        case 1:
-            if (buttonIndex == 1) {
-                [[STMCoreAuthController authController] logout];
-            }
-            break;
-
-        case 2:
-            if (buttonIndex == 1) {
-                [self checkDownloadingConditions];
-            }
-            break;
-
-        case 3:
-            if (buttonIndex == 1) {
-                [self showEnableWWANActionSheet];
-            }
-            break;
-
-        case 4:
-            if (buttonIndex == 0) {
-                [STMGarbageCollector removeUnusedImages];
-                self.unusedPicturesButton.enabled = NO;
-                [self updateUnusedPicturesInfo];
-            }
-            
-            break;
-
-        default:
-            break;
-            
-    }
-    
-}
-
 
 #pragma mark - labels setup
 
@@ -944,13 +983,13 @@
     if ([self blockIfNoLocationPermission] && !self.locationDisabledAlertIsShown) {
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
-            self.locationDisabledAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK TITLE", nil)
-                                                                    message:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK MESSAGE", nil)
-                                                                   delegate:nil
-                                                          cancelButtonTitle:nil
-                                                          otherButtonTitles:nil];
-            [self.locationDisabledAlert show];
+            
+            self.locationDisabledAlert = [UIAlertController
+                alertControllerWithTitle:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK TITLE", nil)
+                message:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK MESSAGE", nil)
+                preferredStyle:UIAlertControllerStyleAlert];
+            
+            [self presentViewController:self.locationDisabledAlert animated:YES completion:nil];
             
         }];
         
@@ -966,7 +1005,7 @@
     
     if (self.locationDisabledAlertIsShown) {
         
-        [self.locationDisabledAlert dismissWithClickedButtonIndex:0 animated:NO];
+        [self.locationDisabledAlert dismissViewControllerAnimated:YES completion:nil];
         self.locationDisabledAlertIsShown = NO;
         
     }
@@ -1169,7 +1208,7 @@
     
     [nc addObserver:self
            selector:@selector(updateUnusedPicturesInfo)
-               name:@"unusedImageRemoved"
+               name:NOTIFICATION_PICTURE_UNUSED_CHANGE
              object:nil];
     
     [nc addObserver:self
@@ -1231,7 +1270,6 @@
     [self setupNonloadedPicturesButton];
     [self updateNonloadedPicturesInfo];
     [self setupUnusedPicturesButton];
-    [self updateUnusedPicturesInfo];
     
     [self addObservers];
     [self startReachability];

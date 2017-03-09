@@ -27,6 +27,7 @@
 
 #import "STMUserDefaults.h"
 
+#import "UITestSetup.h"
 
 @interface STMCoreAppDelegate()
 
@@ -34,7 +35,6 @@
 
 
 @end
-
 
 @implementation STMCoreAppDelegate
 
@@ -80,6 +80,12 @@
     [self setupWindow];
 
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+    
+    if ([[[NSProcessInfo processInfo] arguments] containsObject:@"UI-TESTING"]) {
+    
+        [self setupUITests];
+        
+    }
 
     return YES;
     
@@ -97,7 +103,6 @@
     
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
 
-        [STMGarbageCollector searchUnusedImages];
     }
     
 }
@@ -204,7 +209,7 @@
     [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
                             withValue:logMessage];
 
-    [STMGarbageCollector removeOutOfDateImages];
+    [STMGarbageCollector.sharedInstance removeOutOfDateImages];
 //    [self showTestLocalNotification];
     
 }
@@ -461,6 +466,16 @@
         
     }
 
+}
+
+- (void)setupUITests {
+    
+    if ([[[NSProcessInfo processInfo] arguments] containsObject:@"WorkflowTest"]){
+        
+        [UITestSetup workflowSetup];
+        
+    }
+    
 }
 
 - (void)showTestLocalNotification {

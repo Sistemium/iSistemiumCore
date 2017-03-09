@@ -15,14 +15,10 @@
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
 #import "STMRemoteController.h"
-#import "STMCorePicturesController.h"
-#import "STMCorePhotosController.h"
 #import "STMCoreAppManifestHandler.h"
 
 #import "STMCoreRootTBC.h"
 #import "STMStoryboard.h"
-#import "STMImagePickerController.h"
-#import "STMImagePickerOwnerProtocol.h"
 
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
@@ -33,8 +29,7 @@
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate,
 WKScriptMessageHandler,
 UIAlertViewDelegate,
-STMBarCodeScannerDelegate,
-STMImagePickerOwnerProtocol>
+STMBarCodeScannerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *localView;
 @property (nonatomic, strong) WKWebView *webView;
@@ -54,16 +49,9 @@ STMImagePickerOwnerProtocol>
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
 @property (nonatomic, strong) NSString *remoteControlCallbackJSFunction;
 @property (nonatomic, strong) NSString *checkinCallbackJSFunction;
-@property (nonatomic, strong) NSString *takePhotoCallbackJSFunction;
-
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
 
-@property (nonatomic, strong) NSDictionary *takePhotoMessageParameters;
-@property (nonatomic, strong) NSString *photoEntityName;
-@property (nonatomic, strong) NSDictionary *photoData;
-
 @property (nonatomic) BOOL waitingCheckinLocation;
-@property (nonatomic) BOOL waitingPhoto;
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
 @property (nonatomic, strong) NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> * persistenceDelegate;
@@ -762,7 +750,7 @@ STMImagePickerOwnerProtocol>
         
     } else if ([message.name isEqualToString:WK_MESSAGE_TAKE_PHOTO]) {
         
-        [self handleTakePhotoMessage:message];
+        [self.scriptMessageHandler handleTakePhotoMessage:message];
         
         // persistence messages
         
@@ -798,52 +786,6 @@ STMImagePickerOwnerProtocol>
     
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeError];
-    
-}
-
-- (void)handleTakePhotoMessage:(WKScriptMessage *)message {
-    
-    if (self.waitingPhoto) return;
-        
-    NSDictionary *parameters = message.body;
-    
-    NSString *entityName = parameters[@"entityName"];
-    self.photoEntityName = [STMFunctions addPrefixToEntityName:entityName];
-    
-    if (![self.persistenceDelegate isConcreteEntityName:entityName]) {
-        NSString *error = [NSString stringWithFormat:@"local data model have not entity with name %@", entityName];
-        return [self callbackWithError:error parameters:parameters];
-    }
-        
-    self.waitingPhoto = YES;
-    
-    self.takePhotoMessageParameters = parameters;
-    self.takePhotoCallbackJSFunction = parameters[@"callback"];
-    self.photoData = [parameters[@"data"] isKindOfClass:[NSDictionary class]] ? parameters[@"data"] : @{};
-    
-    UIImagePickerControllerSourceType imageSource = -1;
-    
-    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-        
-        imageSource = UIImagePickerControllerSourceTypeCamera;
-        
-    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-        
-        imageSource = UIImagePickerControllerSourceTypePhotoLibrary;
-        
-    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
-        
-        imageSource = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-        
-    } else {
-        
-        self.waitingPhoto = NO;
-        return [self callbackWithError:@"have no one available source types"
-                            parameters:self.takePhotoMessageParameters];
-        
-    }
-    
-    [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:) withObject:@(imageSource) afterDelay:0];
     
 }
 
@@ -1115,126 +1057,6 @@ int counter = 0;
     }];
     
 }
-
-
-#pragma mark - STMImagePickerOwnerProtocol
-
-- (void)checkImagePickerWithSourceTypeNumber:(NSNumber *)sourceTypeNumber {
-    
-    NSUInteger imageSourceType = sourceTypeNumber.integerValue;
-    
-    if ([UIImagePickerController isSourceTypeAvailable:imageSourceType]) {
-        
-        [self showImagePickerForSourceType:imageSourceType];
-        
-    } else {
-        
-        NSString *imageSourceTypeString = [self stringValueForImageSourceType:imageSourceType];
-        
-        self.waitingPhoto = NO;
-        
-        NSString *message = [NSString stringWithFormat:@"%@ source type is not available", imageSourceTypeString];
-
-        [self callbackWithError:message parameters:self.takePhotoMessageParameters];
-        
-    }
-    
-}
-
-- (NSString *)stringValueForImageSourceType:(UIImagePickerControllerSourceType)imageSourceType {
-    
-    switch (imageSourceType) {
-        case UIImagePickerControllerSourceTypePhotoLibrary: {
-            return @"PhotoLibrary";
-            break;
-        }
-        case UIImagePickerControllerSourceTypeCamera: {
-            return @"Camera";
-            break;
-        }
-        case UIImagePickerControllerSourceTypeSavedPhotosAlbum: {
-            return @"PhotosAlbum";
-            break;
-        }
-    }
-    
-}
-
-- (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType {
-    
-    STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
-    imagePickerController.ownerVC = self;
-    
-    [self.tabBarController presentViewController:imagePickerController animated:YES completion:^{
-        [self.view addSubview:self.spinnerView];
-    }];
-    
-}
-
-- (BOOL)shouldWaitForLocation {
-    return NO;
-}
-
-- (void)saveImage:(UIImage *)image withLocation:(CLLocation *)location {
-    [self saveImage:image];
-}
-
-- (void)saveImage:(UIImage *)image andWaitForLocation:(BOOL)waitForLocation {
-    [self saveImage:image];
-}
-
-- (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
-    
-    [self.spinnerView removeFromSuperview];
-    self.spinnerView = nil;
-    
-    self.waitingPhoto = NO;
-    
-}
-
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-    
-    [self imagePickerWasDissmised:picker];
-    
-    //    [self callbackWithData:@[@"imagePickerControllerDidCancel"]
-    //                parameters:self.takePhotoMessageParameters
-    //        jsCallbackFunction:self.takePhotoCallbackJSFunction];
-    
-    [self callbackWithError:@"imagePickerControllerDidCancel"
-                 parameters:self.takePhotoMessageParameters];
-    
-}
-
-- (void)saveImage:(UIImage *)image {
-    
-    CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
-    
-    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
-    
-    if (!attributes) {
-        self.waitingPhoto = NO;
-        return [self callbackWithError:@"no photo object" parameters:self.takePhotoMessageParameters];
-    }
-    
-    [attributes addEntriesFromDictionary:self.photoData];
-    
-    [self.persistenceDelegate merge:self.photoEntityName attributes:attributes.copy options:nil]
-    .then(^(NSDictionary * result) {
-        [self callbackWithData:@[result]
-                    parameters:self.takePhotoMessageParameters
-            jsCallbackFunction:self.takePhotoCallbackJSFunction];
-    })
-    .catch(^(NSError *error) {
-        NSLog(error.localizedDescription);
-        [self callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
-    })
-    .always(^(){
-        self.waitingPhoto = NO;
-    });
-
-    
-}
-
 
 #pragma mark - STMCheckinDelegate
 

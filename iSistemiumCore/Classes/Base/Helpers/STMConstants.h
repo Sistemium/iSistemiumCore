@@ -78,6 +78,8 @@
 
 #define NOTIFICATION_PICTURE_WAS_DOWNLOADED @"pictureWasDownloaded"
 #define NOTIFICATION_PICTURE_DOWNLOAD_ERROR @"pictureDownloadError"
+#define NOTIFICATION_PICTURE_UNUSED_CHANGE @"unusedImagesDidChange"
+
 #define NOTIFICATION_DEFANTOMIZING_START @"defantomizingStart"
 #define NOTIFICATION_DEFANTOMIZING_UPDATE @"defantomizingUpdate"
 #define NOTIFICATION_DEFANTOMIZING_FINISH @"defantomizingFinish"

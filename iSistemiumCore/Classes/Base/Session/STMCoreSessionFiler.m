@@ -218,6 +218,12 @@
     
 }
 
+- (BOOL)fileExistsAtPath:(NSString *)path{
+
+    return [self.fileManager fileExistsAtPath:path];
+    
+}
+
 
 #pragma mark - filing private methods
 
