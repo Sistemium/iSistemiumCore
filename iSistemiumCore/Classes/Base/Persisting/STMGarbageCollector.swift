@@ -9,12 +9,6 @@
 import Foundation
 import Crashlytics
 
-extension Set {
-    func setmap<U>(transform: (Element) -> U) -> Set<U> {
-        return Set<U>(self.lazy.map(transform))
-    }
-}
-
 @objc class STMGarbageCollector:NSObject{
     
     static let sharedInstance = STMGarbageCollector()
@@ -53,7 +47,7 @@ extension Set {
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
                     }
                     for unusedImage in self.unusedImageFiles{
-                        try self.filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+unusedImage)
+                        try self.filing.removeItem(atPath: self.filing.picturesBasePath() + "/" + unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
                     }
@@ -70,18 +64,15 @@ extension Set {
     }
     
     func searchUnusedImages(){
-        unusedImageFiles = Set<String>()
+        var unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
-        var imageFilePaths = Dictionary<String,String>()
         
         let fileManager = FileManager.default
-        let enumerator = fileManager.enumerator(atPath: STMFunctions.documentsDirectory())
+        let enumerator = fileManager.enumerator(atPath: self.filing.picturesBasePath())
         while let element = enumerator?.nextObject() as? String {
             if element.hasSuffix(".jpg") {
-                let name = element.components(separatedBy: "/").last!
-                allImageFiles.insert(name)
-                imageFilePaths[name] = element
+                allImageFiles.insert(element)
             }
         }
         
@@ -91,23 +82,18 @@ extension Set {
             let data = image["attributes"] as! Dictionary<String,Any>
         
             if let path = data["imagePath"] as? String{
-                if let name = NSURL(fileURLWithPath: path).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(path)
             }
             if let resizedPath = data["resizedImagePath"] as? String{
-                if let name = NSURL(fileURLWithPath: resizedPath).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(resizedPath)
             }
             if let thumbnailPath = data["thumbnailPath"] as? String{
-                if let name = NSURL(fileURLWithPath: thumbnailPath).lastPathComponent{
-                    usedImageFiles.insert(name)
-                }
+                usedImageFiles.insert(thumbnailPath)
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
-        unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
+        
+        self.unusedImageFiles = unusedImageFiles
     }
     
     func removeOutOfDateImages(){
