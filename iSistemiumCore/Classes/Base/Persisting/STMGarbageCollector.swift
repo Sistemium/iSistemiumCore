@@ -17,9 +17,17 @@ import Crashlytics
     
     private var _unusedImageFiles:Set<String>?
     
-    private lazy var filing:STMFiling = {
-        return STMCoreSessionManager.shared().currentSession.filing
-    }()
+    private var _filing:STMFiling?
+    
+    var filing:STMFiling{
+        get{
+            return _filing != nil ? _filing! : STMCoreSessionManager.shared().currentSession.filing
+        }
+        set{
+            _filing = newValue
+        }
+        
+    }
     
     var unusedImageFiles : Set<String>{
         get{
