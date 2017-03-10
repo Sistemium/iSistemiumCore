@@ -144,11 +144,15 @@
     for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
     
         NSString *entityName = entityDescription.name;
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
 
         NSArray *columns = [self addEntity:entityName
                                   modeling:modelMapping.destinationModeling];
 
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        if (!columns) {
+            [columnsDictionary removeObjectForKey:tableName];
+        }
+        
         columnsDictionary[tableName] = columns;
 
     }
@@ -157,11 +161,11 @@
     for (NSEntityDescription *entityDescription in modelMapping.removedEntities) {
         
         NSString *entityName = entityDescription.name;
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+
         BOOL result = [self deleteEntity:entityName
                                 modeling:modelMapping.sourceModeling];
         
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-
         if (result) {
             [columnsDictionary removeObjectForKey:tableName];
         }
@@ -253,7 +257,7 @@
     if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
         
         NSLog(@"STMFmdb ignore entity: %@", entityName);
-        return @[];
+        return nil;
         
     }
     
