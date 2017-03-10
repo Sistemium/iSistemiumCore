@@ -46,14 +46,18 @@
     
     // Create a database as if it is first user's login using first test bundle
     NSManagedObjectModel *sourceModel = [self modelWithName:nil];
-    XCTAssertEqualObjects(sourceModel, [self loadModelFromFile]);
-    
     NSManagedObjectModel *destinationModel = [self modelWithName:@"testModel"];
     
     NSError *error = nil;
-    STMModelMapper *mapper = [[STMModelMapper alloc] initWithSourceModel:sourceModel
-                                                        destinationModel:destinationModel
-                                                                   error:&error];
+    STMModelMapper *mapper = [[STMModelMapper alloc] initWithModelName:@"testModel"
+                                                                filing:self.filing
+                                                                 error:&error];
+    
+    XCTAssertEqualObjects(sourceModel, mapper.sourceModel);
+    XCTAssertEqualObjects(destinationModel, mapper.destinationModel);
+    
+    XCTAssertNotNil(mapper);
+    XCTAssertNil(error);
     
     self.stmFMDB = [self fmdbWithModelMapping:mapper];
     
@@ -61,103 +65,22 @@
         [self checkDb:db withModelMapping:mapper];
     }];
     
-    [self saveModelToFile:destinationModel];
-    XCTAssertEqualObjects(destinationModel, [self loadModelFromFile]);
-
+    [mapper migrationComplete];
+    
     // Create a database as if it is have new version of data model
     sourceModel = [self modelWithName:@"testModel"];
-    XCTAssertEqualObjects(sourceModel, [self loadModelFromFile]);
-    
     destinationModel = [self modelWithName:@"testModelChanged"];
     
-    mapper = [[STMModelMapper alloc] initWithSourceModel:sourceModel
-                                        destinationModel:destinationModel
-                                                   error:&error];
+    mapper = [[STMModelMapper alloc] initWithSourceModelName:@"testModel"
+                                        destinationModelName:@"testModelChanged"
+                                                      filing:self.filing
+                                                       error:&error];
 
     self.stmFMDB = [self fmdbWithModelMapping:mapper];
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
         [self checkDb:db withModelMapping:mapper];
     }];
-    
-    [self saveModelToFile:destinationModel];
-    XCTAssertEqualObjects(destinationModel, [self loadModelFromFile]);
-
-    [self deleteModelFile];
-    
-}
-
-- (NSString *)modelFolderPath {
-    return [self.filing persistencePath:@"model"];
-}
-
-- (NSString *)modelFilePath {
-    return [[self modelFolderPath] stringByAppendingPathComponent:@"datamodel.object"];
-}
-
-- (void)saveModelToFile:(NSManagedObjectModel *)model {
-    
-    NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:model];
-    
-    NSString *path = [self modelFilePath];
-    
-    NSError *error = nil;
-    BOOL writeResult = [modelData writeToFile:path
-                                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                        error:&error];
-    
-    if (!writeResult) {
-        NSLog(@"can't write model to path %@", path);
-    }
-    
-    XCTAssertTrue(writeResult);
-    XCTAssertNil(error);
-
-}
-
-- (NSManagedObjectModel *)loadModelFromFile {
-    
-    NSString *path = [self modelFilePath];
-    
-    NSError *error = nil;
-    NSData *modelData = [NSData dataWithContentsOfFile:path
-                                               options:0
-                                                 error:&error];
-    
-    if (!modelData) {
-    
-        if (error) {
-            
-            NSLog(@"can't load model from path %@", path);
-            NSLog(@"error: %@", error.localizedDescription);
-
-        }
-        
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-    
-    id unarchiveObject = [NSKeyedUnarchiver unarchiveObjectWithData:modelData];
-    
-    if (![unarchiveObject isKindOfClass:[NSManagedObjectModel class]]) {
-        
-        NSLog(@"loaded model from file is not NSManagedObjectModel class");
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-
-    return (NSManagedObjectModel *)unarchiveObject;
-
-}
-
-- (void)deleteModelFile {
-    
-    NSError *error = nil;
-    BOOL result = [self.filing removeItemAtPath:[self modelFilePath]
-                                          error:&error];
-    
-    XCTAssertTrue(result);
-    XCTAssertNil(error);
     
 }
 
