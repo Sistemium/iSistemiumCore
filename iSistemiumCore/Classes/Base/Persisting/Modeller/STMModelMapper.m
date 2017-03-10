@@ -151,6 +151,10 @@
 
 #pragma mark - STMModelMapping
 
+- (void)migrationComplete {
+    [self saveModelToFile:self.destinationModelName];
+}
+
 - (NSArray <NSEntityDescription *> *)addedEntities {
     
     if (!_addedEntities) {

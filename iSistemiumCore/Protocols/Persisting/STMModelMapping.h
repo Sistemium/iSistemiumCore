@@ -28,5 +28,7 @@
 @property (nonatomic, strong, readonly) id <STMModelling> sourceModeling;
 @property (nonatomic, strong, readonly) id <STMModelling> destinationModeling;
 
+- (void)migrationComplete;
+
 
 @end
