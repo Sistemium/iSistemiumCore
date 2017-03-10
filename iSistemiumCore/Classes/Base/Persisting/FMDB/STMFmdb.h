@@ -19,9 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
                               filing:(id <STMFiling>)filing
                             fileName:(NSString *)fileName;
 
-- (instancetype)initWithModelling:(id <STMModelling>)modelling
-                           filing:(id <STMFiling>)filing
-                         fileName:(NSString *)fileName;
+//- (instancetype)initWithModelling:(id <STMModelling>)modelling
+//                           filing:(id <STMFiling>)filing
+//                         fileName:(NSString *)fileName;
 
 - (BOOL)hasTable:(NSString *)name;
 
