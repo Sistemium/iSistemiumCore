@@ -93,7 +93,7 @@ extension Set {
             return true
         }
         
-        let allImages = STMCorePicturesController.allPictures() as! Array<Dictionary<String,Any>>;
+        let allImages = STMCorePicturesController.shared().allPictures() as! Array<Dictionary<String,Any>>;
         for image in allImages{
             
             let data = image["attributes"] as! Dictionary<String,Any>

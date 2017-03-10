@@ -79,7 +79,7 @@
     } else {
         
         [self addObservers];
-        [STMCorePicturesController hrefProcessingForObject:self.picture];
+        [STMCorePicturesController.sharedController hrefProcessingForObject:self.picture];
         
         [self.view addSubview:self.spinnerView];
         

@@ -293,7 +293,7 @@
 
 - (void)saveImage:(UIImage *)image {
     
-    CGFloat jpgQuality = [STMCorePicturesController jpgQuality];
+    CGFloat jpgQuality = [STMCorePicturesController.sharedController jpgQuality];
     
     NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
     

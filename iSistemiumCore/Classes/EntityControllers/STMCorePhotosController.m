@@ -124,10 +124,10 @@
         return nil;
     }
     
-    return [STMCorePicturesController setImagesFromData:photoData
-                                             forPicture:@{@"id": [STMFunctions uuidString]}
-                                         withEntityName:entityName
-                                              andUpload:YES];
+    return [STMCorePicturesController.sharedController setImagesFromData:photoData
+                                                              forPicture:@{@"id": [STMFunctions uuidString]}
+                                                          withEntityName:entityName
+                                                               andUpload:YES];
     
 }
 

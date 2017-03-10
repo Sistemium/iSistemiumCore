@@ -211,7 +211,7 @@
     NSString *pictureSize = parameters[@"size"];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id == %@", pictureId];
     
-    NSDictionary *picture = [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
+    NSDictionary *picture = [[STMCorePicturesController.sharedController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
     
     if (!picture) {
         NSString *error = [NSString stringWithFormat:@"no picture with xid %@", pictureId];
