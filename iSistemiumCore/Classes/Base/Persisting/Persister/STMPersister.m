@@ -19,9 +19,20 @@
 
 + (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
 
+    NSError *error = nil;
+    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
+                                                                     filing:filing
+                                                                      error:&error];
+    
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:@"fmdb.db"];
+    persister.fmdb = [[STMFmdb alloc] initWithModelMapping:modelMapper
+                                                    filing:filing
+                                                  fileName:@"fmdb.db"];
+    
+    [modelMapper migrationComplete];
+    
+//    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:@"fmdb.db"];
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
