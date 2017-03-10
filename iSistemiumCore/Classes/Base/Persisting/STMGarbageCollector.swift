@@ -19,8 +19,6 @@ extension Set {
     
     static let sharedInstance = STMGarbageCollector()
     
-    private override init() {}
-    
     private var _unusedImageFiles:Set<String>?
     
     private var _filing:STMFiling?

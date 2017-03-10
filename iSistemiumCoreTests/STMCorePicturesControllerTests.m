@@ -40,15 +40,17 @@
 
 - (void)testDownloadConnectionForObject {
     
-    NSLog(self.filing.picturesBasePath);
+    STMGarbageCollector *garbageCollector = [[STMGarbageCollector alloc] init];
     
-    STMGarbageCollector.sharedInstance.filing = self.filing;
+    STMCorePicturesController *corePicturesController = [[STMCorePicturesController alloc] init];
     
-    STMCorePicturesController.sharedController.persistenceDelegate = self.persister;
+    garbageCollector.filing = self.filing;
     
-    STMCorePicturesController.sharedController.filing = self.filing;
+    corePicturesController.persistenceDelegate = self.persister;
     
-    XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
+    corePicturesController.filing = self.filing;
+    
+    XCTAssertEqual(garbageCollector.unusedImageFiles.count, 0);
     
     NSString *xid = [STMFunctions uuidString];
     
@@ -73,7 +75,7 @@
     
     XCTAssertNil(error);
     
-    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture].then(^(NSDictionary *picture){
+    [corePicturesController downloadImagesEntityName:entityName attributes:picture].then(^(NSDictionary *picture){
         XCTAssertNotNil(picture);
         [expectation fulfill];
     });
@@ -101,15 +103,15 @@
         [self.persister destroySync:entityName identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
         
         // Need to set real persister because there are real pictures
-        [STMCorePicturesController sharedController].persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
+        corePicturesController.persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
         
-        [STMGarbageCollector.sharedInstance searchUnusedImages];
+        [garbageCollector searchUnusedImages];
         
-        XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 3);
+        XCTAssertEqual(garbageCollector.unusedImageFiles.count, 3);
         
         expectation = [self expectationWithDescription:@"removingPictures"];
         
-        [STMGarbageCollector.sharedInstance removeUnusedImages].then(^(NSError *error){
+        [garbageCollector removeUnusedImages].then(^(NSError *error){
             XCTAssertEqual(error, nil);
             [expectation fulfill];
         });
