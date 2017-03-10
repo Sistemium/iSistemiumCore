@@ -33,6 +33,7 @@
     
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
+    persister.modelMapping = modelMapper;
     persister.fmdb = [[STMFmdb alloc] initWithModelMapping:modelMapper
                                                     filing:filing
                                                   fileName:@"fmdb.db"];

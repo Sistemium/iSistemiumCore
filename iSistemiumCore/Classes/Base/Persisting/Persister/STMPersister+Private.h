@@ -11,6 +11,7 @@
 @interface STMPersister()
 
 @property (nonatomic,strong) NSString * fmdbFileName;
+@property (nonatomic, strong) id <STMModelMapping> modelMapping;
 
 - (void)wrongEntityName:(NSString *)entityName error:(NSError **)error;
 
