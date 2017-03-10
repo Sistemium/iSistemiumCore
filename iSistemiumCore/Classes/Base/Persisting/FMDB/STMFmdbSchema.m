@@ -109,7 +109,7 @@
     while ([tablesSet next]) {
         
         NSString *tableName = [tablesSet stringForColumn:@"name"];
-        NSLog(@"%@", tableName);
+//        NSLog(@"%@", tableName);
         
         NSString *query = [NSString stringWithFormat:@"PRAGMA table_info('%@')", tableName];
         FMResultSet *columnsSet = [self.database executeQuery:query];
@@ -119,7 +119,7 @@
         while ([columnsSet next]) {
             
             NSString *columnName = [columnsSet stringForColumn:@"name"];
-            NSLog(@"    %@", columnName);
+//            NSLog(@"    %@", columnName);
 
             [columns addObject:columnName];
             
@@ -242,7 +242,7 @@
     }];
     
     NSLog(@"columnsDictionary %@", columnsDictionary);
-    NSLog(@"currentDBScheme %@", [self currentDBScheme]);
+//    NSLog(@"currentDBScheme %@", [self currentDBScheme]);
     
     return columnsDictionary.copy;
     
