@@ -385,6 +385,13 @@
 
     if (!entity) {
         
+        if (!self.entityResource) {
+            
+            [self.logger errorMessage:@"ERROR! syncer have no settings, something really wrong here, needs attention!"];
+            return NO;
+            
+        }
+        
         NSError *error;
         NSDictionary *attributes = @{
                                      @"name": [STMFunctions removePrefixFromEntityName:stcEntityName],
