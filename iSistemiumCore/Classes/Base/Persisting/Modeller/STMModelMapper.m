@@ -131,6 +131,20 @@
     
 }
 
+- (void)saveModelToFile:(NSString *)modelName {
+    
+    NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:self.destinationModel];
+    
+    NSString *path = [[self.filing persistenceBasePath] stringByAppendingPathComponent:modelName];
+    
+    NSError *error = nil;
+    BOOL writeResult = [modelData writeToFile:path
+                                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                        error:&error];
+    
+    if (!writeResult) {
+        NSLog(@"can't write model to path %@", path);
+    }
     
 }
 
