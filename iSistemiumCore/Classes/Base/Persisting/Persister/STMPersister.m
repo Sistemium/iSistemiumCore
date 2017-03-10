@@ -15,20 +15,33 @@
 
 #import "STMModeller+Interceptable.h"
 
+#import "STMModelMapper.h"
+
+
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
 
+// probably here we need to create ModelMapper
     NSError *error = nil;
     STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                                      filing:filing
                                                                       error:&error];
+    
+// modelMapper creates own sourceModelling and destinationModelling
+// persister is also STMModeller subclass — do we have modelling redundancy???
     
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelMapping:modelMapper
                                                     filing:filing
                                                   fileName:@"fmdb.db"];
+    
+// if [STMFmdbSchema createTablesWithModelMapping] is OK call [modelMapper migrationComplete] to save new model to file
+// have to do something if createTablesWithModelMapping is notOK ???
+
+// also we don't need to call [modelMapper migrationComplete] if model does not changed
+// may be we should do it somewhere in STMFmdbSchema
     
     [modelMapper migrationComplete];
     

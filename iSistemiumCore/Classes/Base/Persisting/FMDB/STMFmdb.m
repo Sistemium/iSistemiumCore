@@ -25,6 +25,7 @@
     
     NSString *dbPath = [fmdbPath stringByAppendingPathComponent:fileName];
     
+// should we use modelMapping.sourceModelling or destinationModeling here ???
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelMapping.destinationModeling];
     self.dbPath = dbPath;
     
