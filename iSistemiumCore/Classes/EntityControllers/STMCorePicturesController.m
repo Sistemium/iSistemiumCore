@@ -194,9 +194,8 @@
         [self checkBrokenPhotos];
         [self checkNotUploadedPhotos];
         
-#warning counts large downloaded images as unused
-        
         NSLog(@"checkPhotos finish");
+        
     });
     
 }
