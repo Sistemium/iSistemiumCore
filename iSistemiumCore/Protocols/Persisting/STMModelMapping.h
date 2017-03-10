@@ -10,9 +10,12 @@
 
 #import <CoreData/CoreData.h>
 #import "STMModelling.h"
+#import "STMFiling.h"
 
 
 @protocol STMModelMapping <NSObject>
+
+@property (nonatomic, strong, readonly) id <STMFiling> filing;
 
 @property (nonatomic, strong, readonly) NSManagedObjectModel *sourceModel;
 @property (nonatomic, strong, readonly) NSManagedObjectModel *destinationModel;
