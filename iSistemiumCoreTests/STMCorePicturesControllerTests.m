@@ -14,10 +14,10 @@
 #import "iSistemiumCore-Swift.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreSessionFiler.h"
+#import "STMTestDirectoring.h"
 
-@interface STMCorePicturesControllerTests : STMPersistingTests <STMDirectoring>
+@interface STMCorePicturesControllerTests : STMPersistingTests
 
-@property (nonatomic, strong) STMFmdb *stmFMDB;
 @property (nonatomic, strong) id <STMFiling> filing;
 
 @end
@@ -26,9 +26,11 @@
 
 - (void)setUp {
     [super setUp];
+
+    id <STMDirectoring> directoring = [[STMTestDirectoring alloc] init];
     
     if (!self.filing) {
-        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:self];
+        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:directoring];
     }
 }
 
@@ -38,15 +40,15 @@
 
 - (void)testDownloadConnectionForObject {
     
-    STMGarbageCollector.sharedInstance.filing = self.filing;
+    NSLog(self.filing.picturesBasePath);
     
-    XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
+    STMGarbageCollector.sharedInstance.filing = self.filing;
     
     STMCorePicturesController.sharedController.persistenceDelegate = self.persister;
     
     STMCorePicturesController.sharedController.filing = self.filing;
     
-    
+    XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
     
     NSString *xid = [STMFunctions uuidString];
     
@@ -118,21 +120,6 @@
         
     }];
     
-}
-
-#pragma mark - STMDirectoring
-
-
-- (NSString *)userDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSString *)sharedDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSBundle *)bundle {
-    return [NSBundle bundleForClass:[self class]];
 }
 
 @end

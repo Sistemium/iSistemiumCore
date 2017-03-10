@@ -10,10 +10,11 @@
 #import "STMCoreSessionFiler.h"
 #import "STMFmdb+Private.h"
 #import "STMModeller.h"
+#import "STMTestDirectoring.h"
 
 #import "FMDatabaseAdditions.h"
 
-@interface ModelMappingFMDBTests : XCTestCase <STMDirectoring>
+@interface ModelMappingFMDBTests : XCTestCase
 
 @property (nonatomic, strong) STMFmdb *stmFMDB;
 @property (nonatomic, strong) id <STMFiling> filing;
@@ -27,7 +28,7 @@
     [super setUp];
     
     if (!self.filing) {
-        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:self];
+        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:[[STMTestDirectoring alloc] init]];
     }
 }
 
@@ -67,24 +68,6 @@
     
     return [STMModeller modellerWithModel:model];
     
-}
-
-
-#pragma mark - STMDirectoring
-
-
-- (NSString *)userDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSString *)sharedDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSBundle *)bundle {
-    // TODO: For fun in the future create a pair of separate test bundles and use it here
-    // these bundles will contain test models
-    return [NSBundle bundleForClass:[self class]];
 }
 
 @end
