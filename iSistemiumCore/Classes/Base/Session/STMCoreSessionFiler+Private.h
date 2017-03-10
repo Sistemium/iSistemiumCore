@@ -20,6 +20,6 @@
 @property (nonatomic, strong) NSString *userDocuments;
 @property (nonatomic, strong) NSString *sharedDocuments;
 
-@property (nonatomic, weak) id <STMDirectoring> directoring;
+@property (nonatomic, strong) id <STMDirectoring> directoring;
 
 @end
