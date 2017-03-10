@@ -12,7 +12,18 @@
 #import "STMFunctions.h"
 
 
+@interface STMModelMapper()
+
+@property (nonatomic, strong) NSString *sourceModelName;
+@property (nonatomic, strong) NSString *destinationModelName;
+
+
+@end
+
+
 @implementation STMModelMapper
+
+@synthesize filing = _filing;
 
 @synthesize sourceModel = _sourceModel;
 @synthesize sourceModeling = _sourceModeling;
@@ -30,30 +41,96 @@
 @synthesize removedProperties = _removedProperties;
 
 
-- (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
+- (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing error:(NSError **)error {
+    
+    return [self initWithSourceModelName:modelName
+                    destinationModelName:modelName
+                                  filing:filing
+                                   error:error];
+    
+}
+
+- (instancetype)initWithSourceModelName:(NSString *)sourceModelName destinationModelName:(NSString *)destinationModelName filing:(id <STMFiling>)filing error:(NSError **)error {
     
     self = [super init];
     
-    if (self) {
-    
-        _sourceModel = sourceModel;
-        _sourceModeling = [STMModeller modellerWithModel:sourceModel];
-        
-        _destinationModel = destinationModel;
-        _destinationModeling = [STMModeller modellerWithModel:destinationModel];
-        
-        _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
-                                                          destinationModel:destinationModel
-                                                                     error:error];
-        
-        _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
-                                                           destinationModel:destinationModel];
-#ifdef DEBUG
-        [self showMappingInfo];
-#endif
+    if (!self) {
+        return nil;
     }
     
+    _filing = filing;
+    
+    self.sourceModelName = sourceModelName;
+    self.destinationModelName = destinationModelName;
+    
+    NSManagedObjectModel *sourceModel = [self loadModelFromFile:sourceModelName];
+    NSManagedObjectModel *destinationModel = [self bundledModelWithName:destinationModelName];
+    
+    if (!sourceModel) sourceModel = [[NSManagedObjectModel alloc] init];
+    if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
+    
+    _sourceModel = sourceModel;
+    _sourceModeling = [STMModeller modellerWithModel:sourceModel];
+    
+    _destinationModel = destinationModel;
+    _destinationModeling = [STMModeller modellerWithModel:destinationModel];
+    
+    _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
+                                                      destinationModel:destinationModel
+                                                                 error:error];
+    
+    _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
+                                                       destinationModel:destinationModel];
+#ifdef DEBUG
+    [self showMappingInfo];
+#endif
+    
     return self;
+
+}
+
+- (NSManagedObjectModel *)bundledModelWithName:(NSString *)modelName {
+    
+    NSURL *url = [NSURL URLWithString:[self.filing bundledModelFile:modelName]];
+    return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    
+}
+
+- (NSManagedObjectModel *)loadModelFromFile:(NSString *)modelName {
+    
+    NSString *path = [[self.filing persistenceBasePath] stringByAppendingPathComponent:modelName];
+    
+    NSError *error = nil;
+    NSData *modelData = [NSData dataWithContentsOfFile:path
+                                               options:0
+                                                 error:&error];
+    
+    if (!modelData) {
+        
+        if (error) {
+            
+            NSLog(@"can't load model from path %@, return empty model", path);
+            NSLog(@"error: %@", error.localizedDescription);
+            
+        }
+        
+        return [[NSManagedObjectModel alloc] init];
+        
+    }
+    
+    id unarchiveObject = [NSKeyedUnarchiver unarchiveObjectWithData:modelData];
+    
+    if (![unarchiveObject isKindOfClass:[NSManagedObjectModel class]]) {
+        
+        NSLog(@"loaded model from file is not NSManagedObjectModel class, return empty model");
+        return [[NSManagedObjectModel alloc] init];
+        
+    }
+    
+    return (NSManagedObjectModel *)unarchiveObject;
+    
+}
+
     
 }
 
