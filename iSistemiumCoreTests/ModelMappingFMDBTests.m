@@ -45,21 +45,25 @@
 - (void)testCreateAndMigrateFMDB {
     
     // Create a database as if it is first user's login using first test bundle
+    
+    NSString *modelName = @"testModel";
+    
     NSManagedObjectModel *sourceModel = [self modelWithName:nil];
-    NSManagedObjectModel *destinationModel = [self modelWithName:@"testModel"];
+    NSManagedObjectModel *destinationModel = [self modelWithName:modelName];
     
     NSError *error = nil;
-    STMModelMapper *mapper = [[STMModelMapper alloc] initWithModelName:@"testModel"
+    STMModelMapper *mapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                                 filing:self.filing
                                                                  error:&error];
     
     XCTAssertEqualObjects(sourceModel, mapper.sourceModel);
     XCTAssertEqualObjects(destinationModel, mapper.destinationModel);
-    
+
     XCTAssertNotNil(mapper);
     XCTAssertNil(error);
+    XCTAssertTrue(mapper.needToMigrate);
     
-    self.stmFMDB = [self fmdbWithModelMapping:mapper];
+    self.stmFMDB = [self fmdbWithModelName:modelName];
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
         [self checkDb:db withModelMapping:mapper];
@@ -67,19 +71,37 @@
     
     [mapper migrationComplete];
     
+    mapper = [[STMModelMapper alloc] initWithModelName:modelName
+                                                filing:self.filing
+                                                 error:&error];
+
+    XCTAssertNotNil(mapper);
+    XCTAssertNil(error);
+    XCTAssertFalse(mapper.needToMigrate);
+
     // Create a database as if it is have new version of data model
     sourceModel = [self modelWithName:@"testModel"];
-    destinationModel = [self modelWithName:@"testModelChanged"];
+    
+    modelName = @"testModelChanged";
+    destinationModel = [self modelWithName:modelName];
     
     mapper = [[STMModelMapper alloc] initWithSourceModelName:@"testModel"
-                                        destinationModelName:@"testModelChanged"
+                                        destinationModelName:modelName
                                                       filing:self.filing
                                                        error:&error];
 
-    self.stmFMDB = [self fmdbWithModelMapping:mapper];
+    XCTAssertNotNil(mapper);
+    XCTAssertNil(error);
+    XCTAssertTrue(mapper.needToMigrate);
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
+        
+        STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:db];
+        
+        self.stmFMDB.columnsByTable = (mapper.needToMigrate) ? [fmdbSchema createTablesWithModelMapping:mapper] : [fmdbSchema currentDBScheme];
+
         [self checkDb:db withModelMapping:mapper];
+        
     }];
     
 }
@@ -90,11 +112,11 @@
 
     NSLog(@"check all entities and properties in model have corresponding tables and columns in fmdb");
     
-    NSArray <NSString *> *entitiesNames = modelMapping.destinationModeling.entitiesByName.allKeys;
+    NSArray <NSEntityDescription *> *entities = modelMapping.destinationModel.entitiesByName.allValues;
     
-    for (NSString *entityName in entitiesNames) {
+    for (NSEntityDescription *entity in entities) {
         
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
         
         BOOL result = [db tableExists:tableName];
 
@@ -108,7 +130,7 @@
 
         if (!result) continue;
         
-        NSArray <NSString *> *fields = [modelMapping.destinationModeling fieldsForEntityName:entityName].allKeys;
+        NSArray <NSString *> *fields = entity.attributesByName.allKeys;
         
         for (NSString *column in fields) {
             
@@ -132,18 +154,18 @@
 
     NSDictionary <NSString *, NSArray <NSString *> *> *columnsByTable = self.stmFMDB.columnsByTable;
 
-    [columnsByTable enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray <NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+    [columnsByTable enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray <NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
-        NSString *entityName = [STMFunctions addPrefixToEntityName:key];
+        entityName = [STMFunctions addPrefixToEntityName:entityName];
         
-        NSEntityDescription *entityDescription = modelMapping.destinationModeling.entitiesByName[entityName];
+        NSEntityDescription *entityDescription = modelMapping.destinationModel.entitiesByName[entityName];
         
         BOOL result = (entityDescription != nil);
         
         if (!result) {
-            NSLog(@"FMDB have unused table %@", key);
+            NSLog(@"FMDB have unused table %@", entityName);
         } else {
-            NSLog(@"FMDB %@ OK", key);
+            NSLog(@"FMDB %@ OK", entityName);
         }
         
         XCTAssertTrue(result);
@@ -167,9 +189,9 @@
             result = (propertyDescription != nil);
             
             if (!result) {
-                NSLog(@"FMDB have unused column %@ in table %@", column, key);
+                NSLog(@"FMDB have unused column %@ in table %@", column, entityName);
             } else {
-                NSLog(@"FMDB column %@ in %@ OK", column, key);
+                NSLog(@"FMDB column %@ in %@ OK", column, entityName);
             }
 
             XCTAssertTrue(result);
@@ -180,19 +202,11 @@
     
 }
 
-- (STMFmdb *)fmdbWithModelMapping:(id <STMModelMapping>)modelMapping {
-    
-    return [[STMFmdb alloc] initWithModelMapping:modelMapping
-                                          filing:self.filing
-                                        fileName:@"fmdb.db"];
-    
-}
-
 - (STMFmdb *)fmdbWithModelName:(NSString *)modelName {
     
     return [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:modelName]
                                        filing:self.filing
-                                     fileName:@"fmdb.db"];
+                                    modelName:modelName];
 }
 
 - (id <STMModelling>)modelerWithModelName:(NSString *)modelName {
@@ -220,7 +234,6 @@
 
 
 #pragma mark - STMDirectoring
-
 
 - (NSString *)userDocuments {
     return NSTemporaryDirectory();
