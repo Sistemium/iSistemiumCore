@@ -153,56 +153,28 @@
     }
     
 // handle added properties
-    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
+    if (modelMapping.addedProperties.count) {
         
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-
-        NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
-        if (!columns) columns = @[].mutableCopy;
-        
-        for (NSPropertyDescription *property in propertiesArray) {
+        [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
-            NSAttributeDescription *attributeDescription = entity.attributesByName[property.name];
-            
-            if (attributeDescription) {
-                
-                NSArray *result = [self addColumns:@[attributeDescription]
-                                           toTable:tableName];
-                
-                [columns addObjectsFromArray:result];
-                continue;
-                
-            }
+            [self addPropertiesArray:attributesArray
+                            toEntity:entity];
 
-            NSRelationshipDescription *relationshipDescription = entity.relationshipsByName[property.name];
+        }];
+        
+        [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
             
-            if (relationshipDescription) {
-                
-                NSArray *result = [self addRelationships:@[relationshipDescription]
-                                                 toTable:tableName];
-                
-                [columns addObjectsFromArray:result];
-                
-            }
+            [self addPropertiesArray:relationshipsArray
+                            toEntity:entity];
 
-        }
+        }];
         
-        self.columnsDictionary[tableName] = columns;
-        
-    }];
+    }
     
 // handle removed properties
     [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
-// SQLite supports a limited subset of ALTER TABLE. The ALTER TABLE command in SQLite allows the user to rename a table or to add a new column to an existing table
-// http://www.sqlite.org/lang_altertable.html
-        
-// so we have to delete table and create the new one
-        
-// delete table
         [self deleteEntity:entity];
-        
-// add table back
         [self addEntity:entity];
         
 #warning - have to inform corresponding clientEntity to set eTag to '*'
@@ -210,10 +182,36 @@
     }];
     
     NSLog(@"columnsDictionary %@", self.columnsDictionary);
-//    NSLog(@"currentDBScheme %@", [self currentDBScheme]);
     
     return self.columnsDictionary.copy;
     
+}
+
+- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntity:(NSEntityDescription *)entity {
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    
+    NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
+    if (!columns) columns = @[].mutableCopy;
+    
+    NSArray *result = @[];
+    
+    if ([propertiesArray.firstObject isKindOfClass:[NSAttributeDescription class]]) {
+        
+        result = [self addColumns:(NSArray <NSAttributeDescription *> *)propertiesArray
+                          toTable:tableName];
+        
+    } else if ([propertiesArray.firstObject isKindOfClass:[NSRelationshipDescription class]]) {
+        
+        result = [self addRelationships:(NSArray <NSRelationshipDescription *> *)propertiesArray
+                                toTable:tableName];
+        
+    }
+    
+    [columns addObjectsFromArray:result];
+    
+    self.columnsDictionary[tableName] = columns;
+
 }
 
 - (void)addEntity:(NSEntityDescription *)entity {
