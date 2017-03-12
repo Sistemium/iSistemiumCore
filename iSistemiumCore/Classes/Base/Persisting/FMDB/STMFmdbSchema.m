@@ -170,51 +170,17 @@
         
         [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
-            if (modelMapping.removedProperties[entityName]) {
-                
-                // this entity was added earlier
-                return;
-                
-            }
+            [self addPropertiesArray:attributesArray
+                    toEntityWithName:entityName
+                        modelMapping:modelMapping];
             
-            NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
-
-            NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-            
-            NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
-            if (!columns) columns = @[].mutableCopy;
-            
-            NSArray *result = [self addColumns:attributesArray
-                                       toTable:tableName];
-            
-            [columns addObjectsFromArray:result];
-            
-            self.columnsDictionary[tableName] = columns;
-
         }];
         
         [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
             
-            if (modelMapping.removedProperties[entityName]) {
-                
-                // this entity was added earlier
-                return;
-                
-            }
-
-            NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
-
-            NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-            
-            NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
-            if (!columns) columns = @[].mutableCopy;
-            
-            NSArray *result = [self addRelationships:relationshipsArray
-                                             toTable:tableName];
-
-            [columns addObjectsFromArray:result];
-            
-            self.columnsDictionary[tableName] = columns;
+            [self addPropertiesArray:relationshipsArray
+                    toEntityWithName:entityName
+                        modelMapping:modelMapping];
 
         }];
         
@@ -228,6 +194,41 @@
     
     return self.columnsDictionary.copy;
     
+}
+
+- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName modelMapping:(id <STMModelMapping>)modelMapping {
+    
+    if (modelMapping.removedProperties[entityName]) {
+        
+        // this entity was added earlier
+        return;
+        
+    }
+    
+    NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    
+    NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
+    if (!columns) columns = @[].mutableCopy;
+    
+    NSArray *result = nil;
+    
+    if ([propertiesArray.firstObject isKindOfClass:[NSRelationshipDescription class]]) {
+    
+        result = [self addRelationships:(NSArray <NSRelationshipDescription *> *)propertiesArray
+                                toTable:tableName];
+        
+    } else if ([propertiesArray.firstObject isKindOfClass:[NSAttributeDescription class]]) {
+        
+        result = [self addColumns:(NSArray <NSAttributeDescription *> *)propertiesArray
+                          toTable:tableName];
+    }
+    
+    if (result.count) [columns addObjectsFromArray:result];
+    
+    self.columnsDictionary[tableName] = columns;
+
 }
 
 - (void)addEntity:(NSEntityDescription *)entity {
