@@ -15,6 +15,8 @@
 #import "STMFmdbSchema.h"
 #import "STMModelMapper.h"
 
+#import "STMLogger.h"
+
 #import <sqlite3.h>
 
 
@@ -48,18 +50,56 @@
 
     [self.queue inDatabase:^(FMDatabase *database){
         
-        STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
-        
-        NSError *error = nil;
-        STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                                         filing:filing
-                                                                          error:&error];
-
-        self.columnsByTable = (modelMapper.needToMigrate) ? [fmdbSchema createTablesWithModelMapping:modelMapper] : [fmdbSchema currentDBScheme];
+        [self checkModelMappingForDatabase:database
+                                 modelName:modelName];
         
     }];
     
     return self;
+    
+}
+
+- (void)checkModelMappingForDatabase:(FMDatabase *)database modelName:(NSString *)modelName {
+    
+    STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
+    
+    NSError *error = nil;
+    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
+                                                                     filing:self.filing
+                                                                      error:&error];
+    
+    if (modelMapper.needToMigrate) {
+        
+        if (error) {
+            
+            NSString *errorMessage = [NSString stringWithFormat:@"can't create modelMapping: %@", error.localizedDescription];
+            [[STMLogger sharedLogger] errorMessage:errorMessage];
+            [self deleteFile];
+            
+            error = nil;
+            modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
+                                                             filing:self.filing
+                                                              error:&error];
+            
+            if (error) {
+                
+                errorMessage = [NSString stringWithFormat:@"second time can't create modelMapping: %@, something wrong with destination model", error.localizedDescription];
+                [[STMLogger sharedLogger] errorMessage:errorMessage];
+                [self deleteFile];
+
+                return;
+                
+            }
+            
+        }
+        
+        self.columnsByTable = [fmdbSchema createTablesWithModelMapping:modelMapper];
+        
+    } else {
+    
+        self.columnsByTable = [fmdbSchema currentDBScheme];
+
+    }
     
 }
 
