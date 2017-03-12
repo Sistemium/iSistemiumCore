@@ -207,10 +207,10 @@
             if (propertiesSet.count) {
             
                 NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
-
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-            
-                addedProperties[entity] = [entity.properties filteredArrayUsingPredicate:predicate];
+                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
+                
+                if (result) addedProperties[entity] = result;
                 
             }
 
@@ -232,10 +232,10 @@
         [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
             
             NSArray <NSString *> *attributesNames = entity.attributesByName.allKeys;
-    
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", attributesNames];
+            NSArray <NSAttributeDescription *> *result = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
             
-            addedAttributes[entity] = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+            if (result.count) addedAttributes[entity] = result;
             
         }];
         
@@ -255,10 +255,10 @@
         [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
             
             NSArray <NSString *> *relationshipsNames = entity.relationshipsByName.allKeys;
-            
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", relationshipsNames];
+            NSArray <NSRelationshipDescription *> *result = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
             
-            addedRelationships[entity] = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+            if (result) addedRelationships[entity] = result;
             
         }];
         
@@ -284,10 +284,10 @@
             if (propertiesSet.count) {
             
                 NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
-
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-
-                removedProperties[entity] = [entity.properties filteredArrayUsingPredicate:predicate];
+                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
+                
+                if (result) removedProperties[entity] = result;
                 
             }
             
