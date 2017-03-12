@@ -72,12 +72,20 @@
     
     _needToMigrate = ![sourceModel isEqual:destinationModel];
 
+    if (_needToMigrate) {
+        NSLog(@"ModelMapper need to migrate");
+    }
+    
     _sourceModel = sourceModel;
     _destinationModel = destinationModel;
     
     _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
                                                       destinationModel:destinationModel
                                                                  error:error];
+    
+    if (*error) {
+        NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
+    }
     
     _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
                                                        destinationModel:destinationModel];
@@ -102,6 +110,16 @@
     NSString *path = [[self.filing persistenceBasePath] stringByAppendingPathComponent:modelName];
     
     NSError *error = nil;
+    
+    BOOL result = [self.filing fileExistsAtPath:path];
+    
+    if (!result) {
+
+        NSLog(@"where is no model file at path: %@, return empty model", path);
+        return [[NSManagedObjectModel alloc] init];
+
+    }
+    
     NSData *modelData = [NSData dataWithContentsOfFile:path
                                                options:0
                                                  error:&error];
@@ -110,8 +128,8 @@
         
         if (error) {
             
-            NSLog(@"can't load model from path %@, return empty model", path);
             NSLog(@"error: %@", error.localizedDescription);
+            NSLog(@"can't load model from path %@, return empty model", path);
             
         }
         
