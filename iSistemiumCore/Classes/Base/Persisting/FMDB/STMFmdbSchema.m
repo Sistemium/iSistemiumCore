@@ -31,7 +31,7 @@
 @property (nonatomic, strong) NSArray *ignoredAttributes;
 
 @property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
-
+@property (nonatomic) BOOL migrationSuccessful;
 
 @end
 
@@ -140,6 +140,7 @@
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
+    self.migrationSuccessful = YES;
     self.columnsDictionary = [self currentDBScheme].mutableCopy;
 
 // handle added entities
@@ -183,6 +184,10 @@
     
     NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
+    if (self.migrationSuccessful) {
+        [modelMapping migrationComplete];
+    }
+    
     return self.columnsDictionary.copy;
     
 }
@@ -221,7 +226,7 @@
     BOOL tableExisted = [self.database tableExists:tableName];
     
     if (!tableExisted) {
-        [self executeDDL:[self createTableDDL:tableName]];
+        self.migrationSuccessful &= [self executeDDL:[self createTableDDL:tableName]];
     }
     
     NSArray *propertiesColumns = [self processPropertiesForEntity:entity
@@ -246,10 +251,14 @@
 
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
-    if ([self executeDDL:[self dropTable:tableName]]) {
+    BOOL result = [self executeDDL:[self dropTable:tableName]];
+    
+    if (result) {
         [self.columnsDictionary removeObjectForKey:tableName];
     }
 
+    self.migrationSuccessful &= result;
+    
 }
 
 - (NSArray <NSString *> *)processPropertiesForEntity:(NSEntityDescription *)entity tableName:(NSString *)tableName {
@@ -287,7 +296,7 @@
     for (NSAttributeDescription *attribute in columnAttributes) {
         
         [columns addObject:attribute.name];
-        [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
+        self.migrationSuccessful &= [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
         
     }
     
@@ -302,12 +311,12 @@
     for (NSRelationshipDescription *relationship in relationships) {
         
         if (relationship.isToMany) {
-            [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
+            self.migrationSuccessful &= [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
             continue;
         }
         
         [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
-        [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
+        self.migrationSuccessful &= [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
         
     }
     

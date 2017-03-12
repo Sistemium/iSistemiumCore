@@ -69,8 +69,6 @@
         [self checkDb:db withModelMapping:mapper];
     }];
     
-    [mapper migrationComplete];
-    
     mapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                 filing:self.filing
                                                  error:&error];
