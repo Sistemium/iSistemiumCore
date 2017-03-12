@@ -392,7 +392,7 @@
 }
 
 - (NSString *)dropTable:(NSString *)tableName {
-    return [NSString stringWithFormat:@"DROP TABLE %@", tableName];
+    return [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@", tableName];
 }
 
 - (NSString *)createIndexDDL:(NSString *)tableName columnName:(NSString *)columnName {
