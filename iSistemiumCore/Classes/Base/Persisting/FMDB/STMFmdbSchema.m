@@ -153,16 +153,16 @@
     }
     
 // handle added properties
-    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
         
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
 
         NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
         if (!columns) columns = @[].mutableCopy;
-
-        for (NSString *property in obj) {
+        
+        for (NSPropertyDescription *property in propertiesArray) {
             
-            NSAttributeDescription *attributeDescription = entity.attributesByName[property];
+            NSAttributeDescription *attributeDescription = entity.attributesByName[property.name];
             
             if (attributeDescription) {
                 
@@ -174,7 +174,7 @@
                 
             }
 
-            NSRelationshipDescription *relationshipDescription = entity.relationshipsByName[property];
+            NSRelationshipDescription *relationshipDescription = entity.relationshipsByName[property.name];
             
             if (relationshipDescription) {
                 

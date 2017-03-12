@@ -172,22 +172,26 @@
     
 }
 
-- (NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *)addedProperties {
+- (NSDictionary <NSEntityDescription *, NSArray <NSPropertyDescription *> *> *)addedProperties {
     
     if (!_addedProperties) {
         
-        NSMutableDictionary <NSEntityDescription *, NSArray <NSString *> *> *addedProperties = @{}.mutableCopy;
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSPropertyDescription *> *> *addedProperties = @{}.mutableCopy;
         
         NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
         
         for (NSEntityMapping *entityMapping in transformedEntities) {
             
             NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
-            
-            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
 
             if (propertiesSet.count) {
-                addedProperties[entity] = propertiesSet.allObjects;
+            
+                NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+            
+                addedProperties[entity] = [entity.properties filteredArrayUsingPredicate:predicate];
+                
             }
 
         }
