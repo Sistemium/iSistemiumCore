@@ -36,7 +36,16 @@
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
 
     [self.queue inDatabase:^(FMDatabase *database){
-        self.columnsByTable = [[STMFmdbSchema fmdbSchemaForDatabase:database] createTablesWithModelMapping:modelMapping];
+        
+        STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
+        
+        NSError *error = nil;
+        STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
+                                                                         filing:filing
+                                                                          error:&error];
+
+        self.columnsByTable = (modelMapper.needToMigrate) ? [fmdbSchema createTablesWithModelMapping:modelMapper] : [fmdbSchema currentDBScheme];
+        
     }];
     
     return self;
