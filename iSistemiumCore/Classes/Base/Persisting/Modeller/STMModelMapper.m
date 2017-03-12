@@ -205,7 +205,6 @@
     
 }
 
-- (NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *)removedProperties {
 - (NSDictionary <NSEntityDescription *, NSArray <NSAttributeDescription *> *> *)addedAttributes {
     
     if (!_addedAttributes) {
@@ -252,21 +251,26 @@
     
 }
 
+- (NSDictionary <NSEntityDescription *, NSArray <NSPropertyDescription *> *> *)removedProperties {
     
     if (!_removedProperties) {
         
-        NSMutableDictionary <NSEntityDescription *, NSArray <NSString *> *> *removedProperties = @{}.mutableCopy;
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSPropertyDescription *> *> *removedProperties = @{}.mutableCopy;
         
         NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
         
         for (NSEntityMapping *entityMapping in transformedEntities) {
             
             NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
-            
-            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
 
             if (propertiesSet.count) {
-                removedProperties[entity] = propertiesSet.allObjects;
+            
+                NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+
+                removedProperties[entity] = [entity.properties filteredArrayUsingPredicate:predicate];
+                
             }
             
         }
