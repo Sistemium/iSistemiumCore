@@ -18,7 +18,6 @@
 
 + (NSArray *)builtInAttributes;
 
-- (NSDictionary *)createTablesWithModelling:(id <STMModelling>)modelling;
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;
 
 - (NSDictionary *)currentDBScheme;
