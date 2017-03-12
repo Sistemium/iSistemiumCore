@@ -14,6 +14,8 @@
 
 @interface STMModelMapper()
 
+@property (nonatomic, weak, readonly) id <STMFiling> filing;
+
 @property (nonatomic, strong) NSString *sourceModelName;
 @property (nonatomic, strong) NSString *destinationModelName;
 
@@ -22,8 +24,6 @@
 
 
 @implementation STMModelMapper
-
-@synthesize filing = _filing;
 
 @synthesize sourceModel = _sourceModel;
 @synthesize destinationModel = _destinationModel;

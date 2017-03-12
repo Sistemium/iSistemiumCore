@@ -14,8 +14,6 @@
 
 @protocol STMModelMapping <NSObject>
 
-@property (nonatomic, strong, readonly) id <STMFiling> filing;
-
 @property (nonatomic, strong, readonly) NSManagedObjectModel *sourceModel;
 @property (nonatomic, strong, readonly) NSManagedObjectModel *destinationModel;
 @property (nonatomic, strong, readonly) NSMappingModel *mappingModel;
