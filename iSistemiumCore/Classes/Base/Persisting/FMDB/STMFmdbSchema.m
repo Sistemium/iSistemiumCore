@@ -154,7 +154,9 @@
     }
     
 // handle removed properties
-    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
+    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
+        
+        NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
         
         [self deleteEntity:entity];
         [self addEntity:entity];
@@ -166,15 +168,17 @@
 // handle added properties
     if (modelMapping.addedProperties.count) {
         
-        [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
+        [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
-            if (modelMapping.removedProperties[entity]) {
+            if (modelMapping.removedProperties[entityName]) {
                 
                 // this entity was added earlier
                 return;
                 
             }
             
+            NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
+
             NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
             
             NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
@@ -189,14 +193,16 @@
 
         }];
         
-        [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
+        [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
             
-            if (modelMapping.removedProperties[entity]) {
+            if (modelMapping.removedProperties[entityName]) {
                 
                 // this entity was added earlier
                 return;
                 
             }
+
+            NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
 
             NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
             
