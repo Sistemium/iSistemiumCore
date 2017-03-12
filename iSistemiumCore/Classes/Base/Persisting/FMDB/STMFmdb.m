@@ -17,11 +17,22 @@
 
 #import <sqlite3.h>
 
+
+@interface STMFmdb()
+
+@property (nonatomic, weak) id <STMFiling>filing;
+
+
+@end
+
+
 @implementation STMFmdb
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing modelName:(nonnull NSString *)modelName {
     
     self = [self init];
+    
+    self.filing = filing;
     
     NSString *fmdbPath = [filing persistencePath:@"fmdb"];
     
