@@ -146,8 +146,7 @@
         NSString *entityName = entityDescription.name;
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
 
-        NSArray *columns = [self addEntity:entityName
-                                  modeling:modelMapping.destinationModeling];
+        NSArray *columns = [self addEntity:entityDescription];
 
         if (!columns) {
             [columnsDictionary removeObjectForKey:tableName];
@@ -163,8 +162,7 @@
         NSString *entityName = entityDescription.name;
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
 
-        BOOL result = [self deleteEntity:entityName
-                                modeling:modelMapping.sourceModeling];
+        BOOL result = [self deleteEntity:entityDescription];
         
         if (result) {
             [columnsDictionary removeObjectForKey:tableName];
@@ -172,20 +170,17 @@
         
     }
     
-    NSDictionary *entitiesByName = [modelMapping.destinationModeling entitiesByName];
-    
 // handle added properties
-    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
-        NSEntityDescription *entityDescription = entitiesByName[key];
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:key];
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
 
         NSMutableArray *columns = [columnsDictionary[tableName] mutableCopy];
         if (!columns) columns = @[].mutableCopy;
 
         for (NSString *property in obj) {
             
-            NSAttributeDescription *attributeDescription = entityDescription.attributesByName[property];
+            NSAttributeDescription *attributeDescription = entity.attributesByName[property];
             
             if (attributeDescription) {
                 
@@ -197,7 +192,7 @@
                 
             }
 
-            NSRelationshipDescription *relationshipDescription = entityDescription.relationshipsByName[property];
+            NSRelationshipDescription *relationshipDescription = entity.relationshipsByName[property];
             
             if (relationshipDescription) {
                 
@@ -216,28 +211,24 @@
     }];
     
 // handle removed properties
-    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
+    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSString *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
 // SQLite supports a limited subset of ALTER TABLE. The ALTER TABLE command in SQLite allows the user to rename a table or to add a new column to an existing table
 // http://www.sqlite.org/lang_altertable.html
         
 // so we have to delete table and create the new one
         
-        NSString *entityName = key;
-        
 // delete table
-        BOOL result = [self deleteEntity:entityName
-                                modeling:modelMapping.sourceModeling];
+        BOOL result = [self deleteEntity:entity];
         
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
         
         if (result) {
             [columnsDictionary removeObjectForKey:tableName];
         }
         
 // add table back
-        NSArray *columns = [self addEntity:entityName
-                                  modeling:modelMapping.destinationModeling];
+        NSArray *columns = [self addEntity:entity];
         
         columnsDictionary[tableName] = columns;
         
@@ -252,25 +243,18 @@
     
 }
 
-- (NSArray <NSString *> *)addEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling {
-    
-    if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
-        
-        NSLog(@"STMFmdb ignore entity: %@", entityName);
-        return nil;
-        
-    }
+- (NSArray <NSString *> *)addEntity:(NSEntityDescription *)entity {
     
     NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
-    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     BOOL tableExisted = [self.database tableExists:tableName];
     
     if (!tableExisted) {
         [self executeDDL:[self createTableDDL:tableName]];
     }
     
-    NSArray *propertiesColumns = [self processPropertiesForEntity:entityName
-                                                         modeling:modeling
+    NSArray *propertiesColumns = [self processPropertiesForEntity:entity
+                                                         /*modeling:modeling*/
                                                         tableName:tableName];
     
     [columns addObjectsFromArray:propertiesColumns];
@@ -279,33 +263,20 @@
     
 }
 
-- (BOOL)deleteEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling {
+- (BOOL)deleteEntity:(NSEntityDescription *)entity {
     
-    if ([modeling storageForEntityName:entityName] != STMStorageTypeFMDB){
-        
-        NSLog(@"STMFmdb ignore delete entity: %@", entityName);
-        return NO;
-        
-    }
-
 #warning - have to check table before dropping for triggers and something
 
-    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-    BOOL tableExisted = [self.database tableExists:tableName];
-
-    if (tableExisted) {
-        return [self executeDDL:[self dropTable:tableName]];
-    }
-    
-    return NO;
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    return [self executeDDL:[self dropTable:tableName]];
     
 }
 
-- (NSArray <NSString *> *)processPropertiesForEntity:(NSString *)entityName modeling:(id <STMModelling>)modeling tableName:(NSString *)tableName {
+- (NSArray <NSString *> *)processPropertiesForEntity:(NSEntityDescription *)entity tableName:(NSString *)tableName {
     
     NSMutableArray <NSString *> *columns = @[].mutableCopy;
 
-    NSArray *columnAttributes = [modeling fieldsForEntityName:entityName].allValues;
+    NSArray <NSAttributeDescription *> *columnAttributes = entity.attributesByName.allValues;
     NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", self.ignoredAttributes];
     
     columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
@@ -318,9 +289,7 @@
     
     [columns addObjectsFromArray:addedColumns];
     
-    NSArray *relationships = [modeling objectRelationshipsForEntityName:entityName
-                                                               isToMany:nil
-                                                                cascade:nil].allValues;
+    NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
     
     NSArray *addedRelationships = [self addRelationships:relationships
                                                  toTable:tableName];
