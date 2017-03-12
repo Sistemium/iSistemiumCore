@@ -15,38 +15,17 @@
 
 #import "STMModeller+Interceptable.h"
 
-#import "STMModelMapper.h"
-
 
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
 
-// probably here we need to create ModelMapper
-    NSError *error = nil;
-    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                                     filing:filing
-                                                                      error:&error];
-    
-// modelMapper creates own sourceModelling and destinationModelling
-// persister is also STMModeller subclass — do we have modelling redundancy???
-    
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
-    persister.modelMapping = modelMapper;
-    persister.fmdb = [[STMFmdb alloc] initWithModelMapping:modelMapper
-                                                    filing:filing
-                                                  fileName:@"fmdb.db"];
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister
+                                                 filing:filing
+                                              modelName:modelName];
     
-// if [STMFmdbSchema createTablesWithModelMapping] is OK call [modelMapper migrationComplete] to save new model to file
-// have to do something if createTablesWithModelMapping is notOK ???
-
-// also we don't need to call [modelMapper migrationComplete] if model does not changed
-// may be we should do it somewhere in STMFmdbSchema
-    
-    [modelMapper migrationComplete];
-    
-//    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:@"fmdb.db"];
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
