@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 
 #import <CoreData/CoreData.h>
-#import "STMModelling.h"
 #import "STMFiling.h"
 
 
@@ -28,8 +27,6 @@
 @property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSString *> *> *addedProperties;
 @property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSString *> *> *removedProperties;
 
-@property (nonatomic, strong, readonly) id <STMModelling> sourceModeling;
-@property (nonatomic, strong, readonly) id <STMModelling> destinationModeling;
 
 - (void)migrationComplete;
 

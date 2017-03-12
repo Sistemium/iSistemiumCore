@@ -26,10 +26,7 @@
 @synthesize filing = _filing;
 
 @synthesize sourceModel = _sourceModel;
-@synthesize sourceModeling = _sourceModeling;
-
 @synthesize destinationModel = _destinationModel;
-@synthesize destinationModeling = _destinationModeling;
 
 @synthesize mappingModel = _mappingModel;
 @synthesize migrationManager = _migrationManager;
@@ -70,10 +67,7 @@
     if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
     
     _sourceModel = sourceModel;
-    _sourceModeling = [STMModeller modellerWithModel:sourceModel];
-    
     _destinationModel = destinationModel;
-    _destinationModeling = [STMModeller modellerWithModel:destinationModel];
     
     _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
                                                       destinationModel:destinationModel
