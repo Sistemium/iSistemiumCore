@@ -64,8 +64,10 @@
 }
 
 - (void)deleteFile {
-    // TODO: remove the method or rewrite with filing
-    [[NSFileManager defaultManager] removeItemAtPath:self.dbPath error:nil];
+    
+    [self.filing removeItemAtPath:[self.filing persistenceBasePath]
+                            error:nil];
+    
 }
 
 
