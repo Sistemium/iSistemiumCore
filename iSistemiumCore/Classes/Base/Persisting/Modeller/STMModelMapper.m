@@ -35,6 +35,8 @@
 @synthesize removedEntities = _removedEntities;
 
 @synthesize addedProperties = _addedProperties;
+@synthesize addedAttributes = _addedAttributes;
+@synthesize addedRelationships = _addedRelationships;
 @synthesize removedProperties = _removedProperties;
 
 @synthesize needToMigrate = _needToMigrate;
@@ -204,6 +206,52 @@
 }
 
 - (NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *)removedProperties {
+- (NSDictionary <NSEntityDescription *, NSArray <NSAttributeDescription *> *> *)addedAttributes {
+    
+    if (!_addedAttributes) {
+        
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSAttributeDescription *> *> *addedAttributes = @{}.mutableCopy;
+        
+        [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
+            
+            NSArray <NSString *> *attributesNames = entity.attributesByName.allKeys;
+    
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", attributesNames];
+            
+            addedAttributes[entity] = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+            
+        }];
+        
+        _addedAttributes = addedAttributes;
+        
+    }
+    return _addedAttributes;
+    
+}
+
+- (NSDictionary <NSEntityDescription *, NSArray <NSRelationshipDescription *> *> *)addedRelationships {
+    
+    if (!_addedRelationships) {
+        
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSRelationshipDescription *> *> *addedRelationships = @{}.mutableCopy;
+        
+        [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSEntityDescription * _Nonnull entity, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
+            
+            NSArray <NSString *> *relationshipsNames = entity.relationshipsByName.allKeys;
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", relationshipsNames];
+            
+            addedRelationships[entity] = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+            
+        }];
+        
+        _addedRelationships = addedRelationships;
+
+    }
+    return _addedRelationships;
+    
+}
+
     
     if (!_removedProperties) {
         

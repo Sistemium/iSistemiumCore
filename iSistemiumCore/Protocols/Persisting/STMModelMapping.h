@@ -24,6 +24,8 @@
 
 @property (nonatomic, strong, readonly) NSDictionary <NSEntityDescription *, NSArray <NSPropertyDescription *> *> *addedProperties;
 @property (nonatomic, strong, readonly) NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *removedProperties;
+@property (nonatomic, strong, readonly) NSDictionary <NSEntityDescription *, NSArray <NSAttributeDescription *> *> *addedAttributes;
+@property (nonatomic, strong, readonly) NSDictionary <NSEntityDescription *, NSArray <NSRelationshipDescription *> *> *addedRelationships;
 
 @property (nonatomic, readonly) BOOL needToMigrate;
 
