@@ -37,6 +37,8 @@
 @synthesize addedProperties = _addedProperties;
 @synthesize removedProperties = _removedProperties;
 
+@synthesize needToMigrate = _needToMigrate;
+
 
 - (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing error:(NSError **)error {
     
@@ -66,6 +68,8 @@
     if (!sourceModel) sourceModel = [[NSManagedObjectModel alloc] init];
     if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
     
+    _needToMigrate = ![sourceModel isEqual:destinationModel];
+
     _sourceModel = sourceModel;
     _destinationModel = destinationModel;
     
@@ -75,6 +79,7 @@
     
     _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
                                                        destinationModel:destinationModel];
+    
 #ifdef DEBUG
     [self showMappingInfo];
 #endif
