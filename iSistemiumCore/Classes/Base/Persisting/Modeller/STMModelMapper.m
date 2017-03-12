@@ -172,11 +172,11 @@
     
 }
 
-- (NSDictionary <NSString *, NSArray <NSString *> *> *)addedProperties {
+- (NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *)addedProperties {
     
     if (!_addedProperties) {
         
-        NSMutableDictionary <NSString *, NSArray <NSString *> *> *addedProperties = @{}.mutableCopy;
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSString *> *> *addedProperties = @{}.mutableCopy;
         
         NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
         
@@ -184,8 +184,10 @@
             
             NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
             
+            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+
             if (propertiesSet.count) {
-                addedProperties[entityMapping.destinationEntityName] = propertiesSet.allObjects;
+                addedProperties[entity] = propertiesSet.allObjects;
             }
 
         }
@@ -197,11 +199,11 @@
     
 }
 
-- (NSDictionary <NSString *, NSArray <NSString *> *> *)removedProperties {
+- (NSDictionary <NSEntityDescription *, NSArray <NSString *> *> *)removedProperties {
     
     if (!_removedProperties) {
         
-        NSMutableDictionary <NSString *, NSArray <NSString *> *> *removedProperties = @{}.mutableCopy;
+        NSMutableDictionary <NSEntityDescription *, NSArray <NSString *> *> *removedProperties = @{}.mutableCopy;
         
         NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
         
@@ -209,8 +211,10 @@
             
             NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
             
+            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+
             if (propertiesSet.count) {
-                removedProperties[entityMapping.destinationEntityName] = propertiesSet.allObjects;
+                removedProperties[entity] = propertiesSet.allObjects;
             }
             
         }
