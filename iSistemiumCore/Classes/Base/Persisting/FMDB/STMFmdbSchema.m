@@ -30,6 +30,8 @@
 @property (nonatomic, strong) NSArray *builtInAttributes;
 @property (nonatomic, strong) NSArray *ignoredAttributes;
 
+@property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
+
 
 @end
 
@@ -138,36 +140,16 @@
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
-    NSMutableDictionary *columnsDictionary = [self currentDBScheme].mutableCopy;
+    self.columnsDictionary = [self currentDBScheme].mutableCopy;
 
 // handle added entities
     for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
-    
-        NSString *entityName = entityDescription.name;
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-
-        NSArray *columns = [self addEntity:entityDescription];
-
-        if (!columns) {
-            [columnsDictionary removeObjectForKey:tableName];
-        }
-        
-        columnsDictionary[tableName] = columns;
-
+        [self addEntity:entityDescription];
     }
     
 // handle removed entities
     for (NSEntityDescription *entityDescription in modelMapping.removedEntities) {
-        
-        NSString *entityName = entityDescription.name;
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-
-        BOOL result = [self deleteEntity:entityDescription];
-        
-        if (result) {
-            [columnsDictionary removeObjectForKey:tableName];
-        }
-        
+        [self deleteEntity:entityDescription];
     }
     
 // handle added properties
@@ -175,7 +157,7 @@
         
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
 
-        NSMutableArray *columns = [columnsDictionary[tableName] mutableCopy];
+        NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
         if (!columns) columns = @[].mutableCopy;
 
         for (NSString *property in obj) {
@@ -200,13 +182,12 @@
                                                  toTable:tableName];
                 
                 [columns addObjectsFromArray:result];
-                continue;
                 
             }
 
         }
         
-        columnsDictionary[tableName] = columns;
+        self.columnsDictionary[tableName] = columns;
         
     }];
     
@@ -219,31 +200,23 @@
 // so we have to delete table and create the new one
         
 // delete table
-        BOOL result = [self deleteEntity:entity];
-        
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-        
-        if (result) {
-            [columnsDictionary removeObjectForKey:tableName];
-        }
+        [self deleteEntity:entity];
         
 // add table back
-        NSArray *columns = [self addEntity:entity];
-        
-        columnsDictionary[tableName] = columns;
+        [self addEntity:entity];
         
 #warning - have to inform corresponding clientEntity to set eTag to '*'
         
     }];
     
-    NSLog(@"columnsDictionary %@", columnsDictionary);
+    NSLog(@"columnsDictionary %@", self.columnsDictionary);
 //    NSLog(@"currentDBScheme %@", [self currentDBScheme]);
     
-    return columnsDictionary.copy;
+    return self.columnsDictionary.copy;
     
 }
 
-- (NSArray <NSString *> *)addEntity:(NSEntityDescription *)entity {
+- (void)addEntity:(NSEntityDescription *)entity {
     
     NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
@@ -254,22 +227,31 @@
     }
     
     NSArray *propertiesColumns = [self processPropertiesForEntity:entity
-                                                         /*modeling:modeling*/
                                                         tableName:tableName];
     
     [columns addObjectsFromArray:propertiesColumns];
     
-    return columns.copy;
+    if (!columns) {
+        
+        [self.columnsDictionary removeObjectForKey:tableName];
+        return;
+        
+    }
+    
+    self.columnsDictionary[tableName] = columns;
     
 }
 
-- (BOOL)deleteEntity:(NSEntityDescription *)entity {
+- (void)deleteEntity:(NSEntityDescription *)entity {
     
 #warning - have to check table before dropping for triggers and something
 
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-    return [self executeDDL:[self dropTable:tableName]];
     
+    if ([self executeDDL:[self dropTable:tableName]]) {
+        [self.columnsDictionary removeObjectForKey:tableName];
+    }
+
 }
 
 - (NSArray <NSString *> *)processPropertiesForEntity:(NSEntityDescription *)entity tableName:(NSString *)tableName {
