@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="STMClientEntity" representedClassName="STMClientEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="eTag" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="STMTestEntity1" representedClassName="STMTestEntity1" syncable="YES">
         <attribute name="attribute1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="attribute2" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -19,5 +23,6 @@
         <element name="STMTestEntity1" positionX="-8541" positionY="-864" width="128" height="133"/>
         <element name="STMTestEntity2Renamed" positionX="-8316" positionY="-837" width="128" height="58"/>
         <element name="STMTestEntity3" positionX="-8748" positionY="-745" width="128" height="73"/>
+        <element name="STMClientEntity" positionX="-8345" positionY="-700" width="128" height="73"/>
     </elements>
 </model>
