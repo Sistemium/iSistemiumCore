@@ -228,23 +228,35 @@
  
 */
     NSError *error = nil;
+    
+    NSMigrationManager *migrationManager = [[NSMigrationManager alloc] initWithSourceModel:userDataModel
+                                                                          destinationModel:bundledDataModel];
+    
     NSMappingModel *mappingModel = [NSMappingModel inferredMappingModelForSourceModel:userDataModel
                                                                      destinationModel:bundledDataModel
                                                                                 error:&error];
+    
     if (!mappingModel) {
         NSLog(@"mappingModel error: %@, userInfo: %@", error.localizedDescription, error.userInfo);
     }
     XCTAssertNotNil(mappingModel);
     
-    [self parseMappingModel:mappingModel];
+    [self parseMappingModel:mappingModel
+       withMigrationManager:migrationManager];
 
     NSLog(@"mappingModel with empty and bundled model:");
+
+    NSManagedObjectModel *sourceModel = [[NSManagedObjectModel alloc] init];
     
-    mappingModel = [NSMappingModel inferredMappingModelForSourceModel:[[NSManagedObjectModel alloc] init]
+    migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
+                                                      destinationModel:bundledDataModel];
+
+    mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
                                                      destinationModel:bundledDataModel
                                                                 error:&error];
     
-    [self parseMappingModel:mappingModel];
+    [self parseMappingModel:mappingModel
+       withMigrationManager:migrationManager];
 
 // copy bundeled to user
     [self copyBundledDataModelToUsersDocs:TEST_CHANGED_DATA_MODEL_NAME];
@@ -331,7 +343,7 @@
 
 #pragma mark - parse mapping model
 
-- (void)parseMappingModel:(NSMappingModel *)mappingModel {
+- (void)parseMappingModel:(NSMappingModel *)mappingModel withMigrationManager:(NSMigrationManager *)migrationManager {
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mappingType != %d", NSCopyEntityMappingType];
     NSArray *changedEntityMappings = [mappingModel.entityMappings filteredArrayUsingPredicate:predicate];
@@ -353,7 +365,8 @@
             
             switch (mappingType) {
                 case NSAddEntityMappingType:
-                    [self parseAddEntityMappings:result];
+                    [self parseAddEntityMappings:result
+                            withMigrationManager:migrationManager];
                     break;
                     
                 case NSCustomEntityMappingType:
@@ -382,7 +395,7 @@
     
 }
 
-- (void)parseAddEntityMappings:(NSArray *)addEntityMappings {
+- (void)parseAddEntityMappings:(NSArray *)addEntityMappings withMigrationManager:(NSMigrationManager *)migrationManager {
     
     //    NSLog(@"addEntityMappings %@", addEntityMappings);
     NSLog(@"!!! next entities should be added: ");
@@ -390,6 +403,8 @@
     for (NSEntityMapping *entityMapping in addEntityMappings) {
         
         NSLog(@"!!! add %@", entityMapping.destinationEntityName);
+        
+//        NSLog(@"destinationEntityForEntityMapping: %@", [migrationManager destinationEntityForEntityMapping:entityMapping]);
         
     }
     

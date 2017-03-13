@@ -84,8 +84,6 @@
         
         XCTAssertNil(error);
         
-        [[NSNotificationCenter defaultCenter] removeObserver:expectation];
-        
         NSDictionary *rez = [self.persister findSync:entityName identifier:xid options:nil error:&error];
         
         XCTAssertNil(error);

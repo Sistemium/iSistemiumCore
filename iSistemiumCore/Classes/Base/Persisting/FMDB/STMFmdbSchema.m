@@ -27,24 +27,37 @@
 
 @property (nonatomic,weak) FMDatabase *database;
 
+@property (nonatomic, strong) NSArray *builtInAttributes;
+@property (nonatomic, strong) NSArray *ignoredAttributes;
+
+@property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
+@property (nonatomic, weak) id <STMModelMapping> modelMapping;
+
+
 @end
 
 
-
 @implementation STMFmdbSchema
-
 
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database {
     return [[self alloc] initWithDatabase:database];
 }
 
++ (NSArray *)builtInAttributes {
+    
+    return @[STMPersistingKeyPrimary,
+             STMPersistingKeyCreationTimestamp,
+             STMPersistingKeyVersion,
+             STMPersistingOptionLts,
+             STMPersistingKeyPhantom];
+    
+}
 
 - (instancetype)initWithDatabase:(FMDatabase *)database {
     self = [self init];
     self.database = database;
     return self;
 }
-
 
 - (NSString *)sqliteTypeForAttributeType:(NSAttributeType)attributeType {
     
@@ -71,72 +84,260 @@
     
 }
 
+- (NSArray *)builtInAttributes {
+    
+    if (!_builtInAttributes) {
+        _builtInAttributes = [[self class] builtInAttributes];
+    }
+    return _builtInAttributes;
+    
+}
 
-- (NSDictionary*)createTablesWithModelling:(id <STMModelling>)modelling {
+- (NSArray *)ignoredAttributes {
     
-    NSArray *builtInAttributes = @[STMPersistingKeyPrimary,
-                                   STMPersistingKeyCreationTimestamp,
-                                   STMPersistingKeyVersion,
-                                   STMPersistingOptionLts,
-                                   STMPersistingKeyPhantom];
+    if (!_ignoredAttributes) {
+        _ignoredAttributes = [self.builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
+    }
+    return _ignoredAttributes;
     
-    NSArray *ignoredAttributes = [builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
-    
-    NSMutableDictionary *columnsDictionary = @{}.mutableCopy;
+}
 
-    // TODO: create only the new tables of the modelMapping, not all the modelling.entitiesByName
+- (NSDictionary *)currentDBScheme {
     
-    for (NSString *entityName in modelling.entitiesByName){
+    NSMutableDictionary *result = @{}.mutableCopy;
+
+    FMResultSet *tablesSet = [self.database executeQuery:@"SELECT * FROM sqlite_master WHERE type='table' ORDER BY name"];
+    
+    while ([tablesSet next]) {
         
-        if ([modelling storageForEntityName:entityName] != STMStorageTypeFMDB){
-            NSLog(@"STMFmdb ignore entity: %@", entityName);
-            continue;
+        NSString *tableName = [tablesSet stringForColumn:@"name"];
+//        NSLog(@"%@", tableName);
+        
+        NSString *query = [NSString stringWithFormat:@"PRAGMA table_info('%@')", tableName];
+        FMResultSet *columnsSet = [self.database executeQuery:query];
+        
+        NSMutableArray *columns = @[].mutableCopy;
+        
+        while ([columnsSet next]) {
+            
+            NSString *columnName = [columnsSet stringForColumn:@"name"];
+//            NSLog(@"    %@", columnName);
+
+            [columns addObject:columnName];
+            
         }
         
-        NSMutableArray <NSString *> *columns = builtInAttributes.mutableCopy;
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-        BOOL tableExisted = [self.database tableExists:tableName];
+        result[tableName] = columns;
         
-        if (!tableExisted) {
-            [self executeDDL:[self createTableDDL:tableName]];
-        }
+    }
+
+    return result.copy;
+    
+}
+
+
+#pragma mark - createTablesWithModelMapping
+
+- (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
+
+    self.modelMapping = modelMapping;
+    self.migrationSuccessful = YES;
+    self.columnsDictionary = [self currentDBScheme].mutableCopy;
+
+// handle added entities
+    for (NSEntityDescription *entityDescription in modelMapping.addedEntities) {
+        [self addEntity:entityDescription];
+    }
+    
+// handle removed entities
+    for (NSEntityDescription *entityDescription in modelMapping.removedEntities) {
+        [self deleteEntity:entityDescription];
+    }
+    
+// handle removed properties
+    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
-        NSArray *columnAttributes = [modelling fieldsForEntityName:entityName].allValues;
-        NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", ignoredAttributes];
+        NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
         
-        columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
+        [self deleteEntity:entity];
+        [self addEntity:entity];
+                
+    }];
+
+// handle added properties
+    if (modelMapping.addedProperties.count) {
         
-        // it is noticeable faster (on a real device) to create columns with one statement with the table
-        // but for now columns creation is separated to simplify code
+        [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
+            
+            [self addPropertiesArray:attributesArray
+                    toEntityWithName:entityName];
+            
+        }];
         
-        for (NSAttributeDescription *attribute in columnAttributes) {
-            [columns addObject:attribute.name];
-            // if the column exists we get an error
-            // TODO: add only new columns from modelMapping
-            if (!tableExisted) {
-                [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
-            }
-        }
-        
-        NSArray *relationships = [modelling objectRelationshipsForEntityName:entityName isToMany:nil cascade:nil].allValues;
-        
-        for (NSRelationshipDescription *relationship in relationships) {
-            if (relationship.isToMany) {
-                [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
-            } else {
-                [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
-                if (!tableExisted) {
-                    [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
-                }
-            }
-        }
-        
-        columnsDictionary[tableName] = columns.copy;
+        [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
+            
+            [self addPropertiesArray:relationshipsArray
+                    toEntityWithName:entityName];
+
+        }];
         
     }
     
-    return columnsDictionary.copy;
+//    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
+    [self eTagReseting];
+
+    if (self.migrationSuccessful) {
+
+        NSLog(@"model migrating SUCCESS");
+        [modelMapping migrationComplete];
+        return self.columnsDictionary.copy;
+
+    } else {
+        
+        NSLog(@"model migrating NOT SUCCESS");
+        return nil;
+        
+    }
+    
+}
+
+- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
+    
+    if (self.modelMapping.removedProperties[entityName]) {
+        
+        // this entity was fully added earlier (by removing and adding it back)
+        return;
+        
+    }
+    
+    NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    
+    NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
+    if (!columns) columns = @[].mutableCopy;
+    
+    NSArray *result = nil;
+    
+    if ([propertiesArray.firstObject isKindOfClass:[NSRelationshipDescription class]]) {
+    
+        result = [self addRelationships:(NSArray <NSRelationshipDescription *> *)propertiesArray
+                                toTable:tableName];
+        
+    } else if ([propertiesArray.firstObject isKindOfClass:[NSAttributeDescription class]]) {
+        
+        result = [self addColumns:(NSArray <NSAttributeDescription *> *)propertiesArray
+                          toTable:tableName];
+    }
+    
+    if (result.count) [columns addObjectsFromArray:result];
+    
+    self.columnsDictionary[tableName] = columns;
+
+}
+
+- (void)addEntity:(NSEntityDescription *)entity {
+    
+    NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    BOOL tableExisted = [self.database tableExists:tableName];
+    
+    if (!tableExisted) {
+        self.migrationSuccessful &= [self executeDDL:[self createTableDDL:tableName]];
+    }
+    
+    NSArray *propertiesColumns = [self processPropertiesForEntity:entity
+                                                        tableName:tableName];
+    
+    [columns addObjectsFromArray:propertiesColumns];
+    
+    if (!columns) {
+        
+        [self.columnsDictionary removeObjectForKey:tableName];
+        return;
+        
+    }
+    
+    self.columnsDictionary[tableName] = columns;
+    
+}
+
+- (void)deleteEntity:(NSEntityDescription *)entity {
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    
+    BOOL result = [self executeDDL:[self dropTable:tableName]];
+    
+    if (result) {
+        [self.columnsDictionary removeObjectForKey:tableName];
+    }
+
+    self.migrationSuccessful &= result;
+    
+}
+
+- (NSArray <NSString *> *)processPropertiesForEntity:(NSEntityDescription *)entity tableName:(NSString *)tableName {
+    
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
+
+    NSArray <NSAttributeDescription *> *columnAttributes = entity.attributesByName.allValues;
+    NSPredicate *excludeBuiltIn = [NSPredicate predicateWithFormat:@"NOT (name IN %@)", self.ignoredAttributes];
+    
+    columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
+    
+    // it is noticeable faster (on a real device) to create columns with one statement with the table
+    // but for now columns creation is separated to simplify code
+    
+    NSArray *addedColumns = [self addColumns:columnAttributes
+                                     toTable:tableName];
+    
+    [columns addObjectsFromArray:addedColumns];
+    
+    NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
+    
+    NSArray *addedRelationships = [self addRelationships:relationships
+                                                 toTable:tableName];
+    
+    [columns addObjectsFromArray:addedRelationships];
+
+    return columns.copy;
+    
+}
+
+- (NSArray <NSString *> *)addColumns:(NSArray <NSAttributeDescription *> *)columnAttributes toTable:(NSString *)tableName {
+    
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
+
+    for (NSAttributeDescription *attribute in columnAttributes) {
+        
+        [columns addObject:attribute.name];
+        self.migrationSuccessful &= [self executeDDL:[self addAttributeDDL:attribute tableName:tableName]];
+        
+    }
+    
+    return columns.copy;
+
+}
+
+- (NSArray <NSString *> *)addRelationships:(NSArray <NSRelationshipDescription *> *)relationships toTable:(NSString *)tableName {
+    
+    NSMutableArray <NSString *> *columns = @[].mutableCopy;
+
+    for (NSRelationshipDescription *relationship in relationships) {
+        
+        if (relationship.isToMany) {
+            self.migrationSuccessful &= [self executeDDL:[self addToManyRelationshipDDL:relationship tableName:tableName]];
+            continue;
+        }
+        
+        [columns addObject:[relationship.name stringByAppendingString:STMPersistingRelationshipSuffix]];
+        self.migrationSuccessful &= [self executeDDL:[self addRelationshipDDL:relationship tableName:tableName]];
+        
+    }
+    
+    return columns.copy;
+
 }
 
 - (NSString *)createTableDDL:(NSString *)tableName {
@@ -195,6 +396,9 @@
     
 }
 
+- (NSString *)dropTable:(NSString *)tableName {
+    return [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@", tableName];
+}
 
 - (NSString *)createIndexDDL:(NSString *)tableName columnName:(NSString *)columnName {
     NSString *format = @"CREATE INDEX IF NOT EXISTS %@_%@ on %@ (%@);";
@@ -336,6 +540,45 @@
                          [NSString stringWithFormat:@"BEGIN %@; END", body]];
     
     return [formats componentsJoinedByString:@" "];
+    
+}
+
+
+#pragma mark - hardcoded clientEntity eTag reseting
+
+- (void)eTagReseting {
+    
+    NSArray <NSString *> *entitiesToReload = [self.modelMapping.addedProperties.allKeys arrayByAddingObjectsFromArray:self.modelMapping.removedProperties.allKeys];
+    entitiesToReload = [NSSet setWithArray:entitiesToReload].allObjects;
+    
+    if (!entitiesToReload.count) {
+        return;
+    }
+    
+    NSLog(@"entitiesToReload %@", entitiesToReload);
+    
+    NSMutableArray *tablesNames = @[].mutableCopy;
+    NSMutableArray *questionMarks = @[].mutableCopy;
+    
+    [entitiesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull entityName, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        [tablesNames addObject:tableName];
+        [questionMarks addObject:@"?"];
+        
+    }];
+    
+    NSError *error = nil;
+    NSString *formatString = [questionMarks componentsJoinedByString:@","];
+    NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] IN (%@)", formatString];
+
+    self.migrationSuccessful &= [self.database executeUpdate:resetETagSQL
+                                                      values:tablesNames
+                                                       error:&error];
+    
+    if (error) {
+        NSLog(@"reseting eTags error: %@", error.localizedDescription);
+    }
     
 }
 

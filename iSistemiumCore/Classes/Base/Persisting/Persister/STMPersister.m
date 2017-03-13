@@ -15,13 +15,17 @@
 
 #import "STMModeller+Interceptable.h"
 
+
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
 
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister filing:filing fileName:@"fmdb.db"];
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister
+                                                 filing:filing
+                                              modelName:modelName];
+    
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions

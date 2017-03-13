@@ -10,7 +10,7 @@
 
 @interface STMPersister()
 
-@property (nonatomic,strong) NSString * fmdbFileName;
+@property (nonatomic,strong) NSString *fmdbFileName;
 
 - (void)wrongEntityName:(NSString *)entityName error:(NSError **)error;
 
