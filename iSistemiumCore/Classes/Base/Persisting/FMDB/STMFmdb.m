@@ -111,12 +111,11 @@
 }
 
 
-- (BOOL) hasTable:(NSString * _Nonnull)name {
+- (BOOL)hasTable:(NSString * _Nonnull)name {
+    
     name = [STMFunctions removePrefixFromEntityName:name];
-    if ([self.columnsByTable.allKeys containsObject:name]){
-        return true;
-    }
-    return false;
+    return [self.columnsByTable.allKeys containsObject:name];
+
 }
 
 @end
