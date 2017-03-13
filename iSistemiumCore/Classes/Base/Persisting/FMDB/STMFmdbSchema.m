@@ -558,16 +558,19 @@
     NSLog(@"entitiesToReload %@", entitiesToReload);
     
     NSMutableArray *tablesNames = @[].mutableCopy;
+    NSMutableArray *questionMarks = @[].mutableCopy;
     
     [entitiesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull entityName, NSUInteger idx, BOOL * _Nonnull stop) {
         
         NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
         [tablesNames addObject:tableName];
+        [questionMarks addObject:@"?"];
         
     }];
     
     NSError *error = nil;
-    NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] = ?"];
+    NSString *formatString = [questionMarks componentsJoinedByString:@","];
+    NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] IN (%@)", formatString];
 
     self.migrationSuccessful &= [self.database executeUpdate:resetETagSQL
                                                       values:tablesNames
