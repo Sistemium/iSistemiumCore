@@ -18,6 +18,7 @@
 
 @property (nonatomic, strong) NSString *sourceModelName;
 @property (nonatomic, strong) NSString *destinationModelName;
+@property (nonatomic, strong) NSString *basePath;
 
 
 @end
@@ -42,16 +43,17 @@
 @synthesize needToMigrate = _needToMigrate;
 
 
-- (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing error:(NSError **)error {
+- (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing basePath:(NSString *)basePath error:(NSError **)error {
     
     return [self initWithSourceModelName:modelName
                     destinationModelName:modelName
                                   filing:filing
+                                basePath:basePath
                                    error:error];
     
 }
 
-- (instancetype)initWithSourceModelName:(NSString *)sourceModelName destinationModelName:(NSString *)destinationModelName filing:(id <STMFiling>)filing error:(NSError **)error {
+- (instancetype)initWithSourceModelName:(NSString *)sourceModelName destinationModelName:(NSString *)destinationModelName filing:(id <STMFiling>)filing  basePath:(NSString *)basePath error:(NSError **)error {
     
     self = [super init];
     
@@ -60,6 +62,7 @@
     }
     
     _filing = filing;
+    self.basePath = basePath;
     
     self.sourceModelName = sourceModelName;
     self.destinationModelName = destinationModelName;
@@ -98,6 +101,15 @@
 
 }
 
+- (NSString *)basePath {
+    
+    if (!_basePath) {
+        _basePath = [self.filing persistenceBasePath];
+    }
+    return _basePath;
+    
+}
+
 - (NSManagedObjectModel *)bundledModelWithName:(NSString *)modelName {
     
     NSURL *url = [NSURL URLWithString:[self.filing bundledModelFile:modelName]];
@@ -107,7 +119,7 @@
 
 - (NSManagedObjectModel *)loadModelFromFile:(NSString *)modelName {
     
-    NSString *path = [[self.filing persistenceBasePath] stringByAppendingPathComponent:modelName];
+    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
     
     NSError *error = nil;
     
@@ -154,7 +166,7 @@
     
     NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:self.destinationModel];
     
-    NSString *path = [[self.filing persistenceBasePath] stringByAppendingPathComponent:modelName];
+    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
     
     NSError *error = nil;
     BOOL writeResult = [modelData writeToFile:path
