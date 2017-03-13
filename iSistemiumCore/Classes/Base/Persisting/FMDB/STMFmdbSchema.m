@@ -202,7 +202,7 @@
     
     if (self.modelMapping.removedProperties[entityName]) {
         
-        // this entity was added earlier
+        // this entity was fully added earlier (by removing and adding it back)
         return;
         
     }
