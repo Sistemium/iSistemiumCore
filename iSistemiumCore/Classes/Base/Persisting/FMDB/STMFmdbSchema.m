@@ -186,10 +186,13 @@
 //    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
     if (self.migrationSuccessful) {
+        
         [modelMapping migrationComplete];
+        return self.columnsDictionary.copy;
+
+    } else {
+        return nil;
     }
-    
-    return self.columnsDictionary.copy;
     
 }
 
