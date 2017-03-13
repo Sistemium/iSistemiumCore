@@ -159,9 +159,7 @@
         
         [self deleteEntity:entity];
         [self addEntity:entity];
-        
-#warning - have to inform corresponding clientEntity to set eTag to '*'
-        
+                
     }];
 
 // handle added properties
