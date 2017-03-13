@@ -31,6 +31,7 @@
 @property (nonatomic, strong) NSArray *ignoredAttributes;
 
 @property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
+@property (nonatomic, weak) id <STMModelMapping> modelMapping;
 
 
 @end
@@ -139,6 +140,7 @@
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
+    self.modelMapping = modelMapping;
     self.migrationSuccessful = YES;
     self.columnsDictionary = [self currentDBScheme].mutableCopy;
 
@@ -168,16 +170,14 @@
         [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
             [self addPropertiesArray:attributesArray
-                    toEntityWithName:entityName
-                        modelMapping:modelMapping];
+                    toEntityWithName:entityName];
             
         }];
         
         [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
             
             [self addPropertiesArray:relationshipsArray
-                    toEntityWithName:entityName
-                        modelMapping:modelMapping];
+                    toEntityWithName:entityName];
 
         }];
         
@@ -196,16 +196,16 @@
     
 }
 
-- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName modelMapping:(id <STMModelMapping>)modelMapping {
+- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
     
-    if (modelMapping.removedProperties[entityName]) {
+    if (self.modelMapping.removedProperties[entityName]) {
         
         // this entity was added earlier
         return;
         
     }
     
-    NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
+    NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
     
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
