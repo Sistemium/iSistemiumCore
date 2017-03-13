@@ -155,6 +155,12 @@
     }
     
 // handle removed properties
+    
+// TODO: fantom triggers
+    /*хорошо бы, конечно, при переудалении таблицы пройтись по связям "ко-многим" и выполнить то что у них фантомные триггера делают при вставке:
+     ``` insert into {tableName} (id, isFantom, deviceCts) select {toOneRelName}, 1, null from {toManyRelTableName} where not exists (select * from tableName where id = {toManyRelTableName}.{toOneRelName})```
+     */
+
     [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
         
         NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
