@@ -24,6 +24,7 @@
 @interface STMFmdb()
 
 @property (nonatomic, weak) id <STMFiling>filing;
+@property (nonatomic, strong) NSString *fmdbPath;
 
 
 @end
@@ -31,15 +32,22 @@
 
 @implementation STMFmdb
 
+- (NSString *)fmdbPath {
+    
+    if (!_fmdbPath) {
+        _fmdbPath = [self.filing persistencePath:FMDB_PATH];
+    }
+    return _fmdbPath;
+    
+}
+
 - (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing modelName:(nonnull NSString *)modelName {
     
     self = [self init];
     
     self.filing = filing;
     
-    NSString *fmdbPath = [filing persistencePath:@"fmdb"];
-    
-    NSString *dbPath = [fmdbPath stringByAppendingPathComponent:@"fmdb.db"];
+    NSString *dbPath = [self.fmdbPath stringByAppendingPathComponent:@"fmdb.db"];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
@@ -67,6 +75,7 @@
     NSError *error = nil;
     STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                                      filing:self.filing
+                                                                   basePath:self.fmdbPath
                                                                       error:&error];
     
     if (modelMapper.needToMigrate) {
@@ -80,6 +89,7 @@
             error = nil;
             modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                              filing:self.filing
+                                                           basePath:self.fmdbPath
                                                               error:&error];
             
             if (error) {
@@ -122,7 +132,7 @@
 
 - (void)deleteFile {
     
-    [self.filing removeItemAtPath:[self.filing persistenceBasePath]
+    [self.filing removeItemAtPath:self.fmdbPath
                             error:nil];
     
 }
