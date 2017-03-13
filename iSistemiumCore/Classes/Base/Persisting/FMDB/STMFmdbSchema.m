@@ -183,7 +183,7 @@
         
     }
     
-    NSLog(@"columnsDictionary %@", self.columnsDictionary);
+//    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
     if (self.migrationSuccessful) {
         [modelMapping migrationComplete];
