@@ -38,7 +38,10 @@
 @synthesize addedProperties = _addedProperties;
 @synthesize addedAttributes = _addedAttributes;
 @synthesize addedRelationships = _addedRelationships;
+
 @synthesize removedProperties = _removedProperties;
+@synthesize removedAttributes = _removedAttributes;
+@synthesize removedRelationships = _removedRelationships;
 
 @synthesize needToMigrate = _needToMigrate;
 
@@ -311,6 +314,22 @@
 
     }
     return _removedProperties;
+    
+}
+
+- (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)removedAttributes {
+    
+    if (!_removedAttributes) {
+    }
+    return _removedAttributes;
+    
+}
+
+- (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)removedRelationships {
+    
+    if (!_removedRelationships) {
+    }
+    return _removedRelationships;
     
 }
 
