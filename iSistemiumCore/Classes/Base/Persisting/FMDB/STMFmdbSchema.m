@@ -188,6 +188,8 @@
     if (self.migrationSuccessful) {
         
         [modelMapping migrationComplete];
+        [self eTagReseting];
+        
         return self.columnsDictionary.copy;
 
     } else {
@@ -535,6 +537,27 @@
     
     return [formats componentsJoinedByString:@" "];
     
+}
+
+
+#pragma mark - hardcoded clientEntity eTag reseting
+
+- (void)eTagReseting {
+    
+    NSArray <NSString *> *entitiesToReload = [self.modelMapping.addedProperties.allKeys arrayByAddingObjectsFromArray:self.modelMapping.removedProperties.allKeys];
+    entitiesToReload = [NSSet setWithArray:entitiesToReload].allObjects;
+    
+    if (!entitiesToReload.count) {
+        return;
+    }
+    
+    NSLog(@"entitiesToReload %@", entitiesToReload);
+    
+    for (NSString *entityName in entitiesToReload) {
+        
+        
+    }
+
 }
 
 
