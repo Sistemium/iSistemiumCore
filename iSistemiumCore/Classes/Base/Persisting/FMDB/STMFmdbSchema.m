@@ -31,10 +31,9 @@
 @property (nonatomic, strong) NSArray *ignoredAttributes;
 
 @property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
-@property (nonatomic) BOOL migrationSuccessful;
+
 
 @end
-
 
 
 @implementation STMFmdbSchema
