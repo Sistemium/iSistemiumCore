@@ -188,12 +188,16 @@
     [self eTagReseting];
 
     if (self.migrationSuccessful) {
-        
+
+        NSLog(@"model migrating SUCCESS");
         [modelMapping migrationComplete];
         return self.columnsDictionary.copy;
 
     } else {
+        
+        NSLog(@"model migrating NOT SUCCESS");
         return nil;
+        
     }
     
 }
