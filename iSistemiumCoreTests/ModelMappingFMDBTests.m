@@ -22,6 +22,8 @@
 
 @property (nonatomic, strong) STMFmdb *stmFMDB;
 @property (nonatomic, strong) id <STMFiling> filing;
+@property (nonatomic, strong) NSString *basePath;
+
 
 @end
 
@@ -41,6 +43,14 @@
     [super tearDown];
 }
 
+- (NSString *)basePath {
+    
+    if (!_basePath) {
+        _basePath = [self.filing persistencePath:FMDB_PATH];
+    }
+    return _basePath;
+    
+}
 
 - (void)testCreateAndMigrateFMDB {
     
@@ -54,6 +64,7 @@
     NSError *error = nil;
     STMModelMapper *mapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                                 filing:self.filing
+                                                              basePath:self.basePath
                                                                  error:&error];
     
     XCTAssertEqualObjects(sourceModel, mapper.sourceModel);
@@ -71,6 +82,7 @@
     
     mapper = [[STMModelMapper alloc] initWithModelName:modelName
                                                 filing:self.filing
+                                              basePath:self.basePath
                                                  error:&error];
 
     XCTAssertNotNil(mapper);
@@ -86,6 +98,7 @@
     mapper = [[STMModelMapper alloc] initWithSourceModelName:@"testModel"
                                         destinationModelName:modelName
                                                       filing:self.filing
+                                                    basePath:self.basePath
                                                        error:&error];
 
     XCTAssertNotNil(mapper);
