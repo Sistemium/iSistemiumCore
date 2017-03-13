@@ -16,6 +16,7 @@
 #import "STMModelMapper.h"
 
 #import "STMLogger.h"
+#import "STMClientEntityController.h"
 
 #import <sqlite3.h>
 
@@ -94,6 +95,22 @@
         }
         
         self.columnsByTable = [fmdbSchema createTablesWithModelMapping:modelMapper];
+        
+        if (fmdbSchema.migrationSuccessful) {
+        
+            NSArray <NSString *> *entitiesToReload = [modelMapper.addedProperties.allKeys arrayByAddingObjectsFromArray:modelMapper.removedProperties.allKeys];
+            entitiesToReload = [NSSet setWithArray:entitiesToReload].allObjects;
+            
+            NSLog(@"entitiesToReload %@", entitiesToReload);
+            
+            for (NSString *entityName in entitiesToReload) {
+                
+                [STMClientEntityController clientEntityWithName:entityName
+                                                        setETag:nil];
+                
+            }
+            
+        }
         
     } else {
     
