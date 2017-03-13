@@ -185,11 +185,11 @@
     
 //    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
+    [self eTagReseting];
+
     if (self.migrationSuccessful) {
         
         [modelMapping migrationComplete];
-        [self eTagReseting];
-        
         return self.columnsDictionary.copy;
 
     } else {
@@ -553,11 +553,26 @@
     
     NSLog(@"entitiesToReload %@", entitiesToReload);
     
-    for (NSString *entityName in entitiesToReload) {
+    NSMutableArray *tablesNames = @[].mutableCopy;
+    
+    [entitiesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull entityName, NSUInteger idx, BOOL * _Nonnull stop) {
         
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+        [tablesNames addObject:tableName];
         
-    }
+    }];
+    
+    NSError *error = nil;
+    NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] = ?"];
 
+    self.migrationSuccessful &= [self.database executeUpdate:resetETagSQL
+                                                      values:tablesNames
+                                                       error:&error];
+    
+    if (error) {
+        NSLog(@"reseting eTags error: %@", error.localizedDescription);
+    }
+    
 }
 
 
