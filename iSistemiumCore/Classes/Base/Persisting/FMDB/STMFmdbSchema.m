@@ -259,8 +259,6 @@
 
 - (void)deleteEntity:(NSEntityDescription *)entity {
     
-#warning - have to check table before dropping for triggers and something
-
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
     BOOL result = [self executeDDL:[self dropTable:tableName]];
