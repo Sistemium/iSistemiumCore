@@ -241,22 +241,7 @@
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)addedAttributes {
     
     if (!_addedAttributes) {
-        
-        NSMutableDictionary <NSString *, NSArray <NSAttributeDescription *> *> *addedAttributes = @{}.mutableCopy;
-        
-        [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
-            
-            NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
-            NSArray <NSString *> *attributesNames = entity.attributesByName.allKeys;
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", attributesNames];
-            NSArray <NSAttributeDescription *> *result = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
-            
-            if (result.count) addedAttributes[entityName] = result;
-            
-        }];
-        
-        _addedAttributes = addedAttributes;
-        
+        _addedAttributes = [self attributesFromProperties:self.addedProperties];
     }
     return _addedAttributes;
     
@@ -265,22 +250,7 @@
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)addedRelationships {
     
     if (!_addedRelationships) {
-        
-        NSMutableDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *addedRelationships = @{}.mutableCopy;
-        
-        [self.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
-            
-            NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
-            NSArray <NSString *> *relationshipsNames = entity.relationshipsByName.allKeys;
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", relationshipsNames];
-            NSArray <NSRelationshipDescription *> *result = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
-            
-            if (result) addedRelationships[entityName] = result;
-            
-        }];
-        
-        _addedRelationships = addedRelationships;
-
+        _addedRelationships = [self relationshipsFromProperties:self.addedProperties];
     }
     return _addedRelationships;
     
@@ -320,6 +290,7 @@
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)removedAttributes {
     
     if (!_removedAttributes) {
+        _removedAttributes = [self attributesFromProperties:self.removedProperties];
     }
     return _removedAttributes;
     
@@ -328,6 +299,7 @@
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)removedRelationships {
     
     if (!_removedRelationships) {
+        _removedRelationships = [self relationshipsFromProperties:self.removedProperties];
     }
     return _removedRelationships;
     
@@ -363,7 +335,43 @@
     
 }
 
+- (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)attributesFromProperties:(NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)properties {
+    
+    NSMutableDictionary <NSString *, NSArray <NSAttributeDescription *> *> *attributes = @{}.mutableCopy;
+    
+    [properties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
+        
+        NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
+        NSArray <NSString *> *attributesNames = entity.attributesByName.allKeys;
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", attributesNames];
+        NSArray <NSAttributeDescription *> *result = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+        
+        if (result.count) attributes[entityName] = result;
+        
+    }];
 
+    return attributes.copy;
+    
+}
+
+- (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)relationshipsFromProperties:(NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)properties {
+    
+    NSMutableDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *relationships = @{}.mutableCopy;
+    
+    [properties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
+        
+        NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
+        NSArray <NSString *> *relationshipsNames = entity.relationshipsByName.allKeys;
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", relationshipsNames];
+        NSArray <NSRelationshipDescription *> *result = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+        
+        if (result) relationships[entityName] = result;
+        
+    }];
+
+    return relationships.copy;
+    
+}
 
 
 #pragma mark - info
