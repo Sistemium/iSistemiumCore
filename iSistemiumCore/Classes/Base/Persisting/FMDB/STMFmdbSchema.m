@@ -259,17 +259,17 @@
 
 - (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
     
-    if (self.modelMapping.removedProperties[entityName]) {
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+
+    if ([self.tablesToReload containsObject:tableName]) {
         
         // this entity was fully added earlier (by removing and adding it back)
         return;
         
     }
-    
-    NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
-    
-    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-    
+
+    [self.tablesToReload addObject:tableName];
+
     NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
     if (!columns) columns = @[].mutableCopy;
     
@@ -603,24 +603,16 @@
 
 - (void)eTagReseting {
     
-    NSArray <NSString *> *entitiesToReload = [self.modelMapping.addedProperties.allKeys arrayByAddingObjectsFromArray:self.modelMapping.removedProperties.allKeys];
-    entitiesToReload = [NSSet setWithArray:entitiesToReload].allObjects;
-    
-    if (!entitiesToReload.count) {
+    if (!self.tablesToReload.count) {
         return;
     }
     
-    NSLog(@"entitiesToReload %@", entitiesToReload);
+    NSLog(@"tablesToReload %@", self.tablesToReload);
     
-    NSMutableArray *tablesNames = @[].mutableCopy;
     NSMutableArray *questionMarks = @[].mutableCopy;
     
-    [entitiesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull entityName, NSUInteger idx, BOOL * _Nonnull stop) {
-        
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-        [tablesNames addObject:tableName];
+    [self.tablesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         [questionMarks addObject:@"?"];
-        
     }];
     
     NSError *error = nil;
@@ -628,7 +620,7 @@
     NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] IN (%@)", formatString];
 
     self.migrationSuccessful &= [self.database executeUpdate:resetETagSQL
-                                                      values:tablesNames
+                                                      values:self.tablesToReload.allObjects
                                                        error:&error];
     
     if (error) {
