@@ -263,7 +263,12 @@
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
     NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
-    relationships = [relationships filteredArrayUsingPredicate:[self isToManyPredicate]];
+    
+    NSArray *subpredicates = @[[self isToManyPredicate],
+                               [self inverseIsToOnePredicate]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    relationships = [relationships filteredArrayUsingPredicate:predicate];
 
     [relationships enumerateObjectsUsingBlock:^(NSRelationshipDescription * _Nonnull rel, NSUInteger idx, BOOL * _Nonnull stop) {
         
