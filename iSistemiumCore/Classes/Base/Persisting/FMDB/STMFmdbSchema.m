@@ -217,6 +217,7 @@
     
 //    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
+    [self fillRecreatedTablesWithFantom];
     [self eTagReseting];
 
     if (self.migrationSuccessful) {
@@ -251,11 +252,22 @@
     
     [self deleteEntity:entity];
     [self addEntity:entity];
-    [self fillWithFantoms:entity];
     
     [self.tablesToReload addObject:tableName];
     self.recreatedTables = self.tablesToReload.copy;
     
+}
+
+- (void)fillRecreatedTablesWithFantom {
+    
+    for (NSString *tableName in self.recreatedTables) {
+        
+        NSString *entityName = [STMFunctions addPrefixToEntityName:tableName];
+        NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
+        [self fillWithFantoms:entity];
+        
+    }
+
 }
 
 - (void)fillWithFantoms:(NSEntityDescription *)entity {
