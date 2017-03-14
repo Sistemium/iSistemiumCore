@@ -341,9 +341,7 @@
     
     [properties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
         
-        NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
-        NSArray <NSString *> *attributesNames = entity.attributesByName.allKeys;
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", attributesNames];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"class == %@", [NSAttributeDescription class]];
         NSArray <NSAttributeDescription *> *result = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
         
         if (result.count) attributes[entityName] = result;
@@ -360,9 +358,7 @@
     
     [properties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
         
-        NSEntityDescription *entity = self.destinationModel.entitiesByName[entityName];
-        NSArray <NSString *> *relationshipsNames = entity.relationshipsByName.allKeys;
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", relationshipsNames];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"class == %@", [NSRelationshipDescription class]];
         NSArray <NSRelationshipDescription *> *result = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
         
         if (result) relationships[entityName] = result;
