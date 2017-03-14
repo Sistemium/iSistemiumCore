@@ -212,9 +212,16 @@
             
             if (!relationshipsArray.count) return;
             
-            [self addPropertiesArray:relationshipsArray
-                    toEntityWithName:entityName];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
+            relationshipsArray = [relationshipsArray filteredArrayUsingPredicate:predicate];
 
+            if (relationshipsArray.count) {
+            
+                [self addPropertiesArray:relationshipsArray
+                        toEntityWithName:entityName];
+
+            }
+            
         }];
         
     }
