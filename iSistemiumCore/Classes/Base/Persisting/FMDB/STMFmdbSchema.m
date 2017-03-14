@@ -644,11 +644,11 @@
 #pragma mark - predicates
 
 - (NSPredicate *)isToManyPredicate {
-    return [NSPredicate predicateWithFormat:@"toMany == YES"];
+    return [NSPredicate predicateWithFormat:@"isToMany == YES"];
 }
 
 - (NSPredicate *)isToOnePredicate {
-    return [NSPredicate predicateWithFormat:@"toMany != YES"];
+    return [NSPredicate predicateWithFormat:@"isToMany != YES"];
 }
 
 
