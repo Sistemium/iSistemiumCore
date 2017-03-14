@@ -199,9 +199,12 @@
 // handle added properties
     if (modelMapping.addedProperties.count) {
         
+        NSSet <NSString *> *reloadList = self.tablesToReload.copy;
+        
         [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
             if (!attributesArray.count) return;
+            if ([reloadList containsObject:[STMFunctions removePrefixFromEntityName:entityName]]) return;
             
             [self addPropertiesArray:attributesArray
                     toEntityWithName:entityName];
@@ -211,6 +214,7 @@
         [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
             
             if (!relationshipsArray.count) return;
+            if ([reloadList containsObject:[STMFunctions removePrefixFromEntityName:entityName]]) return;
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
             relationshipsArray = [relationshipsArray filteredArrayUsingPredicate:predicate];
@@ -267,14 +271,6 @@
 - (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
     
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-
-    if ([self.tablesToReload containsObject:tableName]) {
-        
-        // this entity was fully added earlier (by removing and adding it back)
-        return;
-        
-    }
-
     [self.tablesToReload addObject:tableName];
 
     NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
