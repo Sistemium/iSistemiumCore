@@ -33,6 +33,8 @@
 @property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
 @property (nonatomic, weak) id <STMModelMapping> modelMapping;
 
+@property (nonatomic, strong) NSMutableSet <NSString *> *tablesToReload;
+
 
 @end
 
@@ -132,6 +134,15 @@
     }
 
     return result.copy;
+    
+}
+
+- (NSMutableSet <NSString *> *)tablesToReload {
+    
+    if (!_tablesToReload) {
+        _tablesToReload = [NSMutableSet set];
+    }
+    return _tablesToReload;
     
 }
 
