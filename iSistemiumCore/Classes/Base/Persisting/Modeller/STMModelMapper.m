@@ -270,7 +270,7 @@
 
             if (propertiesSet.count) {
             
-                NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+                NSEntityDescription *entity = [self.migrationManager sourceEntityForEntityMapping:entityMapping];
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
                 NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
                 
