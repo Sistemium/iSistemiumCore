@@ -186,7 +186,7 @@
             NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
             if ([self.recreatedTables containsObject:tableName]) return;
             
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
+            NSPredicate *predicate = [self isToOnePredicate];
             
             if ([relationships filteredArrayUsingPredicate:predicate].count) {
                 
@@ -195,7 +195,7 @@
                 
             }
             
-            predicate = [NSPredicate predicateWithFormat:@"toMany == YES"];
+            predicate = [self isToManyPredicate];
             relationships = [relationships filteredArrayUsingPredicate:predicate];
             
             for (NSRelationshipDescription *toManyRelationship in relationships) {
@@ -617,6 +617,17 @@
     
     return [formats componentsJoinedByString:@" "];
     
+}
+
+
+#pragma mark - predicates
+
+- (NSPredicate *)isToManyPredicate {
+    return [NSPredicate predicateWithFormat:@"toMany == YES"];
+}
+
+- (NSPredicate *)isToOnePredicate {
+    return [NSPredicate predicateWithFormat:@"toMany != YES"];
 }
 
 
