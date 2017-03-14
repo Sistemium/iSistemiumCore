@@ -7,7 +7,8 @@
 //
 
 #import "STMFiling.h"
+#import "STMCoreSessionFiler.h"
 
-@interface STMTestDirectoring : NSObject <STMDirectoring>
+@interface STMTestDirectoring : STMCoreSessionFiler
 
 @end

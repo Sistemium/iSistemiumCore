@@ -12,7 +12,7 @@
 
 #import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
-
+#import "STMTestDirectoring.h"
 
 #define TEST_PATH @"testPath"
 
@@ -21,21 +21,6 @@
 
 #define TEST_DATA_MODEL_NAME @"testModel"
 #define TEST_CHANGED_DATA_MODEL_NAME @"testModelChanged"
-
-
-@interface STMTestDirectoring : STMCoreSessionFiler
-
-@end
-
-
-@implementation STMTestDirectoring
-
-- (NSBundle *)bundle {
-    return [STMFunctions currentTestTarget] ? [NSBundle bundleForClass:[self class]] : [NSBundle mainBundle];
-}
-
-@end
-
 
 #pragma mark -
 
