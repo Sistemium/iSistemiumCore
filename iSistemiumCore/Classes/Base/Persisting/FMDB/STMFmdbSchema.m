@@ -201,12 +201,16 @@
         
         [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
             
+            if (!attributesArray.count) return;
+            
             [self addPropertiesArray:attributesArray
                     toEntityWithName:entityName];
             
         }];
         
         [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
+            
+            if (!relationshipsArray.count) return;
             
             [self addPropertiesArray:relationshipsArray
                     toEntityWithName:entityName];
