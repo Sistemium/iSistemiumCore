@@ -203,7 +203,7 @@
             }
             
         }];
-
+        
     }
 
 // handle added properties
@@ -267,6 +267,8 @@
 
     [relationships enumerateObjectsUsingBlock:^(NSRelationshipDescription * _Nonnull rel, NSUInteger idx, BOOL * _Nonnull stop) {
         
+        NSLog(@"%@ fill with fantoms", entity.name);
+        
         NSString *toOneRelName = rel.inverseRelationship.name;
         NSString *toManyRelTableName = [STMFunctions removePrefixFromEntityName:rel.destinationEntity.name];
         
@@ -294,6 +296,8 @@
 
     if (attributes.count) {
         
+        NSLog(@"%@ add atributes: %@", entityName, [attributes valueForKeyPath:@"name"]);
+        
         [columns addObjectsFromArray:[self addColumns:attributes toTable:tableName]];
         [self.tablesToReload addObject:tableName];
 
@@ -304,6 +308,8 @@
 
     if (relationships.count) {
         
+        NSLog(@"%@ add relationships: %@", entityName, [relationships valueForKeyPath:@"name"]);
+
         [columns addObjectsFromArray:[self addRelationships:relationships toTable:tableName]];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
