@@ -251,9 +251,30 @@
     
     [self deleteEntity:entity];
     [self addEntity:entity];
-
+    [self fillWithFantoms:entity];
+    
     [self.tablesToReload addObject:tableName];
     self.recreatedTables = self.tablesToReload.copy;
+    
+}
+
+- (void)fillWithFantoms:(NSEntityDescription *)entity {
+
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+    
+    NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
+    relationships = [relationships filteredArrayUsingPredicate:[self isToManyPredicate]];
+
+    [relationships enumerateObjectsUsingBlock:^(NSRelationshipDescription * _Nonnull rel, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSString *toOneRelName = rel.inverseRelationship.name;
+        NSString *toManyRelTableName = [STMFunctions removePrefixFromEntityName:rel.destinationEntity.name];
+        
+        NSString *insertFantomsDDL = [NSString stringWithFormat:@"INSERT INTO %@ (id, isFantom, deviceCts) SELECT DISTINCT %@, 1, null FROM %@", tableName, toOneRelName, toManyRelTableName];
+        
+        self.migrationSuccessful &= [self executeDDL:insertFantomsDDL];
+        
+    }];
     
 }
 
