@@ -651,6 +651,10 @@
     return [NSPredicate predicateWithFormat:@"isToMany != YES"];
 }
 
+- (NSPredicate *)inverseIsToOnePredicate {
+    return [NSPredicate predicateWithFormat:@"inverseRelationship.isToMany != YES"];
+}
+
 
 #pragma mark - hardcoded clientEntity eTag reseting
 
