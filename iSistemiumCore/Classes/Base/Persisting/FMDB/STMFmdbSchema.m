@@ -175,7 +175,6 @@
         [modelMapping.removedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributes, BOOL * _Nonnull stop) {
             
             if (!attributes.count) return;
-
             [self recreateEntityWithName:entityName];
             
         }];
@@ -184,11 +183,23 @@
             
             if (!relationships.count) return;
             
+            NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+            if ([self.recreatedTables containsObject:tableName]) return;
+            
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
+            
+            if ([relationships filteredArrayUsingPredicate:predicate].count) {
+                
+                [self recreateEntityWithName:entityName];
+                return;
+                
+            }
+            
+            predicate = [NSPredicate predicateWithFormat:@"toMany == YES"];
             relationships = [relationships filteredArrayUsingPredicate:predicate];
             
-            if (relationships.count) {
-                [self recreateEntityWithName:entityName];
+            for (NSRelationshipDescription *toManyRelationship in relationships) {
+                self.migrationSuccessful &= [self executeDDL:[self deleteToManyRelationshipDDL:toManyRelationship tableName:tableName]];
             }
             
         }];
@@ -508,6 +519,21 @@
                         tableName:tableName
                              body:deleteChildren
                              when:nil];
+
+}
+
+- (NSString *)deleteToManyRelationshipDDL:(NSRelationshipDescription *)relationship tableName:(NSString *)tableName {
+    
+    if (!relationship.isToMany) {
+        NSLog(@"attempt to delete non-to-many relationship with deleteToManyRelationshipDDL");
+        return nil;
+    }
+
+    if (relationship.deleteRule != NSCascadeDeleteRule) return nil;
+
+    NSString *name = [CASCADE_TRIGGER_PREFIX stringByAppendingString:relationship.name];
+
+    return [NSString stringWithFormat:@"DROP TRIGGER IF EXISTS %@_%@", tableName, name];
 
 }
 
