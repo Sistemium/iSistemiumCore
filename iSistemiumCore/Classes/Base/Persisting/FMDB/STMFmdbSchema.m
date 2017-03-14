@@ -22,6 +22,8 @@
 #define SQLiteBeforeDelete @"BEFORE DELETE"
 #define SQLiteBeforeUpdateOf(column) [@"BEFORE UPDATE OF " stringByAppendingString:column]
 
+#define CASCADE_TRIGGER_PREFIX @"cascade_"
+
 
 @interface STMFmdbSchema()
 
@@ -32,6 +34,9 @@
 
 @property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
 @property (nonatomic, weak) id <STMModelMapping> modelMapping;
+
+@property (nonatomic, strong) NSMutableSet <NSString *> *tablesToReload;
+@property (nonatomic, strong) NSSet <NSString *> *recreatedTables;
 
 
 @end
@@ -135,6 +140,15 @@
     
 }
 
+- (NSMutableSet <NSString *> *)tablesToReload {
+    
+    if (!_tablesToReload) {
+        _tablesToReload = [NSMutableSet set];
+    }
+    return _tablesToReload;
+    
+}
+
 
 #pragma mark - createTablesWithModelMapping
 
@@ -155,33 +169,51 @@
     }
     
 // handle removed properties
-    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
-        
-        NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
-        
-        [self deleteEntity:entity];
-        [self addEntity:entity];
+    
+    if (modelMapping.removedProperties.count) {
+    
+        [modelMapping.removedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributes, BOOL * _Nonnull stop) {
+            
+            if (!attributes.count) return;
+            [self recreateEntityWithName:entityName];
+            
+        }];
+
+        [modelMapping.removedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationships, BOOL * _Nonnull stop) {
+            
+            if (!relationships.count) return;
+            
+            NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+            if ([self.recreatedTables containsObject:tableName]) return;
+            
+            NSPredicate *predicate = [self isToOnePredicate];
+            
+            if ([relationships filteredArrayUsingPredicate:predicate].count) {
                 
-    }];
+                [self recreateEntityWithName:entityName];
+                return;
+                
+            }
+            
+            predicate = [self isToManyPredicate];
+            relationships = [relationships filteredArrayUsingPredicate:predicate];
+            
+            for (NSRelationshipDescription *toManyRelationship in relationships) {
+                self.migrationSuccessful &= [self executeDDL:[self deleteToManyRelationshipDDL:toManyRelationship tableName:tableName]];
+            }
+            
+        }];
+
+    }
 
 // handle added properties
-    if (modelMapping.addedProperties.count) {
+    
+    [modelMapping.addedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull propertiesArray, BOOL * _Nonnull stop) {
         
-        [modelMapping.addedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributesArray, BOOL * _Nonnull stop) {
-            
-            [self addPropertiesArray:attributesArray
-                    toEntityWithName:entityName];
-            
-        }];
-        
-        [modelMapping.addedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationshipsArray, BOOL * _Nonnull stop) {
-            
-            [self addPropertiesArray:relationshipsArray
-                    toEntityWithName:entityName];
+        [self addPropertiesArray:propertiesArray
+                toEntityWithName:entityName];
 
-        }];
-        
-    }
+    }];
     
 //    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
@@ -202,36 +234,86 @@
     
 }
 
-- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
+- (void)recreateEntityWithName:(NSString *)entityName {
     
-    if (self.modelMapping.removedProperties[entityName]) {
-        
-        // this entity was fully added earlier (by removing and adding it back)
-        return;
-        
-    }
+    NSLog(@"recreateEntityWithName: %@", entityName);
+    
+    // TODO: fantom triggers
+    /*хорошо бы, конечно, при переудалении таблицы пройтись по связям "ко-многим" и выполнить то что у них фантомные триггера делают при вставке:
+     ``` insert into {tableName} (id, isFantom, deviceCts) select {toOneRelName}, 1, null from {toManyRelTableName} where not exists (select * from tableName where id = {toManyRelTableName}.{toOneRelName})```
+     */
+
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+
+    if ([self.recreatedTables containsObject:tableName]) return;
     
     NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
     
+    [self deleteEntity:entity];
+    [self addEntity:entity];
+    [self fillWithFantoms:entity];
+    
+    [self.tablesToReload addObject:tableName];
+    self.recreatedTables = self.tablesToReload.copy;
+    
+}
+
+- (void)fillWithFantoms:(NSEntityDescription *)entity {
+
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
+    NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
+    relationships = [relationships filteredArrayUsingPredicate:[self isToManyPredicate]];
+
+    [relationships enumerateObjectsUsingBlock:^(NSRelationshipDescription * _Nonnull rel, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSString *toOneRelName = rel.inverseRelationship.name;
+        NSString *toManyRelTableName = [STMFunctions removePrefixFromEntityName:rel.destinationEntity.name];
+        
+        NSString *insertFantomsDDL = [NSString stringWithFormat:@"INSERT INTO %@ (id, isFantom, deviceCts) SELECT DISTINCT %@, 1, null FROM %@", tableName, toOneRelName, toManyRelTableName];
+        
+        self.migrationSuccessful &= [self executeDDL:insertFantomsDDL];
+        
+    }];
+    
+}
+
+- (void)addPropertiesArray:(NSArray <NSPropertyDescription *> *)propertiesArray toEntityWithName:(NSString *)entityName {
+    
+    if (!propertiesArray.count) return;
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+
+    if ([self.recreatedTables containsObject:tableName]) return;
+
     NSMutableArray *columns = [self.columnsDictionary[tableName] mutableCopy];
     if (!columns) columns = @[].mutableCopy;
     
-    NSArray *result = nil;
-    
-    if ([propertiesArray.firstObject isKindOfClass:[NSRelationshipDescription class]]) {
-    
-        result = [self addRelationships:(NSArray <NSRelationshipDescription *> *)propertiesArray
-                                toTable:tableName];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"class == %@", [NSAttributeDescription class]];
+    NSArray <NSAttributeDescription *> *attributes = (NSArray <NSAttributeDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+
+    if (attributes.count) {
         
-    } else if ([propertiesArray.firstObject isKindOfClass:[NSAttributeDescription class]]) {
-        
-        result = [self addColumns:(NSArray <NSAttributeDescription *> *)propertiesArray
-                          toTable:tableName];
+        [columns addObjectsFromArray:[self addColumns:attributes toTable:tableName]];
+        [self.tablesToReload addObject:tableName];
+
     }
-    
-    if (result.count) [columns addObjectsFromArray:result];
+
+    predicate = [NSPredicate predicateWithFormat:@"class == %@", [NSRelationshipDescription class]];
+    NSArray <NSRelationshipDescription *> *relationships = (NSArray <NSRelationshipDescription *> *)[propertiesArray filteredArrayUsingPredicate:predicate];
+
+    if (relationships.count) {
+        
+        [columns addObjectsFromArray:[self addRelationships:relationships toTable:tableName]];
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
+        relationships = [relationships filteredArrayUsingPredicate:predicate];
+        
+        if (relationships.count) {
+            [self.tablesToReload addObject:tableName];
+        }
+
+    }
     
     self.columnsDictionary[tableName] = columns;
 
@@ -453,11 +535,26 @@
 
     NSString *deleteChildren = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
     
-    return [self createTriggerDDL:[@"cascade_" stringByAppendingString:name]
+    return [self createTriggerDDL:[CASCADE_TRIGGER_PREFIX stringByAppendingString:name]
                             event:SQLiteBeforeDelete
                         tableName:tableName
                              body:deleteChildren
                              when:nil];
+
+}
+
+- (NSString *)deleteToManyRelationshipDDL:(NSRelationshipDescription *)relationship tableName:(NSString *)tableName {
+    
+    if (!relationship.isToMany) {
+        NSLog(@"attempt to delete non-to-many relationship with deleteToManyRelationshipDDL");
+        return nil;
+    }
+
+    if (relationship.deleteRule != NSCascadeDeleteRule) return nil;
+
+    NSString *name = [CASCADE_TRIGGER_PREFIX stringByAppendingString:relationship.name];
+
+    return [NSString stringWithFormat:@"DROP TRIGGER IF EXISTS %@_%@", tableName, name];
 
 }
 
@@ -544,28 +641,31 @@
 }
 
 
+#pragma mark - predicates
+
+- (NSPredicate *)isToManyPredicate {
+    return [NSPredicate predicateWithFormat:@"toMany == YES"];
+}
+
+- (NSPredicate *)isToOnePredicate {
+    return [NSPredicate predicateWithFormat:@"toMany != YES"];
+}
+
+
 #pragma mark - hardcoded clientEntity eTag reseting
 
 - (void)eTagReseting {
     
-    NSArray <NSString *> *entitiesToReload = [self.modelMapping.addedProperties.allKeys arrayByAddingObjectsFromArray:self.modelMapping.removedProperties.allKeys];
-    entitiesToReload = [NSSet setWithArray:entitiesToReload].allObjects;
-    
-    if (!entitiesToReload.count) {
+    if (!self.tablesToReload.count) {
         return;
     }
     
-    NSLog(@"entitiesToReload %@", entitiesToReload);
+    NSLog(@"tablesToReload %@", self.tablesToReload);
     
-    NSMutableArray *tablesNames = @[].mutableCopy;
     NSMutableArray *questionMarks = @[].mutableCopy;
     
-    [entitiesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull entityName, NSUInteger idx, BOOL * _Nonnull stop) {
-        
-        NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
-        [tablesNames addObject:tableName];
+    [self.tablesToReload enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         [questionMarks addObject:@"?"];
-        
     }];
     
     NSError *error = nil;
@@ -573,7 +673,7 @@
     NSString *resetETagSQL = [NSString stringWithFormat:@"UPDATE ClientEntity SET [eTag] = '*' WHERE [name] IN (%@)", formatString];
 
     self.migrationSuccessful &= [self.database executeUpdate:resetETagSQL
-                                                      values:tablesNames
+                                                      values:self.tablesToReload.allObjects
                                                        error:&error];
     
     if (error) {
