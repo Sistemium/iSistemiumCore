@@ -167,16 +167,35 @@
     
 // handle removed properties
     
+    if (modelMapping.removedProperties.count) {
+    
+        [modelMapping.removedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSAttributeDescription *> * _Nonnull attributes, BOOL * _Nonnull stop) {
+            
+            if (!attributes.count) return;
 
-    [modelMapping.removedProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSPropertyDescription *> * _Nonnull obj, BOOL * _Nonnull stop) {
-        
-        NSEntityDescription *entity = modelMapping.destinationModel.entitiesByName[entityName];
-        
-        [self deleteEntity:entity];
-        [self addEntity:entity];
-                
-    }];
+            [self recreateEntityWithName:entityName];
+            
+        }];
 
+        [modelMapping.removedRelationships enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSArray<NSRelationshipDescription *> * _Nonnull relationships, BOOL * _Nonnull stop) {
+            
+            if (!relationships.count) return;
+            
+            if ([self.tablesToReload containsObject:[STMFunctions removePrefixFromEntityName:entityName]]) {
+                return;
+            }
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
+            relationships = [relationships filteredArrayUsingPredicate:predicate];
+            
+            if (relationships.count) {
+                [self recreateEntityWithName:entityName];
+            }
+            
+        }];
+
+    }
+    
 // handle added properties
     if (modelMapping.addedProperties.count) {
         
