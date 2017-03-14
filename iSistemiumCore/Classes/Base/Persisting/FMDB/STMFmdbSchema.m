@@ -22,6 +22,8 @@
 #define SQLiteBeforeDelete @"BEFORE DELETE"
 #define SQLiteBeforeUpdateOf(column) [@"BEFORE UPDATE OF " stringByAppendingString:column]
 
+#define CASCADE_TRIGGER_PREFIX @"cascade_"
+
 
 @interface STMFmdbSchema()
 
@@ -501,7 +503,7 @@
 
     NSString *deleteChildren = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = OLD.%@", childTableName, fkColumn, STMPersistingKeyPrimary];
     
-    return [self createTriggerDDL:[@"cascade_" stringByAppendingString:name]
+    return [self createTriggerDDL:[CASCADE_TRIGGER_PREFIX stringByAppendingString:name]
                             event:SQLiteBeforeDelete
                         tableName:tableName
                              body:deleteChildren
