@@ -53,6 +53,7 @@
     
     NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
     NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
+    NSArray *groupBy = options[STMPersistingOptionGroupBy];
     
     if (offset) {
         offset -= 1;
@@ -73,7 +74,7 @@
             
         case STMStorageTypeFMDB:
             
-            return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset];
+            return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset groupBy:groupBy];
             
         case STMStorageTypeCoreData: {
             

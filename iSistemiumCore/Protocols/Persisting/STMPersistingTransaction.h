@@ -46,6 +46,7 @@
                                orderBy:(NSString *)orderBy
                              ascending:(BOOL)ascending
                             fetchLimit:(NSUInteger)fetchLimit
-                           fetchOffset:(NSUInteger)fetchOffset;
+                           fetchOffset:(NSUInteger)fetchOffset
+                               groupBy:(NSArray *)groupBy;
 
 @end
