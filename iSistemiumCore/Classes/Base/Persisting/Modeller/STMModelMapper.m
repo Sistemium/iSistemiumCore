@@ -16,8 +16,8 @@
 
 @property (nonatomic, weak, readonly) id <STMFiling> filing;
 
-@property (nonatomic, strong) NSString *sourceModelName;
-@property (nonatomic, strong) NSString *destinationModelName;
+@property (nonatomic, strong) NSManagedObjectModel *sourceModel;
+@property (nonatomic, strong) NSManagedObjectModel *destinationModel;
 @property (nonatomic, strong) NSString *basePath;
 
 
@@ -46,32 +46,16 @@
 @synthesize needToMigrate = _needToMigrate;
 
 
-- (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing basePath:(NSString *)basePath error:(NSError **)error {
+- (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
     
-    return [self initWithSourceModelName:modelName
-                    destinationModelName:modelName
-                                  filing:filing
-                                basePath:basePath
-                                   error:error];
-    
-}
-
-- (instancetype)initWithSourceModelName:(NSString *)sourceModelName destinationModelName:(NSString *)destinationModelName filing:(id <STMFiling>)filing  basePath:(NSString *)basePath error:(NSError **)error {
-    
-    self = [super init];
+    self = [self init];
     
     if (!self) {
         return nil;
     }
     
-    _filing = filing;
-    self.basePath = basePath;
-    
-    self.sourceModelName = sourceModelName;
-    self.destinationModelName = destinationModelName;
-    
-    NSManagedObjectModel *sourceModel = [self loadModelFromFile:sourceModelName];
-    NSManagedObjectModel *destinationModel = [self bundledModelWithName:destinationModelName];
+    self.sourceModel = sourceModel;
+    self.destinationModel = destinationModel;
     
     if (!sourceModel) sourceModel = [[NSManagedObjectModel alloc] init];
     if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
@@ -104,90 +88,9 @@
 
 }
 
-- (NSString *)basePath {
-    
-    if (!_basePath) {
-        _basePath = [self.filing persistenceBasePath];
-    }
-    return _basePath;
-    
-}
-
-- (NSManagedObjectModel *)bundledModelWithName:(NSString *)modelName {
-    
-    NSURL *url = [NSURL URLWithString:[self.filing bundledModelFile:modelName]];
-    return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
-    
-}
-
-- (NSManagedObjectModel *)loadModelFromFile:(NSString *)modelName {
-    
-    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
-    
-    NSError *error = nil;
-    
-    BOOL result = [self.filing fileExistsAtPath:path];
-    
-    if (!result) {
-
-        NSLog(@"where is no model file at path: %@, return empty model", path);
-        return [[NSManagedObjectModel alloc] init];
-
-    }
-    
-    NSData *modelData = [NSData dataWithContentsOfFile:path
-                                               options:0
-                                                 error:&error];
-    
-    if (!modelData) {
-        
-        if (error) {
-            
-            NSLog(@"error: %@", error.localizedDescription);
-            NSLog(@"can't load model from path %@, return empty model", path);
-            
-        }
-        
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-    
-    id unarchiveObject = [NSKeyedUnarchiver unarchiveObjectWithData:modelData];
-    
-    if (![unarchiveObject isKindOfClass:[NSManagedObjectModel class]]) {
-        
-        NSLog(@"loaded model from file is not NSManagedObjectModel class, return empty model");
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-    
-    return (NSManagedObjectModel *)unarchiveObject;
-    
-}
-
-- (void)saveModelToFile:(NSString *)modelName {
-    
-    NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:self.destinationModel];
-    
-    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
-    
-    NSError *error = nil;
-    BOOL writeResult = [modelData writeToFile:path
-                                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                        error:&error];
-    
-    if (!writeResult) {
-        NSLog(@"can't write model to path %@", path);
-    }
-    
-}
-
 
 #pragma mark - STMModelMapping
 
-- (void)migrationComplete {
-    [self saveModelToFile:self.destinationModelName];
-}
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
     

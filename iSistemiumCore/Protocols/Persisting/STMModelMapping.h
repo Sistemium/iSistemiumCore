@@ -32,7 +32,4 @@
 
 @property (nonatomic, readonly) BOOL needToMigrate;
 
-- (void)migrationComplete;
-
-
 @end

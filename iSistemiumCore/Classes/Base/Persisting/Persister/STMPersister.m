@@ -23,8 +23,7 @@
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister
-                                                 filing:filing
-                                              modelName:modelName];
+                                                 filing:filing];
     
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
