@@ -114,6 +114,35 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
         
         NSArray <NSDictionary*> *result = [self.data[entityName] filteredArrayUsingPredicate:predicate];
         
+        NSArray *groupBy = options[STMPersistingOptionGroupBy];
+        
+        NSMutableDictionary<NSString *,NSMutableDictionary *> *grouped = @{}.mutableCopy;
+        
+        if (groupBy !=nil && groupBy.count > 0){
+            for (NSDictionary *data in result){
+                NSString *groupKey = @"";
+                for (NSString *groupName in groupBy){
+                    groupKey = [groupKey stringByAppendingString:[data[groupName] description]];
+                }
+                if ([grouped.allKeys containsObject:groupKey]){
+                    NSMutableDictionary *mutable = grouped[groupKey];
+                    mutable[@"count()"] = [NSNumber numberWithInteger:[mutable[@"count()"] integerValue] + 1];
+                    grouped[groupKey] = mutable;
+                }else{
+                    grouped[groupKey] = @{@"count()":[NSNumber numberWithInteger:1]}.mutableCopy;
+                    [grouped[groupKey] addEntriesFromDictionary:data];
+                }
+            }
+            
+            NSMutableArray *mutResult = @[].mutableCopy;
+            
+            for (NSMutableDictionary *mutable in grouped.allValues){
+                [mutResult addObject:mutable.copy];
+            }
+            
+            result = mutResult.copy;
+        }
+        
         if (result && options[STMPersistingOptionOrder]) {
             result = [result sortedArrayUsingComparator:^NSComparisonResult(NSDictionary* obj1, NSDictionary* obj2) {
                 NSComparisonResult result = NSOrderedSame;
