@@ -14,6 +14,8 @@
 
 @required
 
+@property (readonly) NSManagedObjectModel *managedObjectModel;
+
 @property (readonly,strong) NSDictionary <NSString *, NSEntityDescription *> *concreteEntities;
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName;

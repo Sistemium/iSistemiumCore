@@ -40,14 +40,14 @@
 }
 
 - (void)tearDown {
-    [self.stmFMDB deleteFile];
+    [self.filing removeItemAtPath:self.basePath error:nil];
     [super tearDown];
 }
 
 - (NSString *)basePath {
     
     if (!_basePath) {
-        _basePath = [self.filing persistencePath:FMDB_PATH];
+        _basePath = [self.filing persistencePath:NSStringFromClass(self.class)];
     }
     return _basePath;
     
@@ -57,50 +57,48 @@
     
     // Create a database as if it is first user's login using first test bundle
     
-    NSString *modelName = @"testModel";
-    
-    NSManagedObjectModel *sourceModel = [self modelWithName:nil];
-    NSManagedObjectModel *destinationModel = [self modelWithName:modelName];
+    NSManagedObjectModel *emptyModel = [self modelWithName:nil];
+    NSManagedObjectModel *testModel = [self modelWithName:@"testModel"];
     
     NSError *error = nil;
-    STMModelMapper *mapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                                filing:self.filing
-                                                              basePath:self.basePath
-                                                                 error:&error];
+    STMModelMapper *mapper = [[STMModelMapper alloc] initWithSourceModel:emptyModel
+                                                        destinationModel:testModel
+                                                                   error:&error];
     
-    XCTAssertEqualObjects(sourceModel, mapper.sourceModel);
-    XCTAssertEqualObjects(destinationModel, mapper.destinationModel);
+    XCTAssertEqualObjects(emptyModel, mapper.sourceModel);
+    XCTAssertEqualObjects(testModel, mapper.destinationModel);
 
     XCTAssertNotNil(mapper);
     XCTAssertNil(error);
     XCTAssertTrue(mapper.needToMigrate);
     
-    self.stmFMDB = [self fmdbWithModelName:modelName];
+    // Need to hold the reference to the modeller because stmFMDB's weak
+    STMModeller *modeller = [STMModeller modellerWithModel:testModel];
+    self.stmFMDB = [self fmdbWithModel:modeller];
     
     [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
         [self checkDb:db withModelMapping:mapper];
     }];
     
-    mapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                filing:self.filing
-                                              basePath:self.basePath
-                                                 error:&error];
+    NSManagedObjectModel *fmdbModel = self.stmFMDB.modellingDelegate.managedObjectModel;
+    
+    XCTAssertNotNil(fmdbModel);
+    
+    mapper = [[STMModelMapper alloc] initWithSourceModel:fmdbModel
+                                        destinationModel:testModel
+                                                   error:&error];
 
     XCTAssertNotNil(mapper);
     XCTAssertNil(error);
     XCTAssertFalse(mapper.needToMigrate);
 
     // Create a database as if it is have new version of data model
-    sourceModel = [self modelWithName:@"testModel"];
     
-    modelName = @"testModelChanged";
-    destinationModel = [self modelWithName:modelName];
+    NSManagedObjectModel *testModelChanged = [self modelWithName:@"testModelChanged"];
     
-    mapper = [[STMModelMapper alloc] initWithSourceModelName:@"testModel"
-                                        destinationModelName:modelName
-                                                      filing:self.filing
-                                                    basePath:self.basePath
-                                                       error:&error];
+    mapper = [[STMModelMapper alloc] initWithSourceModel:testModel
+                                        destinationModel:testModelChanged
+                                                   error:&error];
 
     XCTAssertNotNil(mapper);
     XCTAssertNil(error);
@@ -214,15 +212,11 @@
     
 }
 
-- (STMFmdb *)fmdbWithModelName:(NSString *)modelName {
+- (STMFmdb *)fmdbWithModel:(id <STMModelling>)modelling {
     
-    return [[STMFmdb alloc] initWithModelling:[self modelerWithModelName:modelName]
-                                       filing:self.filing
-                                    modelName:modelName];
-}
-
-- (id <STMModelling>)modelerWithModelName:(NSString *)modelName {
-    return [STMModeller modellerWithModel:[self modelWithName:modelName]];
+    return [[STMFmdb alloc] initWithModelling:modelling
+                                       dbPath:[self.basePath stringByAppendingPathComponent:@"fmdb"]];
+    
 }
 
 - (NSManagedObjectModel *)modelWithName:(NSString *)name {

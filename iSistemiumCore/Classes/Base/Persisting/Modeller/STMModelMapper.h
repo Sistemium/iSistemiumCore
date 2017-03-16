@@ -13,16 +13,8 @@
 
 @interface STMModelMapper : NSObject <STMModelMapping>
 
-- (instancetype)initWithModelName:(NSString *)modelName
-                           filing:(id <STMFiling>)filing
-                         basePath:(NSString *)basePath
-                            error:(NSError **)error;
-
-- (instancetype)initWithSourceModelName:(NSString *)sourceModelName
-                   destinationModelName:(NSString *)destinationModelName
-                                 filing:(id <STMFiling>)filing
-                               basePath:(NSString *)basePath
-                                  error:(NSError **)error;
-
+- (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel
+                   destinationModel:(NSManagedObjectModel *)destinationModel
+                              error:(NSError **)error;
 
 @end

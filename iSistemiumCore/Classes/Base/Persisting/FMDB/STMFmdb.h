@@ -10,20 +10,14 @@
 #import "STMModelMapping.h"
 #import "STMFiling.h"
 
-#define FMDB_PATH @"fmdb"
-
-
 @interface STMFmdb : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling
-                           filing:(id <STMFiling>)filing
-                        modelName:(NSString *)modelName;
+                           dbPath:(NSString *)dbPath;
 
 - (BOOL)hasTable:(NSString *)name;
-
-- (void)deleteFile;
 
 NS_ASSUME_NONNULL_END
 

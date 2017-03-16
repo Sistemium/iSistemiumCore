@@ -17,37 +17,23 @@
 
 #import "STMLogger.h"
 #import "STMClientEntityController.h"
+#import "NSManagedObjectModel+Serialization.h"
 
 #import <sqlite3.h>
 
 
 @interface STMFmdb()
 
-@property (nonatomic, weak) id <STMFiling>filing;
-@property (nonatomic, strong) NSString *fmdbPath;
-
-
 @end
 
 
 @implementation STMFmdb
 
-- (NSString *)fmdbPath {
-    
-    if (!_fmdbPath) {
-        _fmdbPath = [self.filing persistencePath:FMDB_PATH];
-    }
-    return _fmdbPath;
-    
-}
-
-- (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing modelName:(nonnull NSString *)modelName {
+- (instancetype)initWithModelling:(id <STMModelling>)modelling dbPath:(NSString *)dbPath {
     
     self = [self init];
     
-    self.filing = filing;
-    
-    NSString *dbPath = [self.fmdbPath stringByAppendingPathComponent:@"fmdb.db"];
+    self.modellingDelegate = modelling;
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
@@ -56,55 +42,55 @@
     
     self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:flags];
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
+    
+    __block BOOL result = NO;
 
     [self.queue inDatabase:^(FMDatabase *database){
         
-        [self checkModelMappingForDatabase:database
-                                 modelName:modelName];
+        result = [self checkModelMappingForDatabase:database model:modelling.managedObjectModel];
         
     }];
+    
+    if (!result) return nil;
     
     return self;
     
 }
 
-- (void)checkModelMappingForDatabase:(FMDatabase *)database modelName:(NSString *)modelName {
+- (BOOL)checkModelMappingForDatabase:(FMDatabase *)database model:(NSManagedObjectModel *)model {
     
     STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
     
-    NSError *error = nil;
-    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                                     filing:self.filing
-                                                                   basePath:self.fmdbPath
-                                                                      error:&error];
+    NSString *savedModelPath = [self.dbPath stringByAppendingString:@".model"];
     
+    NSManagedObjectModel *savedModel = [NSManagedObjectModel managedObjectModelFromFile:savedModelPath];
+    
+    if (!savedModel) {
+        savedModel = [[NSManagedObjectModel alloc] init];
+    }
+    
+    NSError *error = nil;
+    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel
+                                                             destinationModel:model
+                                                                        error:&error];
+
     if (modelMapper.needToMigrate) {
         
         if (error) {
             
             NSString *errorMessage = [NSString stringWithFormat:@"can't create modelMapping: %@", error.localizedDescription];
             [[STMLogger sharedLogger] errorMessage:errorMessage];
-            [self deleteFile];
             
-            error = nil;
-            modelMapper = [[STMModelMapper alloc] initWithModelName:modelName
-                                                             filing:self.filing
-                                                           basePath:self.fmdbPath
-                                                              error:&error];
-            
-            if (error) {
-                
-                errorMessage = [NSString stringWithFormat:@"second time can't create modelMapping: %@, something wrong with destination model", error.localizedDescription];
-                [[STMLogger sharedLogger] errorMessage:errorMessage];
-                [self deleteFile];
-
-                return;
-                
-            }
+            // TODO: maybe need to start with savedModel
+            return NO;
             
         }
         
         self.columnsByTable = [fmdbSchema createTablesWithModelMapping:modelMapper];
+        
+        if (self.columnsByTable) {
+            [[modelMapper destinationModel] saveToFile:savedModelPath];
+        }
                 
     } else {
     
@@ -112,15 +98,9 @@
 
     }
     
-}
-
-- (void)deleteFile {
-    
-    [self.filing removeItemAtPath:self.fmdbPath
-                            error:nil];
+    return YES;
     
 }
-
 
 - (BOOL)hasTable:(NSString * _Nonnull)name {
     

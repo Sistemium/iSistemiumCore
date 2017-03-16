@@ -222,7 +222,6 @@
     if (self.migrationSuccessful) {
 
         NSLog(@"model migrating SUCCESS");
-        [modelMapping migrationComplete];
         return self.columnsDictionary.copy;
 
     } else {
