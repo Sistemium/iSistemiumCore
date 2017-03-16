@@ -8,6 +8,7 @@
 
 #import "STMPersistingTests.h"
 #import "STMCoreObjectsController.h"
+#import "STMCoreSessionManager.h"
 
 @interface PersistingSyncTests : STMPersistingTests
 
@@ -302,6 +303,38 @@
                           error:&error];
     
     XCTAssertNil(error);
+}
+
+-(void)testGroupBy{
+    
+    NSString *entityName = @"STMVisit";
+    
+    NSArray *sample = [self sampleDataOf:entityName count:10 options:nil addArgumentsToItemAtNumber:^NSDictionary *(NSUInteger number) {
+        NSDate *today = [NSDate date];
+        NSDate *yesterday = [today dateByAddingTimeInterval: -86400.0];
+        
+        return @{@"date": number % 2 == 0 ? today : yesterday};
+        
+    }];
+    
+    NSError *error;
+    
+    [self.persister mergeManySync:entityName
+                   attributeArray:sample
+                          options:nil
+                            error:&error];
+    
+    XCTAssertNil(error);
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", sample.firstObject[@"ownerXid"]];
+    
+    NSDictionary *options = @{STMPersistingOptionGroupBy:@[@"date", @"ownerXid"]};
+    NSArray<NSDictionary *> *result =[self.persister findAllSync:entityName predicate:predicate options:options error:&error];
+    
+    XCTAssertNil(error);
+    XCTAssertEqual(result.count, 2);
+    XCTAssertEqual([result.firstObject[@"count()"] integerValue], 5);
+    XCTAssertEqual([result.lastObject[@"count()"] integerValue], 5);
 }
 
 @end
