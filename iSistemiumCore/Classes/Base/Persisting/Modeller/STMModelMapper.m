@@ -20,8 +20,6 @@
 @property (nonatomic, strong) NSMappingModel *mappingModel;
 @property (nonatomic, strong) NSMigrationManager *migrationManager;
 
-@property (nonatomic) BOOL needToMigrate;
-
 @end
 
 
@@ -40,22 +38,21 @@
     
     self.sourceModel = sourceModel;
     self.destinationModel = destinationModel;
-    self.needToMigrate = ![sourceModel isEqual:destinationModel];
 
-    if (_needToMigrate) {
+    if (self.needToMigrate) {
         NSLog(@"ModelMapper need to migrate");
     }
     
-    _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
-                                                      destinationModel:destinationModel
-                                                                 error:error];
+    self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
+                                                          destinationModel:destinationModel
+                                                                     error:error];
     
     if (*error) {
         NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
     }
     
-    _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
-                                                       destinationModel:destinationModel];
+    self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
+                                                           destinationModel:destinationModel];
     
 #ifdef DEBUG
     [self showMappingInfo];
@@ -68,6 +65,9 @@
 
 #pragma mark - STMModelMapping
 
+- (BOOL)needToMigrate {
+    return ![self.sourceModel isEqual:self.destinationModel];
+}
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
     return [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
