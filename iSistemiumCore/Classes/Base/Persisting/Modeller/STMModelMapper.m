@@ -14,37 +14,18 @@
 
 @interface STMModelMapper()
 
-@property (nonatomic, weak, readonly) id <STMFiling> filing;
-
 @property (nonatomic, strong) NSManagedObjectModel *sourceModel;
 @property (nonatomic, strong) NSManagedObjectModel *destinationModel;
-@property (nonatomic, strong) NSString *basePath;
 
+@property (nonatomic, strong) NSMappingModel *mappingModel;
+@property (nonatomic, strong) NSMigrationManager *migrationManager;
+
+@property (nonatomic) BOOL needToMigrate;
 
 @end
 
 
 @implementation STMModelMapper
-
-@synthesize sourceModel = _sourceModel;
-@synthesize destinationModel = _destinationModel;
-
-@synthesize mappingModel = _mappingModel;
-@synthesize migrationManager = _migrationManager;
-
-@synthesize addedEntities = _addedEntities;
-@synthesize removedEntities = _removedEntities;
-
-@synthesize addedProperties = _addedProperties;
-@synthesize addedAttributes = _addedAttributes;
-@synthesize addedRelationships = _addedRelationships;
-
-@synthesize removedProperties = _removedProperties;
-@synthesize removedAttributes = _removedAttributes;
-@synthesize removedRelationships = _removedRelationships;
-
-@synthesize needToMigrate = _needToMigrate;
-
 
 - (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
     
@@ -54,20 +35,16 @@
         return nil;
     }
     
-    self.sourceModel = sourceModel;
-    self.destinationModel = destinationModel;
-    
     if (!sourceModel) sourceModel = [[NSManagedObjectModel alloc] init];
     if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
     
-    _needToMigrate = ![sourceModel isEqual:destinationModel];
+    self.sourceModel = sourceModel;
+    self.destinationModel = destinationModel;
+    self.needToMigrate = ![sourceModel isEqual:destinationModel];
 
     if (_needToMigrate) {
         NSLog(@"ModelMapper need to migrate");
     }
-    
-    _sourceModel = sourceModel;
-    _destinationModel = destinationModel;
     
     _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
                                                       destinationModel:destinationModel
@@ -93,119 +70,80 @@
 
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
-    
-    if (!_addedEntities) {
-        _addedEntities = [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
-    }
-    return _addedEntities;
-
+    return [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
 }
 
 - (NSArray <NSEntityDescription *> *)removedEntities {
-    
-    if (!_removedEntities) {
-        _removedEntities = [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
-    }
-    return _removedEntities;
-    
+    return [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
 }
 
 - (NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)addedProperties {
     
-    if (!_addedProperties) {
+    NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties = @{}.mutableCopy;
+    
+    NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+    
+    for (NSEntityMapping *entityMapping in transformedEntities) {
         
-        NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties = @{}.mutableCopy;
-        
-        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
-        
-        for (NSEntityMapping *entityMapping in transformedEntities) {
-            
-            NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
+        NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
 
-            if (propertiesSet.count) {
+        if (propertiesSet.count) {
+        
+            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+            NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
             
-                NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
-                
-                if (result) addedProperties[entity.name] = result;
-                
-            }
-
+            if (result) addedProperties[entity.name] = result;
+            
         }
-        
-        _addedProperties = addedProperties;
-        
+
     }
-    return _addedProperties;
+    
+    return addedProperties.copy;
     
 }
 
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)addedAttributes {
-    
-    if (!_addedAttributes) {
-        _addedAttributes = [self attributesFromProperties:self.addedProperties];
-    }
-    return _addedAttributes;
-    
+    return [self attributesFromProperties:self.addedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)addedRelationships {
-    
-    if (!_addedRelationships) {
-        _addedRelationships = [self relationshipsFromProperties:self.addedProperties];
-    }
-    return _addedRelationships;
-    
+    return [self relationshipsFromProperties:self.addedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)removedProperties {
     
-    if (!_removedProperties) {
+    
+    NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties = @{}.mutableCopy;
+    
+    NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+    
+    for (NSEntityMapping *entityMapping in transformedEntities) {
         
-        NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties = @{}.mutableCopy;
-        
-        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
-        
-        for (NSEntityMapping *entityMapping in transformedEntities) {
-            
-            NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
+        NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
 
-            if (propertiesSet.count) {
+        if (propertiesSet.count) {
+        
+            NSEntityDescription *entity = [self.migrationManager sourceEntityForEntityMapping:entityMapping];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+            NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
             
-                NSEntityDescription *entity = [self.migrationManager sourceEntityForEntityMapping:entityMapping];
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
-                
-                if (result) removedProperties[entity.name] = result;
-                
-            }
+            if (result) removedProperties[entity.name] = result;
             
         }
         
-        _removedProperties = removedProperties;
-
     }
-    return _removedProperties;
+
+    return removedProperties.copy;
     
 }
 
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)removedAttributes {
-    
-    if (!_removedAttributes) {
-        _removedAttributes = [self attributesFromProperties:self.removedProperties];
-    }
-    return _removedAttributes;
-    
+    return [self attributesFromProperties:self.removedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)removedRelationships {
-    
-    if (!_removedRelationships) {
-        _removedRelationships = [self relationshipsFromProperties:self.removedProperties];
-    }
-    return _removedRelationships;
-    
+    return [self relationshipsFromProperties:self.removedProperties];
 }
 
 

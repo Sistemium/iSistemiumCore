@@ -14,22 +14,20 @@
 
 @protocol STMModelMapping <NSObject>
 
-@property (nonatomic, strong, readonly) NSManagedObjectModel *sourceModel;
-@property (nonatomic, strong, readonly) NSManagedObjectModel *destinationModel;
-@property (nonatomic, strong, readonly) NSMappingModel *mappingModel;
-@property (nonatomic, strong, readonly) NSMigrationManager *migrationManager;
+@property (readonly) NSManagedObjectModel *sourceModel;
+@property (readonly) NSManagedObjectModel *destinationModel;
 
-@property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *addedEntities;
-@property (nonatomic, strong, readonly) NSArray <NSEntityDescription *> *removedEntities;
+@property (readonly) NSArray <NSEntityDescription *> *addedEntities;
+@property (readonly) NSArray <NSEntityDescription *> *removedEntities;
 
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties;
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *addedAttributes;
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *addedRelationships;
+@property (readonly) NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties;
+@property (readonly) NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *addedAttributes;
+@property (readonly) NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *addedRelationships;
 
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties;
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *removedAttributes;
-@property (nonatomic, strong, readonly) NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *removedRelationships;
+@property (readonly) NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties;
+@property (readonly) NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *removedAttributes;
+@property (readonly) NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *removedRelationships;
 
-@property (nonatomic, readonly) BOOL needToMigrate;
+@property (readonly) BOOL needToMigrate;
 
 @end
