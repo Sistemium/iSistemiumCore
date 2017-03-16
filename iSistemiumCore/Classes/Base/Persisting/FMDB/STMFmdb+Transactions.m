@@ -233,7 +233,7 @@
     NSString *dataToSelect = @"*";
     
     if (groupBy.length){
-        dataToSelect = @"*, count(*) as Quantity";
+        dataToSelect = @"*, count(*) [count()]";
     }else {
         groupBy = @"";
     }
