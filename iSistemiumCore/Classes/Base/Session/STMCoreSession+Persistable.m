@@ -68,7 +68,7 @@
     [self removePersistenceObservers];
     
 //     Uncomment if you want to rebuild db with logoff-logon
-//     [[(STMPersister *)self.persistenceDelegate fmdb] deleteFile];
+//    [self.filing removeItemAtPath:[self.filing persistenceBasePath] error:nil];
 
     STMDocument *document = self.document;
     

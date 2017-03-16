@@ -40,14 +40,14 @@
 }
 
 - (void)tearDown {
-    [self.stmFMDB deleteFile];
+    [self.filing removeItemAtPath:self.basePath error:nil];
     [super tearDown];
 }
 
 - (NSString *)basePath {
     
     if (!_basePath) {
-        _basePath = [self.filing persistencePath:FMDB_PATH];
+        _basePath = [self.filing persistencePath:NSStringFromClass(self.class)];
     }
     return _basePath;
     
@@ -215,11 +215,8 @@
 - (STMFmdb *)fmdbWithModel:(id <STMModelling>)modelling {
     
     return [[STMFmdb alloc] initWithModelling:modelling
-                                       filing:self.filing];
-}
-
-- (id <STMModelling>)modelerWithModelName:(NSString *)modelName {
-    return [STMModeller modellerWithModel:[self modelWithName:modelName]];
+                                       dbPath:[self.basePath stringByAppendingPathComponent:@"fmdb"]];
+    
 }
 
 - (NSManagedObjectModel *)modelWithName:(NSString *)name {

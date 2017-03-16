@@ -15,11 +15,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling
-                           filing:(id <STMFiling>)filing;
+                           dbPath:(NSString *)dbPath;
 
 - (BOOL)hasTable:(NSString *)name;
-
-- (void)deleteFile;
 
 NS_ASSUME_NONNULL_END
 

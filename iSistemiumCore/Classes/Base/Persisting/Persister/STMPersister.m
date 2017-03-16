@@ -15,6 +15,7 @@
 
 #import "STMModeller+Interceptable.h"
 
+#define FMDB_PATH @"fmdb"
 
 @implementation STMPersister
 
@@ -22,8 +23,10 @@
 
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
     
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister
-                                                 filing:filing];
+    NSString *fmdbFile = [modelName stringByAppendingString:@".db"];
+    NSString *fmdbPath = [[filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
+
+    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
     
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     

@@ -24,32 +24,16 @@
 
 @interface STMFmdb()
 
-@property (nonatomic, weak) id <STMFiling>filing;
-@property (nonatomic, strong) NSString *fmdbPath;
-
-
 @end
 
 
 @implementation STMFmdb
 
-- (NSString *)fmdbPath {
-    
-    if (!_fmdbPath) {
-        _fmdbPath = [self.filing persistencePath:FMDB_PATH];
-    }
-    return _fmdbPath;
-    
-}
-
-- (instancetype)initWithModelling:(id <STMModelling>)modelling filing:(id <STMFiling>)filing {
+- (instancetype)initWithModelling:(id <STMModelling>)modelling dbPath:(NSString *)dbPath {
     
     self = [self init];
     
-    self.filing = filing;
     self.modellingDelegate = modelling;
-    
-    NSString *dbPath = [self.fmdbPath stringByAppendingPathComponent:@"fmdb.db"];
     
     self.predicateToSQL = [STMPredicateToSQL predicateToSQLWithModelling:modelling];
     self.dbPath = dbPath;
@@ -117,14 +101,6 @@
     return YES;
     
 }
-
-- (void)deleteFile {
-    
-    [self.filing removeItemAtPath:self.fmdbPath
-                            error:nil];
-    
-}
-
 
 - (BOOL)hasTable:(NSString * _Nonnull)name {
     

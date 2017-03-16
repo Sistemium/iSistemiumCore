@@ -10,8 +10,6 @@
 #import "FMDB.h"
 #import "STMPredicateToSQL.h"
 
-#define FMDB_PATH @"fmdb"
-
 @interface STMFmdb()
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
