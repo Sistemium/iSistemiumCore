@@ -10,9 +10,6 @@
 #import "STMModelMapping.h"
 #import "STMFiling.h"
 
-#define FMDB_PATH @"fmdb"
-
-
 @interface STMFmdb : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
