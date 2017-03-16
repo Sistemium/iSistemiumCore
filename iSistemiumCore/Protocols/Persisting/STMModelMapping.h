@@ -6,13 +6,10 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #import <CoreData/CoreData.h>
-#import "STMFiling.h"
 
 
-@protocol STMModelMapping <NSObject>
+@protocol STMModelMapping
 
 @property (readonly) NSManagedObjectModel *sourceModel;
 @property (readonly) NSManagedObjectModel *destinationModel;
