@@ -329,10 +329,12 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ownerXid == %@", sample.firstObject[@"ownerXid"]];
     
     NSDictionary *options = @{STMPersistingOptionGroupBy:@[@"date", @"ownerXid"]};
-    NSArray *result =[self.persister findAllSync:entityName predicate:predicate options:options error:&error];
+    NSArray<NSDictionary *> *result =[self.persister findAllSync:entityName predicate:predicate options:options error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(result.count, 2);
+    XCTAssertEqual([result.firstObject[@"count()"] integerValue], 5);
+    XCTAssertEqual([result.lastObject[@"count()"] integerValue], 5);
 }
 
 @end
