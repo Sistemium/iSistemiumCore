@@ -47,6 +47,7 @@
     self = [self init];
     
     self.filing = filing;
+    self.modellingDelegate = modelling;
     
     NSString *dbPath = [self.fmdbPath stringByAppendingPathComponent:@"fmdb.db"];
     
