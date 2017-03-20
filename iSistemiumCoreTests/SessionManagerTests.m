@@ -13,7 +13,7 @@
 #import "STMCoreAuthController.h"
 
 
-@interface SessionManagerTests : XCTestCase
+@interface SessionManagerTests : XCTestCase <STMCoreAuth>
 
 @property (nonatomic, strong) STMCoreSessionManager *sessionManager;
 @property (nonatomic) NSUInteger numberOfSessions;
@@ -44,6 +44,8 @@
 }
 
 - (void)testSessionManager {
+
+    _userID = @"testUserID";
     
     NSDate *startedAt = [NSDate date];
     self.expectation = [self expectationWithDescription:@"waiting for session stop"];
@@ -72,7 +74,9 @@
     self.runningSessionsUIDs = @[].mutableCopy;
 
     for (NSUInteger i = 1; i <= self.numberOfSessions; i++) {
-    
+
+        _userID = [self.userID stringByAppendingString:[NSString stringWithFormat:@"_%@", @(i)]];
+        
         count = self.haveAuthSession ? i + 1 : i;
 
         [self.sessionsUIDs addObject:[self startSomeSession]];
@@ -94,7 +98,7 @@
     
     NSString *sessionUID = [STMFunctions uuidString];
     
-    STMCoreSession *session = [self.sessionManager startSessionWithAuthDelegate:nil
+    STMCoreSession *session = [self.sessionManager startSessionWithAuthDelegate:self
                                                                        trackers:nil
                                                                   startSettings:nil
                                                         defaultSettingsFileName:nil];
@@ -155,6 +159,24 @@
         
     }
     
+}
+
+
+#pragma mark - STMCoreAuth
+
+@synthesize userName = _userName;
+@synthesize userID = _userID;
+@synthesize lastAuth = _lastAuth;
+@synthesize accountOrg = _accountOrg;
+@synthesize controllerState = _controllerState;
+@synthesize iSisDB = _iSisDB;
+
+- (void)logout {
+    
+}
+
+- (NSURLRequest *)authenticateRequest:(NSURLRequest *)request {
+    return nil;
 }
 
 

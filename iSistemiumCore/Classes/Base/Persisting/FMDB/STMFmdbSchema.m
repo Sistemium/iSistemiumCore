@@ -203,7 +203,7 @@
             }
             
         }];
-
+        
     }
 
 // handle added properties
@@ -217,6 +217,7 @@
     
 //    NSLog(@"columnsDictionary %@", self.columnsDictionary);
     
+    [self fillRecreatedTablesWithFantom];
     [self eTagReseting];
 
     if (self.migrationSuccessful) {
@@ -250,11 +251,22 @@
     
     [self deleteEntity:entity];
     [self addEntity:entity];
-    [self fillWithFantoms:entity];
     
     [self.tablesToReload addObject:tableName];
     self.recreatedTables = self.tablesToReload.copy;
     
+}
+
+- (void)fillRecreatedTablesWithFantom {
+    
+    for (NSString *tableName in self.recreatedTables) {
+        
+        NSString *entityName = [STMFunctions addPrefixToEntityName:tableName];
+        NSEntityDescription *entity = self.modelMapping.destinationModel.entitiesByName[entityName];
+        [self fillWithFantoms:entity];
+        
+    }
+
 }
 
 - (void)fillWithFantoms:(NSEntityDescription *)entity {
@@ -262,9 +274,16 @@
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
     NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
-    relationships = [relationships filteredArrayUsingPredicate:[self isToManyPredicate]];
+    
+    NSArray *subpredicates = @[[self isToManyPredicate],
+                               [self inverseIsToOnePredicate]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    relationships = [relationships filteredArrayUsingPredicate:predicate];
 
     [relationships enumerateObjectsUsingBlock:^(NSRelationshipDescription * _Nonnull rel, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSLog(@"%@ fill with fantoms", entity.name);
         
         NSString *toOneRelName = rel.inverseRelationship.name;
         NSString *toManyRelTableName = [STMFunctions removePrefixFromEntityName:rel.destinationEntity.name];
@@ -293,6 +312,8 @@
 
     if (attributes.count) {
         
+        NSLog(@"%@ add atributes: %@", entityName, [attributes valueForKeyPath:@"name"]);
+        
         [columns addObjectsFromArray:[self addColumns:attributes toTable:tableName]];
         [self.tablesToReload addObject:tableName];
 
@@ -303,6 +324,8 @@
 
     if (relationships.count) {
         
+        NSLog(@"%@ add relationships: %@", entityName, [relationships valueForKeyPath:@"name"]);
+
         [columns addObjectsFromArray:[self addRelationships:relationships toTable:tableName]];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"toMany != YES"];
@@ -643,11 +666,15 @@
 #pragma mark - predicates
 
 - (NSPredicate *)isToManyPredicate {
-    return [NSPredicate predicateWithFormat:@"toMany == YES"];
+    return [NSPredicate predicateWithFormat:@"isToMany == YES"];
 }
 
 - (NSPredicate *)isToOnePredicate {
-    return [NSPredicate predicateWithFormat:@"toMany != YES"];
+    return [NSPredicate predicateWithFormat:@"isToMany != YES"];
+}
+
+- (NSPredicate *)inverseIsToOnePredicate {
+    return [NSPredicate predicateWithFormat:@"inverseRelationship.isToMany != YES"];
 }
 
 
