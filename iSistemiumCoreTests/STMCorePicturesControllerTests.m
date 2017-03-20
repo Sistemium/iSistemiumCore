@@ -6,7 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
-#define PictureDownloadingTestsTimeOut 10
+#define PictureDownloadingTestsTimeOut 20
 
 #import "STMPersistingTests.h"
 #import "STMCorePicturesController.h"
@@ -59,7 +59,7 @@
     NSString* entityName = @"STMVisitPhoto";
     
     NSDictionary *picture = @{@"id":xid,
-                              @"href":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/largeImage.png",
+                              @"href":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/smallImage.png",
                               @"thumbnailHref":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png",
                               };
     
@@ -115,7 +115,7 @@
         });
         
         [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
-            XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
+            XCTAssertEqual(garbageCollector.unusedImageFiles.count, 0);
         }];
         
     }];
