@@ -38,7 +38,7 @@
 + (BOOL)needWaitSession;
 
 - (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count;
-- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count options:(NSDictionary *)options;
+- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count options:(NSDictionary *)options addArgumentsToItemAtNumber:(NSDictionary* (^)(NSUInteger))addArguments;
 
 - (NSUInteger)destroyOwnData:(NSString *)entityName;
 

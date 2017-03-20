@@ -691,7 +691,7 @@
 
 - (void)startPicturesDownloading {
     
-    [STMCorePicturesController checkPhotos];
+    [STMCorePicturesController.sharedController checkPhotos];
     [STMCorePicturesController sharedController].downloadingPictures = YES;
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 

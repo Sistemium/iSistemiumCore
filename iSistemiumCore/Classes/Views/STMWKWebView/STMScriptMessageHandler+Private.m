@@ -211,7 +211,7 @@
     NSString *pictureSize = parameters[@"size"];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id == %@", pictureId];
     
-    NSDictionary *picture = [[STMCorePicturesController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
+    NSDictionary *picture = [[STMCorePicturesController.sharedController allPictures] filteredArrayUsingPredicate:predicate].lastObject;
     
     if (!picture) {
         NSString *error = [NSString stringWithFormat:@"no picture with xid %@", pictureId];
@@ -302,6 +302,7 @@
         
         for (NSString *entityName in subscription.entityNames) {
             [persisterSubscriptions addObject:[self.persistenceDelegate observeEntity:entityName predicate:nil options:options callback:^(NSArray *data) {
+#warning need to check if we're in background
                 [self sendSubscribedBunchOfObjects:data entityName:entityName];
             }]];
         }

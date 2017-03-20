@@ -105,10 +105,10 @@
 
 
 - (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count {
-    return [self sampleDataOf:entityName count:count options:nil];
+    return [self sampleDataOf:entityName count:count options:nil addArgumentsToItemAtNumber:nil];
 }
 
-- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count options:(NSDictionary *)options {
+- (NSArray *)sampleDataOf:(NSString *)entityName count:(NSUInteger)count options:(NSDictionary *)options addArgumentsToItemAtNumber:(NSDictionary* (^)(NSUInteger))addArguments{
     
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
     
@@ -126,6 +126,10 @@
                                       @"type": @"debug",
                                       @"source": source
                                       }.mutableCopy;
+        
+        if (addArguments != nil){
+            [item addEntriesFromDictionary:addArguments(i)];
+        }
         
         if (options[@"generateId"]) {
             item[STMPersistingKeyPrimary] = [STMFunctions uuidString];

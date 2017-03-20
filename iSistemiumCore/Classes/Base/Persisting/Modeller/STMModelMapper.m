@@ -14,87 +14,45 @@
 
 @interface STMModelMapper()
 
-@property (nonatomic, weak, readonly) id <STMFiling> filing;
+@property (nonatomic, strong) NSManagedObjectModel *sourceModel;
+@property (nonatomic, strong) NSManagedObjectModel *destinationModel;
 
-@property (nonatomic, strong) NSString *sourceModelName;
-@property (nonatomic, strong) NSString *destinationModelName;
-@property (nonatomic, strong) NSString *basePath;
-
+@property (nonatomic, strong) NSMappingModel *mappingModel;
+@property (nonatomic, strong) NSMigrationManager *migrationManager;
 
 @end
 
 
 @implementation STMModelMapper
 
-@synthesize sourceModel = _sourceModel;
-@synthesize destinationModel = _destinationModel;
-
-@synthesize mappingModel = _mappingModel;
-@synthesize migrationManager = _migrationManager;
-
-@synthesize addedEntities = _addedEntities;
-@synthesize removedEntities = _removedEntities;
-
-@synthesize addedProperties = _addedProperties;
-@synthesize addedAttributes = _addedAttributes;
-@synthesize addedRelationships = _addedRelationships;
-
-@synthesize removedProperties = _removedProperties;
-@synthesize removedAttributes = _removedAttributes;
-@synthesize removedRelationships = _removedRelationships;
-
-@synthesize needToMigrate = _needToMigrate;
-
-
-- (instancetype)initWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing basePath:(NSString *)basePath error:(NSError **)error {
+- (instancetype)initWithSourceModel:(NSManagedObjectModel *)sourceModel destinationModel:(NSManagedObjectModel *)destinationModel error:(NSError **)error {
     
-    return [self initWithSourceModelName:modelName
-                    destinationModelName:modelName
-                                  filing:filing
-                                basePath:basePath
-                                   error:error];
-    
-}
-
-- (instancetype)initWithSourceModelName:(NSString *)sourceModelName destinationModelName:(NSString *)destinationModelName filing:(id <STMFiling>)filing  basePath:(NSString *)basePath error:(NSError **)error {
-    
-    self = [super init];
+    self = [self init];
     
     if (!self) {
         return nil;
     }
     
-    _filing = filing;
-    self.basePath = basePath;
-    
-    self.sourceModelName = sourceModelName;
-    self.destinationModelName = destinationModelName;
-    
-    NSManagedObjectModel *sourceModel = [self loadModelFromFile:sourceModelName];
-    NSManagedObjectModel *destinationModel = [self bundledModelWithName:destinationModelName];
-    
     if (!sourceModel) sourceModel = [[NSManagedObjectModel alloc] init];
     if (!destinationModel) destinationModel = [[NSManagedObjectModel alloc] init];
     
-    _needToMigrate = ![sourceModel isEqual:destinationModel];
+    self.sourceModel = sourceModel;
+    self.destinationModel = destinationModel;
 
-    if (_needToMigrate) {
+    if (self.needToMigrate) {
         NSLog(@"ModelMapper need to migrate");
     }
     
-    _sourceModel = sourceModel;
-    _destinationModel = destinationModel;
-    
-    _mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
-                                                      destinationModel:destinationModel
-                                                                 error:error];
+    self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
+                                                          destinationModel:destinationModel
+                                                                     error:error];
     
     if (*error) {
         NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
     }
     
-    _migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
-                                                       destinationModel:destinationModel];
+    self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
+                                                           destinationModel:destinationModel];
     
 #ifdef DEBUG
     [self showMappingInfo];
@@ -104,205 +62,88 @@
 
 }
 
-- (NSString *)basePath {
-    
-    if (!_basePath) {
-        _basePath = [self.filing persistenceBasePath];
-    }
-    return _basePath;
-    
-}
-
-- (NSManagedObjectModel *)bundledModelWithName:(NSString *)modelName {
-    
-    NSURL *url = [NSURL URLWithString:[self.filing bundledModelFile:modelName]];
-    return [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
-    
-}
-
-- (NSManagedObjectModel *)loadModelFromFile:(NSString *)modelName {
-    
-    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
-    
-    NSError *error = nil;
-    
-    BOOL result = [self.filing fileExistsAtPath:path];
-    
-    if (!result) {
-
-        NSLog(@"where is no model file at path: %@, return empty model", path);
-        return [[NSManagedObjectModel alloc] init];
-
-    }
-    
-    NSData *modelData = [NSData dataWithContentsOfFile:path
-                                               options:0
-                                                 error:&error];
-    
-    if (!modelData) {
-        
-        if (error) {
-            
-            NSLog(@"error: %@", error.localizedDescription);
-            NSLog(@"can't load model from path %@, return empty model", path);
-            
-        }
-        
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-    
-    id unarchiveObject = [NSKeyedUnarchiver unarchiveObjectWithData:modelData];
-    
-    if (![unarchiveObject isKindOfClass:[NSManagedObjectModel class]]) {
-        
-        NSLog(@"loaded model from file is not NSManagedObjectModel class, return empty model");
-        return [[NSManagedObjectModel alloc] init];
-        
-    }
-    
-    return (NSManagedObjectModel *)unarchiveObject;
-    
-}
-
-- (void)saveModelToFile:(NSString *)modelName {
-    
-    NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:self.destinationModel];
-    
-    NSString *path = [self.basePath stringByAppendingPathComponent:modelName];
-    
-    NSError *error = nil;
-    BOOL writeResult = [modelData writeToFile:path
-                                      options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                        error:&error];
-    
-    if (!writeResult) {
-        NSLog(@"can't write model to path %@", path);
-    }
-    
-}
-
 
 #pragma mark - STMModelMapping
 
-- (void)migrationComplete {
-    [self saveModelToFile:self.destinationModelName];
+- (BOOL)needToMigrate {
+    return ![self.sourceModel isEqual:self.destinationModel];
 }
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
-    
-    if (!_addedEntities) {
-        _addedEntities = [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
-    }
-    return _addedEntities;
-
+    return [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
 }
 
 - (NSArray <NSEntityDescription *> *)removedEntities {
-    
-    if (!_removedEntities) {
-        _removedEntities = [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
-    }
-    return _removedEntities;
-    
+    return [self mappingEntitiesDescriptionsWithType:NSRemoveEntityMappingType];
 }
 
 - (NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)addedProperties {
     
-    if (!_addedProperties) {
+    NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties = @{}.mutableCopy;
+    
+    NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+    
+    for (NSEntityMapping *entityMapping in transformedEntities) {
         
-        NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *addedProperties = @{}.mutableCopy;
-        
-        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
-        
-        for (NSEntityMapping *entityMapping in transformedEntities) {
-            
-            NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
+        NSSet *propertiesSet = entityMapping.userInfo[@"addedProperties"];
 
-            if (propertiesSet.count) {
+        if (propertiesSet.count) {
+        
+            NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+            NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
             
-                NSEntityDescription *entity = [self.migrationManager destinationEntityForEntityMapping:entityMapping];
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
-                
-                if (result) addedProperties[entity.name] = result;
-                
-            }
-
+            if (result) addedProperties[entity.name] = result;
+            
         }
-        
-        _addedProperties = addedProperties;
-        
+
     }
-    return _addedProperties;
+    
+    return addedProperties.copy;
     
 }
 
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)addedAttributes {
-    
-    if (!_addedAttributes) {
-        _addedAttributes = [self attributesFromProperties:self.addedProperties];
-    }
-    return _addedAttributes;
-    
+    return [self attributesFromProperties:self.addedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)addedRelationships {
-    
-    if (!_addedRelationships) {
-        _addedRelationships = [self relationshipsFromProperties:self.addedProperties];
-    }
-    return _addedRelationships;
-    
+    return [self relationshipsFromProperties:self.addedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSPropertyDescription *> *> *)removedProperties {
     
-    if (!_removedProperties) {
+    
+    NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties = @{}.mutableCopy;
+    
+    NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
+    
+    for (NSEntityMapping *entityMapping in transformedEntities) {
         
-        NSMutableDictionary <NSString *, NSArray <NSPropertyDescription *> *> *removedProperties = @{}.mutableCopy;
-        
-        NSArray <NSEntityMapping *> *transformedEntities = [self mappingEntitiesWithType:NSTransformEntityMappingType];
-        
-        for (NSEntityMapping *entityMapping in transformedEntities) {
-            
-            NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
+        NSSet *propertiesSet = entityMapping.userInfo[@"removedProperties"];
 
-            if (propertiesSet.count) {
+        if (propertiesSet.count) {
+        
+            NSEntityDescription *entity = [self.migrationManager sourceEntityForEntityMapping:entityMapping];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
+            NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
             
-                NSEntityDescription *entity = [self.migrationManager sourceEntityForEntityMapping:entityMapping];
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name IN %@", propertiesSet];
-                NSArray *result = [entity.properties filteredArrayUsingPredicate:predicate];
-                
-                if (result) removedProperties[entity.name] = result;
-                
-            }
+            if (result) removedProperties[entity.name] = result;
             
         }
         
-        _removedProperties = removedProperties;
-
     }
-    return _removedProperties;
+
+    return removedProperties.copy;
     
 }
 
 - (NSDictionary <NSString *, NSArray <NSAttributeDescription *> *> *)removedAttributes {
-    
-    if (!_removedAttributes) {
-        _removedAttributes = [self attributesFromProperties:self.removedProperties];
-    }
-    return _removedAttributes;
-    
+    return [self attributesFromProperties:self.removedProperties];
 }
 
 - (NSDictionary <NSString *, NSArray <NSRelationshipDescription *> *> *)removedRelationships {
-    
-    if (!_removedRelationships) {
-        _removedRelationships = [self relationshipsFromProperties:self.removedProperties];
-    }
-    return _removedRelationships;
-    
+    return [self relationshipsFromProperties:self.removedProperties];
 }
 
 

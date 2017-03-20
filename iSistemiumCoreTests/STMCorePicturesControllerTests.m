@@ -14,10 +14,10 @@
 #import "iSistemiumCore-Swift.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreSessionFiler.h"
+#import "STMTestDirectoring.h"
 
-@interface STMCorePicturesControllerTests : STMPersistingTests <STMDirectoring>
+@interface STMCorePicturesControllerTests : STMPersistingTests
 
-@property (nonatomic, strong) STMFmdb *stmFMDB;
 @property (nonatomic, strong) id <STMFiling> filing;
 
 @end
@@ -26,9 +26,11 @@
 
 - (void)setUp {
     [super setUp];
+
+    id <STMDirectoring> directoring = [[STMTestDirectoring alloc] init];
     
     if (!self.filing) {
-        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:self];
+        self.filing = [STMCoreSessionFiler coreSessionFilerWithDirectoring:directoring];
     }
 }
 
@@ -38,15 +40,17 @@
 
 - (void)testDownloadConnectionForObject {
     
-    STMGarbageCollector.sharedInstance.filing = self.filing;
+    STMGarbageCollector *garbageCollector = [[STMGarbageCollector alloc] init];
     
-    XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 0);
+    STMCorePicturesController *corePicturesController = [[STMCorePicturesController alloc] init];
     
-    STMCorePicturesController.sharedController.persistenceDelegate = self.persister;
+    garbageCollector.filing = self.filing;
     
-    STMCorePicturesController.sharedController.filing = self.filing;
+    corePicturesController.persistenceDelegate = self.persister;
     
+    corePicturesController.filing = self.filing;
     
+    XCTAssertEqual(garbageCollector.unusedImageFiles.count, 0);
     
     NSString *xid = [STMFunctions uuidString];
     
@@ -71,7 +75,7 @@
     
     XCTAssertNil(error);
     
-    [[STMCorePicturesController sharedController] downloadImagesEntityName:entityName attributes:picture].then(^(NSDictionary *picture){
+    [corePicturesController downloadImagesEntityName:entityName attributes:picture].then(^(NSDictionary *picture){
         XCTAssertNotNil(picture);
         [expectation fulfill];
     });
@@ -79,8 +83,6 @@
     [self waitForExpectationsWithTimeout:PictureDownloadingTestsTimeOut handler:^(NSError * _Nullable error) {
         
         XCTAssertNil(error);
-        
-        [[NSNotificationCenter defaultCenter] removeObserver:expectation];
         
         NSDictionary *rez = [self.persister findSync:entityName identifier:xid options:nil error:&error];
         
@@ -99,15 +101,15 @@
         [self.persister destroySync:entityName identifier:xid options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
         
         // Need to set real persister because there are real pictures
-        [STMCorePicturesController sharedController].persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
+        corePicturesController.persistenceDelegate = [[STMCoreSessionManager.sharedManager currentSession] persistenceDelegate];
         
-        [STMGarbageCollector.sharedInstance searchUnusedImages];
+        [garbageCollector searchUnusedImages];
         
-        XCTAssertEqual(STMGarbageCollector.sharedInstance.unusedImageFiles.count, 3);
+        XCTAssertEqual(garbageCollector.unusedImageFiles.count, 3);
         
         expectation = [self expectationWithDescription:@"removingPictures"];
         
-        [STMGarbageCollector.sharedInstance removeUnusedImages].then(^(NSError *error){
+        [garbageCollector removeUnusedImages].then(^(NSError *error){
             XCTAssertEqual(error, nil);
             [expectation fulfill];
         });
@@ -118,21 +120,6 @@
         
     }];
     
-}
-
-#pragma mark - STMDirectoring
-
-
-- (NSString *)userDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSString *)sharedDocuments {
-    return NSTemporaryDirectory();
-}
-
-- (NSBundle *)bundle {
-    return [NSBundle bundleForClass:[self class]];
 }
 
 @end

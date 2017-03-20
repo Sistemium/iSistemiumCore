@@ -127,7 +127,7 @@
     NSString *entityName = @"STMLogMessage";
     int numberOfLogs = 1000;
     int numberOfExpectations = 10;
-    NSArray *data = [self sampleDataOf:entityName count:numberOfLogs options:@{@"generateId":@YES}];
+    NSArray *data = [self sampleDataOf:entityName count:numberOfLogs options:@{@"generateId":@YES} addArgumentsToItemAtNumber:nil];
 
     STMPTStartedAt
     

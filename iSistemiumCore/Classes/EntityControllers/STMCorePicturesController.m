@@ -41,10 +41,6 @@
     return [super sharedInstance];
 }
 
-+ (id <STMPersistingPromised,STMPersistingAsync,STMPersistingSync>)persistenceDelegate {
-    return [[self sharedController] persistenceDelegate];
-}
-
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -91,10 +87,6 @@
     
     return _uploadQueue;
     
-}
-
-+ (NSArray *)allPictures {
-    return [self sharedController].allPictures;
 }
 
 - (NSSet <NSString *> *)pictureEntitiesNames {
@@ -176,7 +168,7 @@
 
 #pragma mark - class methods
 
-+ (CGFloat)jpgQuality {
+- (CGFloat)jpgQuality {
     
     NSDictionary *appSettings = [[self session].settingsController currentSettingsForGroup:@"appSettings"];
     CGFloat jpgQuality = [appSettings[@"jpgQuality"] floatValue];
@@ -185,7 +177,7 @@
     
 }
 
-+ (void)checkPhotos {
+- (void)checkPhotos {
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
     
@@ -194,18 +186,17 @@
         [self checkBrokenPhotos];
         [self checkNotUploadedPhotos];
         
-#warning counts large downloaded images as unused
-        
         NSLog(@"checkPhotos finish");
+        
     });
     
 }
 
 #pragma mark - checkPicturesPaths
 
-+ (void)startCheckingPicturesPaths {
+- (void)startCheckingPicturesPaths {
     
-    NSArray *allPictures = [STMCorePicturesController allPictures];
+    NSArray *allPictures = [self allPictures];
     
     if (!allPictures.count) return;
 
@@ -225,7 +216,7 @@
             NSString *xid = attributes[STMPersistingKeyPrimary];
             NSString *fileName = [xid stringByAppendingString:@".jpg"];
             
-            if (thumbnailData) [STMCorePicturesController saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:attributes fromImageData:thumbnailData withEntityName:entityName];
+            if (thumbnailData) [self saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:attributes fromImageData:thumbnailData withEntityName:entityName];
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
@@ -251,7 +242,7 @@
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", attributes[@"id"]];
-                [[self sharedController].logger errorMessage:logMessage];
+                [self.logger errorMessage:logMessage];
                 [self deletePicture:picture];
                 
             }
@@ -276,7 +267,7 @@
     
 }
 
-+ (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
+- (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
     
     NSString *entityName = picture[@"entityName"];
     
@@ -299,12 +290,12 @@
             
             NSLog(@"! new resizedImagePath for picture %@", attributes[@"id"]);
 
-            if ([self.sharedController.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
-                [self.sharedController.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
+            if ([self.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
+                [self.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
             }
 
             NSLog(@"save new resizedImage file for picture %@", attributes[@"id"]);
-            NSData *imageData = [NSData dataWithContentsOfFile:[[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:newImagePath]];
+            NSData *imageData = [NSData dataWithContentsOfFile:[[self.filing picturesBasePath] stringByAppendingPathComponent:newImagePath]];
             
             [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
                             forPicture:attributes
@@ -341,12 +332,12 @@
 
 }
 
-+ (NSString *)convertImagePath:(NSString *)path withEntityName:(NSString *)entityName{
+- (NSString *)convertImagePath:(NSString *)path withEntityName:(NSString *)entityName{
     
     NSString *lastPathComponent = [path lastPathComponent];
-    NSString *imagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:lastPathComponent];
+    NSString *imagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:lastPathComponent];
     
-    if ([self.sharedController.filing fileExistsAtPath:imagePath]) {
+    if ([self.filing fileExistsAtPath:imagePath]) {
         return [entityName stringByAppendingPathComponent:lastPathComponent];
     } else {
         return nil;
@@ -357,13 +348,11 @@
 
 #pragma mark - check Broken & Uploaded Photos
 
-+ (void)checkBrokenPhotos {
-    
-    STMCorePicturesController *controller = [self sharedController];
+- (void)checkBrokenPhotos {
     
     NSPredicate *anyNilPaths = [NSPredicate predicateWithFormat:@"thumbnailPath == nil OR imagePath == nil OR resizedImagePath == nil"];
     
-    for (NSDictionary *picture in [controller allPicturesWithPredicate:anyNilPaths]) {
+    for (NSDictionary *picture in [self allPicturesWithPredicate:anyNilPaths]) {
         
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
@@ -373,9 +362,9 @@
         NSString *resizedFileName = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         NSString *thumbnailFileName = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         
-        NSString *imagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:fileName];
-        NSString *resizedImagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
-        NSString *thumbnailPath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
+        NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:fileName];
+        NSString *resizedImagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
+        NSString *thumbnailPath = [[self.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
         
         NSError *error;
         
@@ -383,7 +372,7 @@
         
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
         
-        if ([self.sharedController.filing fileExistsAtPath:imagePath] && ![STMFunctions isNotNull:mutAttributes[@"imagePath"]]) {
+        if ([self.filing fileExistsAtPath:imagePath] && ![STMFunctions isNotNull:mutAttributes[@"imagePath"]]) {
         
             mutAttributes[@"imagePath"] = fileName;
             
@@ -391,7 +380,7 @@
         
         }
         
-        if ([self.sharedController.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
+        if ([self.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
             
@@ -399,7 +388,7 @@
             
         }
         
-        if ([self.sharedController.filing fileExistsAtPath:thumbnailPath] && ![STMFunctions isNotNull:mutAttributes[@"thumbnailPath"]]) {
+        if ([self.filing fileExistsAtPath:thumbnailPath] && ![STMFunctions isNotNull:mutAttributes[@"thumbnailPath"]]) {
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
             
@@ -409,7 +398,7 @@
         
         if (fieldsToUpdate.count > 0){
             
-            attributes = [controller.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fieldsToUpdate.copy} error:&error];
+            attributes = [self.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fieldsToUpdate.copy} error:&error];
             
             if (error){
                 NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos error: %@", error.localizedDescription];
@@ -419,7 +408,7 @@
             
             NSString *href = attributes[@"href"];
             
-            [self.sharedController.hrefDictionary removeObjectForKey:href];
+            [self.hrefDictionary removeObjectForKey:href];
             
             if (([STMFunctions isNotNull:attributes[@"imagePath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]] && [STMFunctions isNotNull:attributes[@"thumbnailPath"]])){
                 continue;
@@ -451,7 +440,7 @@
         }
             
         error = nil;
-        NSString *path = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSString *path = [[self.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (photoData && photoData.length > 0) {
@@ -462,8 +451,8 @@
             
             NSArray *fields = @[@"resizedImagePath",@"thumbnailPath",@"imagePath"];
             
-            [controller.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields}  completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-                [controller postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
+            [self.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields}  completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+                [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                                   userInfo:[STMFunctions setValue:result forKey:@"attributes" inDictionary:picture]];
             }];
             
@@ -488,18 +477,17 @@
 
     }
     
-    [self.sharedController postAsyncMainQueueNotification:NOTIFICATION_PICTURE_UNUSED_CHANGE];
+    [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_UNUSED_CHANGE];
     
 }
 
-+ (void)checkNotUploadedPhotos {
+- (void)checkNotUploadedPhotos {
 
     NSUInteger counter = 0;
 
     NSPredicate *notUploaded = [NSPredicate predicateWithFormat:@"href == nil"];
-    STMCorePicturesController *controller = [self sharedController];
     
-    for (NSDictionary *picture in [controller allPicturesWithPredicate:notUploaded].copy) {
+    for (NSDictionary *picture in [self allPicturesWithPredicate:notUploaded].copy) {
         
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
@@ -507,12 +495,12 @@
         if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
-        NSString *path = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSString *path = [[self.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (imageData && imageData.length > 0) {
             
-            [controller uploadImageEntityName:entityName attributes:attributes data:imageData];
+            [self uploadImageEntityName:entityName attributes:attributes data:imageData];
             counter++;
             
             return;
@@ -523,13 +511,13 @@
         if (error) {
             
             NSString *logMessage = [NSString stringWithFormat:@"checkUploadedPhotos dataWithContentsOfFile error: %@", error.localizedDescription];
-            [[self sharedController].logger errorMessage:logMessage];
+            [self.logger errorMessage:logMessage];
             
         } else {
             
             NSString *logMessage = [NSString stringWithFormat:@"attempt to upload picture %@, imageData %@, length %lu — object will be deleted", entityName, imageData, (unsigned long)imageData.length];
             
-            [controller.logger errorMessage:logMessage];
+            [self.logger errorMessage:logMessage];
             
             [self deletePicture:picture];
             
@@ -538,7 +526,7 @@
     }
     
     if (counter > 0) {
-		[controller.logger importantMessage:[NSString stringWithFormat:@"Sending %@ photos",@(counter)]];
+		[self.logger importantMessage:[NSString stringWithFormat:@"Sending %@ photos",@(counter)]];
     }
     
 }
@@ -546,9 +534,7 @@
 
 #pragma mark - other methods
 
-+ (void)hrefProcessingForObject:(NSDictionary *)object {
-    
-    STMCorePicturesController *controlller = [self sharedController];
+- (void)hrefProcessingForObject:(NSDictionary *)object {
 
     NSString *entityName = object[@"entityName"];
     NSMutableDictionary *attributes = [object[@"attributes"] mutableCopy];
@@ -556,25 +542,25 @@
     
     if (![STMFunctions isNotNull:href]) return;
         
-    if (![controlller.pictureEntitiesNames containsObject:entityName]) return;
+    if (![self.pictureEntitiesNames containsObject:entityName]) return;
     
-    if (controlller.hrefDictionary[href]) return;
+    if (self.hrefDictionary[href]) return;
         
-    controlller.hrefDictionary[href] = object;
+    self.hrefDictionary[href] = object;
     
-    if ([controlller.instantLoadEntityNames containsObject:entityName]) {
-        [controlller downloadImagesEntityName:entityName attributes:attributes];
+    if ([self.instantLoadEntityNames containsObject:entityName]) {
+        [self downloadImagesEntityName:entityName attributes:attributes];
     }
 
 }
 
-+ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
+- (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
     
     NSString *xid = picture[STMPersistingKeyPrimary];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
     
     if (shouldUpload) {
-        [[self sharedController] uploadImageEntityName:entityName attributes:picture data:data];
+        [self uploadImageEntityName:entityName attributes:picture data:data];
     }
     
     if (!fileName) return nil;
@@ -597,7 +583,7 @@
     
 }
 
-+ (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
+- (BOOL)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
     UIImage *image = [UIImage imageWithData:data];
     CGFloat maxDimension = MAX(image.size.height, image.size.width);
@@ -611,7 +597,7 @@
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:fileName];
     
-    NSString *absoluteImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:fileName];
+    NSString *absoluteImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:fileName];
     
     NSError *error = nil;
     BOOL result = absoluteImagePath && data && [data writeToFile:absoluteImagePath
@@ -632,11 +618,11 @@
     
 }
 
-+ (BOOL)saveResizedImageFile:(NSString *)resizedFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
+- (BOOL)saveResizedImageFile:(NSString *)resizedFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
     NSString *resizedImagePath = [entityName stringByAppendingPathComponent:resizedFileName];
 
-    NSString *absoluteResizedImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
+    NSString *absoluteResizedImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
     
     UIImage *resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(1024, 1024) allowRetina:NO];
     NSData *resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
@@ -658,14 +644,14 @@
 
 }
 
-+ (BOOL)saveThumbnailImageFile:(NSString *)thumbnailFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
+- (BOOL)saveThumbnailImageFile:(NSString *)thumbnailFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
     UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
     NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:thumbnailFileName];
     
-    NSString *absoluteImagePath = [[self.sharedController.filing picturesPath:entityName] stringByAppendingPathComponent:thumbnailFileName];
+    NSString *absoluteImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:thumbnailFileName];
     
     NSError *error = nil;
     BOOL result = absoluteImagePath && thumbnail &&  [thumbnail writeToFile:absoluteImagePath
@@ -712,7 +698,7 @@
     } else {
         
         self.downloadingPictures = NO;
-        [STMCorePicturesController checkBrokenPhotos];
+        [self checkBrokenPhotos];
         self.downloadingPictures = (self.hrefDictionary.allValues.count > 0);
         
     }
@@ -750,7 +736,7 @@
             
             if (connectionError) return resolve(connectionError);
                 
-            NSDictionary *pictureWithPaths = [self.class setImagesFromData:data forPicture:attributes withEntityName:entityName andUpload:NO];
+            NSDictionary *pictureWithPaths = [self setImagesFromData:data forPicture:attributes withEntityName:entityName andUpload:NO];
             
             NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
             
@@ -873,7 +859,7 @@
 
 #pragma mark
 
-+ (void)deletePicture:(NSDictionary *)picture {
+- (void)deletePicture:(NSDictionary *)picture {
 
 //    NSLog(@"delete picture %@", picture);
     
@@ -890,21 +876,21 @@
     
 }
 
-+ (void)removeImageFilesForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
+- (void)removeImageFilesForPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
     
     if (picture[@"imagePath"] && ![picture[@"imagePath"] isKindOfClass:NSNull.class]) [self removeImageFile:picture[@"imagePath"] withEntityName:entityName];
     if (picture[@"resizedImagePath"] && ![picture[@"resizedImagePath"] isKindOfClass:NSNull.class]) [self removeImageFile:picture[@"resizedImagePath"] withEntityName:entityName];
     
 }
 
-+ (void)removeImageFile:(NSString *)filePath withEntityName:(NSString *)entityName{
+- (void)removeImageFile:(NSString *)filePath withEntityName:(NSString *)entityName{
     
-    NSString *imagePath = [[self.sharedController.filing picturesBasePath] stringByAppendingPathComponent:filePath];
+    NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:filePath];
 
-    if ([self.sharedController.filing fileExistsAtPath:imagePath]) {
+    if ([self.filing fileExistsAtPath:imagePath]) {
 
         NSError *error;
-        BOOL success = [self.sharedController.filing removeItemAtPath:imagePath error:&error];
+        BOOL success = [self.filing removeItemAtPath:imagePath error:&error];
         
         if (success) {
             

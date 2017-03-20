@@ -238,7 +238,7 @@
         
         if (!picture.thumbnailPath && picture.href) {
             
-            [STMCorePicturesController hrefProcessingForObject:picture];
+            [STMCorePicturesController.sharedController hrefProcessingForObject:picture];
             [self addSpinnerToCell:cell];
             
         } else {

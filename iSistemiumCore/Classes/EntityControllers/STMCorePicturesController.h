@@ -12,19 +12,19 @@
 
 @property (nonatomic) BOOL downloadingPictures;
 @property (nonatomic,readonly) NSUInteger nonloadedPicturesCount;
-@property (nonatomic, strong) id <STMFiling> filing;
+@property (nonatomic, weak) id <STMFiling> filing;
 
 + (STMCorePicturesController *)sharedController;
 
-+ (NSArray *)allPictures;
+- (NSArray *)allPictures;
 
-+ (CGFloat)jpgQuality;
+- (CGFloat)jpgQuality;
 
-+ (void)checkPhotos;
+- (void)checkPhotos;
 
-+ (void)hrefProcessingForObject:(NSDictionary *)object;
+- (void)hrefProcessingForObject:(NSDictionary *)object;
 
-+ (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
+- (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload;
 
 - (AnyPromise *)downloadImagesEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes;
 

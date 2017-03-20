@@ -258,7 +258,7 @@
     
 #warning If we are called here in the end of a background fetch, then something wrong would happen if we've got some pictures to process because the completion handler doesn't wait us to finish processing pictures.
     
-    [STMCorePicturesController checkPhotos];
+    [STMCorePicturesController.sharedController checkPhotos];
     
 #ifdef DEBUG
     [self logTotalNumberOfObjectsInStorages];
