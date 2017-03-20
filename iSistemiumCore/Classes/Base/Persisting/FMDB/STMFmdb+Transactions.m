@@ -267,9 +267,17 @@
             id value = [dictionary objectForKey:key];
             
             if ([value isKindOfClass:[NSDate class]]) {
+                
                 [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+
+            } else if([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]]) {
+                
+                [values addObject:[STMFunctions jsonStringFromObject:value]];
+                
             } else {
+                
                 [values addObject:(NSString*)value];
+                
             }
             
         }
