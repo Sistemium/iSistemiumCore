@@ -59,6 +59,8 @@
 
 - (BOOL)checkModelMappingForDatabase:(FMDatabase *)database model:(NSManagedObjectModel *)model {
     
+    NSLogMethodName;
+    
     STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
     
     NSString *savedModelPath = [self.dbPath stringByAppendingString:@".model"];

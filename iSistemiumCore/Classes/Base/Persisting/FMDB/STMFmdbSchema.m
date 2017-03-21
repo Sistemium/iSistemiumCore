@@ -38,6 +38,12 @@
 @property (nonatomic, strong) NSMutableSet <NSString *> *tablesToReload;
 @property (nonatomic, strong) NSSet <NSString *> *recreatedTables;
 
+@property (nonatomic) NSTimeInterval addEnititiesTime;
+@property (nonatomic) NSTimeInterval tablesCreateTime;
+@property (nonatomic) NSTimeInterval processingPropertiesTime;
+@property (nonatomic) NSTimeInterval addColumnsTime;
+@property (nonatomic) NSTimeInterval addRelationshipsTime;
+
 
 @end
 
@@ -154,6 +160,13 @@
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping {
 
+    NSLogMethodName;
+    self.addEnititiesTime = 0;
+    self.tablesCreateTime = 0;
+    self.processingPropertiesTime = 0;
+    self.addColumnsTime = 0;
+    self.addRelationshipsTime = 0;
+    
     self.modelMapping = modelMapping;
     self.migrationSuccessful = YES;
     self.columnsDictionary = [self currentDBScheme].mutableCopy;
@@ -220,6 +233,12 @@
     [self fillRecreatedTablesWithFantom];
     [self eTagReseting];
 
+    NSLog(@"overall time for add entities %f", self.addEnititiesTime);
+    NSLog(@"overall time for create tables %f", self.tablesCreateTime);
+    NSLog(@"overall time for processing properties %f", self.processingPropertiesTime);
+    NSLog(@"overall time for adding columns %f", self.addColumnsTime);
+    NSLog(@"overall time for adding relationships %f", self.addRelationshipsTime);
+    
     if (self.migrationSuccessful) {
 
         NSLog(@"model migrating SUCCESS");
@@ -271,6 +290,8 @@
 
 - (void)fillWithFantoms:(NSEntityDescription *)entity {
 
+    NSLog(@"fillWithFantoms: %@", entity.name);
+    
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
     NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
@@ -343,16 +364,24 @@
 
 - (void)addEntity:(NSEntityDescription *)entity {
     
+    NSDate *startAddEntityTime = [NSDate date];
+    NSLog(@"add entity %@", entity.name);
+    
     NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     BOOL tableExisted = [self.database tableExists:tableName];
     
     if (!tableExisted) {
+        
+        NSDate *startCreateTableTime = [NSDate date];
         self.migrationSuccessful &= [self executeDDL:[self createTableDDL:tableName]];
+        self.tablesCreateTime += -[startCreateTableTime timeIntervalSinceNow];
+        
     }
     
-    NSArray *propertiesColumns = [self processPropertiesForEntity:entity
-                                                        tableName:tableName];
+    NSDate *startProcessingPropertiesTime = [NSDate date];
+    NSArray *propertiesColumns = [self processPropertiesForEntity:entity tableName:tableName];
+    self.processingPropertiesTime += -[startProcessingPropertiesTime timeIntervalSinceNow];
     
     [columns addObjectsFromArray:propertiesColumns];
     
@@ -365,9 +394,13 @@
     
     self.columnsDictionary[tableName] = columns;
     
+    self.addEnititiesTime += -[startAddEntityTime timeIntervalSinceNow];
+    
 }
 
 - (void)deleteEntity:(NSEntityDescription *)entity {
+    
+    NSLog(@"delete entity %@", entity.name);
     
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
     
@@ -390,18 +423,23 @@
     
     columnAttributes = [columnAttributes filteredArrayUsingPredicate:excludeBuiltIn];
     
+#warning processing properties takes 80% of time for adding entity
     // it is noticeable faster (on a real device) to create columns with one statement with the table
     // but for now columns creation is separated to simplify code
     
+    NSDate *startAddColumnTime = [NSDate date];
     NSArray *addedColumns = [self addColumns:columnAttributes
                                      toTable:tableName];
+    self.addColumnsTime += -[startAddColumnTime timeIntervalSinceNow];
     
     [columns addObjectsFromArray:addedColumns];
     
     NSArray <NSRelationshipDescription *> *relationships = entity.relationshipsByName.allValues;
     
+    NSDate *startAddRelationshipTime = [NSDate date];
     NSArray *addedRelationships = [self addRelationships:relationships
                                                  toTable:tableName];
+    self.addRelationshipsTime += -[startAddRelationshipTime timeIntervalSinceNow];
     
     [columns addObjectsFromArray:addedRelationships];
 
