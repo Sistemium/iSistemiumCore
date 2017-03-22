@@ -11,6 +11,7 @@
 #define NSLogM(callerInfo, args...) NSLogMessage(callerInfo, args);
 #else
 #define NSLog(x...)
+#define NSLogM(x...)
 #endif
 
 void ExtendNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...);
