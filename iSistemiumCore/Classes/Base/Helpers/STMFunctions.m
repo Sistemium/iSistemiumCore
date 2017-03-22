@@ -543,7 +543,8 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 #pragma mark - images
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size {
-    return [self resizeImage:image toSize:size allowRetina:YES];
+    BOOL isRetina = [UIScreen mainScreen].scale > 1;
+    return [self resizeImage:image toSize:size allowRetina:isRetina];
 }
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size allowRetina:(BOOL)retina {
