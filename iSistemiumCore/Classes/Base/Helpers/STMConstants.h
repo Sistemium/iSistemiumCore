@@ -23,8 +23,6 @@
 
 #define STM_SECTION_HEADER_COLOR [UIColor colorWithRed:239.0/255 green:239.0/255 blue:244.0/255 alpha:1.0];
 
-#define MAX_PICTURE_SIZE 3500.0
-
 #define TICK NSDate *startTime = [NSDate date]
 #define TOCK NSLog(@"ElapsedTime: %f", -[startTime timeIntervalSinceNow])
 
