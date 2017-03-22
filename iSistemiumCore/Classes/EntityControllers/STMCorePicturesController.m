@@ -13,8 +13,11 @@
 #import "STMCoreObjectsController.h"
 #import "STMOperationQueue.h"
 
+#define RESIZED_IMAGE_SIZE 1024
+
 #warning This won't be enough for CampaignPictures
-#define MAX_PICTURE_SIZE 2048
+// 1024 + 50%
+#define MAX_PICTURE_SIZE 1536
 
 @interface STMCorePicturesController()
 
@@ -596,7 +599,7 @@
     UIImage *image = [UIImage imageWithData:data];
     CGFloat maxDimension = MAX(image.size.height, image.size.width);
     
-    if (maxDimension > MAX_PICTURE_SIZE) {
+    if (maxDimension > MAX_PICTURE_SIZE * [UIScreen mainScreen].scale) {
         
         image = [STMFunctions resizeImage:image toSize:CGSizeMake(MAX_PICTURE_SIZE, MAX_PICTURE_SIZE)];
         data = UIImageJPEGRepresentation(image, [self jpgQuality]);
@@ -635,9 +638,11 @@
     UIImage *resizedImage = [UIImage imageWithData:data];
     CGFloat maxDimension = MAX(resizedImage.size.height, resizedImage.size.width);
     
-    if (maxDimension > 1024 * [UIScreen mainScreen].scale) {
+    // TODO: detect RESIZED_IMAGE_SIZE with mainScreen bounds
+    
+    if (maxDimension > RESIZED_IMAGE_SIZE * [UIScreen mainScreen].scale) {
         // TODO: do not make a resized copy if the original is smaller
-        resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(1024, 1024)];
+        resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(RESIZED_IMAGE_SIZE, RESIZED_IMAGE_SIZE)];
     }
     
     NSData *resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
