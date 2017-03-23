@@ -261,7 +261,7 @@
                 
                 attributes = mutPicture[@"attributes"];
                 
-                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath"],STMPersistingOptionSetTs:@NO};
+                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
                 [self.persistenceDelegate update:entityName attributes:attributes options:options];
             }
             
@@ -279,35 +279,16 @@
     
     NSString *newImagePath = [self convertImagePath:attributes[@"imagePath"] withEntityName:entityName];
     NSString *newResizedImagePath = [self convertImagePath:attributes[@"resizedImagePath"] withEntityName:entityName];
+    NSString *newThumbnailPath = [self convertImagePath:attributes[@"thumbnailPath"] withEntityName:entityName];
     
-    if (newImagePath) {
+    if (newImagePath && newResizedImagePath && newThumbnailPath) {
 
         NSLog(@"set new imagePath for picture %@", attributes[@"id"]);
         attributes[@"imagePath"] = newImagePath;
-
-        if (newResizedImagePath) {
-            
-            NSLog(@"set new resizedImagePath for picture %@", attributes[@"id"]);
-            attributes[@"resizedImagePath"] = newResizedImagePath;
-            
-        } else {
-            
-            NSLog(@"! new resizedImagePath for picture %@", attributes[@"id"]);
-
-            if ([self.filing fileExistsAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"]]) {
-                [self.filing removeItemAtPath:(NSString * _Nonnull)attributes[@"resizedImagePath"] error:nil];
-            }
-
-            NSLog(@"save new resizedImage file for picture %@", attributes[@"id"]);
-            NSData *imageData = [NSData dataWithContentsOfFile:[[self.filing picturesBasePath] stringByAppendingPathComponent:newImagePath]];
-            
-            [self saveResizedImageFile:[@"resized_" stringByAppendingString:newImagePath]
-                            forPicture:attributes
-                         fromImageData:imageData
-                        withEntityName:entityName];
-            
-        }
-        picture[@"attributes"] = attributes.copy;
+        NSLog(@"set new resizedImagePath for picture %@", attributes[@"id"]);
+        attributes[@"resizedImagePath"] = newResizedImagePath;
+        NSLog(@"set new thumbnaiPath for picture %@", attributes[@"id"]);
+        attributes[@"thumbnailPath"] = newThumbnailPath;
         
     } else {
 
@@ -324,7 +305,7 @@
             
         } else {
 
-            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and no href for picture %@, will be deleted", attributes[@"id"]];
+            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no relative image path and no href for picture %@, will be deleted", attributes[@"id"]];
             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                      numType:STMLogMessageTypeError];
             
