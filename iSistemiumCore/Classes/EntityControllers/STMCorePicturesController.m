@@ -17,7 +17,9 @@
 
 #warning This won't be enough for CampaignPictures
 // 1024 + 50%
-#define MAX_PICTURE_SIZE 1536
+//#define MAX_PICTURE_SIZE 1536
+#define MAX_PICTURE_SIZE 1024
+
 
 @interface STMCorePicturesController()
 
