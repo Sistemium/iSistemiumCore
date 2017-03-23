@@ -13,8 +13,6 @@
 #import "STMCoreObjectsController.h"
 #import "STMOperationQueue.h"
 
-#define RESIZED_IMAGE_SIZE 1024
-
 #warning This won't be enough for CampaignPictures
 // 1024 + 50%
 #define MAX_PICTURE_SIZE 1536
@@ -564,23 +562,25 @@
     
     NSString *xid = picture[STMPersistingKeyPrimary];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
-    
-    if (shouldUpload) {
-        [self uploadImageEntityName:entityName attributes:picture data:data];
-    }
-    
-    if (!fileName) return nil;
         
     BOOL result = YES;
     NSMutableDictionary *mutablePicture = picture.mutableCopy;
     
-    data = [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data withEntityName:entityName];
+    NSData *resizedData = [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
-    result = !!data;
+    result = !!resizedData;
     
-    data = [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
-    
-    result = !!data;
+    if (shouldUpload) {
+        
+        data = [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data withEntityName:entityName];
+        
+        result = !!data;
+        
+        [self uploadImageEntityName:entityName attributes:picture data:data];
+        
+    }else{
+        mutablePicture[@"imagePath"] = mutablePicture[@"resizedImagePath"];
+    }
     
     result = result && [self saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
@@ -595,16 +595,6 @@
 }
 
 - (NSData *)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
-    
-    UIImage *image = [UIImage imageWithData:data];
-    CGFloat maxDimension = MAX(image.size.height, image.size.width);
-    
-    if (maxDimension > MAX_PICTURE_SIZE * [UIScreen mainScreen].scale) {
-        
-        image = [STMFunctions resizeImage:image toSize:CGSizeMake(MAX_PICTURE_SIZE, MAX_PICTURE_SIZE)];
-        data = UIImageJPEGRepresentation(image, [self jpgQuality]);
-
-    }
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:fileName];
     
@@ -631,38 +621,36 @@
 
 - (NSData *)saveResizedImageFile:(NSString *)resizedFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
-    NSString *resizedImagePath = [entityName stringByAppendingPathComponent:resizedFileName];
-
-    NSString *absoluteResizedImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
+    UIImage *image = [UIImage imageWithData:data];
+    CGFloat maxDimension = MAX(image.size.height, image.size.width);
     
-    UIImage *resizedImage = [UIImage imageWithData:data];
-    CGFloat maxDimension = MAX(resizedImage.size.height, resizedImage.size.width);
-    
-    // TODO: detect RESIZED_IMAGE_SIZE with mainScreen bounds
-    
-    if (maxDimension > RESIZED_IMAGE_SIZE * [UIScreen mainScreen].scale) {
-        // TODO: do not make a resized copy if the original is smaller
-        resizedImage = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(RESIZED_IMAGE_SIZE, RESIZED_IMAGE_SIZE)];
+    if (maxDimension > MAX_PICTURE_SIZE * [UIScreen mainScreen].scale) {
+        
+        image = [STMFunctions resizeImage:image toSize:CGSizeMake(MAX_PICTURE_SIZE, MAX_PICTURE_SIZE)];
+        data = UIImageJPEGRepresentation(image, [self jpgQuality]);
+        
     }
     
-    NSData *resizedImageData = UIImageJPEGRepresentation(resizedImage, [self jpgQuality]);
-
-    if (!absoluteResizedImagePath || !resizedImageData) return nil;
-        
+    NSString *imagePath = [entityName stringByAppendingPathComponent:resizedFileName];
+    
+    NSString *absoluteImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:resizedFileName];
+    
     NSError *error = nil;
-    BOOL result = [resizedImageData writeToFile:absoluteResizedImagePath
-                                        options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                          error:&error];
+    BOOL result = absoluteImagePath && data && [data writeToFile:absoluteImagePath
+                                                         options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                                           error:&error];
     
     if (!result) {
-        NSString *logMessage = [NSString stringWithFormat:@"saveResizedImageFile %@ writeToFile %@ error: %@", resizedFileName, absoluteResizedImagePath, error.localizedDescription];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"saveImageFile %@ writeToFile %@ error: %@", resizedFileName, absoluteImagePath, error.localizedDescription];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
         return nil;
-	}
-
-    picture[@"resizedImagePath"] = resizedImagePath;
-
-    return resizedImageData;
+        
+    }
+    
+    picture[@"resizedImagePath"] = imagePath;
+    
+    return result ? data : nil;
 
 }
 
@@ -864,7 +852,11 @@
         
         NSLog(@"%@", picture[@"picturesInfo"]);
         
-        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo"]};
+        [self removeImageFile:picture[@"imagePath"] withEntityName:entityName];
+        
+        picture[@"imagePath"] = picture[@"resizedImagePath"];
+        
+        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
         
         [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
             if (result) return;
