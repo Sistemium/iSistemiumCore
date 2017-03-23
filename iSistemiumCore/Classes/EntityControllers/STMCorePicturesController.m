@@ -362,11 +362,9 @@
         NSDictionary *attributes = picture[@"attributes"];
         
         NSString *xid = attributes[STMPersistingKeyPrimary];
-        NSString *fileName = [entityName stringByAppendingPathComponent:[xid stringByAppendingString:@".jpg"]];
         NSString *resizedFileName = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         NSString *thumbnailFileName = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
         
-        NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:fileName];
         NSString *resizedImagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
         NSString *thumbnailPath = [[self.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
         
@@ -376,17 +374,13 @@
         
         NSMutableDictionary *mutAttributes = [attributes mutableCopy];
         
-        if ([self.filing fileExistsAtPath:imagePath] && ![STMFunctions isNotNull:mutAttributes[@"imagePath"]]) {
-        
-            mutAttributes[@"imagePath"] = fileName;
-            
-            [fieldsToUpdate addObject:@"imagePath"];
-        
-        }
-        
         if ([self.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
+            
+            [fieldsToUpdate addObject:@"resizedImagePath"];
+            
+            mutAttributes[@"imagePath"] = resizedFileName;
             
             [fieldsToUpdate addObject:@"resizedImagePath"];
             
@@ -439,7 +433,7 @@
             
         }
         
-        if ([STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]]){
+        if ([STMFunctions isNotNull:attributes[@"thumbnailPath"]]){
             continue;
         }
             
