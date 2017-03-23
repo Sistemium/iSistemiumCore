@@ -551,7 +551,7 @@
         
         result = !!data;
         
-        [self uploadImageEntityName:entityName attributes:picture data:data];
+        [self uploadImageEntityName:entityName attributes:mutablePicture.copy data:data];
         
     }else{
         mutablePicture[@"imagePath"] = mutablePicture[@"resizedImagePath"];
