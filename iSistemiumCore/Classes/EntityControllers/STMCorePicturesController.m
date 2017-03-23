@@ -874,6 +874,8 @@
 
 - (void)removeImageFile:(NSString *)filePath withEntityName:(NSString *)entityName{
     
+    if (filePath == nil) return;
+    
     NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:filePath];
 
     if ([self.filing fileExistsAtPath:imagePath]) {
