@@ -331,6 +331,10 @@
     NSDictionary *options = @{STMPersistingOptionGroupBy:@[@"date", @"ownerXid"]};
     NSArray<NSDictionary *> *result =[self.persister findAllSync:entityName predicate:predicate options:options error:&error];
     
+    NSArray *keys = result.firstObject.allKeys;
+    
+    XCTAssertEqual(keys.count, 3);
+    
     XCTAssertNil(error);
     XCTAssertEqual(result.count, 2);
     XCTAssertEqual([result.firstObject[@"count()"] integerValue], 5);
