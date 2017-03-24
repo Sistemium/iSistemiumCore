@@ -71,7 +71,7 @@
     
     if (!pk || !returnSaved) return nil;
     
-    return [self selectFrom:tableName where:[NSString stringWithFormat:@"id = '%@'", pk] groupBy:nil orderBy:nil].firstObject;
+    return [self selectFrom:tableName where:[NSString stringWithFormat:@"id = '%@'", pk] orderBy:nil].firstObject;
     
 }
 
@@ -108,11 +108,17 @@
 - (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate orderBy:(NSString *)orderBy ascending:(BOOL)ascending fetchLimit:(NSUInteger)fetchLimit fetchOffset:(NSUInteger)fetchOffset groupBy:(NSArray *)groupBy{
     
     NSString *options = @"";
-    NSString *groupOptions = @"";
+    NSString *columns = @"";
     
-    if (groupBy) {
-        NSString *group = [@" GROUP BY " stringByAppendingString:[groupBy componentsJoinedByString:@", "]];
-        groupOptions = [groupOptions stringByAppendingString:group];
+    if (groupBy.count){
+        groupBy = [STMFunctions mapArray:groupBy withBlock:^id (id value) {
+            return [NSString stringWithFormat:@"[%@]", value];
+        }];
+        options = [groupBy componentsJoinedByString:@", "];
+        columns = [options stringByAppendingString:@", count(*) [count()]"];
+        options = [@"GROUP BY " stringByAppendingString:options];
+    } else {
+        columns = @"*";
     }
     
     if (orderBy) {
@@ -145,7 +151,7 @@
                                                  withString:entityName];
     }
     
-    return [self selectFrom:entityName where:where groupBy:groupOptions orderBy:options];
+    return [self selectFrom:entityName columns:columns where:where orderBy:options];
     
 }
 
@@ -184,7 +190,7 @@
     
     [self.database executeUpdate:updateSQL values:values error:error];
     
-    return [self selectFrom:tablename where:[NSString stringWithFormat:@"id = '%@'", pk] groupBy:nil orderBy:nil].firstObject;
+    return [self selectFrom:tablename where:[NSString stringWithFormat:@"id = '%@'", pk] orderBy:nil].firstObject;
     
 }
 
@@ -218,7 +224,13 @@
 
 #pragma mark - Private helpers
 
-- (NSArray *)selectFrom:(NSString *)tableName where:(NSString *)where groupBy:(NSString *)groupBy orderBy:(NSString *)orderBy {
+- (NSArray *)selectFrom:(NSString *)tableName where:(NSString *)where orderBy:(NSString *)orderBy {
+
+    return [self selectFrom:tableName columns:@"*" where:where orderBy:orderBy];
+    
+}
+
+- (NSArray *)selectFrom:(NSString *)tableName columns:(NSString *)columns where:(NSString *)where orderBy:(NSString *)orderBy {
     
     NSMutableArray *rez = @[].mutableCopy;
     
@@ -230,15 +242,7 @@
     
     if (!orderBy) orderBy = @"";
     
-    NSString *dataToSelect = @"*";
-    
-    if (groupBy.length){
-        dataToSelect = @"*, count(*) [count()]";
-    }else {
-        groupBy = @"";
-    }
-    
-    NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM [%@]%@ %@ %@", dataToSelect, tableName, where,groupBy, orderBy];
+    NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM [%@]%@ %@", columns, tableName, where, orderBy];
     
     FMResultSet *s = [self.database executeQuery:query];
     
