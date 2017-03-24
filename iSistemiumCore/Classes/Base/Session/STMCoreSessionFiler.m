@@ -12,9 +12,6 @@
 
 @implementation STMCoreSessionFiler
 
-@synthesize directoring = _directoring;
-
-
 #pragma mark - STMDirectoring protocol
 
 - (instancetype)initWithOrg:(NSString *)org userId:(NSString *)uid {

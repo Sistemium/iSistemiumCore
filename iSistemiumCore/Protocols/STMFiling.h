@@ -19,7 +19,7 @@
 
 @protocol STMFiling
 
-@property (nonatomic, strong) id <STMDirectoring> directoring;
+@property (readonly) id <STMDirectoring> directoring;
 
 - (NSString *)persistenceBasePath;
 - (NSString *)picturesBasePath;
