@@ -130,7 +130,12 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
                     grouped[groupKey] = mutable;
                 }else{
                     grouped[groupKey] = @{@"count()":[NSNumber numberWithInteger:1]}.mutableCopy;
-                    [grouped[groupKey] addEntriesFromDictionary:data];
+                    
+                    for (NSString *groupName in groupBy){
+                        
+                        grouped[groupKey][groupName] = data[groupName];
+                        
+                    }
                 }
             }
             
