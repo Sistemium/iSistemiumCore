@@ -247,7 +247,16 @@
     FMResultSet *s = [self.database executeQuery:query];
     
     while ([s next]) {
-        [rez addObject:s.resultDictionary];
+        
+        NSMutableDictionary *dict = (NSMutableDictionary*)s.resultDictionary;
+
+        NSArray *booleanKeys = [self.modellingDelegate booleanFieldsForEntityName:[STMFunctions addPrefixToEntityName:tableName]].allKeys;
+        for (NSString* key in booleanKeys){
+            if ([STMFunctions isNotNull:[dict valueForKey:key]]){
+                dict[key] = (__bridge id _Nullable)([dict[key] boolValue] ? kCFBooleanTrue : kCFBooleanFalse);
+            }
+        }
+        [rez addObject:dict];
     }
     
     // there will be memory warnings loading catalogue on an old device if no copy
