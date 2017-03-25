@@ -845,7 +845,7 @@
 
         NSArray *picturesDicts = dictionary[@"pictures"];
 
-        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:0 error:&localError];
+        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:kNilOptions error:&localError];
         
         if (!picturesJson) {
             NSLog(@"error in json serialization: %@", localError.localizedDescription);

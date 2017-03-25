@@ -994,7 +994,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     }
     
-    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
+    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:object options:kNilOptions error:nil];
     NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
     
     return JSONString;
