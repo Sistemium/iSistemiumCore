@@ -12,12 +12,7 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreObjectsController.h"
 #import "STMOperationQueue.h"
-
-#warning This won't be enough for CampaignPictures
-// 1024 + 50%
-//#define MAX_PICTURE_SIZE 1536
-#define MAX_PICTURE_SIZE 1024
-
+#import "STMEntityController.h"
 
 @interface STMCorePicturesController()
 
@@ -598,10 +593,21 @@
 
 - (NSData *)saveResizedImageFile:(NSString *)resizedFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
-    UIImage *image = [UIImage imageWithData:data];
-    CGFloat maxDimension = MAX(image.size.height, image.size.width);
+    double maxPictureScale = [STMFunctions isNotNull:[STMEntityController entityWithName:entityName][@"maxPictureScale"]] ?
+    [[STMEntityController entityWithName:entityName][@"maxPictureScale"] doubleValue] : 1;
     
-    if (maxDimension > MAX_PICTURE_SIZE * [UIScreen mainScreen].scale) {
+    UIImage *image = [UIImage imageWithData:data];
+    CGFloat maxPictureDimension = MAX(image.size.height, image.size.width);
+    
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenRect.size.width;
+    CGFloat screenHeight = screenRect.size.height;
+    
+    CGFloat maxScreenDimension = MAX(screenWidth,screenHeight);
+    
+    CGFloat MAX_PICTURE_SIZE = maxScreenDimension * maxPictureScale;
+    
+    if (maxPictureDimension > MAX_PICTURE_SIZE * [UIScreen mainScreen].scale) {
         
         image = [STMFunctions resizeImage:image toSize:CGSizeMake(MAX_PICTURE_SIZE, MAX_PICTURE_SIZE)];
         data = UIImageJPEGRepresentation(image, [self jpgQuality]);
