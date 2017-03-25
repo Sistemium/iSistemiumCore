@@ -256,7 +256,7 @@
                 dict[key] = (__bridge id _Nullable)([dict[key] boolValue] ? kCFBooleanTrue : kCFBooleanFalse);
             }
         }
-        [rez addObject:dict];
+        [rez addObject:dict.copy];
     }
     
     // there will be memory warnings loading catalogue on an old device if no copy

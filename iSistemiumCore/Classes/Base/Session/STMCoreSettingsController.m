@@ -308,7 +308,7 @@
         for (NSString *settingName in settingsGroup.allKeys) {
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name == %@ AND SELF.group == %@", settingName, settingsGroupName];
-            NSMutableDictionary *settingToCheck = [currentSettings filteredArrayUsingPredicate:predicate].lastObject;
+            NSMutableDictionary *settingToCheck = [[currentSettings filteredArrayUsingPredicate:predicate].lastObject mutableCopy];
 
             id settingValue = settingsGroup[settingName];
             
