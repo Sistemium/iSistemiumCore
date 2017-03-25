@@ -63,9 +63,9 @@
                               @"thumbnailHref":@"https://s3-eu-west-1.amazonaws.com/sisdev/STMVisitPhoto/2016/12/28/31d0fd3c5d5c50cca385b5a692df0afb/thumbnail.png",
                               };
     
-    NSString *expectedImagePath = [entityName stringByAppendingPathComponent:[xid stringByAppendingString:@".jpg"]];
-    
     NSString *expectedResizedImagePath = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
+    
+    NSString *expectedImagePath = expectedResizedImagePath;
     
     NSString *expectedThumbnailPath = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
     
@@ -105,7 +105,7 @@
         
         [garbageCollector searchUnusedImages];
         
-        XCTAssertEqual(garbageCollector.unusedImageFiles.count, 3);
+        XCTAssertEqual(garbageCollector.unusedImageFiles.count, 2);
         
         expectation = [self expectationWithDescription:@"removingPictures"];
         

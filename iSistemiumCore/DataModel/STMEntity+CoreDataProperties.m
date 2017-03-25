@@ -27,6 +27,7 @@
 @dynamic lts;
 @dynamic name;
 @dynamic ownerXid;
+@dynamic pictureLifeTime;
 @dynamic roleName;
 @dynamic roleOwner;
 @dynamic source;
@@ -34,7 +35,7 @@
 @dynamic url;
 @dynamic workflow;
 @dynamic xid;
-@dynamic pictureLifeTime;
+@dynamic maxPictureScale;
 @dynamic wf;
 
 @end
