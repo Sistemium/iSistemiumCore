@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSDate *lts;
 @property (nullable, nonatomic, copy) NSString *name;
 @property (nullable, nonatomic, retain) NSData *ownerXid;
+@property (nullable, nonatomic, copy) NSNumber *pictureLifeTime;
 @property (nullable, nonatomic, copy) NSString *roleName;
 @property (nullable, nonatomic, copy) NSString *roleOwner;
 @property (nullable, nonatomic, copy) NSString *source;
@@ -35,8 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *url;
 @property (nullable, nonatomic, copy) NSString *workflow;
 @property (nullable, nonatomic, retain) NSData *xid;
-@property (nullable, nonatomic, copy) NSNumber *pictureLifeTime;
+@property (nullable, nonatomic, copy) NSNumber *maxPictureScale;
 @property (nullable, nonatomic, retain) STMWorkflow *wf;
+
 
 @end
 
