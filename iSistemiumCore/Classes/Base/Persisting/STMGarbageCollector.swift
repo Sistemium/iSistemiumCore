@@ -46,6 +46,7 @@ extension Set {
         }
     }
     
+    @discardableResult
     func removeUnusedImages() -> AnyPromise{
         
         return AnyPromise.promiseWithResolverBlock({ resolve in
