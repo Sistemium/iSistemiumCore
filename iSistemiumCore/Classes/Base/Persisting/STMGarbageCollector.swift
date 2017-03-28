@@ -147,7 +147,7 @@ extension Set {
                 
                 for var image in images{
                     
-                    let logMessage = String(format: "removeOutOfDateImages for:\(entity["name"]) deviceAts:\(image["deviceAts"])")
+                    let logMessage = String(format: "removeOutOfDateImages for:\(String(describing: entity["name"])) deviceAts:\(String(describing: image["deviceAts"]))")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
                     if let imagePath = image["imagePath"] as? String{
