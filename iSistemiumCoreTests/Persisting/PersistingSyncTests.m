@@ -309,10 +309,11 @@
     
     NSString *entityName = @"STMVisit";
     
+    NSDate *today = [NSDate date];
+    NSDate *yesterday = [today dateByAddingTimeInterval: -86400.0];
+    
     NSArray *sample = [self sampleDataOf:entityName count:10 options:nil addArgumentsToItemAtNumber:^NSDictionary *(NSUInteger number) {
-        NSDate *today = [NSDate date];
-        NSDate *yesterday = [today dateByAddingTimeInterval: -86400.0];
-        
+    
         return @{@"date": number % 2 == 0 ? today : yesterday};
         
     }];
