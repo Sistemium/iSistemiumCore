@@ -26,8 +26,6 @@
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
 
-- (NSDictionary *)booleanFieldsForEntityName:(NSString *)entityName;
-
 - (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
                                                                                    isToMany:(NSNumber *)isToMany
                                                                                     cascade:(NSNumber *)cascade;

@@ -160,7 +160,8 @@
     
     NSString *tablename = [STMFunctions removePrefixFromEntityName:entityName];
     
-    NSArray *columns = self.stmFMDB.columnsByTable[tablename];
+    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
+    
     NSString *pk = attributes[@"id"];
     
     NSMutableArray* keys = @[].mutableCopy;
@@ -250,12 +251,20 @@
         
         NSMutableDictionary *dict = (NSMutableDictionary*)s.resultDictionary;
 
-        NSArray *booleanKeys = [self.modellingDelegate booleanFieldsForEntityName:[STMFunctions addPrefixToEntityName:tableName]].allKeys;
+        NSArray *booleanKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSBooleanAttributeType]];
         for (NSString* key in booleanKeys){
             if ([STMFunctions isNotNull:[dict valueForKey:key]]){
                 dict[key] = (__bridge id _Nullable)([dict[key] boolValue] ? kCFBooleanTrue : kCFBooleanFalse);
             }
         }
+        
+        NSArray *jsonKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]];
+        for (NSString* key in jsonKeys){
+            if ([STMFunctions isNotNull:[dict valueForKey:key]]){
+                dict[key] = [STMFunctions jsonObjectFromString:dict[key]];
+            }
+        }
+        
         [rez addObject:dict.copy];
     }
     
@@ -266,7 +275,7 @@
 
 - (NSString *) mergeInto:(NSString *)tablename dictionary:(NSDictionary<NSString *, id> *)dictionary error:(NSError **)error {
     
-    NSArray *columns = self.stmFMDB.columnsByTable[tablename];
+    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
     NSString *pk = dictionary [STMPersistingKeyPrimary] ? dictionary [STMPersistingKeyPrimary] : [STMFunctions uuidString];
     
     NSMutableArray* keys = @[].mutableCopy;
@@ -283,7 +292,7 @@
                 
                 [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
 
-            } else if([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]]) {
+            } else if([[self.stmFMDB.columnsByTable[tablename] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]] containsObject:key]) {
                 
                 [values addObject:[STMFunctions jsonStringFromObject:value]];
                 

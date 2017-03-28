@@ -100,6 +100,26 @@
 
     }
     
+    NSMutableDictionary *columnsByTableWithTypes = @{}.mutableCopy;
+    
+    for (NSString *tablename in self.columnsByTable.allKeys){
+        
+        NSMutableDictionary *columns = @{}.mutableCopy;
+        
+        for (NSString *columnname in self.columnsByTable[tablename]){
+            
+            NSAttributeType attributeType = self.modellingDelegate.entitiesByName[[STMFunctions addPrefixToEntityName:tablename]].attributesByName[columnname].attributeType;
+            
+            [columns addEntriesFromDictionary:@{columnname:[NSNumber numberWithUnsignedInteger:attributeType]}];
+            
+        }
+        
+        columnsByTableWithTypes[tablename] = columns.copy;
+        
+    }
+    
+    self.columnsByTable = columnsByTableWithTypes.copy;
+    
     return YES;
     
 }

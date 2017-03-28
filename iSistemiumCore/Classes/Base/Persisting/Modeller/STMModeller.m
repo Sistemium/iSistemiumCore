@@ -77,14 +77,8 @@
         
         NSEntityDescription *entity = self.entitiesByName[entityKey];
         
-        NSArray* booleanFields = [entity.attributesByName keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop){
-            NSAttributeDescription * desc = obj;
-            return desc.attributeType == NSBooleanAttributeType;
-        }].allObjects;
-        
         cache[entityKey] = @{@"fields"          : entity.attributesByName,
-                             @"relationships"   : entity.relationshipsByName,
-                             @"booleanFields"   : [entity.attributesByName dictionaryWithValuesForKeys:booleanFields]};
+                             @"relationships"   : entity.relationshipsByName};
         
     }
     
@@ -144,10 +138,6 @@
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName {
     return self.allEntitiesCache[entityName][@"fields"];
-}
-
-- (NSDictionary *)booleanFieldsForEntityName:(NSString *)entityName {
-    return self.allEntitiesCache[entityName][@"booleanFields"];
 }
 
 - (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany cascade:(NSNumber *)cascade {
