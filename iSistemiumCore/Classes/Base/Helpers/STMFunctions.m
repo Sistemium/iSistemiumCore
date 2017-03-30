@@ -100,18 +100,26 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     return [[self dateFormatterWithMilliseconds] stringFromDate:[NSDate date]];
 }
 
-+(NSString *)addPrefixToEntityName:(NSString*)entityName{
++ (NSString *)addPrefixToEntityName:(NSString *)entityName {
+    
+    if (![STMFunctions isNotNull:entityName]) return @"";
+    
     if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
     }
     return entityName;
+    
 }
 
-+ (NSString *)removePrefixFromEntityName:(NSString *)entity{
-    if ([entity hasPrefix:ISISTEMIUM_PREFIX]){
-        return [entity substringFromIndex:ISISTEMIUM_PREFIX.length];
++ (NSString *)removePrefixFromEntityName:(NSString *)entityName {
+
+    if (![STMFunctions isNotNull:entityName]) return @"";
+
+    if ([entityName hasPrefix:ISISTEMIUM_PREFIX]){
+        return [entityName substringFromIndex:ISISTEMIUM_PREFIX.length];
     }
-    return entity ;
+    return entityName;
+    
 }
 
 + (NSDateFormatter *)dateNumbersFormatter {
