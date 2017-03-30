@@ -385,6 +385,8 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
     STMScriptMessagingFilterDictionary *destinationEntityFilter = filterDictionary[key];
     NSString *firstKey = destinationEntityFilter.allKeys.firstObject;
     
+#warning ignores any key except first
+    
     destinationEntityFilter = @{firstKey : destinationEntityFilter[firstKey]};
     // only one filter is using at ANY condition
     
