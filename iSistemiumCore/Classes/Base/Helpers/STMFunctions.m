@@ -102,7 +102,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)addPrefixToEntityName:(NSString *)entityName {
     
-    if (![STMFunctions isNotNull:entityName]) return @"";
+//    if (![STMFunctions isNotNull:entityName]) return @"";
     
     if (![entityName hasPrefix:ISISTEMIUM_PREFIX]) {
         entityName = [ISISTEMIUM_PREFIX stringByAppendingString:entityName];
@@ -113,7 +113,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)removePrefixFromEntityName:(NSString *)entityName {
 
-    if (![STMFunctions isNotNull:entityName]) return @"";
+//    if (![STMFunctions isNotNull:entityName]) return @"";
 
     if ([entityName hasPrefix:ISISTEMIUM_PREFIX]){
         return [entityName substringFromIndex:ISISTEMIUM_PREFIX.length];
