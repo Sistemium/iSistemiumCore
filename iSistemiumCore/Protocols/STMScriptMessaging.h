@@ -10,6 +10,7 @@
 #import <WebKit/WebKit.h>
 
 typedef NSDictionary <NSString *, __kindof NSObject *> STMScriptMessagingFilterDictionary;
+typedef NSMutableDictionary <NSString *, __kindof NSObject *> STMScriptMessagingFilterMutableDictionary;
 typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScriptMessagingWhereFilterDictionary;
 
 @protocol STMScriptMessagingOwner
