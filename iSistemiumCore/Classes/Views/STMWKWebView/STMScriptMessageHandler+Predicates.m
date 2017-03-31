@@ -384,12 +384,6 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     }
     
     STMScriptMessagingFilterDictionary *destinationEntityFilter = filterDictionary[key];
-    NSString *firstKey = destinationEntityFilter.allKeys.firstObject;
-    
-#warning ignores any key except first
-    
-    destinationEntityFilter = @{firstKey : destinationEntityFilter[firstKey]};
-    // only one filter is using at ANY condition
     
     if (![destinationEntityFilter isKindOfClass:[self whereFilterClass]]) {
         
@@ -400,16 +394,23 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     
     NSString *destinationEntityName = relationships[checkingProperty].destinationEntity.name;
     
-    NSArray <STMScriptMessagingFilterDictionary *> *subpredicatesDics =
+    STMScriptMessagingFiltersArray *subpredicatesDics =
         [self subpredicatesDicsForEntityName:destinationEntityName
                             filterDictionary:destinationEntityFilter];
+
+    STMScriptMessagingFiltersMutableArray *resultSubpredicatesDics = @[].mutableCopy;
     
-    firstKey = subpredicatesDics.firstObject.allKeys.firstObject;
-    NSString *finalKey = [@[key, firstKey] componentsJoinedByString:@"."];
+    [subpredicatesDics enumerateObjectsUsingBlock:^(STMScriptMessagingFilterDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
     
-    subpredicatesDics = @[@{finalKey : subpredicatesDics.firstObject[firstKey]}];
+        NSString *firstKey = obj.allKeys.firstObject;
+        NSString *finalKey = [@[key, firstKey] componentsJoinedByString:@"."];
+        
+        [resultSubpredicatesDics addObject:@{finalKey : obj[firstKey]}];
+        
+    }];
     
-    return subpredicatesDics;
+    return resultSubpredicatesDics.copy;
     
 }
 
