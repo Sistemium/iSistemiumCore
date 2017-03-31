@@ -7,7 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "STMStating.h"
 
 @interface STMCoreApplication : UIApplication
+
++(STMCoreApplication *) sharedApplication;
+
+@property(nonatomic) id<STMStating> states;
 
 @end

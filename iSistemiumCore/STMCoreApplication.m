@@ -11,11 +11,31 @@
 
 @implementation STMCoreApplication
 
-- (void)sendEvent:(UIEvent *)event {
++(STMCoreApplication *) sharedApplication{
+    static dispatch_once_t pred = 0;
+    __strong static id _sharedApp = nil;
     
-    [super sendEvent:event];
-    
+    dispatch_once(&pred, ^{
+        _sharedApp = [UIApplication sharedApplication];
+    });
+    return _sharedApp;
 }
 
+-(BOOL)isNetworkActivityIndicatorVisible{
+    if (_states){
+        return self.states.networkActivityIndicatorVisible;
+    }
+    
+    return super.networkActivityIndicatorVisible;
+}
+
+-(void) setNetworkActivityIndicatorVisible:(BOOL)networkActivityIndicatorVisible{
+    if (_states){
+        [self.states setNetworkActivityIndicatorVisible:networkActivityIndicatorVisible];
+    }else{
+        [super setNetworkActivityIndicatorVisible:networkActivityIndicatorVisible];
+    }
+    
+}
 
 @end

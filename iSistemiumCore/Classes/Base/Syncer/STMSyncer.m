@@ -15,6 +15,7 @@
 #import "STMClientDataController.h"
 
 #import "STMSocketTransport+Persisting.h"
+#import "STMCoreApplication.h"
 
 
 @interface STMSyncer()
@@ -157,7 +158,7 @@
         _isDefantomizing = isDefantomizing;
         
         if (isDefantomizing) {
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+            [[STMCoreApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         } else {
             [self turnOffNetworkActivityIndicator];
         }
@@ -191,7 +192,7 @@
     
     if (!self.isUsingNetwork) {
         
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        [STMCoreApplication sharedApplication].networkActivityIndicatorVisible = NO;
         [self checkSyncerState];
         
     }
