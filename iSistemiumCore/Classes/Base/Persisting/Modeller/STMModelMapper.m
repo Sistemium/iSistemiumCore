@@ -43,12 +43,33 @@
         NSLog(@"ModelMapper need to migrate");
     }
     
-    self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
-                                                          destinationModel:destinationModel
-                                                                     error:error];
-    
-    if (*error) {
-        NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
+    while (true) {
+        self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
+                                                              destinationModel:destinationModel
+                                                                         error:error];
+        
+        if (*error) {
+            NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
+            if ([STMFunctions isNotNull:(*error).userInfo[@"reason"]] && [(*error).userInfo[@"reason"] isEqualToString:@"Source and destination attribute types are incompatible"]){
+                
+                NSMutableDictionary *sourceEntities = sourceModel.entitiesByName.mutableCopy;
+                NSEntityDescription *sourceEntity = sourceModel.entitiesByName[(*error).userInfo[@"entity"]];
+                NSMutableDictionary *sourceEntityProperties = sourceEntity.propertiesByName.mutableCopy;
+                NSEntityDescription *destinationEntity = destinationModel.entitiesByName[(*error).userInfo[@"entity"]];
+                NSAttributeDescription *destinationProperty = destinationEntity.attributesByName[(*error).userInfo[@"property"]];
+                
+                sourceEntityProperties[(*error).userInfo[@"property"]] = destinationProperty;
+                sourceEntity.properties = sourceEntityProperties.allValues;
+                
+                sourceEntities[(*error).userInfo[@"entity"]] = sourceEntity;
+                sourceModel.entities = sourceEntities.allValues;
+                
+                *error = nil;
+                
+                continue;
+            }
+        }
+        break;
     }
     
     self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
