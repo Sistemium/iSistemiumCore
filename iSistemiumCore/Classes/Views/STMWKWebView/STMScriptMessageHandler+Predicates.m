@@ -392,7 +392,21 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
     }
     
-    NSString *destinationEntityName = relationships[checkingProperty].destinationEntity.name;
+    NSRelationshipDescription *relationship = relationships[checkingProperty];
+    
+    if (relationship.isToMany && destinationEntityFilter.count > 1) {
+        
+        NSLog(@"WARNING! ANY with more than one condition are broken for to-many relationships");
+    
+#warning ANY with more than one condition are broken for to-many relationships
+        // ANY (rel.a = %a && rel.b = %b)
+        // will be transform to
+        // ANY rel.a = %a && ANY rel.b = %b
+        // which is not equal to first one if rel is to-many
+
+    }
+    
+    NSString *destinationEntityName = relationship.destinationEntity.name;
     
     STMScriptMessagingFiltersArray *subpredicatesDics =
         [self subpredicatesDicsForEntityName:destinationEntityName
