@@ -159,10 +159,68 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     
     if ([key hasPrefix:@"ANY"]) {
         
+#warning TODO: mv it to previous method
+        
         return [self anyConditionForKey:key
                        filterDictionary:filterDictionary
                           relationships:relationships
                              entityName:entityName];
+        
+    }
+    
+    NSMutableArray *keyComponents = [key componentsSeparatedByString:@"."].mutableCopy;
+    
+    if (keyComponents.count > 1) {
+        
+//        NSLog(@"have complex key");
+        NSString *keyHead = keyComponents.firstObject;
+        NSRelationshipDescription *relationship = relationships[keyHead];
+        
+        if (!relationship) {
+            
+            NSLog(@"have no relationship %@", keyHead);
+            return nil;
+            
+        }
+        
+        [keyComponents removeObject:keyHead];
+        NSString *filterKey = [keyComponents componentsJoinedByString:@"."];
+        
+        NSString *relEntityName = relationship.destinationEntity.name;
+        NSEntityDescription *entityDescription = self.modellingDelegate.entitiesByName[relEntityName];
+        
+        NSDictionary <NSString *, __kindof NSPropertyDescription *> *relProperties = entityDescription.propertiesByName;
+        NSDictionary <NSString *, NSAttributeDescription *> *relAttributes = entityDescription.attributesByName;
+        NSDictionary <NSString *, NSRelationshipDescription *> *relRelationships = entityDescription.relationshipsByName;
+
+        STMScriptMessagingFiltersArray *result = [self subpredicatesDicsForFilterKey:filterKey
+                                                                    filterDictionary:@{filterKey: filterDictionary[key]}
+                                                                       relationships:relRelationships
+                                                                          attributes:relAttributes
+                                                                          properties:relProperties
+                                                                          entityName:relEntityName];
+        
+        STMScriptMessagingFiltersMutableArray *returnResult = @[].mutableCopy;
+        
+        [result enumerateObjectsUsingBlock:^(STMScriptMessagingFilterDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+           
+            STMScriptMessagingFilterMutableDictionary *dic = @{}.mutableCopy;
+
+            [obj enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, __kindof NSObject * _Nonnull obj, BOOL * _Nonnull stop) {
+            
+                NSString *newKey = [@[keyHead, key] componentsJoinedByString:@"."];
+                dic[newKey] = obj;
+                
+            }];
+            
+            [returnResult addObject:dic];
+            
+        }];
+        
+//        NSLog(@"result %@", result);
+//        NSLog(@"returnResult %@", returnResult);
+        
+        return returnResult;
         
     }
     
