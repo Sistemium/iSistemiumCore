@@ -20,6 +20,8 @@
 @property (nonatomic, strong) NSMappingModel *mappingModel;
 @property (nonatomic, strong) NSMigrationManager *migrationManager;
 
+@property (nonatomic) BOOL needToMigrate;
+
 @end
 
 
@@ -38,7 +40,8 @@
     
     self.sourceModel = sourceModel;
     self.destinationModel = destinationModel;
-
+    self.needToMigrate = ![self.sourceModel isEqual:self.destinationModel];
+    
     if (self.needToMigrate) {
         NSLog(@"ModelMapper need to migrate");
     }
@@ -52,8 +55,8 @@
             
             // This is a workaround for migrating json fields to Transformable
             
-            NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
             NSDictionary *errorUserInfo = (*error).userInfo;
+            NSLog(@"NSMappingModel error: %@: %@", [*error localizedDescription], errorUserInfo[@"reason"]);
             
             if ([STMFunctions isNotNull:errorUserInfo[@"reason"]] && [errorUserInfo[@"reason"] isEqualToString:@"Source and destination attribute types are incompatible"]){
                 
@@ -67,13 +70,15 @@
                 NSEntityDescription *destinationEntity = destinationModel.entitiesByName[entityName];
                 NSAttributeDescription *destinationProperty = destinationEntity.attributesByName[propertyName];
                 
-                sourceEntityProperties[propertyName] = destinationProperty;
+                sourceEntityProperties[propertyName] = destinationProperty.copy;
                 sourceEntity.properties = sourceEntityProperties.allValues;
                 
                 sourceEntities[errorUserInfo[@"entity"]] = sourceEntity;
                 sourceModel.entities = sourceEntities.allValues;
                 
                 *error = nil;
+                
+                self.needToMigrate = YES;
                 
                 continue;
             }
@@ -94,10 +99,6 @@
 
 
 #pragma mark - STMModelMapping
-
-- (BOOL)needToMigrate {
-    return ![self.sourceModel isEqual:self.destinationModel];
-}
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
     return [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
