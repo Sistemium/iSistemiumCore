@@ -50,7 +50,7 @@
     
     if ([options[STMPersistingOptionRecordstatuses] isEqual:@NO]) return attributes;
     
-    if ([STMFunctions isNotNullAndTrue:attributes[@"isRemoved"]]) {
+    if ([STMFunctions isNotNullAndTrue:attributes[@"isRemoved"]] && [STMFunctions isNotNull:attributes[@"name"]]) {
         
         NSString *objectXid = attributes[@"objectXid"];
         NSString *entityNameToDestroy = [STMFunctions addPrefixToEntityName:attributes[@"name"]];

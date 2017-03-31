@@ -9,6 +9,7 @@
 #import "STMScriptMessageHandler+Predicates.h"
 
 typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFiltersArray;
+typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFiltersMutableArray;
 
 @implementation STMScriptMessageHandler (Predicates)
 
@@ -383,10 +384,6 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
     }
     
     STMScriptMessagingFilterDictionary *destinationEntityFilter = filterDictionary[key];
-    NSString *firstKey = destinationEntityFilter.allKeys.firstObject;
-    
-    destinationEntityFilter = @{firstKey : destinationEntityFilter[firstKey]};
-    // only one filter is using at ANY condition
     
     if (![destinationEntityFilter isKindOfClass:[self whereFilterClass]]) {
         
@@ -395,18 +392,39 @@ typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFilters
         
     }
     
-    NSString *destinationEntityName = relationships[checkingProperty].destinationEntity.name;
+    NSRelationshipDescription *relationship = relationships[checkingProperty];
     
-    NSArray <STMScriptMessagingFilterDictionary *> *subpredicatesDics =
+    if (relationship.isToMany && destinationEntityFilter.count > 1) {
+        
+        NSLog(@"WARNING! ANY with more than one condition are broken for to-many relationships");
+    
+#warning ANY with more than one condition are broken for to-many relationships
+        // ANY (rel.a = %a && rel.b = %b)
+        // will be transform to
+        // ANY rel.a = %a && ANY rel.b = %b
+        // which is not equal to first one if rel is to-many
+
+    }
+    
+    NSString *destinationEntityName = relationship.destinationEntity.name;
+    
+    STMScriptMessagingFiltersArray *subpredicatesDics =
         [self subpredicatesDicsForEntityName:destinationEntityName
                             filterDictionary:destinationEntityFilter];
+
+    STMScriptMessagingFiltersMutableArray *resultSubpredicatesDics = @[].mutableCopy;
     
-    firstKey = subpredicatesDics.firstObject.allKeys.firstObject;
-    NSString *finalKey = [@[key, firstKey] componentsJoinedByString:@"."];
+    [subpredicatesDics enumerateObjectsUsingBlock:^(STMScriptMessagingFilterDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
     
-    subpredicatesDics = @[@{finalKey : subpredicatesDics.firstObject[firstKey]}];
+        NSString *firstKey = obj.allKeys.firstObject;
+        NSString *finalKey = [@[key, firstKey] componentsJoinedByString:@"."];
+        
+        [resultSubpredicatesDics addObject:@{finalKey : obj[firstKey]}];
+        
+    }];
     
-    return subpredicatesDics;
+    return resultSubpredicatesDics.copy;
     
 }
 
