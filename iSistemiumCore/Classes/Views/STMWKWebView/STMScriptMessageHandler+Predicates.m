@@ -9,6 +9,7 @@
 #import "STMScriptMessageHandler+Predicates.h"
 
 typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFiltersArray;
+typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFiltersMutableArray;
 
 @implementation STMScriptMessageHandler (Predicates)
 
