@@ -49,19 +49,28 @@
                                                                          error:error];
         
         if (*error) {
+            
+            // This is a workaround for migrating json fields to Transformable
+            
             NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
-            if ([STMFunctions isNotNull:(*error).userInfo[@"reason"]] && [(*error).userInfo[@"reason"] isEqualToString:@"Source and destination attribute types are incompatible"]){
+            NSDictionary *errorUserInfo = (*error).userInfo;
+            
+            if ([STMFunctions isNotNull:errorUserInfo[@"reason"]] && [errorUserInfo[@"reason"] isEqualToString:@"Source and destination attribute types are incompatible"]){
+                
+                NSString *entityName = errorUserInfo[@"entity"];
+                NSString *propertyName = errorUserInfo[@"property"];
                 
                 NSMutableDictionary *sourceEntities = sourceModel.entitiesByName.mutableCopy;
-                NSEntityDescription *sourceEntity = sourceModel.entitiesByName[(*error).userInfo[@"entity"]];
+                NSEntityDescription *sourceEntity = sourceEntities[entityName];
                 NSMutableDictionary *sourceEntityProperties = sourceEntity.propertiesByName.mutableCopy;
-                NSEntityDescription *destinationEntity = destinationModel.entitiesByName[(*error).userInfo[@"entity"]];
-                NSAttributeDescription *destinationProperty = destinationEntity.attributesByName[(*error).userInfo[@"property"]];
                 
-                sourceEntityProperties[(*error).userInfo[@"property"]] = destinationProperty;
+                NSEntityDescription *destinationEntity = destinationModel.entitiesByName[entityName];
+                NSAttributeDescription *destinationProperty = destinationEntity.attributesByName[propertyName];
+                
+                sourceEntityProperties[propertyName] = destinationProperty;
                 sourceEntity.properties = sourceEntityProperties.allValues;
                 
-                sourceEntities[(*error).userInfo[@"entity"]] = sourceEntity;
+                sourceEntities[errorUserInfo[@"entity"]] = sourceEntity;
                 sourceModel.entities = sourceEntities.allValues;
                 
                 *error = nil;
