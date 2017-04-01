@@ -247,19 +247,21 @@
     
     FMResultSet *s = [self.database executeQuery:query];
     
+    NSArray *booleanKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSBooleanAttributeType]];
+    
+    NSArray *jsonKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]];
+
     while ([s next]) {
         
         NSMutableDictionary *dict = (NSMutableDictionary*)s.resultDictionary;
 
-        NSArray *booleanKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSBooleanAttributeType]];
-        for (NSString* key in booleanKeys){
+        for (NSString *key in booleanKeys){
             if ([STMFunctions isNotNull:[dict valueForKey:key]]){
                 dict[key] = (__bridge id _Nullable)([dict[key] boolValue] ? kCFBooleanTrue : kCFBooleanFalse);
             }
         }
         
-        NSArray *jsonKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]];
-        for (NSString* key in jsonKeys){
+        for (NSString *key in jsonKeys){
             if ([STMFunctions isNotNull:[dict valueForKey:key]]){
                 dict[key] = [STMFunctions jsonObjectFromString:dict[key]];
             }
