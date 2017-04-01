@@ -133,16 +133,33 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     NSDictionary <NSString *, NSAttributeDescription *> *attributes = entityDescription.attributesByName;
     NSDictionary <NSString *, NSRelationshipDescription *> *relationships = entityDescription.relationshipsByName;
     
-    NSMutableArray <NSDictionary <NSString *, __kindof NSObject *> *> *subpredicatesDics = @[].mutableCopy;
+    STMScriptMessagingFiltersMutableArray *subpredicatesDics = @[].mutableCopy;
     
     for (NSString *key in filterDictionary.allKeys) {
         
-        [subpredicatesDics addObjectsFromArray:[self subpredicatesDicsForFilterKey:key
-                                                                  filterDictionary:filterDictionary
-                                                                     relationships:relationships
-                                                                        attributes:attributes
-                                                                        properties:properties
-                                                                        entityName:entityName]];
+        STMScriptMessagingWhereFilterDictionary *filterArguments = filterDictionary[key];
+        
+        STMScriptMessagingFiltersArray *result = @[];
+        
+        if ([key hasPrefix:@"ANY"]) {
+            
+            result = [self anyConditionForKey:key
+                              filterArguments:filterArguments
+                                relationships:relationships
+                                   entityName:entityName];
+            
+        } else {
+            
+            result = [self subpredicatesDicsForFilterKey:key
+                                         filterArguments:filterArguments
+                                           relationships:relationships
+                                              attributes:attributes
+                                              properties:properties
+                                              entityName:entityName];
+            
+        }
+
+        [subpredicatesDics addObjectsFromArray:result];
         
     }
     
@@ -151,22 +168,11 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
 }
 
 - (STMScriptMessagingFiltersArray *)subpredicatesDicsForFilterKey:(NSString *)key
-                                                 filterDictionary:(STMScriptMessagingWhereFilterDictionary *)filterDictionary
+                                                  filterArguments:(STMScriptMessagingWhereFilterDictionary *)filterArguments
                                                     relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
                                                        attributes:(NSDictionary <NSString *, NSAttributeDescription *> *)attributes
                                                        properties:(NSDictionary <NSString *, __kindof NSPropertyDescription *> *)properties
                                                        entityName:(NSString *)entityName {
-    
-    if ([key hasPrefix:@"ANY"]) {
-        
-#warning TODO: mv it to previous method
-        
-        return [self anyConditionForKey:key
-                       filterDictionary:filterDictionary
-                          relationships:relationships
-                             entityName:entityName];
-        
-    }
     
     NSMutableArray *keyComponents = [key componentsSeparatedByString:@"."].mutableCopy;
     
@@ -186,19 +192,8 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         [keyComponents removeObject:keyHead];
         NSString *filterKey = [keyComponents componentsJoinedByString:@"."];
         
-        NSString *relEntityName = relationship.destinationEntity.name;
-        NSEntityDescription *entityDescription = self.modellingDelegate.entitiesByName[relEntityName];
-        
-        NSDictionary <NSString *, __kindof NSPropertyDescription *> *relProperties = entityDescription.propertiesByName;
-        NSDictionary <NSString *, NSAttributeDescription *> *relAttributes = entityDescription.attributesByName;
-        NSDictionary <NSString *, NSRelationshipDescription *> *relRelationships = entityDescription.relationshipsByName;
-
-        STMScriptMessagingFiltersArray *result = [self subpredicatesDicsForFilterKey:filterKey
-                                                                    filterDictionary:@{filterKey: filterDictionary[key]}
-                                                                       relationships:relRelationships
-                                                                          attributes:relAttributes
-                                                                          properties:relProperties
-                                                                          entityName:relEntityName];
+        STMScriptMessagingFiltersArray *result = [self subpredicatesDicsForEntityName:relationship.destinationEntity.name
+                                                                     filterDictionary:@{filterKey: filterArguments}];
         
         STMScriptMessagingFiltersMutableArray *returnResult = @[].mutableCopy;
         
@@ -216,9 +211,6 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
             [returnResult addObject:dic];
             
         }];
-        
-//        NSLog(@"result %@", result);
-//        NSLog(@"returnResult %@", returnResult);
         
         return returnResult;
         
@@ -256,9 +248,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
     }
     
-    NSDictionary <NSString *, __kindof NSObject *> *arguments = filterDictionary[key];
-    
-    return [self subpredicatesDicsForArguments:arguments
+    return [self subpredicatesDicsForArguments:filterArguments
                                       localKey:localKey
                                    isAttribute:isAttribute
                                 isRelationship:isRelationship
@@ -428,7 +418,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
 }
 
 - (STMScriptMessagingFiltersArray *)anyConditionForKey:(NSString *)key
-                                      filterDictionary:(STMScriptMessagingWhereFilterDictionary *)filterDictionary
+                                       filterArguments:(STMScriptMessagingWhereFilterDictionary *)filterArguments
                                          relationships:(NSDictionary <NSString *, NSRelationshipDescription *> *)relationships
                                             entityName:(NSString *)entityName {
 
@@ -441,18 +431,16 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
     }
     
-    STMScriptMessagingFilterDictionary *destinationEntityFilter = filterDictionary[key];
-    
-    if (![destinationEntityFilter isKindOfClass:[self whereFilterClass]]) {
+    if (![filterArguments isKindOfClass:[self whereFilterClass]]) {
         
-        NSLog(@"ANY filter is malformed: %@", destinationEntityFilter);
+        NSLog(@"ANY filter is malformed: %@", filterArguments);
         return nil;
         
     }
     
     NSRelationshipDescription *relationship = relationships[checkingProperty];
     
-    if (relationship.isToMany && destinationEntityFilter.count > 1) {
+    if (relationship.isToMany && filterArguments.count > 1) {
         
         NSLog(@"WARNING! ANY with more than one condition are broken for to-many relationships");
     
@@ -468,7 +456,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     
     STMScriptMessagingFiltersArray *subpredicatesDics =
         [self subpredicatesDicsForEntityName:destinationEntityName
-                            filterDictionary:destinationEntityFilter];
+                            filterDictionary:filterArguments];
 
     STMScriptMessagingFiltersMutableArray *resultSubpredicatesDics = @[].mutableCopy;
     
