@@ -212,8 +212,8 @@
         NSString *entityName = picture[@"entityName"];
         NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
         
-        // use STMFunctions isNull: here?
-        if (![STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"thumbnailHref"]]){
+        if ([STMFunctions isNull:attributes[@"thumbnailPath"]] &&
+            [STMFunctions isNotNull:attributes[@"thumbnailHref"]]) {
             
             NSString *thumbnailHref = attributes[@"thumbnailHref"];
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
@@ -234,8 +234,8 @@
 
             }
             
-            //___________
-            // mv it in if (thumbnailData) {} ?
+            //---------
+            // mv it in if(thumbnailData){…} ?
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
             [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
@@ -245,7 +245,7 @@
             .catch(^(NSError *error){
                 NSLog(@"thumbnail set %@ id: %@ error:",entityName, attributes[STMPersistingKeyPrimary], [error localizedDescription]);
             });
-            // ___________
+            //---------
             
             continue;
         }
@@ -307,23 +307,19 @@
         
         NSMutableDictionary *mutAttributes = attributes.mutableCopy;
         
-        // use STMFunctions isNull: here?
-        if ([self.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
+        if ([self.filing fileExistsAtPath:resizedImagePath] &&
+            [STMFunctions isNull:mutAttributes[@"resizedImagePath"]]) {
             
             mutAttributes[@"resizedImagePath"] = resizedFileName;
-            
             [fieldsToUpdate addObject:@"resizedImagePath"];
             
-            // we don't check imagePath is exist?
             mutAttributes[@"imagePath"] = resizedFileName;
-            
-            // add wrong obeject? should be @"imagePath"?
             [fieldsToUpdate addObject:@"imagePath"];
             
         }
         
-        // use STMFunctions isNull: here?
-        if ([self.filing fileExistsAtPath:thumbnailPath] && ![STMFunctions isNotNull:mutAttributes[@"thumbnailPath"]]) {
+        if ([self.filing fileExistsAtPath:thumbnailPath] &&
+            [STMFunctions isNull:mutAttributes[@"thumbnailPath"]]) {
             
             mutAttributes[@"thumbnailPath"] = thumbnailFileName;
             
@@ -335,16 +331,15 @@
             
             NSDictionary *options = @{STMPersistingOptionSetTs          :   @NO,
                                       STMPersistingOptionFieldstoUpdate :   fieldsToUpdate.copy};
-            
+
+#warning - memory leak here
+            // updateSync: causes memory leak
             attributes = [self.persistenceDelegate updateSync:entityName
                                                    attributes:mutAttributes.copy
                                                       options:options
                                                         error:&error];
-
-            // check if attributes is correct here
-            NSLog(@"attributes after update %@", attributes);
             
-            if (error){
+            if (error) {
                 NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos error: %@", error.localizedDescription];
                 [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
                 continue;
@@ -354,11 +349,9 @@
             
             [self.hrefDictionary removeObjectForKey:href];
             
-            if (([STMFunctions isNotNull:attributes[@"imagePath"]] &&
-                 [STMFunctions isNotNull:attributes[@"resizedImagePath"]] &&
-                 [STMFunctions isNotNull:attributes[@"thumbnailPath"]])) {
-                
-                // why double (()) here?
+            if ([STMFunctions isNotNull:attributes[@"imagePath"]] &&
+                [STMFunctions isNotNull:attributes[@"resizedImagePath"]] &&
+                [STMFunctions isNotNull:attributes[@"thumbnailPath"]]) {
                 
                 continue;
                 
@@ -367,8 +360,7 @@
         }
         
         
-        // use STMFunctions isNull: here?
-        if (![STMFunctions isNotNull:attributes[@"imagePath"]]) {
+        if ([STMFunctions isNull:attributes[@"imagePath"]]) {
             
             if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
@@ -408,7 +400,7 @@
             
             attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
             
-            // mv it at begining of block? why we check it here?
+            // mv it at begining of if(photoData && photoData.length > 0){…}? why we check it here?
             if (!picture) continue;
             
             NSArray *fields = @[@"resizedImagePath",
@@ -429,10 +421,12 @@
             NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", attributes[@"imagePath"], error.localizedDescription];
             [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
             
-        // use STMFunctions isNotNull: here?
-        } else if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
+        } else if ([STMFunctions isNotNull:attributes[@"href"]]) {
             
-            // are we already do it earlier?
+            // are we already do it earlier in line 367?
+            // in if ([STMFunctions isNull:attributes[@"imagePath"]]){
+            //       if ([STMFunctions isNotNull:attributes[@"href"]]) {
+            
             [self hrefProcessingForObject:picture.mutableCopy];
             
         } else {
