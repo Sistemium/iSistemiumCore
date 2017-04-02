@@ -14,6 +14,10 @@
 #import "STMOperationQueue.h"
 #import "STMEntityController.h"
 
+
+#define THUMBNAIL_SIZE CGSizeMake(150, 150)
+
+
 @interface STMCorePicturesController()
 
 @property (nonatomic, strong) NSOperationQueue *uploadQueue;
