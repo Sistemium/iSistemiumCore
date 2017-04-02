@@ -318,7 +318,7 @@
             mutAttributes[@"imagePath"] = resizedFileName;
             
             // add wrong obeject? should be @"imagePath"?
-            [fieldsToUpdate addObject:@"resizedImagePath"];
+            [fieldsToUpdate addObject:@"imagePath"];
             
         }
         
