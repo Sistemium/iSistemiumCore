@@ -271,84 +271,14 @@
             if (pathComponents.count > 2) {
                 
                 NSLog(@"pathComponents.count > 2");
-                NSLog(@"this should not happened");
+                NSLog(@"this should not happened, was used earlier to convert image's paths from absolute to relative");
                 
-                NSMutableDictionary *mutPicture = picture.mutableCopy;
-                
-                [self imagePathsConvertingFromAbsoluteToRelativeForPicture:mutPicture];
-                
-                attributes = mutPicture[@"attributes"];
-                
-                NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"imagePath",@"resizedImagePath",@"imageThumbnail"],STMPersistingOptionSetTs:@NO};
-                [self.persistenceDelegate update:entityName attributes:attributes options:options];
             }
             
         }
         
     }
     
-}
-
-- (void)imagePathsConvertingFromAbsoluteToRelativeForPicture:(NSMutableDictionary *)picture {
-    
-    NSLogMethodName;
-    NSLog(@"this method should not be using any more");
-    
-    NSString *entityName = picture[@"entityName"];
-    
-    NSMutableDictionary *attributes = [picture[@"attributes"] mutableCopy];
-    
-    NSString *newImagePath = [self convertImagePath:attributes[@"imagePath"] withEntityName:entityName];
-    NSString *newResizedImagePath = [self convertImagePath:attributes[@"resizedImagePath"] withEntityName:entityName];
-    NSString *newThumbnailPath = [self convertImagePath:attributes[@"thumbnailPath"] withEntityName:entityName];
-    
-    if (newImagePath && newResizedImagePath && newThumbnailPath) {
-
-        NSLog(@"set new imagePath for picture %@", attributes[@"id"]);
-        attributes[@"imagePath"] = newImagePath;
-        NSLog(@"set new resizedImagePath for picture %@", attributes[@"id"]);
-        attributes[@"resizedImagePath"] = newResizedImagePath;
-        NSLog(@"set new thumbnaiPath for picture %@", attributes[@"id"]);
-        attributes[@"thumbnailPath"] = newThumbnailPath;
-        
-    } else {
-
-        NSLog(@"! new imagePath for picture %@", attributes[@"id"]);
-
-        if (attributes[@"href"] && ![attributes[@"href"] isKindOfClass:NSNull.class]) {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no newImagePath and have href for picture %@, flush picture and download data again", attributes[@"id"]];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            
-            [self removeImageFilesForPicture:attributes.copy withEntityName:entityName];
-            [self hrefProcessingForObject:picture];
-            
-        } else {
-
-            NSString *logMessage = [NSString stringWithFormat:@"imagePathsConvertingFromAbsoluteToRelativeForPicture no relative image path and no href for picture %@, will be deleted", attributes[@"id"]];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                     numType:STMLogMessageTypeError];
-            
-            [self deletePicture:picture.copy];
-            
-        }
-
-    }
-
-}
-
-- (NSString *)convertImagePath:(NSString *)path withEntityName:(NSString *)entityName{
-    
-    NSString *lastPathComponent = [path lastPathComponent];
-    NSString *imagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:lastPathComponent];
-    
-    if ([self.filing fileExistsAtPath:imagePath]) {
-        return [entityName stringByAppendingPathComponent:lastPathComponent];
-    } else {
-        return nil;
-    }
-
 }
 
 
