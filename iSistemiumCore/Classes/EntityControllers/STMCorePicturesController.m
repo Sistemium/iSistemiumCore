@@ -406,7 +406,7 @@
             attributes = [self.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fieldsToUpdate.copy} error:&error];
 
             // check if attributes is correct here
-            NSLog(@"attributes after update", attributes);
+            NSLog(@"attributes after update %@", attributes);
             
             if (error){
                 NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos error: %@", error.localizedDescription];
