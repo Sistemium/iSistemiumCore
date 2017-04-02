@@ -214,19 +214,26 @@
         
         if (![STMFunctions isNotNull:attributes[@"thumbnailPath"]] && [STMFunctions isNotNull:attributes[@"thumbnailHref"]]){
             
-            NSString* thumbnailHref = attributes[@"thumbnailHref"];
+            NSString *thumbnailHref = attributes[@"thumbnailHref"];
             NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
             NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
             
-            NSString *xid = attributes[STMPersistingKeyPrimary];
-            NSString *fileName = [xid stringByAppendingString:@".jpg"];
+            if (thumbnailData) {
             
-            if (thumbnailData) [self saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:attributes fromImageData:thumbnailData withEntityName:entityName];
+                NSString *xid = attributes[STMPersistingKeyPrimary];
+                NSString *fileName = [@[@"thumbnail_", xid, @".jpg"] componentsJoinedByString:@""];
+                
+                [self saveThumbnailImageFile:fileName
+                                  forPicture:attributes
+                               fromImageData:thumbnailData
+                              withEntityName:entityName];
+
+            }
             
             NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
             [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
-            .then(^(NSDictionary * result){
+            .then(^(NSDictionary *result){
                 NSLog(@"thumbnail set %@ id: %@", entityName, attributes[STMPersistingKeyPrimary]);
             })
             .catch(^(NSError *error){
@@ -236,7 +243,7 @@
             continue;
         }
         
-        NSArray *pathComponents = ![attributes[@"imagePath"] isKindOfClass:NSNull.class] ? [attributes[@"imagePath"] pathComponents] : nil;
+        NSArray *pathComponents = [STMFunctions isNotNull:attributes[@"imagePath"]] ? [attributes[@"imagePath"] pathComponents] : nil;
         
         if (pathComponents.count == 0) {
             
@@ -344,8 +351,8 @@
         NSDictionary *attributes = picture[@"attributes"];
         
         NSString *xid = attributes[STMPersistingKeyPrimary];
-        NSString *resizedFileName = [entityName stringByAppendingPathComponent:[@"resized_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
-        NSString *thumbnailFileName = [entityName stringByAppendingPathComponent:[@"thumbnail_" stringByAppendingString:[xid stringByAppendingString:@".jpg"]]];
+        NSString *resizedFileName = [entityName stringByAppendingPathComponent:[@[@"resized_", xid, @".jpg"] componentsJoinedByString:@""]];
+        NSString *thumbnailFileName = [entityName stringByAppendingPathComponent:[@[@"thumbnail_", xid, @".jpg"] componentsJoinedByString:@""]];
         
         NSString *resizedImagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:resizedFileName];
         NSString *thumbnailPath = [[self.filing picturesBasePath] stringByAppendingPathComponent:thumbnailFileName];
@@ -354,7 +361,7 @@
         
         NSMutableArray *fieldsToUpdate = @[].mutableCopy;
         
-        NSMutableDictionary *mutAttributes = [attributes mutableCopy];
+        NSMutableDictionary *mutAttributes = attributes.mutableCopy;
         
         if ([self.filing fileExistsAtPath:resizedImagePath] && ![STMFunctions isNotNull:mutAttributes[@"resizedImagePath"]]) {
             
@@ -390,7 +397,9 @@
             
             [self.hrefDictionary removeObjectForKey:href];
             
-            if (([STMFunctions isNotNull:attributes[@"imagePath"]] && [STMFunctions isNotNull:attributes[@"resizedImagePath"]] && [STMFunctions isNotNull:attributes[@"thumbnailPath"]])){
+            if (([STMFunctions isNotNull:attributes[@"imagePath"]] &&
+                 [STMFunctions isNotNull:attributes[@"resizedImagePath"]] &&
+                 [STMFunctions isNotNull:attributes[@"thumbnailPath"]])) {
                 continue;
             }
             
@@ -429,11 +438,17 @@
             
             if (!picture) continue;
             
-            NSArray *fields = @[@"resizedImagePath",@"thumbnailPath",@"imagePath"];
+            NSArray *fields = @[@"resizedImagePath",
+                                @"thumbnailPath",
+                                @"imagePath"];
             
-            [self.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields}  completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            [self.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+                
                 [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
-                                                  userInfo:[STMFunctions setValue:result forKey:@"attributes" inDictionary:picture]];
+                                            userInfo:[STMFunctions setValue:result
+                                                                     forKey:@"attributes"
+                                                               inDictionary:picture]];
+                
             }];
             
             
@@ -643,7 +658,7 @@
 
 - (BOOL)saveThumbnailImageFile:(NSString *)thumbnailFileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName{
     
-    UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:CGSizeMake(150, 150)];
+    UIImage *thumbnailPath = [STMFunctions resizeImage:[UIImage imageWithData:data] toSize:THUMBNAIL_SIZE];
     NSData *thumbnail = UIImageJPEGRepresentation(thumbnailPath, [self jpgQuality]);
     
     NSString *imagePath = [entityName stringByAppendingPathComponent:thumbnailFileName];
@@ -651,24 +666,21 @@
     NSString *absoluteImagePath = [[self.filing picturesPath:entityName] stringByAppendingPathComponent:thumbnailFileName];
     
     NSError *error = nil;
-    BOOL result = absoluteImagePath && thumbnail &&  [thumbnail writeToFile:absoluteImagePath
-                                 options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
-                                   error:&error];
+    BOOL result = absoluteImagePath && thumbnail && [thumbnail writeToFile:absoluteImagePath
+                                                                   options:(NSDataWritingAtomic|NSDataWritingFileProtectionNone)
+                                                                     error:&error];
     
     if (result) {
-        
         picture[@"thumbnailPath"] = imagePath;
-        
-        return YES;
-        
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"saveImageThumbnailFile %@ writeToFile %@ error: %@", thumbnailFileName, absoluteImagePath, error.localizedDescription];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
                                                  numType:STMLogMessageTypeError];
-        return NO;
         
     }
+    
+    return result;
     
 }
 
