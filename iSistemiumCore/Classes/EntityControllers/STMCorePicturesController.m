@@ -333,7 +333,13 @@
         
         if (fieldsToUpdate.count > 0){
             
-            attributes = [self.persistenceDelegate updateSync:entityName attributes:mutAttributes.copy options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fieldsToUpdate.copy} error:&error];
+            NSDictionary *options = @{STMPersistingOptionSetTs          :   @NO,
+                                      STMPersistingOptionFieldstoUpdate :   fieldsToUpdate.copy};
+            
+            attributes = [self.persistenceDelegate updateSync:entityName
+                                                   attributes:mutAttributes.copy
+                                                      options:options
+                                                        error:&error];
 
             // check if attributes is correct here
             NSLog(@"attributes after update %@", attributes);
