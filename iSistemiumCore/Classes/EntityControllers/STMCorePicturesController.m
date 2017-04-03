@@ -189,7 +189,11 @@
     
     self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString *entityName, NSArray *data) {
         
-        NSString *dataId = data.firstObject[@"id"];
+        NSDictionary *pic = data.firstObject;
+        
+        if (!pic[@"thumbnailPath"]) return;
+        
+        NSString *dataId = pic[@"id"];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id != %@", dataId];
         self.nonloadedPictures = [self.nonloadedPictures filteredArrayUsingPredicate:predicate].mutableCopy;
