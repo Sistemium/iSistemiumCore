@@ -47,13 +47,19 @@
 }
 
 - (instancetype)init {
+    
     self = [super init];
+    
     if (self) {
+        
         self.downloadQueue = [[STMOperationQueue alloc] init];
         self.downloadQueue.maxConcurrentOperationCount = 1;
+        
     }
     return self;
+    
 }
+
 
 #pragma mark - instance properties
 
@@ -85,11 +91,8 @@
 - (NSOperationQueue *)uploadQueue {
     
     if (!_uploadQueue) {
-        
         _uploadQueue = [[NSOperationQueue alloc] init];
-        
     }
-    
     return _uploadQueue;
     
 }
@@ -99,9 +102,7 @@
 }
 
 - (NSArray *)allPictures {
-
     return [self allPicturesWithPredicate:nil];
-    
 }
 
 - (NSArray *)allPicturesWithPredicate:(NSPredicate*)predicate{
@@ -169,7 +170,9 @@
     if (_nonloadedPicturesCount == 0) self.downloadingPictures = NO;
 
     return _nonloadedPicturesCount;
+
 }
+
 
 #pragma mark - class methods
 

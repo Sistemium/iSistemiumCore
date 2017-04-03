@@ -506,7 +506,7 @@
 
     self.nonloadedPicturesButton.enabled = YES;
     
-    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [STMCorePicturesController sharedController].nonloadedPicturesCount;
     
     NSString *title = @"";
     NSString *badgeValue = nil;
@@ -710,7 +710,7 @@
 
 - (void)showDownloadAlert {
     
-    NSUInteger unloadedPicturesCount = [[STMCorePicturesController sharedController] nonloadedPicturesCount];
+    NSUInteger unloadedPicturesCount = [STMCorePicturesController sharedController].nonloadedPicturesCount;
     
     if (unloadedPicturesCount > 0) {
         
