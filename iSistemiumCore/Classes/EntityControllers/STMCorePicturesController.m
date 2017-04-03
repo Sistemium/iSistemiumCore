@@ -56,13 +56,24 @@
         self.downloadQueue = [[STMOperationQueue alloc] init];
         self.downloadQueue.maxConcurrentOperationCount = 1;
         
+        [self observeNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
+                         selector:@selector(syncerGetBunchOfObjects)];
+        
     }
     return self;
     
 }
 
+- (void)dealloc {
+    [self removeObservers];
+}
+
 
 #pragma mark - instance properties
+
+- (void)syncerGetBunchOfObjects {
+    self.nonloadedPictures = nil;
+}
 
 - (BOOL)waitingForDownloadPicture {
     return !!self.downloadQueue.operationCount;
