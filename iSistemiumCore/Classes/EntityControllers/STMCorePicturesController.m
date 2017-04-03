@@ -189,6 +189,11 @@
     
     self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString *entityName, NSArray *data) {
         
+        NSString *dataId = data.firstObject[@"id"];
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id != %@", dataId];
+        self.nonloadedPictures = [self.nonloadedPictures filteredArrayUsingPredicate:predicate].mutableCopy;
+        
         _nonloadedPicturesCount = self.nonloadedPictures.count;
         
         [self postAsyncMainQueueNotification:@"nonloadedPicturesCountDidChange"];
