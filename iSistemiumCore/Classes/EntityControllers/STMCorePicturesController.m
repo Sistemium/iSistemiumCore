@@ -172,23 +172,28 @@
 
     if (!self.nonloadedPicturesSubscriptionID) {
         
-        _nonloadedPicturesCount = [self nonloadedPictures].count;
-        
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
-        
-        self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString * entityName, NSArray *data) {
-            
-            _nonloadedPicturesCount = [self nonloadedPictures].count;
-            
-            [self postAsyncMainQueueNotification:@"nonloadedPicturesCountDidChange"];
-            
-        }];
+        _nonloadedPicturesCount = self.nonloadedPictures.count;
+        [self subscribeToNonloadedPictures];
         
     }
 
     if (_nonloadedPicturesCount == 0) self.downloadingPictures = NO;
 
     return _nonloadedPicturesCount;
+
+}
+
+- (void)subscribeToNonloadedPictures {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
+    
+    self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString *entityName, NSArray *data) {
+        
+        _nonloadedPicturesCount = self.nonloadedPictures.count;
+        
+        [self postAsyncMainQueueNotification:@"nonloadedPicturesCountDidChange"];
+        
+    }];
 
 }
 
