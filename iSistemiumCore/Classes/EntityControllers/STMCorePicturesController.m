@@ -27,6 +27,7 @@
 @property (nonatomic, strong) NSMutableDictionary *settings;
 
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
+@property (nonatomic, strong) NSMutableArray *nonloadedPictures;
 
 @property (nonatomic,strong) STMOperationQueue *downloadQueue;
 
@@ -139,13 +140,20 @@
     return _filing;
 }
 
-- (NSArray *)nonloadedPictures {
+- (NSMutableArray *)nonloadedPictures {
     
-    NSString *loadablePictures = @"NOT (entityName IN %@) AND (attributes.href != nil) AND (attributes.thumbnailPath == nil)";
-    NSArray *excludingPhotosAndInstant = [self.photoEntitiesNames arrayByAddingObjectsFromArray:self.instantLoadEntityNames];
-    NSPredicate *nonloadedPicturesPredicate = [NSPredicate predicateWithFormat:loadablePictures, excludingPhotosAndInstant];
+    if (!_nonloadedPictures) {
     
-    return [self.allPictures filteredArrayUsingPredicate:nonloadedPicturesPredicate];
+        NSString *loadablePictures = @"NOT (entityName IN %@) AND (attributes.href != nil) AND (attributes.thumbnailPath == nil)";
+        NSArray *excludingPhotosAndInstant = [self.photoEntitiesNames arrayByAddingObjectsFromArray:self.instantLoadEntityNames];
+        NSPredicate *nonloadedPicturesPredicate = [NSPredicate predicateWithFormat:loadablePictures, excludingPhotosAndInstant];
+        
+        NSArray *result = [self.allPictures filteredArrayUsingPredicate:nonloadedPicturesPredicate];
+        
+        _nonloadedPictures = result.count ? result.mutableCopy : nil;
+
+    }
+    return _nonloadedPictures;
     
 }
 
