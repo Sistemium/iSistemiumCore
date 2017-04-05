@@ -339,6 +339,36 @@
     
 }
 
+- (NSArray *)sumKeysForEntityName:(NSString *)entityName {
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+    
+    NSArray <NSNumber *> *numericTypes = @[@(NSInteger16AttributeType),
+                                           @(NSInteger32AttributeType),
+                                           @(NSInteger64AttributeType),
+                                           @(NSDecimalAttributeType),
+                                           @(NSDoubleAttributeType),
+                                           @(NSFloatAttributeType)];
+    
+    NSDictionary *tableColumns = self.stmFMDB.columnsByTable[tableName];
+    
+    NSDictionary *filteredTableColumns = [STMFunctions mapDictionary:tableColumns withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
+        
+        BOOL valueIsNumeric = [numericTypes containsObject:value];
+        BOOL keyIsIgnored = [self.stmFMDB.ignoredAttributes containsObject:key];
+        
+        return valueIsNumeric && !keyIsIgnored ? value : nil;
+        
+    }];
+    
+    NSArray *sumKeys = [STMFunctions mapArray:filteredTableColumns.allKeys withBlock:^id _Nonnull(id  _Nonnull value) {
+        return [NSString stringWithFormat:@"sum([%1$@]) [%1$@]", value];
+    }];
+
+    return sumKeys;
+    
+}
+
 
 @end
 
