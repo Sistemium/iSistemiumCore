@@ -63,6 +63,9 @@
     
     STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:database];
     
+    self.builtInAttributes = [STMFmdbSchema builtInAttributes];
+    self.ignoredAttributes = [STMFmdbSchema ignoredAttributes];
+    
     NSString *savedModelPath = [self.dbPath stringByAppendingString:@".model"];
     
     NSManagedObjectModel *savedModel = [NSManagedObjectModel managedObjectModelFromFile:savedModelPath];
