@@ -369,7 +369,7 @@
     }];
     
     NSArray *sumKeys = [STMFunctions mapArray:filteredTableColumns.allKeys withBlock:^id _Nonnull(id  _Nonnull value) {
-        return [NSString stringWithFormat:@"sum([%1$@]) [%1$@]", value];
+        return [NSString stringWithFormat:@"sum([%1$@]) [sum(%1$@)]", value];
     }];
 
     return sumKeys;
