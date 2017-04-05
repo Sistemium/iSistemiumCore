@@ -110,13 +110,20 @@
     NSString *options = @"";
     NSString *columns = @"";
     
-    if (groupBy.count){
+    if (groupBy.count) {
+        
         groupBy = [STMFunctions mapArray:groupBy withBlock:^id (id value) {
             return [NSString stringWithFormat:@"[%@]", value];
         }];
         options = [groupBy componentsJoinedByString:@", "];
-        columns = [options stringByAppendingString:@", count(*) [count()]"];
         options = [@"GROUP BY " stringByAppendingString:options];
+
+        NSMutableArray *columnKeys = groupBy.mutableCopy;
+        [columnKeys addObjectsFromArray:[self sumKeysForEntityName:entityName]];
+        [columnKeys addObject:@"count(*) [count()]"];
+        
+        columns = [columnKeys componentsJoinedByString:@", "];
+        
     } else {
         columns = @"*";
     }
