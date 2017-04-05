@@ -19,6 +19,7 @@
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database;
 
 + (NSArray *)builtInAttributes;
++ (NSArray *)ignoredAttributes;
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;
 
