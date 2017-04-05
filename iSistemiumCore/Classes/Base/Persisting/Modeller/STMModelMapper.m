@@ -342,7 +342,7 @@
         NSSet *mappedProperties = entityMapping.userInfo[@"mappedProperties"];
         if (mappedProperties.count) {
             for (NSString *propertyName in mappedProperties) {
-                NSLog(@"    !!! remains the same property: %@", propertyName);
+//                NSLog(@"    !!! remains the same property: %@", propertyName);
             }
         }
         
