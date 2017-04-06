@@ -868,7 +868,7 @@
     NSError *error;
 
     [self.persistenceDelegate destroySync:entityName
-                               identifier:[STMFunctions hexStringFromData:attributes[@"id"]]
+                               identifier:attributes[@"id"]
                                   options:nil error:&error];
     
 }
