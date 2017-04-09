@@ -348,9 +348,21 @@ static NSString *SQLNullValueString = @"NULL";
     tables = mtables.copy;
     
     if (tables.count > 1){
+        
+        if ([rightSQLExpression isEqualToString:@"NULL"]) {
+            NSLog(@"nil");
+        }
+        
         leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]],[self FKToTablename:tables[1]]];
         if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]){
-            rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )",tables[0]]];
+            
+            if ([rightSQLExpression isEqualToString:@"NULL"]) {
+#warning this won't work if relationship name isn't equal to column name
+                leftSQLExpression = [NSString stringWithFormat:@"%@%@" ,tables[0], RELATIONSHIP_SUFFIX];
+            } else {
+                rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )",tables[0]]];
+            }
+            
         }else{
             rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
         }
