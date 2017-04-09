@@ -349,10 +349,6 @@ static NSString *SQLNullValueString = @"NULL";
     
     if (tables.count > 1){
         
-        if ([rightSQLExpression isEqualToString:@"NULL"]) {
-            NSLog(@"nil");
-        }
-        
         leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]],[self FKToTablename:tables[1]]];
         if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]){
             
