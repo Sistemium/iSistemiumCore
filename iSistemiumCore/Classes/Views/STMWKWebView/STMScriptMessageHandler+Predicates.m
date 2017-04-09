@@ -312,14 +312,14 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     
     if ([localKey.lowercaseString hasSuffix:@"uuid"] || [localKey.lowercaseString hasSuffix:@"xid"] || isRelationship) {
         
-        if (![value isKindOfClass:[NSString class]]) {
-            
-            NSLog(@"value is not a String, but it should be to get xid or uuid value");
+        if ([value isKindOfClass:[NSString class]]) {
+            value = [value stringByReplacingOccurrencesOfString:@"-" withString:@""];
+        } else if ([value isEqual:[NSNull null]]) {
+            value = nil;
+        } else {
+            NSLog(@"value is neither a String nor Null, but it should be to get xid or uuid value");
             return nil;
-            
         }
-        
-        value = [value stringByReplacingOccurrencesOfString:@"-" withString:@""];
         
     }
     
@@ -354,7 +354,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
             
         }
         
-        value = [STMFunctions dataFromString:value];
+        value = value ? [STMFunctions dataFromString:value] : nil;
         
         localKey = [localKey stringByAppendingString:@".xid"];
         
