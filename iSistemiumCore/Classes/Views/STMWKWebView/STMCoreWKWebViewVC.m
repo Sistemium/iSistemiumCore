@@ -961,7 +961,13 @@ STMBarCodeScannerDelegate>
     
     if (requestId && [data isKindOfClass:[NSArray class]]) {
         
-        NSLog(@"requestId %@ (%@) callbackWithData: %@ objects", requestId, parameters[@"entity"], @([(NSArray *)data count]));
+        NSString *entityName = parameters[@"entity"] ? parameters[@"entity"] : parameters[@"entityName"] ? parameters[@"entityName"] : @"unknown entity";
+        
+        if ([entityName isEqualToString:@"unknown entity"]) {
+            NSLog(@"parameters %@", parameters);
+        }
+        
+        NSLog(@"requestId %@ (%@) callbackWithData: %@ objects", requestId, entityName, @([(NSArray *)data count]));
         
     } else {
         
