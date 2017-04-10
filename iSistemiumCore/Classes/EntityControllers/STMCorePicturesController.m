@@ -29,7 +29,7 @@
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID nonloadedPicturesSubscriptionID;
 @property (nonatomic, strong) NSMutableArray *nonloadedPictures;
 
-@property (nonatomic,strong) STMOperationQueue *downloadQueue;
+@property (nonatomic,strong) NSOperationQueue *downloadQueue;
 
 @property (readonly) NSSet <NSString *> *pictureEntitiesNames;
 @property (readonly) NSArray <NSString *> *photoEntitiesNames;
@@ -53,8 +53,8 @@
     
     if (self) {
         
-        self.downloadQueue = [[STMOperationQueue alloc] init];
-        self.downloadQueue.maxConcurrentOperationCount = 1;
+        self.downloadQueue = [[NSOperationQueue alloc] init];
+        self.downloadQueue.maxConcurrentOperationCount = 2;
         
         [self observeNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
                          selector:@selector(syncerGetBunchOfObjects)];
@@ -564,6 +564,8 @@
     BOOL result = YES;
     NSMutableDictionary *mutablePicture = picture.mutableCopy;
     
+    NSLog(@"saveResized: %@", fileName);
+    
     NSData *resizedData = [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
     result = !!resizedData;
@@ -579,6 +581,8 @@
     }else{
         mutablePicture[@"imagePath"] = mutablePicture[@"resizedImagePath"];
     }
+    
+    NSLog(@"saveThumbnail: %@", fileName);
     
     result = result && [self saveThumbnailImageFile:[@"thumbnail_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
