@@ -240,6 +240,31 @@
     
 }
 
+- (void)haveUnsyncedObjects {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        self.syncImageView.image = [[UIImage imageNamed:@"Upload To Cloud-100"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        
+        UIColor *color = [UIColor redColor];
+        
+        NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
+        if (networkStatus == NotReachable || !self.syncer.transportIsReady) {
+            color = [color colorWithAlphaComponent:0.3];
+        }
+
+        self.syncImageView.tintColor = color;
+
+        [self removeGestureRecognizersFromCloudImages];
+
+    });
+    
+}
+
+- (void)haveNoUnsyncedObjects {
+    [self setImageForSyncImageView];
+}
+
 - (void)setImageForSyncImageView {
     
     NSString *imageName = nil;
@@ -258,6 +283,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
+    
 }
 
 - (void)checkSpinnerStates {
@@ -1114,6 +1140,16 @@
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_FINISHED
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveNoUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
              object:nil];
 
     [nc addObserver:self
