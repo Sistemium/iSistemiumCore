@@ -174,7 +174,7 @@
                 itemsFiltered = nil;
             }
         }
-        
+
         if (!itemsFiltered.count) continue;
         
         if (subscription.entityName) {
@@ -182,6 +182,7 @@
         } else {
             if (subscription.callbackWithEntityName) subscription.callbackWithEntityName(entityName, itemsFiltered);
         }
+        
     }
     
 }
