@@ -203,7 +203,16 @@
     
     @synchronized (self) {
         
-        if (!self.subscriberDelegate || self.isPaused) return;
+        if (!self.subscriberDelegate || self.isPaused) {
+            
+            NSDictionary *objectToSend = [self anyObjectToSend];
+            
+            NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+            [nc postNotificationName:(objectToSend) ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS object:self];
+
+            return;
+            
+        }
 
         if (!self.syncingState) {
             NSLogMethodName;
@@ -246,6 +255,9 @@
     }
 
     NSDictionary *objectToSend = [self anyObjectToSend];
+
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc postNotificationName:(objectToSend) ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS object:self];
     
     if (objectToSend) {
         
