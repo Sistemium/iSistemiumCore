@@ -126,16 +126,21 @@ extension Set {
             }
             
             let entities = stcEntities.filter{entityPredicate.evaluate(with: $1)}
+            
+            let persistence: STMPersistingSync
+            
+            persistence = STMCoreSessionManager.shared().currentSession.persistenceDelegate
 
             for (key,value) in entities {
                 
                 let entity = (value as! Dictionary<String, Any>)
                 let limitDate = Date().addingTimeInterval(-(entity["pictureLifeTime"] as! Double))
+                let dateString = STMFunctions.string(from: limitDate)
                 
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
                 let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil OR thumbnailPath != nil")
-                let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [limitDate, limitDate])
+                let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [dateString, dateString])
                 
                 let subpredicates = [photoIsUploaded, photoIsSynced, photoHaveFiles, photoIsOutOfDate]
                 
@@ -145,24 +150,41 @@ extension Set {
                 
                 images = images.filter{photoPredicate.evaluate(with: $0)};
                 
+                let options: [String: Any] = [
+                    STMPersistingOptionFieldstoUpdate: ["imagePath", "resizedImagePath"],
+                    STMPersistingOptionSetTs: true
+                ]
+                
                 for var image in images{
                     
                     let logMessage = String(format: "removeOutOfDateImages for:\(String(describing: entity["name"])) deviceAts:\(String(describing: image["deviceAts"]))")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
                     
-                    if let imagePath = image["imagePath"] as? String{
-                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath)
+                    let imagePath = image["imagePath"] as? String
+                    let resizedImagePath = image["resizedImagePath"] as? String
+                    
+                    if (imagePath != nil) {
+                        do {
+                            try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath!)
+                        } catch let error as NSError {
+                            NSLog(error.description)
+                        }
                         image["imagePath"] = nil
                     }
                     
-                    if let resizedImagePath = image["resizedImagePath"] as? String{
-                        try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath)
+                    // TODO: need testing
+                    if (resizedImagePath != nil && resizedImagePath != imagePath) {
+                        do {
+                            try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath!)
+                        } catch let error as NSError {
+                            NSLog(error.description)
+                        }
                         image["resizedImagePath"] = nil
                     }
                     
+                    try persistence.update(key, attributes: image, options: options)
+                    
                 }
-                
-                try STMCoreSessionManager.shared().currentSession.persistenceDelegate.mergeManySync(key, attributeArray: images, options: nil)
                 
             }
             
