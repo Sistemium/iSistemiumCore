@@ -11,6 +11,10 @@
 #import "STMConstants.h"
 #import "STMEntityController.h"
 
+#import "STMLogger.h"
+#import "STMCoreSettingsController.h"
+#import "STMLogMessage.h"
+
 
 @interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
 
@@ -116,6 +120,29 @@
     [self sendNextUnsyncedObject];
     
     return YES;
+    
+}
+
+- (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
+    
+    NSMutableArray *subpredicates = @[].mutableCopy;
+    
+    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
+        
+        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+                                                                           forGroup:@"syncer"];
+        
+        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        
+    }
+    
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    
+    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
+    
+    return predicate;
     
 }
 
@@ -314,7 +341,7 @@
     
     NSMutableArray *subpredicates = [NSMutableArray array];
     
-    NSPredicate *unsyncedPredicate = [self.subscriberDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
+    NSPredicate *unsyncedPredicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
     
     if (!unsyncedPredicate) return nil;
     
