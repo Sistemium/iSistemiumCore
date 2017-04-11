@@ -157,6 +157,10 @@
     
     if (!self.subscriberDelegate) return;
     
+    [self.subscriptions enumerateObjectsUsingBlock:^(NSString * _Nonnull subscriptionId, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self.persistenceDelegate cancelSubscription:subscriptionId];
+    }];
+    
     self.subscriptions = [NSMutableArray array];
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
     self.pendingObjectsByEntity = @{}.mutableCopy;
@@ -187,11 +191,6 @@
 - (void)unsubscribeUnsynced {
     NSLog(@"unsubscribeUnsynced");
     
-    [self.subscriptions enumerateObjectsUsingBlock:^(NSString * _Nonnull subscriptionId, NSUInteger idx, BOOL * _Nonnull stop) {
-        [self.persistenceDelegate cancelSubscription:subscriptionId];
-    }];
-    
-    self.subscriptions = nil;
     self.erroredObjectsByEntity = nil;
     self.pendingObjectsByEntity = nil;
     self.syncedPendingObjectsByEntity = nil;
