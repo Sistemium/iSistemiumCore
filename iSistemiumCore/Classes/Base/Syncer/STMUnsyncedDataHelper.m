@@ -189,13 +189,27 @@
 }
 
 - (void)unsubscribeUnsynced {
+    
     NSLog(@"unsubscribeUnsynced");
     
     self.erroredObjectsByEntity = nil;
     self.pendingObjectsByEntity = nil;
     self.syncedPendingObjectsByEntity = nil;
     
+    [self checkUnsyncedObjects];
+
+    [self finishHandleUnsyncedObjects];
+
 }
+
+- (void)checkUnsyncedObjects {
+    
+    NSString *notificationName = [self anyObjectToSend] ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS;
+    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
+                                                        object:self];
+
+}
+
 
 #pragma mark - state control
 
@@ -205,11 +219,7 @@
         
         if (!self.subscriberDelegate || self.isPaused) {
             
-            NSDictionary *objectToSend = [self anyObjectToSend];
-            
-            NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-            [nc postNotificationName:(objectToSend) ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS object:self];
-
+            [self checkUnsyncedObjects];
             return;
             
         }
@@ -253,11 +263,8 @@
         return;
         
     }
-
+    
     NSDictionary *objectToSend = [self anyObjectToSend];
-
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc postNotificationName:(objectToSend) ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS object:self];
     
     if (objectToSend) {
         
