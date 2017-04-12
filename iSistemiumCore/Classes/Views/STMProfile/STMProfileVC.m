@@ -251,19 +251,27 @@
 - (void)haveUnsyncedObjects {
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        
-        self.syncImageView.image = [[UIImage imageNamed:@"Upload To Cloud-100"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        
-        UIColor *color = [UIColor redColor];
-        
+
         NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
+        
         if (networkStatus == NotReachable || !self.syncer.transportIsReady) {
+            
+            self.syncImageFileName = UPLOAD_FILE_NAME;
+            
+            self.syncImageView.image = [[UIImage imageNamed:self.syncImageFileName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            
+            UIColor *color = [UIColor redColor];
             color = [color colorWithAlphaComponent:0.3];
+            
+            self.syncImageView.tintColor = color;
+            
+            [self removeGestureRecognizersFromCloudImages];
+            
+        } else {
+            
+            self.syncImageView.tintColor = ACTIVE_BLUE_COLOR;
+
         }
-
-        self.syncImageView.tintColor = color;
-
-        [self removeGestureRecognizersFromCloudImages];
 
     });
     
