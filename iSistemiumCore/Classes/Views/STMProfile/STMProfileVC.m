@@ -361,9 +361,8 @@
     
     [self removeGestureRecognizersFromCloudImages];
     
-    BOOL hasObjectsToUpload = NO;// ([syncer numbersOfAllUnsyncedObjects] > 0);
-    UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
-    SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
+    UIColor *color = (self.syncImageView.tintColor) ? self.syncImageView.tintColor : ACTIVE_BLUE_COLOR;
+    SEL cloudTapSelector = @selector(downloadCloudTapped);
     
     NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
     
@@ -374,27 +373,11 @@
         
     } else {
         
-//        if (self.syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
+        [self.syncImageView setTintColor:color];
         
-            [self.syncImageView setTintColor:color];
-            
-            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                                  action:cloudTapSelector];
-            [self.syncImageView addGestureRecognizer:tap];
-            
-            if (hasObjectsToUpload) {
-                
-                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                                                                        action:@selector(uploadCloudLongPressed:)];
-                [self.syncImageView addGestureRecognizer:longPress];
-                
-            }
-            
-//        } else {
-//            
-//            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
-//            
-//        }
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                              action:cloudTapSelector];
+        [self.syncImageView addGestureRecognizer:tap];
         
     }
     
