@@ -244,6 +244,8 @@
     
     self.syncingState = nil;
     
+    [self checkUnsyncedObjects];
+
     self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
     self.pendingObjectsByEntity = @{}.mutableCopy;
     self.syncedPendingObjectsByEntity = @{}.mutableCopy;
