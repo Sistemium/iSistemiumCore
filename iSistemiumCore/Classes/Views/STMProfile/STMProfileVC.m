@@ -59,6 +59,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *lastLocationImageView;
 
 @property (weak, nonatomic) UIImageView *syncImageView;
+@property (nonatomic, strong) NSString *syncImageFileName;
 
 @property (nonatomic) float totalEntityCount;
 @property (nonatomic) int previousNumberOfObjects;
@@ -274,21 +275,21 @@
 
 - (void)setImageForSyncImageView {
     
-    NSString *imageName = nil;
-    
     if (self.syncer.transportIsReady) {
 
-        imageName = @"Download From Cloud-100";
+        self.syncImageFileName = DOWNLOAD_FILE_NAME;
         [self checkSpinnerStates];
         
     } else {
         
-        imageName = @"No connection Cloud-100";
-        
+        if (![self.syncImageFileName isEqualToString:UPLOAD_FILE_NAME]) {
+            self.syncImageFileName = NO_CONNECTION_FILE_NAME;
+        }
+
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        self.syncImageView.image = [[UIImage imageNamed:self.syncImageFileName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
     
 }
