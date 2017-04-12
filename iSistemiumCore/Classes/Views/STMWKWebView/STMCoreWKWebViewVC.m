@@ -1331,6 +1331,29 @@ int counter = 0;
 }
 
 
+#pragma mark - unsynced observers
+
+- (void)haveUnsyncedObjects {
+    
+    if (!self.unsyncedInfoJSFunction) return;
+    
+    [self callbackWithData:@[@"haveUnsyncedObjects"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+
+}
+
+- (void)haveNoUnsyncedObjects {
+
+    if (!self.unsyncedInfoJSFunction) return;
+
+    [self callbackWithData:@[@"haveNoUnsyncedObjects"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+
+}
+
+
 #pragma mark - view lifecycle
 
 - (void)addObservers {
@@ -1346,7 +1369,17 @@ int counter = 0;
            selector:@selector(applicationDidBecomeActiveNotification:)
                name:UIApplicationDidBecomeActiveNotification
              object:nil];
-    
+ 
+    [nc addObserver:self
+           selector:@selector(haveUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveNoUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
+             object:nil];
+
 }
 
 - (void)customInit {
