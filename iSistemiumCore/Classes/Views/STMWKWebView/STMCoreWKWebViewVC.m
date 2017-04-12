@@ -44,6 +44,7 @@ STMBarCodeScannerDelegate>
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
+@property (nonatomic, strong) NSString *unsyncedInfoJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
