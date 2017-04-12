@@ -183,6 +183,7 @@
         [self updateSyncDatesLabels];
         [self updateCloudImages];
         [self updateNonloadedPicturesInfo];
+        [self checkSpinnerStates];
         
     });
     
