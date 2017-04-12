@@ -27,6 +27,12 @@
 
 #import "STMUserDefaults.h"
 
+
+#define UPLOAD_FILE_NAME @"Upload To Cloud-100"
+#define DOWNLOAD_FILE_NAME @"Download From Cloud-100"
+#define NO_CONNECTION_FILE_NAME @"No connection Cloud-100"
+
+
 @interface STMProfileVC ()
 
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
