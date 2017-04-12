@@ -775,6 +775,10 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler receiveDestroyMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
+        
+        [self handleUnsyncedInfoMessage:message];
+        
     }
     
 }
@@ -859,6 +863,10 @@ STMBarCodeScannerDelegate>
     
     [self startBarcodeScanning];
     
+}
+
+- (void)handleUnsyncedInfoMessage:(WKScriptMessage *)message {
+    self.unsyncedInfoJSFunction = message.body[@"scanCallback"];
 }
 
 - (void)handleTabbarMessage:(WKScriptMessage *)message {
