@@ -365,6 +365,10 @@
     
     [self unsubscribeFromUnsyncedObjects];
     
+    if (self.isSendingData) {
+        self.isSendingData = NO;
+    }
+    
     if (self.isReceivingData) {
         [self.dataDownloadingDelegate stopDownloading];
     }
@@ -645,6 +649,7 @@
 
     self.dataSyncingDelegate.subscriberDelegate = nil;
     [self.dataSyncingDelegate pauseSyncing];
+    [self finishUnsyncedProcess];
 
 }
 
@@ -782,7 +787,10 @@
 }
 
 - (void)finishUnsyncedProcess {
+    
     self.isSendingData = NO;
+    [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_SEND_FINISHED];
+
 }
 
 - (void)sendStarted {
