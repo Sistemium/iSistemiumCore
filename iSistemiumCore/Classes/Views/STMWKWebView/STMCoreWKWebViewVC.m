@@ -866,7 +866,7 @@ STMBarCodeScannerDelegate>
 }
 
 - (void)handleUnsyncedInfoMessage:(WKScriptMessage *)message {
-    self.unsyncedInfoJSFunction = message.body[@"scanCallback"];
+    self.unsyncedInfoJSFunction = message.body[@"unsyncedInfoCallback"];
 }
 
 - (void)handleTabbarMessage:(WKScriptMessage *)message {
