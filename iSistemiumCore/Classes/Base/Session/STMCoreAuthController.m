@@ -517,8 +517,26 @@
 
 - (NSString *)dataModelName {
     
-    NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
-    return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
+//    NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
+//    return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
+
+    NSString *dataModelName = @"";
+    
+#if defined (CONFIGURATION_DebugSales) || defined (CONFIGURATION_ReleaseSales)
+
+    NSLog(@"USE SALES DATA MODEL");
+    dataModelName = @"iSisSales";
+    
+#endif
+
+#if defined (CONFIGURATION_DebugWarehouse) || defined (CONFIGURATION_ReleaseWarehouse)
+    
+    NSLog(@"USE WAREHOUSE DATA MODEL");
+    dataModelName = @"iSisWarehouse";
+    
+#endif
+
+    return dataModelName;
     
 }
 
