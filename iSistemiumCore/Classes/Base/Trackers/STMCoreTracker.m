@@ -147,7 +147,10 @@
 #pragma mark - tracker settings
 
 - (BOOL)trackerAutoStart {
-    return [[self.settings valueForKey:[NSString stringWithFormat:@"%@TrackerAutoStart", self.group]] boolValue];
+    
+    id trackerAutoStart = self.settings[[NSString stringWithFormat:@"%@TrackerAutoStart", self.group]];    
+    return [STMFunctions isNotNullAndTrue:trackerAutoStart];
+    
 }
 
 - (double)trackerStartTime {
