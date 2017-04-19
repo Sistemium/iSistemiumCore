@@ -819,29 +819,32 @@
 
 - (void)saveReceiveDate {
     
-    if (!self.session.uid) return;
-    
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
+        if (!self.session.uid) return;
+
         NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-        
         NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
         
         [self.userDefaults setObject:receiveDateString forKey:key];
         [self.userDefaults synchronize];
+        
     }];
     
 }
 
 - (void)saveSendDate {
-    
-    if (!self.session.uid) return;
-    
+
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        
+        if (!self.session.uid) return;
+
         NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
         NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
         
         [self.userDefaults setObject:sendDateString forKey:key];
         [self.userDefaults synchronize];
+        
     }];
     
 }
