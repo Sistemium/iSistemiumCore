@@ -26,6 +26,20 @@ extension Set {
     var filing:STMFiling{
         get{
             return _filing != nil ? _filing! : STMCoreSessionManager.shared().currentSession.filing
+            
+//FIXME: app crash in line above if login and immediately logout, possibly due to checkNotUploadedPhotos process
+            
+//            Log info: Session #244 status changed to STMSessionFinishing
+//            Log info: Session #244 status changed to STMSessionStopped
+//            userID (null)
+//            accessToken (null)
+//            Warning: Attempt to present <UIAlertController: 0x7ff12ec8b570> on <STMProfileVC: 0x7ff128d6d660> whose view is not in the window hierarchy!
+//            Can't find keyplane that supports type 4 for keyboard iPhone-Portrait-NumberPad; using 160517473_Portrait_iPhone-Simple-Pad_Default
+//            checkNotUploadedPhotos
+//            checkPhotos finish
+//            STMCoreSettingsController.m:46 - dealloc
+//            fatal error: unexpectedly found nil while unwrapping an Optional value
+
         }
         set{
             _filing = newValue
