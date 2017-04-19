@@ -818,35 +818,27 @@
 #pragma mark - save dates
 
 - (void)saveReceiveDate {
-    
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-
-        if (!self.session.uid) return;
-
-        NSString *key = [@"receiveDate" stringByAppendingString:self.session.uid];
-        NSString *receiveDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
-        
-        [self.userDefaults setObject:receiveDateString forKey:key];
-        [self.userDefaults synchronize];
-        
-    }];
-    
+    [self saveSyncDate:@"receive"];
 }
 
 - (void)saveSendDate {
+    [self saveSyncDate:@"send"];
+}
 
+- (void)saveSyncDate:(NSString *)syncDateType {
+    
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
         if (!self.session.uid) return;
-
-        NSString *key = [@"sendDate" stringByAppendingString:self.session.uid];
-        NSString *sendDateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
         
-        [self.userDefaults setObject:sendDateString forKey:key];
+        NSString *key = [syncDateType stringByAppendingString:[@"Date" stringByAppendingString:self.session.uid]];
+        NSString *dateString = [[STMFunctions dateShortTimeShortFormatter] stringFromDate:[NSDate date]];
+        
+        [self.userDefaults setObject:dateString forKey:key];
         [self.userDefaults synchronize];
         
     }];
-    
+
 }
 
 
