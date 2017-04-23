@@ -988,6 +988,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)jsonStringFromObject:(id)object {
     
+    if ([self isNull:object]) {
+        return @"null";
+    }
+    
     if (![NSJSONSerialization isValidJSONObject:object]) {
         
         if ([object isKindOfClass:[NSDictionary class]]) {
