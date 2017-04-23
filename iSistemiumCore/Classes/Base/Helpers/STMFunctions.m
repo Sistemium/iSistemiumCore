@@ -988,6 +988,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)jsonStringFromObject:(id)object {
     
+    if ([self isNull:object]) {
+        return @"null";
+    }
+    
     if (![NSJSONSerialization isValidJSONObject:object]) {
         
         if ([object isKindOfClass:[NSDictionary class]]) {
@@ -1002,7 +1006,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     }
     
-    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
+    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:object options:kNilOptions error:nil];
     NSString *JSONString = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
     
     return JSONString;
@@ -1293,10 +1297,14 @@ vm_size_t freeMemory(void) {
     return value && ![value isEqual:[NSNull null]];
 }
 
++ (BOOL)isNull:(nullable id)value {
+    return ![self isNotNull:value];
+}
+
 + (BOOL)isNullBoth:(id)value1 and:(id)value2 {
     
-    BOOL isNullFirst = ![self isNotNull:value1];
-    BOOL isNullSecond = ![self isNotNull:value2];
+    BOOL isNullFirst = [self isNull:value1];
+    BOOL isNullSecond = [self isNull:value2];
     
     return isNullFirst && isNullSecond;
     

@@ -64,6 +64,10 @@
     
 }
 
++ (NSArray *)ignoredAttributes {
+    return [[self builtInAttributes] arrayByAddingObjectsFromArray:@[@"xid"]];
+}
+
 - (instancetype)initWithDatabase:(FMDatabase *)database {
     self = [self init];
     self.database = database;
@@ -107,7 +111,7 @@
 - (NSArray *)ignoredAttributes {
     
     if (!_ignoredAttributes) {
-        _ignoredAttributes = [self.builtInAttributes arrayByAddingObjectsFromArray:@[@"xid"]];
+        _ignoredAttributes = [[self class] ignoredAttributes];
     }
     return _ignoredAttributes;
     

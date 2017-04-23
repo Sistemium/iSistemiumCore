@@ -20,6 +20,8 @@
 @property (nonatomic, strong) NSMappingModel *mappingModel;
 @property (nonatomic, strong) NSMigrationManager *migrationManager;
 
+@property (nonatomic) BOOL needToMigrate;
+
 @end
 
 
@@ -38,17 +40,50 @@
     
     self.sourceModel = sourceModel;
     self.destinationModel = destinationModel;
-
+    self.needToMigrate = ![self.sourceModel isEqual:self.destinationModel];
+    
     if (self.needToMigrate) {
         NSLog(@"ModelMapper need to migrate");
     }
     
-    self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
-                                                          destinationModel:destinationModel
-                                                                     error:error];
-    
-    if (*error) {
-        NSLog(@"NSMappingModel error: %@", [*error localizedDescription]);
+    while (true) {
+        self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
+                                                              destinationModel:destinationModel
+                                                                         error:error];
+        
+        if (*error) {
+            
+            // This is a workaround for migrating json fields to Transformable
+            
+            NSDictionary *errorUserInfo = (*error).userInfo;
+            NSLog(@"NSMappingModel error: %@: %@", [*error localizedDescription], errorUserInfo[@"reason"]);
+            
+            if ([STMFunctions isNotNull:errorUserInfo[@"reason"]] && [errorUserInfo[@"reason"] isEqualToString:@"Source and destination attribute types are incompatible"]){
+                
+                NSString *entityName = errorUserInfo[@"entity"];
+                NSString *propertyName = errorUserInfo[@"property"];
+                
+                NSMutableDictionary *sourceEntities = sourceModel.entitiesByName.mutableCopy;
+                NSEntityDescription *sourceEntity = sourceEntities[entityName];
+                NSMutableDictionary *sourceEntityProperties = sourceEntity.propertiesByName.mutableCopy;
+                
+                NSEntityDescription *destinationEntity = destinationModel.entitiesByName[entityName];
+                NSAttributeDescription *destinationProperty = destinationEntity.attributesByName[propertyName];
+                
+                sourceEntityProperties[propertyName] = destinationProperty.copy;
+                sourceEntity.properties = sourceEntityProperties.allValues;
+                
+                sourceEntities[errorUserInfo[@"entity"]] = sourceEntity;
+                sourceModel.entities = sourceEntities.allValues;
+                
+                *error = nil;
+                
+                self.needToMigrate = YES;
+                
+                continue;
+            }
+        }
+        break;
     }
     
     self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
@@ -64,10 +99,6 @@
 
 
 #pragma mark - STMModelMapping
-
-- (BOOL)needToMigrate {
-    return ![self.sourceModel isEqual:self.destinationModel];
-}
 
 - (NSArray <NSEntityDescription *> *)addedEntities {
     return [self mappingEntitiesDescriptionsWithType:NSAddEntityMappingType];
@@ -310,9 +341,9 @@
         
         NSSet *mappedProperties = entityMapping.userInfo[@"mappedProperties"];
         if (mappedProperties.count) {
-            for (NSString *propertyName in mappedProperties) {
-                NSLog(@"    !!! remains the same property: %@", propertyName);
-            }
+//            for (NSString *propertyName in mappedProperties) {
+//                NSLog(@"    !!! remains the same property: %@", propertyName);
+//            }
         }
         
     }

@@ -110,13 +110,20 @@
     NSString *options = @"";
     NSString *columns = @"";
     
-    if (groupBy.count){
+    if (groupBy.count) {
+        
         groupBy = [STMFunctions mapArray:groupBy withBlock:^id (id value) {
             return [NSString stringWithFormat:@"[%@]", value];
         }];
         options = [groupBy componentsJoinedByString:@", "];
-        columns = [options stringByAppendingString:@", count(*) [count()]"];
         options = [@"GROUP BY " stringByAppendingString:options];
+
+        NSMutableArray *columnKeys = groupBy.mutableCopy;
+        [columnKeys addObjectsFromArray:[self sumKeysForEntityName:entityName]];
+        [columnKeys addObject:@"count(*) [count()]"];
+        
+        columns = [columnKeys componentsJoinedByString:@", "];
+        
     } else {
         columns = @"*";
     }
@@ -160,7 +167,8 @@
     
     NSString *tablename = [STMFunctions removePrefixFromEntityName:entityName];
     
-    NSArray *columns = self.stmFMDB.columnsByTable[tablename];
+    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
+    
     NSString *pk = attributes[@"id"];
     
     NSMutableArray* keys = @[].mutableCopy;
@@ -246,8 +254,27 @@
     
     FMResultSet *s = [self.database executeQuery:query];
     
+    NSArray *booleanKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSBooleanAttributeType]];
+    
+    NSArray *jsonKeys = [self.stmFMDB.columnsByTable[tableName] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]];
+
     while ([s next]) {
-        [rez addObject:s.resultDictionary];
+        
+        NSMutableDictionary *dict = (NSMutableDictionary*)s.resultDictionary;
+
+        for (NSString *key in booleanKeys){
+            if ([STMFunctions isNotNull:[dict valueForKey:key]]){
+                dict[key] = (__bridge id _Nullable)([dict[key] boolValue] ? kCFBooleanTrue : kCFBooleanFalse);
+            }
+        }
+        
+        for (NSString *key in jsonKeys){
+            if ([STMFunctions isNotNull:[dict valueForKey:key]]){
+                dict[key] = [STMFunctions jsonObjectFromString:dict[key]];
+            }
+        }
+        
+        [rez addObject:dict.copy];
     }
     
     // there will be memory warnings loading catalogue on an old device if no copy
@@ -257,7 +284,7 @@
 
 - (NSString *) mergeInto:(NSString *)tablename dictionary:(NSDictionary<NSString *, id> *)dictionary error:(NSError **)error {
     
-    NSArray *columns = self.stmFMDB.columnsByTable[tablename];
+    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
     NSString *pk = dictionary [STMPersistingKeyPrimary] ? dictionary [STMPersistingKeyPrimary] : [STMFunctions uuidString];
     
     NSMutableArray* keys = @[].mutableCopy;
@@ -274,7 +301,7 @@
                 
                 [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
 
-            } else if([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]]) {
+            } else if([[self.stmFMDB.columnsByTable[tablename] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]] containsObject:key]) {
                 
                 [values addObject:[STMFunctions jsonStringFromObject:value]];
                 
@@ -316,6 +343,36 @@
     }
     
     return pk;
+    
+}
+
+- (NSArray *)sumKeysForEntityName:(NSString *)entityName {
+    
+    NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
+    
+    NSArray <NSNumber *> *numericTypes = @[@(NSInteger16AttributeType),
+                                           @(NSInteger32AttributeType),
+                                           @(NSInteger64AttributeType),
+                                           @(NSDecimalAttributeType),
+                                           @(NSDoubleAttributeType),
+                                           @(NSFloatAttributeType)];
+    
+    NSDictionary *tableColumns = self.stmFMDB.columnsByTable[tableName];
+    
+    NSDictionary *filteredTableColumns = [STMFunctions mapDictionary:tableColumns withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
+        
+        BOOL valueIsNumeric = [numericTypes containsObject:value];
+        BOOL keyIsIgnored = [self.stmFMDB.ignoredAttributes containsObject:key];
+        
+        return valueIsNumeric && !keyIsIgnored ? value : nil;
+        
+    }];
+    
+    NSArray *sumKeys = [STMFunctions mapArray:filteredTableColumns.allKeys withBlock:^id _Nonnull(id  _Nonnull value) {
+        return [NSString stringWithFormat:@"sum([%1$@]) [sum(%1$@)]", value];
+    }];
+
+    return sumKeys;
     
 }
 

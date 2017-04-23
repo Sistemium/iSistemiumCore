@@ -14,7 +14,11 @@
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
 @property (nonatomic, strong) FMDatabasePool *pool;
+
 @property (nonatomic, strong) NSDictionary *columnsByTable;
+@property (nonatomic, strong) NSArray *builtInAttributes;
+@property (nonatomic, strong) NSArray *ignoredAttributes;
+
 @property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
 @property (nonatomic,strong) NSString *dbPath;

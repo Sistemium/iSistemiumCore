@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16E195" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="STMClientEntity" representedClassName="STMClientEntity" syncable="YES">
         <attribute name="eTag" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
@@ -19,10 +19,19 @@
         <attribute name="attribute" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="toManyRenamed" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="STMTestEntity1" inverseName="toMany" inverseEntity="STMTestEntity1" syncable="YES"/>
     </entity>
+    <entity name="STMTestEntity4" representedClassName="STMTestEntity4" syncable="YES">
+        <attribute name="attribute1" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="attribute2" optional="YES" attributeType="Transformable" syncable="YES"/>
+    </entity>
+    <entity name="STMTestEntity5" representedClassName="STMTestEntity5" syncable="YES">
+        <attribute name="attribute1" optional="YES" attributeType="Transformable" syncable="YES"/>
+    </entity>
     <elements>
-        <element name="STMTestEntity1" positionX="-8541" positionY="-864" width="128" height="133"/>
+        <element name="STMClientEntity" positionX="-8345" positionY="-700" width="128" height="73"/>
+        <element name="STMTestEntity1" positionX="-8541" positionY="-864" width="128" height="135"/>
         <element name="STMTestEntity2Renamed" positionX="-8316" positionY="-837" width="128" height="58"/>
         <element name="STMTestEntity3" positionX="-8748" positionY="-745" width="128" height="73"/>
-        <element name="STMClientEntity" positionX="-8345" positionY="-700" width="128" height="73"/>
+        <element name="STMTestEntity4" positionX="-8541" positionY="-765" width="128" height="75"/>
+        <element name="STMTestEntity5" positionX="-8514" positionY="-738" width="128" height="60"/>
     </elements>
 </model>

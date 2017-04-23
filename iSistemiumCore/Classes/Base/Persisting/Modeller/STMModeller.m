@@ -76,6 +76,7 @@
     for (NSString *entityKey in self.entitiesByName) {
         
         NSEntityDescription *entity = self.entitiesByName[entityKey];
+        
         cache[entityKey] = @{@"fields"          : entity.attributesByName,
                              @"relationships"   : entity.relationshipsByName};
         

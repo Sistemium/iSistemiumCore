@@ -119,8 +119,8 @@
 
 + (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData {
 	
-    if (![NSClassFromString(entityName) isSubclassOfClass:[STMCorePhoto class]] || !photoData.length) {
-        NSLog(@"have no entity with name %@ or photoData is empty", entityName);
+    if (!photoData.length) {
+        NSLog(@"photoData is empty", entityName);
         return nil;
     }
     
