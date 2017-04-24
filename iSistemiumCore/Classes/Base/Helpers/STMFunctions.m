@@ -970,6 +970,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (id)jsonObjectFromString:(NSString *)string {
     
+    if ([string isEqualToString:@"null"]) {
+        return [NSNull null];
+    }
+    
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
@@ -980,6 +984,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
     if (!jsonObject) {
         NSLog(@"jsonObjectFromString error: %@", error.localizedDescription);
+        return [NSNull null];
     }
     
     return jsonObject;
