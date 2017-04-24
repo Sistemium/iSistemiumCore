@@ -1007,6 +1007,11 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
             object = [self validJSONArrayFromArray:object];
 
+        } else if ([object isKindOfClass:[NSString class]]) {
+            return [NSString stringWithFormat:@"\"%@\"", object];
+        } else {
+            [[STMLogger sharedLogger] errorMessage:[@"jsonStringFrom invalid object: " stringByAppendingString:object]];
+            return @"null";
         }
 
     }
