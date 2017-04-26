@@ -290,6 +290,8 @@
     NSMutableArray* keys = @[].mutableCopy;
     NSMutableArray* values = @[].mutableCopy;
     
+    NSArray *jsonColumns = [self.stmFMDB.columnsByTable[tablename] allKeysForObject:@(NSTransformableAttributeType)];
+    
     for (NSString* key in dictionary) {
         
         if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
@@ -301,7 +303,7 @@
                 
                 [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
 
-            } else if([[self.stmFMDB.columnsByTable[tablename] allKeysForObject:[NSNumber numberWithUnsignedInteger:NSTransformableAttributeType]] containsObject:key]) {
+            } else if([jsonColumns containsObject:key]) {
                 
                 [values addObject:[STMFunctions jsonStringFromObject:value]];
                 
