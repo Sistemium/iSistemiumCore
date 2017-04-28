@@ -1026,6 +1026,14 @@
 
 }
 
+- (void)haveUnsyncedObjects {
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
+}
+
+-(void)haveNoUnsyncedObjects {
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+}
+
 - (void)setDocumentReady {
     
     [STMClientDataController checkAppVersion];
@@ -1089,6 +1097,16 @@
                name:@"updateButtonPressed"
              object:nil];
     
+    [nc addObserver:self
+           selector:@selector(haveUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(haveNoUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
+             object:nil];
+        
     [nc addObserver:self
            selector:@selector(setDocumentReady)
                name:NOTIFICATION_DOCUMENT_READY
