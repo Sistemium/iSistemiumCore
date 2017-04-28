@@ -27,6 +27,12 @@
 
 #import "STMUserDefaults.h"
 
+
+#define UPLOAD_FILE_NAME @"Upload To Cloud-100"
+#define DOWNLOAD_FILE_NAME @"Download From Cloud-100"
+#define NO_CONNECTION_FILE_NAME @"No connection Cloud-100"
+
+
 @interface STMProfileVC ()
 
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
@@ -53,6 +59,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *lastLocationImageView;
 
 @property (weak, nonatomic) UIImageView *syncImageView;
+@property (nonatomic, strong) NSString *syncImageFileName;
 
 @property (nonatomic) float totalEntityCount;
 @property (nonatomic) int previousNumberOfObjects;
@@ -177,6 +184,7 @@
         [self updateSyncDatesLabels];
         [self updateCloudImages];
         [self updateNonloadedPicturesInfo];
+        [self checkSpinnerStates];
         
     });
     
@@ -240,24 +248,58 @@
     
 }
 
-- (void)setImageForSyncImageView {
+- (void)haveUnsyncedObjects {
     
-    NSString *imageName = nil;
+    dispatch_async(dispatch_get_main_queue(), ^{
+
+        NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
+        
+        if (networkStatus == NotReachable || !self.syncer.transportIsReady) {
+            
+            self.syncImageFileName = UPLOAD_FILE_NAME;
+            
+            self.syncImageView.image = [[UIImage imageNamed:self.syncImageFileName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            
+            UIColor *color = [UIColor redColor];
+            color = [color colorWithAlphaComponent:0.3];
+            
+            self.syncImageView.tintColor = color;
+            
+            [self removeGestureRecognizersFromCloudImages];
+            
+        } else {
+            
+            self.syncImageView.tintColor = ACTIVE_BLUE_COLOR;
+
+        }
+
+    });
+    
+}
+
+- (void)haveNoUnsyncedObjects {
+    [self setImageForSyncImageView];
+}
+
+- (void)setImageForSyncImageView {
     
     if (self.syncer.transportIsReady) {
 
-        imageName = @"Download From Cloud-100";
+        self.syncImageFileName = DOWNLOAD_FILE_NAME;
         [self checkSpinnerStates];
         
     } else {
         
-        imageName = @"No connection Cloud-100";
-        
+        if (![self.syncImageFileName isEqualToString:UPLOAD_FILE_NAME]) {
+            self.syncImageFileName = NO_CONNECTION_FILE_NAME;
+        }
+
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.syncImageView.image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        self.syncImageView.image = [[UIImage imageNamed:self.syncImageFileName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
+    
 }
 
 - (void)checkSpinnerStates {
@@ -329,9 +371,8 @@
     
     [self removeGestureRecognizersFromCloudImages];
     
-    BOOL hasObjectsToUpload = NO;// ([syncer numbersOfAllUnsyncedObjects] > 0);
-    UIColor *color = (hasObjectsToUpload) ? [UIColor redColor] : ACTIVE_BLUE_COLOR;
-    SEL cloudTapSelector = (hasObjectsToUpload) ? @selector(uploadCloudTapped) : @selector(downloadCloudTapped);
+    UIColor *color = (self.syncImageView.tintColor) ? self.syncImageView.tintColor : ACTIVE_BLUE_COLOR;
+    SEL cloudTapSelector = @selector(downloadCloudTapped);
     
     NetworkStatus networkStatus = [self.internetReachability currentReachabilityStatus];
     
@@ -342,27 +383,11 @@
         
     } else {
         
-//        if (self.syncer.syncerState == STMSyncerIdle/* && ![STMCoreObjectsController isDefantomizingProcessRunning]*/) {
+        [self.syncImageView setTintColor:color];
         
-            [self.syncImageView setTintColor:color];
-            
-            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                                  action:cloudTapSelector];
-            [self.syncImageView addGestureRecognizer:tap];
-            
-            if (hasObjectsToUpload) {
-                
-                UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                                                                        action:@selector(uploadCloudLongPressed:)];
-                [self.syncImageView addGestureRecognizer:longPress];
-                
-            }
-            
-//        } else {
-//            
-//            [self.syncImageView setTintColor:[UIColor lightGrayColor]];
-//            
-//        }
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                              action:cloudTapSelector];
+        [self.syncImageView addGestureRecognizer:tap];
         
     }
     
@@ -1114,6 +1139,16 @@
     [nc addObserver:self
            selector:@selector(updateSyncInfo)
                name:NOTIFICATION_SYNCER_SEND_FINISHED
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveNoUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
              object:nil];
 
     [nc addObserver:self

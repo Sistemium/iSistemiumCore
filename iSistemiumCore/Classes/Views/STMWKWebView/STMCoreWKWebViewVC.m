@@ -44,6 +44,7 @@ STMBarCodeScannerDelegate>
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
+@property (nonatomic, strong) NSString *unsyncedInfoJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;
 @property (nonatomic, strong) NSString *soundCallbackJSFunction;
@@ -774,6 +775,10 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler receiveDestroyMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
+        
+        [self handleUnsyncedInfoMessage:message];
+        
     }
     
 }
@@ -858,6 +863,10 @@ STMBarCodeScannerDelegate>
     
     [self startBarcodeScanning];
     
+}
+
+- (void)handleUnsyncedInfoMessage:(WKScriptMessage *)message {
+    self.unsyncedInfoJSFunction = message.body[@"unsyncedInfoCallback"];
 }
 
 - (void)handleTabbarMessage:(WKScriptMessage *)message {
@@ -1322,6 +1331,29 @@ int counter = 0;
 }
 
 
+#pragma mark - unsynced observers
+
+- (void)haveUnsyncedObjects {
+    
+    if (!self.unsyncedInfoJSFunction) return;
+    
+    [self callbackWithData:@[@"haveUnsyncedObjects"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+
+}
+
+- (void)haveNoUnsyncedObjects {
+
+    if (!self.unsyncedInfoJSFunction) return;
+
+    [self callbackWithData:@[@"haveNoUnsyncedObjects"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+
+}
+
+
 #pragma mark - view lifecycle
 
 - (void)addObservers {
@@ -1337,7 +1369,17 @@ int counter = 0;
            selector:@selector(applicationDidBecomeActiveNotification:)
                name:UIApplicationDidBecomeActiveNotification
              object:nil];
-    
+ 
+    [nc addObserver:self
+           selector:@selector(haveUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS
+             object:nil];
+
+    [nc addObserver:self
+           selector:@selector(haveNoUnsyncedObjects)
+               name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
+             object:nil];
+
 }
 
 - (void)customInit {

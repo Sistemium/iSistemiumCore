@@ -22,12 +22,19 @@
 
 - (void)testEntitiesHierarchy {
     
-    NSArray<NSString*>* expectedPictrureNames = @[@"STMArticlePicture",@"STMOutletPhoto",@"STMVisitPhoto",@"STMMessagePicture"];
+    NSArray<NSString*>* expectedPictrureNames = @[
+                                                  @"STMArticlePicture",
+                                                  @"STMOutletPhoto",
+                                                  @"STMVisitPhoto",
+                                                  @"STMMessagePicture",
+                                                  @"STMUncashingPicture",
+                                                  @"STMCampaignPicture"
+                                                  ];
     NSSet *expectedPictrureNamesSet=[NSSet setWithArray:expectedPictrureNames];
     NSSet *resultSet= [self.persister hierarchyForEntityName:@"STMCorePicture"];
     XCTAssertEqualObjects(expectedPictrureNamesSet, resultSet);
     
-    expectedPictrureNames = @[@"STMOutletPhoto",@"STMVisitPhoto"];
+    expectedPictrureNames = @[@"STMOutletPhoto",@"STMVisitPhoto", @"STMUncashingPicture"];
     expectedPictrureNamesSet=[NSSet setWithArray:expectedPictrureNames];
     resultSet= [self.persister hierarchyForEntityName:@"STMCorePhoto"];
     XCTAssertEqualObjects(expectedPictrureNamesSet, resultSet);

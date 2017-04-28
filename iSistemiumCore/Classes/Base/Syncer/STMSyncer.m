@@ -365,6 +365,10 @@
     
     [self unsubscribeFromUnsyncedObjects];
     
+    if (self.isSendingData) {
+        self.isSendingData = NO;
+    }
+    
     if (self.isReceivingData) {
         [self.dataDownloadingDelegate stopDownloading];
     }
@@ -645,6 +649,7 @@
 
     self.dataSyncingDelegate.subscriberDelegate = nil;
     [self.dataSyncingDelegate pauseSyncing];
+    [self finishUnsyncedProcess];
 
 }
 
@@ -749,26 +754,7 @@
 #pragma mark - STMDataSyncingSubscriber
 
 - (NSPredicate *)predicateForUnsyncedObjectsWithEntityName:(NSString *)entityName {
-    
-    NSMutableArray *subpredicates = @[].mutableCopy;
-    
-    if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
-        
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
-                                                                           forGroup:@"syncer"];
-        
-        NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
-        
-    }
-    
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
-    
-    NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
-    
-    return predicate;
-    
+    return [self.dataSyncingDelegate predicateForUnsyncedObjectsWithEntityName:entityName];
 }
 
 - (void)haveUnsynced:(NSString *)entityName itemData:(NSDictionary *)itemData itemVersion:(NSString *)itemVersion {
