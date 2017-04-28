@@ -986,9 +986,9 @@
     if (vc) {
         
         NSInteger unreadCount = [STMMessageController unreadMessagesCount];
-        NSString *badgeValue = (unreadCount > 0) ? [NSString stringWithFormat:@"%lu", (unsigned long)unreadCount] : nil;
+        NSString *badgeValue = (unreadCount > 0) ? [NSString stringWithFormat:@"%@", @(unreadCount)] : nil;
         vc.tabBarItem.badgeValue = badgeValue;
-        [UIApplication sharedApplication].applicationIconBadgeNumber = [badgeValue integerValue];
+        [UIApplication sharedApplication].applicationIconBadgeNumber = badgeValue.integerValue;
         
     }
     
@@ -1013,7 +1013,7 @@
             
             alertView.tag = 1;
             
-            UIViewController *vc = [self.authVCs lastObject];
+            UIViewController *vc = self.authVCs.lastObject;
             vc.tabBarItem.badgeValue = @"!";
             
             self.updateAlertIsShowing = YES;
