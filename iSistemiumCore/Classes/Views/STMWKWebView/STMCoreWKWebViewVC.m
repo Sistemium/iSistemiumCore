@@ -996,6 +996,11 @@ STMBarCodeScannerDelegate>
     
 #endif
     
+    if (!jsCallbackFunction) {
+        NSLog(@"have no jsCallbackFunction");
+        return;
+    }
+    
     //    NSLog(@"callbackWithData %@", @([NSDate timeIntervalSinceReferenceDate]));
     
     NSMutableArray *arguments = @[].mutableCopy;
