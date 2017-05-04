@@ -363,12 +363,26 @@ static void completionCallback (SystemSoundID sysSound, void *data) {
 
 #pragma mark - playing silent sound
 
+#warning - may be have to use setting for backgroundPlay instead of config_name
+
 + (void)startBackgroundPlay {
-//    [[self sharedController] startBackgroundPlay];
+    
+#if defined(CONFIGURATION_DebugWarehouse) || defined(CONFIGURATION_ReleaseWarehouse)
+    
+    [[self sharedController] startBackgroundPlay];
+    
+#endif
+
 }
 
 + (void)stopBackgroundPlay {
-//    [[self sharedController] stopBackgroundPlay];
+    
+#if defined(CONFIGURATION_DebugWarehouse) || defined(CONFIGURATION_ReleaseWarehouse)
+    
+    [[self sharedController] stopBackgroundPlay];
+    
+#endif
+
 }
 
 - (void)startBackgroundPlay {
