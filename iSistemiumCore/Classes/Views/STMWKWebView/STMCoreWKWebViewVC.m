@@ -1214,6 +1214,37 @@ int counter = 0;
 
 - (void)checkBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type arguments:(NSMutableArray *)arguments {
     
+    NSString *typeString = [STMCoreBarCodeController barCodeTypeStringForType:type];
+    
+    if (!typeString) {
+        
+        NSLog(@"send received barcode %@ to WKWebView", barcode);
+        return;
+        
+    }
+
+    if (type != STMBarCodeTypeStockBatch) {
+        
+        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+        return;
+        
+    }
+
+    [arguments addObject:typeString];
+    
+    NSDictionary *stockBatch = [STMCoreBarCodeController stockBatchForBarcode:barcode].firstObject;
+    
+    if (!stockBatch) {
+
+        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+        return;
+
+    }
+    
+    [arguments addObject:stockBatch];
+    
+    NSLog(@"send received barcode %@ with type %@ and stockBatch %@ to WKWebView", barcode, typeString, stockBatch);
+
 }
 
 - (void)evaluateReceiveBarCodeJSFunctionWithArguments:(NSArray *)arguments {
