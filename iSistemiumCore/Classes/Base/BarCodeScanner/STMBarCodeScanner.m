@@ -34,7 +34,8 @@
 @property (nonatomic, strong) NSTimer* scanApiConsumer;
 @property (nonatomic, strong) DeviceInfo *deviceInfo;
 
-@property (nonatomic, strong) NSFetchedResultsController *barCodeTypesRC;
+//@property (nonatomic, strong) NSFetchedResultsController *barCodeTypesRC;
+@property (nonatomic, strong) NSArray *barCodeTypes;
 
 
 @end
@@ -147,37 +148,54 @@
     
 }
 
-- (NSFetchedResultsController *)barCodeTypesRC {
+//- (NSFetchedResultsController *)barCodeTypesRC {
+//    
+//    if (!_barCodeTypesRC) {
+//        
+//        NSManagedObjectContext *context = [STMCoreSessionManager sharedManager].currentSession.document.managedObjectContext;
+//        
+//        if (context) {
+//            
+//            STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMBarCodeType class])];
+//            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
+//            request.predicate = [STMPredicate predicateWithNoFantoms];
+//            
+//            NSFetchedResultsController *rc = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+//                                                                                 managedObjectContext:context
+//                                                                                   sectionNameKeyPath:nil
+//                                                                                            cacheName:nil];
+//            [rc performFetch:nil];
+//            
+//            _barCodeTypesRC = rc;
+//            
+//        }
+//        
+//    }
+//    return _barCodeTypesRC;
+//    
+//}
+
+- (NSArray *)barCodeTypes {
     
-    if (!_barCodeTypesRC) {
+    if (!_barCodeTypes) {
         
-        NSManagedObjectContext *context = [STMCoreSessionManager sharedManager].currentSession.document.managedObjectContext;
-        
-        if (context) {
-            
-            STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMBarCodeType class])];
-            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"id" ascending:YES selector:@selector(compare:)]];
-            request.predicate = [STMPredicate predicateWithNoFantoms];
-            
-            NSFetchedResultsController *rc = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                                 managedObjectContext:context
-                                                                                   sectionNameKeyPath:nil
-                                                                                            cacheName:nil];
-            [rc performFetch:nil];
-            
-            _barCodeTypesRC = rc;
-            
-        }
+        NSArray *barCodeTypes = [[[STMCoreSessionManager sharedManager].currentSession persistenceDelegate] findAllSync:NSStringFromClass([STMBarCodeType class])
+                                                                                                              predicate:[STMPredicate predicateWithNoFantoms]
+                                                                                                                options:nil
+                                                                                                                  error:nil];
+        _barCodeTypes = barCodeTypes;
         
     }
-    return _barCodeTypesRC;
+    return _barCodeTypes;
     
 }
 
 - (void)checkScannedBarcode:(NSString *)barcode {
     
-    STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypes:self.barCodeTypesRC.fetchedObjects forBarcode:barcode];
-    
+//    STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypes:self.barCodeTypesRC.fetchedObjects forBarcode:barcode];
+
+    STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypesDics:self.barCodeTypes forBarcode:barcode];
+
     STMBarCodeScan *barCodeScan = (STMBarCodeScan *)[STMCoreObjectsController newObjectForEntityName:NSStringFromClass([STMBarCodeScan class])
                                                                                         isFantom:NO];
     barCodeScan.code = barcode;
@@ -501,7 +519,7 @@
             
             enum ESktScanSymbologyID symbologyID = [symbology getID];
             
-            NSArray *availableSymbologies = [self.barCodeTypesRC.fetchedObjects valueForKeyPath:@"symbology"];
+            NSArray *availableSymbologies = [self.barCodeTypes valueForKeyPath:@"symbology"];
             
             if ([availableSymbologies containsObject:[symbology getName]]) {
                 

@@ -14,16 +14,16 @@
 
 @implementation STMCoreBarCodeController
 
-+ (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types forBarcode:(NSString *)barcode {
++ (STMBarCodeScannedType)barcodeTypeFromTypesDics:(NSArray <NSDictionary *> *)types forBarcode:(NSString *)barcode {
     
     NSString *matchedType = nil;
     
-    for (STMBarCodeType *barCodeType in types) {
+    for (NSDictionary *barCodeType in types) {
         
-        if (barCodeType.mask) {
+        if (barCodeType[@"mask"]) {
             
             NSError *error = nil;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:(NSString * _Nonnull)barCodeType.mask
+            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:(NSString * _Nonnull)barCodeType[@"mask"]
                                                                                    options:NSRegularExpressionCaseInsensitive
                                                                                      error:&error];
             
@@ -33,7 +33,7 @@
             
             if (numberOfMatches > 0) {
                 
-                matchedType = barCodeType.type;
+                matchedType = barCodeType[@"type"];
                 break;
                 
             }
@@ -45,6 +45,38 @@
     return [self barCodeScannedTypeForStringType:matchedType];
 
 }
+
+//+ (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types forBarcode:(NSString *)barcode {
+//    
+//    NSString *matchedType = nil;
+//    
+//    for (STMBarCodeType *barCodeType in types) {
+//        
+//        if (barCodeType.mask) {
+//            
+//            NSError *error = nil;
+//            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:(NSString * _Nonnull)barCodeType.mask
+//                                                                                   options:NSRegularExpressionCaseInsensitive
+//                                                                                     error:&error];
+//            
+//            NSUInteger numberOfMatches = [regex numberOfMatchesInString:barcode
+//                                                                options:0
+//                                                                  range:NSMakeRange(0, barcode.length)];
+//            
+//            if (numberOfMatches > 0) {
+//                
+//                matchedType = barCodeType.type;
+//                break;
+//                
+//            }
+//            
+//        }
+//        
+//    }
+//    
+//    return [self barCodeScannedTypeForStringType:matchedType];
+//
+//}
 
 + (STMBarCodeScannedType)barCodeScannedTypeForStringType:(NSString *)type {
     
