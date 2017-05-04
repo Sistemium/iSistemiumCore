@@ -19,9 +19,6 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
 
 @interface STMCoreBarCodeController : STMCoreController
 
-//+ (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types
-//                                   forBarcode:(NSString *)barcode;
-
 + (STMBarCodeScannedType)barcodeTypeFromTypesDics:(NSArray <NSDictionary *> *)types
                                        forBarcode:(NSString *)barcode;
 
