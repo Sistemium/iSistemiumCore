@@ -168,6 +168,10 @@
             
     }
     
+    NSMutableArray *recordStatuses = [NSMutableArray array];
+    
+    NSString *recordStatusEntity = [STMFunctions addPrefixToEntityName:@"RecordStatus"];
+    
     for (NSDictionary *object in objects){
         
         NSDictionary *recordStatus = @{
@@ -176,8 +180,19 @@
                                        @"isRemoved": @YES,
                                        };
         
-        [self mergeWithoutSave:@"STMRecordStatus" attributes:recordStatus options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
+        recordStatus = [self mergeWithoutSave:recordStatusEntity attributes:recordStatus options:@{STMPersistingOptionRecordstatuses:@NO} error:error];
         
+        if (recordStatus) {
+            [recordStatuses addObject:recordStatus];
+        }
+        
+    }
+   
+    if (recordStatuses.count) {
+        // will crash if not async
+        dispatch_async(self.persister.dispatchQueue, ^{
+            [self.persister notifyObservingEntityName:recordStatusEntity ofUpdatedArray:recordStatuses options:options];
+        });
     }
     
     return count;

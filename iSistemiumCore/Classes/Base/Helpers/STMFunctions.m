@@ -970,6 +970,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (id)jsonObjectFromString:(NSString *)string {
     
+    if ([string isEqualToString:@"null"]) {
+        return [NSNull null];
+    }
+    
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
@@ -980,6 +984,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     
     if (!jsonObject) {
         NSLog(@"jsonObjectFromString error: %@", error.localizedDescription);
+        return [NSNull null];
     }
     
     return jsonObject;
@@ -987,6 +992,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 }
 
 + (NSString *)jsonStringFromObject:(id)object {
+    
+    if ([self isNull:object]) {
+        return @"null";
+    }
     
     if (![NSJSONSerialization isValidJSONObject:object]) {
         
@@ -998,6 +1007,11 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
             object = [self validJSONArrayFromArray:object];
 
+        } else if ([object isKindOfClass:[NSString class]]) {
+            return [NSString stringWithFormat:@"\"%@\"", object];
+        } else {
+            [[STMLogger sharedLogger] errorMessage:[@"jsonStringFrom invalid object: " stringByAppendingString:object]];
+            return @"null";
         }
 
     }

@@ -46,48 +46,48 @@
     
     NSString *errorMessage = nil;
     
-    if ([remoteCommands isKindOfClass:[NSDictionary class]]) {
+    if (![remoteCommands isKindOfClass:[NSDictionary class]]) {
         
+        [self error:error withMessage:@"remoteCommands is not an NSDictionary class"];
+        return NO;
+        
+    }
+    
+    
     for (NSString *className in remoteCommands.allKeys) {
         
         Class theClass = NSClassFromString(className);
         
-        if (theClass) {
+        if (!theClass) {
             
-            id payload = remoteCommands[className];
+            NSString *message = [NSString stringWithFormat:@"%@ does not exist", className];
+            errorMessage = errorMessage ? [[errorMessage stringByAppendingString:@"\n"] stringByAppendingString:message] : message;
+            continue;
+
+        }
+        
+        id payload = remoteCommands[className];
+        
+        if ([payload isKindOfClass:[NSString class]]) {
             
-            if ([payload isKindOfClass:[NSString class]]) {
-                
-                    [self performMethod:payload onClass:theClass error:error];
-                
-            } else if ([payload isKindOfClass:[NSDictionary class]]) {
-                
-                NSDictionary *methodsDic = (NSDictionary *)payload;
-                
-                for (NSString *methodName in methodsDic.allKeys) {
-                        [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass error:error];
-                }
-                
-            } else {
-                
-                    errorMessage = [NSString stringWithFormat:@"notification's payload for %@ is not a string or dictionary", className];
-                
+            [self performMethod:payload onClass:theClass error:error];
+            
+        } else if ([payload isKindOfClass:[NSDictionary class]]) {
+            
+            NSDictionary *methodsDic = (NSDictionary *)payload;
+            
+            for (NSString *methodName in methodsDic.allKeys) {
+                [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass error:error];
             }
             
         } else {
             
-                errorMessage = [NSString stringWithFormat:@"%@ does not exist", className];
-                
-            }
+            errorMessage = [NSString stringWithFormat:@"notification's payload for %@ is not a string or dictionary", className];
             
         }
         
-    } else {
-        
-        errorMessage = @"remoteCommands is not an NSDictionary class";
-        
     }
-
+    
     if (errorMessage) [self error:error withMessage:errorMessage];
     
     return (error == nil);

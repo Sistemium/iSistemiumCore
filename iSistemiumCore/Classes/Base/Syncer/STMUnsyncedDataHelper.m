@@ -268,45 +268,46 @@
     
     NSDictionary *objectToSend = [self anyObjectToSend];
     
-    if (objectToSend) {
+    if (!objectToSend) {
+        return [self finishHandleUnsyncedObjects];
+    }
         
-        NSString *entityName = objectToSend[@"entityName"];
-        NSDictionary *object = objectToSend[@"object"];
+    NSString *entityName = objectToSend[@"entityName"];
+    NSDictionary *object = objectToSend[@"object"];
+    
+//    NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
+    
+    if (self.subscriberDelegate) {
         
-//        NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
+        BOOL isCoreData = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeCoreData;
+        NSString *objectVersion = isCoreData ? object[@"ts"] : object[STMPersistingKeyVersion];
         
-        if (self.subscriberDelegate) {
-            
-            BOOL isCoreData = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeCoreData;
-            NSString *objectVersion = isCoreData ? object[@"ts"] : object[STMPersistingKeyVersion];
-            
-            [self.subscriberDelegate haveUnsynced:entityName
-                                         itemData:object
-                                      itemVersion:objectVersion];
-            
-        }
-        
-    } else {
-        
-        [self finishHandleUnsyncedObjects];
+        [self.subscriberDelegate haveUnsynced:entityName
+                                     itemData:object
+                                  itemVersion:objectVersion];
         
     }
+    
+
 
 }
 
 - (NSDictionary *)anyObjectToSend {
    
-    NSDictionary *anyObjectToSend = nil;
-    
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
 
-        anyObjectToSend = [self findSyncableObjectWithEntityName:entityName];
+        NSDictionary *anyObjectToSend = [self findSyncableObjectWithEntityName:entityName];
         
-        if (anyObjectToSend) break;
+        if (anyObjectToSend) {
+            return @{
+                     @"entityName": entityName,
+                     @"object": anyObjectToSend
+                     };
+        }
         
     }
     
-    return anyObjectToSend;
+    return nil;
     
 }
 
@@ -314,45 +315,26 @@
     
     NSDictionary *unsyncedObject = [self unsyncedObjectWithEntityName:entityName];
     
-    __block NSMutableDictionary *resultObject = nil;
-    
-    if (unsyncedObject) {
+    if (!unsyncedObject) return nil;
         
-        [self checkUnsyncedParentsForObject:unsyncedObject withEntityName:entityName completionHandler:^(BOOL haveUnsyncedParent, NSDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents) {
-            
-            if (!haveUnsyncedParent || (haveUnsyncedParent && optionalUnsyncedParents.count > 0)) {
-                
-                resultObject = @{}.mutableCopy;
-                resultObject[@"entityName"] = entityName;
-                
-                if (optionalUnsyncedParents.count > 0) {
-                    
-                    [self pendingObject:unsyncedObject
-                             entityName:entityName
-                     withHoldingParents:optionalUnsyncedParents.allValues];
-                
-                    NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
-                    
-                    [optionalUnsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
-                        alteredObject[key] = [NSNull null];
-                    }];
-                    
-                    resultObject[@"object"] = alteredObject.copy;
-
-                } else {
-                    
-                    resultObject[@"object"] = unsyncedObject.copy;
-                    
-                }
-                
-            }
-            
+    NSDictionary *unsyncedParents = [self checkUnsyncedParentsForObject:unsyncedObject withEntityName:entityName];
+    
+    if (unsyncedParents.count) {
+        
+        [self addPendingObject:unsyncedObject entityName:entityName withHoldingParents:unsyncedParents.allValues];
+    
+        NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
+        
+        [unsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary *obj, BOOL *stop) {
+            alteredObject[key] = [NSNull null];
         }];
         
+        return alteredObject.copy;
+
     }
     
-    return resultObject.copy;
-
+    return unsyncedObject;
+    
 }
 
 - (NSDictionary *)unsyncedObjectWithEntityName:(NSString *)entityName {
@@ -387,9 +369,10 @@
 
 }
 
-- (void)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName completionHandler:(void (^)(BOOL haveUnsyncedParent, NSDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents))completionHandler {
+- (NSDictionary <NSString *, NSDictionary *> *)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName {
     
     BOOL haveUnsyncedParent = NO;
+    
     NSMutableDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents = @{}.mutableCopy;
     
     NSEntityDescription *entityDesciption = [self.persistenceDelegate entitiesByName][entityName];
@@ -461,7 +444,7 @@
         
     }
 
-    completionHandler(haveUnsyncedParent, optionalUnsyncedParents.mutableCopy);
+    return haveUnsyncedParent ? optionalUnsyncedParents.copy : nil;
     
 }
 
@@ -494,7 +477,7 @@
 
 }
 
-- (void)pendingObject:(NSDictionary *)object entityName:(NSString *)entityName withHoldingParents:(NSArray *)parents {
+- (void)addPendingObject:(NSDictionary *)object entityName:(NSString *)entityName withHoldingParents:(NSArray *)parents {
     
     NSString *pk = object[@"id"];
     
