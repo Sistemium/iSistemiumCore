@@ -575,6 +575,21 @@ STMBarCodeScannerDelegate>
     //    NSLog(@"HTTPMethod %@", navigationAction.request.HTTPMethod)
     //    NSLog(@"HTTPBody %@", navigationAction.request.HTTPBody)
     
+    UIApplication *app = [UIApplication sharedApplication];
+    NSURL *url = navigationAction.request.URL;
+    
+    if ([url.scheme isEqualToString:@"tel"]) {
+        
+        if ([app canOpenURL:url]) {
+            
+            [app openURL:url];
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
+            
+        }
+        
+    }
+
     decisionHandler(WKNavigationActionPolicyAllow);
     
 }
