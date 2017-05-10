@@ -196,6 +196,7 @@ STMBarCodeScannerDelegate>
     
     [self hideNavBar];
     [self.scriptMessageHandler cancelSubscriptions];
+    self.unsyncedInfoJSFunction = nil;
     
     if ([self webViewAppManifestURI]) {
         
@@ -207,7 +208,7 @@ STMBarCodeScannerDelegate>
         
         NSString *wvUrl = [self webViewUrlString];
         
-        __block NSString *jsString = [NSString stringWithFormat:@"'%@'.startsWith(location.origin) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
+        __block NSString *jsString = [NSString stringWithFormat:@"('%@'.lastIndexOf(location.origin) >= 0) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
         
         [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError * _Nullable error) {
             
@@ -1023,13 +1024,16 @@ STMBarCodeScannerDelegate>
     if (data) [arguments addObject:data];
     if (parameters) [arguments addObject:parameters];
     
-    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
+    NSString *jsFunction = [NSString stringWithFormat:@"window.%1$@ && %1$@.apply(null,%2$@)", jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
     
     //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
     
-    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
         
         //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
+        if (error) {
+            NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
+        }
         
     }];
     
