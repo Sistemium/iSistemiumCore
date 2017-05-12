@@ -260,10 +260,7 @@
 - (void)sendNextUnsyncedObject {
 
     if (!self.syncingState) {
-        
-        [self finishHandleUnsyncedObjects];
-        return;
-        
+        return [self finishHandleUnsyncedObjects];
     }
     
     NSDictionary *objectToSend = [self anyObjectToSend];
@@ -271,24 +268,19 @@
     if (!objectToSend) {
         return [self finishHandleUnsyncedObjects];
     }
-        
-    NSString *entityName = objectToSend[@"entityName"];
-    NSDictionary *object = objectToSend[@"object"];
     
-//    NSLog(@"object to send: %@ %@", entityName, object[@"id"]);
-    
-    if (self.subscriberDelegate) {
-        
-        BOOL isCoreData = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeCoreData;
-        NSString *objectVersion = isCoreData ? object[@"ts"] : object[STMPersistingKeyVersion];
-        
-        [self.subscriberDelegate haveUnsynced:entityName
-                                     itemData:object
-                                  itemVersion:objectVersion];
-        
+    if (!self.subscriberDelegate) {
+        return;
     }
     
-
+    NSString *entityName = objectToSend[@"entityName"];
+    NSDictionary *itemData = objectToSend[@"object"];
+    
+    BOOL isCoreData = [self.persistenceDelegate storageForEntityName:entityName] == STMStorageTypeCoreData;
+    NSString *itemVersion = itemData[isCoreData ? @"ts" : STMPersistingKeyVersion];
+    
+    [self.subscriberDelegate haveUnsynced:entityName itemData:itemData itemVersion:itemVersion];
+    
 
 }
 
