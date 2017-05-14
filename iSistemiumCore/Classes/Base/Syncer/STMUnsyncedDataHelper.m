@@ -30,7 +30,7 @@
 @interface STMUnsyncedDataHelper()
 
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
+@property (nonatomic, strong) STMLazyDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
 @property (nonatomic, strong) STMLazyDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *pendingObjectsByEntity;
 @property (nonatomic, strong) STMLazyDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
 @property (nonatomic, strong) STMUnsyncedDataHelperState *syncingState;
@@ -151,7 +151,7 @@
 
 - (void)initPrivateData {
 
-    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    self.erroredObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableSet class]];
     self.pendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableDictionary class]];
     self.syncedPendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableArray class]];
     
@@ -238,9 +238,12 @@
     
     NSLogMethodName;
     
-    [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSSet *ids, BOOL *stop) {
+    for (NSString *entityName in self.erroredObjectsByEntity.allKeys) {
+        
+        NSSet *ids = self.erroredObjectsByEntity[entityName];
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
-    }];
+        
+    }
     
     self.syncingState = nil;
     
@@ -422,7 +425,7 @@
 
 - (void)declineFromSync:(NSDictionary *)object entityName:(NSString *)entityName{
     
-    NSString *pk = object[@"id"];
+    NSString *pk = object[STMPersistingKeyPrimary];
     
     if (!pk) {
         
@@ -435,12 +438,7 @@
     
     @synchronized (self) {
         
-        NSMutableSet *errored = self.erroredObjectsByEntity[entityName];
-        if (!errored) errored = [NSMutableSet set];
-        
-        [errored addObject:pk];
-        
-        self.erroredObjectsByEntity[entityName] = errored;
+        [self.erroredObjectsByEntity[entityName] addObject:pk];
         
     }
 
