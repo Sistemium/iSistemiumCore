@@ -15,6 +15,7 @@
 #import "STMCoreSettingsController.h"
 #import "STMLogMessage.h"
 
+#import "STMLazyDictionary.h"
 
 @interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
 
@@ -30,8 +31,8 @@
 
 @property (nonatomic, strong) NSMutableArray <STMPersistingObservingSubscriptionID> *subscriptions;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableSet <NSString *> *> *erroredObjectsByEntity;
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *pendingObjectsByEntity;
-@property (nonatomic, strong) NSMutableDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
+@property (nonatomic, strong) STMLazyDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *pendingObjectsByEntity;
+@property (nonatomic, strong) STMLazyDictionary <NSString *, NSMutableArray *> *syncedPendingObjectsByEntity;
 @property (nonatomic, strong) STMUnsyncedDataHelperState *syncingState;
 
 @property (nonatomic) BOOL isPaused;
@@ -89,31 +90,26 @@
         [self declineFromSync:itemData entityName:entityName];
         [self releasePendingObject:itemData entityName:entityName];
         
+    } else if (!itemVersion) {
+        
+        NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
+        
     } else {
         
-        if (itemVersion) {
+        if ([self isPendingObject:itemData entityName:entityName]) {
             
-            NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
-            
-            if ([self isPendingObject:itemData entityName:entityName]) {
-                
-                [self didSyncPendingObject:itemData entityName:entityName];
+            [self didSyncPendingObject:itemData entityName:entityName];
 
-            } else {
-
-                NSError *error;
-                [self.persistenceDelegate mergeSync:entityName
-                                         attributes:itemData
-                                            options:@{STMPersistingOptionLts: itemVersion}
-                                              error:&error];
-                
-            }
-            
-            [self checkForPendingParentsForObject:itemData];
-            
         } else {
-            NSLog(@"No itemVersion for %@ %@", entityName, itemData[@"id"]);
+
+            NSError *error;
+            NSDictionary *options = @{STMPersistingOptionLts: itemVersion};
+            
+            [self.persistenceDelegate mergeSync:entityName attributes:itemData options:options error:&error];
+            
         }
+        
+        [self checkForPendingParentsForObject:itemData];
         
     }
     
@@ -153,6 +149,14 @@
 
 #pragma mark - Private helpers
 
+- (void)initPrivateData {
+
+    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
+    self.pendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableDictionary class]];
+    self.syncedPendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableArray class]];
+    
+}
+
 - (void)subscribeUnsynced {
     
     if (!self.subscriberDelegate) return;
@@ -162,9 +166,8 @@
     }];
     
     self.subscriptions = [NSMutableArray array];
-    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
-    self.pendingObjectsByEntity = @{}.mutableCopy;
-    self.syncedPendingObjectsByEntity = @{}.mutableCopy;
+    
+    [self initPrivateData];
     
     for (NSString *entityName in [STMEntityController uploadableEntitiesNames]) {
         
@@ -205,8 +208,8 @@
 - (void)checkUnsyncedObjects {
     
     NSString *notificationName = [self anyObjectToSend] ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS;
-    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
-                                                        object:self];
+    
+    [self postAsyncMainQueueNotification:notificationName];
 
 }
 
@@ -218,10 +221,7 @@
     @synchronized (self) {
         
         if (!self.subscriberDelegate || self.isPaused) {
-            
-            [self checkUnsyncedObjects];
-            return;
-            
+            return [self checkUnsyncedObjects];
         }
 
         if (!self.syncingState) {
@@ -238,17 +238,14 @@
     
     NSLogMethodName;
     
-    [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSMutableSet<NSString *> * ids, BOOL * stop) {
+    [self.erroredObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * entityName, NSSet *ids, BOOL *stop) {
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
     }];
     
     self.syncingState = nil;
     
     [self checkUnsyncedObjects];
-
-    self.erroredObjectsByEntity = [NSMutableDictionary dictionary];
-    self.pendingObjectsByEntity = @{}.mutableCopy;
-    self.syncedPendingObjectsByEntity = @{}.mutableCopy;
+    [self initPrivateData];
     
     [self.subscriberDelegate finishUnsyncedProcess];
     
@@ -280,7 +277,6 @@
     NSString *itemVersion = itemData[isCoreData ? @"ts" : STMPersistingKeyVersion];
     
     [self.subscriberDelegate haveUnsynced:entityName itemData:itemData itemVersion:itemVersion];
-    
 
 }
 
@@ -317,12 +313,14 @@
     
         NSMutableDictionary *alteredObject = unsyncedObject.mutableCopy;
         
-        [unsyncedParents enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary *obj, BOOL *stop) {
+        for (NSString *key in unsyncedParents.allKeys) {
             alteredObject[key] = [NSNull null];
-        }];
+        }
         
         return alteredObject.copy;
 
+    } else if (unsyncedParents) {
+        return nil;
     }
     
     return unsyncedObject;
@@ -353,17 +351,15 @@
                               STMPersistingOptionOrder      : @"deviceTs,id",
                               STMPersistingOptionOrderDirectionAsc};
     
-    NSArray *result = [self.persistenceDelegate findAllSync:entityName
-                                                  predicate:predicate
-                                                    options:options
-                                                      error:&error];
+    NSArray *result = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:options error:&error];
+    
     return result.firstObject;
 
 }
 
 - (NSDictionary <NSString *, NSDictionary *> *)checkUnsyncedParentsForObject:(NSDictionary *)object withEntityName:(NSString *)entityName {
     
-    BOOL haveUnsyncedParent = NO;
+    BOOL hasUnsyncedParent = NO;
     
     NSMutableDictionary <NSString *, NSDictionary *> *optionalUnsyncedParents = @{}.mutableCopy;
     
@@ -374,37 +370,16 @@
     for (NSString *relName in relNames) {
 
         NSString *relKey = [relName stringByAppendingString:RELATIONSHIP_SUFFIX];
-        
         NSString *parentId = object[relKey];
         
-        if (!parentId || [parentId isKindOfClass:[NSNull class]]) continue;
+        if ([STMFunctions isNull:parentId]) continue;
         
         NSString *parentEntityName = [entityDesciption.relationshipsByName[relName] destinationEntity].name;
         
-        NSError *error = nil;
+        NSError *error;
+        NSDictionary *parent = [self.persistenceDelegate findSync:parentEntityName identifier:parentId options:nil error:&error];
         
-        NSDictionary *parent = [self.persistenceDelegate findSync:parentEntityName
-                                                       identifier:parentId
-                                                          options:nil
-                                                            error:&error];
-        
-        BOOL haveToCheckRelationship = NO;
-        
-        if (parent) {
-            
-            NSString *parentLts = parent[STMPersistingOptionLts];
-            
-            BOOL isEmptyLts = (![STMFunctions isNotNull:parentLts] || [parentLts isEqualToString:@""]);
-            
-            if (isEmptyLts) {
-                
-                BOOL isSynced = [self isSyncedPendingObject:parent entityName:parentEntityName];
-                
-                haveToCheckRelationship = !isSynced;
-                
-            }
-            
-        } else {
+        if (!parent) {
             
             if (error) {
                 NSLog(@"error to find %@ %@: %@", parentEntityName, parentId, error.localizedDescription);
@@ -412,31 +387,33 @@
                 NSLog(@"we have relation's id but have no both object with this id and error — something wrong with it");
             }
             
-            haveToCheckRelationship = YES;
-            
+            continue;
         }
         
-        if (haveToCheckRelationship) {
-            
-            haveUnsyncedParent = YES;
-            
-            NSRelationshipDescription *relationship = entityDesciption.relationshipsByName[relName];
-            
-            if (relationship.inverseRelationship.deleteRule != NSCascadeDeleteRule) {
-                
-                if (parent) {
-                    optionalUnsyncedParents[relKey] = parent;
-                } else {
-                    NSLog(@"have no parent to wait for sync — something wrong with it");
-                }
-                
-            }
-            
+        BOOL theParentWasSynced = ![STMFunctions isEmpty:parent[STMPersistingOptionLts]];
+        
+        if (theParentWasSynced || [self isSyncedPendingObject:parent entityName:parentEntityName]) {
+            continue;
         }
+        
+        hasUnsyncedParent = YES;
+        
+        NSRelationshipDescription *relationship = entityDesciption.relationshipsByName[relName];
+        
+        BOOL hasUnsyncedRequiredParent = relationship.inverseRelationship.deleteRule == NSCascadeDeleteRule;
+        BOOL wasOnceSynced = ![STMFunctions isEmpty:object[STMPersistingOptionLts]];
+        BOOL isSyncedPending = [self isSyncedPendingObject:object entityName:entityName];
+        
+        if (hasUnsyncedRequiredParent || wasOnceSynced || isSyncedPending) {
+            // this means "don't sync"
+            return [NSDictionary dictionary];
+        }
+        
+        optionalUnsyncedParents[relKey] = parent;
         
     }
 
-    return haveUnsyncedParent ? optionalUnsyncedParents.copy : nil;
+    return hasUnsyncedParent ? optionalUnsyncedParents.copy : nil;
     
 }
 
@@ -471,19 +448,13 @@
 
 - (void)addPendingObject:(NSDictionary *)object entityName:(NSString *)entityName withHoldingParents:(NSArray *)parents {
     
-    NSString *pk = object[@"id"];
-    
-    NSLog(@"pendingObject: %@", object);
-    
     @synchronized (self) {
         
-        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        NSLog(@"pendingObject: %@", object);
         
-        if (!pendingObjects) pendingObjects = @{}.mutableCopy;
+        NSArray *parentIds = [parents valueForKeyPath:STMPersistingKeyPrimary];
         
-        pendingObjects[pk] = [[parents valueForKeyPath:@"id"] mutableCopy];
-        
-        self.pendingObjectsByEntity[entityName] = pendingObjects;
+        self.pendingObjectsByEntity[entityName][object[STMPersistingKeyPrimary]] = parentIds.mutableCopy;
         
     }
 
@@ -491,15 +462,13 @@
 
 - (BOOL)isPendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
     
-    NSString *pk = object[@"id"];
-    
-    if (!pk) return NO;
-    
     @synchronized (self) {
         
-        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
-
-        return pendingObjects[pk] ? YES : NO;
+        NSString *pk = object[STMPersistingKeyPrimary];
+        
+        if (!pk) return NO;
+        
+        return !!self.pendingObjectsByEntity[entityName][pk];
         
     }
 
@@ -507,23 +476,21 @@
 
 - (void)releasePendingObject:(NSDictionary *)object entityName:(NSString *)entityName {
     
-    NSString *pk = object[@"id"];
+    NSString *pk = object[STMPersistingKeyPrimary];
     
     if (!pk) return;
     
     @synchronized (self) {
         
-        NSMutableDictionary <NSString *, NSMutableArray *> *pendingObjects = self.pendingObjectsByEntity[entityName];
+        NSMutableDictionary *pendingObjects = self.pendingObjectsByEntity[entityName];
 
-        if (pendingObjects[pk]) {
-            
-            NSLog(@"releasePendingObject: %@", object);
-
-            [pendingObjects removeObjectForKey:pk];
-            
-            self.pendingObjectsByEntity[entityName] = pendingObjects;
-
+        if (!pendingObjects[pk]) {
+            return;
         }
+        
+        NSLog(@"releasePendingObject: %@", object);
+
+        [pendingObjects removeObjectForKey:pk];
 
     }
     
@@ -531,51 +498,31 @@
 
 - (void)checkForPendingParentsForObject:(NSDictionary *)object {
     
-    NSString *pk = object[@"id"];
+    NSString *pk = object[STMPersistingKeyPrimary];
     
     if (!pk) return;
 
     @synchronized (self) {
         
-        __block NSMutableDictionary <NSString *, NSMutableDictionary <NSString *, NSMutableArray *> *> *copyOfPendingObjectsByEntity = self.pendingObjectsByEntity.mutableCopy;
-        
-        [self.pendingObjectsByEntity enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull entityName, NSMutableDictionary<NSString *,NSMutableArray *> * _Nonnull pendingObjects, BOOL * _Nonnull stop) {
-           
-            __block NSMutableDictionary<NSString *,NSMutableArray *> *copyOfPendingObjects = pendingObjects.mutableCopy;
-                        
-            [pendingObjects enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull objectId, NSMutableArray * _Nonnull parents, BOOL * _Nonnull stop) {
+        for (NSString *entityName in self.pendingObjectsByEntity.allKeys) {
+
+            NSDictionary *pendingObjects = self.pendingObjectsByEntity[entityName].copy;
+            
+            [pendingObjects enumerateKeysAndObjectsUsingBlock:^(NSString *objectId, NSMutableArray *parents, BOOL *stop) {
                                 
-                if ([parents containsObject:pk]) {
-                    
-                    [parents removeObject:pk];
-                    
-                    if (parents.count > 0) {
-                        
-                        copyOfPendingObjects[objectId] = parents;
-                        
-                    } else {
-                        
-                        [copyOfPendingObjects removeObjectForKey:objectId];
-                        
-                    }
-                    
+                if (![parents containsObject:pk]) {
+                    return;
+                }
+                
+                [parents removeObject:pk];
+                
+                if (!parents.count) {
+                    [self.pendingObjectsByEntity[entityName] removeObjectForKey:objectId];
                 }
                 
             }];
             
-            if (copyOfPendingObjects.count > 0) {
-                
-                copyOfPendingObjectsByEntity[entityName] = copyOfPendingObjects.mutableCopy;
-                
-            } else {
-                
-                [copyOfPendingObjectsByEntity removeObjectForKey:entityName];
-                
-            }
-            
-        }];
-        
-        self.pendingObjectsByEntity = copyOfPendingObjectsByEntity.mutableCopy;
+        }
         
     }
     
@@ -592,12 +539,7 @@
     @synchronized (self) {
         
         NSMutableArray *syncedObjects = self.syncedPendingObjectsByEntity[entityName];
-        
-        if (!syncedObjects) syncedObjects = @[].mutableCopy;
-        
         [syncedObjects addObject:pk];
-        
-        self.syncedPendingObjectsByEntity[entityName] = syncedObjects;
         
     }
     
