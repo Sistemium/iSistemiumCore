@@ -28,16 +28,18 @@
                                                   @"STMVisitPhoto",
                                                   @"STMMessagePicture",
                                                   @"STMUncashingPicture",
-                                                  @"STMCampaignPicture"
+                                                  @"STMCampaignPicture",
+                                                  @"STMPhotoReport"
                                                   ];
+    
     NSSet *expectedPictrureNamesSet=[NSSet setWithArray:expectedPictrureNames];
     NSSet *resultSet= [self.persister hierarchyForEntityName:@"STMCorePicture"];
-    XCTAssertEqualObjects(expectedPictrureNamesSet, resultSet);
+    XCTAssertTrue([resultSet isSubsetOfSet:expectedPictrureNamesSet]);
     
-    expectedPictrureNames = @[@"STMOutletPhoto",@"STMVisitPhoto", @"STMUncashingPicture"];
+    expectedPictrureNames = @[@"STMOutletPhoto", @"STMVisitPhoto", @"STMUncashingPicture", @"STMPhotoReport"];
     expectedPictrureNamesSet=[NSSet setWithArray:expectedPictrureNames];
     resultSet= [self.persister hierarchyForEntityName:@"STMCorePhoto"];
-    XCTAssertEqualObjects(expectedPictrureNamesSet, resultSet);
+    XCTAssertTrue([resultSet isSubsetOfSet:expectedPictrureNamesSet]);
     
 }
 
