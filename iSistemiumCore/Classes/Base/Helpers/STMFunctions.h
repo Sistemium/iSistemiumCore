@@ -140,6 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isNull:(nullable id)value;
 + (BOOL)isNullBoth:(id)value1 and:(id)value2;
 
++ (BOOL)isEmpty:(id)value;
+
 + (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval;
 
 + (NSDictionary *)callerInfo;

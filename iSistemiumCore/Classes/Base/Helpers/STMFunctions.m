@@ -1320,6 +1320,10 @@ vm_size_t freeMemory(void) {
     
 }
 
++ (BOOL)isEmpty:(id)value {
+    return [STMFunctions isNull:value] || [value isEqualToString:@""];
+}
+
 + (NSString *)printableTimeInterval:(NSTimeInterval)timeInterval {
     
     if (timeInterval > 10) {

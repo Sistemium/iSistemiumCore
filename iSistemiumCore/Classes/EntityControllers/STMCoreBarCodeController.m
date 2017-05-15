@@ -10,20 +10,21 @@
 
 #import "STMSoundController.h"
 #import "STMCoreObjectsController.h"
+#import "STMLogger.h"
 
 
 @implementation STMCoreBarCodeController
 
-+ (STMBarCodeScannedType)barcodeTypeFromTypes:(NSArray <STMBarCodeType *> *)types forBarcode:(NSString *)barcode {
++ (STMBarCodeScannedType)barcodeTypeFromTypesDics:(NSArray <NSDictionary *> *)types forBarcode:(NSString *)barcode {
     
     NSString *matchedType = nil;
     
-    for (STMBarCodeType *barCodeType in types) {
+    for (NSDictionary *barCodeType in types) {
         
-        if (barCodeType.mask) {
+        if (barCodeType[@"mask"]) {
             
             NSError *error = nil;
-            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:(NSString * _Nonnull)barCodeType.mask
+            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:(NSString * _Nonnull)barCodeType[@"mask"]
                                                                                    options:NSRegularExpressionCaseInsensitive
                                                                                      error:&error];
             
@@ -33,7 +34,7 @@
             
             if (numberOfMatches > 0) {
                 
-                matchedType = barCodeType.type;
+                matchedType = barCodeType[@"type"];
                 break;
                 
             }
@@ -44,6 +45,70 @@
     
     return [self barCodeScannedTypeForStringType:matchedType];
 
+}
+
++ (NSArray <NSDictionary *> *)stockBatchForBarcode:(NSString *)barcode {
+    
+    NSArray *barcodesArray = [self barcodesArrayForBarcodeClass:@"STMStockBatchBarCode" barcodeValue:barcode];
+    
+    if (barcodesArray.count > 0) {
+        
+        if (barcodesArray.count > 1) {
+            
+            NSString *logMessage = [NSString stringWithFormat:@"More than one stockbatch barcodes for barcode: %@", barcode];
+            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+            
+        }
+        
+        NSMutableArray *result = @[].mutableCopy;
+        
+        for (NSDictionary *stockBatchBarCode in barcodesArray) {
+            
+            NSString *stockBatchId = stockBatchBarCode[@"stockBatchId"];
+            
+            if (stockBatchId) {
+                
+                NSDictionary *stockBatch = [[self persistenceDelegate] findSync:@"STMStockBatch"
+                                                                     identifier:stockBatchId
+                                                                        options:nil
+                                                                          error:nil];
+                
+                [result addObject:stockBatch];
+                NSLog(@"stockBatch artileId %@", stockBatch[@"articleId"]);
+                
+            }
+            
+        }
+        
+        return result;
+        
+    } else {
+        
+        NSLog(@"unknown barcode %@", barcode);
+        return nil;
+        
+    }
+    
+}
+
++ (NSArray *)barcodesArrayForBarcodeClass:(NSString *)barcodeClass barcodeValue:(NSString *)barcodeValue {
+    
+    if ([barcodeClass isEqualToString:@"STMArticleBarCode"] || [barcodeClass isEqualToString:@"STMStockBatchBarCode"]) {
+        
+        NSPredicate *predicate = (barcodeValue) ? [NSPredicate predicateWithFormat:@"code == %@", barcodeValue] : nil;
+        
+        NSArray *barcodesArray = [[self persistenceDelegate] findAllSync:barcodeClass
+                                                               predicate:predicate
+                                                                 options:nil
+                                                                   error:nil];
+        return barcodesArray;
+        
+    } else {
+        
+        return nil;
+        
+    }
+    
 }
 
 + (STMBarCodeScannedType)barCodeScannedTypeForStringType:(NSString *)type {

@@ -517,12 +517,42 @@
 
 - (NSString *)dataModelName {
     
-    NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
-    return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
-    
+//    NSString *bundleName = [[NSBundle mainBundle].bundleIdentifier componentsSeparatedByString:@"."].lastObject;
+//    return ([bundleName isEqualToString:@"iSistemium"]) ? @"STMDataModel2" : bundleName;
+
+//    NSString *dataModelName = @"";
+//    
+//#if defined (CONFIGURATION_DebugSales) || defined (CONFIGURATION_ReleaseSales)
+//
+//    NSLog(@"USE SALES DATA MODEL");
+//    dataModelName = @"iSisSales";
+//    
+//#endif
+//
+//#if defined (CONFIGURATION_DebugWarehouse) || defined (CONFIGURATION_ReleaseWarehouse)
+//    
+//    NSLog(@"USE WAREHOUSE DATA MODEL");
+//    dataModelName = @"iSisWarehouse";
+//    
+//#endif
+//
+//    return dataModelName;
+
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *path = [bundle pathForResource:@"config" ofType:@"plist"];
+    NSDictionary *config = [NSDictionary dictionaryWithContentsOfFile:path];
+    return config[@"dataModelName"];
+
 }
 
 - (void)startSession {
+    
+#if defined (CONFIGURATION_DebugWarehouse)
+
+//    NSLog(@"CONFIGURATION_DebugWarehouse — use local socket");
+//    self.socketURL = @"http://localhost:8000/socket.io-client/";
+
+#endif
 
     NSLog(@"socketURL %@", self.socketURL);
     NSLog(@"entity resource %@", self.entityResource);
