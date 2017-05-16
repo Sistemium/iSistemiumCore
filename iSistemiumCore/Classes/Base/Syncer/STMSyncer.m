@@ -458,6 +458,7 @@
     UIApplication *app = [UIApplication sharedApplication];
 
     if (app.applicationState != UIApplicationStateBackground) return;
+    if (app.backgroundTimeRemaining > 180) return;
 
     if (self.isUsingNetwork) {
         self.haveToCloseSocketAfterFetch = YES;
