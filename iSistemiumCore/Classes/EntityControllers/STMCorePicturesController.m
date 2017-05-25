@@ -401,6 +401,12 @@
             if ([STMFunctions isNotNull:attributes[@"href"]]) {
                 
                 [self hrefProcessingForObject:picture];
+            } else if ([STMFunctions isNotNull:picture[@"thumbnailHref"]]) {
+                
+                NSString *logMessage = [NSString stringWithFormat:@"Broken picture with thumbnailHref id = '%@'", picture[STMPersistingKeyPrimary]];
+                [self.logger errorMessage:logMessage];
+                
+                continue;
                 
             } else {
                 
@@ -893,10 +899,14 @@
     [self removeImageFilesForPicture:attributes withEntityName:entityName];
     
     NSError *error;
+    NSDictionary *options = @{
+//                              STMPersistingOptionRecordstatuses:@(NO)
+                              };
 
     [self.persistenceDelegate destroySync:entityName
                                identifier:attributes[@"id"]
-                                  options:nil error:&error];
+                                  options:options
+                                    error:&error];
     
 }
 
