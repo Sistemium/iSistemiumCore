@@ -28,6 +28,8 @@
 
     persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
     
+    persister.persistingRunning = persister;
+    
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
@@ -73,7 +75,7 @@
    
     __block NSUInteger result = 0;
     
-    [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         result = [transaction count:entityName predicate:predicate options:options error:error];
         return nil;
     }];
@@ -99,7 +101,7 @@
     // Allow pass nil in error
     __block NSError *innerError;
     
-    NSArray *result = [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    NSArray *result = [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         return [transaction findAllSync:entityName predicate:predicate options:options error:&innerError];
     }];
     
@@ -118,7 +120,7 @@
 
     __block NSDictionary *result;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
         
@@ -149,7 +151,7 @@
     
     if (!attributeArray.count || *error) return attributeArray;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         for (NSDictionary *attributes in attributeArray) {
             
@@ -194,7 +196,7 @@
     
     __block NSUInteger count;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
         
@@ -210,7 +212,7 @@
     
     __block NSDictionary *result;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:error];
         

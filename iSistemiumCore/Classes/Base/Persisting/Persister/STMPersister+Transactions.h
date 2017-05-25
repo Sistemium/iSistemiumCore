@@ -8,8 +8,9 @@
 
 #import "STMPersister.h"
 #import "STMPersistingTransaction.h"
+#import "STMPersistingRunning.h"
 
-@interface STMPersister (Transactions)
+@interface STMPersister (Transactions) <STMPersistingRunning>
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error;
 - (NSArray *)readOnly:(NSArray * (^)(id <STMPersistingTransaction> transaction))block;
