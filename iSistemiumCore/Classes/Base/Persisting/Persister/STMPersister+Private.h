@@ -14,6 +14,4 @@
 @property (nonatomic,strong) NSString *fmdbFileName;
 @property (nonatomic,strong) id<STMPersistingRunning> persistingRunning;
 
-- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error;
-
 @end

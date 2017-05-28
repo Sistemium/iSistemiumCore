@@ -87,7 +87,7 @@
         }
             
         default:
-            [self.persister wrongEntityName:entityName error:error];
+            [self wrongEntityName:entityName error:error];
             return nil;
     }
     
@@ -122,7 +122,7 @@
         
         default:
             
-            [self.persister wrongEntityName:entityName error:error];
+            [self wrongEntityName:entityName error:error];
             return nil;
         
     }
@@ -163,7 +163,7 @@
         }
         
         default:
-            [self.persister wrongEntityName:entityName error:error];
+            [self wrongEntityName:entityName error:error];
             return 0;
             
     }
@@ -247,7 +247,7 @@
         
         }
             
-        default: [self.persister wrongEntityName:entityName error:error];
+        default: [self wrongEntityName:entityName error:error];
     
     }
     
@@ -277,7 +277,7 @@
         }
             
         default:
-            [self.persister wrongEntityName:entityName error:error];
+            [self wrongEntityName:entityName error:error];
             return 0;
             
     }
@@ -299,6 +299,11 @@
     
     return options;
     
+}
+
+- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error {
+    NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName];
+    [STMFunctions error:error withMessage:message];
 }
 
 @end
