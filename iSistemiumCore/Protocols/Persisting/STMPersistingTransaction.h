@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMModelling.h"
 
 #define STMPerisistingResultSet NSArray <NSDictionary *> *
 
