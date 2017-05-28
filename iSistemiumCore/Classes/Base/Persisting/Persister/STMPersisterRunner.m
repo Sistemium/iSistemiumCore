@@ -7,15 +7,31 @@
 //
 
 #import "STMPersisterRunner.h"
+#import "STMPersisterTransactionCoordinator.h"
 
 @implementation STMPersisterRunner
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
 
+    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] init];
+    
+    BOOL result = block(transactionCoordinator);
+    
+    if (result){
+        [transactionCoordinator rollback];
+    }else{
+        [transactionCoordinator commit];
+    }
     
 }
 
 - (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
+    
+    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] init];
+    
+    NSArray *result = block(transactionCoordinator);
+    
+    return result;
     
 }
 
