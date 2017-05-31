@@ -23,6 +23,12 @@
 @implementation STMPersisterTransactionCoordinator
 
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate{
+
+    return [self initWithModellingDelegate:modellingDelegate readOny:NO];
+    
+}
+
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly{
     
     self = [self init];
     

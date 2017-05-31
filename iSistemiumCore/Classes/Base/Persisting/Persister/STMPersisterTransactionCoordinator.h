@@ -11,6 +11,7 @@
 @interface STMPersisterTransactionCoordinator : NSObject <STMPersistingTransaction>
 
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate;
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly;
 - (void)commit;
 - (void)rollback;
 

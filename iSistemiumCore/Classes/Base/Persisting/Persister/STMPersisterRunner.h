@@ -8,7 +8,6 @@
 
 #import "STMPersistingRunning.h"
 
-
-@interface STMPersisterRunner : NSObject <STMPersistingRunning>
+@interface STMPersisterRunner : NSOperationQueue <STMPersistingRunning>
 
 @end

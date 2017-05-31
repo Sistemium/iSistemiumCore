@@ -9,30 +9,61 @@
 #import "STMPersisterRunner.h"
 #import "STMPersisterTransactionCoordinator.h"
 
+@interface STMPersisterRunner()
+
+@property (nonatomic, strong) STMPersisterTransactionCoordinator *transactionCoordinator;
+@property (nonatomic, strong) STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator;
+
+@end
+
 @implementation STMPersisterRunner
 
-- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
-
-    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] init];
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate{
     
-    BOOL result = block(transactionCoordinator);
+    self = [self init];
     
-    if (result){
-        [transactionCoordinator rollback];
-    }else{
-        [transactionCoordinator commit];
+    if (!self) {
+        return nil;
     }
+    
+    self.transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithModellingDelegate:modellingDelegate];
+    self.readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithModellingDelegate:modellingDelegate readOny:YES];
+    self.maxConcurrentOperationCount = 1;
+    
+    return self;
+    
+}
+
+- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
+    
+    [self addOperationWithBlock:^{
+        
+        BOOL result = block(self.transactionCoordinator);
+        
+        if (result){
+            [self.transactionCoordinator rollback];
+        }else{
+            [self.transactionCoordinator commit];
+        }
+        
+    }];
     
 }
 
 - (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
     
-    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] init];
+    __block NSArray *result;
     
-    NSArray *result = block(transactionCoordinator);
+    [self addOperationWithBlock:^{
+        
+        result = block(self.readOnlyTransactionCoordinator);
+        
+    }];
+    
+    [self waitUntilAllOperationsAreFinished];
     
     return result;
-    
 }
 
 @end
+
