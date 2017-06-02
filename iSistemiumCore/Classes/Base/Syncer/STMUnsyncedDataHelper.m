@@ -241,6 +241,7 @@
     for (NSString *entityName in self.erroredObjectsByEntity.allKeys) {
         
         NSSet *ids = self.erroredObjectsByEntity[entityName];
+        if (!ids.count) continue;
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
         
     }
