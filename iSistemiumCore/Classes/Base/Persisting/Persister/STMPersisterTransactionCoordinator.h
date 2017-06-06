@@ -12,7 +12,6 @@
 
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate;
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly;
-- (void)commit;
-- (void)rollback;
+- (void)endTransactionWithSuccess:(BOOL *)success;
 
 @end

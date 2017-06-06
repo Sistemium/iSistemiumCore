@@ -40,11 +40,7 @@
         
         BOOL result = block(self.transactionCoordinator);
         
-        if (result){
-            [self.transactionCoordinator rollback];
-        }else{
-            [self.transactionCoordinator commit];
-        }
+        [self.transactionCoordinator rollback];
         
     }];
     
