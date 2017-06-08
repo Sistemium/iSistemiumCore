@@ -51,32 +51,32 @@
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
-    NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
-    NSArray *groupBy = options[STMPersistingOptionGroupBy];
-    
-    if (offset) {
-        offset -= 1;
-        offset *= pageSize;
-    }
-    
-    NSString *orderBy = options[STMPersistingOptionOrder];
-    
-    BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
-    
-    if (!orderBy) orderBy = @"id";
+    __block NSArray *result;
     
     predicate = [self.persister predicate:predicate withOptions:options];
-    
-    __block NSArray *result;
     
     switch ([self.persister storageForEntityName:entityName options:options]) {
             
         case STMStorageTypeFMDB:
             
-            return [super findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset groupBy:groupBy];
+            return [super findAllSync:entityName predicate:predicate options:options error:error];
             
         case STMStorageTypeCoreData: {
+            
+            NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
+            NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
+            NSArray *groupBy = options[STMPersistingOptionGroupBy];
+            
+            if (offset) {
+                offset -= 1;
+                offset *= pageSize;
+            }
+            
+            NSString *orderBy = options[STMPersistingOptionOrder];
+            
+            BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
+            
+            if (!orderBy) orderBy = @"id";
             
             [self.coreDataContext performBlockAndWait:^{
                 result = [self.persister objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.coreDataContext error:error];

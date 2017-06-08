@@ -162,6 +162,27 @@
     
 }
 
+- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
+    NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
+    NSArray *groupBy = options[STMPersistingOptionGroupBy];
+    
+    if (offset) {
+        offset -= 1;
+        offset *= pageSize;
+    }
+    
+    NSString *orderBy = options[STMPersistingOptionOrder];
+    
+    BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
+    
+    if (!orderBy) orderBy = @"id";
+    
+    return [self findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset groupBy:groupBy];
+    
+}
+
 
 - (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
     
