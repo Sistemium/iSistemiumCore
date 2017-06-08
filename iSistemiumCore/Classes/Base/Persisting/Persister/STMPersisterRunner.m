@@ -40,7 +40,7 @@
         
         BOOL result = block(self.transactionCoordinator);
         
-        [self.transactionCoordinator rollback];
+        [self.transactionCoordinator endTransactionWithSuccess:result];
         
     }];
     

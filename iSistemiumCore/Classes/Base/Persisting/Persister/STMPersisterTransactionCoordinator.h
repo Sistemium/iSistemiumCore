@@ -12,6 +12,6 @@
 
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate;
 - (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly;
-- (void)endTransactionWithSuccess:(BOOL *)success;
+- (void)endTransactionWithSuccess:(BOOL)success;
 
 @end

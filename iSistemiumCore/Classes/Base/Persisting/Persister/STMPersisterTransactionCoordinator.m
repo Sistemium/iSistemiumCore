@@ -73,7 +73,7 @@
     return _transactions;
 }
 
-- (void)endTransactionWithSuccess:(BOOL *)success{
+- (void)endTransactionWithSuccess:(BOOL)success{
     
     [self.transactions removeAllObjects];
 
