@@ -28,7 +28,10 @@
 }
 
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
-    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
+    
+    return [[self session].settingsController currentSettingsForGroup:group][settingsName];
+//    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
+    
 }
 
 - (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{

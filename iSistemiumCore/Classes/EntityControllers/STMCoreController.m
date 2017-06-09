@@ -26,7 +26,13 @@
 }
 
 + (instancetype)sharedInstance {
+    
+    // this is do not work for [STMCoreSettingsController stringValueForSettings…]
+    // session store settingsController with key = STMSettingsController
+    // but we ask here controller with key = STMCoreSettingsController
+
     return (STMCoreController*)[[self session] controllerWithClass:self.class];
+    
 }
 
 - (instancetype)initWithPersistenceDelegate:(id)persistenceDelegate {
