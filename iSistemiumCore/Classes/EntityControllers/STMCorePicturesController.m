@@ -411,7 +411,7 @@
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"picture %@ have no both imagePath and href", picture];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+                [self.logger errorMessage:logMessage];
                 [self deletePicture:picture];
                 
             }
@@ -900,7 +900,7 @@
     
     NSError *error;
     NSDictionary *options = @{
-//                              STMPersistingOptionRecordstatuses:@(NO)
+                              STMPersistingOptionRecordstatuses:@(NO)
                               };
 
     [self.persistenceDelegate destroySync:entityName
