@@ -65,7 +65,7 @@
     predicate = [self predicate:predicate withOptions:options];
    
     __block NSUInteger result = 0;
-
+    
     __block NSError *innerError;
     
     [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
@@ -108,27 +108,31 @@
 
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-
-    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     
-    if (!attributes || *error) return nil;
+    __block NSError *innerError;
+
+    attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:&innerError];
+    
+    if (!attributes || innerError) return nil;
 
     __block NSDictionary *result;
     
     [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
-        result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
+        result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:&innerError inTransaction:transaction];
         
         // Exit if there's no result and no error from the interceptor, but don't rollback
-        if (!result || *error) return !*error;
+        if (!result || innerError) return !innerError;
         
-        result = [transaction mergeWithoutSave:entityName attributes:result options:options error:error];
+        result = [transaction mergeWithoutSave:entityName attributes:result options:options error:&innerError];
         
-        return !*error;
+        return !innerError;
         
-    } error:error];
+    } error:&innerError];
     
-    if (*error) return nil;
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
+    
+    if (innerError) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result ? result : attributes
@@ -140,33 +144,37 @@
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
     
+    __block NSError *innerError;
+    
     __block NSMutableArray *result = @[].mutableCopy;
     
-    attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:error];
+    attributeArray = [self applyMergeInterceptors:entityName attributeArray:attributeArray options:options error:&innerError];
     
-    if (!attributeArray.count || *error) return attributeArray;
+    if (!attributeArray.count || innerError) return attributeArray;
     
     [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         for (NSDictionary *attributes in attributeArray) {
             
-            NSDictionary *merged = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
+            NSDictionary *merged = [self applyMergeInterceptors:entityName attributes:attributes options:options error:&innerError inTransaction:transaction];
             
-            if (*error) return NO;
+            if (innerError) return NO;
             if (!merged) continue;
             
-            merged = [transaction mergeWithoutSave:entityName attributes:merged options:options error:error];
+            merged = [transaction mergeWithoutSave:entityName attributes:merged options:options error:&innerError];
             
-            if (*error) return NO;
+            if (innerError) return NO;
             if (merged) [result addObject:merged];
             
         }
         
         return YES;
         
-    } error:error];
+    } error:&innerError];
     
-    if (*error) return nil;
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
+    
+    if (innerError) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                      ofUpdatedArray:result.count ? result : attributeArray
@@ -189,15 +197,19 @@
 
 - (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
+    __block NSError *innerError;
+    
     __block NSUInteger count;
     
     [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
-        count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
+        count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:&innerError];
         
-        return !*error;
+        return !innerError;
         
-    } error:error];
+    } error:&innerError];
+    
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
     return count;
     
@@ -207,15 +219,19 @@
     
     __block NSDictionary *result;
     
+    __block NSError *innerError;
+    
     [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
-        result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:error];
+        result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:&innerError];
         
-        return !*error;
+        return !innerError;
         
-    } error:error];
+    } error:&innerError];
     
-    if (*error) return nil;
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
+    
+    if (innerError) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result
