@@ -44,20 +44,24 @@
         
     }];
     
+    [self waitUntilAllOperationsAreFinished];
+
 }
 
 - (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
     
     __block NSArray *result;
-    
+
     [self addOperationWithBlock:^{
-        
+    
         result = block(self.readOnlyTransactionCoordinator);
         
+        [self.readOnlyTransactionCoordinator endTransactionWithSuccess:YES];
+
     }];
-    
+
     [self waitUntilAllOperationsAreFinished];
-    
+
     return result;
 }
 
