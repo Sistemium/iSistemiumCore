@@ -65,11 +65,15 @@
     predicate = [self predicate:predicate withOptions:options];
    
     __block NSUInteger result = 0;
+
+    __block NSError *innerError;
     
     [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
-        result = [transaction count:entityName predicate:predicate options:options error:error];
+        result = [transaction count:entityName predicate:predicate options:options error:&innerError];
         return nil;
     }];
+    
+    if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
     return result;
     
