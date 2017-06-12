@@ -9,8 +9,9 @@
 #import "STMModelling.h"
 #import "STMModelMapping.h"
 #import "STMFiling.h"
+#import "STMAdapting.h"
 
-@interface STMFmdb : NSObject
+@interface STMFmdb : NSObject<STMAdapting>
 
 NS_ASSUME_NONNULL_BEGIN
 

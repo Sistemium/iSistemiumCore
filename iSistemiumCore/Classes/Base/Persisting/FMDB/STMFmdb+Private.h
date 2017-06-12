@@ -14,6 +14,7 @@
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
 @property (nonatomic, strong) FMDatabasePool *pool;
+@property (nonatomic, strong) FMDatabase *database;
 
 @property (nonatomic, strong) NSDictionary *columnsByTable;
 @property (nonatomic, strong) NSArray *builtInAttributes;

@@ -42,6 +42,7 @@
     
     self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:flags];
     self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
+    self.database = [FMDatabase databaseWithPath:self.dbPath];
     
     __block BOOL result = NO;
 
@@ -132,6 +133,44 @@
     name = [STMFunctions removePrefixFromEntityName:name];
     return [self.columnsByTable.allKeys containsObject:name];
 
+}
+
+
+#pragma mark - Adapting protocol
+
+- (id<STMPersistingTransaction>)beginTransactionReadOnly:(BOOL)readOnly{
+    
+    [self.database open];
+    
+    if (!readOnly){
+        [self.database beginTransaction];
+    }
+    
+    id<STMPersistingTransaction> transaction = [[STMFmdbTransaction alloc] initWithFMDatabase:self.database stmFMDB:self];
+    
+    return transaction;
+
+}
+
+- (void)commit{
+
+    if (self.database.inTransaction){
+        [self.database commit];
+    }
+    
+    [self.database close];
+
+}
+
+
+- (void)rollback{
+
+    if (self.database.inTransaction){
+        [self.database rollback];
+    }
+    
+    [self.database close];
+    
 }
 
 @end
