@@ -12,18 +12,14 @@
 #import "STMPersister.h"
 #import "STMFunctions.h"
 #import "STMPersister+Transactions.h"
+#import "STMCoreSessionManager.h"
+#import "STMCoreAuthController.h"
 
-@protocol Adapting
-
-- (id<STMPersistingTransaction>)beginTransaction;
-- (void)commit;
-- (void)rollback;
-
-@end
+#define FMDB_PATH @"fmdb"
 
 @interface STMPersisterTransactionCoordinator()
 
-@property (nonatomic, strong) NSDictionary<NSNumber *, id<Adapting>>* adapters;
+@property (nonatomic, strong) NSDictionary<NSNumber *, id<STMAdapting>>* adapters;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, id<STMPersistingTransaction>>* transactions;
 @property (nonatomic, strong) id <STMModelling> modellingDelegate;
 @property BOOL readOnly;
@@ -55,10 +51,22 @@
     
 }
 
-- (NSDictionary<NSNumber *, id<Adapting>>*)adapters{
+- (NSDictionary<NSNumber *, id<STMAdapting>>*)adapters{
+    
+    STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
+    
+    NSString *dataModelName = session.startSettings[@"dataModelName"];
+    
+    if (!dataModelName) {
+        dataModelName = [[STMCoreAuthController authController] dataModelName];
+    }
+    
+    NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
+    NSString *fmdbPath = [[session.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
+    
     if (!_adapters){
         _adapters = @{
-                      
+                      @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:self.modellingDelegate dbPath:fmdbPath]
                       };
     }
     
@@ -77,7 +85,7 @@
     
     [self.transactions removeAllObjects];
 
-    for (id<Adapting> adapter in self.adapters.allValues){
+    for (id<STMAdapting> adapter in self.adapters.allValues){
         if (success){
             [adapter commit];
         }else{
@@ -182,13 +190,17 @@
     
     id<STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
     
-    return [transaction updateWithoutSave:entityName attributes:attributes options:options error:error];
+    return [transaction updateWithoutSave:entityName attributes:attributesToUpdate.copy options:options error:error];
     
 }
 
 - (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
     id<STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    
+    if ([STMFunctions isNull:transaction]){
+        return 0;
+    }
     
     return [transaction count:entityName predicate:predicate options:options error:error];
     
@@ -217,17 +229,17 @@
     STMStorageType storageType = [self storageForEntityName:entityName options:options];
     
     if (![self.transactions.allKeys containsObject:@(storageType)] && [self.adapters.allKeys containsObject:@(storageType)]){
-        self.transactions[@(storageType)] = [self.adapters[@(storageType)] beginTransaction];
+        self.transactions[@(storageType)] = [self.adapters[@(storageType)] beginTransactionReadOnly:self.readOnly];
     }
     
     if (![self.transactions.allKeys containsObject:@(storageType)]){
         
         [self wrongEntityName:entityName error:error];
-        return [self.transactions objectForKey:@(storageType)];
+        return nil;
         
     }
     
-    return nil;
+    return [self.transactions objectForKey:@(storageType)];
     
 }
 
