@@ -14,6 +14,7 @@
 #import "STMPersister+Transactions.h"
 
 #import "STMModeller+Interceptable.h"
+#import "STMPersisterRunner.h"
 
 #define FMDB_PATH @"fmdb"
 
@@ -26,10 +27,10 @@
     NSString *fmdbFile = [modelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
 
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
+//    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
     
-    persister.persistingRunning = persister;
-    
+//    persister.persistingRunning = persister;
+    persister.persistingRunning = [[STMPersisterRunner alloc] initWithModellingDelegate:persister];
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
