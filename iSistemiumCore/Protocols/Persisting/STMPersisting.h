@@ -10,11 +10,11 @@
 #define STMPersisting_h
 
 typedef NS_ENUM(NSInteger, STMStorageType) {
-    STMStorageTypeFMDB,
-    STMStorageTypeCoreData,
-    STMStorageTypeAbstract,
-    STMStorageTypeNone,
-    STMStorageTypeInMemory
+    STMStorageTypeFMDB = 0,
+    STMStorageTypeCoreData = 1,
+    STMStorageTypeAbstract = 2,
+    STMStorageTypeNone = 3,
+    STMStorageTypeInMemory = 4
 };
 
 #define STMPersistingKeyPrimary @"id"
