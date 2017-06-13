@@ -14,6 +14,7 @@
 #import "STMFmdb.h"
 
 #import "STMFiling.h"
+#import "STMPersistingRunning.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -22,10 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) STMFmdb *fmdb;
 @property (nonatomic, strong) STMDocument *document;
+@property (nonatomic,strong) id<STMPersistingRunning> runner;
 @property (nonatomic,strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype)persisterWithModelName:(NSString *)modelName
-                                filing:(id <STMFiling>)filing
                      completionHandler:(void (^ _Nullable)(BOOL success))completionHandler;
 
 @end

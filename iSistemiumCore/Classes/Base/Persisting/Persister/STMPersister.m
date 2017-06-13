@@ -20,17 +20,11 @@
 
 @implementation STMPersister
 
-+ (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
++ (instancetype)persisterWithModelName:(NSString *)modelName completionHandler:(void (^)(BOOL success))completionHandler {
 
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
-    
-    NSString *fmdbFile = [modelName stringByAppendingString:@".db"];
-    NSString *fmdbPath = [[filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
 
 //    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
-    
-//    persister.persistingRunning = persister;
-    persister.persistingRunning = [[STMPersisterRunner alloc] initWithModellingDelegate:persister];
 //    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
@@ -68,7 +62,7 @@
     
     __block NSError *innerError;
     
-    [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    [self.runner readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         result = [transaction count:entityName predicate:predicate options:options error:&innerError];
         return nil;
     }];
@@ -96,7 +90,7 @@
     // Allow pass nil in error
     __block NSError *innerError;
     
-    NSArray *result = [self.persistingRunning readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    NSArray *result = [self.runner readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         return [transaction findAllSync:entityName predicate:predicate options:options error:&innerError];
     }];
     
@@ -117,7 +111,7 @@
 
     __block NSDictionary *result;
     
-    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:&innerError inTransaction:transaction];
         
@@ -152,7 +146,7 @@
     
     if (!attributeArray.count || innerError) return attributeArray;
     
-    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         for (NSDictionary *attributes in attributeArray) {
             
@@ -201,7 +195,7 @@
     
     __block NSUInteger count;
     
-    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:&innerError];
         
@@ -221,7 +215,7 @@
     
     __block NSError *innerError;
     
-    [self.persistingRunning execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:&innerError];
         

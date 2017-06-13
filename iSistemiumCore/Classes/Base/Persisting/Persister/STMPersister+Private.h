@@ -12,6 +12,5 @@
 @interface STMPersister()
 
 @property (nonatomic,strong) NSString *fmdbFileName;
-@property (nonatomic,strong) id<STMPersistingRunning> persistingRunning;
 
 @end

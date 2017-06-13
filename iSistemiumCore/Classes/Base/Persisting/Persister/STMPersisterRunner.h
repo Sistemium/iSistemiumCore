@@ -10,6 +10,6 @@
 
 @interface STMPersisterRunner : NSOperationQueue <STMPersistingRunning>
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate;
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *) adapters;
 
 @end

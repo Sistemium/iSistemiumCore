@@ -24,7 +24,8 @@
 #import "STMSyncerHelper+Downloading.h"
 
 #import "STMPersisterFantoms.h"
-
+#import "STMPersisterRunner.h"
+#define FMDB_PATH @"fmdb"
 
 @implementation STMCoreSession (Persistable)
 
@@ -36,13 +37,24 @@
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
     
-    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName filing:self.filing completionHandler:^(BOOL success) {
+    NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
+    NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
+    
+    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName completionHandler:^(BOOL success) {
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [self persisterCompleteInitializationWithSuccess:success];
         });
         
     }];
+    
+    NSDictionary *adapters = @{
+                               @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath]
+                               };
+    
+    id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithModellingDelegate:persister adapters:adapters];
+    
+    persister.runner = runner;
 
     self.persistenceDelegate = persister;
     // TODO: remove direct links to document after full persisting concept realization

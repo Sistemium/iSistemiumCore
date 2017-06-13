@@ -10,8 +10,8 @@
 
 @interface STMPersisterTransactionCoordinator : NSObject <STMPersistingTransaction>
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate;
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly;
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters;
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly;
 - (void)endTransactionWithSuccess:(BOOL)success;
 
 @end

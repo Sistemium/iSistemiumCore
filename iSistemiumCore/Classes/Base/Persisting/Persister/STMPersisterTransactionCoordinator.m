@@ -15,8 +15,6 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
 
-#define FMDB_PATH @"fmdb"
-
 @interface STMPersisterTransactionCoordinator()
 
 @property (nonatomic, strong) NSDictionary<NSNumber *, id<STMAdapting>>* adapters;
@@ -28,13 +26,13 @@
 
 @implementation STMPersisterTransactionCoordinator
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate{
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters{
 
-    return [self initWithModellingDelegate:modellingDelegate readOny:NO];
+    return [self initWithModellingDelegate:modellingDelegate adapters:(NSDictionary *)adapters readOny:NO];
     
 }
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate readOny:(BOOL) readOnly{
+- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly{
     
     self = [self init];
     
@@ -46,31 +44,11 @@
     
     _modellingDelegate = modellingDelegate;
     
+    self.adapters = adapters;
+    
     return self;
     
     
-}
-
-- (NSDictionary<NSNumber *, id<STMAdapting>>*)adapters{
-    
-    STMCoreSession *session = [STMCoreSessionManager sharedManager].currentSession;
-    
-    NSString *dataModelName = session.startSettings[@"dataModelName"];
-    
-    if (!dataModelName) {
-        dataModelName = [[STMCoreAuthController authController] dataModelName];
-    }
-    
-    NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
-    NSString *fmdbPath = [[session.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
-    
-    if (!_adapters){
-        _adapters = @{
-                      @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:self.modellingDelegate dbPath:fmdbPath]
-                      };
-    }
-    
-    return _adapters;
 }
 
 - (NSMutableDictionary<NSNumber *, id<STMPersistingTransaction>>*)transactions{
@@ -96,10 +74,6 @@
 }
 
 #pragma mark - PersistingTransaction protocol
-
-- (id <STMModelling>)modellingDelegate {
-    return _modellingDelegate;
-}
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
