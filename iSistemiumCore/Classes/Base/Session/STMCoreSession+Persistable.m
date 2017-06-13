@@ -52,7 +52,7 @@
                                @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath]
                                };
     
-    id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithModellingDelegate:persister adapters:adapters];
+    id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
     
     persister.runner = runner;
 

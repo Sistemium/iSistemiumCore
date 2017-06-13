@@ -19,20 +19,21 @@
 
 @property (nonatomic, strong) NSDictionary<NSNumber *, id<STMAdapting>>* adapters;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, id<STMPersistingTransaction>>* transactions;
-@property (nonatomic, strong) id <STMModelling> modellingDelegate;
+@property (nonatomic, strong) id <STMModelling,STMPersistingObserving> modellingDelegate;
+@property (nonatomic,strong) dispatch_queue_t dispatchQueue;
 @property BOOL readOnly;
 
 @end
 
 @implementation STMPersisterTransactionCoordinator
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters{
+- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters{
 
-    return [self initWithModellingDelegate:modellingDelegate adapters:(NSDictionary *)adapters readOny:NO];
+    return [self initWithPersister:persister adapters:(NSDictionary *)adapters readOny:NO];
     
 }
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly{
+- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly{
     
     self = [self init];
     
@@ -42,9 +43,11 @@
     
     self.readOnly = readOnly;
     
-    _modellingDelegate = modellingDelegate;
+    self.modellingDelegate = persister;
     
     self.adapters = adapters;
+    
+    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMPersisterTransactionCoordinatorDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
     
     return self;
     
@@ -124,13 +127,10 @@
         
     }
     
-#warning needs to be moved somewhere
-    STMPersister *persister = (STMPersister *) self.modellingDelegate;
-    
     if (recordStatuses.count) {
         // will crash if not async
-        dispatch_async(persister.dispatchQueue, ^{
-            [persister notifyObservingEntityName:recordStatusEntity ofUpdatedArray:recordStatuses options:options];
+        dispatch_async(self.dispatchQueue, ^{
+            [self.modellingDelegate notifyObservingEntityName:recordStatusEntity ofUpdatedArray:recordStatuses options:options];
         });
     }
     

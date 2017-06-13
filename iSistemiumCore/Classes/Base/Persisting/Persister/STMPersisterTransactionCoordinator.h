@@ -7,11 +7,12 @@
 //
 
 #import "STMPersistingTransaction.h"
+#import "STMPersistingObserving.h"
 
 @interface STMPersisterTransactionCoordinator : NSObject <STMPersistingTransaction>
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters;
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly;
+- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
+- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly;
 - (void)endTransactionWithSuccess:(BOOL)success;
 
 @end

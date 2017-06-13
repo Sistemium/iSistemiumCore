@@ -18,7 +18,7 @@
 
 @implementation STMPersisterRunner
 
-- (instancetype)initWithModellingDelegate:(id <STMModelling>)modellingDelegate adapters:(NSDictionary *)adapters{
+- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters{
     
     self = [self init];
     
@@ -26,8 +26,8 @@
         return nil;
     }
     
-    self.transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithModellingDelegate:modellingDelegate adapters:(NSDictionary *)adapters];
-    self.readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithModellingDelegate:modellingDelegate adapters:(NSDictionary *)adapters readOny:YES];
+    self.transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:persister adapters:(NSDictionary *)adapters];
+    self.readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:persister adapters:(NSDictionary *)adapters readOny:YES];
     self.maxConcurrentOperationCount = 1;
     
     return self;

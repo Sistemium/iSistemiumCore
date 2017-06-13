@@ -14,9 +14,6 @@
 #import "STMPersister+Transactions.h"
 
 #import "STMModeller+Interceptable.h"
-#import "STMPersisterRunner.h"
-
-#define FMDB_PATH @"fmdb"
 
 @implementation STMPersister
 
