@@ -128,11 +128,11 @@
         
         return !innerError;
         
-    } error:&innerError];
+    } error:error];
     
     if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
-    if (innerError) return nil;
+    if (innerError || *error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result ? result : attributes
@@ -170,11 +170,11 @@
         
         return YES;
         
-    } error:&innerError];
+    } error:error];
     
     if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
-    if (innerError) return nil;
+    if (innerError || *error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                      ofUpdatedArray:result.count ? result : attributeArray
@@ -207,7 +207,7 @@
         
         return !innerError;
         
-    } error:&innerError];
+    } error:error];
     
     if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
@@ -227,11 +227,11 @@
         
         return !innerError;
         
-    } error:&innerError];
+    } error:error];
     
     if (innerError && error) [STMFunctions error:error withMessage:innerError.localizedDescription];
     
-    if (innerError) return nil;
+    if (innerError || *error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
                           ofUpdated:result
