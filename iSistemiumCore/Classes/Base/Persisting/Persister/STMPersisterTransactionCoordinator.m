@@ -63,16 +63,13 @@
 }
 
 - (void)endTransactionWithSuccess:(BOOL)success{
+
+    for (NSNumber* key in self.transactions.allKeys){
+        id<STMPersistingTransaction> transaction = self.transactions[key];
+        [self.adapters[key] endTransaction:transaction withSuccess:success];
+    }
     
     [self.transactions removeAllObjects];
-
-    for (id<STMAdapting> adapter in self.adapters.allValues){
-        if (success){
-            [adapter commit];
-        }else{
-            [adapter rollback];
-        }
-    }
     
 }
 

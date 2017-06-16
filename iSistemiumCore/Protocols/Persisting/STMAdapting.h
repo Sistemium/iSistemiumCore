@@ -11,7 +11,7 @@
 @protocol STMAdapting
 
 - (id<STMPersistingTransaction>)beginTransactionReadOnly:(BOOL)readOnly;
-- (void)commit;
-- (void)rollback;
+- (void)endTransaction:(id<STMPersistingTransaction>)transaction withSuccess:(BOOL)success;
+
 
 @end

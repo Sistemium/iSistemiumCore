@@ -152,24 +152,15 @@
 
 }
 
-- (void)commit{
 
-    if (self.database.inTransaction){
-        [self.database commit];
     }
     
-    [self.database close];
-
 }
 
+- (void)endTransaction:(STMFmdbTransaction *)transaction withSuccess:(BOOL)success{
 
-- (void)rollback{
-
-    if (self.database.inTransaction){
-        [self.database rollback];
     }
     
-    [self.database close];
     
 }
 
