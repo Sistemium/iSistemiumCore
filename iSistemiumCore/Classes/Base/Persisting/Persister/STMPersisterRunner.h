@@ -9,7 +9,7 @@
 #import "STMPersistingRunning.h"
 #import "STMPersistingObserving.h"
 
-@interface STMPersisterRunner : NSOperationQueue <STMPersistingRunning>
+@interface STMPersisterRunner : NSObject <STMPersistingRunning>
 
 - (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
 

@@ -8,11 +8,12 @@
 
 #import "STMPersisterRunner.h"
 #import "STMPersisterTransactionCoordinator.h"
+#import "STMAdapting.h"
 
 @interface STMPersisterRunner()
 
-@property (nonatomic, strong) STMPersisterTransactionCoordinator *transactionCoordinator;
-@property (nonatomic, strong) STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator;
+@property (nonatomic, strong) NSDictionary<NSNumber *, id<STMAdapting>>* adapters;
+@property (nonatomic, strong) id <STMModelling,STMPersistingObserving> persister;
 
 @end
 
@@ -26,41 +27,32 @@
         return nil;
     }
     
-    self.transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:persister adapters:(NSDictionary *)adapters];
-    self.readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:persister adapters:(NSDictionary *)adapters readOny:YES];
-    self.maxConcurrentOperationCount = 1;
+    self.adapters = adapters;
+    self.persister = persister;
     
     return self;
     
 }
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
+        
+    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *)self.adapters];
     
-    [self addOperationWithBlock:^{
-        
-        BOOL result = block(self.transactionCoordinator);
-        
-        [self.transactionCoordinator endTransactionWithSuccess:result];
-        
-    }];
+    BOOL result = block(transactionCoordinator);
     
-    [self waitUntilAllOperationsAreFinished];
+    [transactionCoordinator endTransactionWithSuccess:result];
 
 }
 
 - (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
     
     __block NSArray *result;
-
-    [self addOperationWithBlock:^{
-    
-        result = block(self.readOnlyTransactionCoordinator);
         
-        [self.readOnlyTransactionCoordinator endTransactionWithSuccess:YES];
+    STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *)self.adapters readOny:YES];
 
-    }];
-
-    [self waitUntilAllOperationsAreFinished];
+    result = block(readOnlyTransactionCoordinator);
+    
+    [readOnlyTransactionCoordinator endTransactionWithSuccess:YES];
 
     return result;
 }
