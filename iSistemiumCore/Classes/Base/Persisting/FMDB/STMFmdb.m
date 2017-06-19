@@ -25,7 +25,6 @@
 
 @interface STMFmdbOperation : STMOperation
 
-#warning need to consider memory leaks
 @property (nonatomic, strong) STMFmdbTransaction *transaction;
 @property (nonatomic, weak) STMFmdb *stmFMDB;
 @property (nonatomic, strong) FMDatabase *database;
@@ -67,6 +66,8 @@
     }
     
     self.transaction = [[STMFmdbTransaction alloc] initWithFMDatabase:self.database stmFMDB:self.stmFMDB];
+    
+    self.transaction.operation = self;
 
     dispatch_semaphore_signal(self.sem);
     
@@ -258,23 +259,25 @@
 
     STMFmdbOperation *operation;
     
-    for (STMFmdbOperation *op in self.operationPoolQueue.operations){
-        if (op.transaction == transaction){
-            operation = op;
-            break;
-        }
-    }
+    operation = (STMFmdbOperation*)transaction.operation;
     
-    if (!operation){
-        
-        for (STMFmdbOperation *op in self.operationQueue.operations){
-            if (op.transaction == transaction){
-                operation = op;
-                break;
-            }
-        }
-        
-    }
+//    for (STMFmdbOperation *op in self.operationPoolQueue.operations){
+//        if (op.transaction == transaction){
+//            operation = op;
+//            break;
+//        }
+//    }
+//    
+//    if (!operation){
+//        
+//        for (STMFmdbOperation *op in self.operationQueue.operations){
+//            if (op.transaction == transaction){
+//                operation = op;
+//                break;
+//            }
+//        }
+//        
+//    }
     
     operation.success = success;
     
