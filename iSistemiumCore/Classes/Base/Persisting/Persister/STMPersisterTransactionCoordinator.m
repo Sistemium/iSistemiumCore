@@ -200,18 +200,21 @@
     
     STMStorageType storageType = [self storageForEntityName:entityName options:options];
     
-    if (![self.transactions.allKeys containsObject:@(storageType)] && [self.adapters.allKeys containsObject:@(storageType)]){
+    BOOL contains = [self.transactions.allKeys containsObject:@(storageType)];
+    
+    if (!contains && [self.adapters.allKeys containsObject:@(storageType)]){
         self.transactions[@(storageType)] = [self.adapters[@(storageType)] beginTransactionReadOnly:self.readOnly];
+        contains = true;
     }
     
-    if (![self.transactions.allKeys containsObject:@(storageType)]){
+    if (!contains){
         
         [self wrongEntityName:entityName error:error];
         return nil;
         
     }
     
-    return [self.transactions objectForKey:@(storageType)];
+    return self.transactions[@(storageType)];
     
 }
 

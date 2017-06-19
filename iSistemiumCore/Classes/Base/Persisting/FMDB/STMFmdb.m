@@ -257,27 +257,7 @@
 
 - (void)endTransaction:(STMFmdbTransaction *)transaction withSuccess:(BOOL)success{
 
-    STMFmdbOperation *operation;
-    
-    operation = (STMFmdbOperation*)transaction.operation;
-    
-//    for (STMFmdbOperation *op in self.operationPoolQueue.operations){
-//        if (op.transaction == transaction){
-//            operation = op;
-//            break;
-//        }
-//    }
-//    
-//    if (!operation){
-//        
-//        for (STMFmdbOperation *op in self.operationQueue.operations){
-//            if (op.transaction == transaction){
-//                operation = op;
-//                break;
-//            }
-//        }
-//        
-//    }
+    STMFmdbOperation *operation = (STMFmdbOperation*)transaction.operation;
     
     operation.success = success;
     
