@@ -47,7 +47,8 @@
     
     self.adapters = adapters;
     
-    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMPersisterTransactionCoordinatorDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+    // TODO: use static
+    self.dispatchQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     
     return self;
     
