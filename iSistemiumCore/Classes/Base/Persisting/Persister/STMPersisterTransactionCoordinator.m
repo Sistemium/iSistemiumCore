@@ -200,21 +200,20 @@
     
     STMStorageType storageType = [self storageForEntityName:entityName options:options];
     
-    BOOL contains = [self.transactions.allKeys containsObject:@(storageType)];
+    id<STMPersistingTransaction> transaction = self.transactions[@(storageType)];
     
-    if (!contains && [self.adapters.allKeys containsObject:@(storageType)]){
-        self.transactions[@(storageType)] = [self.adapters[@(storageType)] beginTransactionReadOnly:self.readOnly];
-        contains = true;
+    if (!transaction && [self.adapters.allKeys containsObject:@(storageType)]){
+        transaction = [self.adapters[@(storageType)] beginTransactionReadOnly:self.readOnly];
+        self.transactions[@(storageType)] = transaction;
     }
     
-    if (!contains){
+    if (!transaction){
         
         [self wrongEntityName:entityName error:error];
-        return nil;
         
     }
     
-    return self.transactions[@(storageType)];
+    return transaction;
     
 }
 
