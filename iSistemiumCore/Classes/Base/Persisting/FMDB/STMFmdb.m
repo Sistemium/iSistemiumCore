@@ -137,7 +137,7 @@
     
     self.poolDatabases = @[].mutableCopy;
     
-    for (int i = 0; i<POOL_SIZE;i++){
+    for (int i = 0; i<=POOL_SIZE;i++){
         
         FMDatabase *poolDb = [FMDatabase databaseWithPath:self.dbPath];
         
