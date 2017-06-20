@@ -846,10 +846,8 @@
         }
 
         NSArray *picturesDicts = dictionary[@"pictures"];
-
-        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:kNilOptions error:&localError];
         
-        if (!picturesJson) {
+        if (!picturesDicts) {
             NSLog(@"error in json serialization: %@", localError.localizedDescription);
             return;
         }
@@ -862,9 +860,7 @@
             }
         }
         
-        NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
-        
-        picture[@"picturesInfo"] = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        picture[@"picturesInfo"] = picturesDicts;
         
         NSLog(@"%@", picture[@"picturesInfo"]);
         
