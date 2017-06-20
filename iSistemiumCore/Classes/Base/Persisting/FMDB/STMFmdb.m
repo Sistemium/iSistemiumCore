@@ -91,7 +91,7 @@
     
     if (self.readOnly){
         
-        [self.stmFMDB.poolDatabases addObject:self.database];
+        [STMFunctions pushArray:self.stmFMDB.poolDatabases object:self.database];
         
     }
     
