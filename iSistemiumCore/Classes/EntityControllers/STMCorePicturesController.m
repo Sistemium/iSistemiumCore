@@ -864,16 +864,23 @@
         
         NSLog(@"%@", picture[@"picturesInfo"]);
         
-        [self removeImageFile:picture[@"imagePath"] withEntityName:entityName];
+        NSString *imagePath = picture[@"imagePath"];
         
         picture[@"imagePath"] = picture[@"resizedImagePath"];
         
         NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
         
         [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-            if (result) return;
-            [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
-            if (error) {
+            if (!result){
+                
+                [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
+                
+            }
+            if (!error) {
+                
+                [self removeImageFile:imagePath withEntityName:entityName];
+                
+            }else{
                 NSLog(@"error: %@", error);
             }
         }];
