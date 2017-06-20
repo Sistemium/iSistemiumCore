@@ -59,8 +59,7 @@
     
     if (!_uploadLogType) {
         
-        _uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
-                                                                  forGroup:@"syncer"];
+        _uploadLogType = [self.session.settingsController stringValueForSettings:@"uploadLog.type" forGroup:@"syncer"];
         
     }
     return _uploadLogType;

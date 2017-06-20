@@ -27,8 +27,8 @@
     return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
-+ (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
-    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
+- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
+    return [self currentSettingsForGroup:group][settingsName];
 }
 
 - (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{
