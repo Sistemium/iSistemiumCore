@@ -511,7 +511,7 @@
             [self uploadImageEntityName:entityName attributes:attributes data:imageData];
             counter++;
             
-            return;
+            continue;
             
         }
         
