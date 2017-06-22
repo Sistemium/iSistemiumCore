@@ -500,7 +500,7 @@
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
         
-        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
+        if ([STMFunctions isNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
         NSString *path = [[self.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
