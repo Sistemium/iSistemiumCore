@@ -104,6 +104,7 @@
     
     if (!_uploadQueue) {
         _uploadQueue = [[NSOperationQueue alloc] init];
+        _uploadQueue.maxConcurrentOperationCount = 2;
     }
     return _uploadQueue;
     
@@ -822,7 +823,7 @@
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
     [request setHTTPBody:data];
     
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+    [NSURLConnection sendAsynchronousRequest:request queue:self.uploadQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
        if (error) {
            NSLog(@"connectionError %@", error.localizedDescription);
