@@ -11,7 +11,6 @@
 #import "STMPersisting.h"
 #import "STMPersister.h"
 #import "STMFunctions.h"
-#import "STMPersister+Transactions.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
 
@@ -77,6 +76,8 @@
 #pragma mark - PersistingTransaction protocol
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    predicate = [self predicate:predicate withOptions:options];
     
     id<STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
     
@@ -168,6 +169,8 @@
 
 - (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
+    predicate = [self predicate:predicate withOptions:options];
+    
     id<STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
     
     if ([STMFunctions isNull:transaction]){
@@ -214,6 +217,22 @@
     }
     
     return transaction;
+    
+}
+
+- (NSPredicate *)predicate:(NSPredicate *)predicate withOptions:(NSDictionary *)options {
+    
+    NSMutableArray *predicates = [NSMutableArray arrayWithObject:[self phantomPredicateForOptions:options]];
+    
+    if (predicate) [predicates addObject:predicate];
+    
+    return [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
+}
+
+- (NSPredicate *)phantomPredicateForOptions:(NSDictionary *)options {
+    
+    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
+    return [NSPredicate predicateWithFormat:@"isFantom == %@", @(isFantom)];
     
 }
 

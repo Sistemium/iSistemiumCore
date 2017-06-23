@@ -49,8 +49,6 @@
 
 - (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
-    predicate = [self predicate:predicate withOptions:options];
-    
     __block NSUInteger result = 0;
     
     [self.runner readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
@@ -64,7 +62,7 @@
 
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    NSPredicate *predicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
+    NSPredicate *predicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier]];
     
     NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
     
@@ -73,8 +71,6 @@
 }
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
-    
-    predicate = [self predicate:predicate withOptions:options];
     
     // Allow pass nil in error
     __block NSError *innerError;
@@ -162,7 +158,7 @@
 - (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger deletedCount = [self destroyAllSync:entityName
-                                         predicate:[self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options]
+                                         predicate:[self primaryKeyPredicateEntityName:entityName values:@[identifier]]
                                            options:options
                                              error:error];
     
