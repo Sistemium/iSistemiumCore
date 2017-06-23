@@ -13,9 +13,6 @@
 
 @interface STMFmdb()
 
-@property (nonatomic, strong) FMDatabaseQueue *queue;
-@property (nonatomic, strong) FMDatabasePool *pool;
-
 @property (nonatomic, strong) FMDatabase *database;
 @property (nonatomic, strong) NSMutableArray<FMDatabase*> *poolDatabases;
 @property (nonatomic, strong) STMOperationQueue* operationQueue;
