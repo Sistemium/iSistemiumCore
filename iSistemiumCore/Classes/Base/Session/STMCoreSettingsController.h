@@ -16,8 +16,6 @@
 
 + (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
 
-+ (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
-
 - (id)normalizeValue:(id)value forKey:(NSString *)key;
 
 - (BOOL)isPositiveDouble:(NSString *)value;

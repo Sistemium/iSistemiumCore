@@ -47,6 +47,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 - (NSDictionary *)currentSettingsForGroup:(NSString *)group;
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
+- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 
 @property (readonly) NSArray *currentSettings;
 @property (readonly) NSArray *groupNames;

@@ -104,6 +104,7 @@
     
     if (!_uploadQueue) {
         _uploadQueue = [[NSOperationQueue alloc] init];
+        _uploadQueue.maxConcurrentOperationCount = 2;
     }
     return _uploadQueue;
     
@@ -500,7 +501,7 @@
         NSString *entityName = picture[@"entityName"];
         NSDictionary *attributes = picture[@"attributes"];
         
-        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) continue;
+        if ([STMFunctions isNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
         NSString *path = [[self.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
@@ -511,7 +512,7 @@
             [self uploadImageEntityName:entityName attributes:attributes data:imageData];
             counter++;
             
-            return;
+            continue;
             
         }
         
@@ -822,7 +823,7 @@
     [request setValue: @"image/jpeg" forHTTPHeaderField:@"content-type"];
     [request setHTTPBody:data];
     
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+    [NSURLConnection sendAsynchronousRequest:request queue:self.uploadQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 
        if (error) {
            NSLog(@"connectionError %@", error.localizedDescription);
@@ -846,10 +847,8 @@
         }
 
         NSArray *picturesDicts = dictionary[@"pictures"];
-
-        NSData *picturesJson = [NSJSONSerialization dataWithJSONObject:picturesDicts options:kNilOptions error:&localError];
         
-        if (!picturesJson) {
+        if (!picturesDicts) {
             NSLog(@"error in json serialization: %@", localError.localizedDescription);
             return;
         }
@@ -862,22 +861,27 @@
             }
         }
         
-        NSString *info = [[NSString alloc] initWithData:picturesJson encoding:NSUTF8StringEncoding];
-        
-        picture[@"picturesInfo"] = [info stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        picture[@"picturesInfo"] = picturesDicts;
         
         NSLog(@"%@", picture[@"picturesInfo"]);
         
-        [self removeImageFile:picture[@"imagePath"] withEntityName:entityName];
+        NSString *imagePath = picture[@"imagePath"];
         
         picture[@"imagePath"] = picture[@"resizedImagePath"];
         
         NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
         
         [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-            if (result) return;
-            [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
-            if (error) {
+            if (!result){
+                
+                [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
+                
+            }
+            if (!error) {
+                
+                [self removeImageFile:imagePath withEntityName:entityName];
+                
+            }else{
                 NSLog(@"error: %@", error);
             }
         }];
