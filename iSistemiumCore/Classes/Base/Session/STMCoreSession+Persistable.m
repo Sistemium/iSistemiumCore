@@ -48,17 +48,19 @@
         
     }];
     
-    NSDictionary *adapters = @{
-                               @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath]
-                               };
+    NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
+                                                             @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath],
+                                                             @(STMStorageTypeCoreData): persister
+                                                             };
     
     id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
     
     persister.runner = runner;
-
+    
     self.persistenceDelegate = persister;
     // TODO: remove direct links to document after full persisting concept realization
-    self.document = persister.document;
+    //    self.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
+    persister.document = self.document;
     
     
     STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
@@ -70,7 +72,7 @@
                          interceptor:entityNameInterceptor];
     
     [self addPersistenceObservers];
-
+    
     return self;
     
 }
@@ -79,9 +81,9 @@
     
     [self removePersistenceObservers];
     
-//     Uncomment if you want to rebuild db with logoff-logon
-//    [self.filing removeItemAtPath:[self.filing persistenceBasePath] error:nil];
-
+    //     Uncomment if you want to rebuild db with logoff-logon
+    //    [self.filing removeItemAtPath:[self.filing persistenceBasePath] error:nil];
+    
     STMDocument *document = self.document;
     
     // TODO: do document closing in STMPersister

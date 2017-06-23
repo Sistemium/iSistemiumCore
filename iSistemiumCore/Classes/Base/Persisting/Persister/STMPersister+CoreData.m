@@ -22,6 +22,11 @@
 
 @implementation STMPersister (CoreData)
 
+- (NSManagedObjectContext *) coreDataContext{
+    
+    return self.document.managedObjectContext;
+    
+}
 
 #pragma mark - Modelling override
 
@@ -31,21 +36,134 @@
     
 }
 
-- (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray <NSString *> *)values {
+#pragma mark - Adapting protocol
+
+- (id <STMPersistingTransaction>)beginTransactionReadOnly:(BOOL)readOnly{
     
-    if ([self storageForEntityName:entityName] != STMStorageTypeCoreData) {
-        return [super primaryKeyPredicateEntityName:entityName values:values];
-    }
+    return self;
     
-    NSArray *xids = [STMFunctions mapArray:values withBlock:^id (id value) {
-        return [STMFunctions xidDataFromXidString:value];
+}
+
+- (void)endTransaction:(id <STMPersistingTransaction>)transaction withSuccess:(BOOL)success{
+    
+}
+
+#pragma mark - PersistingTransaction protocol
+
+- (id <STMModelling>)modellingDelegate {
+    return self;
+}
+
+#warning predicate will work only for fmdb, core data needs this one
+//NSArray *xids = [STMFunctions mapArray:values withBlock:^id (id value) {
+//    return [STMFunctions xidDataFromXidString:value];
+//}];
+//
+//return [NSPredicate predicateWithFormat:@"xid IN %@", xids];
+
+#warning findAllSync signature is identical in STMPersistingSync and PersistingTransaction protocols, it causes troubles here
+//- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+//    
+//    __block NSArray *result;
+//    
+//    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
+//    NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
+//    
+//    if (offset) {
+//        offset -= 1;
+//        offset *= pageSize;
+//    }
+//    
+//    NSString *orderBy = options[STMPersistingOptionOrder];
+//    
+//    BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
+//    
+//    if (!orderBy) orderBy = @"id";
+//    
+//    [self.coreDataContext performBlockAndWait:^{
+//        result = [self objectsForEntityName:entityName orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset withFantoms:YES predicate:predicate resultType:NSManagedObjectResultType inManagedObjectContext:self.coreDataContext error:error];
+//    }];
+//    
+//    return [self arrayForJSWithObjects:result];
+//    
+//}
+//
+//
+//- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+//    
+//    __block NSDictionary *result;
+//    
+//    self.needSaveDocument = YES;
+//    options = [self fixMergeOptions:options entityName:entityName];
+//    
+//    [self.coreDataContext performBlockAndWait:^{
+//        result = [self mergeWithoutSave:entityName attributes:attributes options:options error:error inManagedObjectContext:self.coreDataContext];
+//    }];
+//    
+//    return result;
+//    
+//}
+
+- (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+    
+    __block NSUInteger count = 0;
+    
+    self.needSaveDocument = YES;
+    
+    [self.coreDataContext performBlockAndWait:^{
+        count = [self removeObjectForPredicate:predicate entityName:entityName];
     }];
     
-    return [NSPredicate predicateWithFormat:@"xid IN %@", xids];
+    return count;
+    
+}
+
+
+- (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+    
+    __block NSDictionary *result = 0;
+    
+    self.needSaveDocument = YES;
+    options = [self fixMergeOptions:options entityName:entityName];
+    
+    [self.coreDataContext performBlockAndWait:^{
+        result = [self update:entityName attributes:attributes options:options error:error inManagedObjectContext:self.coreDataContext];
+    }];
+    
+    return result.copy;
+    
+}
+
+- (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+    
+    __block NSUInteger result = 0;
+    
+    [self.coreDataContext performBlockAndWait:^{
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        request.predicate = predicate;
+        result = [self.coreDataContext countForFetchRequest:request error:error];
+    }];
+    
+    return result;
     
 }
 
 #pragma mark - Private CoreData helpers
+
+- (NSDictionary *)fixMergeOptions:(NSDictionary *)options
+                       entityName:(NSString *)entityName{
+    
+    if (options[STMPersistingOptionLts]) {
+        NSDate *lts = [STMFunctions dateFromString:options[STMPersistingOptionLts]];
+        // Add 1ms because there are microseconds in deviceTs
+        options = [STMFunctions setValue:[lts dateByAddingTimeInterval:1.0/1000.0]
+                                  forKey:STMPersistingOptionLts
+                            inDictionary:options];
+    }
+    
+    return options;
+    
+}
 
 - (BOOL)setRelationshipFromDictionary:(NSDictionary *)dictionary {
     

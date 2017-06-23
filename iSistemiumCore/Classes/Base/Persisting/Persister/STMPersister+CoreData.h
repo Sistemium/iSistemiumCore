@@ -8,7 +8,10 @@
 
 #import "STMPersister.h"
 
-@interface STMPersister (CoreData)
+@interface STMPersister (CoreData) <STMAdapting,STMPersistingTransaction>
+
+@property (nonatomic, strong) NSManagedObjectContext *coreDataContext;
+@property (nonatomic) BOOL needSaveDocument;
 
 - (void)removeObjects:(NSArray*)objects;
 
