@@ -8,7 +8,7 @@
 
 #import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
-
+#import "STMCoreSessionManager.h"
 
 @implementation STMCoreSessionFiler
 
@@ -274,6 +274,48 @@
     
     return result;
     
+}
+
+#pragma mark - remote controller
+
++(NSDictionary *)getFileArrayforPath:(NSString*)path{
+    
+    NSFileManager* fm = [NSFileManager defaultManager];
+    
+    NSMutableDictionary *dictionary = @{}.mutableCopy;
+    
+    NSArray * directoryContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
+    
+    for (NSString * file in directoryContents){
+        BOOL isDirectory = NO;
+        NSString* fullPath = [path stringByAppendingPathComponent:file];
+        [[NSFileManager defaultManager] fileExistsAtPath:fullPath
+                                             isDirectory: &isDirectory];
+        if (!isDirectory){
+            
+            dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
+            
+        }
+        else{
+            dictionary[file] = [self getFileArrayforPath:fullPath];
+        }
+    }
+    
+    return dictionary.copy;
+    
+}
+
++ (void) JSONOfAllFiles{
+
+    NSDictionary* dictionary = [STMCoreSessionFiler getFileArrayforPath:[STMFunctions documentsDirectory]];
+    
+    NSString *message = [STMFunctions jsonStringFromDictionary:dictionary];
+    
+    STMLogMessageType messageType = STMLogMessageTypeInfo;
+    
+    [[STMLogger sharedLogger] saveLogMessageWithText:message
+                                             numType:messageType];
+
 }
 
 

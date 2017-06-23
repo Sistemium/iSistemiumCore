@@ -17,4 +17,6 @@
 - (instancetype)initWithOrg:(NSString *)org
                      userId:(NSString *)uid;
 
++ (void) JSONOfAllFiles;
+
 @end
