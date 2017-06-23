@@ -34,8 +34,8 @@
     
 }
 
-- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error {
-        
+- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
+    
     STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *)self.adapters];
     
     BOOL result = block(transactionCoordinator);

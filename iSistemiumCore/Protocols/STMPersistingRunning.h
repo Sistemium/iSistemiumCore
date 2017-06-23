@@ -10,7 +10,7 @@
 
 @protocol STMPersistingRunning
 
-- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block error:(NSError **)error;
+- (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block;
 
 - (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block;
 

@@ -11,22 +11,18 @@
 #import "STMPersister.h"
 #import "STMPersister+CoreData.h"
 #import "STMPersister+Private.h"
-#import "STMPersister+Transactions.h"
 
 #import "STMModeller+Interceptable.h"
 
 @implementation STMPersister
 
 + (instancetype)persisterWithModelName:(NSString *)modelName completionHandler:(void (^)(BOOL success))completionHandler {
-
+    
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
-
-//    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
-//    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
     if (completionHandler) completionHandler(YES);
-
+    
     return persister;
     
 }
@@ -113,7 +109,7 @@
         
         return !*error;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     
@@ -151,7 +147,7 @@
         
         return YES;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     
@@ -184,7 +180,7 @@
         
         return !*error;
         
-    } error:error];
+    }];
     
     return count;
     
@@ -200,7 +196,7 @@
         
         return !*error;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     
