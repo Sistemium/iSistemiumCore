@@ -9,7 +9,6 @@
 #import "STMFunctions.h"
 
 #import "STMPersister.h"
-#import "STMPersister+CoreData.h"
 #import "STMPersister+Private.h"
 
 #import "STMModeller+Interceptable.h"
