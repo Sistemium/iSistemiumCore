@@ -294,7 +294,10 @@
         if (isDirectory){
             dictionary[file] = [self getFileArrayforPath:fullPath];
         } else {
-            dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
+            NSDictionary *atr = [fm attributesOfItemAtPath:fullPath error:nil];
+            dictionary[file] = @{@"NSFileSize":atr[@"NSFileSize"],
+                                 @"NSFileCreationDate":atr[@"NSFileCreationDate"],
+                                 @"NSFileModificationDate":atr[@"NSFileModificationDate"]};
         }
         
     }
