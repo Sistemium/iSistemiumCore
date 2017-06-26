@@ -8,7 +8,7 @@
 
 #import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
-#import "STMCoreSessionManager.h"
+#import "STMLogger.h"
 
 @implementation STMCoreSessionFiler
 
@@ -278,26 +278,25 @@
 
 #pragma mark - remote controller
 
-+(NSDictionary *)getFileArrayforPath:(NSString*)path{
++ (NSDictionary *)getFileArrayforPath:(NSString*)path{
     
-    NSFileManager* fm = [NSFileManager defaultManager];
+    NSFileManager *fm = [NSFileManager defaultManager];
     
     NSMutableDictionary *dictionary = @{}.mutableCopy;
     
-    NSArray * directoryContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
+    NSArray * directoryContents = [fm contentsOfDirectoryAtPath:path error:nil];
     
-    for (NSString * file in directoryContents){
+    for (NSString * file in directoryContents) {
+        
         BOOL isDirectory = NO;
         NSString* fullPath = [path stringByAppendingPathComponent:file];
-        [[NSFileManager defaultManager] fileExistsAtPath:fullPath
-                                             isDirectory: &isDirectory];
-        if (!isDirectory){
-            
-            dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
-            
-        }
-        else{
+        
+        [fm fileExistsAtPath:fullPath isDirectory:&isDirectory];
+        
+        if (isDirectory){
             dictionary[file] = [self getFileArrayforPath:fullPath];
+        } else {
+            dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
         }
     }
     
@@ -305,16 +304,13 @@
     
 }
 
-+ (void) JSONOfAllFiles{
++ (void)JSONOfAllFiles {
 
-    NSDictionary* dictionary = [STMCoreSessionFiler getFileArrayforPath:[STMFunctions documentsDirectory]];
+    NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory]];
     
     NSString *message = [STMFunctions jsonStringFromDictionary:dictionary];
     
-    STMLogMessageType messageType = STMLogMessageTypeInfo;
-    
-    [[STMLogger sharedLogger] saveLogMessageWithText:message
-                                             numType:messageType];
+    [[STMLogger sharedLogger] infoMessage:message];
 
 }
 
