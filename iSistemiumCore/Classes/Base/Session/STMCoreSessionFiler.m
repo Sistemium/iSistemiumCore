@@ -278,12 +278,10 @@
 
 #pragma mark - remote controller
 
-+ (NSDictionary *)getFileArrayforPath:(NSString*)path{
++ (NSDictionary *)getFileArrayforPath:(NSString*)path {
     
     NSFileManager *fm = [NSFileManager defaultManager];
-    
     NSMutableDictionary *dictionary = @{}.mutableCopy;
-    
     NSArray * directoryContents = [fm contentsOfDirectoryAtPath:path error:nil];
     
     for (NSString * file in directoryContents) {
@@ -298,6 +296,7 @@
         } else {
             dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
         }
+        
     }
     
     return dictionary.copy;
