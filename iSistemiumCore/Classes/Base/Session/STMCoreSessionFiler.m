@@ -312,7 +312,7 @@
     
     NSString *message = [STMFunctions jsonStringFromDictionary:dictionary];
     
-    [[STMLogger sharedLogger] infoMessage:message];
+    [[STMLogger sharedLogger] importantMessage:message];
 
 }
 
