@@ -58,10 +58,6 @@
     persister.runner = runner;
     
     self.persistenceDelegate = persister;
-    // TODO: remove direct links to document after full persisting concept realization
-    //    self.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
-    persister.document = self.document;
-    
     
     STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
     

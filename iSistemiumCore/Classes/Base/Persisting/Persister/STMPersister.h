@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,strong) id<STMPersistingRunning> runner;
 @property (nonatomic,strong) dispatch_queue_t dispatchQueue;
-@property (nonatomic, strong) STMDocument *document;
 
 + (instancetype)persisterWithModelName:(NSString *)modelName
                      completionHandler:(void (^ _Nullable)(BOOL success))completionHandler;
