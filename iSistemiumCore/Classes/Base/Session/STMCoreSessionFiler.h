@@ -19,5 +19,6 @@
 
 + (NSDictionary *)JSONOfAllFiles;
 
++ (NSDictionary *)JSONOfFilesAtPath:(NSString *)path;
 
 @end

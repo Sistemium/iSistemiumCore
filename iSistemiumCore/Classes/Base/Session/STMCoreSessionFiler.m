@@ -314,5 +314,14 @@
 
 }
 
++ (NSDictionary *)JSONOfFilesAtPath:(NSString *)path {
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSDictionary* dictionary = [self getFileArrayforPath:path];
+    
+    return dictionary;
+    
+}
 
 @end
