@@ -306,13 +306,11 @@
     
 }
 
-+ (void)JSONOfAllFiles {
++ (NSDictionary *)JSONOfAllFiles {
 
     NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory]];
     
-    NSString *message = [STMFunctions jsonStringFromDictionary:dictionary];
-    
-    [[STMLogger sharedLogger] importantMessage:message];
+    return dictionary;
 
 }
 
