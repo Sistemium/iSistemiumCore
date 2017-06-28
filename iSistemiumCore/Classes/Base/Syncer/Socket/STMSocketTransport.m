@@ -133,6 +133,7 @@
                         @(STMSocketEventReconnect),
                         @(STMSocketEventReconnectAttempt),
                         @(STMSocketEventRemoteCommands),
+                        @(STMSocketEventRemoteRequests),
                         @(STMSocketEventData),
                         @(STMSocketEventJSData)];
     
@@ -181,6 +182,11 @@
 
             case STMSocketEventRemoteCommands: {
                 [self remoteCommandsEventHandleWithData:data ack:ack];
+                break;
+            }
+                
+            case STMSocketEventRemoteRequests: {
+                [self remoteRequestsEventHandleWithData:data ack:ack];
                 break;
             }
                 
@@ -323,6 +329,14 @@
 
 }
 
+- (void)remoteRequestsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    
+    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
+        id response = [STMRemoteController receiveRemoteRequests:data.firstObject];
+        [ack with:@[response]];
+    }
+    
+}
 
 #pragma mark - ack handlers
 
@@ -518,6 +532,10 @@
         }
         case STMSocketEventRemoteCommands: {
             return @"remoteCommands";
+            break;
+        }
+        case STMSocketEventRemoteRequests: {
+            return @"remoteRequests";
             break;
         }
         case STMSocketEventData: {
