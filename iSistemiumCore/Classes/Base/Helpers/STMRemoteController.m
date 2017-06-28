@@ -256,8 +256,16 @@
         [invocation setArgument:(void * _Nonnull) &argument atIndex:index];
         index++;
     }
-    
-    [invocation invoke];
+    @try {
+        
+        [invocation invoke];
+        
+    }
+    @catch (NSException *exception) {
+
+        return @{@"error": [exception description]};
+        
+    }
     
     if ([signature methodReturnLength]){
         
