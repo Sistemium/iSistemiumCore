@@ -199,18 +199,22 @@
             
             NSDictionary *methodsDic = (NSDictionary *)payload;
             
+            NSMutableDictionary *classAnswer = @{}.mutableCopy;
+            
             for (NSString *methodName in methodsDic.allKeys) {
                 
                 id answer = [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass error:&error];
                 
                 if (error){
-                    response[className] = @{@"error":[error localizedDescription]};
+                    answer = @{@"error":[error localizedDescription]};
                     error = nil;
-                }else{
-                    response[className] = @{methodName:answer};
                 }
                 
+                classAnswer[methodName] = answer;
+                
             }
+            
+            response[className] = classAnswer.copy;
             
         } else {
             
