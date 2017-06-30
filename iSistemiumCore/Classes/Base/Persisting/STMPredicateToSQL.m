@@ -380,6 +380,13 @@ static NSString *SQLNullValueString = @"NULL";
             return [NSString stringWithFormat:@"(%@ >= %@)",leftSQLExpression,rightSQLExpression];
         }
         case NSEqualToPredicateOperatorType: {
+            
+            if ([predicate.rightExpression.constantValue isKindOfClass:[NSArray class]]) {
+                return [NSString stringWithFormat:@"(%@ in (%@))",
+                        leftSQLExpression,
+                        rightSQLExpression];
+            }
+            
             return [NSString stringWithFormat:@"(%@ %@ %@)",
                     leftSQLExpression,
                     [rightSQLExpression isEqual: @"NULL"] ? @"IS" : @"=",
