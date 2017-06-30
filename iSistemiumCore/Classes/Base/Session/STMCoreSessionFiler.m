@@ -278,12 +278,10 @@
 
 #pragma mark - remote controller
 
-+ (NSDictionary *)getFileArrayforPath:(NSString*)path{
++ (NSDictionary *)getFileArrayforPath:(NSString*)path {
     
     NSFileManager *fm = [NSFileManager defaultManager];
-    
     NSMutableDictionary *dictionary = @{}.mutableCopy;
-    
     NSArray * directoryContents = [fm contentsOfDirectoryAtPath:path error:nil];
     
     for (NSString * file in directoryContents) {
@@ -296,23 +294,34 @@
         if (isDirectory){
             dictionary[file] = [self getFileArrayforPath:fullPath];
         } else {
-            dictionary[file] = [fm attributesOfItemAtPath:fullPath error:nil];
+            NSDictionary *atr = [fm attributesOfItemAtPath:fullPath error:nil];
+            dictionary[file] = @{@"NSFileSize":atr[@"NSFileSize"],
+                                 @"NSFileCreationDate":[atr[@"NSFileCreationDate"] description],
+                                 @"NSFileModificationDate":[atr[@"NSFileModificationDate"] description]};
         }
+        
     }
     
     return dictionary.copy;
     
 }
 
-+ (void)JSONOfAllFiles {
++ (NSDictionary *)JSONOfAllFiles {
 
     NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory]];
     
-    NSString *message = [STMFunctions jsonStringFromDictionary:dictionary];
-    
-    [[STMLogger sharedLogger] infoMessage:message];
+    return dictionary;
 
 }
 
++ (NSDictionary *)JSONOfFilesAtPath:(NSString *)path {
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSDictionary* dictionary = [self getFileArrayforPath:path];
+    
+    return dictionary;
+    
+}
 
 @end
