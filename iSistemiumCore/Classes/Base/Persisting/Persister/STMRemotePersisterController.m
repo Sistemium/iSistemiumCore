@@ -25,7 +25,7 @@
     NSArray *response = nil;
     
     if (!entityName){
-        [STMFunctions errorWithMessage:@"No entity name given"];
+        [STMFunctions error:&error withMessage:@"No entity name given"];
     }else{
         response = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:options error:&error];
     }
