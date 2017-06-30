@@ -332,7 +332,10 @@
 - (void)remoteRequestsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     
     if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
-        id response = [STMRemoteController receiveRemoteRequests:data.firstObject];
+        NSDictionary* response = [STMRemoteController receiveRemoteRequests:data.firstObject];
+        
+        response = [STMFunctions validJSONDictionaryFromDictionary:response];
+        
         [ack with:@[response]];
     }
     
