@@ -40,4 +40,34 @@
 
 }
 
++ (NSString *)destroyAllRemote:(NSDictionary *)data{
+
+    NSError *error = nil;
+    
+    NSString * entityName = data[@"entityName"];
+    
+    NSString *predicateFormat = data[@"predicateFormat"];
+    
+    NSDictionary *options = data[@"options"];
+    
+    NSPredicate *predicate = predicateFormat ? [NSPredicate predicateWithFormat:predicateFormat] : nil;
+    
+    NSUInteger response = 0;
+    
+    if (!entityName){
+        [STMFunctions error:&error withMessage:@"No entity name given"];
+    }else{
+        response = [self.persistenceDelegate destroyAllSync:entityName predicate:predicate options:options error:&error];
+    }
+    
+    if (error){
+        
+        [NSException raise:@"findAllRemote exception" format:@"%@", [error localizedDescription]];
+        
+    }
+    
+    return [NSString stringWithFormat:@"%lu rows deleted",(unsigned long)response];
+    
+}
+
 @end
