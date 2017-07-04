@@ -21,7 +21,10 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventRemoteCommands,
     STMSocketEventRemoteRequests,
     STMSocketEventData,
-    STMSocketEventJSData
+    STMSocketEventJSData,
+    STMSocketEventSubscribe,
+    STMSocketEventUpdate,
+    STMSocketEventDestroy
 };
 
 @protocol STMSocketConnection <NSObject>

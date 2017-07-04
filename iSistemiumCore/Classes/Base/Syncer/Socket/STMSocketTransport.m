@@ -135,7 +135,9 @@
                         @(STMSocketEventRemoteCommands),
                         @(STMSocketEventRemoteRequests),
                         @(STMSocketEventData),
-                        @(STMSocketEventJSData)];
+                        @(STMSocketEventJSData),
+                        @(STMSocketEventUpdate),
+                        @(STMSocketEventDestroy)];
     
     for (NSNumber *eventNum in events) {
         [self addHandlerForEvent:eventNum.integerValue];
@@ -187,6 +189,16 @@
                 
             case STMSocketEventRemoteRequests: {
                 [self remoteRequestsEventHandleWithData:data ack:ack];
+                break;
+            }
+                
+            case STMSocketEventUpdate: {
+                [self updateEventHandleWithData:data ack:ack];
+                break;
+            }
+                
+            case STMSocketEventDestroy: {
+                [self destroyEventHandleWithData:data ack:ack];
                 break;
             }
                 
@@ -269,23 +281,33 @@
         
     NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
     
-    if (!value || !primaryKey) {
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData !value || !primaryKey"]);
-    }
-        
-    NSDictionary *dataDic = @{primaryKey : value};
-    
-    dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-    
     NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
     
-    if (!dataDic) {
-        NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
-        NSLog(message);
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+    if (value && primaryKey) {
+        
+        NSDictionary *dataDic = @{primaryKey : value};
+        
+        dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+        
+        if (!dataDic) {
+            NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
+            NSLog(message);
+            return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+        }
+        
+        [self.socket emit:eventStringValue with:@[dataDic]];
+        
+    }else if (value){
+    
+        [self.socket emit:eventStringValue with:@[value]];
+        
+    }else{
+        
+        [self.socket emit:eventStringValue with:@[]];
+        
     }
     
-    [self.socket emit:eventStringValue with:@[dataDic]];
+    
     
 }
 
@@ -307,7 +329,17 @@
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
     
     [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        
         [self receiveAckWithData:data forEventNum:eventNum];
+        
+        NSArray *downloadableEntityNames = [STMEntityController downloadableEntityNames];
+        
+        NSArray *downloadableEntityResources = [STMFunctions mapArray:downloadableEntityNames withBlock:^id _Nonnull(NSString *_Nonnull value) {
+            return [STMEntityController resourceForEntity:value];
+        }];
+        
+        [self socketSendEvent:STMSocketEventSubscribe withValue:downloadableEntityResources];
+        
     }];
 
 }
@@ -340,6 +372,10 @@
     }
     
 }
+
+- (void)updateEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+}
+- (void)destroyEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
 
 #pragma mark - ack handlers
 
@@ -549,6 +585,18 @@
             return @"jsData";
             break;
         }
+        case STMSocketEventSubscribe: {
+            return @"jsData:subscribe";
+            break;
+        }
+        case STMSocketEventUpdate: {
+            return @"jsData:update";
+            break;
+        }
+        case STMSocketEventDestroy: {
+            return @"jsData:destroy";
+            break;
+        }
         default: {
             return nil;
             break;
@@ -581,6 +629,7 @@
         return STMSocketEventData;
     } else if ([stringValue isEqualToString:@"jsData"]) {
         return STMSocketEventJSData;
+        
     } else {
         return STMSocketEventInfo;
     }
@@ -597,6 +646,9 @@
         case STMSocketEventInfo:
         case STMSocketEventAuthorization:
         case STMSocketEventRemoteCommands:
+            break;
+        case STMSocketEventSubscribe:
+            primaryKey = nil;
             break;
         case STMSocketEventData: {
             primaryKey = @"data";
