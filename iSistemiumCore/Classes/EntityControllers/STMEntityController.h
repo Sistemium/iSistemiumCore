@@ -25,6 +25,9 @@
 + (NSArray <NSString *> *)entityNamesWithResolveFantoms;
 
 + (NSSet <NSString *> *)entityNamesWithLifeTime;
+
++ (NSArray <NSString *> *)downloadableEntityNames;
+
 + (NSArray <NSDictionary *> *)entitiesWithLifeTime;
 
 + (NSArray *)uploadableEntitiesNames;
