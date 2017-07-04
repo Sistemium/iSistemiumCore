@@ -116,12 +116,6 @@
     [self observeLtsTestStorageType:STMStorageTypeFMDB];
 }
 
-- (void)testObserveLtsCoreData {
-    if (!self.realPersister.document) return;
-    if (self.fakePersistingOptions) return;
-    [self observeLtsTestStorageType:STMStorageTypeCoreData];
-}
-
 - (void)testObserveLtsInMemory {
     id oldPersister = self.persister;
     if (!self.fakePersistingOptions) [self inMemoryPersisting];

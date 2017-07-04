@@ -32,7 +32,8 @@
     if (!self.transport) {
         self.transport = [STMSocketTransport transportWithUrl:TEST_SOCKET_URL
                                             andEntityResource:STM_ENTITY_NAME
-                                                        owner:self];
+                                                        owner:self
+                                     remotePersistingDelegate:nil];
         [self waitConnection];
     }
 }
