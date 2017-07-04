@@ -139,11 +139,9 @@
             
             NSMutableOrderedSet *names = [NSMutableOrderedSet orderedSetWithObject:STM_ENTITY_NAME];
             
-            if ([STMEntityController entityWithName:@"STMSetting"]) [names addObject:@"STMSetting"];
+            [names addObjectsFromArray:[STMEntityController downloadableEntityNames]];
             
-            [[STMEntityController stcEntities] enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *entity, BOOL *stop) {
-                if ([STMFunctions isNotNull:entity[@"url"]]) [names addObject:name];
-            }];
+            if ([STMEntityController entityWithName:@"STMSetting"]) [names addObject:@"STMSetting"];
             
             entitiesNames = names.array.copy;
             
