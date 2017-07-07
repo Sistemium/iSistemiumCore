@@ -50,7 +50,6 @@
     
     NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
                                                              @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath],
-                                                             @(STMStorageTypeCoreData): persister
                                                              };
     
     id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];

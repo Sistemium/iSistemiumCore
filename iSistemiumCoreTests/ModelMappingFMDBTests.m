@@ -75,10 +75,8 @@
     // Need to hold the reference to the modeller because stmFMDB's weak
     STMModeller *modeller = [STMModeller modellerWithModel:testModel];
     self.stmFMDB = [self fmdbWithModel:modeller];
-    
-    [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
-        [self checkDb:db withModelMapping:mapper];
-    }];
+
+    [self checkDb:self.stmFMDB.database withModelMapping:mapper];
     
     NSManagedObjectModel *fmdbModel = self.stmFMDB.modellingDelegate.managedObjectModel;
     
@@ -104,15 +102,13 @@
     XCTAssertNil(error);
     XCTAssertTrue(mapper.needToMigrate);
     
-    [self.stmFMDB.queue inDatabase:^(FMDatabase *db) {
+    FMDatabase *db = self.stmFMDB.database;
         
-        STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:db];
+    STMFmdbSchema *fmdbSchema = [STMFmdbSchema fmdbSchemaForDatabase:db];
         
-        self.stmFMDB.columnsByTable = (mapper.needToMigrate) ? [fmdbSchema createTablesWithModelMapping:mapper] : [fmdbSchema currentDBScheme];
+    self.stmFMDB.columnsByTable = (mapper.needToMigrate) ? [fmdbSchema createTablesWithModelMapping:mapper] : [fmdbSchema currentDBScheme];
 
-        [self checkDb:db withModelMapping:mapper];
-        
-    }];
+    [self checkDb:db withModelMapping:mapper];
     
 }
 

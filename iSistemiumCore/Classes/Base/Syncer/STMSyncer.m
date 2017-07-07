@@ -269,7 +269,7 @@
     
     [self addObservers];
     
-    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self];
+    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self remotePersistingDelegate:self];
 
     if (!self.socketTransport) {
         return [self.session.logger saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
@@ -839,6 +839,58 @@
         [self.userDefaults synchronize];
         
     }];
+
+}
+
+#pragma mark - save dates
+
+- (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+    
+    [STMFunctions errorWithMessage:@"Not implemented"];
+
+    return nil;
+
+}
+
+- (NSArray *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    [STMFunctions errorWithMessage:@"Not implemented"];
+
+    return nil;
+
+}
+
+- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+
+    return [self.persistenceDelegate mergeSync:entityName attributes:attributes options:options error:error];
+
+}
+
+- (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
+    
+    [self receiveEntities:@[entityName]];
+    
+    return nil;
+    
+}
+
+- (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
+
+    return [self.persistenceDelegate destroySync:entityName identifier:identifier options:options error:error];
+
+}
+
+- (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    [STMFunctions errorWithMessage:@"Not implemented"];
+
+    return 0;
+
+}
+
+- (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+
+    return [self mergeSync:entityName attributes:attributes options:options error:error];
 
 }
 

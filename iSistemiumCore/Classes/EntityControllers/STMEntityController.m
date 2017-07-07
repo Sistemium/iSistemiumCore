@@ -194,6 +194,16 @@
     
 }
 
++ (NSArray <NSString *> *)downloadableEntityNames {
+    
+    NSSet *filteredKeys = [self.stcEntities keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
+        return [STMFunctions isNotNull:obj[@"url"]];
+    }];
+    
+    return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
+    
+}
+
 + (NSArray <NSDictionary *> *)entitiesWithLifeTime {
     
     NSError *error;

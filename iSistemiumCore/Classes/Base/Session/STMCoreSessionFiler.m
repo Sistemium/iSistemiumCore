@@ -296,8 +296,8 @@
         } else {
             NSDictionary *atr = [fm attributesOfItemAtPath:fullPath error:nil];
             dictionary[file] = @{@"NSFileSize":atr[@"NSFileSize"],
-                                 @"NSFileCreationDate":[atr[@"NSFileCreationDate"] description],
-                                 @"NSFileModificationDate":[atr[@"NSFileModificationDate"] description]};
+                                 @"NSFileCreationDate":atr[@"NSFileCreationDate"],
+                                 @"NSFileModificationDate":atr[@"NSFileModificationDate"]};
         }
         
     }

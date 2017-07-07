@@ -12,4 +12,6 @@
 
 + (NSArray *)findAllRemote:(NSDictionary *)data;
 
++ (NSString *)destroyAllRemote:(NSDictionary *)data;
+
 @end

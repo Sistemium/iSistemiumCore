@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "STMSocketConnectionOwner.h"
+#import "STMPersistingSync.h"
 
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventConnect,
@@ -21,7 +22,10 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventRemoteCommands,
     STMSocketEventRemoteRequests,
     STMSocketEventData,
-    STMSocketEventJSData
+    STMSocketEventJSData,
+    STMSocketEventSubscribe,
+    STMSocketEventUpdate,
+    STMSocketEventDestroy
 };
 
 @protocol STMSocketConnection <NSObject>
@@ -29,6 +33,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, nullable) id <STMSocketConnectionOwner> owner;
+@property (nonatomic, weak, nullable) id <STMPersistingSync> remotePersistingDelegate;
 @property (nonatomic) BOOL isReady;
 
 - (void)closeSocket;
