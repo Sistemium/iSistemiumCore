@@ -862,9 +862,7 @@
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
 
-    [self sendFindWithValue:@{@"entity":entityName, @"id":attributes[@"id"]}];
-    
-    return nil;
+    return [self.persistenceDelegate mergeSync:entityName attributes:attributes options:options error:error];
 
 }
 

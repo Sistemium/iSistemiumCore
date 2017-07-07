@@ -385,11 +385,11 @@
         
         NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
         
-        NSString *identifier = receivedData[@"data"][@"id"];
+        NSDictionary *data = receivedData[@"data"];
         
-        if (identifier){
+        if (data && data[@"id"]){
             
-            [self.remotePersistingDelegate mergeSync:entityName attributes:@{@"id":identifier} options:nil error:&error];
+            [self.remotePersistingDelegate mergeSync:entityName attributes:data options:nil error:&error];
             
         }else{
             
