@@ -386,10 +386,11 @@
         NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
         
         NSDictionary *data = receivedData[@"data"];
+        NSDictionary *options = @{STMPersistingOptionLtsNow};
         
         if (data && data[@"id"]){
             
-            [self.remotePersistingDelegate mergeSync:entityName attributes:data options:nil error:&error];
+            [self.remotePersistingDelegate mergeSync:entityName attributes:data options:options error:&error];
             
         }else{
             
@@ -403,7 +404,7 @@
         
         NSString *errorMessage = [NSString stringWithFormat:@"Error update event handle with data: %@", error.localizedDescription];
         
-        [[STMLogger sharedLogger] errorMessage:errorMessage];
+        [self.logger errorMessage:errorMessage];
         
     }
     
