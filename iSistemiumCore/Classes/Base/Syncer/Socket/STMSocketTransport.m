@@ -393,9 +393,7 @@
             [self.remotePersistingDelegate mergeSync:entityName attributes:data options:options error:&error];
             
         } else {
-            NSLog(@"no data in updateEventHandleWithData");
-//            [self.remotePersistingDelegate mergeManySync:entityName attributeArray:nil options:nil error:&error];
-            
+            [self.remotePersistingDelegate mergeManySync:entityName attributeArray:nil options:nil error:&error];            
         }
         
     }
