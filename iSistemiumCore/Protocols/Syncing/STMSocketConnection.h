@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "STMSocketConnectionOwner.h"
-#import "STMPersistingSync.h"
+#import "STMRemoteDataEventHandling.h"
 
 typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventConnect,
@@ -33,7 +33,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
 NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, nullable) id <STMSocketConnectionOwner> owner;
-@property (nonatomic, weak, nullable) id <STMPersistingSync> remotePersistingDelegate;
+@property (nonatomic, weak, nullable) id <STMRemoteDataEventHandling> remoteDataEventHandling;
 @property (nonatomic) BOOL isReady;
 
 - (void)closeSocket;

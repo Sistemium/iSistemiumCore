@@ -31,7 +31,7 @@
 
 @implementation STMSocketTransport
 
-+ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner remotePersistingDelegate:(id <STMPersistingSync>)remotePersistingDelegate{
++ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner remoteDataEventHandling:(id <STMRemoteDataEventHandling>)remoteDataEventHandling{
     
     STMLogger *logger = [STMLogger sharedLogger];
     
@@ -53,7 +53,7 @@
     socketTransport.entityResource = entityResource;
     socketTransport.owner = owner;
     socketTransport.logger = logger;
-    socketTransport.remotePersistingDelegate = remotePersistingDelegate;
+    socketTransport.remoteDataEventHandling = remoteDataEventHandling;
     
     [socketTransport startSocket];
     
@@ -224,7 +224,7 @@
 
 @synthesize isReady = _isReady;
 @synthesize owner = _owner;
-@synthesize remotePersistingDelegate = _remotePersistingDelegate;
+@synthesize remoteDataEventHandling = _remoteDataEventHandling;
 
 
 - (BOOL)isReady {
@@ -377,8 +377,6 @@
 
 - (void)updateEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     
-    NSError *error = nil;
-    
     NSDictionary *receivedData = data.firstObject;
     
     if ([STMFunctions isNotNull:receivedData[@"resource"]]){
@@ -386,31 +384,20 @@
         NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
         
         NSDictionary *data = receivedData[@"data"];
-        NSDictionary *options = @{STMPersistingOptionLtsNow};
         
         if (data && data[@"id"]){
             
-            [self.remotePersistingDelegate mergeSync:entityName attributes:data options:options error:&error];
+            [self.remoteDataEventHandling remoteUpdated:entityName attributes:data];
             
         } else {
-            [self.remotePersistingDelegate mergeManySync:entityName attributeArray:nil options:nil error:&error];            
+            [self.remoteDataEventHandling remoteHasNewData:entityName];
         }
-        
-    }
-    
-    if (error){
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"Error update event handle with data: %@", error.localizedDescription];
-        
-        [self.logger errorMessage:errorMessage];
         
     }
     
 }
 
 - (void)destroyEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    
-    NSError *error = nil;
     
     NSDictionary *receivedData = data.firstObject;
     
@@ -422,17 +409,9 @@
         
         if (identifier){
             
-            [self.remotePersistingDelegate destroySync:entityName identifier:identifier options:@{STMPersistingOptionRecordstatuses:@NO} error:&error];
+            [self.remoteDataEventHandling remoteDestroyed:entityName identifier:identifier];
             
         }
-        
-    }
-    
-    if (error){
-        
-        NSString *errorMessage = [NSString stringWithFormat:@"Error destroy event handle with data: %@", error.localizedDescription];
-        
-        [[STMLogger sharedLogger] errorMessage:errorMessage];
         
     }
     
