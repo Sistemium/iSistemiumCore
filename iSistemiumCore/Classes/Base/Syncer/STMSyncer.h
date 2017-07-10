@@ -13,7 +13,7 @@
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
 
-@interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner,STMPersistingSync>
+@interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner, STMPersistingSync>
 
 @property (nonatomic, strong) id <STMDataSyncing> dataSyncingDelegate;
 @property (nonatomic, strong) id <STMDataDownloading> dataDownloadingDelegate;

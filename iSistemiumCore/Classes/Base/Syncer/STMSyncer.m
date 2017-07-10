@@ -842,7 +842,7 @@
 
 }
 
-#pragma mark - save dates
+#pragma mark - STMPersistingSync
 
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
