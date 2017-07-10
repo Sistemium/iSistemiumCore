@@ -178,21 +178,27 @@
         
         NSString *callerInfoString = [NSString stringWithFormat:@"[%@ %@]", callerInfo[@"class"], callerInfo[@"function"]];
         
-        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"   : text,
-                                                                  @"type"   : type,
-                                                                  @"source" : callerInfoString}];
+#warning sometimes crashes after sync
         
-        if (!result) return;
+//        NSArray *result = [self checkMessageForRepeatingPattern:@{@"text"   : text,
+//                                                                  @"type"   : type,
+//                                                                  @"source" : callerInfoString}];
+//        
+//        if (!result) return;
+//        
+//        for (NSDictionary *logMessageDic in result) {
         
-        for (NSDictionary *logMessageDic in result) {
-            
+        NSDictionary *logMessageDic = @{@"text"   : text,
+                                        @"type"   : type,
+                                        @"source" : callerInfoString};
+        
             [self nsLogMessageWithType:logMessageDic[@"type"]
                                   text:logMessageDic[@"text"]
                             callerInfo:callerInfo];
             
             [self saveLogMessageDic:logMessageDic];
             
-        }
+//        }
         
     } else {
 
