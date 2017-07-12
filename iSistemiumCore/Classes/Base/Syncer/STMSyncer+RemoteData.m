@@ -10,13 +10,17 @@
 
 @implementation STMSyncer (RemoteData)
 
-- (void)remoteHasNewData:(NSString *)entityName{
+- (void)remoteHasNewData:(NSString *)entityName {
+    
+    NSLog(@"remoteHasNewData for entity name: %@",entityName)
     
     [self receiveEntities:@[entityName]];
     
 }
 
-- (void)remoteUpdated:(NSString *)entityName attributes:(NSDictionary *)attributes{
+- (void)remoteUpdated:(NSString *)entityName attributes:(NSDictionary *)attributes {
+    
+    NSLog(@"remoteUpdated entity name: %@, id: %@",entityName, attributes[@"id"]);
     
     NSError *error = nil;
     
@@ -33,7 +37,10 @@
     }
     
 }
-- (void)remoteDestroyed:(NSString *)entityName identifier:(NSString *)identifier{
+
+- (void)remoteDestroyed:(NSString *)entityName identifier:(NSString *)identifier {
+    
+    NSLog(@"remoteDestroyed entity name: %@, id: %@",entityName, identifier);
     
     NSError *error = nil;
     
