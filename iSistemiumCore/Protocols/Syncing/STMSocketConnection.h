@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, STMSocketEvent) {
     STMSocketEventJSData,
     STMSocketEventSubscribe,
     STMSocketEventUpdate,
+    STMSocketEventUpdateCollection,
     STMSocketEventDestroy
 };
 

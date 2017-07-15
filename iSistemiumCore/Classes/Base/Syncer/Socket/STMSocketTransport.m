@@ -138,6 +138,7 @@
                         @(STMSocketEventData),
                         @(STMSocketEventJSData),
                         @(STMSocketEventUpdate),
+                        @(STMSocketEventUpdateCollection),
                         @(STMSocketEventDestroy)];
     
     for (NSNumber *eventNum in events) {
@@ -192,7 +193,8 @@
                 [self remoteRequestsEventHandleWithData:data ack:ack];
                 break;
             }
-                
+            
+            case STMSocketEventUpdateCollection:
             case STMSocketEventUpdate: {
                 [self updateEventHandleWithData:data ack:ack];
                 break;
@@ -631,6 +633,10 @@
         }
         case STMSocketEventUpdate: {
             return @"jsData:update";
+            break;
+        }
+        case STMSocketEventUpdateCollection: {
+            return @"jsData:updateCollection";
             break;
         }
         case STMSocketEventDestroy: {
