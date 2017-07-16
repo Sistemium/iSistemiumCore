@@ -71,8 +71,8 @@
     }
 #ifdef DEBUG
     [op addObserver:self forKeyPath:KEYPATH_IS_FINISHED options:NSKeyValueObservingOptionNew context:nil];
-    [super addOperation:op];
 #endif
+    [super addOperation:op];
 }
 
 
