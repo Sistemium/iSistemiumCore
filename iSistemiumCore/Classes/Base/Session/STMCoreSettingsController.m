@@ -125,8 +125,12 @@
     
 }
 
-#pragma mark - Public methods
+- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
+    return [[self class] stringValueForSettings:settingsName forGroup:group];
+}
 
+
+#pragma mark - Public methods
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
     
