@@ -27,16 +27,11 @@
     return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
-<<<<<<< HEAD
 + (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
     
     return [[self session].settingsController currentSettingsForGroup:group][settingsName];
 //    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
     
-=======
-- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
-    return [self currentSettingsForGroup:group][settingsName];
->>>>>>> origin/transactionCoordinator
 }
 
 - (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{
