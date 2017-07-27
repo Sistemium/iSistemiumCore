@@ -69,6 +69,7 @@
     
 }
 
+
 #pragma mark - SettingsController protocol
 
 - (NSArray *)currentSettings {
@@ -79,11 +80,9 @@
     
 }
 
-
 - (NSArray *)groupNames {
     return [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
 }
-
 
 - (NSDictionary *)currentSettingsForGroup:(NSString *)group {
     
