@@ -9,30 +9,19 @@
 #import "STMFunctions.h"
 
 #import "STMPersister.h"
-#import "STMPersister+CoreData.h"
 #import "STMPersister+Private.h"
-#import "STMPersister+Transactions.h"
 
 #import "STMModeller+Interceptable.h"
 
-#define FMDB_PATH @"fmdb"
-
 @implementation STMPersister
 
-+ (instancetype)persisterWithModelName:(NSString *)modelName filing:(id <STMFiling>)filing completionHandler:(void (^)(BOOL success))completionHandler {
-
++ (instancetype)persisterWithModelName:(NSString *)modelName completionHandler:(void (^)(BOOL success))completionHandler {
+    
     STMPersister *persister = [[self alloc] initWithModelName:modelName];
-    
-    NSString *fmdbFile = [modelName stringByAppendingString:@".db"];
-    NSString *fmdbPath = [[filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
-
-    persister.fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
-    
-//    persister.document = [STMDocument documentWithUID:uid iSisDB:iSisDB filing:filing dataModelName:modelName];
     
     // TODO: call completionHandler after document is ready to rid off documentReady subscriptions
     if (completionHandler) completionHandler(YES);
-
+    
     return persister;
     
 }
@@ -54,26 +43,14 @@
                        callback:callback];
 }
 
-
-#pragma mark - Private methods
-
-
-- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error {
-    NSString *message = [NSString stringWithFormat:@"'%@' is not a concrete entity name", entityName];
-    [STMFunctions error:error withMessage:message];
-}
-
-
 #pragma mark - STMPersistingSync
 
 
 - (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
     
-    predicate = [self predicate:predicate withOptions:options];
-   
     __block NSUInteger result = 0;
     
-    [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    [self.runner readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         result = [transaction count:entityName predicate:predicate options:options error:error];
         return nil;
     }];
@@ -84,7 +61,7 @@
 
 - (NSDictionary *)findSync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
-    NSPredicate *predicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options];
+    NSPredicate *predicate = [self primaryKeyPredicateEntityName:entityName values:@[identifier]];
     
     NSArray *results = [self findAllSync:entityName predicate:predicate options:options error:error];
     
@@ -94,12 +71,10 @@
 
 - (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
     
-    predicate = [self predicate:predicate withOptions:options];
-    
     // Allow pass nil in error
     __block NSError *innerError;
     
-    NSArray *result = [self readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
+    NSArray *result = [self.runner readOnly:^NSArray *(id<STMPersistingTransaction> transaction) {
         return [transaction findAllSync:entityName predicate:predicate options:options error:&innerError];
     }];
     
@@ -111,14 +86,14 @@
 
 
 - (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
-
+    
     attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     
     if (!attributes || *error) return nil;
-
+    
     __block NSDictionary *result;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error inTransaction:transaction];
         
@@ -129,7 +104,7 @@
         
         return !*error;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     
@@ -138,7 +113,7 @@
                             options:options];
     
     return result.copy;
-
+    
 }
 
 - (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
@@ -149,7 +124,7 @@
     
     if (!attributeArray.count || *error) return attributeArray;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         for (NSDictionary *attributes in attributeArray) {
             
@@ -167,7 +142,7 @@
         
         return YES;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     
@@ -182,7 +157,7 @@
 - (BOOL)destroySync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options error:(NSError **)error{
     
     NSUInteger deletedCount = [self destroyAllSync:entityName
-                                         predicate:[self primaryKeyPredicateEntityName:entityName values:@[identifier] options:options]
+                                         predicate:[self primaryKeyPredicateEntityName:entityName values:@[identifier]]
                                            options:options
                                              error:error];
     
@@ -194,13 +169,13 @@
     
     __block NSUInteger count;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
         
         return !*error;
         
-    } error:error];
+    }];
     
     return count;
     
@@ -210,13 +185,13 @@
     
     __block NSDictionary *result;
     
-    [self execute:^BOOL(id <STMPersistingTransaction> transaction) {
+    [self.runner execute:^BOOL(id <STMPersistingTransaction> transaction) {
         
         result = [transaction updateWithoutSave:entityName attributes:attributes options:options error:error];
         
         return !*error;
         
-    } error:error];
+    }];
     
     if (*error) return nil;
     

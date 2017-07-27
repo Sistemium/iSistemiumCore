@@ -273,7 +273,6 @@
     NSArray *entityNames = [[self.persistenceDelegate entitiesByName].allKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
     
     NSUInteger totalCountFMDB = 0;
-    NSUInteger totalCountCoreData = 0;
     NSUInteger totalFantoms = 0;
     
     for (NSString *entityName in entityNames) {
@@ -288,30 +287,23 @@
                                     options:@{STMPersistingOptionForceStorageFMDB}
                                       error:&error];
         
-        NSUInteger countCoreData =
-        [self.persistenceDelegate countSync:entityName
-                                  predicate:nil
-                                    options:@{STMPersistingOptionForceStorageCoreData}
-                                      error:&error];
-        
         NSUInteger countFantoms =
         [self.persistenceDelegate countSync:entityName
                                   predicate:nil
                                     options:@{STMPersistingOptionFantoms:@YES}
                                       error:&error];
         
-        NSLog(@"%@ count: %u + %u%@",
-              entityName, countFMDB, countCoreData,
+        NSLog(@"%@ count: %u%@",
+              entityName, countFMDB,
               countFantoms ? [NSString stringWithFormat:@" (+ %@ fantoms)", @(countFantoms)] : @""
               );
         
         totalCountFMDB += countFMDB;
-        totalCountCoreData += countCoreData;
         totalFantoms += countFantoms;
         
     }
     
-    NSLog(@"Total count: %u + %u", totalCountFMDB, totalCountCoreData);
+    NSLog(@"Total count: %u", totalCountFMDB);
     NSLog(@"Fantoms total count: %@", @(totalFantoms));
     
 }

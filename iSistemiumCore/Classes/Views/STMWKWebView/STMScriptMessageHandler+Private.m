@@ -280,13 +280,6 @@
             
             [subscription.entityNames addObject:[STMFunctions addPrefixToEntityName:entityName]];
             
-        } else {
-            
-            errorMessage = [NSString stringWithFormat:@"entity name %@ is not in local data model",
-                            entityName];
-            result = NO;
-            break;
-            
         }
         
     }

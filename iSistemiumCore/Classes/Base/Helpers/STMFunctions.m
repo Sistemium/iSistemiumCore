@@ -704,6 +704,12 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     }
 }
 
++ (void)pushArray:(NSMutableArray *)array object:(_Nonnull id)object{
+    @synchronized (array) {
+        [array addObject:object];
+    }
+}
+
 + (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array {
     
     NSUInteger indexOfObject = [array indexOfObject:object];

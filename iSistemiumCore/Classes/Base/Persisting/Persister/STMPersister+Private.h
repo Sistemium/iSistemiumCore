@@ -7,11 +7,10 @@
 //
 
 #import "STMPersister.h"
+#import "STMPersistingRunning.h"
 
 @interface STMPersister()
 
 @property (nonatomic,strong) NSString *fmdbFileName;
-
-- (void)wrongEntityName:(NSString *)entityName error:(NSError **)error;
 
 @end

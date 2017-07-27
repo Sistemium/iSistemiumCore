@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)lowercaseFirst:(NSString *)inputString;
 
 + (nullable id)popArray:(NSMutableArray *)array;
++ (void)pushArray:(NSMutableArray *)array object:(_Nonnull id)object;
 + (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array;
 + (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array;
 

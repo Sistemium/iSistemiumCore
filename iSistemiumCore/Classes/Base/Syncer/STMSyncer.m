@@ -15,6 +15,7 @@
 #import "STMClientDataController.h"
 
 #import "STMSocketTransport+Persisting.h"
+#import "STMSyncer+RemoteData.h"
 
 
 @interface STMSyncer()
@@ -269,7 +270,7 @@
     
     [self addObservers];
     
-    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self];
+    self.socketTransport = [STMSocketTransport transportWithUrl:self.socketUrlString andEntityResource:self.entityResource owner:self remoteDataEventHandling:self];
 
     if (!self.socketTransport) {
         return [self.session.logger saveLogMessageWithText:@"Syncer can not start socket transport" numType:STMLogMessageTypeError];
@@ -841,6 +842,5 @@
     }];
 
 }
-
 
 @end

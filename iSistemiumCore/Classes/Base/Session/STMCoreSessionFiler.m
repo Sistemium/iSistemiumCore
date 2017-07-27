@@ -8,7 +8,7 @@
 
 #import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
-
+#import "STMLogger.h"
 
 @implementation STMCoreSessionFiler
 
@@ -276,5 +276,52 @@
     
 }
 
+#pragma mark - remote controller
+
++ (NSDictionary *)getFileArrayforPath:(NSString*)path {
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSMutableDictionary *dictionary = @{}.mutableCopy;
+    NSArray * directoryContents = [fm contentsOfDirectoryAtPath:path error:nil];
+    
+    for (NSString * file in directoryContents) {
+        
+        BOOL isDirectory = NO;
+        NSString* fullPath = [path stringByAppendingPathComponent:file];
+        
+        [fm fileExistsAtPath:fullPath isDirectory:&isDirectory];
+        
+        if (isDirectory){
+            dictionary[file] = [self getFileArrayforPath:fullPath];
+        } else {
+            NSDictionary *atr = [fm attributesOfItemAtPath:fullPath error:nil];
+            dictionary[file] = @{@"NSFileSize":atr[@"NSFileSize"],
+                                 @"NSFileCreationDate":atr[@"NSFileCreationDate"],
+                                 @"NSFileModificationDate":atr[@"NSFileModificationDate"]};
+        }
+        
+    }
+    
+    return dictionary.copy;
+    
+}
+
++ (NSDictionary *)JSONOfAllFiles {
+
+    NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory]];
+    
+    return dictionary;
+
+}
+
++ (NSDictionary *)JSONOfFilesAtPath:(NSString *)path {
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSDictionary* dictionary = [self getFileArrayforPath:path];
+    
+    return dictionary;
+    
+}
 
 @end
