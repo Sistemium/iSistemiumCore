@@ -179,7 +179,7 @@ extension Set {
                     
                     if (imagePath != nil) {
                         do {
-                            try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+imagePath!)
+                            try filing.removeItem(atPath: filing.picturesBasePath() + "/" + imagePath!)
                         } catch let error as NSError {
                             NSLog(error.description)
                         }
@@ -189,7 +189,7 @@ extension Set {
                     // TODO: need testing
                     if (resizedImagePath != nil && resizedImagePath != imagePath) {
                         do {
-                            try filing.removeItem(atPath: STMFunctions.documentsDirectory()+"/"+resizedImagePath!)
+                            try filing.removeItem(atPath: filing.picturesBasePath() + "/" + resizedImagePath!)
                         } catch let error as NSError {
                             NSLog(error.description)
                         }

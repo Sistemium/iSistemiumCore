@@ -10,23 +10,12 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreSession.h"
 #import "STMSyncer.h"
+#import "STMCoreSessionFiler.h"
 
 @implementation STMRemoteController
 
 + (STMCoreSession *)session {
     return [STMCoreSessionManager sharedManager].currentSession;
-}
-
-+ (BOOL)error:(NSError **)error withMessage:(NSString *)errorMessage {
-    
-    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
-    
-    if (bundleId && error) *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
-                                                        code:1
-                                                    userInfo:@{NSLocalizedDescriptionKey: errorMessage}];
-    
-    return (error == nil);
-    
 }
 
 + (void)loggingErrorMessage:(NSString *)logMessage {
@@ -48,7 +37,7 @@
     
     if (![remoteCommands isKindOfClass:[NSDictionary class]]) {
         
-        [self error:error withMessage:@"remoteCommands is not an NSDictionary class"];
+        [STMFunctions error:error withMessage:@"remoteCommands is not an NSDictionary class"];
         return NO;
         
     }
@@ -88,41 +77,52 @@
         
     }
     
-    if (errorMessage) [self error:error withMessage:errorMessage];
+    if (errorMessage) [STMFunctions error:error withMessage:errorMessage];
     
     return (error == nil);
     
 }
 
-+ (BOOL)performMethod:(NSString *)methodName onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
++ (id)performMethod:(NSString *)methodName onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
     
-    [self performMethod:methodName withObject:nil onClass:theClass error:error];
-    return (error == nil);
+    return [self performMethod:methodName withObject:nil onClass:theClass error:error];
     
 }
 
-+ (BOOL)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
++ (id)performMethod:(NSString *)methodName withObject:(id)object onClass:(Class)theClass error:(NSError *__autoreleasing *)error {
+    
+    NSArray* arguments;
+    
+    if (object){
+        arguments = @[object];
+    }
+
+    return [self performMethod:methodName withArguments:arguments onClass:theClass error:error];
+
+}
+
++ (id)performMethod:(NSString *)methodName withArguments:(NSArray *)arguments onClass:(Class)theClass error:(NSError *__autoreleasing *)error{
 
     SEL selector = NSSelectorFromString(methodName);
     
     if ([theClass respondsToSelector:selector]) {
         
-        [self noWarningPerformSelector:selector withObject:object onReceiver:theClass];
+        return [self invokeWithSelector:selector withArguments:arguments onReceiver:theClass];
         
     } else if ([theClass instancesRespondToSelector:selector]) {
         
         id instance = [self instanceForClass:theClass error:error];
         
-        if (instance) [self noWarningPerformSelector:selector withObject:object onReceiver:instance];
+        if (instance) return [self invokeWithSelector:selector withArguments:arguments onReceiver:instance];
         
     } else {
         
         NSString *logMessage = [NSString stringWithFormat:@"%@ have no method %@", NSStringFromClass([theClass class]), methodName];
-        [self error:error withMessage:logMessage];
+        [STMFunctions error:error withMessage:logMessage];
         
     }
     
-    return (error == nil);
+    return nil;
 
 }
 
@@ -140,42 +140,151 @@
 
         return self.session.locationTracker;
 
-    } else {
+    } else if ([class isSubclassOfClass:[STMCoreSessionFiler class]]) {
         
-        NSString *logMessage = [NSString stringWithFormat:@"no registered instance for class %@", NSStringFromClass([class class])];
-        [self error:error withMessage:logMessage];
-
-        return nil;
+        return self.session.filing;
         
     }
+    
+    NSString *logMessage = [NSString stringWithFormat:@"no registered instance for class %@", NSStringFromClass([class class])];
+    [STMFunctions error:error withMessage:logMessage];
+    
+    return nil;
 }
 
-+ (void)noWarningPerformSelector:(SEL)selector withObject:(id)object onReceiver:(id)receiver {
-
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [receiver performSelector:selector withObject:object afterDelay:0];
-    }];
++ (NSDictionary*)receiveRemoteRequests:(NSDictionary *)remoteRequests{
     
-//    IMP imp = [receiver methodForSelector:selector];
-//    
-//// --- if need to get return value from method then use this two lines instead of imp()
-////    id (*func)(id, SEL, id) = (id (*)(id,SEL,id))imp;
-////    id value = func(receiver, selector, object);
-//    
-//    imp(receiver, selector, object);
-
-
-// another way to remove warning
-// ----
-// remove the warning about potential memory leak
-// in the _response selector because the compiler
-// doesn't know in ARC mode if it needs to apply
-// a retain or release.
-//#pragma clang diagnostic push
-//#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-// ----
+    NSError *error = nil;
     
+    NSMutableDictionary *response = @{}.mutableCopy;
+    
+    if (![remoteRequests isKindOfClass:[NSDictionary class]]) {
+        
+        [STMFunctions error:&error withMessage:@"remoteRequests is not an NSDictionary class"];
+        return @{@"error":[error localizedDescription]};
+        
+    }
+    
+    for (NSString *className in remoteRequests.allKeys) {
+        
+        Class theClass = NSClassFromString(className);
+        
+        if (!theClass) {
+            
+            NSString *message = [NSString stringWithFormat:@"%@ does not exist", className];
+            
+            [STMFunctions error:&error withMessage:message];
+            
+            response[className] = @{@"error":[error localizedDescription]};
+            
+            continue;
+            
+        }
+        
+        error = nil;
+        
+        id payload = remoteRequests[className];
+        
+        if ([payload isKindOfClass:[NSString class]]) {
+            
+            id answer = [self performMethod:payload onClass:theClass error:&error];
+            
+            if (error){
+                response[className] = @{@"error":[error localizedDescription]};
+            }else{
+                response[className] = answer;
+            }
+            
+        } else if ([payload isKindOfClass:[NSDictionary class]]) {
+            
+            NSDictionary *methodsDic = (NSDictionary *)payload;
+            
+            NSMutableDictionary *classAnswer = @{}.mutableCopy;
+            
+            for (NSString *methodName in methodsDic.allKeys) {
+                
+                id answer = [self performMethod:methodName withObject:methodsDic[methodName] onClass:theClass error:&error];
+                
+                if (error){
+                    answer = @{@"error":[error localizedDescription]};
+                    error = nil;
+                }
+                
+                classAnswer[methodName] = answer;
+                
+            }
+            
+            response[className] = classAnswer.copy;
+            
+        } else {
+            
+            [STMFunctions error:&error withMessage:[NSString stringWithFormat:@"notification's payload for %@ is not a string or dictionary", className]];
+            
+            response[className] = @{@"error":[error localizedDescription]};
+            
+        }
+        
+        error = nil;
+        
+    }
+    
+    return response.copy;
+
 }
 
++ (id)invokeWithSelector:(SEL)selector withArguments:(NSArray*)arguments onReceiver:(id)receiver{
+
+    NSMethodSignature * signature;
+    
+    if ([receiver respondsToSelector:selector]){
+        
+        signature = [receiver methodSignatureForSelector:selector];
+        
+    }else{
+        
+        signature = [receiver instanceMethodSignatureForSelector:selector];
+        
+    }
+    
+    NSInvocation * invocation = [NSInvocation invocationWithMethodSignature:signature];;
+    
+    [invocation setTarget:receiver];
+    
+    [invocation setSelector:selector];
+    
+    int index = 2;
+    
+    for (id argument in arguments){
+        
+        if (index == [signature numberOfArguments]) break;
+        [invocation setArgument:(void * _Nonnull) &argument atIndex:index];
+        index++;
+    }
+    @try {
+        
+        [invocation invoke];
+        
+    }
+    @catch (NSException *exception) {
+
+        return @{@"error": [exception description]};
+        
+    }
+    
+    if ([signature methodReturnLength]){
+        
+        void *pointer;
+        
+        [invocation getReturnValue:&pointer];
+        
+        id result = (__bridge id)pointer;
+        
+        return result;
+        
+    }
+    
+    return nil;
+    
+}
 
 @end

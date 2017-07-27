@@ -162,39 +162,38 @@
     
 }
 
+- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+    
+    NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
+    NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
+    NSArray *groupBy = options[STMPersistingOptionGroupBy];
+    
+    if (offset) {
+        offset -= 1;
+        offset *= pageSize;
+    }
+    
+    NSString *orderBy = options[STMPersistingOptionOrder];
+    
+    BOOL asc = options[STMPersistingOptionOrderDirection] && [[options[STMPersistingOptionOrderDirection] lowercaseString] isEqualToString:@"asc"];
+    
+    if (!orderBy) orderBy = @"id";
+    
+    return [self findAllSync:entityName predicate:predicate orderBy:orderBy ascending:asc fetchLimit:pageSize fetchOffset:offset groupBy:groupBy];
+    
+}
+
 
 - (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError *__autoreleasing *)error {
-    
-    NSString *tablename = [STMFunctions removePrefixFromEntityName:entityName];
-    
-    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
     
     NSString *pk = attributes[@"id"];
     
     NSMutableArray* keys = @[].mutableCopy;
     NSMutableArray* values = @[].mutableCopy;
     
-    for(NSString* key in attributes){
-        if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
-            [keys addObject:key];
-            id value = [attributes objectForKey:key];
-            if ([value isKindOfClass:[NSDate class]]) {
-                [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
-            } else {
-                [values addObject:(NSString*)value];
-            }
-            
-        }
-    }
+    NSString *tablename = [STMFunctions removePrefixFromEntityName:entityName];
     
-    [values addObject:pk];
-    
-    NSMutableArray* v = @[].mutableCopy;
-    for (int i=0;i<[keys count];i++){
-        [v addObject:@"?"];
-    }
-    
-    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET isFantom = 0, %@ = ? WHERE id = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+    NSString* updateSQL = [self updateTablename:tablename attributes:attributes keys:keys values:values primaryKey:pk];
     
     [self.database executeUpdate:updateSQL values:values error:error];
     
@@ -284,42 +283,12 @@
 
 - (NSString *) mergeInto:(NSString *)tablename dictionary:(NSDictionary<NSString *, id> *)dictionary error:(NSError **)error {
     
-    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
     NSString *pk = dictionary [STMPersistingKeyPrimary] ? dictionary [STMPersistingKeyPrimary] : [STMFunctions uuidString];
     
     NSMutableArray* keys = @[].mutableCopy;
     NSMutableArray* values = @[].mutableCopy;
     
-    NSArray *jsonColumns = [self.stmFMDB.columnsByTable[tablename] allKeysForObject:@(NSTransformableAttributeType)];
-    
-    for (NSString* key in dictionary) {
-        
-        if ([columns containsObject:key] && ![@[@"id", @"isFantom"] containsObject:key]){
-            
-            [keys addObject:[STMPredicateToSQL quotedName:key]];
-            id value = [dictionary objectForKey:key];
-            
-            if ([value isKindOfClass:[NSDate class]]) {
-                
-                [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
-
-            } else if([jsonColumns containsObject:key]) {
-                
-                [values addObject:[STMFunctions jsonStringFromObject:value]];
-                
-            } else {
-                
-                [values addObject:(NSString*)value];
-                
-            }
-            
-        }
-        
-    }
-    
-    [values addObject:pk];
-    
-    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET [isFantom] = 0, %@ = ? WHERE [id] = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+    NSString* updateSQL = [self updateTablename:tablename attributes:dictionary keys:keys values:values primaryKey:pk];
     
     if(![self.database executeUpdate:updateSQL values:values error:error]){
         
@@ -378,6 +347,44 @@
     
 }
 
+- (NSString*) updateTablename:(NSString *)tablename attributes:(NSDictionary *)attributes keys:(NSMutableArray *)keys values:(NSMutableArray *)values primaryKey:(NSString *)primaryKey{
+    
+    NSArray *columns = [self.stmFMDB.columnsByTable[tablename] allKeys];
+    
+    NSArray *jsonColumns = [self.stmFMDB.columnsByTable[tablename] allKeysForObject:@(NSTransformableAttributeType)];
+    
+    for (NSString* key in attributes) {
+        
+        if ([columns containsObject:key] && ![@[STMPersistingKeyPrimary, STMPersistingKeyPhantom] containsObject:key]){
+            
+            [keys addObject:[STMPredicateToSQL quotedName:key]];
+            id value = [attributes objectForKey:key];
+            
+            if ([value isKindOfClass:[NSDate class]]) {
+                
+                [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+                
+            } else if([jsonColumns containsObject:key]) {
+                
+                [values addObject:[STMFunctions jsonStringFromObject:value]];
+                
+            } else {
+                
+                [values addObject:(NSString*)value];
+                
+            }
+            
+        }
+        
+    }
+    
+    [values addObject:primaryKey];
+    
+    NSString* updateSQL = [NSString stringWithFormat:@"UPDATE %@ SET [isFantom] = 0, %@ = ? WHERE [id] = ?", tablename, [keys componentsJoinedByString:@" = ?, "]];
+    
+    return updateSQL;
+    
+}
 
 @end
 

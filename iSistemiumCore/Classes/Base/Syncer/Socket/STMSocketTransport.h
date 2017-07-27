@@ -16,6 +16,7 @@
 
 + (instancetype)transportWithUrl:(NSString *)socketUrlString
                andEntityResource:(NSString *)entityResource
-                           owner:(id <STMSocketConnectionOwner>)owner;
+                           owner:(id <STMSocketConnectionOwner>)owner
+         remoteDataEventHandling:(id <STMRemoteDataEventHandling>)remoteDataEventHandling;
 
 @end

@@ -125,7 +125,7 @@
     
     if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
         
-        NSString *uploadLogType = [STMCoreSettingsController stringValueForSettings:@"uploadLog.type"
+        NSString *uploadLogType = [self.session.settingsController stringValueForSettings:@"uploadLog.type"
                                                                            forGroup:@"syncer"];
         
         NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
@@ -238,13 +238,16 @@
     
     NSLogMethodName;
     
+#ifdef DEBUG
     for (NSString *entityName in self.erroredObjectsByEntity.allKeys) {
         
         NSSet *ids = self.erroredObjectsByEntity[entityName];
+        if (!ids.count) continue;
         NSLog(@"finishHandleUnsyncedObjects errored %@ of %@", @(ids.count), entityName);
         
     }
-    
+#endif
+
     self.syncingState = nil;
     
     [self checkUnsyncedObjects];
@@ -502,7 +505,7 @@
 
     @synchronized (self) {
         
-        for (NSString *entityName in self.pendingObjectsByEntity.allKeys) {
+        for (NSString *entityName in self.pendingObjectsByEntity.allKeys.copy) {
 
             NSDictionary *pendingObjects = self.pendingObjectsByEntity[entityName].copy;
             

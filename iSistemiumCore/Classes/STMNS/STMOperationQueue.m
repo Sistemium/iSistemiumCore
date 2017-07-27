@@ -69,7 +69,9 @@
     if ([op respondsToSelector:@selector(setQueue:)]) {
         [op performSelector:@selector(setQueue:) withObject:self];
     }
+#ifdef DEBUG
     [op addObserver:self forKeyPath:KEYPATH_IS_FINISHED options:NSKeyValueObservingOptionNew context:nil];
+#endif
     [super addOperation:op];
 }
 
@@ -86,7 +88,8 @@
 
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    
+
+#ifdef DEBUG
     if ([keyPath isEqualToString:KEYPATH_IS_FINISHED] && [object respondsToSelector:@selector(finishedIn)]) {
         
         self.finishedOperationsDuration += [object finishedIn];
@@ -99,6 +102,7 @@
         }
         
     }
+#endif
     
 }
 

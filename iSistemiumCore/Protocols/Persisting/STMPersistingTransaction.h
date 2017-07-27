@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "STMModelling.h"
 
 #define STMPerisistingResultSet NSArray <NSDictionary *> *
 
@@ -34,19 +35,9 @@
             options:(NSDictionary *)options
               error:(NSError **)error;
 
-@optional
-
 - (STMPerisistingResultSet)findAllSync:(NSString *)entityName
                              predicate:(NSPredicate *)predicate
                                options:(NSDictionary *)options
                                  error:(NSError **)error;
-
-- (STMPerisistingResultSet)findAllSync:(NSString *)name
-                             predicate:(NSPredicate *)predicate
-                               orderBy:(NSString *)orderBy
-                             ascending:(BOOL)ascending
-                            fetchLimit:(NSUInteger)fetchLimit
-                           fetchOffset:(NSUInteger)fetchOffset
-                               groupBy:(NSArray *)groupBy;
 
 @end

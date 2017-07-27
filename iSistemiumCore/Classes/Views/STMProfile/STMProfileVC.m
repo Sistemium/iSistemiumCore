@@ -895,8 +895,10 @@
 - (void)setupLocationLabels {
 
     if (![self.requestLocationServiceAuthorization isEqualToString:@"noRequest"]) {
+        
+        id <STMSettingsController> settings = STMCoreSessionManager.sharedManager.currentSession.settingsController;
 
-        BOOL isDriver = [[STMCoreSettingsController stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
+        BOOL isDriver = [[settings stringValueForSettings:@"geotrackerControl" forGroup:@"location"] isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE];
         
         self.lastLocationImageView.hidden = NO;
         [self setupLastLocationLabel];

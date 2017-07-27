@@ -21,6 +21,91 @@
 
 #import <sqlite3.h>
 
+#define POOL_SIZE 3
+
+@interface STMFmdbOperation : STMOperation
+
+@property (nonatomic, strong) STMFmdbTransaction *transaction;
+@property (nonatomic, weak) STMFmdb *stmFMDB;
+@property (nonatomic, strong) FMDatabase *database;
+@property BOOL readOnly;
+@property BOOL success;
+@property dispatch_semaphore_t sem;
+
+@end
+
+@implementation STMFmdbOperation
+
+- (instancetype)initWithReadOnly:(BOOL)readOnly stmFMDB:(STMFmdb*)stmFMDB{
+
+    self = [self init];
+    
+    self.readOnly = readOnly;
+    
+    self.stmFMDB = stmFMDB;
+    
+    self.sem = dispatch_semaphore_create(0);
+    
+    return self;
+
+}
+
+- (void)main{
+
+    if (self.readOnly){
+
+        self.database = [STMFunctions popArray:self.stmFMDB.poolDatabases];
+    
+        
+    }else{
+        
+        self.database = self.stmFMDB.database;
+            
+        [self.database beginTransaction];
+        
+    }
+    
+    self.transaction = [[STMFmdbTransaction alloc] initWithFMDatabase:self.database stmFMDB:self.stmFMDB];
+    
+    self.transaction.operation = self;
+
+    dispatch_semaphore_signal(self.sem);
+    
+}
+
+- (void)finish{
+    
+    if (!self.readOnly){
+        
+        if (self.success){
+            
+            [self.database commit];
+            
+        }else{
+        
+            [self.database rollback];
+            
+        }
+        
+    }
+    
+    if (self.readOnly){
+        
+        [STMFunctions pushArray:self.stmFMDB.poolDatabases object:self.database];
+        
+    }
+    
+    [super finish];
+    
+}
+
+- (void)waitUntilTransactionIsReady{
+    
+    dispatch_semaphore_wait(self.sem, DISPATCH_TIME_FOREVER);
+    
+}
+
+@end
 
 @interface STMFmdb()
 
@@ -39,19 +124,32 @@
     self.dbPath = dbPath;
     
     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE;
-    
-    self.queue = [FMDatabaseQueue databaseQueueWithPath:dbPath flags:flags];
-    self.pool = [FMDatabasePool databasePoolWithPath:dbPath flags:SQLITE_OPEN_READONLY];
-    
-    __block BOOL result = NO;
 
-    [self.queue inDatabase:^(FMDatabase *database){
-        
-        result = [self checkModelMappingForDatabase:database model:modelling.managedObjectModel];
-        
-    }];
+    self.database = [FMDatabase databaseWithPath:self.dbPath];
     
-    if (!result) return nil;
+    [self.database openWithFlags:flags];
+    
+    [self.database executeUpdate:@"PRAGMA journal_mode=WAL;"];
+    
+    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
+    
+    if (![self checkModelMappingForDatabase:self.database model:modelling.managedObjectModel]) return nil;
+    
+    self.poolDatabases = @[].mutableCopy;
+    
+    for (int i = 0; i<=POOL_SIZE;i++){
+        
+        FMDatabase *poolDb = [FMDatabase databaseWithPath:self.dbPath];
+        
+        [poolDb openWithFlags:SQLITE_OPEN_READONLY];
+        
+        [self.poolDatabases addObject:poolDb];
+        
+    }
+    
+    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMFmdbDispatchQueue", DISPATCH_QUEUE_SERIAL);
+    self.operationQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:1];
+    self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:POOL_SIZE];
     
     return self;
     
@@ -132,6 +230,41 @@
     name = [STMFunctions removePrefixFromEntityName:name];
     return [self.columnsByTable.allKeys containsObject:name];
 
+}
+
+
+#pragma mark - Adapting protocol
+
+- (STMFmdbTransaction *)beginTransactionReadOnly:(BOOL)readOnly{
+
+    STMFmdbOperation* operation = [[STMFmdbOperation asynchronousOperation] initWithReadOnly:readOnly stmFMDB:self];
+    
+    if (readOnly){
+
+        [self.operationPoolQueue addOperation:operation];
+
+        [operation waitUntilTransactionIsReady];
+
+    }else{
+
+        [self.operationQueue addOperation:operation];
+
+        [operation waitUntilTransactionIsReady];
+        
+    }
+    
+    return operation.transaction;
+    
+}
+
+- (void)endTransaction:(STMFmdbTransaction *)transaction withSuccess:(BOOL)success{
+
+    STMFmdbOperation *operation = (STMFmdbOperation*)transaction.operation;
+    
+    operation.success = success;
+    
+    [operation finish];
+    
 }
 
 @end

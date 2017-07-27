@@ -31,7 +31,7 @@
 
 @implementation STMSocketTransport
 
-+ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner {
++ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner remoteDataEventHandling:(id <STMRemoteDataEventHandling>)remoteDataEventHandling{
     
     STMLogger *logger = [STMLogger sharedLogger];
     
@@ -53,6 +53,7 @@
     socketTransport.entityResource = entityResource;
     socketTransport.owner = owner;
     socketTransport.logger = logger;
+    socketTransport.remoteDataEventHandling = remoteDataEventHandling;
     
     [socketTransport startSocket];
     
@@ -133,8 +134,12 @@
                         @(STMSocketEventReconnect),
                         @(STMSocketEventReconnectAttempt),
                         @(STMSocketEventRemoteCommands),
+                        @(STMSocketEventRemoteRequests),
                         @(STMSocketEventData),
-                        @(STMSocketEventJSData)];
+                        @(STMSocketEventJSData),
+                        @(STMSocketEventUpdate),
+                        @(STMSocketEventUpdateCollection),
+                        @(STMSocketEventDestroy)];
     
     for (NSNumber *eventNum in events) {
         [self addHandlerForEvent:eventNum.integerValue];
@@ -184,6 +189,22 @@
                 break;
             }
                 
+            case STMSocketEventRemoteRequests: {
+                [self remoteRequestsEventHandleWithData:data ack:ack];
+                break;
+            }
+            
+            case STMSocketEventUpdateCollection:
+            case STMSocketEventUpdate: {
+                [self updateEventHandleWithData:data ack:ack];
+                break;
+            }
+                
+            case STMSocketEventDestroy: {
+                [self destroyEventHandleWithData:data ack:ack];
+                break;
+            }
+                
             case STMSocketEventReconnectAttempt:
             case STMSocketEventError:
             case STMSocketEventStatusChange:
@@ -205,6 +226,7 @@
 
 @synthesize isReady = _isReady;
 @synthesize owner = _owner;
+@synthesize remoteDataEventHandling = _remoteDataEventHandling;
 
 
 - (BOOL)isReady {
@@ -263,23 +285,33 @@
         
     NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
     
-    if (!value || !primaryKey) {
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData !value || !primaryKey"]);
-    }
-        
-    NSDictionary *dataDic = @{primaryKey : value};
-    
-    dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-    
     NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
     
-    if (!dataDic) {
-        NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
-        NSLog(message);
-        return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+    if (value && primaryKey) {
+        
+        NSDictionary *dataDic = @{primaryKey : value};
+        
+        dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
+        
+        if (!dataDic) {
+            NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
+            NSLog(message);
+            return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
+        }
+        
+        [self.socket emit:eventStringValue with:@[dataDic]];
+        
+    }else if (value){
+    
+        [self.socket emit:eventStringValue with:@[value]];
+        
+    }else{
+        
+        [self.socket emit:eventStringValue with:@[]];
+        
     }
     
-    [self.socket emit:eventStringValue with:@[dataDic]];
+    
     
 }
 
@@ -301,7 +333,17 @@
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
     
     [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:self.timeout callback:^(NSArray *data) {
+        
         [self receiveAckWithData:data forEventNum:eventNum];
+        
+        NSArray *downloadableEntityNames = [STMEntityController downloadableEntityNames];
+        
+        NSArray *downloadableEntityResources = [STMFunctions mapArray:downloadableEntityNames withBlock:^id _Nonnull(NSString *_Nonnull value) {
+            return [STMEntityController resourceForEntity:value];
+        }];
+        
+        [self socketSendEvent:STMSocketEventSubscribe withValue:downloadableEntityResources];
+        
     }];
 
 }
@@ -323,6 +365,59 @@
 
 }
 
+- (void)remoteRequestsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    
+    if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
+        NSDictionary* response = [STMRemoteController receiveRemoteRequests:data.firstObject];
+        
+        response = [STMFunctions validJSONDictionaryFromDictionary:response];
+        
+        [ack with:@[response]];
+    }
+    
+}
+
+- (void)updateEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    
+    NSDictionary *receivedData = data.firstObject;
+    
+    if ([STMFunctions isNotNull:receivedData[@"resource"]]){
+        
+        NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
+        
+        NSDictionary *data = receivedData[@"data"];
+        
+        if (data && data[@"id"]){
+            
+            [self.remoteDataEventHandling remoteUpdated:entityName attributes:data];
+            
+        } else {
+            [self.remoteDataEventHandling remoteHasNewData:entityName];
+        }
+        
+    }
+    
+}
+
+- (void)destroyEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    
+    NSDictionary *receivedData = data.firstObject;
+    
+    if ([STMFunctions isNotNull:receivedData[@"resource"]]){
+        
+        NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
+        
+        NSString *identifier = receivedData[@"data"][@"id"];
+        
+        if (identifier){
+            
+            [self.remoteDataEventHandling remoteDestroyed:entityName identifier:identifier];
+            
+        }
+        
+    }
+    
+}
 
 #pragma mark - ack handlers
 
@@ -520,12 +615,32 @@
             return @"remoteCommands";
             break;
         }
+        case STMSocketEventRemoteRequests: {
+            return @"remoteRequests";
+            break;
+        }
         case STMSocketEventData: {
             return @"data:v1";
             break;
         }
         case STMSocketEventJSData: {
             return @"jsData";
+            break;
+        }
+        case STMSocketEventSubscribe: {
+            return @"jsData:subscribe";
+            break;
+        }
+        case STMSocketEventUpdate: {
+            return @"jsData:update";
+            break;
+        }
+        case STMSocketEventUpdateCollection: {
+            return @"jsData:updateCollection";
+            break;
+        }
+        case STMSocketEventDestroy: {
+            return @"jsData:destroy";
             break;
         }
         default: {
@@ -560,6 +675,7 @@
         return STMSocketEventData;
     } else if ([stringValue isEqualToString:@"jsData"]) {
         return STMSocketEventJSData;
+        
     } else {
         return STMSocketEventInfo;
     }
@@ -576,6 +692,9 @@
         case STMSocketEventInfo:
         case STMSocketEventAuthorization:
         case STMSocketEventRemoteCommands:
+            break;
+        case STMSocketEventSubscribe:
+            primaryKey = nil;
             break;
         case STMSocketEventData: {
             primaryKey = @"data";

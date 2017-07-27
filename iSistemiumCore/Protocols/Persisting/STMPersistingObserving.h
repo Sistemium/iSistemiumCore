@@ -32,6 +32,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId;
 
+- (void)notifyObservingEntityName:(NSString *)entityName
+                        ofUpdated:(NSDictionary *)item
+                          options:(STMPersistingOptions _Nullable)options;
+
+- (void)notifyObservingEntityName:(NSString *)entityName
+                   ofUpdatedArray:(NSArray *)items
+                          options:(STMPersistingOptions _Nullable)options;
+
 @optional
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName

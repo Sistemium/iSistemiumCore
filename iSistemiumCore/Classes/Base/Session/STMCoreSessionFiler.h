@@ -17,4 +17,8 @@
 - (instancetype)initWithOrg:(NSString *)org
                      userId:(NSString *)uid;
 
++ (NSDictionary *)JSONOfAllFiles;
+
++ (NSDictionary *)JSONOfFilesAtPath:(NSString *)path;
+
 @end
