@@ -1053,7 +1053,14 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
             
             validDictionary[keyString] = [self validJSONArrayFromArray:dictionary[key]];
             
-        } else if (![dictionary[key] isKindOfClass:[NSString class]]) {
+        } else if ([dictionary[key] isKindOfClass:[NSDate class]]) {
+            
+            validDictionary[keyString] = [[STMFunctions dateFormatterWithMilliseconds] stringFromDate:dictionary[key]];
+            
+        }
+        else if (![dictionary[key] isKindOfClass:[NSString class]]
+                   && ![dictionary[key] isKindOfClass:[@YES class]]
+                   && ![dictionary[key] isKindOfClass:[NSNull class]]) {
             
             validDictionary[keyString] = [dictionary[key] description];
             
