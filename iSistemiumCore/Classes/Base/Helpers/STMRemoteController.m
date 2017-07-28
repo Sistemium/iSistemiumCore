@@ -117,7 +117,7 @@
         
     } else {
         
-        NSString *logMessage = [NSString stringWithFormat:@"%@ have no method %@", NSStringFromClass([theClass class]), methodName];
+        NSString *logMessage = [NSString stringWithFormat:@"%@ has no method %@", NSStringFromClass([theClass class]), methodName];
         [STMFunctions error:error withMessage:logMessage];
         
     }
