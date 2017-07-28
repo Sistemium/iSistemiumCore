@@ -114,6 +114,7 @@
     self.settingsController = [[self settingsControllerClass] controllerWithSettings:self.startSettings defaultSettings:self.defaultSettings];
     self.settingsController.persistenceDelegate = self.persistenceDelegate;
     self.settingsController.session = self;
+    self.controllers[NSStringFromClass([self settingsControllerClass])] = self.settingsController;
     
     [self.persistenceDelegate beforeMergeEntityName:STM_SETTING_NAME interceptor:self.settingsController];
     [self.persistenceDelegate beforeMergeEntityName:STM_RECORDSTATUS_NAME

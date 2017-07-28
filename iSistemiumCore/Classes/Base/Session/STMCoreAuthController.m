@@ -547,7 +547,7 @@
 
 - (void)startSession {
     
-#if defined (CONFIGURATION_DebugWarehouse)
+#if defined CONFIGURATION_DebugWarehouse || CONFIGURATION_DebugShipping
 
 //    NSLog(@"CONFIGURATION_DebugWarehouse — use local socket");
 //    self.socketURL = @"http://localhost:8000/socket.io-client/";

@@ -27,8 +27,11 @@
     return [[self alloc] initWithSettings:startSettings defaultSettings:(NSDictionary *)defaultSettings];
 }
 
-- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
-    return [self currentSettingsForGroup:group][settingsName];
++ (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
+    
+    return [[self session].settingsController currentSettingsForGroup:group][settingsName];
+//    return [[self sharedInstance] currentSettingsForGroup:group][settingsName];
+    
 }
 
 - (instancetype)initWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings{
@@ -66,6 +69,7 @@
     
 }
 
+
 #pragma mark - SettingsController protocol
 
 - (NSArray *)currentSettings {
@@ -76,11 +80,9 @@
     
 }
 
-
 - (NSArray *)groupNames {
     return [self.currentSettings valueForKeyPath:@"@distinctUnionOfObjects.group"];
 }
-
 
 - (NSDictionary *)currentSettingsForGroup:(NSString *)group {
     
@@ -123,8 +125,12 @@
     
 }
 
-#pragma mark - Public methods
+- (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group {
+    return [[self class] stringValueForSettings:settingsName forGroup:group];
+}
 
+
+#pragma mark - Public methods
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key {
     

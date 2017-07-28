@@ -161,7 +161,7 @@ STMBarCodeScannerDelegate>
 
 - (NSString *)webViewUrlString {
     
-    //    return @"http://maxbook.local:3000";
+//        return @"http://maxbook.local:3000";
     //    return @"https://isissales.sistemium.com/";
     //    return @"https://sistemium.com";
     
@@ -172,7 +172,7 @@ STMBarCodeScannerDelegate>
 
 - (NSString *)webViewAppManifestURI {
     
-    //    return nil;
+//        return nil;
     //    return @"https://isd.sistemium.com/app.manifest";
     //    return @"https://r50.sistemium.com/app.manifest";
     //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
