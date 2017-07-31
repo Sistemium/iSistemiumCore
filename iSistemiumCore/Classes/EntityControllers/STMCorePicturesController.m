@@ -872,18 +872,13 @@
         NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
         
         [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
-            if (!result){
-                
-                [self.persistenceDelegate mergeSync:entityName attributes:attributes options:nil error:&error];
-                
-            }
-            if (!error) {
+            
+            if (!error && result) {
                 
                 [self removeImageFile:imagePath withEntityName:entityName];
                 
-            }else{
-                NSLog(@"error: %@", error);
             }
+            
         }];
 
     }];
