@@ -166,8 +166,10 @@
     
     NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
     NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
-    NSArray *groupBy = options[STMPersistingOptionGroupBy];
+    NSMutableArray *groupBy = [options[STMPersistingOptionGroupBy] mutableCopy];
     
+    [groupBy removeObject:@""];
+                               
     if (offset) {
         offset -= 1;
         offset *= pageSize;
