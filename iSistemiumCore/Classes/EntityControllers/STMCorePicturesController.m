@@ -441,7 +441,7 @@
             
             NSLog(@"photoData && photoData.length > 0");
             
-            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName andUpload:NO];
+            attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName];
             
             // mv it at begining of if(photoData && photoData.length > 0){…}? why we check it here?
             if (!picture) continue;
@@ -563,7 +563,7 @@
 
 }
 
-- (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName andUpload:(BOOL)shouldUpload{
+- (NSDictionary *)setImagesFromData:(NSData *)data forPicture:(NSDictionary *)picture withEntityName:(NSString *)entityName{
     
     NSString *xid = picture[STMPersistingKeyPrimary];
     NSString *fileName = [xid stringByAppendingString:@".jpg"];
@@ -576,18 +576,6 @@
     NSData *resizedData = [self saveResizedImageFile:[@"resized_" stringByAppendingString:fileName] forPicture:mutablePicture fromImageData:data withEntityName:entityName];
     
     result = !!resizedData;
-    
-    if (shouldUpload) {
-        
-        data = [self saveImageFile:fileName forPicture:mutablePicture fromImageData:data withEntityName:entityName];
-        
-        result = !!data;
-        
-        [self uploadImageEntityName:entityName attributes:mutablePicture.copy data:data];
-        
-    }else{
-        mutablePicture[@"imagePath"] = mutablePicture[@"resizedImagePath"];
-    }
     
     NSLog(@"saveThumbnail: %@", fileName);
     
@@ -763,7 +751,7 @@
             
             if (connectionError) return resolve(connectionError);
                 
-            NSDictionary *pictureWithPaths = [self setImagesFromData:data forPicture:attributes withEntityName:entityName andUpload:NO];
+            NSDictionary *pictureWithPaths = [self setImagesFromData:data forPicture:attributes withEntityName:entityName].mutableCopy;
             
             NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
             
@@ -772,7 +760,7 @@
                                       STMPersistingOptionSetTs: @NO
                                       };
             
-            resolve([self.persistenceDelegate update:entityName attributes:pictureWithPaths.copy options:options]);
+            resolve([self.persistenceDelegate update:entityName attributes:pictureWithPaths options:options]);
 
         }];
 

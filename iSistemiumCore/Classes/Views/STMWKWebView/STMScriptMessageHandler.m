@@ -295,7 +295,9 @@
     
     CGFloat jpgQuality = [STMCorePicturesController.sharedController jpgQuality];
     
-    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
+    NSData *jpgData = UIImageJPEGRepresentation(image, jpgQuality);
+    
+    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:jpgData].mutableCopy;
     
     if (!attributes) {
         self.waitingPhoto = NO;
@@ -309,6 +311,7 @@
         [self.owner callbackWithData:@[result]
                     parameters:self.takePhotoMessageParameters
             jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        [STMCorePhotosController uploadPhotoEntityName:self.photoEntityName antributes:result photoData:jpgData];
     })
     .catch(^(NSError *error) {
         NSLog(error.localizedDescription);
