@@ -24,7 +24,7 @@
 
 - (void)dataReceivedSuccessfully:(BOOL)success
                       entityName:(NSString *)entityName
-                          result:(NSArray *)result
+                    dataRecieved:(NSArray *)dataRecieved
                           offset:(NSString *)offset
                         pageSize:(NSUInteger)pageSize
                            error:(NSError *)error;

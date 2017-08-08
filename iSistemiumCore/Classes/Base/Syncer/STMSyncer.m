@@ -743,7 +743,7 @@
 
         [self.dataDownloadingDelegate dataReceivedSuccessfully:success
                                                     entityName:entityName
-                                                        result:result
+                                                  dataRecieved:result
                                                         offset:offset
                                                       pageSize:pageSize
                                                          error:error];

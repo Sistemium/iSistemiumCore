@@ -333,7 +333,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.downloadingDelegate dataReceivedSuccessfully:YES
                                                 entityName:entityName
-                                                    result:nil
+                                              dataRecieved:nil
                                                     offset:offset
                                                   pageSize:0
                                                      error:nil];

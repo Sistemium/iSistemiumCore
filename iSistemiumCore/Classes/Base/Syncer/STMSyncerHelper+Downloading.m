@@ -172,7 +172,7 @@
 }
 
 
-- (void)dataReceivedSuccessfully:(BOOL)success entityName:(NSString *)entityName result:(NSArray *)result offset:(NSString *)offset pageSize:(NSUInteger)pageSize error:(NSError *)error {
+- (void)dataReceivedSuccessfully:(BOOL)success entityName:(NSString *)entityName dataRecieved:(NSArray *)dataRecieved offset:(NSString *)offset pageSize:(NSUInteger)pageSize error:(NSError *)error {
     
     if (!success) {
         return [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
@@ -182,7 +182,7 @@
         return [self receivingDidFinishWithError:@"called parseFindAllAckResponseData with empty entityName"];
     }
     
-    if (!result.count) {
+    if (!dataRecieved.count) {
 //        NSLog(@"    %@: have no new data", entityName);
         return [self doneDownloadingEntityName:entityName];
     }
@@ -192,13 +192,13 @@
         return [self doneDownloadingEntityName:entityName];
     }
     
-    [self.persistenceDelegate mergeManyAsync:entityName attributeArray:result options:@{STMPersistingOptionLtsNow} completionHandler:^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) {
+    [self.persistenceDelegate mergeManyAsync:entityName attributeArray:dataRecieved options:@{STMPersistingOptionLtsNow} completionHandler:^(STMP_ASYNC_ARRAY_RESULT_CALLBACK_ARGS) {
         
         if (!success) {
             return [self doneDownloadingEntityName:entityName errorMessage:error.localizedDescription];
         }
         
-        [self findAllResultMergedWithSuccess:result entityName:entityName offset:offset pageSize:pageSize];
+        [self findAllResultMergedWithSuccess:dataRecieved entityName:entityName offset:offset pageSize:pageSize];
         
     }];
 
