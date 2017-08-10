@@ -587,6 +587,8 @@
         return nil;
     }
     
+    mutablePicture[@"imagePath"] = mutablePicture[@"resizedImagePath"];
+    
     return mutablePicture.copy;
     
 }
