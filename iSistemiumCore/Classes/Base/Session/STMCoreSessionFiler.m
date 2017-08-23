@@ -278,7 +278,7 @@
 
 #pragma mark - remote controller
 
-+ (NSDictionary *)getFileArrayforPath:(NSString*)path {
++ (NSDictionary *)getFileArrayforPath:(NSString*)path currentLevel:(BOOL)currentLevel{
     
     NSFileManager *fm = [NSFileManager defaultManager];
     NSMutableDictionary *dictionary = @{}.mutableCopy;
@@ -292,7 +292,7 @@
         [fm fileExistsAtPath:fullPath isDirectory:&isDirectory];
         
         if (isDirectory){
-            dictionary[file] = [self getFileArrayforPath:fullPath];
+            dictionary[file] = currentLevel ? @{} : [self getFileArrayforPath:fullPath currentLevel:currentLevel];
         } else {
             NSDictionary *atr = [fm attributesOfItemAtPath:fullPath error:nil];
             dictionary[file] = @{@"NSFileSize":atr[@"NSFileSize"],
@@ -308,7 +308,7 @@
 
 + (NSDictionary *)JSONOfAllFiles {
 
-    NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory]];
+    NSDictionary* dictionary = [self getFileArrayforPath:[STMFunctions documentsDirectory] currentLevel:NO];
     
     return dictionary;
 
@@ -318,7 +318,17 @@
     
     path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
     
-    NSDictionary* dictionary = [self getFileArrayforPath:path];
+    NSDictionary* dictionary = [self getFileArrayforPath:path currentLevel:NO];
+    
+    return dictionary;
+    
+}
+
++ (NSDictionary *)levelFilesAtPath:(NSString *)path {
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSDictionary* dictionary = [self getFileArrayforPath:path currentLevel:YES];
     
     return dictionary;
     

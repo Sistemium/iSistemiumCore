@@ -21,4 +21,6 @@
 
 + (NSDictionary *)JSONOfFilesAtPath:(NSString *)path;
 
++ (NSDictionary *)levelFilesAtPath:(NSString *)path;
+
 @end
