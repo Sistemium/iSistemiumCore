@@ -769,6 +769,10 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler handleTakePhotoMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_CMERA_ROLL]) {
+        
+        [self.scriptMessageHandler handleSendToCameraRollMessage:message];
+        
         // persistence messages
         
     } else if ([message.name isEqualToString:WK_MESSAGE_GET_PICTURE]) {

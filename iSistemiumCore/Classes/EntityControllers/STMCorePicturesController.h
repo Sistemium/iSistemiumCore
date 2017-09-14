@@ -32,4 +32,6 @@
 
 - (NSData *)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName;
 
+- (UIImage *)imageFileForPrimaryKey:(NSString *)idendtifier;
+
 @end

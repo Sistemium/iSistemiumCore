@@ -692,6 +692,28 @@
     
 }
 
+- (UIImage *)imageFileForPrimaryKey:(NSString *)idendtifier{
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, idendtifier];
+    
+    NSDictionary *picture = [self allPicturesWithPredicate:predicate].firstObject;
+    
+    if (!picture){
+        return nil;
+    }
+    
+    NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:picture[@"attributes"][@"imagePath"]];
+    
+    if ([self.filing fileExistsAtPath:imagePath]) {
+        
+        return [UIImage imageWithContentsOfFile:imagePath];
+        
+    }
+    
+    return nil;
+    
+    
+}
 
 #pragma mark - queues
 

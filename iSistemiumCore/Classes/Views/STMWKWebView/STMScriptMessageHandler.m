@@ -10,6 +10,7 @@
 #import "STMImagePickerController.h"
 #import "STMCorePicturesController.h"
 #import "STMCorePhotosController.h"
+#import <Photos/Photos.h>
 
 @implementation STMScriptMessagingSubscription
 
@@ -95,6 +96,42 @@
     }
     
     [self performSelector:@selector(checkImagePickerWithSourceTypeNumber:) withObject:@(imageSource) afterDelay:0];
+    
+}
+
+- (void)handleSendToCameraRollMessage:(WKScriptMessage *)message {
+    
+    NSString *callback = message.body[@"callback"];
+    NSString *imageID = message.body[@"imageID"];
+    NSString *imageURL = message.body[@"imageURL"];
+    
+    UIImage *image = [STMCorePicturesController.sharedController imageFileForPrimaryKey:imageID];
+    
+    if (!image){
+        NSURL *url = [NSURL URLWithString:imageURL];
+        NSData *data = [NSData dataWithContentsOfURL:url];
+        image = [UIImage imageWithData:data];
+    }
+    
+    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if (status == PHAuthorizationStatusAuthorized) {
+        
+        [self.owner callbackWithData:@{@"success":@YES, @"title":NSLocalizedString(@"SAVE TO CAMERA ROLL", nil)}
+                          parameters:nil
+                  jsCallbackFunction:callback];
+        
+    }
+    
+    else if (status == PHAuthorizationStatusDenied) {
+        
+        [self.owner callbackWithData:@{@"success":@NO, @"title":NSLocalizedString(@"IMPOSSIBLE TO SAVE", nil), @"detail":NSLocalizedString(@"GIVE PERMISSIONS", nil)}
+                          parameters:nil
+                  jsCallbackFunction:callback];
+
+    }
     
 }
 
