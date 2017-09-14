@@ -40,6 +40,36 @@
 
 }
 
++ (NSNumber *)countRemote:(NSDictionary *)data{
+    
+    NSError *error = nil;
+    
+    NSString * entityName = data[@"entityName"];
+    
+    NSString *predicateFormat = data[@"predicateFormat"];
+    
+    NSDictionary *options = data[@"options"];
+    
+    NSPredicate *predicate = predicateFormat ? [NSPredicate predicateWithFormat:predicateFormat] : nil;
+    
+    NSNumber *response = 0;
+    
+    if (!entityName){
+        [STMFunctions error:&error withMessage:@"No entity name given"];
+    }else{
+        response = [NSNumber numberWithUnsignedInteger:[self.persistenceDelegate countSync:entityName predicate:predicate options:options error:&error]];
+    }
+    
+    if (error){
+        
+        [NSException raise:@"findAllRemote exception" format:@"%@", [error localizedDescription]];
+        
+    }
+    
+    return response;
+    
+}
+
 + (NSString *)destroyAllRemote:(NSDictionary *)data{
 
     NSError *error = nil;
