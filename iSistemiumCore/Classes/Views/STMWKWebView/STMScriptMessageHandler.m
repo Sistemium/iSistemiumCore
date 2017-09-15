@@ -101,9 +101,11 @@
 
 - (void)handleSendToCameraRollMessage:(WKScriptMessage *)message {
     
-    NSString *callback = message.body[@"callback"];
-    NSString *imageID = message.body[@"imageID"];
-    NSString *imageURL = message.body[@"imageURL"];
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+    NSString *imageID = parameters[@"imageID"];
+    NSString *imageURL = parameters[@"imageURL"];
     
     UIImage *image = [STMCorePicturesController.sharedController imageFileForPrimaryKey:imageID];
     
@@ -119,16 +121,16 @@
     
     if (status == PHAuthorizationStatusAuthorized) {
         
-        [self.owner callbackWithData:@{@"success":@YES, @"title":NSLocalizedString(@"SAVE TO CAMERA ROLL", nil)}
-                          parameters:nil
+        [self.owner callbackWithData:@[]
+                          parameters:parameters
                   jsCallbackFunction:callback];
         
     }
     
     else if (status == PHAuthorizationStatusDenied) {
         
-        [self.owner callbackWithData:@{@"success":@NO, @"title":NSLocalizedString(@"IMPOSSIBLE TO SAVE", nil), @"detail":NSLocalizedString(@"GIVE PERMISSIONS", nil)}
-                          parameters:nil
+        [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+                          parameters:parameters
                   jsCallbackFunction:callback];
 
     }
