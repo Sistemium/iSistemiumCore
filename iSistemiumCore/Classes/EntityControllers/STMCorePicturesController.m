@@ -702,6 +702,14 @@
         return nil;
     }
     
+    NSString *path = picture[@"attributes"][@"imagePath"];
+    
+    if ([STMFunctions isNull:path]){
+    
+        return nil;
+        
+    }
+    
     NSString *imagePath = [[self.filing picturesBasePath] stringByAppendingPathComponent:picture[@"attributes"][@"imagePath"]];
     
     if ([self.filing fileExistsAtPath:imagePath]) {
