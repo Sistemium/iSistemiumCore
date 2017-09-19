@@ -35,6 +35,8 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (void)handleSendToCameraRollMessage:(WKScriptMessage *)message;
 
+- (void)handleLoadImageMessage:(WKScriptMessage *)message;
+
 - (void)handleGetPictureMessage:(WKScriptMessage *)message;
 
 - (void)receiveFindMessage:(WKScriptMessage *)message;

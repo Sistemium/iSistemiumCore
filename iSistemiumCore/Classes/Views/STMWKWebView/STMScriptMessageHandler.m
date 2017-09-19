@@ -150,24 +150,23 @@
     
 }
 
+- (void)handleLoadImageMessage:(WKScriptMessage *)message {
     
-    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    NSDictionary *parameters = message.body;
+    NSString *callback = parameters[@"callback"];
+    NSString *identifier = parameters[@"imageID"];
     
-    if (status == PHAuthorizationStatusAuthorized) {
-        
-        [self.owner callbackWithData:@[]
+    [STMCorePicturesController.sharedController loadImageForPrimaryKey:identifier]
+    .then(^ (NSDictionary *downloadedPicture){
+        [self.owner callbackWithData:@[downloadedPicture]
                           parameters:parameters
                   jsCallbackFunction:callback];
-        
-    }
-    
-    else if (status == PHAuthorizationStatusDenied) {
-        
-        [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+    })
+    .catch(^ (NSError *error) {
+        [self.owner callbackWithData:@""
                           parameters:parameters
                   jsCallbackFunction:callback];
-
-    }
+    });
     
 }
 
