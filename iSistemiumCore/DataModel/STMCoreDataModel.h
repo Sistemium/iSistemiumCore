@@ -9,7 +9,7 @@
 #ifndef iSistemium_STMCoreDataModel_h
 #define iSistemium_STMCoreDataModel_h
 
-#warning we have no need in NSManagedObject's classes, FMDB use only .xcdatamodeld file
+// we have no need in NSManagedObject's classes, FMDB use only .xcdatamodeld file
 
 #import "STMBarCodeType.h"
 #import "STMBarCodeScan.h"

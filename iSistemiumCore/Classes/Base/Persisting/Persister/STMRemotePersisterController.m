@@ -10,7 +10,7 @@
 
 @implementation STMRemotePersisterController
 
-+ (NSArray *)findAllRemote:(NSDictionary *)data{
++ (NSArray *)findAllRemote:(NSDictionary *) data {
     
     NSError *error = nil;
     

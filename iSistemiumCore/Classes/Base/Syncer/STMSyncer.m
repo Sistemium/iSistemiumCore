@@ -175,8 +175,10 @@
         
         if (isSendingData) {
             
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-            [self sendStarted];
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                [self sendStarted];
+            }];
             
         } else {
             
@@ -713,15 +715,18 @@
 
     [self startDefantomization];
 
-    UIApplication *app = [UIApplication sharedApplication];
-    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)app.delegate;
-    
-    if (appDelegate.haveFetchCompletionHandlers) {
-    
-        [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
-        [self closeSocketInBackgroundAfterFetch];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        UIApplication *app = [UIApplication sharedApplication];
+        STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *)app.delegate;
         
-    }
+        if (appDelegate.haveFetchCompletionHandlers) {
+            
+            [appDelegate completeFetchCompletionHandlersWithResult:UIBackgroundFetchResultNewData];
+            [self closeSocketInBackgroundAfterFetch];
+            
+        }
+    }];
+
     
 }
 
