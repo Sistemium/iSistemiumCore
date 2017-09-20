@@ -1032,15 +1032,18 @@ STMBarCodeScannerDelegate>
     
     //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
     
-    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
-        
-        //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
-        if (error) {
-            NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
-        }
-        
-    }];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
     
+        [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
+            
+            //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
+            if (error) {
+                NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
+            }
+            
+        }];
+    }];
+
 }
 - (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters {
     [self callbackWithData:data parameters:parameters jsCallbackFunction:self.iSistemiumIOSCallbackJSFunction];
