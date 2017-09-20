@@ -1298,7 +1298,13 @@
 
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 22, 22)];
     self.syncImageView = imageView;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:imageView];
+    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithCustomView:imageView];
+    NSLayoutConstraint * widthConstraint = [NSLayoutConstraint constraintWithItem:imageView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:22];
+    NSLayoutConstraint * heightConstraint = [NSLayoutConstraint constraintWithItem:imageView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:22];
+    self.navigationItem.rightBarButtonItem = button;
+    [widthConstraint setActive:YES];
+    [heightConstraint setActive:YES];
+    
 
 //    self.lastLocationImageView.image = [self.lastLocationImageView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
