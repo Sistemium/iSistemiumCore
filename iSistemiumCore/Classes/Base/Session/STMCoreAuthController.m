@@ -658,7 +658,7 @@
     
     if ([STMFunctions isCorrectPhoneNumber:phoneNumber]) {
         
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        [STMFunctions setNetworkActivityIndicatorVisible:YES];
         
         self.phoneNumber = phoneNumber;
         
@@ -676,7 +676,7 @@
                                                                 object:self
                                                               userInfo:@{@"error": @"No connection"}];
             
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+            [STMFunctions setNetworkActivityIndicatorVisible:NO];
             
             return NO;
 
@@ -692,7 +692,7 @@
     
     if ([STMFunctions isCorrectSMSCode:SMSCode]) {
 
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+        [STMFunctions setNetworkActivityIndicatorVisible:YES];
 
         NSString *urlString = [NSString stringWithFormat:@"%@?smsCode=%@&ID=%@", AUTH_URL, SMSCode, self.requestID];
         NSURLRequest *request = [self requestForURL:urlString];
@@ -708,7 +708,7 @@
                                                                 object:self
                                                               userInfo:@{@"error": NSLocalizedString(@"NO CONNECTION", nil)}];
             
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+            [STMFunctions setNetworkActivityIndicatorVisible:NO];
             
             self.controllerState = STMAuthEnterPhoneNumber;
 
@@ -731,7 +731,7 @@
 
 - (BOOL)requestRoles {
     
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [STMFunctions setNetworkActivityIndicatorVisible:YES];
     
     NSURLRequest *request = [self authenticateRequest:[self requestForURL:ROLES_URL]];
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
@@ -788,7 +788,7 @@
                                                             object:self
                                                           userInfo:@{@"error": error.localizedDescription}];
         
-        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
     }
 
@@ -817,7 +817,7 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
     
     [self parseResponse:self.responseData fromConnection:connection];
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    [STMFunctions setNetworkActivityIndicatorVisible:NO];
     self.responseData = nil;
     
 }

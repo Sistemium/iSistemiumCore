@@ -945,7 +945,11 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)appStateString {
     
-    UIApplicationState appState = [UIApplication sharedApplication].applicationState;
+    __block UIApplicationState appState;
+    
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        appState = [UIApplication sharedApplication].applicationState;
+    });
     
     NSString *appStateString = nil;
     
@@ -1388,6 +1392,14 @@ vm_size_t freeMemory(void) {
     result[@"function"] = array[functionIndex];
     
     return result;
+    
+}
+
++ (void)setNetworkActivityIndicatorVisible:(BOOL)visible{
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = visible;
+    });
     
 }
 

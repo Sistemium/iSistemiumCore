@@ -158,7 +158,7 @@
         _isDefantomizing = isDefantomizing;
         
         if (isDefantomizing) {
-            [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+            [STMFunctions setNetworkActivityIndicatorVisible:YES];
         } else {
             [self turnOffNetworkActivityIndicator];
         }
@@ -176,7 +176,7 @@
         if (isSendingData) {
             
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+                [STMFunctions setNetworkActivityIndicatorVisible:YES];
                 [self sendStarted];
             }];
             
@@ -194,7 +194,7 @@
     
     if (!self.isUsingNetwork) {
         
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        STMFunctions.networkActivityIndicatorVisible = NO;
         [self checkSyncerState];
         
     }
@@ -217,7 +217,15 @@
 }
 
 - (NSTimeInterval)timeout {
-    return ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
+    
+    __block NSTimeInterval result;
+    
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        result = ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
+    });
+    
+    return result;
+
 }
 
 - (BOOL)transportIsReady {
