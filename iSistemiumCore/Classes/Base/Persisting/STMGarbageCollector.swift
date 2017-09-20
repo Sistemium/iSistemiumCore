@@ -15,7 +15,8 @@ extension Set {
     }
 }
 
-@objc class STMGarbageCollector:NSObject{
+@objcMembers
+class STMGarbageCollector:NSObject{
     
     static let sharedInstance = STMGarbageCollector()
     

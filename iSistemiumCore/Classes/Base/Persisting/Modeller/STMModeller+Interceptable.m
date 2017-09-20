@@ -50,7 +50,7 @@
     
 }
 
-- (NSArray *)applyMergeInterceptors:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error {
+- (NSArray *)applyMergeInterceptors:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError * __autoreleasing *)error {
     
     NSObject <STMPersistingMergeInterceptor> *interceptor = [self.beforeMergeInterceptors objectForKey:entityName];
     

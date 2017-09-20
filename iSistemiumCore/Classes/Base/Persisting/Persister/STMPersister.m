@@ -46,7 +46,7 @@
 #pragma mark - STMPersistingSync
 
 
-- (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+- (NSUInteger)countSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError * __autoreleasing *)error {
     
     __block NSUInteger result = 0;
     
@@ -85,7 +85,7 @@
 }
 
 
-- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+- (NSDictionary *)mergeSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError * __autoreleasing *)error{
     
     attributes = [self applyMergeInterceptors:entityName attributes:attributes options:options error:error];
     
@@ -116,7 +116,7 @@
     
 }
 
-- (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error{
+- (NSArray *)mergeManySync:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError * __autoreleasing *)error{
     
     __block NSMutableArray *result = @[].mutableCopy;
     
@@ -165,7 +165,7 @@
     
 }
 
-- (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error{
+- (NSUInteger)destroyAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError * __autoreleasing *)error{
     
     __block NSUInteger count;
     
@@ -181,7 +181,7 @@
     
 }
 
-- (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error{
+- (NSDictionary *)updateSync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError * __autoreleasing *)error{
     
     __block NSDictionary *result;
     
