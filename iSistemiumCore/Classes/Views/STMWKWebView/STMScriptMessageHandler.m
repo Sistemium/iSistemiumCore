@@ -105,35 +105,68 @@
     
     NSString *callback = parameters[@"callback"];
     NSString *imageID = parameters[@"imageID"];
-    NSString *imageURL = parameters[@"imageURL"];
     
-    UIImage *image = [STMCorePicturesController.sharedController imageFileForPrimaryKey:imageID];
-    
-    if (!image){
-        NSURL *url = [NSURL URLWithString:imageURL];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        image = [UIImage imageWithData:data];
-    }
-    
-    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
-    
-    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
-    
-    if (status == PHAuthorizationStatusAuthorized) {
+    [STMCorePicturesController.sharedController loadImageForPrimaryKey:imageID]
+    .then(^ (NSDictionary *downloadedPicture){
         
-        [self.owner callbackWithData:@[]
-                          parameters:parameters
-                  jsCallbackFunction:callback];
+        UIImage *image = [STMCorePicturesController.sharedController imageFileForPrimaryKey:downloadedPicture[STMPersistingKeyPrimary]];
         
-    }
-    
-    else if (status == PHAuthorizationStatusDenied) {
-        
-        [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
-                          parameters:parameters
-                  jsCallbackFunction:callback];
+        if (!image){
 
-    }
+            return [self.owner callbackWithData:@""
+                                     parameters:parameters
+                             jsCallbackFunction:callback];
+            
+        }
+        
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+        
+        PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+        
+        if (status == PHAuthorizationStatusAuthorized) {
+            
+            [self.owner callbackWithData:@[]
+                              parameters:parameters
+                      jsCallbackFunction:callback];
+            
+        }
+        
+        else if (status == PHAuthorizationStatusDenied) {
+            
+            [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+                              parameters:parameters
+                      jsCallbackFunction:callback];
+            
+        }
+        
+    })
+    .catch(^ (NSError *error) {
+       
+        return [self.owner callbackWithData:@""
+                                 parameters:parameters
+                         jsCallbackFunction:callback];
+        
+    });
+    
+}
+
+- (void)handleLoadImageMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    NSString *callback = parameters[@"callback"];
+    NSString *identifier = parameters[@"imageID"];
+    
+    [STMCorePicturesController.sharedController loadImageForPrimaryKey:identifier]
+    .then(^ (NSDictionary *downloadedPicture){
+        [self.owner callbackWithData:@[downloadedPicture]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+    })
+    .catch(^ (NSError *error) {
+        [self.owner callbackWithData:@""
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+    });
     
 }
 

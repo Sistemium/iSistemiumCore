@@ -34,4 +34,6 @@
 
 - (UIImage *)imageFileForPrimaryKey:(NSString *)idendtifier;
 
+- (AnyPromise *)loadImageForPrimaryKey:(NSString *)idendtifier;
+
 @end

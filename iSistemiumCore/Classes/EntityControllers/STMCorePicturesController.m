@@ -720,7 +720,23 @@
     
     return nil;
     
+}
+
+- (AnyPromise *)loadImageForPrimaryKey:(NSString *)idendtifier{
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, idendtifier];
     
+    NSDictionary *picture = [self allPicturesWithPredicate:predicate].firstObject;
+    
+    if (!picture){
+        return nil;
+    }
+    
+    NSDictionary *attributes = picture[@"attributes"];
+    NSString *entityName = picture[@"entityName"];
+    
+    return [self downloadImagesEntityName:entityName attributes:attributes];
+
 }
 
 #pragma mark - queues
