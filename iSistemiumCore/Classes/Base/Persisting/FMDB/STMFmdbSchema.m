@@ -251,7 +251,8 @@
     } else {
         
         NSLog(@"model migrating NOT SUCCESS");
-        return nil;
+#warning TODO return the same as if success because we don't know what to do otherwise
+        return self.columnsDictionary.copy;
         
     }
     
