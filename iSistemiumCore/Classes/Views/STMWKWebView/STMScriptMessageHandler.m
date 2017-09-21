@@ -119,25 +119,27 @@
             
         }
         
-        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
-        
-        PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
-        
-        if (status == PHAuthorizationStatusAuthorized) {
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
             
-            [self.owner callbackWithData:@[]
-                              parameters:parameters
-                      jsCallbackFunction:callback];
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
             
-        }
-        
-        else if (status == PHAuthorizationStatusDenied) {
+            if (status == PHAuthorizationStatusAuthorized) {
+                
+                [self.owner callbackWithData:@[]
+                                  parameters:parameters
+                          jsCallbackFunction:callback];
+                
+            }
             
-            [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
-                              parameters:parameters
-                      jsCallbackFunction:callback];
+            else {
+                
+                [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+                                  parameters:parameters
+                          jsCallbackFunction:callback];
+                
+            }
             
-        }
+        }];
         
     })
     .catch(^ (NSError *error) {
