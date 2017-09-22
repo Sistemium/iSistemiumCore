@@ -39,6 +39,7 @@ STMBarCodeScannerDelegate>
 
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
 @property (nonatomic, strong) STMBarCodeScanner *iOSModeBarCodeScanner;
+@property (nonatomic, strong) STMBarCodeScanner *HIDModeBarCodeScanner;
 @property (nonatomic, strong) STMCoreAppManifestHandler *appManifestHandler;
 @property (nonatomic, strong) STMLogger *logger;
 
@@ -1155,7 +1156,10 @@ int counter = 0;
 #pragma mark - barcode scanning
 
 - (void)startBarcodeScanning {
-    [self startIOSModeScanner];
+    
+//    [self startIOSModeScanner];
+    [self startHIDModeScanner];
+    
 }
 
 - (void)startIOSModeScanner {
@@ -1170,14 +1174,38 @@ int counter = 0;
     
 }
 
+- (void)startHIDModeScanner {
+    
+    self.HIDModeBarCodeScanner = [[STMBarCodeScanner alloc] initWithMode:STMBarCodeScannerHIDKeyboardMode];
+    self.HIDModeBarCodeScanner.delegate = self;
+    [self.HIDModeBarCodeScanner startScan];
+    
+    if ([self.HIDModeBarCodeScanner isDeviceConnected]) {
+        [self scannerIsConnected];
+    }
+    
+}
+
 - (void)stopBarcodeScanning {
-    [self stopIOSModeScanner];
+    
+//    [self stopIOSModeScanner];
+    [self stopHIDModeScanner];
+    
 }
 
 - (void)stopIOSModeScanner {
     
     [self.iOSModeBarCodeScanner stopScan];
     self.iOSModeBarCodeScanner = nil;
+    
+    [self scannerIsDisconnected];
+    
+}
+
+- (void)stopHIDModeScanner {
+    
+    [self.HIDModeBarCodeScanner stopScan];
+    self.HIDModeBarCodeScanner = nil;
     
     [self scannerIsDisconnected];
     
