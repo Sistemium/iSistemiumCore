@@ -356,6 +356,10 @@
     
 }
 
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField {
+    return [textField isEqual:self.hiddenBarCodeTextField] ? NO : YES;
+}
+
 
 #pragma mark - STMBarCodeScannerIOSMode
 
