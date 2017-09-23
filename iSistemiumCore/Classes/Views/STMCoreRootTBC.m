@@ -917,7 +917,7 @@
                                    style:UIAlertActionStyleCancel
                                    handler:nil];
         
-        [_authAlert addAction: okButton];
+        [_lowFreeSpaceAlert addAction: okButton];
 
     }
     return _lowFreeSpaceAlert;
