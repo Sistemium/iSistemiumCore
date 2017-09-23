@@ -334,4 +334,22 @@
     
 }
 
++ (NSString *)removeFilesAtPath:(NSString *)path {
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSError *error = nil;
+    
+    [fm removeItemAtPath:path error:&error];
+    
+    if (error){
+        return [error localizedDescription];
+    }
+    
+    return @"";
+    
+}
+
 @end

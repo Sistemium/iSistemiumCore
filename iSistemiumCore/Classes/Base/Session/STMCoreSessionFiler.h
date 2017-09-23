@@ -23,4 +23,6 @@
 
 + (NSDictionary *)levelFilesAtPath:(NSString *)path;
 
++ (NSString *)removeFilesAtPath:(NSString *)path;
+
 @end
