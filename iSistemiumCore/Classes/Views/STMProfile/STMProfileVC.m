@@ -26,6 +26,7 @@
 #import "iSistemiumCore-Swift.h"
 
 #import "STMUserDefaults.h"
+#import "STMIdleTimerController.h"
 
 
 #define UPLOAD_FILE_NAME @"Upload To Cloud-100"
@@ -152,7 +153,9 @@
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
         self.progressBar.hidden = YES;
-        [UIApplication sharedApplication].idleTimerDisabled = NO;
+        [STMIdleTimerController sender:NSStringFromClass([self class])
+                  askIdleTimerDisabled:NO];
+//        [UIApplication sharedApplication].idleTimerDisabled = NO;
         
     }];
     
@@ -203,7 +206,9 @@
         [self setColorForSyncImageView];
 
         self.fantomsCount = [notification.userInfo[@"fantomsCount"] integerValue];
-        [UIApplication sharedApplication].idleTimerDisabled = YES;
+        [STMIdleTimerController sender:NSStringFromClass([self class])
+                  askIdleTimerDisabled:YES];
+//        [UIApplication sharedApplication].idleTimerDisabled = YES;
         
         self.progressBar.hidden = NO;
         self.progressBar.progress = 0.0;
@@ -550,7 +555,9 @@
         self.nonloadedPicturesButton.enabled = NO;
         
         [STMCorePicturesController sharedController].downloadingPictures = NO;
-        [UIApplication sharedApplication].idleTimerDisabled = NO;
+        [STMIdleTimerController sender:NSStringFromClass([self class])
+                  askIdleTimerDisabled:NO];
+//        [UIApplication sharedApplication].idleTimerDisabled = NO;
 
     }
     
@@ -718,7 +725,9 @@
     
     [STMCorePicturesController.sharedController checkPhotos];
     [STMCorePicturesController sharedController].downloadingPictures = YES;
-    [UIApplication sharedApplication].idleTimerDisabled = YES;
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:YES];
+//    [UIApplication sharedApplication].idleTimerDisabled = YES;
 
     [self updateNonloadedPicturesInfo];
     
@@ -727,7 +736,9 @@
 - (void)stopPicturesDownloading {
     
     [STMCorePicturesController sharedController].downloadingPictures = NO;
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:NO];
+//    [UIApplication sharedApplication].idleTimerDisabled = NO;
     
     [self updateNonloadedPicturesInfo];
 
@@ -870,7 +881,9 @@
 
     BOOL syncerIsIdle = YES;
     self.progressBar.hidden = syncerIsIdle;
-    [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:!syncerIsIdle];
+//    [UIApplication sharedApplication].idleTimerDisabled = !syncerIsIdle;
     
     self.locationWarningLabel.text = @"";
     
@@ -1332,7 +1345,11 @@
     }
     
     if ([STMCorePicturesController sharedController].downloadingPictures) {
-        [UIApplication sharedApplication].idleTimerDisabled = YES;
+        
+        [STMIdleTimerController sender:NSStringFromClass([self class])
+                  askIdleTimerDisabled:YES];
+//        [UIApplication sharedApplication].idleTimerDisabled = YES;
+        
     }
     
 }
@@ -1341,7 +1358,9 @@
     
     [super viewWillDisappear:animated];
     
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:NO];
+//    [UIApplication sharedApplication].idleTimerDisabled = NO;
 
 }
 
