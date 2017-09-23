@@ -24,6 +24,7 @@
 #import "STMCoreUI.h"
 
 #import "STMScriptMessageHandler.h"
+#import "STMIdleTimerController.h"
 
 
 @interface STMCoreWKWebViewVC () <WKNavigationDelegate,
@@ -1180,6 +1181,10 @@ int counter = 0;
     self.HIDModeBarCodeScanner.delegate = self;
     [self.HIDModeBarCodeScanner startScan];
     
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:YES];
+//    [UIApplication sharedApplication].idleTimerDisabled = YES;
+    
     if ([self.HIDModeBarCodeScanner isDeviceConnected]) {
         [self scannerIsConnected];
     }
@@ -1207,6 +1212,10 @@ int counter = 0;
     [self.HIDModeBarCodeScanner stopScan];
     self.HIDModeBarCodeScanner = nil;
     
+    [STMIdleTimerController sender:NSStringFromClass([self class])
+              askIdleTimerDisabled:NO];
+//    [UIApplication sharedApplication].idleTimerDisabled = NO;
+
     [self scannerIsDisconnected];
     
 }
