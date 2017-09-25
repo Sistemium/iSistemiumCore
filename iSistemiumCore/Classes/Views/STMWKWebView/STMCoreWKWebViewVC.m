@@ -920,6 +920,10 @@ STMBarCodeScannerDelegate>
     self.scannerScanJSFunction = message.body[@"scanCallback"];
     self.scannerPowerButtonJSFunction = message.body[@"powerButtonCallback"];
     
+    if (message.body[@"scannerHIDMode"]) {
+        self.scannerHIDMode = [message.body[@"scannerHIDMode"] boolValue];
+    }
+    
     [self startBarcodeScanning];
     
 }
