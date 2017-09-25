@@ -1199,6 +1199,10 @@ int counter = 0;
 
 - (void)startIOSModeScanner {
     
+    if (self.iOSModeBarCodeScanner) {
+        return;
+    }
+    
     self.iOSModeBarCodeScanner = [[STMBarCodeScanner alloc] initWithMode:STMBarCodeScannerIOSMode];
     self.iOSModeBarCodeScanner.delegate = self;
     [self.iOSModeBarCodeScanner startScan];
@@ -1210,6 +1214,10 @@ int counter = 0;
 }
 
 - (void)startHIDModeScanner {
+    
+    if (self.HIDModeBarCodeScanner) {
+        return;
+    }
     
     self.HIDModeBarCodeScanner = [[STMBarCodeScanner alloc] initWithMode:STMBarCodeScannerHIDKeyboardMode];
     self.HIDModeBarCodeScanner.delegate = self;
