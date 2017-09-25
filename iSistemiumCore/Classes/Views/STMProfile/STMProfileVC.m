@@ -141,7 +141,7 @@
         [alertController addAction:cancelAction];
         [alertController addAction:okAction];
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -643,7 +643,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
 
@@ -683,7 +683,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
 }
@@ -768,7 +768,7 @@
             [alertController addAction:noAction];
             [alertController addAction:yesAction];
             
-            [self presentViewController:alertController animated:YES completion:nil];
+            [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
             self.downloadAlertWasShown = YES;
 
@@ -831,7 +831,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -1016,7 +1016,7 @@
                 message:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK MESSAGE", nil)
                 preferredStyle:UIAlertControllerStyleAlert];
             
-            [self presentViewController:self.locationDisabledAlert animated:YES completion:nil];
+            [self.tabBarController presentViewController:self.locationDisabledAlert animated:YES completion:nil];
             
         }];
         
