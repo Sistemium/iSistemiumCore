@@ -115,7 +115,7 @@ STMBarCodeScannerDelegate>
 - (BOOL)scannerHIDMode {
     
     if (!_scannerHIDMode) {
-        _scannerHIDMode = YES; // TODO: get mode from settings and/or from webview message
+        _scannerHIDMode = [[[self webViewSettings] valueForKey:@"scannerHIDMode"] boolValue];
     }
     return _scannerHIDMode;
     
