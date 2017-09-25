@@ -926,16 +926,16 @@
 
 - (void)showLowFreeSpaceAlert {
     
-    if (!self.lowFreeSpaceAlertWasShown) {
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    
+        if (!self.lowFreeSpaceAlertWasShown) {
             
-            self.lowFreeSpaceAlertWasShown = YES;
-            [self presentViewController:self.lowFreeSpaceAlert animated:YES completion:nil];
+                self.lowFreeSpaceAlertWasShown = YES;
+                [self presentViewController:self.lowFreeSpaceAlert animated:YES completion:nil];
             
-        }];
+        }
         
-    }
+    }];
     
 }
 
