@@ -46,6 +46,7 @@ STMBarCodeScannerDelegate>
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
+@property (nonatomic) BOOL scannerHIDMode;
 @property (nonatomic, strong) NSString *unsyncedInfoJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;
@@ -63,6 +64,9 @@ STMBarCodeScannerDelegate>
 
 
 @implementation STMCoreWKWebViewVC
+
+@synthesize scannerHIDMode = _scannerHIDMode;
+
 
 - (NSObject <STMPersistingPromised,STMPersistingAsync,STMPersistingSync> *)persistenceDelegate {
     
@@ -105,6 +109,35 @@ STMBarCodeScannerDelegate>
         _logger = [STMLogger sharedLogger];
     }
     return _logger;
+    
+}
+
+- (BOOL)scannerHIDMode {
+    
+    if (!_scannerHIDMode) {
+        _scannerHIDMode = YES; // TODO: get mode from settings and/or from webview message
+    }
+    return _scannerHIDMode;
+    
+}
+
+- (void)setScannerHIDMode:(BOOL)scannerHIDMode {
+    
+    if (scannerHIDMode != _scannerHIDMode) {
+
+        _scannerHIDMode = scannerHIDMode;
+
+        if (self.HIDModeBarCodeScanner) {
+            [self stopHIDModeScanner];
+            [self startIOSModeScanner];
+        }
+        
+        if (self.iOSModeBarCodeScanner) {
+            [self stopIOSModeScanner];
+            [self startHIDModeScanner];
+        }
+
+    }
     
 }
 
@@ -1157,10 +1190,7 @@ int counter = 0;
 #pragma mark - barcode scanning
 
 - (void)startBarcodeScanning {
-    
-//    [self startIOSModeScanner];
-    [self startHIDModeScanner];
-    
+    self.scannerHIDMode ? [self startHIDModeScanner] : [self startIOSModeScanner];
 }
 
 - (void)startIOSModeScanner {
@@ -1192,10 +1222,7 @@ int counter = 0;
 }
 
 - (void)stopBarcodeScanning {
-    
-//    [self stopIOSModeScanner];
-    [self stopHIDModeScanner];
-    
+    self.scannerHIDMode ? [self stopHIDModeScanner] : [self stopIOSModeScanner];
 }
 
 - (void)stopIOSModeScanner {
