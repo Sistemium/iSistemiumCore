@@ -157,7 +157,8 @@
                                 @"deviceMotionUpdate",
                                 @"enableDownloadViaWWAN",
                                 @"getLocationsWithNegativeSpeed",
-                                @"blockIfNoLocationPermission"];
+                                @"blockIfNoLocationPermission",
+                                @"scannerHIDMode"];
         
         NSArray *boolValueSuffixes = @[@"TrackerAutoStart"];
         
