@@ -1384,26 +1384,34 @@ int counter = 0;
 
 - (void)deviceArrivalForBarCodeScanner:(STMBarCodeScanner *)scanner {
     
-    if (scanner == self.iOSModeBarCodeScanner) {
-        
-        [STMSoundController say:NSLocalizedString(@"SCANNER DEVICE ARRIVAL", nil)];
-        
-        [self scannerIsConnected];
-        
+    if (!self.iOSModeBarCodeScanner && !self.HIDModeBarCodeScanner) {
+        return;
     }
+    
+    if (scanner == self.iOSModeBarCodeScanner) {
+        [STMSoundController say:NSLocalizedString(@"SCANNER DEVICE ARRIVAL", nil)];
+    } else if (scanner == self.HIDModeBarCodeScanner) {
+        [STMSoundController say:NSLocalizedString(@"HID SCANNER DEVICE ARRIVAL", nil)];
+    }
+
+    [self scannerIsConnected];
     
 }
 
 - (void)deviceRemovalForBarCodeScanner:(STMBarCodeScanner *)scanner {
-    
+
+    if (!self.iOSModeBarCodeScanner && !self.HIDModeBarCodeScanner) {
+        return;
+    }
+
     if (scanner == self.iOSModeBarCodeScanner) {
-        
         [STMSoundController say:NSLocalizedString(@"SCANNER DEVICE REMOVAL", nil)];
-        
-        [self scannerIsDisconnected];
-        
+    } else if (scanner == self.HIDModeBarCodeScanner) {
+        [STMSoundController say:NSLocalizedString(@"HID SCANNER DEVICE ARRIVAL", nil)];
     }
     
+    [self scannerIsDisconnected];
+
 }
 
 
