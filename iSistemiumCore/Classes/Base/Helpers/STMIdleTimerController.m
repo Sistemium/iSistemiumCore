@@ -43,11 +43,7 @@
 }
 
 + (void)sender:(NSString *)senderName askIdleTimerDisabled:(BOOL)disabled {
-    
-    NSLog(@"%@ %@", senderName, @(disabled));
-    
     disabled ? [self disableBySender:senderName] : [self enableBySender:senderName];
-    
 }
 
 + (void)disableBySender:(NSString *)senderName {
