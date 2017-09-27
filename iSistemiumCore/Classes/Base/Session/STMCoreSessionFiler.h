@@ -25,4 +25,6 @@
 
 + (NSString *)removeFilesAtPath:(NSString *)path;
 
++ (NSString *)base64ofFileAtPath:(NSString *)path;
+
 @end

@@ -352,4 +352,14 @@
     
 }
 
++ (NSString *)base64ofFileAtPath:(NSString *)path{
+    
+    path = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSData* file = [NSData dataWithContentsOfFile:path];
+    
+    return [file base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    
+}
+
 @end
