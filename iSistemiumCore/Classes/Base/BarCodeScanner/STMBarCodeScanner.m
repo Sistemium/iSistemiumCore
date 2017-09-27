@@ -313,7 +313,6 @@
 
 - (void)prepareForHIDScanMode {
     
-    
     self.hiddenBarCodeTextField = [[UITextField alloc] init];
     
     self.hiddenBarCodeTextField.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -333,6 +332,13 @@
     
     [[self.delegate viewForScanner:self] addSubview:self.hiddenBarCodeTextField];
     
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"Connect HID scanner"
+                                             numType:STMLogMessageTypeImportant];
+
+    if ([self.delegate respondsToSelector:@selector(deviceArrivalForBarCodeScanner:)]) {
+        [self.delegate deviceArrivalForBarCodeScanner:self];
+    }
+
 }
 
 - (void)finishHIDScanMode {
@@ -342,6 +348,13 @@
     self.hiddenBarCodeTextField.delegate = nil;
     self.hiddenBarCodeTextField = nil;
     
+    [[STMLogger sharedLogger] saveLogMessageWithText:@"Disconnect HID scanner"
+                                             numType:STMLogMessageTypeImportant];
+    
+    if ([self.delegate respondsToSelector:@selector(deviceRemovalForBarCodeScanner:)]) {
+        [self.delegate deviceRemovalForBarCodeScanner:self];
+    }
+
 }
 
 
