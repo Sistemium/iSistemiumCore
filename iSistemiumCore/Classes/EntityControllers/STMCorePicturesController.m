@@ -779,13 +779,17 @@
         
         NSString *href = attributes[@"href"];
         
-        if (![STMFunctions isNotNull:href] || ![self.pictureEntitiesNames containsObject:entityName]) {
-            return resolve([STMFunctions errorWithMessage:@"no href or not a Picture"]);
+        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) {
+            
+            if ([STMFunctions isNotNull:href]){
+                [self didProcessHref:href];
+            }
+            
+            return resolve(attributes);
         }
         
-        if ([STMFunctions isNotNull:attributes[@"imagePath"]]) {
-            [self didProcessHref:href];
-            return resolve(attributes);
+        if (![STMFunctions isNotNull:href] || ![self.pictureEntitiesNames containsObject:entityName]) {
+            return resolve([STMFunctions errorWithMessage:@"no href or not a Picture"]);
         }
         
         NSURL *url = [NSURL URLWithString:href];
