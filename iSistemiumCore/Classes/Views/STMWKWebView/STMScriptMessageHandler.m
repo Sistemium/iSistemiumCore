@@ -11,6 +11,7 @@
 #import "STMCorePicturesController.h"
 #import "STMCorePhotosController.h"
 #import <Photos/Photos.h>
+#import "STMLogger.h"
 
 @implementation STMScriptMessagingSubscription
 
@@ -389,6 +390,8 @@
     })
     .catch(^(NSError *error) {
         NSLog(error.localizedDescription);
+        NSString *logMessage = [NSString stringWithFormat:@"Error on merge during saveImage: %@", [error localizedDescription]];
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
         [self.owner callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
     })
     .always(^(){

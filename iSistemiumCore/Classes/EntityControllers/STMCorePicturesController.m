@@ -919,6 +919,11 @@
                 
             }
             
+            if (error){
+                NSString *logMessage = [NSString stringWithFormat:@"Error on update after upload: %@", [error localizedDescription]];
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
+            }
+            
         }];
 
     }];
