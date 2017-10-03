@@ -924,6 +924,13 @@
                 [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
             }
             
+            if (!result){
+                
+                NSString *logMessage = @"No update result after upload";
+                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
+                
+            }
+            
         }];
 
     }];
