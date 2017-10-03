@@ -63,16 +63,16 @@
         self.finishedIn = -[self.startedAt timeIntervalSinceNow];
     }
     
+    if (!_finished && !self.isCancelled && _executing) {
+        [self willChangeValueForKey:@"isFinished"];
+        _finished = YES;
+        [self didChangeValueForKey:@"isFinished"];
+    }
+    
     if (_executing) {
         [self willChangeValueForKey:@"isExecuting"];
         _executing = NO;
         [self didChangeValueForKey:@"isExecuting"];
-    }
-    
-    if (!_finished && !self.isCancelled) {
-        [self willChangeValueForKey:@"isFinished"];
-        _finished = YES;
-        [self didChangeValueForKey:@"isFinished"];
     }
     
 }
