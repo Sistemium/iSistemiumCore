@@ -167,15 +167,15 @@
         return [self checkAuthorizationStatus];
     }
     
-    UIView *view = [[UIView alloc] initWithFrame:self.cameraOverlayView.frame];
-    view.backgroundColor = [UIColor grayColor];
-    view.alpha = 0.75;
-    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    spinner.center = view.center;
-    [spinner startAnimating];
-    [view addSubview:spinner];
-    
-    [self.cameraOverlayView addSubview:view];
+//    UIView *view = [[UIView alloc] initWithFrame:self.cameraOverlayView.frame];
+//    view.backgroundColor = [UIColor grayColor];
+//    view.alpha = 0.75;
+//    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+//    spinner.center = view.center;
+//    [spinner startAnimating];
+//    [view addSubview:spinner];
+//    
+//    [self.cameraOverlayView addSubview:view];
     
     [self takePicture];
     

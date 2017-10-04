@@ -327,7 +327,7 @@
     imagePickerController.ownerVC = self;
     
     [self.owner.tabBarController presentViewController:imagePickerController animated:YES completion:^{
-        [self.owner.view addSubview:self.spinnerView];
+//        [self.owner.view addSubview:self.spinnerView];
     }];
     
 }
@@ -346,8 +346,8 @@
 
 - (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
     
-    [self.spinnerView removeFromSuperview];
-    self.spinnerView = nil;
+//    [self.spinnerView removeFromSuperview];
+//    self.spinnerView = nil;
     
     self.waitingPhoto = NO;
     

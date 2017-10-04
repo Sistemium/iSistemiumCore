@@ -1488,11 +1488,10 @@ int counter = 0;
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeImportant];
     
-    logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
-    
     if ([STMFunctions isAppInBackground]) {
+        logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeImportant];
         [self flushWebView];
     }
     
