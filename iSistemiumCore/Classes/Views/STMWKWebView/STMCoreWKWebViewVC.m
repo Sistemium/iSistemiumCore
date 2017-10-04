@@ -537,7 +537,7 @@ STMBarCodeScannerDelegate>
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeError];
     
-    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+    if ([STMFunctions isAppInBackground]) {
         [self flushWebView];
     } else {
         [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
@@ -1492,7 +1492,9 @@ int counter = 0;
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeImportant];
     
-    [self flushWebView];
+    if ([STMFunctions isAppInBackground]) {
+        [self flushWebView];
+    }
     
 }
 

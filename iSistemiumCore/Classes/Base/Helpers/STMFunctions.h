@@ -148,6 +148,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary *)callerInfo;
 
 + (void)setNetworkActivityIndicatorVisible:(BOOL)visible;
++ (BOOL)isAppInBackground;
 
 
 NS_ASSUME_NONNULL_END
