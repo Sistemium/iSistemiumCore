@@ -329,9 +329,9 @@
         
         _currentAccuracy = currentAccuracy;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"currentAccuracyUpdated"
-                                                            object:self 
-                                                          userInfo:@{@"isAccuracySufficient":@(self.isAccuracySufficient)}];
+        NSDictionary *userInfo = @{@"isAccuracySufficient":@(self.isAccuracySufficient)};
+        
+        [self postAsyncMainQueueNotification:@"currentAccuracyUpdated" userInfo:userInfo];
 
     }
     
@@ -717,10 +717,9 @@
     CLLocationAccuracy previousAccuracy = self.currentAccuracy;
     self.currentAccuracy = newLocation.horizontalAccuracy;
     
-    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
-        self.currentAccuracy > 0) {
+    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL && self.currentAccuracy > 0) {
 
-        BOOL shouldSaveLocation = ([self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits]);
+        BOOL shouldSaveLocation = [self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits];
         
         if ([self isAccuracySufficient] && shouldSaveLocation) {
             
