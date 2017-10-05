@@ -799,9 +799,17 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler receiveDestroyMessage:message];
         
-    } else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
-        
+    }else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
+
         [self handleUnsyncedInfoMessage:message];
+
+    }else if ([message.name isEqualToString:WK_MESSAGE_SAVE_IMAGE]) {
+        
+        [self.scriptMessageHandler handleSaveImageMessage:message];
+        
+    }else if ([message.name isEqualToString:WK_MESSAGE_COPY_CLIPBOARD]) {
+        
+        [self.scriptMessageHandler handleCopyToClipboardMessage:message];
         
     }
     

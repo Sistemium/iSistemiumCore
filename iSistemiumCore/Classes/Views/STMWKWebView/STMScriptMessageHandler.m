@@ -100,6 +100,22 @@
     
 }
 
+- (void)handleCopyToClipboardMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+    NSString *text = parameters[@"text"];
+    
+    UIPasteboard *pb = [UIPasteboard generalPasteboard];
+    [pb setString:text];
+    
+    [self.owner callbackWithData:@[]
+                      parameters:parameters
+              jsCallbackFunction:callback];
+    
+}
+
 - (void)handleSendToCameraRollMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
@@ -177,6 +193,23 @@
     
     NSDictionary *parameters = message.body;
     [self handleGetPictureParameters:parameters];
+    
+}
+
+- (void)handleSaveImageMessage:(WKScriptMessage *)message {
+    
+    self.takePhotoMessageParameters = message.body;
+    self.takePhotoCallbackJSFunction = self.takePhotoMessageParameters[@"callback"];
+    
+    self.photoEntityName = self.takePhotoMessageParameters[@"entityName"];
+    self.photoData = self.takePhotoMessageParameters[@"data"];
+    
+    NSString *base64String = self.takePhotoMessageParameters[@"imageData"];
+    NSURL *url = [NSURL URLWithString:base64String];
+    NSData *imageData = [NSData dataWithContentsOfURL:url];
+    UIImage *image = [UIImage imageWithData:imageData];
+    
+    [self saveImage:image];
     
 }
 
