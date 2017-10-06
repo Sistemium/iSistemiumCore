@@ -1045,7 +1045,12 @@ STMBarCodeScannerDelegate>
     //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-    
+        
+        if (!self.webView.window){
+            NSLog(@"Not Visible, but handled");
+            return;
+        }
+        
         [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
             
             //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
@@ -1370,6 +1375,11 @@ int counter = 0;
     
     NSString *checkJS = @"window.document.body.childNodes.length";
     
+    if (!self.webView.window) {
+        NSLog(@"Visible");
+        return;
+    }
+
     [self.webView evaluateJavaScript:checkJS completionHandler:^(id result, NSError *error) {
         
         if (error) {
