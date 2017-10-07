@@ -1047,7 +1047,7 @@ STMBarCodeScannerDelegate>
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
         if (!self.webView.window){
-            NSLog(@"Not Visible, but handled");
+//            NSLog(@"Not Visible, but handled");
             return;
         }
         
@@ -1376,7 +1376,7 @@ int counter = 0;
     NSString *checkJS = @"window.document.body.childNodes.length";
     
     if (!self.webView.window) {
-        NSLog(@"Visible");
+        NSLog(@"Webview is not visible");
         return;
     }
 
