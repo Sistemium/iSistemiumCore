@@ -415,17 +415,25 @@
     [attributes addEntriesFromDictionary:self.photoData];
     
     [self.persistenceDelegate merge:self.photoEntityName attributes:attributes.copy options:nil]
-    .then(^(NSDictionary * result) {
+    .then(^(NSDictionary *result) {
+        
         [self.owner callbackWithData:@[result]
                     parameters:self.takePhotoMessageParameters
             jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        
         [STMCorePhotosController uploadPhotoEntityName:self.photoEntityName antributes:result photoData:jpgData];
+        
     })
     .catch(^(NSError *error) {
+        
         NSLog(error.localizedDescription);
-        NSString *logMessage = [NSString stringWithFormat:@"Error on merge during saveImage: %@", [error localizedDescription]];
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Error on merge during saveImage: %@", error.localizedDescription];
+        
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
+        
         [self.owner callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
+        
     })
     .always(^(){
         self.waitingPhoto = NO;
