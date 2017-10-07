@@ -151,7 +151,7 @@
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [picker dismissViewControllerAnimated:NO completion:^{
-        [self.ownerVC imagePickerWasDissmised:picker];
+        [self.ownerVC imagePickerControllerDidCancel:picker];
     }];
     
 }
