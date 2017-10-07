@@ -141,56 +141,52 @@
 
     NSMutableDictionary *clientData = [self clientData].mutableCopy;
     
-    if (clientData) {
+    if (!clientData) {
+        return;
+    }
+
+    NSString *entityName = NSStringFromClass([STMClientData class]);
     
-        NSString *entityName = NSStringFromClass([STMClientData class]);
+    NSSet *keys = [[self persistenceDelegate] ownObjectKeysForEntityName:entityName];
+    
+    BOOL haveUpdates = NO;
+    
+    for (NSString *key in keys) {
         
-        NSSet *keys = [[self persistenceDelegate] ownObjectKeysForEntityName:entityName];
+        SEL selector = NSSelectorFromString(key);
         
-        BOOL haveUpdates = NO;
-        
-        for (NSString *key in keys) {
-            
-            SEL selector = NSSelectorFromString(key);
-            
-            if ([self respondsToSelector:selector]) {
-                
-// next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
-                IMP imp = [self methodForSelector:selector];
-                id (*func)(id, SEL) = (void *)imp;
-                id currentValue = func(self, selector);
-                
-                id storedValue = clientData[key];
-                
-                if (![currentValue isEqual:storedValue]) {
-
-                    if ([STMFunctions isNullBoth:currentValue and:storedValue]) continue;
-
-//                    NSLog(@"%@ was changed", key);
-//                    NSLog(@"client value %@", storedValue);
-//                    NSLog(@"new value %@", currentValue);
-                    
-                    clientData[key] = currentValue;
-                    haveUpdates = YES;
-                    
-                }
-                
-            }
-            
+        if (![self respondsToSelector:selector]) {
+            continue;
         }
+            
+        // next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
+        IMP imp = [self methodForSelector:selector];
+        id (*func)(id, SEL) = (void *)imp;
+        id currentValue = func(self, selector);
         
-        if (haveUpdates) {
-
-            [[self persistenceDelegate] mergeAsync:entityName
-                                        attributes:clientData
-                                           options:nil
-                                 completionHandler:nil];
-
+        id storedValue = clientData[key];
+        
+        if ([currentValue isEqual:storedValue]) {
+            continue;
         }
 
+        if ([STMFunctions isNullBoth:currentValue and:storedValue]) {
+            continue;
+        }
+
+        clientData[key] = currentValue;
+        haveUpdates = YES;
+        
     }
     
-//    NSLog(@"clientData %@", clientData);
+    if (haveUpdates) {
+
+        [[self persistenceDelegate] mergeAsync:entityName
+                                    attributes:clientData
+                                       options:nil
+                             completionHandler:nil];
+
+    }
 
 }
 
