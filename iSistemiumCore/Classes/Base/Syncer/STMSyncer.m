@@ -540,6 +540,7 @@
 
 - (void)upload {
     [self sendData];
+    [self.dataSyncingDelegate startSyncing];
 }
 
 - (void)fullSync {
