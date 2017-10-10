@@ -218,11 +218,9 @@
 
 - (NSTimeInterval)timeout {
     
-    __block NSTimeInterval result;
+    [STMFunctions appState];
     
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        result = ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) ? self.httpTimeoutBackground : self.httpTimeoutForeground;
-    });
+    NSTimeInterval result = [STMFunctions appState] ? self.httpTimeoutBackground : self.httpTimeoutForeground;
     
     return result;
 

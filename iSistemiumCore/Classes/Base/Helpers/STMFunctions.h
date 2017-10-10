@@ -114,6 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSString *)shortCompanyName:(nullable NSString *)companyName;
 
 + (NSString *)appStateString;
++ (UIApplicationState)appState;
 
 + (uint64_t)freeDiskspace;
 

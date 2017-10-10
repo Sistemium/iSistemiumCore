@@ -945,11 +945,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 + (NSString *)appStateString {
     
-    __block UIApplicationState appState;
-    
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        appState = [UIApplication sharedApplication].applicationState;
-    });
+    UIApplicationState appState = [self appState];
     
     NSString *appStateString = nil;
     
@@ -972,6 +968,24 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
     }
     return appStateString;
+    
+}
+
++ (UIApplicationState)appState {
+    
+    __block UIApplicationState appState;
+    
+    if (![NSThread isMainThread]) {
+        
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            appState = [UIApplication sharedApplication].applicationState;
+        });
+        
+    }else{
+        appState = [UIApplication sharedApplication].applicationState;
+    }
+    
+    return appState;
     
 }
 
