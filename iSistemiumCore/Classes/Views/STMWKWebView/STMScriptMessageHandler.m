@@ -136,27 +136,7 @@
             
         }
         
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-            
-            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
-            
-            if (status == PHAuthorizationStatusAuthorized) {
-                
-                [self.owner callbackWithData:@[]
-                                  parameters:parameters
-                          jsCallbackFunction:callback];
-                
-            }
-            
-            else {
-                
-                [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
-                                  parameters:parameters
-                          jsCallbackFunction:callback];
-                
-            }
-            
-        }];
+        UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), (__bridge_retained void * _Nullable)(parameters));
         
     })
     .catch(^ (NSError *error) {
@@ -166,6 +146,28 @@
                          jsCallbackFunction:callback];
         
     });
+    
+}
+
+-(void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo{
+    
+    NSDictionary *parameters = (__bridge_transfer NSMutableDictionary *)(contextInfo);
+    
+    NSString *callback = parameters[@"callback"];
+    
+    if (error){
+        
+        [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+        
+    }else{
+        
+        [self.owner callbackWithData:@[]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+        
+    }
     
 }
 
