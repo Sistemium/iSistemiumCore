@@ -1515,18 +1515,13 @@ int counter = 0;
     
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    
-    [super viewWillAppear:animated];
-    
-    [self checkWebViewIsAlive];
-    
-}
 
 - (void)viewDidAppear:(BOOL)animated {
     
     [super viewDidAppear:animated];
     
+    [self checkWebViewIsAlive];
+
     if (self.iOSModeBarCodeScanner) {
         self.iOSModeBarCodeScanner.delegate = self;
     }
