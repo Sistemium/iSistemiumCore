@@ -178,7 +178,23 @@
         STMPersistingObservingSubscriptionID sid =
         [self.persistenceDelegate observeEntity:entityName predicate:predicate options:onlyLocalChanges callback:^(NSArray *data) {
             NSLog(@"observeEntity %@ data count %u", entityName, data.count);
-            [self startHandleUnsyncedObjects];
+            
+            if (data.count && !self.syncingState){
+                for (NSDictionary* object in data){
+                    
+                    NSDictionary *objectToSend = @{
+                                                   @"entityName": entityName,
+                                                   @"object": object
+                                                   };
+                    
+                    [self sendUnsyncedObject:objectToSend];
+                    
+                }
+            }else{
+                [self startHandleUnsyncedObjects];
+            }
+            
+            
         }];
         
         [self.subscriptions addObject:sid];
@@ -268,6 +284,12 @@
     
     NSDictionary *objectToSend = [self anyObjectToSend];
     
+    [self sendUnsyncedObject:objectToSend];
+
+}
+
+- (void)sendUnsyncedObject:(NSDictionary *)objectToSend {
+    
     if (!objectToSend) {
         return [self finishHandleUnsyncedObjects];
     }
@@ -283,7 +305,7 @@
     NSString *itemVersion = itemData[isCoreData ? @"ts" : STMPersistingKeyVersion];
     
     [self.subscriberDelegate haveUnsynced:entityName itemData:itemData itemVersion:itemVersion];
-
+    
 }
 
 - (NSDictionary *)anyObjectToSend {

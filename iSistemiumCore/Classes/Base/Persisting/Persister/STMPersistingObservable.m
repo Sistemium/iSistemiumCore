@@ -126,17 +126,21 @@
 
 - (void)notifyObservingEntityName:(NSString *)entityName ofUpdated:(NSDictionary *)item options:(STMPersistingOptions)options {
     
-    if (!item) return;
+    NSArray * data;
+    
+    if (!item) {
+        data = @[];
+    }else{
+        data = [NSArray arrayWithObject:item];
+    }
     
     [self notifyObservingEntityName:entityName
-                     ofUpdatedArray:[NSArray arrayWithObject:item]
+                     ofUpdatedArray:data
                             options:options];
     
 }
 
 - (void)notifyObservingEntityName:(NSString *)entityName ofUpdatedArray:(NSArray *)items options:(STMPersistingOptions)options;{
-    
-    if (!items.count) return;
     
     for (STMPersistingObservingSubscriptionID key in self.subscriptions.allKeys) {
         

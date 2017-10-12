@@ -109,7 +109,7 @@
     if (*error) return nil;
     
     [self notifyObservingEntityName:[STMFunctions addPrefixToEntityName:entityName]
-                          ofUpdated:result ? result : attributes
+                          ofUpdated:result ? result : nil
                             options:options];
     
     return result.copy;
