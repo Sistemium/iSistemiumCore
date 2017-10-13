@@ -36,5 +36,7 @@
 
 + (void)addChangesObserver:(STMCoreObject *)anObject selector:(SEL)selector;
 
++ (BOOL)downloadableEntityReady;
+
 
 @end

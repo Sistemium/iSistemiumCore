@@ -161,6 +161,8 @@
 - (void)syncerReceiveStarted {
     
     self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
+    
+    self.tabBarController.tabBar.userInteractionEnabled = [STMEntityController downloadableEntityReady];
 
     [self updateSyncInfo];
     
@@ -227,6 +229,7 @@
         
         [self hideProgressBar];
         [self setColorForSyncImageView];
+        self.tabBarController.tabBar.userInteractionEnabled = [STMEntityController downloadableEntityReady];
         
     }];
     

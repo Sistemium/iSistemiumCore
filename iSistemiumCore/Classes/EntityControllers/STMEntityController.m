@@ -21,6 +21,8 @@
 
 @property (nonatomic, strong) STMPersistingObservingSubscriptionID entitySubscriptionID;
 
+@property BOOL downloadableEntityReady;
+
 + (STMEntityController *)sharedInstance;
 
 
@@ -201,6 +203,40 @@
     }];
     
     return [filteredKeys sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:nil ascending:YES]]];
+    
+}
+
++ (BOOL)downloadableEntityReady {
+    
+    if (!self.sharedInstance.downloadableEntityReady){
+        
+        self.sharedInstance.downloadableEntityReady = YES;
+        
+        NSError *error;
+        
+        NSArray <NSDictionary *> *clientEntities = [self.persistenceDelegate findAllSync:@"ClientEntity" predicate:nil options:nil error:&error];
+        
+        NSMutableArray <NSString *> *downloadedEntityNames = @[].mutableCopy;
+        
+        NSArray <NSString *> *downloadableEntityNames = [self downloadableEntityNames];
+        
+        for (NSDictionary *clientEntity in clientEntities){
+            
+            [downloadedEntityNames addObject:[STMFunctions addPrefixToEntityName:clientEntity[@"name"]]];
+            
+        }
+        
+        for (NSString *downloadableEntityName in downloadableEntityNames){
+            
+            if (![downloadedEntityNames containsObject:downloadableEntityName]){
+                self.sharedInstance.downloadableEntityReady = NO;
+            }
+            
+        }
+        
+    }
+    
+    return self.sharedInstance.downloadableEntityReady;
     
 }
 
