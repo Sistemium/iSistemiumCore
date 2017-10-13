@@ -182,13 +182,18 @@
         return [self receivingDidFinishWithError:@"called parseFindAllAckResponseData with empty entityName"];
     }
     
-    if (!dataRecieved.count) {
-//        NSLog(@"    %@: have no new data", entityName);
-        return [self doneDownloadingEntityName:entityName];
+    NSString *currentEtag = [STMClientEntityController clientEntityWithName:entityName][@"eTag"];
+    
+    if ([STMFunctions isNull:currentEtag]){
+        currentEtag = @"";
     }
     
-    if (!offset) {
-//        NSLog(@"    %@: receive data w/o offset", entityName);
+    if (!dataRecieved.count && ![offset isEqualToString:currentEtag]) {
+        
+        [STMClientEntityController clientEntityWithName:entityName setETag:offset];
+    }
+    
+    if (!dataRecieved.count){
         return [self doneDownloadingEntityName:entityName];
     }
     
