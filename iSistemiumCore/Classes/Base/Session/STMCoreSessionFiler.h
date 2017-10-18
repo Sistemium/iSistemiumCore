@@ -27,4 +27,6 @@
 
 + (NSString *)base64ofFileAtPath:(NSString *)path;
 
++ (NSDictionary *)uploadFileAtPath:(NSDictionary *)data;
+
 @end

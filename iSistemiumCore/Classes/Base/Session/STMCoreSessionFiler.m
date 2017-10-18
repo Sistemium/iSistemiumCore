@@ -9,6 +9,8 @@
 #import "STMCoreSessionFiler+Private.h"
 #import "STMFunctions.h"
 #import "STMLogger.h"
+#import "STMClientDataController.h"
+#import "STMCoreSessionManager.h"
 
 @implementation STMCoreSessionFiler
 
@@ -46,7 +48,6 @@
     self.directoring = directoring;
     return self;
 }
-
 
 #pragma mark - STMFiling protocol
 
@@ -278,7 +279,7 @@
 
 #pragma mark - remote controller
 
-+ (NSDictionary *)getFileArrayforPath:(NSString*)path currentLevel:(BOOL)currentLevel{
++ (NSDictionary *)getFileArrayforPath:(NSString*)path currentLevel:(BOOL)currentLevel {
     
     NSFileManager *fm = [NSFileManager defaultManager];
     NSMutableDictionary *dictionary = @{}.mutableCopy;
@@ -359,6 +360,58 @@
     NSData* file = [NSData dataWithContentsOfFile:path];
     
     return [file base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    
+}
+
++ (NSString *)uploadUrl {
+    return [[[STMCoreSessionManager sharedManager].currentSession.syncer.socketUrlString stringByDeletingLastPathComponent] stringByAppendingString:@"/api/upload"];
+}
+
++ (NSURLSessionTask *)uploadFilePath:(NSString*)path sessionID:(NSString*)sessionID{
+
+    NSURL *url = [NSURL URLWithString:[self uploadUrl]];
+    
+    NSString *devicePath = [[STMFunctions documentsDirectory] stringByAppendingPathComponent:path];
+    
+    NSString *uploadId = [NSString stringWithFormat:@"%@%@", [STMClientDataController deviceUUID], path];
+    
+    NSURL * fileUrl = [NSURL URLWithString:devicePath];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    
+    [request setHTTPMethod:@"POST"];
+    
+    [request setValue:[uploadId stringByDeletingLastPathComponent] forHTTPHeaderField:@"x-file-path"];
+    
+    [request setValue:[uploadId lastPathComponent] forHTTPHeaderField:@"x-file-name"];
+    
+    [request setValue:sessionID forHTTPHeaderField:@"x-session-id"];
+
+    NSURLSessionConfiguration * conf = NSURLSessionConfiguration.defaultSessionConfiguration;
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:conf];
+    
+    NSURLSessionUploadTask *task = [session uploadTaskWithRequest:request fromFile:fileUrl completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSLog(@"completed");
+    }];
+
+    [task resume];
+
+    return task;
+
+}
+
++ (NSDictionary *)uploadFileAtPath:(NSDictionary *)data {
+    
+    NSString *path = data[@"path"];
+    
+    NSString *sessionID = data[@"sessionID"];
+    
+    [self uploadFilePath:path sessionID:sessionID];
+    
+    return @{
+             @"uploadStarted": @YES
+             };
     
 }
 
