@@ -25,6 +25,7 @@
 @property (nonatomic,readwrite) BOOL isReceivingData;
 @property (nonatomic,readwrite) BOOL isSendingData;
 
+@property (nonatomic, strong) NSString *socketUrlString;
 
 - (void)checkSocket;
 

@@ -26,7 +26,6 @@
 @property (nonatomic, strong) NSTimer *syncTimer;
 
 @property (nonatomic, strong) NSString *entityResource;
-@property (nonatomic, strong) NSString *socketUrlString;
 @property (nonatomic) NSTimeInterval httpTimeoutForeground;
 @property (nonatomic) NSTimeInterval httpTimeoutBackground;
 
