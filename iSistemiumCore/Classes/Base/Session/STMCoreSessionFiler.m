@@ -367,7 +367,7 @@
     return [[[STMCoreSessionManager sharedManager].currentSession.syncer.socketUrlString stringByDeletingLastPathComponent] stringByAppendingString:@"/api/upload"];
 }
 
-+ (NSURLSessionTask *)uploadFilePath:(NSString*)path sessionID:(NSString*)sessionID{
++ (NSURLSessionTask *)uploadFilePath:(NSString*)path sessionID:(NSString*)sessionID {
 
     NSURL *url = [NSURL URLWithString:[self uploadUrl]];
     
@@ -392,7 +392,13 @@
     NSURLSession *session = [NSURLSession sessionWithConfiguration:conf];
     
     NSURLSessionUploadTask *task = [session uploadTaskWithRequest:request fromFile:fileUrl completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSLog(@"completed");
+        
+        if (error) {
+            
+            [STMLogger.sharedLogger errorMessage:[NSString stringWithFormat:@"uploadFilePath error: %@", [error localizedDescription]]];
+            
+        }
+        
     }];
 
     [task resume];
