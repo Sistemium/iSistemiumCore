@@ -25,5 +25,7 @@
 
 - (NSDictionary *)currentDBScheme;
 
+- (void)addEntity:(NSEntityDescription *)entity;
+
 
 @end

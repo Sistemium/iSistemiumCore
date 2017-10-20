@@ -12,12 +12,13 @@
 
 @interface STMPersisterRunner()
 
-@property (nonatomic, strong) NSDictionary<NSNumber *, id<STMAdapting>>* adapters;
 @property (nonatomic, strong) id <STMModelling,STMPersistingObserving> persister;
 
 @end
 
 @implementation STMPersisterRunner
+
+@synthesize adapters;
 
 - (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters{
     

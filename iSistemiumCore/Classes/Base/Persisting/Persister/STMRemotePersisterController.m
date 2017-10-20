@@ -7,6 +7,9 @@
 //
 
 #import "STMRemotePersisterController.h"
+#import "STMPersister.h"
+#import "STMFmdb+Private.h"
+#import "STMFmdbSchema.h"
 
 @implementation STMRemotePersisterController
 
@@ -99,5 +102,37 @@
     return [NSString stringWithFormat:@"%lu rows deleted",(unsigned long)response];
     
 }
+
++ (NSArray *)syncFMDB{
+    
+    NSMutableArray *result = @[].mutableCopy;
+    
+    STMPersister *persister = (STMPersister *) self.persistenceDelegate;
+    
+    STMFmdb * fmdb = (STMFmdb *) persister.runner.adapters[@(STMStorageTypeFMDB)];
+    
+    NSManagedObjectModel *managedObjectModel = self.persistenceDelegate.managedObjectModel;
+    
+    STMFmdbSchema *schema = [STMFmdbSchema fmdbSchemaForDatabase:fmdb.database];
+    
+    for (NSEntityDescription *entity in managedObjectModel.entities) {
+        
+        NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
+        
+        if (![fmdb.database tableExists:tableName]){
+            
+            [schema addEntity:entity];
+            [result addObject:entity.name];
+            
+        }else{
+            NSLog(@"%@ not exists", tableName);
+        }
+    }
+    
+    return result;
+    
+}
+
+
 
 @end

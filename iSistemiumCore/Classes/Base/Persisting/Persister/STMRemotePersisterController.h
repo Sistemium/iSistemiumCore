@@ -16,4 +16,6 @@
 
 + (NSString *)destroyAllRemote:(NSDictionary *)data;
 
++ (NSArray *)syncFMDB;
+
 @end
