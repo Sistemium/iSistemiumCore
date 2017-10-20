@@ -355,7 +355,7 @@
     
     for (NSString* key in attributes) {
         
-        if ([columns containsObject:key] && ![@[STMPersistingKeyPrimary, STMPersistingKeyPhantom] containsObject:key]){
+        if ([columns containsObject:key] && ![@[STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingKeyCreationTimestamp] containsObject:key]){
             
             [keys addObject:[STMPredicateToSQL quotedName:key]];
             id value = [attributes objectForKey:key];
