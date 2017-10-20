@@ -40,11 +40,6 @@
     
     self.sourceModel = sourceModel;
     self.destinationModel = destinationModel;
-    self.needToMigrate = ![self.sourceModel isEqual:self.destinationModel];
-    
-    if (self.needToMigrate) {
-        NSLog(@"ModelMapper need to migrate");
-    }
     
     while (true) {
         self.mappingModel = [NSMappingModel inferredMappingModelForSourceModel:sourceModel
@@ -88,6 +83,17 @@
     
     self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:sourceModel
                                                            destinationModel:destinationModel];
+    
+    NSUInteger changes = self.addedEntities.count + self.removedEntities.count + self.addedAttributes.count + self.removedAttributes.count +
+    self.addedProperties.count + self.removedProperties.count + self.addedRelationships.count + self.removedRelationships.count;
+    
+    if (changes) {
+        NSLog(@"ModelMapper need to migrate");
+        
+        self.needToMigrate = YES;
+        
+        NSLog(@"Summ of changes: %i", changes);
+    }
     
 #ifdef DEBUG
     [self showMappingInfo];
