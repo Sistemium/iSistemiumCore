@@ -54,6 +54,18 @@
     
 }
 
+- (instancetype)init {
+    
+    self = [super init];
+    
+    if (self) {
+        [self initPrivateData];
+    }
+    
+    return self;
+    
+}
+
 #pragma mark - STMDataSyncing
 
 - (void)startSyncing {
