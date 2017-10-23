@@ -223,9 +223,7 @@
     
     NSLog(@"unsubscribeUnsynced");
     
-    self.erroredObjectsByEntity = nil;
-    self.pendingObjectsByEntity = nil;
-    self.syncedPendingObjectsByEntity = nil;
+    [self initPrivateData];
     
     [self checkUnsyncedObjects];
 
