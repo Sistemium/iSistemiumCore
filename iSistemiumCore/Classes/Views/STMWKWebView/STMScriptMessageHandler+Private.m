@@ -302,8 +302,27 @@
         
         for (NSString *entityName in subscription.entityNames) {
             [persisterSubscriptions addObject:[self.persistenceDelegate observeEntity:entityName predicate:nil options:options callback:^(NSArray *data) {
-#warning need to check if we're in background
+                
+                if ([STMFunctions isAppInBackground]){
+                    return;
+                }
+
                 [self sendSubscribedBunchOfObjects:data entityName:entityName];
+                
+                NSString *lts = data.firstObject[STMPersistingOptionLts];
+                
+                for (NSDictionary *object in data){
+                    
+                    if (object[STMPersistingOptionLts] > lts){
+                        
+                        lts = object[STMPersistingOptionLts];
+                        
+                    }
+                    
+                }
+                
+                [subscription.ltsOffset setObject:lts forKey:entityName];
+                
             }]];
         }
         
