@@ -312,7 +312,7 @@
                     return;
                 }
                 
-                [self sendSubscribedBunchOfObjects:data entityName:subscription.callbackName];
+                [self sendSubscribedBunchOfObjects:data entityName:entityName];
                 
                 [self updateLtsOffsetForEntityName:entityName subscription:subscription];
                 
