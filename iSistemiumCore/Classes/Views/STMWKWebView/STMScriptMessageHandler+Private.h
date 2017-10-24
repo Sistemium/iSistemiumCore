@@ -23,6 +23,10 @@
                callbackName:(NSString *)callbackName
                       error:(NSError **)error;
 
+- (void)sendSubscribedBunchOfObjects:(NSArray <NSDictionary *> *)objectsArray entityName:(NSString *)entityName;
+
+- (void)updateLtsOffsetForEntityName:(NSString *)entityName subscription:(STMScriptMessagingSubscription *)subscription;
+
 - (void) flushSubscribedViewController;
 
 @end

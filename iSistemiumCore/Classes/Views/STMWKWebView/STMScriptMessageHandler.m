@@ -297,6 +297,33 @@
     
 }
 
+- (void)syncSubscriptions {
+    
+    for (STMScriptMessagingSubscription *subscription in self.subscriptions.allValues){
+        
+        for (NSString *entityName in subscription.ltsOffset.allKeys){
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ > %@", STMPersistingOptionLts, subscription.ltsOffset[entityName]];
+            
+            [self.persistenceDelegate findAll:entityName predicate:predicate options:nil]
+            .then(^(NSArray *data) {
+                
+                if (!data.count) {
+                    return;
+                }
+                
+                [self sendSubscribedBunchOfObjects:data entityName:subscription.callbackName];
+                
+                [self updateLtsOffsetForEntityName:entityName subscription:subscription];
+                
+            });
+            
+        }
+        
+    }
+    
+}
+
 - (void)receiveDestroyMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;

@@ -1357,7 +1357,10 @@ int counter = 0;
 - (void)applicationDidBecomeActiveNotification:(NSNotification *)notification {
     
     if (self.isViewLoaded && self.view.window != nil) {
+        
+        [self.scriptMessageHandler syncSubscriptions];
         [self checkWebViewIsAlive];
+        
     }
     
 }

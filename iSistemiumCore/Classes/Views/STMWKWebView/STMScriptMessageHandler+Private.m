@@ -269,16 +269,23 @@
     STMScriptMessagingSubscription *subscription = self.subscriptions[callbackName];
     
     if (!subscription) {
+        
         subscription = [[STMScriptMessagingSubscription alloc] init];
         subscription.entityNames = [NSMutableSet set];
         subscription.callbackName = callbackName;
+        subscription.ltsOffset = @{}.mutableCopy;
+        
     }
     
     for (NSString *entityName in entities) {
         
         if ([self.modellingDelegate isConcreteEntityName:entityName]) {
             
-            [subscription.entityNames addObject:[STMFunctions addPrefixToEntityName:entityName]];
+            NSString *prfixedEntityName = [STMFunctions addPrefixToEntityName:entityName];
+            
+            [subscription.entityNames addObject:prfixedEntityName];
+            
+            [self updateLtsOffsetForEntityName:prfixedEntityName subscription:subscription];
             
         }
         
@@ -311,6 +318,25 @@
     }
     
     return result;
+    
+}
+
+- (void)updateLtsOffsetForEntityName:(NSString *)entityName subscription:(STMScriptMessagingSubscription *)subscription {
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
+                              STMPersistingOptionOrder      : STMPersistingOptionLts,
+                              STMPersistingOptionOrderDirectionDesc};
+    
+    [self.persistenceDelegate findAll:entityName predicate:nil options:options]
+    .then(^(NSArray *objects){
+        
+        if (objects.firstObject) {
+            
+            [subscription.ltsOffset setObject:objects.firstObject[STMPersistingOptionLts] forKey:entityName];
+            
+        }
+        
+    });
     
 }
 

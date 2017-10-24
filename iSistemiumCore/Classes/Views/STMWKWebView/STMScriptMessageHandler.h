@@ -21,6 +21,7 @@
 @property (nonatomic, strong) NSString *callbackName;
 @property (nonatomic, strong) NSMutableSet <NSString *> *entityNames;
 @property (nonatomic, strong) NSSet <STMPersistingObservingSubscriptionID> *persisterSubscriptions;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *ltsOffset;
 
 @end
 
