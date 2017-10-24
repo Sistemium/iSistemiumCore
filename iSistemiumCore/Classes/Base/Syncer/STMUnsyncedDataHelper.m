@@ -233,7 +233,13 @@
 
 - (void)checkUnsyncedObjects {
     
-    NSString *notificationName = [self anyObjectToSend] ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS;
+    NSDictionary *somethingToUpload = [self anyObjectToSend];
+    
+    NSString *notificationName = somethingToUpload ? NOTIFICATION_SYNCER_HAVE_UNSYNCED_OBJECTS : NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS;
+    
+//    if (somethingToUpload) {
+//        NSLog(@"%@ %@", somethingToUpload[@"entityName"], somethingToUpload[@"object"][@"id"]);
+//    }
     
     [self postAsyncMainQueueNotification:notificationName];
 
