@@ -1440,6 +1440,16 @@ int counter = 0;
 
 }
 
+- (void)syncerIsSendingData {
+    
+    if (!self.unsyncedInfoJSFunction) return;
+    
+    [self callbackWithData:@[@"syncerIsSendingData"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+    
+}
+
 
 #pragma mark - view lifecycle
 
@@ -1465,6 +1475,11 @@ int counter = 0;
     [nc addObserver:self
            selector:@selector(haveNoUnsyncedObjects)
                name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(syncerIsSendingData)
+               name:NOTIFICATION_SYNCER_SEND_STARTED
              object:nil];
 
 }
