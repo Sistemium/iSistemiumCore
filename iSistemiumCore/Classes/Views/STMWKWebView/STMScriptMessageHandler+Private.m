@@ -321,7 +321,9 @@
                     
                 }
                 
-                [subscription.ltsOffset setObject:lts forKey:entityName];
+                if (lts) {
+                    [subscription.ltsOffset setObject:lts forKey:entityName];
+                }
                 
             }]];
         }
