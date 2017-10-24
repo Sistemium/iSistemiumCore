@@ -303,7 +303,7 @@
         for (NSString *entityName in subscription.entityNames) {
             [persisterSubscriptions addObject:[self.persistenceDelegate observeEntity:entityName predicate:nil options:options callback:^(NSArray *data) {
                 
-                if ([STMFunctions isAppInBackground]){
+                if ([STMFunctions isAppInBackground]) {
                     return;
                 }
 
@@ -313,7 +313,7 @@
                 
                 for (NSDictionary *object in data){
                     
-                    if (object[STMPersistingOptionLts] > lts){
+                    if (object[STMPersistingOptionLts] > lts) {
                         
                         lts = object[STMPersistingOptionLts];
                         
