@@ -1421,9 +1421,9 @@ vm_size_t freeMemory(void) {
     
     __block BOOL result = NO;
     
-//    dispatch_sync(dispatch_get_main_queue(), ^{
+    dispatch_sync(dispatch_get_main_queue(), ^{
         result = [UIApplication sharedApplication].applicationState == UIApplicationStateBackground;
-//    });
+    });
     
     return result;
     
