@@ -35,6 +35,10 @@
 
 - (id)objectForKeyedSubscript:(id)key {
     
+    if (!self || !self.privateData) {
+        return nil;
+    }
+    
     id item = self.privateData[key];
     
     if (!item) {
