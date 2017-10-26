@@ -142,7 +142,13 @@
 
 - (void)notifyObservingEntityName:(NSString *)entityName ofUpdatedArray:(NSArray *)items options:(STMPersistingOptions)options;{
     
-    for (STMPersistingObservingSubscriptionID key in self.subscriptions.allKeys) {
+    if (!self.subscriptions) {
+        return;
+    }
+    
+    NSArray *subscriptions = self.subscriptions.allKeys;
+    
+    for (STMPersistingObservingSubscriptionID key in subscriptions) {
         
         STMPersistingObservingSubscription *subscription = self.subscriptions[key];
         
