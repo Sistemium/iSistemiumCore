@@ -191,20 +191,20 @@
         [self.persistenceDelegate observeEntity:entityName predicate:predicate options:onlyLocalChanges callback:^(NSArray *data) {
             NSLog(@"observeEntity %@ data count %u", entityName, data.count);
             
-            if (data.count && !self.syncingState) {
-                for (NSDictionary *object in data) {
-                    
-                    NSDictionary *objectToSend = @{
-                                                   @"entityName": entityName,
-                                                   @"object": object
-                                                   };
-                    
-                    [self sendUnsyncedObject:objectToSend];
-                    
-                }
-            } else {
+//            if (data.count && !self.syncingState) {
+//                for (NSDictionary *object in data) {
+//
+//                    NSDictionary *objectToSend = @{
+//                                                   @"entityName": entityName,
+//                                                   @"object": object
+//                                                   };
+//
+//                    [self sendUnsyncedObject:objectToSend];
+//
+//                }
+//            } else {
                 [self startHandleUnsyncedObjects];
-            }
+//            }
             
             
         }];
