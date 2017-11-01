@@ -191,8 +191,8 @@
         [self.persistenceDelegate observeEntity:entityName predicate:predicate options:onlyLocalChanges callback:^(NSArray *data) {
             NSLog(@"observeEntity %@ data count %u", entityName, data.count);
             
-            if (data.count && !self.syncingState){
-                for (NSDictionary* object in data){
+            if (data.count && !self.syncingState) {
+                for (NSDictionary *object in data) {
                     
                     NSDictionary *objectToSend = @{
                                                    @"entityName": entityName,
@@ -202,7 +202,7 @@
                     [self sendUnsyncedObject:objectToSend];
                     
                 }
-            }else{
+            } else {
                 [self startHandleUnsyncedObjects];
             }
             
