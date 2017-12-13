@@ -304,19 +304,17 @@
         for (NSString *entityName in subscription.ltsOffset.allKeys){
             
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ > %@", STMPersistingOptionLts, subscription.ltsOffset[entityName]];
+            NSError *error;
             
-            [self.persistenceDelegate findAll:entityName predicate:predicate options:nil]
-            .then(^(NSArray *data) {
-                
-                if (!data.count) {
-                    return;
-                }
-                
-                [self sendSubscribedBunchOfObjects:data entityName:entityName];
-                
-                [self updateLtsOffsetForEntityName:entityName subscription:subscription];
-                
-            });
+            NSArray *data = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:&error];
+            
+            if (!data.count) {
+                continue;
+            }
+            
+            [self sendSubscribedBunchOfObjects:data entityName:entityName];
+            
+            [self updateLtsOffsetForEntityName:entityName subscription:subscription];
             
         }
         

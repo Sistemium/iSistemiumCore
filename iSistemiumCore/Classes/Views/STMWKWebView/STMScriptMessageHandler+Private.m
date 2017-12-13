@@ -348,16 +348,14 @@
                               STMPersistingOptionOrder      : STMPersistingOptionLts,
                               STMPersistingOptionOrderDirectionDesc};
     
-    [self.persistenceDelegate findAll:entityName predicate:nil options:options]
-    .then(^(NSArray *objects){
-        
-        if (objects.firstObject) {
-            
-            [subscription.ltsOffset setObject:objects.firstObject[STMPersistingOptionLts] forKey:entityName];
-            
-        }
-        
-    });
+    NSError *error;
+    
+    
+    NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:nil options:options error:&error];
+    
+    if (objects.firstObject) {
+        [subscription.ltsOffset setObject:objects.firstObject[STMPersistingOptionLts] forKey:entityName];
+    }
     
 }
 
