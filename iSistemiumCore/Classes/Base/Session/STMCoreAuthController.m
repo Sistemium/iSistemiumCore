@@ -728,6 +728,12 @@
     NSURLRequest *request = [self authenticateRequest:[self requestForURL:ROLES_URL]];
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
     
+    if (self.stcTabs) {
+        
+        self.controllerState = STMAuthSuccess;
+        
+    }
+    
     if (connection) {
         
         return YES;
