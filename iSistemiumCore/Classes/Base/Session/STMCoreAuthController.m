@@ -177,7 +177,6 @@
         
         [[STMLogger sharedLogger] saveLogMessageWithText:@"login success"
                                                  numType:STMLogMessageTypeImportant];
-        [self startSession];
         
     }
     
@@ -725,14 +724,16 @@
     
     [STMFunctions setNetworkActivityIndicatorVisible:YES];
     
-    NSURLRequest *request = [self authenticateRequest:[self requestForURL:ROLES_URL]];
-    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
-    
     if (self.stcTabs) {
         
         self.controllerState = STMAuthSuccess;
         
+        [self startSession];
+        
     }
+    
+    NSURLRequest *request = [self authenticateRequest:[self requestForURL:ROLES_URL]];
+    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
     
     if (connection) {
         
@@ -960,6 +961,8 @@
             
         case STMAuthRequestRoles: {
             
+            BOOL wasLogged = !!self.stcTabs;
+            
             self.rolesResponse = responseJSON;
             
             NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
@@ -993,6 +996,12 @@
             }
             
             self.controllerState = STMAuthSuccess;
+            
+            if (!wasLogged){
+                
+                [self startSession];
+                
+            }
             
             break;
             
