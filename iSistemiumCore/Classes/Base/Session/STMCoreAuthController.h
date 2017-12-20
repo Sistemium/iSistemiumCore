@@ -33,5 +33,6 @@
 - (BOOL)sendSMSCode:(NSString *)SMSCode;
 - (BOOL)requestNewSMSCode;
 - (BOOL)requestRoles;
+- (void)checkPhoneNumber;
 
 @end

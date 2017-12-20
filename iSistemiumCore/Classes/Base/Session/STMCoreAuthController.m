@@ -79,7 +79,6 @@
     if (self) {
 
         self.controllerState = STMAuthStarted;
-        [self checkPhoneNumber];
         
     }
     
