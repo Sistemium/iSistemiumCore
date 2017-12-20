@@ -779,6 +779,10 @@
 
         [self connectionErrorWhileRequestingRoles];
         
+    } else if (self.controllerState == STMAuthSuccess){
+        
+        
+        
     } else {
         
         self.controllerState = STMAuthEnterPhoneNumber;
