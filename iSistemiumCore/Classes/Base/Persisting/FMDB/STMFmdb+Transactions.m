@@ -328,17 +328,18 @@
     
     NSMutableArray *result = [NSMutableArray array];
     
-    [tableColumns enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull field, id  _Nonnull type, BOOL * _Nonnull stop) {
+    [tableColumns enumerateKeysAndObjectsUsingBlock:^(NSString *field, id type, BOOL *stop) {
         
-        if ([self.stmFMDB.ignoredAttributes containsObject:field]) {
+        if ([field isEqualToString:@"id"]) {
             return;
         }
         
         BOOL valueIsNumeric = [numericTypes containsObject:type];
+        BOOL minMaxField = [minMaxTypes containsObject:type] || [field isEqualToString:@"date"];
         
         if (valueIsNumeric) {
             [result addObject:[NSString stringWithFormat:@"sum([%1$@]) [sum(%1$@)]", field]];
-        } else if ([minMaxTypes containsObject:type]) {
+        } else if (minMaxField) {
             [result addObject:[NSString stringWithFormat:@"max([%1$@]) [max(%1$@)]", field]];
             [result addObject:[NSString stringWithFormat:@"min([%1$@]) [min(%1$@)]", field]];
         }
