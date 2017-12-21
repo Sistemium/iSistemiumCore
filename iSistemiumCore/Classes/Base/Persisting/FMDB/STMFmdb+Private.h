@@ -7,7 +7,7 @@
 //
 
 #import "STMFmdb.h"
-#import "FMDB.h"
+#import <FMDB/FMDB.h>
 #import "STMPredicateToSQL.h"
 #import "STMOperationQueue.h"
 
@@ -22,6 +22,8 @@
 @property (nonatomic, strong) NSDictionary *columnsByTable;
 @property (nonatomic, strong) NSArray *builtInAttributes;
 @property (nonatomic, strong) NSArray *ignoredAttributes;
+@property (nonatomic, strong) NSArray <NSNumber *> *numericAttributes;
+@property (nonatomic, strong) NSArray *minMaxAttributes;
 
 @property (nonatomic, strong) STMPredicateToSQL *predicateToSQL;
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;

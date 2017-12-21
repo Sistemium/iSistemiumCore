@@ -321,29 +321,31 @@
     
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entityName];
     
-    NSArray <NSNumber *> *numericTypes = @[@(NSInteger16AttributeType),
-                                           @(NSInteger32AttributeType),
-                                           @(NSInteger64AttributeType),
-                                           @(NSDecimalAttributeType),
-                                           @(NSDoubleAttributeType),
-                                           @(NSFloatAttributeType)];
+    NSArray <NSNumber *> *numericTypes = self.stmFMDB.numericAttributes;
+    NSArray <NSNumber *> *minMaxTypes = self.stmFMDB.minMaxAttributes;
     
     NSDictionary *tableColumns = self.stmFMDB.columnsByTable[tableName];
     
-    NSDictionary *filteredTableColumns = [STMFunctions mapDictionary:tableColumns withBlock:^id _Nonnull(id  _Nonnull value, id  _Nonnull key) {
-        
-        BOOL valueIsNumeric = [numericTypes containsObject:value];
-        BOOL keyIsIgnored = [self.stmFMDB.ignoredAttributes containsObject:key];
-        
-        return valueIsNumeric && !keyIsIgnored ? value : nil;
-        
-    }];
+    NSMutableArray *result = [NSMutableArray array];
     
-    NSArray *sumKeys = [STMFunctions mapArray:filteredTableColumns.allKeys withBlock:^id _Nonnull(id  _Nonnull value) {
-        return [NSString stringWithFormat:@"sum([%1$@]) [sum(%1$@)]", value];
+    [tableColumns enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull field, id  _Nonnull type, BOOL * _Nonnull stop) {
+        
+        if ([self.stmFMDB.ignoredAttributes containsObject:field]) {
+            return;
+        }
+        
+        BOOL valueIsNumeric = [numericTypes containsObject:type];
+        
+        if (valueIsNumeric) {
+            [result addObject:[NSString stringWithFormat:@"sum([%1$@]) [sum(%1$@)]", field]];
+        } else if ([minMaxTypes containsObject:type]) {
+            [result addObject:[NSString stringWithFormat:@"max([%1$@]) [max(%1$@)]", field]];
+            [result addObject:[NSString stringWithFormat:@"min([%1$@]) [min(%1$@)]", field]];
+        }
+        
     }];
 
-    return sumKeys;
+    return result.copy;
     
 }
 

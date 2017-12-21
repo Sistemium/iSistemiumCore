@@ -163,6 +163,8 @@
     
     self.builtInAttributes = [STMFmdbSchema builtInAttributes];
     self.ignoredAttributes = [STMFmdbSchema ignoredAttributes];
+    self.numericAttributes = [STMFmdbSchema numericAttributes];
+    self.minMaxAttributes = [STMFmdbSchema minMaxAttributes];
     
     NSString *savedModelPath = [self.dbPath stringByAppendingString:@".model"];
     

@@ -20,6 +20,8 @@
 
 + (NSArray *)builtInAttributes;
 + (NSArray *)ignoredAttributes;
++ (NSArray *)numericAttributes;
++ (NSArray *)minMaxAttributes;
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;
 

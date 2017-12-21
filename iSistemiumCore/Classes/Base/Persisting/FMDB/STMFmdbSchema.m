@@ -68,6 +68,19 @@
     return [[self builtInAttributes] arrayByAddingObjectsFromArray:@[@"xid"]];
 }
 
++ (NSArray *)numericAttributes {
+    return @[@(NSInteger16AttributeType),
+             @(NSInteger32AttributeType),
+             @(NSInteger64AttributeType),
+             @(NSDecimalAttributeType),
+             @(NSDoubleAttributeType),
+             @(NSFloatAttributeType)];
+}
+
++ (NSArray *)minMaxAttributes {
+    return @[@(NSDateAttributeType)];
+}
+
 - (instancetype)initWithDatabase:(FMDatabase *)database {
     self = [self init];
     self.database = database;
@@ -512,6 +525,9 @@
     // Index phantom column
     
     [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyPhantom]];
+    
+    [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingOptionLts]];
+    [clauses addObject:[self createIndexDDL:tableName columnName:STMPersistingKeyVersion]];
     
     // Check Lts trigger
     
