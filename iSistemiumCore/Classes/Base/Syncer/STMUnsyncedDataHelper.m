@@ -137,8 +137,7 @@
     
     if ([entityName isEqualToString:NSStringFromClass([STMLogMessage class])]) {
         
-        NSString *uploadLogType = [self.session.settingsController stringValueForSettings:@"uploadLog.type"
-                                                                           forGroup:@"syncer"];
+        NSString *uploadLogType = [self.session.settingsController stringValueForSettings:@"uploadLog.type" forGroup:@"syncer"];
         
         NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
         
