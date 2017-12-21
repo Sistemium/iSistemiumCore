@@ -165,8 +165,7 @@
     _controllerState = controllerState;
     
     NSString *logMessage = [NSString stringWithFormat:@"authController state %@", [self authControllerStateString]];
-    [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                             numType:STMLogMessageTypeImportant];
+    [[STMLogger sharedLogger] infoMessage:logMessage];
     
     if (controllerState == STMAuthRequestRoles) {
         
@@ -174,8 +173,7 @@
         
     } else if (controllerState == STMAuthSuccess) {
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"login success"
-                                                 numType:STMLogMessageTypeImportant];
+        [[STMLogger sharedLogger] importantMessage:@"login success"];
         
     }
     
@@ -433,8 +431,7 @@
 
 - (void)checkPhoneNumber {
     
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"checkPhoneNumber"
-                                             numType:STMLogMessageTypeImportant];
+    [[STMLogger sharedLogger] infoMessage:@"checkPhoneNumber"];
 
     NSString *keychainPhoneNumber = [STMKeychain loadValueForKey:KC_PHONE_NUMBER];
     
@@ -446,8 +443,7 @@
         
         NSString *logMessage = [NSString stringWithFormat:@"keychainPhoneNumber %@ != userDefaultsPhoneNumber %@", keychainPhoneNumber, self.phoneNumber];
         
-        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage
-                                                 numType:STMLogMessageTypeError];
+        [[STMLogger sharedLogger] errorMessage:logMessage];
         
         self.controllerState = STMAuthEnterPhoneNumber;
         
@@ -460,15 +456,13 @@
     
 - (void)checkAccessToken {
 
-    [[STMLogger sharedLogger] saveLogMessageWithText:@"checkAccessToken"
-                                             numType:STMLogMessageTypeImportant];
+    [[STMLogger sharedLogger] infoMessage:@"checkAccessToken"];
 
     BOOL checkValue = YES;
     
     if (!self.userID || [self.userID isEqualToString:@""]) {
 
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"No userID or userID is empty string"
-                                                numType:STMLogMessageTypeError];
+        [[STMLogger sharedLogger] errorMessage:@"No userID or userID is empty string"];
         checkValue = NO;
         
     } else {
@@ -476,8 +470,7 @@
     }
     if (!self.accessToken || [self.accessToken isEqualToString:@""]) {
 
-        [[STMLogger sharedLogger] saveLogMessageWithText:@"No accessToken or accessToken is empty string"
-                                                numType:STMLogMessageTypeError];
+        [[STMLogger sharedLogger] errorMessage:@"No accessToken or accessToken is empty string"];
         checkValue = NO;
         
     } else {

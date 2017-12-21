@@ -266,8 +266,8 @@ STMBarCodeScannerDelegate>
 
 - (void)loadURLString:(NSString *)urlString {
     
-    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
-                                numType:STMLogMessageTypeImportant];
+//    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
+//                                numType:STMLogMessageTypeImportant];
     
     NSURL *url = [NSURL URLWithString:urlString];
     [self loadURL:url];
@@ -303,8 +303,8 @@ STMBarCodeScannerDelegate>
 
 - (void)loadLocalHTML {
     
-    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
-                                numType:STMLogMessageTypeImportant];
+//    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
+//                                numType:STMLogMessageTypeImportant];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self.appManifestHandler startLoadLocalHTML];
@@ -316,9 +316,9 @@ STMBarCodeScannerDelegate>
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
-        [self.logger saveLogMessageWithText:logMessage
-                                    numType:STMLogMessageTypeImportant];
+//        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
+//        [self.logger saveLogMessageWithText:logMessage
+//                                    numType:STMLogMessageTypeImportant];
         
         if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
             
@@ -326,9 +326,8 @@ STMBarCodeScannerDelegate>
             
         } else {
             
-            logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
-            [self.logger saveLogMessageWithText:logMessage
-                                        numType:STMLogMessageTypeError];
+            NSString *logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
+            [self.logger  errorMessage:logMessage];
             
         }
         
@@ -340,9 +339,9 @@ STMBarCodeScannerDelegate>
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
-        [self.logger saveLogMessageWithText:logMessage
-                                    numType:STMLogMessageTypeImportant];
+//        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
+//        [self.logger saveLogMessageWithText:logMessage
+//                                    numType:STMLogMessageTypeImportant];
         
         [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
         
@@ -369,8 +368,7 @@ STMBarCodeScannerDelegate>
 - (void)appManifestLoadInfoText:(NSString *)infoText {
     
     infoText = [@"cache manifest load: " stringByAppendingString:infoText];
-    [self appManifestLoadLogMessage:infoText
-                            numType:STMLogMessageTypeImportant];
+    [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
     
 }
 
@@ -411,8 +409,7 @@ STMBarCodeScannerDelegate>
 
 - (void)webViewInit {
     
-    [self.logger saveLogMessageWithText:@"webViewInit"
-                                numType:STMLogMessageTypeImportant];
+    [self.logger infoMessage:@"webViewInit"];
     
     [self flushWebView];
     
@@ -509,9 +506,9 @@ STMBarCodeScannerDelegate>
 
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
     
-    NSString *logMessage = [NSString stringWithFormat:@"webView didCommitNavigation %@", webView.URL];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
+//    NSString *logMessage = [NSString stringWithFormat:@"webView didCommitNavigation %@", webView.URL];
+//    [self.logger saveLogMessageWithText:logMessage
+//                                numType:STMLogMessageTypeImportant];
     
 }
 
@@ -597,9 +594,9 @@ STMBarCodeScannerDelegate>
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     
-    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
+//    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
+//    [self.logger saveLogMessageWithText:logMessage
+//                                numType:STMLogMessageTypeImportant];
     
     self.wasLoadingOnce = YES;
     [self cancelWatingTimeout];
