@@ -225,6 +225,14 @@
     
 }
 
+- (unsigned long long)fileSizeAtPath:(NSString *)path {
+    
+    NSError *attributesError = nil;
+    NSDictionary *fileAttributes = [self.fileManager attributesOfItemAtPath:path error:&attributesError];
+    
+    return [fileAttributes fileSize];
+
+}
 
 #pragma mark - filing private methods
 
