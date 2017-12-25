@@ -14,6 +14,8 @@
 #import "STMCoreRootTBC.h"
 #import "STMRemoteController.h"
 
+#define AUTH_DELAY 20
+
 
 @interface STMSocketTransport()
 
@@ -319,6 +321,12 @@
 
 - (void)connectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     
+    [self emitAuthorization];
+
+}
+
+- (void)emitAuthorization {
+ 
     NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
     
     NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
@@ -468,6 +476,12 @@
     }
     
     NSDictionary *dataDic = data.firstObject;
+    
+    if (![dataDic objectForKey:@"isAuthorized"]) {
+        NSLog(@"Socket auth error: %@", dataDic);
+        return [self delayedAuthorization];
+    }
+    
     BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
     
     if (!isAuthorized) {
@@ -481,6 +495,14 @@
 
     [self.owner socketReceiveAuthorization];
     [self checkAppState];
+    
+}
+
+- (void)delayedAuthorization {
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(AUTH_DELAY * NSEC_PER_SEC)), self.handleQueue, ^{
+        [self emitAuthorization];
+    });
     
 }
 

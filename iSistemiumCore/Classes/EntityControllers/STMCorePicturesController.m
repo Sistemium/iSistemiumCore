@@ -126,10 +126,12 @@
     
     NSMutableArray *result = @[].mutableCopy;
     
+    NSLog(@"predicate: %@", predicate)
+    
     for (NSString *entityName in self.pictureEntitiesNames) {
         NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:nil];
-        [result addObjectsFromArray:[STMFunctions mapArray:objects withBlock:^id _Nonnull(id  _Nonnull value) {
-            return @{@"entityName":entityName, @"attributes":value};
+        [result addObjectsFromArray:[STMFunctions mapArray:objects withBlock:^id _Nonnull(NSDictionary *value) {
+            return @{@"entityName":entityName, @"attributes":value.copy};
         }]];
     }
     
@@ -242,7 +244,9 @@
 
 - (void)startCheckingPicturesPaths {
     
-    NSArray *allPictures = [self allPictures];
+    NSPredicate *hasThumbnailHrefButNoThumbnailPath = [NSPredicate predicateWithFormat:@"thumbnailHref != nil AND thumbnailPath == nil"];
+    
+    NSArray *allPictures = [self allPicturesWithPredicate:hasThumbnailHrefButNoThumbnailPath];
     
     NSLogMethodName;
 
