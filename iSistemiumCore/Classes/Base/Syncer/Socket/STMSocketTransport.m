@@ -344,16 +344,8 @@
         
         [self receiveAckWithData:data forEventNum:eventNum];
         
-        NSArray *downloadableEntityNames = [STMEntityController downloadableEntityNames];
-        
-        NSArray *downloadableEntityResources = [STMFunctions mapArray:downloadableEntityNames withBlock:^id _Nonnull(NSString *_Nonnull value) {
-            return [STMEntityController resourceForEntity:value];
-        }];
-        
-        [self socketSendEvent:STMSocketEventSubscribe withValue:downloadableEntityResources];
-        
     }];
-
+    
 }
 
 - (void)disconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {

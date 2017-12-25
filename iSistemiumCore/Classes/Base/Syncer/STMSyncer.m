@@ -349,6 +349,14 @@
 
     [self initTimer];
     
+    NSArray *downloadableEntityNames = [STMEntityController downloadableEntityNames];
+    
+    NSArray *downloadableEntityResources = [STMFunctions mapArray:downloadableEntityNames withBlock:^id _Nonnull(NSString *_Nonnull value) {
+        return [STMEntityController resourceForEntity:value];
+    }];
+    
+    [self.socketTransport socketSendEvent:STMSocketEventSubscribe withValue:downloadableEntityResources];
+    
 }
 
 - (void)socketWillClosed {
