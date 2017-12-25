@@ -31,7 +31,7 @@
 
 @property (nonatomic,strong) NSOperationQueue *downloadQueue;
 
-@property (readonly) NSSet <NSString *> *pictureEntitiesNames;
+@property (readonly, nonatomic, strong) NSSet <NSString *> *pictureEntitiesNames;
 @property (readonly) NSArray <NSString *> *photoEntitiesNames;
 @property (readonly) NSArray <NSString *> *instantLoadEntityNames;
 @property (readonly) NSArray <NSDictionary *> *allPictures;
@@ -42,6 +42,7 @@
 @implementation STMCorePicturesController
 
 @synthesize nonloadedPicturesCount = _nonloadedPicturesCount;
+@synthesize pictureEntitiesNames = _pictureEntitiesNames;
 
 + (STMCorePicturesController *)sharedController {
     return [super sharedInstance];
@@ -111,7 +112,10 @@
 }
 
 - (NSSet <NSString *> *)pictureEntitiesNames {
-    return [self.persistenceDelegate hierarchyForEntityName:@"STMCorePicture"];
+    if (!_pictureEntitiesNames) {
+        _pictureEntitiesNames = [self.persistenceDelegate hierarchyForEntityName:@"STMCorePicture"];
+    }
+    return _pictureEntitiesNames;
 }
 
 - (NSArray *)allPictures {
