@@ -520,6 +520,8 @@
 
     NSPredicate *notUploaded = [NSPredicate predicateWithFormat:@"href == nil"];
     
+    NSString *picturesBasePath = [self.filing picturesBasePath];
+    
     for (NSDictionary *picture in [self allPicturesWithPredicate:notUploaded].copy) {
         
         NSString *entityName = picture[@"entityName"];
@@ -528,7 +530,7 @@
         if ([STMFunctions isNull:attributes[@"imagePath"]]) continue;
             
         NSError *error = nil;
-        NSString *path = [[self.filing picturesBasePath] stringByAppendingPathComponent:attributes[@"imagePath"]];
+        NSString *path = [picturesBasePath stringByAppendingPathComponent:attributes[@"imagePath"]];
         NSData *imageData = [NSData dataWithContentsOfFile:path options:0 error:&error];
         
         if (imageData && imageData.length > 0) {
@@ -570,7 +572,7 @@
 - (void)hrefProcessingForObject:(NSDictionary *)object {
 
     NSString *entityName = object[@"entityName"];
-    NSMutableDictionary *attributes = [object[@"attributes"] mutableCopy];
+    NSDictionary *attributes = object[@"attributes"];
     NSString *href = attributes[@"href"];
     
     if (![STMFunctions isNotNull:href]) return;
