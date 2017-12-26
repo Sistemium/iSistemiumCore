@@ -237,9 +237,13 @@
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
         
+        NSDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
+                                  STMPersistingOptionPageSize: @(20000)
+                                  };
+        
         NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
                                                                  predicate:predicate
-                                                                   options:@{STMPersistingOptionRecordstatuses:@NO}
+                                                                   options:options
                                                                      error:&error];
         
         if (error) {
