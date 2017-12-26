@@ -39,12 +39,8 @@
     
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
-    
+
     STMPersister *persister = [STMPersister persisterWithModelName:dataModelName completionHandler:^(BOOL success) {
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self persisterCompleteInitializationWithSuccess:success];
-        });
         
     }];
     
@@ -53,10 +49,11 @@
     NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
                                                              @(STMStorageTypeFMDB): fmdb
                                                              };
-    
     id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
     
     persister.runner = runner;
+
+    [self applyPatchesWithFmdb:fmdb persister:persister];
     
     self.persistenceDelegate = persister;
     
@@ -68,41 +65,53 @@
     [persister beforeMergeEntityName:entityNameInterceptor.entityName
                          interceptor:entityNameInterceptor];
     
-    [persister findAll:@"STMSQLPatch" predicate:[NSPredicate predicateWithFormat:@"isProcessed == NULL"] options:@{
-                                                                                  STMPersistingOptionOrder: @"ord",
-                                                                                  STMPersistingOptionOrderDirection: @"ASC"
-                                                                                  }]
-    .then(^(NSArray * result){
+    [self addPersistenceObservers];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self persisterCompleteInitializationWithSuccess:YES];
+    });
+
+    return self;
+    
+}
+
+- (void)applyPatchesWithFmdb:(STMFmdb *)fmdb persister:(STMPersister *)persister {
+    
+    NSPredicate *notProcessed = [NSPredicate predicateWithFormat:@"isProcessed == NULL"];
+    
+    NSDictionary *options = @{
+                              STMPersistingOptionOrder: @"ord",
+                              STMPersistingOptionOrderDirection: @"ASC"
+                              };
+    NSError *error;
+    
+    NSArray *result = [persister findAllSync:@"STMSQLPatch" predicate:notProcessed options:options error:&error];
+   
+    if (!result.count) {
+        NSLog(@"No not-processed pathes");
+        return;
+    }
+
+    for (NSDictionary *patch in result){
         
-        for (NSDictionary *patch in result){
+        NSString *result = [fmdb executePatchForCondition:patch[@"condition"] patch:patch[@"patch"]];
+        
+        if ([result hasPrefix:@"Success"]){
             
-            NSString *result = [fmdb executePatchForCondition:patch[@"condition"] patch:patch[@"patch"]];
+            NSMutableDictionary *mPatch = patch.mutableCopy;
             
-            if ([result hasPrefix:@"Success"]){
-                
-                NSMutableDictionary *mPatch = patch.mutableCopy;
-                
-                mPatch[@"isProcessed"] = @YES;
-                
-                NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"isProcessed"]};
-                
-                [persister update:@"STMSQLPatch" attributes:mPatch.copy options:fieldstoUpdate];
-                
-            }
+            mPatch[@"isProcessed"] = @YES;
             
-            [STMLogger.sharedLogger saveLogMessageWithText:result
-                                                   numType:STMLogMessageTypeImportant];
+            NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"isProcessed"]};
             
-            NSLog(result);
+            [persister update:@"STMSQLPatch" attributes:mPatch.copy options:fieldstoUpdate];
             
         }
         
-    });
-    
-    [self addPersistenceObservers];
-    
-    return self;
-    
+        [STMLogger.sharedLogger importantMessage:result];
+        
+    }
+
 }
 
 - (void)removePersistable:(void (^)(BOOL success))completionHandler {
