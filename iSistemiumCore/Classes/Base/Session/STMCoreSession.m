@@ -9,7 +9,7 @@
 #import "STMCoreSession+Private.h"
 #import "STMCoreSession+Persistable.h"
 #import "STMCoreSessionFiler.h"
-
+#import "STMCoreObjectsController.h"
 
 @implementation STMCoreSession
 
@@ -160,7 +160,7 @@
 
 
 - (void)applicationDidEnterBackground {
-    
+    [STMCoreObjectsController checkObjectsForFlushing];
 }
 
 - (void)setStatus:(STMSessionStatus)status {
