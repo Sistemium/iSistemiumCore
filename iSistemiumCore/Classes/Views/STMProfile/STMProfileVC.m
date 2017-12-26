@@ -160,6 +160,10 @@
 
 - (void)syncerReceiveStarted {
     
+    if (!self.isViewLoaded || !self.view.window) {
+        return;
+    }
+    
     self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
     
     self.tabBarController.tabBar.userInteractionEnabled = [STMEntityController downloadableEntityReady];
@@ -170,9 +174,15 @@
 
 - (void)syncerReceiveFinished {
     
+    if (!self.isViewLoaded || !self.view.window) {
+        return;
+    }
+    
     [self updateSyncInfo];
     [self hideProgressBar];
-
+    
+    [STMCorePicturesController.sharedController checkPhotos];
+    
     [self performSelector:@selector(hideNumberOfObjects)
                withObject:nil
                afterDelay:2];
@@ -1344,6 +1354,10 @@
         [UIApplication sharedApplication].idleTimerDisabled = YES;
     }
     
+    [STMCorePicturesController.sharedController checkPhotos];
+    
+    [self updateSyncInfo];
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -1356,6 +1370,7 @@
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+    [STMFunctions nilifyViewForVC:self];
     // Dispose of any resources that can be recreated.
 }
 

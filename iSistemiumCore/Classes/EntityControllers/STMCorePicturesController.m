@@ -387,11 +387,13 @@
             
             foundSomeBroken = YES;
             
+            NSString *fieldsToUpdateMessage = [NSString stringWithFormat:@"broken photo fieldsToUpdate id = %@", attributes[STMPersistingKeyPrimary]];
+            
+            [self.logger importantMessage:fieldsToUpdateMessage];
+            
             NSDictionary *options = @{STMPersistingOptionSetTs          :   @NO,
                                       STMPersistingOptionFieldstoUpdate :   fieldsToUpdate.copy};
 
-#warning - memory leak here
-            // updateSync: causes memory leak
             attributes = [self.persistenceDelegate updateSync:entityName
                                                    attributes:mutAttributes.copy
                                                       options:options
@@ -399,7 +401,7 @@
             
             if (error) {
                 NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos error: %@", error.localizedDescription];
-                [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
+                [self.logger errorMessage:logMessage];
                 continue;
             }
             
@@ -446,7 +448,6 @@
             continue;
         }
             
-        error = nil;
         NSString *path = [picturesBasePath stringByAppendingPathComponent:attributes[@"imagePath"]];
         
         // what will happend if we don't have @"imagePath"?
@@ -460,16 +461,34 @@
         
         if (fileSize > 0) {
             
-            NSLog(@"photoData && photoData.length > 0");
+            error = nil;
             
-            foundSomeBroken = YES;
+            NSString *logFileSizeButNoPaths = [NSString stringWithFormat:@"broken photo id = %@ size: %llu", attributes[STMPersistingKeyPrimary], fileSize];
+            
+            [self.logger importantMessage:logFileSizeButNoPaths];
             
             NSData *photoData = [NSData dataWithContentsOfFile:path options:0 error:&error];
             
+            if (error) {
+                
+                NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", attributes[@"imagePath"], error.localizedDescription];
+            
+                [self.logger errorMessage:logMessage];
+                
+                continue;
+                
+            }
+            
+            foundSomeBroken = YES;
+            
             attributes = [self setImagesFromData:photoData forPicture:attributes withEntityName:entityName];
             
-            // mv it at begining of if(photoData && photoData.length > 0){…}? why we check it here?
-            if (!picture) continue;
+            if (!attributes) {
+                NSString *cantResizeImage = [NSString stringWithFormat:@"can't resize - delete image path %@", path];
+                [self.logger importantMessage:cantResizeImage];
+                [self.filing removeItemAtPath:path error:&error];
+                continue;
+            }
             
             NSArray *fields = @[@"resizedImagePath",
                                 @"thumbnailPath",
@@ -483,11 +502,6 @@
                                                                inDictionary:picture]];
                 
             }];
-            
-        } else if (error) {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"checkBrokenPhotos dataWithContentsOfFile %@ error: %@", attributes[@"imagePath"], error.localizedDescription];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeError];
             
         } else if ([STMFunctions isNotNull:attributes[@"href"]]) {
             
@@ -654,6 +668,11 @@
     [[STMEntityController entityWithName:entityName][@"maxPictureScale"] doubleValue] : 1;
     
     UIImage *image = [UIImage imageWithData:data];
+    
+    if (!image) {
+        return nil;
+    }
+    
     CGFloat maxPictureDimension = MAX(image.size.height, image.size.width);
     
     CGRect screenRect = [[UIScreen mainScreen] bounds];
