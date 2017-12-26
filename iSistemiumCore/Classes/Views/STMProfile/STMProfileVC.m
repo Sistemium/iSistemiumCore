@@ -1370,7 +1370,7 @@
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    [STMFunctions nilifyViewForVC:self];
+//    [STMFunctions nilifyViewForVC:self];
     // Dispose of any resources that can be recreated.
 }
 
