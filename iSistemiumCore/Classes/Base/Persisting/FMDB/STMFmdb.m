@@ -238,7 +238,7 @@
     
     STMFmdbOperation* operation = [[STMFmdbOperation asynchronousOperation] initWithReadOnly:NO stmFMDB:self];
         
-    [self.operationPoolQueue addOperation:operation];
+    [self.operationQueue addOperation:operation];
         
     [operation waitUntilTransactionIsReady];
     
