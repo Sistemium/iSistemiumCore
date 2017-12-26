@@ -48,8 +48,10 @@
         
     }];
     
+    STMFmdb *fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
+    
     NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
-                                                             @(STMStorageTypeFMDB): [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath],
+                                                             @(STMStorageTypeFMDB): fmdb
                                                              };
     
     id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
@@ -65,6 +67,37 @@
     
     [persister beforeMergeEntityName:entityNameInterceptor.entityName
                          interceptor:entityNameInterceptor];
+    
+    [persister findAll:@"STMSQLPatch" predicate:[NSPredicate predicateWithFormat:@"isProcessed == NULL"] options:@{
+                                                                                  STMPersistingOptionOrder: @"ord",
+                                                                                  STMPersistingOptionOrderDirection: @"ASC"
+                                                                                  }]
+    .then(^(NSArray * result){
+        
+        for (NSDictionary *patch in result){
+            
+            NSString *result = [fmdb executePatchForCondition:patch[@"condition"] patch:patch[@"patch"]];
+            
+            if ([result hasPrefix:@"Success"]){
+                
+                NSMutableDictionary *mPatch = patch.mutableCopy;
+                
+                mPatch[@"isProcessed"] = @YES;
+                
+                NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"isProcessed"]};
+                
+                [persister update:@"STMSQLPatch" attributes:mPatch.copy options:fieldstoUpdate];
+                
+            }
+            
+            [STMLogger.sharedLogger saveLogMessageWithText:result
+                                                   numType:STMLogMessageTypeImportant];
+            
+            NSLog(result);
+            
+        }
+        
+    });
     
     [self addPersistenceObservers];
     

@@ -234,6 +234,40 @@
 
 }
 
+- (NSString *)executePatchForCondition:(NSString *)condition patch:(NSString *)patch{
+    
+    STMFmdbOperation* operation = [[STMFmdbOperation asynchronousOperation] initWithReadOnly:NO stmFMDB:self];
+        
+    [self.operationQueue addOperation:operation];
+        
+    [operation waitUntilTransactionIsReady];
+    
+    FMResultSet *result = [self.database executeQuery:condition];
+    
+    if ([result next]){
+        
+        NSError *error = nil;
+        
+        if(![self.database executeQuery:patch values:nil error:&error]){
+            
+            [self endTransaction:operation.transaction withSuccess:NO];
+            
+            return [@"Error while executing patch: " stringByAppendingString:error.localizedDescription];
+            
+        }
+        
+        [self endTransaction:operation.transaction withSuccess:YES];
+        
+        return [@"Successfully executed patch: " stringByAppendingString:patch];
+        
+    }
+    
+    [self endTransaction:operation.transaction withSuccess:YES];
+    
+    return [@"Successfully skipped unnecessary patch: " stringByAppendingString:patch];
+    
+}
+
 
 #pragma mark - Adapting protocol
 

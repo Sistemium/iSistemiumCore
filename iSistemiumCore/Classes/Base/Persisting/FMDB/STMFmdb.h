@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
                            dbPath:(NSString *)dbPath;
 
 - (BOOL)hasTable:(NSString *)name;
+- (NSString *)executePatchForCondition:(NSString *)condition
+                           patch:(NSString *)patch;
 
 NS_ASSUME_NONNULL_END
 
