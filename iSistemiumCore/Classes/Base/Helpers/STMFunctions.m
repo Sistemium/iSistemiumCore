@@ -1250,7 +1250,7 @@ vm_size_t freeMemory(void) {
             totalSpace = [fileSystemSizeInBytes unsignedLongLongValue];
             totalFreeSpace = [freeFileSystemSizeInBytes unsignedLongLongValue];
             
-            NSLog(@"Memory Capacity of %llu MiB with %llu MiB Free memory available.", ((totalSpace/1024ll)/1024ll), ((totalFreeSpace/1024ll)/1024ll));
+            NSLog(@"Filesystem capacity of %llu MiB with %llu MiB Free memory available.", ((totalSpace/1024ll)/1024ll), ((totalFreeSpace/1024ll)/1024ll));
             
         } else {
             NSLog(@"Error Obtaining System Memory Info: Domain = %@, Code = %ld", [error domain], (long)[error code]);
