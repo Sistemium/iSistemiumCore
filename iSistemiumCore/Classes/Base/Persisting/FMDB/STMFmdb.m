@@ -236,35 +236,21 @@
 
 - (NSString *)executePatchForCondition:(NSString *)condition patch:(NSString *)patch{
     
-    STMFmdbOperation* operation = [[STMFmdbOperation asynchronousOperation] initWithReadOnly:NO stmFMDB:self];
-        
-    [self.operationQueue addOperation:operation];
-        
-    [operation waitUntilTransactionIsReady];
-    
     FMResultSet *result = [self.database executeQuery:condition];
     
-    if ([result next]){
+    if (![result next]) {
+        return [@"Successfully skipped unnecessary patch: " stringByAppendingString:patch];
+    }
+    
+    [result close];
+    
+    if (![self.database executeStatements:patch]) {
         
-        NSError *error = nil;
-        
-        if(![self.database executeQuery:patch values:nil error:&error]){
-            
-            [self endTransaction:operation.transaction withSuccess:NO];
-            
-            return [@"Error while executing patch: " stringByAppendingString:error.localizedDescription];
-            
-        }
-        
-        [self endTransaction:operation.transaction withSuccess:YES];
-        
-        return [@"Successfully executed patch: " stringByAppendingString:patch];
+        return @"Error while executing patch";
         
     }
     
-    [self endTransaction:operation.transaction withSuccess:YES];
-    
-    return [@"Successfully skipped unnecessary patch: " stringByAppendingString:patch];
+    return [@"Successfully executed patch: " stringByAppendingString:patch];
     
 }
 
