@@ -184,7 +184,7 @@
     
     sc.isInFlushingProcess = NO;
     
-    if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+    if (![STMFunctions isAppInBackground]) {
         
         NSLog(@"app is not in background, flushing canceled");
         return;
@@ -196,30 +196,14 @@
     NSDate *startFlushing = [NSDate date];
     
     NSArray *entitiesWithLifeTime = [STMEntityController entitiesWithLifeTime];
-
-    NSMutableDictionary *entityDic = [NSMutableDictionary dictionary];
     
     for (NSDictionary *entity in entitiesWithLifeTime) {
         
-        if (entity[@"name"] && ![entity[@"name"] isEqual:[NSNull null]]) {
-            
-            NSString *capFirstLetter = [[entity[@"name"] substringToIndex:1] capitalizedString];
-            NSString *capEntityName = [entity[@"name"] stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
-            NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
-         
-            entityDic[entityName] = @{@"lifeTime": entity[@"lifeTime"],
-                                      @"lifeTimeDateField": entity[@"lifeTimeDateField"] ? entity[@"lifeTimeDateField"] : @"deviceCts"};
-            
-        }
-        
-    }
-    
-    for (NSString *entityName in entityDic.allKeys) {
-        
-        double lifeTime = [entityDic[entityName][@"lifeTime"] doubleValue];
+        double lifeTime = [entity[@"lifeTime"] doubleValue];
+        NSString *entityName = entity[@"name"];
         NSDate *terminatorDate = [NSDate dateWithTimeInterval:-lifeTime*3600 sinceDate:startFlushing];
         
-        NSString *dateField = entityDic[entityName][@"lifeTimeDateField"];
+        NSString *dateField = entity[@"lifeTimeDateField"];
         NSArray *availableDateKeys = [self attributesForEntityName:entityName withType:NSDateAttributeType];
         dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
         
@@ -238,7 +222,7 @@
                                                                      subpredicates:subpredicates];
         
         NSDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
-                                  STMPersistingOptionPageSize: @(20000)
+                                  STMPersistingOptionPageSize: @(1000)
                                   };
         
         NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
