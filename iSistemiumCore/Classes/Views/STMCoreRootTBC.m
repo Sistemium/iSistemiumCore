@@ -805,7 +805,6 @@
         
         if([view isKindOfClass:[UITabBar class]]) {
             [view setFrame:CGRectMake(view.frame.origin.x, viewHeight, view.frame.size.width, view.frame.size.height)];
-            [view setHidden:YES];
         } else {
             [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, viewHeight)];
         }
@@ -822,6 +821,7 @@
 
 - (void)releaseTabbarLock {
     self.isInHideTabbarProcess = NO;
+    [self.tabBar setHidden:YES];
 }
 
 - (void)showTabBar {
