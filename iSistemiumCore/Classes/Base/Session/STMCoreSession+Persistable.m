@@ -104,7 +104,9 @@
             
             NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"isProcessed"]};
             
-            [persister update:@"STMSQLPatch" attributes:mPatch.copy options:fieldstoUpdate];
+            NSError *error;
+            
+            [persister updateSync:@"STMSQLPatch" attributes:mPatch.copy options:fieldstoUpdate error:&error];
             
         }
         
