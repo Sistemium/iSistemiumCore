@@ -413,8 +413,7 @@
         if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
             
             NSString *errorString = @"location tracking is not permitted";
-            [[self.session logger] saveLogMessageWithText:errorString
-                                                  numType:STMLogMessageTypeError];
+            [[self.session logger] infoMessage:errorString];
             [self checkinLocationError:errorString];
             
             self.locationManager = nil;
@@ -436,8 +435,7 @@
             } else {
                 
                 NSString *errorString = @"location tracking disabled";
-                [[self.session logger] saveLogMessageWithText:errorString
-                                                      numType:STMLogMessageTypeError];
+                [[self.session logger] infoMessage:errorString];
                 [self checkinLocationError:errorString];
                 
                 [super stopTracking];
