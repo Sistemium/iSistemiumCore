@@ -387,9 +387,9 @@
     
     NSMutableArray <NSString *> *columns = self.builtInAttributes.mutableCopy;
     NSString *tableName = [STMFunctions removePrefixFromEntityName:entity.name];
-    BOOL tableExisted = [self.database tableExists:tableName];
+    BOOL tableExists = [self.database tableExists:tableName];
     
-    if (!tableExisted) {
+    if (!tableExists) {
         
         NSDate *startCreateTableTime = [NSDate date];
         self.migrationSuccessful &= [self executeDDL:[self createTableDDL:tableName]];
