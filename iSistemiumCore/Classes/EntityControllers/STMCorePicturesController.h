@@ -20,6 +20,8 @@
 
 - (CGFloat)jpgQuality;
 
++ (void)checkNotUploadedPhotos;
+
 - (void)checkPhotos;
 
 - (void)hrefProcessingForObject:(NSDictionary *)object;

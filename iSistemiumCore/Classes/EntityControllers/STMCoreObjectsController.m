@@ -279,6 +279,8 @@
 
 + (void)dataLoadingFinished {
 
+    [STMCorePicturesController checkNotUploadedPhotos];
+    
 #ifdef DEBUG
     [self logTotalNumberOfObjectsInStorages];
 #else

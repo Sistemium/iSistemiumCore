@@ -48,6 +48,14 @@
     return [super sharedInstance];
 }
 
++ (void)checkNotUploadedPhotos {
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[self sharedInstance] checkNotUploadedPhotos];
+    });
+    
+}
+
 - (instancetype)init {
     
     self = [super init];
@@ -232,7 +240,6 @@
         [self startCheckingPicturesPaths];
         
         [self checkBrokenPhotos];
-        [self checkNotUploadedPhotos];
         
         NSLog(@"checkPhotos finish");
         
