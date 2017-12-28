@@ -229,11 +229,21 @@
 
         [relations enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSRelationshipDescription *relation, BOOL * _Nonnull stop) {
             
-            NSLog(@"%@ %@", name, relation);
-            
             NSString *destinationName = [STMFunctions removePrefixFromEntityName:relation.destinationEntity.name];
             
-            if (![self.persistenceDelegate isConcreteEntityName:destinationName] || relation.deleteRule != NSDenyDeleteRule) {
+            if (relation.deleteRule != NSDenyDeleteRule) {
+                return;
+            }
+            
+            NSSet <NSString*> *concreteDescendants = [self.persistenceDelegate hierarchyForEntityName:relation.destinationEntity.name];
+            
+            for (NSString *descendant in concreteDescendants) {
+                NSString *denyDelete = [NSString stringWithFormat:@"not exists (select * from %@ where %@Id = %@.id)", [STMFunctions removePrefixFromEntityName:descendant], relation.inverseRelationship.name, entityName];
+                
+                [denyCascades addObject:denyDelete];
+            }
+
+            if (![self.persistenceDelegate isConcreteEntityName:destinationName]) {
                 return;
             }
             
