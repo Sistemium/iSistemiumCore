@@ -208,9 +208,10 @@
         dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
         
         NSError *error;
+        NSString *prefixedName = [STMFunctions addPrefixToEntityName:entityName];
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
-        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:entityName];
+        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:prefixedName];
         
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
@@ -218,16 +219,40 @@
             [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
         }
         
+        NSDictionary *relations = [self.persistenceDelegate objectRelationshipsForEntityName:prefixedName isToMany:@YES cascade:@NO];
+        
+        NSMutableDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
+                                         STMPersistingOptionPageSize: @(1000)
+                                         }.mutableCopy;
+        
+        NSMutableArray *denyCascades = [NSMutableArray array];
+
+        [relations enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSRelationshipDescription *relation, BOOL * _Nonnull stop) {
+            
+            NSLog(@"%@ %@", name, relation);
+            
+            NSString *destinationName = [STMFunctions removePrefixFromEntityName:relation.destinationEntity.name];
+            
+            if (![self.persistenceDelegate isConcreteEntityName:destinationName] || relation.deleteRule != NSDenyDeleteRule) {
+                return;
+            }
+            
+            NSString *denyDelete = [NSString stringWithFormat:@"not exists (select * from %@ where %@Id = %@.id)", destinationName, relation.inverseRelationship.name, entityName];
+            
+            [denyCascades addObject:denyDelete];
+            
+        }];
+        
+        if (denyCascades.count) {
+            options[STMPersistingOptionWhere] = [denyCascades componentsJoinedByString:@" AND "];
+        }
+        
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
         
-        NSDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
-                                  STMPersistingOptionPageSize: @(1000)
-                                  };
-        
         NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
                                                                  predicate:predicate
-                                                                   options:options
+                                                                   options:options.copy
                                                                      error:&error];
         
         if (error) {
