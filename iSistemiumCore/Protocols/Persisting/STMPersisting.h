@@ -35,6 +35,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionPageSize @"pageSize"
 #define STMPersistingOptionStartPage @"startPage"
 #define STMPersistingOptionGroupBy @"groupBy"
+#define STMPersistingOptionWhere @"where"
 #define STMPersistingOptionOffset @"offset"
 #define STMPersistingOptionOrder @"sortBy"
 #define STMPersistingOptionOrderDirection @"direction"

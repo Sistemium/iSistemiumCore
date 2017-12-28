@@ -83,7 +83,15 @@
     
     if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]){
         where = @"";
-    }else{
+    }
+    
+    NSString *whereOption = options[STMPersistingOptionWhere];
+    
+    if (whereOption) {
+        where = [NSString stringWithFormat:@"%@ AND %@", where, whereOption];
+    }
+    
+    if (where.length) {
         where = [@" WHERE " stringByAppendingString:where];
     }
     
