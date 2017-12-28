@@ -203,9 +203,7 @@
         NSString *entityName = entity[@"name"];
         NSDate *terminatorDate = [NSDate dateWithTimeInterval:-lifeTime*3600 sinceDate:startFlushing];
         
-        NSString *dateField = entity[@"lifeTimeDateField"];
-        NSArray *availableDateKeys = [self attributesForEntityName:entityName withType:NSDateAttributeType];
-        dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
+        NSString *dateField = STMIsNull(entity[@"lifeTimeDateField"], @"deviceCts");
         
         NSError *error;
         NSString *prefixedName = [STMFunctions addPrefixToEntityName:entityName];
