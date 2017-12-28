@@ -142,10 +142,12 @@
         NSArray *logMessageSyncTypes = [[STMLogger sharedLogger] syncingTypesForSettingType:uploadLogType];
         
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
+        // This is to avoid promlems of sending too much old logmessages
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceCts > %@", [NSDate dateWithTimeIntervalSinceNow: -3600 * 72]]];
         
     }
     
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts OR lts == nil"]];
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs != nil and (deviceTs > lts OR lts == nil)"]];
     
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     
