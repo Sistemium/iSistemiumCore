@@ -145,7 +145,7 @@
         
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"type IN %@", logMessageSyncTypes]];
         // This is to avoid promlems of sending too much old logmessages
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceCts > %@", [NSDate dateWithTimeIntervalSinceNow: - LOGMESSAGE_MAX_TIME_INTERVAL_TO_UPLOAD]]];
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceCts > %@", [STMFunctions stringFromDate:[NSDate dateWithTimeIntervalSinceNow: - LOGMESSAGE_MAX_TIME_INTERVAL_TO_UPLOAD]]]];
         
     }
     
