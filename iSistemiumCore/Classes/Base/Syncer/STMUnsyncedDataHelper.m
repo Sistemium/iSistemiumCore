@@ -102,18 +102,14 @@
         [self declineFromSync:itemData entityName:entityName];
         [self releasePendingObject:itemData entityName:entityName];
         
-    } else if (!itemVersion) {
-        
-        NSLog(@"sync success %@ %@", entityName, itemData[@"id"]);
-        
     } else {
         
         if ([self isPendingObject:itemData entityName:entityName]) {
             
             [self didSyncPendingObject:itemData entityName:entityName];
 
-        } else {
-
+        } else if (itemVersion) {
+            
             NSError *error;
             NSDictionary *options = @{STMPersistingOptionLts: itemVersion};
             
@@ -363,6 +359,8 @@
         for (NSString *key in unsyncedParents.allKeys) {
             alteredObject[key] = [NSNull null];
         }
+        
+        [alteredObject removeObjectForKey:STMPersistingKeyVersion];
         
         return alteredObject.copy;
 
