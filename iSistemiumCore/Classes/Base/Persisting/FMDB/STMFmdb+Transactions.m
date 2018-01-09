@@ -364,26 +364,29 @@
     
     NSArray *jsonColumns = [self.stmFMDB.columnsByTable[tablename] allKeysForObject:@(NSTransformableAttributeType)];
     
+    NSArray *nonUpdatingKeys = @[STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingKeyCreationTimestamp];
+    
     for (NSString* key in attributes) {
         
-        if ([columns containsObject:key] && ![@[STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingKeyCreationTimestamp] containsObject:key]){
+        if (![columns containsObject:key] || [nonUpdatingKeys containsObject:key]) {
+            continue;
+        }
             
-            [keys addObject:[STMPredicateToSQL quotedName:key]];
-            id value = [attributes objectForKey:key];
+        [keys addObject:[STMPredicateToSQL quotedName:key]];
+        
+        id value = [attributes objectForKey:key];
+        
+        if ([value isKindOfClass:[NSDate class]]) {
             
-            if ([value isKindOfClass:[NSDate class]]) {
-                
-                [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
-                
-            } else if([jsonColumns containsObject:key]) {
-                
-                [values addObject:[STMFunctions jsonStringFromObject:value]];
-                
-            } else {
-                
-                [values addObject:(NSString*)value];
-                
-            }
+            [values addObject:[STMFunctions stringFromDate:(NSDate *)value]];
+            
+        } else if([jsonColumns containsObject:key]) {
+            
+            [values addObject:[STMFunctions jsonStringFromObject:value]];
+            
+        } else {
+            
+            [values addObject:(NSString*)value];
             
         }
         
