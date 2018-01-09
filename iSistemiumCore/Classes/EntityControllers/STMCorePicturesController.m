@@ -109,6 +109,30 @@
     
 }
 
+- (id)hrefDictionaryValueOf:(NSString *)key {
+    @synchronized (self) {
+        return self.hrefDictionary[key];
+    }
+}
+
+- (void)hrefDictionarySet:(id)value forKey:(NSString *)key {
+    @synchronized (self) {
+        self.hrefDictionary[key] = value;
+    }
+}
+
+- (void)hrefDictionaryRemove:(NSString *)key {
+    @synchronized (self) {
+        [self.hrefDictionary removeObjectForKey:key];
+    }
+}
+
+- (NSArray *)hrefDictionaryAll {
+    @synchronized (self) {
+        return self.hrefDictionary.allValues;
+    }
+}
+
 - (NSOperationQueue *)uploadQueue {
     
     if (!_uploadQueue) {
@@ -414,7 +438,7 @@
             
             NSString *href = attributes[@"href"];
             
-            [self.hrefDictionary removeObjectForKey:href];
+            [self hrefDictionaryRemove:href];
             
             if ([STMFunctions isNotNull:attributes[@"imagePath"]] &&
                 [STMFunctions isNotNull:attributes[@"resizedImagePath"]] &&
@@ -604,9 +628,9 @@
         
     if (![self.pictureEntitiesNames containsObject:entityName]) return;
     
-    if (self.hrefDictionary[href]) return;
+    if ([self hrefDictionaryValueOf:href]) return;
         
-    self.hrefDictionary[href] = object;
+    [self hrefDictionarySet:object forKey:href];
     
     if ([self.instantLoadEntityNames containsObject:entityName]) {
         [self downloadImagesEntityName:entityName attributes:attributes];
@@ -805,7 +829,7 @@
     
     if (!self.downloadingPictures) return;
     
-    NSDictionary *picture = self.hrefDictionary.allValues.firstObject;
+    NSDictionary *picture = [self hrefDictionaryAll].firstObject;
     
     NSString *entityName = picture[@"entityName"];
     NSMutableDictionary *attributes = picture[@"attributes"];
@@ -818,7 +842,7 @@
         
         self.downloadingPictures = NO;
         [self checkBrokenPhotos];
-        self.downloadingPictures = (self.hrefDictionary.allValues.count > 0);
+        self.downloadingPictures = !![self hrefDictionaryAll].count;
         
     }
 
@@ -893,7 +917,7 @@
 
 - (void)didProcessHref:(NSString *)href {
 
-    [self.hrefDictionary removeObjectForKey:href];
+    [self hrefDictionaryRemove:href];
     [self downloadNextPicture];
 
 }
@@ -982,7 +1006,7 @@
             
             if (!result){
                 
-                NSString *logMessage = @"No update result after upload";
+                NSString *logMessage = [NSString stringWithFormat:@"No update result after upload picture %@", attributes];
                 [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
                 
             }
