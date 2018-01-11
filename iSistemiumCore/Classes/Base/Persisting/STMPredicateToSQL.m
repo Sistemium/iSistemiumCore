@@ -395,7 +395,7 @@ static NSString *SQLNullValueString = @"NULL";
         case NSNotEqualToPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ %@ %@)",
                     leftSQLExpression,
-                    [rightSQLExpression isEqual: @"NULL"] ? @"IS NOT" : @"=",
+                    [rightSQLExpression isEqual: @"NULL"] ? @"IS NOT" : @"<>",
                     rightSQLExpression];
         }
         case NSMatchesPredicateOperatorType: {
