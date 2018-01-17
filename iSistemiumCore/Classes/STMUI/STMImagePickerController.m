@@ -64,18 +64,18 @@
         CGRect screenFrame = [rootView convertRect:originalFrame fromView:nil];
         cameraOverlayView.frame = screenFrame;
         
-        if (IPHONE) {
+        if (IPHONE && SYSTEM_VERSION < 11.0) {
             
             CGFloat camHeight = screenFrame.size.width * 4 / 3; // 4/3 — camera aspect ratio
-            
+
             CGFloat toolbarHeight = TOOLBAR_HEIGHT;
-            
+
             for (UIView *subview in self.cameraOverlayView.subviews)
                 if ([subview isKindOfClass:[UIToolbar class]])
                     toolbarHeight = subview.frame.size.height;
-            
+
             CGFloat translationDistance = (screenFrame.size.height - toolbarHeight - camHeight) / 2;
-            
+
             CGAffineTransform translate = CGAffineTransformMakeTranslation(0.0, translationDistance);
             self.cameraViewTransform = translate;
             
