@@ -955,15 +955,16 @@
             
         }
             
+        case STMAuthSuccess:
         case STMAuthRequestRoles: {
             
             BOOL wasLogged = !!self.stcTabs;
             
-            self.rolesResponse = responseJSON;
-            
             NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
             
             if (roles) {
+                
+                self.rolesResponse = responseJSON;
                 
                 self.accountOrg = roles[@"org"];
                 self.iSisDB = roles[@"iSisDB"];
@@ -1001,10 +1002,6 @@
             
             break;
             
-        }
-            
-        case STMAuthSuccess: {
-            break;
         }
             
         default: {

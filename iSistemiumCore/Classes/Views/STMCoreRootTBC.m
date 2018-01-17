@@ -968,7 +968,7 @@
         
         [self initAuthTab];
         
-    } else if ([STMCoreAuthController authController].controllerState == STMAuthSuccess) {
+    } else if ([STMCoreAuthController authController].controllerState == STMAuthRequestRoles) {
 
         [self.view addSubview:self.spinnerView];
         
