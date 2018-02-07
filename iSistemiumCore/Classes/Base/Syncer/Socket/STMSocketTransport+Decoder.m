@@ -35,9 +35,9 @@
     } else {
         STSocketsJSDataResponseError *error = [[STSocketsJSDataResponseError alloc] init];
         
-        error.errorCode = [stResponse[@"error"] integerValue];
+        error.errorCode = stResponse[@"error"] ? [stResponse[@"error"] integerValue] : 500;
         
-        if ([[stResponse[@"text"] class] isSubclassOfClass:NSDictionary.class]) {
+        if (stResponse[@"text"] && [[stResponse[@"text"] class] isSubclassOfClass:NSDictionary.class]) {
             error.errorText = stResponse[@"text"][@"text"];
         } else {
             error.errorText = stResponse[@"text"];
