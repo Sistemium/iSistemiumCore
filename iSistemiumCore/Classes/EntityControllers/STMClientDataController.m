@@ -208,52 +208,45 @@
 }
 
 + (void)checkAppVersion {
+
+    NSMutableDictionary *clientData = [self clientData].mutableCopy;
     
-    if (self.document.managedObjectContext) {
+    if (!clientData) {
+        return;
+    }
+    
+    NSString *buildVersion = BUILD_VERSION;
+    
+    if (![clientData[@"appVersion"] isEqualToString:buildVersion]) {
         
-        NSMutableDictionary *clientData = [self clientData].mutableCopy;
+        clientData[@"appVersion"] = buildVersion;
         
-        if (clientData) {
-            
-            NSString *buildVersion = BUILD_VERSION;
-            
-            if (![clientData[@"appVersion"] isEqualToString:buildVersion]) {
-                
-                clientData[@"appVersion"] = buildVersion;
-                
-                [[self persistenceDelegate] mergeAsync:NSStringFromClass([STMClientData class])
-                                            attributes:clientData
-                                               options:nil
-                                     completionHandler:nil];
-
-            }
-            
-            NSString *entityName = NSStringFromClass([STMSetting class]);
-            
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
-            
-            [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
-            
-                [self.document.managedObjectContext performBlockAndWait:^{
-                
-                    NSDictionary *availableVersionSetting = result.lastObject;
-                    
-                    if (availableVersionSetting) {
-                        
-                        NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
-                        NSNumber *currentVersion = @([clientData[@"appVersion"] integerValue]);
-                        
-                        [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
-                        
-                    }
-
-                }];
-                
-            }];
-            
-        }
+        [[self persistenceDelegate] mergeAsync:NSStringFromClass([STMClientData class])
+                                    attributes:clientData
+                                       options:nil
+                             completionHandler:nil];
         
     }
+    
+    NSString *entityName = NSStringFromClass([STMSetting class]);
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", @"availableVersion"];
+    
+    [[self persistenceDelegate] findAllAsync:entityName predicate:predicate options:nil completionHandler:^(BOOL success, NSArray<NSDictionary *> *result, NSError *error) {
+            
+        NSDictionary *availableVersionSetting = result.lastObject;
+        
+        if (!availableVersionSetting) {
+            return;
+        }
+            
+        NSNumber *availableVersion = @([availableVersionSetting[@"value"] integerValue]);
+        NSNumber *currentVersion = @([clientData[@"appVersion"] integerValue]);
+        
+        [self compareAvailableVersion:availableVersion withCurrentVersion:currentVersion];
+        
+    }];
+
     
 }
 
