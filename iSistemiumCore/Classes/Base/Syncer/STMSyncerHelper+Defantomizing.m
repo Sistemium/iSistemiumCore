@@ -44,7 +44,6 @@
 
 
 - (instancetype)initWithEntityName:(NSString *)entityName identifier:(NSString *)identifier {
-    self = [self init];
     self.identifier = identifier;
     self.entityName = entityName;
     return self;

@@ -37,8 +37,6 @@
 @implementation STMFmdbOperation
 
 - (instancetype)initWithReadOnly:(BOOL)readOnly stmFMDB:(STMFmdb*)stmFMDB{
-
-    self = [self init];
     
     self.readOnly = readOnly;
     
@@ -96,6 +94,11 @@
     }
     
     [super finish];
+    
+    self.transaction.operation = nil;
+    self.transaction = nil;
+    self.sem = nil;
+    self.database = nil;
     
 }
 
