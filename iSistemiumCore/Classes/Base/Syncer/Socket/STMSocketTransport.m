@@ -80,7 +80,7 @@
     
     NSDictionary *config = @{
                              @"handleQueue"        : self.handleQueue,
-                             @"doubleEncodeUTF8"   : @YES,
+//                             @"doubleEncodeUTF8"   : @YES,
                              @"voipEnabled"        : @YES,
                              @"log"                : @NO,
                              @"forceWebsockets"    : @NO,
