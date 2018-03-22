@@ -385,13 +385,13 @@
         self.isSendingData = NO;
     }
     
-    if (self.isReceivingData) {
+//    if (self.isReceivingData) {
         [self.dataDownloadingDelegate stopDownloading];
-    }
+//    }
     
-    if (self.isDefantomizing) {
+//    if (self.isDefantomizing) {
         [self.defantomizingDelegate stopDefantomization];
-    }
+//    }
 
 }
 
