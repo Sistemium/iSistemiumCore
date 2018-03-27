@@ -269,6 +269,9 @@
         
     }
     
+    self.socketUrlString = [self.socketUrlString stringByReplacingOccurrencesOfString:@"//socket." withString:@"//socket-v2."];
+    self.socketUrlString = [self.socketUrlString stringByReplacingOccurrencesOfString:@"//socket2." withString:@"//socket-v2."];
+    
     [STMEntityController checkEntitiesForDuplicates];
     [STMClientDataController checkClientData];
     
