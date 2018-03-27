@@ -596,6 +596,8 @@
 
     }
     
+//    self.socketURL = @"http://lamac.local:8000/socket.io-client/";
+    
     if (self.socketURL) {
         
         self.socketURL = [self.socketURL stringByReplacingOccurrencesOfString:@"//socket."
