@@ -14,7 +14,7 @@
 #import "STMCoreRootTBC.h"
 #import "STMRemoteController.h"
 
-#define AUTH_DELAY 20
+#define AUTH_DELAY 30
 
 
 @interface STMSocketTransport()
@@ -559,12 +559,12 @@
         case SocketIOClientStatusNotConnected:
         case SocketIOClientStatusDisconnected:
             
-            if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
-                
-                [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
-                [self reconnectSocket];
-                
-            }
+//            if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
+//
+//                [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
+//                [self reconnectSocket];
+//
+//            }
             
             break;
             
@@ -582,7 +582,7 @@
 
     [self.logger infoMessage:infoString];
     
-    [self checkReachabilityAndSocketStatus];
+//    [self checkReachabilityAndSocketStatus];
     
     [self.owner socketLostConnection];
     
