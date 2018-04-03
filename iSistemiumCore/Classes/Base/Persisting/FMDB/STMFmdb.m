@@ -21,8 +21,6 @@
 
 #import <sqlite3.h>
 
-#define POOL_SIZE 3
-
 @interface STMFmdbOperation : STMOperation
 
 @property (nonatomic, strong) STMFmdbTransaction *transaction;
@@ -140,7 +138,13 @@
     
     self.poolDatabases = @[].mutableCopy;
     
-    for (int i = 0; i<=POOL_SIZE;i++){
+    NSUInteger poolSize = [NSProcessInfo processInfo].processorCount;
+    
+    poolSize = poolSize > 2 ? 2 : poolSize;
+    
+    NSLog(@"Pool size: %@", @(poolSize));
+    
+    for (int i = 0; i <= poolSize; i++){
         
         FMDatabase *poolDb = [FMDatabase databaseWithPath:self.dbPath];
         
@@ -152,7 +156,7 @@
     
     self.dispatchQueue = dispatch_queue_create("com.sistemium.STMFmdbDispatchQueue", DISPATCH_QUEUE_SERIAL);
     self.operationQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:1];
-    self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:POOL_SIZE];
+    self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:poolSize];
     
     return self;
     
