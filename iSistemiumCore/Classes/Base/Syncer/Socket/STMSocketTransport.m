@@ -27,6 +27,8 @@
 @property (nonatomic) NSTimeInterval timeout;
 
 @property (nonatomic,strong) dispatch_queue_t handleQueue;
+@property (nonatomic,strong) SocketManager *socketManager;
+
 
 @end
 
@@ -83,18 +85,23 @@
     NSDictionary *config = @{
                              @"handleQueue"        : self.handleQueue,
 //                             @"doubleEncodeUTF8"   : @YES,
-                             @"voipEnabled"        : @YES,
+//                             @"voipEnabled"        : @YES,
                              @"log"                : @NO,
                              @"forceWebsockets"    : @NO,
                              @"path"               : path,
                              @"reconnects"         : @YES
                              };
+
+    if (!self.socketManager) {
+        self.socketManager = [[SocketManager alloc] initWithSocketURL:socketUrl config:config];
+    }
     
-    self.socket = [[SocketIOClient alloc] initWithSocketURL:socketUrl config:config];
+    self.socketManager.reconnects = YES;
+    self.socket = self.socketManager.defaultSocket;
 
     [self addEventObservers];
     
-    [self.socket connect];
+    [self.socketManager connect];
     
 }
 
@@ -103,7 +110,8 @@
     
     [self.logger infoMessage:CurrentMethodName];
     [self.socket removeAllHandlers];
-    [self.socket disconnect];
+    self.socketManager.reconnects = NO;
+    [self.socketManager disconnect];
     [self.owner socketWillClosed];
     
     self.socket = nil;
@@ -234,7 +242,7 @@
 
 
 - (BOOL)isReady {
-    return self.socket.status == SocketIOClientStatusConnected && self.isAuthorized;
+    return self.socket.status == SocketIOStatusConnected && self.isAuthorized;
 }
 
 - (void)checkSocket {
@@ -556,8 +564,8 @@
 - (void)checkReachabilityAndSocketStatus {
     
     switch (self.socket.status) {
-        case SocketIOClientStatusNotConnected:
-        case SocketIOClientStatusDisconnected:
+        case SocketIOStatusNotConnected:
+        case SocketIOStatusDisconnected:
             
 //            if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
 //
@@ -568,8 +576,8 @@
             
             break;
             
-        case SocketIOClientStatusConnecting:
-        case SocketIOClientStatusConnected:
+        case SocketIOStatusConnecting:
+        case SocketIOStatusConnected:
         default:
             break;
     }
