@@ -602,8 +602,6 @@
         
         self.socketURL = [self.socketURL stringByReplacingOccurrencesOfString:@"//socket."
                                                                    withString:@"//socket-v2."];
-        self.socketURL = [self.socketURL stringByReplacingOccurrencesOfString:@"//socket2."
-                                                                   withString:@"//socket-v2."];
         
         startSettings = [STMFunctions setValue:self.socketURL
                                         forKey:@"socketUrl"
