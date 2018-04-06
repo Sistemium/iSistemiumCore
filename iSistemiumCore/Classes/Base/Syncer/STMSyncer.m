@@ -683,7 +683,9 @@
     [[self.session logger] saveLogMessageWithText:CurrentMethodName
                                           numType:STMLogMessageTypeInfo];
     
-    [STMClientDataController checkClientData];
+    if (![STMFunctions isAppInBackground]) {
+        [STMClientDataController checkClientData];
+    }
     
 }
 
