@@ -80,8 +80,8 @@
         self.handleQueue =
 //        dispatch_get_main_queue();
         dispatch_queue_create("com.sistemium.STMSocketTransport",
-//                              DISPATCH_QUEUE_CONCURRENT
-                              DISPATCH_QUEUE_SERIAL
+                              DISPATCH_QUEUE_CONCURRENT
+//                              DISPATCH_QUEUE_SERIAL
                               );
     }
     
