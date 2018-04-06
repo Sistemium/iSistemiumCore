@@ -74,7 +74,7 @@
 
 - (void)cancel {
     [super cancel];
-    NSLog(@"entityName: %@", self.entityName);
+    NSLog(@"cancel downloading entityName: %@", self.entityName);
 }
 
 @end
@@ -166,7 +166,8 @@
     NSLogMethodName;
     
     [self.downloadingState.queue cancelAllOperations];
-    [self receivingDidFinishWithError:nil];
+    self.downloadingState = nil;
+//    [self receivingDidFinishWithError:nil];
     
 }
 

@@ -683,7 +683,7 @@
     [[self.session logger] saveLogMessageWithText:CurrentMethodName
                                           numType:STMLogMessageTypeInfo];
     
-    if (![STMFunctions isAppInBackground]) {
+    if ([NSThread isMainThread]) {
         [STMClientDataController checkClientData];
     }
     
@@ -697,8 +697,10 @@
                                           numType:STMLogMessageTypeInfo];
 
     if ([self.dataDownloadingDelegate downloadingState]) {
-        self.needRepeatDownload = YES;
-        return;
+//        self.needRepeatDownload = YES;
+//        return;
+        [[self.session logger] importantMessage:@"receiveData is stopping downloading"];
+        [self.dataDownloadingDelegate stopDownloading];
     }
     
     [self.dataDownloadingDelegate startDownloading];
