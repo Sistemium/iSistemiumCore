@@ -256,14 +256,14 @@
     STMOperationQueue *queue = self.downloadingState.queue;
     
     if (!queue) {
-        return [self logErrorMessage:@"receivingDidFinish with nil queue"];
+        [self logErrorMessage:@"receivingDidFinish with nil queue"];
+    } else {
+        NSString *finishedIn = queue.printableFinishedIn;
+        NSString *duration = queue.printableFinishedOperationsDuration;
+        NSUInteger initialCount = queue.finishedOperationsCount;
+        
+        NSLog(@"receivingDidFinish in %@ (%@ total of %@ operations)", finishedIn, duration, @(initialCount));
     }
-    
-    NSString *finishedIn = queue.printableFinishedIn;
-    NSString *duration = queue.printableFinishedOperationsDuration;
-    NSUInteger initialCount = queue.finishedOperationsCount;
-    
-    NSLog(@"receivingDidFinish in %@ (%@ total of %@ operations)", finishedIn, duration, @(initialCount));
     
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
