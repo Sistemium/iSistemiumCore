@@ -39,22 +39,30 @@
         return nil;
     }
     
-    id item = self.privateData[key];
+    id item;
     
-    if (!item) {
-        item = self.privateData[key] = [[self.itemsClass alloc] init];
+    @synchronized (self) {
+        
+        item = self.privateData[key];
+        
+        if (!item) {
+            item = self.privateData[key] = [[self.itemsClass alloc] init];
+        }
+    
     }
-    
+
     return item;
 
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(id)key {
     
-    if (obj) {
-        self.privateData[key] = obj;
-    } else {
-        [self removeObjectForKey:key];
+    @synchronized (self) {
+        if (obj) {
+            self.privateData[key] = obj;
+        } else {
+            [self removeObjectForKey:key];
+        }
     }
     
 }
@@ -64,7 +72,9 @@
 }
 
 - (void)removeObjectForKey:(NSString *)aKey {
-    [self.privateData removeObjectForKey:aKey];
+    @synchronized (self) {
+        [self.privateData removeObjectForKey:aKey];
+    }
 }
 
 - (id)valueForKey:(NSString *)aKey {
