@@ -322,7 +322,9 @@
                 }
                 
                 if (lts) {
-                    [subscription.ltsOffset setObject:lts forKey:entityName];
+                    @synchronized (subscription) {
+                        [subscription.ltsOffset setObject:lts forKey:entityName];
+                    }
                 }
                 
             }]];
