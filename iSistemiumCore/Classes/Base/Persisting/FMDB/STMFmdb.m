@@ -92,12 +92,26 @@
         savedModel = [[NSManagedObjectModel alloc] init];
     }
 
-    NSError *error = nil;
-    STMModelMapper *modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel
-                                                             destinationModel:model
-                                                                        error:&error];
+    NSString *versionPath = [self.dbPath stringByAppendingString:@".version"];
 
-    if (modelMapper.needToMigrate) {
+    NSData *versionData = [NSData dataWithContentsOfFile:versionPath];
+
+    NSString *savedVersion = versionData ? [NSString stringWithUTF8String:versionData.bytes] : nil;
+    NSString *bundleVersion = BUILD_VERSION;
+
+    BOOL needToMigrate = !savedVersion || [savedVersion compare:bundleVersion] != NSOrderedDescending;
+
+    NSLog(@"Saved model version: %@, bundle version: %@, maybe need to migrate: %@", savedVersion, bundleVersion, needToMigrate ? @"yes" : @"no");
+
+    NSError *error = nil;
+    STMModelMapper *modelMapper;
+
+    if (needToMigrate) {
+        modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel destinationModel:model error:&error];
+        needToMigrate = modelMapper.needToMigrate;
+    }
+
+    if (needToMigrate) {
 
         if (error) {
 
@@ -113,6 +127,7 @@
 
         if (self.columnsByTable) {
             [[modelMapper destinationModel] saveToFile:savedModelPath];
+            [bundleVersion writeToFile:versionPath atomically:YES];
         }
 
     } else {
