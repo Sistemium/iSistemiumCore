@@ -13,7 +13,7 @@
 #import "STMSoundController.h"
 
 
-@interface STMScannerInfoVC () <STMBarCodeScannerDelegate, NSFetchedResultsControllerDelegate>
+@interface STMScannerInfoVC () <STMBarCodeScannerDelegate>
 
 @property (weak, nonatomic) IBOutlet STMLabel *scannerStatusLabel;
 @property (weak, nonatomic) IBOutlet STMLabel *beepStatusLabel;
@@ -31,9 +31,6 @@
 @property (nonatomic, strong) STMSpinnerView *spinner;
 @property (nonatomic) NSInteger requestsCounter;
 
-@property (nonatomic, strong) NSFetchedResultsController *resultsController;
-
-
 @end
 
 
@@ -45,33 +42,6 @@
         _spinner = [STMSpinnerView spinnerViewWithFrame:self.view.frame];
     }
     return _spinner;
-    
-}
-
-- (NSFetchedResultsController *)resultsController {
-    
-    if (!_resultsController) {
-
-        NSManagedObjectContext *context = [STMCoreSessionManager sharedManager].currentSession.document.managedObjectContext;
-
-        if (context) {
-            
-            STMFetchRequest *request = [STMFetchRequest fetchRequestWithEntityName:NSStringFromClass([STMBarCodeScan class])];
-            request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"deviceCts" ascending:YES selector:@selector(compare:)]];
-            request.predicate = [STMPredicate predicateWithNoFantoms];
-            
-            _resultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                                     managedObjectContext:context
-                                                                       sectionNameKeyPath:nil
-                                                                                cacheName:nil];
-            _resultsController.delegate = self;
-            
-            [_resultsController performFetch:nil];
-
-        }
-        
-    }
-    return _resultsController;
     
 }
 
@@ -167,8 +137,9 @@
 
 - (void)updateLastScannedBarcode {
     
-    STMBarCodeScan *barcodeScan = self.resultsController.fetchedObjects.lastObject;
-    self.lastScannedBarcode.text = (barcodeScan) ? barcodeScan.code : nil;
+//    STMBarCodeScan *barcodeScan = self.resultsController.fetchedObjects.lastObject;
+    // TODO: implement with persistence
+    self.lastScannedBarcode.text = nil;
 
 }
 
