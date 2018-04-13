@@ -11,6 +11,7 @@
 @interface STMPredicate : NSPredicate
 
 + (NSPredicate *)predicateWithNoFantoms;
+
 + (NSPredicate *)predicateWithNoFantomsFromPredicate:(NSPredicate *)predicate;
 
 

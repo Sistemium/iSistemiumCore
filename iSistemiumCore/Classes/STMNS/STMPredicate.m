@@ -15,7 +15,7 @@
     NSPredicate *notFantom = [NSPredicate predicateWithFormat:@"isFantom == NO"];
 
     return notFantom;
-    
+
 }
 
 + (NSPredicate *)predicateWithNoFantomsFromPredicate:(NSPredicate *)predicate {
@@ -23,17 +23,17 @@
     NSPredicate *notFantom = [self predicateWithNoFantoms];
 
     if (predicate) {
-    
+
         predicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[predicate, notFantom]];
-        
+
         return predicate;
 
     } else {
-        
+
         return notFantom;
-        
+
     }
-    
+
 }
 
 

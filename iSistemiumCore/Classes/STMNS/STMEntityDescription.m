@@ -15,23 +15,23 @@
 @implementation STMEntityDescription
 
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inManagedObjectContext:(NSManagedObjectContext *)context {
-    
+
     NSString *eName = [NSString stringWithFormat:@"%@", entityName];
-    
+
     return [super insertNewObjectForEntityForName:eName inManagedObjectContext:context];
-    
+
 }
 
 + (STMEntityDescription *)entityForName:(NSString *)entityName inManagedObjectContext:(NSManagedObjectContext *)context {
-    
+
     if (context) {
-        
+
         NSString *eName = [NSString stringWithFormat:@"%@", entityName];
-        
-        return (STMEntityDescription *)[super entityForName:eName inManagedObjectContext:context];
-        
+
+        return (STMEntityDescription *) [super entityForName:eName inManagedObjectContext:context];
+
     } else {
-        
+
 //        STMDocument *document = [[STMCoreSessionManager sharedManager] currentSession].document;
 //        
 //        CLS_LOG(@"entityForName method — context is nil");
@@ -41,7 +41,7 @@
 //        CLS_LOG(@"parentContext %@", document.managedObjectContext.parentContext);
 
         return nil;
-        
+
     }
 
 }

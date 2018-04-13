@@ -9,7 +9,7 @@
 #import "STMFetchRequest.h"
 #import "STMCoreNS.h"
 
-@interface STMFetchRequest()
+@interface STMFetchRequest ()
 
 
 @end
@@ -18,22 +18,22 @@
 @implementation STMFetchRequest
 
 + (STMFetchRequest *)fetchRequestWithEntityName:(NSString *)entityName {
-    
+
     entityName = [NSString stringWithFormat:@"%@", entityName];
-    
-    STMFetchRequest *request = (STMFetchRequest *)[super fetchRequestWithEntityName:entityName];
+
+    STMFetchRequest *request = (STMFetchRequest *) [super fetchRequestWithEntityName:entityName];
     request.predicate = nil;
-    
+
     return request;
-    
+
 }
 
 - (void)setPredicate:(NSPredicate *)predicate {
-    
+
     predicate = [STMPredicate predicateWithNoFantomsFromPredicate:predicate];
-    
+
     [super setPredicate:predicate];
-    
+
 }
 
 @end

@@ -14,7 +14,7 @@
 
 @interface STMOperationQueue ()
 
-@property (nonatomic,strong) NSDate *startedAt;
+@property (nonatomic, strong) NSDate *startedAt;
 @property (nonatomic) NSTimeInterval finishedIn;
 
 @property (atomic) NSUInteger iterationsCount;
@@ -39,26 +39,26 @@
 }
 
 - (instancetype)init {
-    
+
     self = [super init];
     self.finishedIn = 0;
     self.iterationsCount = 0;
     self.finishedOperationsCount = 0;
     self.finishedOperationsDuration = 0;
     self.maxConcurrentOperationCount = [self maxConcurrentForCurrentDevice];
-    
+
     return self;
-    
+
 }
 
 - (instancetype)initWithDispatchQueue:(dispatch_queue_t)dispatchQueue {
 
     self = [self init];
-    
+
     if (dispatchQueue) self.underlyingQueue = dispatchQueue;
-    
+
     return self;
-    
+
 }
 
 - (NSUInteger)maxConcurrentForCurrentDevice {
@@ -86,36 +86,35 @@
 }
 
 
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context {
 
 #ifdef DEBUG
     if ([keyPath isEqualToString:KEYPATH_IS_FINISHED] && [object respondsToSelector:@selector(finishedIn)]) {
-        
+
         self.finishedOperationsDuration += [object finishedIn];
-        self.finishedOperationsCount ++;
-        
+        self.finishedOperationsCount++;
+
         [object removeObserver:self forKeyPath:KEYPATH_IS_FINISHED];
-        
+
         if (!self.operationCount) {
             self.finishedIn += -[self.startedAt timeIntervalSinceNow];
         }
-        
+
     }
 #endif
-    
+
 }
 
 
 - (void)setSuspended:(BOOL)willBeSuspended {
-    
+
     if (self.suspended && !willBeSuspended) {
         self.startedAt = [NSDate date];
-        self.iterationsCount ++;
+        self.iterationsCount++;
     }
-    
+
     [super setSuspended:willBeSuspended];
-    
+
 }
 
 
