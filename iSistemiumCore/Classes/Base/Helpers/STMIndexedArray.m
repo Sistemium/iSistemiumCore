@@ -10,7 +10,7 @@
 
 @interface STMIndexedArray ()
 
-@property (nonatomic, strong) NSString * primaryKey;
+@property (nonatomic, strong) NSString *primaryKey;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumber *> *primaryIndex;
 
 @end
@@ -52,34 +52,34 @@
 
 - (NSDictionary *)addObject:(NSDictionary *)anObject {
     @synchronized (self) {
-        
+
         NSString *primaryKey = anObject[self.primaryKey];
-        
+
         if (!primaryKey) {
             primaryKey = [[NSUUID UUID] UUIDString].lowercaseString;
             NSMutableDictionary *anObjectCopy = anObject.mutableCopy;
             anObjectCopy[self.primaryKey] = primaryKey;
             anObject = anObjectCopy.copy;
         }
-        
+
         NSNumber *index = self.primaryIndex[primaryKey];
-        
+
         if (!index) {
             [_data addObject:anObject];
             self.primaryIndex[primaryKey] = @(_data.count - 1);
         } else {
             _data[index.integerValue] = anObject;
         }
-        
+
         return anObject;
-        
+
     }
 }
 
-- (NSArray <NSDictionary*> *)addObjectsFromArray:(NSArray <NSDictionary*> *)array {
+- (NSArray <NSDictionary *> *)addObjectsFromArray:(NSArray <NSDictionary *> *)array {
     @synchronized (self) {
-        NSMutableArray <NSDictionary*> *result = [NSMutableArray array];
-        [array enumerateObjectsUsingBlock:^(NSDictionary * obj, NSUInteger idx, BOOL * stop) {
+        NSMutableArray <NSDictionary *> *result = [NSMutableArray array];
+        [array enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL *stop) {
             [result addObject:[self addObject:obj]];
         }];
         return result.copy;
@@ -104,13 +104,13 @@
 
 - (NSArray <NSDictionary *> *)filteredArrayUsingPredicate:(NSPredicate *)predicate {
     @synchronized (self) {
-        
+
         NSMutableArray *predicates = [NSMutableArray arrayWithObject:[NSPredicate predicateWithFormat:@"id != nil"]];
-        
+
         if (predicate) [predicates addObject:predicate];
-        
+
         NSCompoundPredicate *predicateWithNotDeleted = [NSCompoundPredicate andPredicateWithSubpredicates:predicates];
-        
+
         return [_data filteredArrayUsingPredicate:predicateWithNotDeleted];
     }
 }

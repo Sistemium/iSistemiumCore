@@ -141,7 +141,7 @@
         [alertController addAction:cancelAction];
         [alertController addAction:okAction];
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -160,7 +160,13 @@
 
 - (void)syncerReceiveStarted {
     
+    if (!self.isViewLoaded || !self.view.window) {
+        return;
+    }
+    
     self.totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
+    
+    self.tabBarController.tabBar.userInteractionEnabled = [STMEntityController downloadableEntityReady];
 
     [self updateSyncInfo];
     
@@ -168,9 +174,15 @@
 
 - (void)syncerReceiveFinished {
     
+    if (!self.isViewLoaded || !self.view.window) {
+        return;
+    }
+    
     [self updateSyncInfo];
     [self hideProgressBar];
-
+    
+    [STMCorePicturesController.sharedController checkPhotos];
+    
     [self performSelector:@selector(hideNumberOfObjects)
                withObject:nil
                afterDelay:2];
@@ -227,6 +239,7 @@
         
         [self hideProgressBar];
         [self setColorForSyncImageView];
+        self.tabBarController.tabBar.userInteractionEnabled = [STMEntityController downloadableEntityReady];
         
     }];
     
@@ -643,7 +656,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
 
@@ -683,7 +696,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
 }
@@ -768,7 +781,7 @@
             [alertController addAction:noAction];
             [alertController addAction:yesAction];
             
-            [self presentViewController:alertController animated:YES completion:nil];
+            [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
             self.downloadAlertWasShown = YES;
 
@@ -831,7 +844,7 @@
         alertController.popoverPresentationController.sourceView = self.view;
         alertController.popoverPresentationController.sourceRect = self.view.bounds;
         
-        [self presentViewController:alertController animated:YES completion:nil];
+        [self.tabBarController presentViewController:alertController animated:YES completion:nil];
         
     }];
     
@@ -1016,7 +1029,7 @@
                 message:NSLocalizedString(@"NO LOCATION PERMISSION BLOCK MESSAGE", nil)
                 preferredStyle:UIAlertControllerStyleAlert];
             
-            [self presentViewController:self.locationDisabledAlert animated:YES completion:nil];
+            [self.tabBarController presentViewController:self.locationDisabledAlert animated:YES completion:nil];
             
         }];
         
@@ -1298,7 +1311,13 @@
 
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 22, 22)];
     self.syncImageView = imageView;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:imageView];
+    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithCustomView:imageView];
+    NSLayoutConstraint * widthConstraint = [NSLayoutConstraint constraintWithItem:imageView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:22];
+    NSLayoutConstraint * heightConstraint = [NSLayoutConstraint constraintWithItem:imageView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:22];
+    self.navigationItem.rightBarButtonItem = button;
+    [widthConstraint setActive:YES];
+    [heightConstraint setActive:YES];
+    
 
 //    self.lastLocationImageView.image = [self.lastLocationImageView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
@@ -1335,6 +1354,10 @@
         [UIApplication sharedApplication].idleTimerDisabled = YES;
     }
     
+    [STMCorePicturesController.sharedController checkPhotos];
+    
+    [self updateSyncInfo];
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -1347,6 +1370,7 @@
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+//    [STMFunctions nilifyViewForVC:self];
     // Dispose of any resources that can be recreated.
 }
 

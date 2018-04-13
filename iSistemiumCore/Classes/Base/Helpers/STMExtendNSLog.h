@@ -15,4 +15,5 @@
 #endif
 
 void ExtendNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...);
+
 void NSLogMessage(NSDictionary *callerInfo, NSString *format, ...);

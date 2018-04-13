@@ -12,6 +12,10 @@
 
 + (NSArray *)findAllRemote:(NSDictionary *)data;
 
++ (NSNumber *)countRemote:(NSDictionary *)data;
+
 + (NSString *)destroyAllRemote:(NSDictionary *)data;
+
++ (NSArray *)syncFMDB;
 
 @end

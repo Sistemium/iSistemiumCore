@@ -16,7 +16,7 @@
 
 + (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling;
 
-+ (NSString *)quotedName:(NSString*)name;
++ (NSString *)quotedName:(NSString *)name;
 
 
 @end

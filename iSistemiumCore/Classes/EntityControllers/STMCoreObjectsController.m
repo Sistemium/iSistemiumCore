@@ -184,7 +184,7 @@
     
     sc.isInFlushingProcess = NO;
     
-    if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+    if (![STMFunctions isAppInBackground]) {
         
         NSLog(@"app is not in background, flushing canceled");
         return;
@@ -196,37 +196,24 @@
     NSDate *startFlushing = [NSDate date];
     
     NSArray *entitiesWithLifeTime = [STMEntityController entitiesWithLifeTime];
-
-    NSMutableDictionary *entityDic = [NSMutableDictionary dictionary];
     
     for (NSDictionary *entity in entitiesWithLifeTime) {
         
-        if (entity[@"name"] && ![entity[@"name"] isEqual:[NSNull null]]) {
-            
-            NSString *capFirstLetter = [[entity[@"name"] substringToIndex:1] capitalizedString];
-            NSString *capEntityName = [entity[@"name"] stringByReplacingCharactersInRange:NSMakeRange(0,1) withString:capFirstLetter];
-            NSString *entityName = [ISISTEMIUM_PREFIX stringByAppendingString:capEntityName];
-         
-            entityDic[entityName] = @{@"lifeTime": entity[@"lifeTime"],
-                                      @"lifeTimeDateField": entity[@"lifeTimeDateField"] ? entity[@"lifeTimeDateField"] : @"deviceCts"};
-            
-        }
-        
-    }
-    
-    for (NSString *entityName in entityDic.allKeys) {
-        
-        double lifeTime = [entityDic[entityName][@"lifeTime"] doubleValue];
+        double lifeTime = [entity[@"lifeTime"] doubleValue];
+        NSString *entityName = entity[@"name"];
         NSDate *terminatorDate = [NSDate dateWithTimeInterval:-lifeTime*3600 sinceDate:startFlushing];
         
-        NSString *dateField = entityDic[entityName][@"lifeTimeDateField"];
-        NSArray *availableDateKeys = [self attributesForEntityName:entityName withType:NSDateAttributeType];
-        dateField = ([availableDateKeys containsObject:dateField]) ? dateField : @"deviceCts";
+        NSString *dateField = entity[@"lifeTimeDateField"];
+        
+        if ([STMFunctions isNull:dateField]) {
+            dateField = @"deviceCts";
+        }
         
         NSError *error;
+        NSString *prefixedName = [STMFunctions addPrefixToEntityName:entityName];
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
-        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:entityName];
+        NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:prefixedName];
         
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
@@ -234,12 +221,50 @@
             [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
         }
         
+        NSDictionary *relations = [self.persistenceDelegate objectRelationshipsForEntityName:prefixedName isToMany:@YES cascade:@NO];
+        
+        NSMutableDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
+                                         STMPersistingOptionPageSize: @(1000)
+                                         }.mutableCopy;
+        
+        NSMutableArray *denyCascades = [NSMutableArray array];
+
+        [relations enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSRelationshipDescription *relation, BOOL * _Nonnull stop) {
+            
+            NSString *destinationName = [STMFunctions removePrefixFromEntityName:relation.destinationEntity.name];
+            
+            if (relation.deleteRule != NSDenyDeleteRule) {
+                return;
+            }
+            
+            NSSet <NSString*> *concreteDescendants = [self.persistenceDelegate hierarchyForEntityName:relation.destinationEntity.name];
+            
+            for (NSString *descendant in concreteDescendants) {
+                NSString *denyDelete = [NSString stringWithFormat:@"not exists (select * from %@ where %@Id = %@.id)", [STMFunctions removePrefixFromEntityName:descendant], relation.inverseRelationship.name, entityName];
+                
+                [denyCascades addObject:denyDelete];
+            }
+
+            if (![self.persistenceDelegate isConcreteEntityName:destinationName]) {
+                return;
+            }
+            
+            NSString *denyDelete = [NSString stringWithFormat:@"not exists (select * from %@ where %@Id = %@.id)", destinationName, relation.inverseRelationship.name, entityName];
+            
+            [denyCascades addObject:denyDelete];
+            
+        }];
+        
+        if (denyCascades.count) {
+            options[STMPersistingOptionWhere] = [denyCascades componentsJoinedByString:@" AND "];
+        }
+        
         NSCompoundPredicate *predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType
                                                                      subpredicates:subpredicates];
         
         NSUInteger deletedCount = [self.persistenceDelegate destroyAllSync:entityName
                                                                  predicate:predicate
-                                                                   options:@{STMPersistingOptionRecordstatuses:@NO}
+                                                                   options:options.copy
                                                                      error:&error];
         
         if (error) {
@@ -255,10 +280,8 @@
 #pragma mark - finish of recieving objects
 
 + (void)dataLoadingFinished {
-    
-#warning If we are called here in the end of a background fetch, then something wrong would happen if we've got some pictures to process because the completion handler doesn't wait us to finish processing pictures.
-    
-    [STMCorePicturesController.sharedController checkPhotos];
+
+    [STMCorePicturesController checkNotUploadedPhotos];
     
 #ifdef DEBUG
     [self logTotalNumberOfObjectsInStorages];

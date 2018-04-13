@@ -11,8 +11,10 @@
 
 @interface STMPersisterTransactionCoordinator : NSObject <STMPersistingTransaction>
 
-- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
-- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL) readOnly;
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
+
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL)readOnly;
+
 - (void)endTransactionWithSuccess:(BOOL)success;
 
 @end

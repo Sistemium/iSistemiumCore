@@ -124,10 +124,23 @@
         return nil;
     }
     
-    return [STMCorePicturesController.sharedController setImagesFromData:photoData
+    NSMutableDictionary *picture = [STMCorePicturesController.sharedController setImagesFromData:photoData
                                                               forPicture:@{@"id": [STMFunctions uuidString]}
-                                                          withEntityName:entityName
-                                                               andUpload:YES];
+                                                          withEntityName:entityName].mutableCopy;
+    
+    NSString *xid = picture[STMPersistingKeyPrimary];
+    NSString *fileName = [xid stringByAppendingString:@".jpg"];
+    
+    [STMCorePicturesController.sharedController saveImageFile:fileName forPicture:picture fromImageData:photoData withEntityName:entityName];
+    
+    return picture.copy;
+    
+}
+
++ (void)uploadPhotoEntityName:(NSString *)entityName antributes:(NSDictionary *)atributes photoData:(NSData *)photoData {
+    
+    
+    [STMCorePicturesController.sharedController uploadImageEntityName:entityName attributes:atributes data:photoData];
     
 }
 

@@ -33,7 +33,15 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message;
 
+- (void)handleCopyToClipboardMessage:(WKScriptMessage *)message;
+
+- (void)handleSendToCameraRollMessage:(WKScriptMessage *)message;
+
+- (void)handleLoadImageMessage:(WKScriptMessage *)message;
+
 - (void)handleGetPictureMessage:(WKScriptMessage *)message;
+
+- (void)handleSaveImageMessage:(WKScriptMessage *)message;
 
 - (void)receiveFindMessage:(WKScriptMessage *)message;
 
@@ -42,6 +50,8 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 - (void)receiveDestroyMessage:(WKScriptMessage *)message;
 
 - (void)receiveSubscribeMessage:(WKScriptMessage *)message;
+
+- (void)syncSubscriptions;
 
 - (void)cancelSubscriptions;
 

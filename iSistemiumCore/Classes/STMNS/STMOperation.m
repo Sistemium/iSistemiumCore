@@ -31,22 +31,22 @@
 }
 
 - (void)start {
-    
+
     if (self.isCancelled) {
         NSLog(@"operation cancelled");
         return [self finish];
     }
-        
+
     self.startedAt = [NSDate date];
 
     [self willChangeValueForKey:@"isExecuting"];
 
     _executing = YES;
-    
+
     [self didChangeValueForKey:@"isExecuting"];
-    
+
     [self main];
-    
+
 }
 
 - (BOOL)isExecuting {
@@ -58,23 +58,23 @@
 }
 
 - (void)finish {
-    
+
     if (self.startedAt) {
         self.finishedIn = -[self.startedAt timeIntervalSinceNow];
     }
-    
+
+    if (!_finished && !self.isCancelled && _executing) {
+        [self willChangeValueForKey:@"isFinished"];
+        _finished = YES;
+        [self didChangeValueForKey:@"isFinished"];
+    }
+
     if (_executing) {
         [self willChangeValueForKey:@"isExecuting"];
         _executing = NO;
         [self didChangeValueForKey:@"isExecuting"];
     }
-    
-    if (!_finished && !self.isCancelled) {
-        [self willChangeValueForKey:@"isFinished"];
-        _finished = YES;
-        [self didChangeValueForKey:@"isFinished"];
-    }
-    
+
 }
 
 - (NSString *)printableFinishedIn {

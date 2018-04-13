@@ -21,7 +21,6 @@
 }
 
 - (instancetype)initWithInMemoryPersister:(STMFakePersisting *)persister {
-    self = [self init];
     self.persister = persister;
     return self;
 }

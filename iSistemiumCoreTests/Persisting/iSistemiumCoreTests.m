@@ -63,6 +63,10 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     
     STMAssertSQLFilter(predicate, @"([date] = '2017-01-01')");
     
+    predicate = [NSPredicate predicateWithFormat:@"discount != %@", @(0)];
+    
+    STMAssertSQLFilter(predicate, @"([discount] <> '0')");
+
     predicate = [NSPredicate predicateWithFormat:@"avatarPictureId == %@", nil];
     
     STMAssertSQLFilter(predicate, @"([avatarPictureId] IS NULL)");

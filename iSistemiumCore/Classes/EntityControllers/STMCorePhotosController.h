@@ -18,6 +18,8 @@
 
 + (NSDictionary *)newPhotoObjectEntityName:(NSString *)entityName photoData:(NSData *)photoData;
 
++ (void)uploadPhotoEntityName:(NSString *)entityName antributes:(NSDictionary *)atributes photoData:(NSData *)photoData;
+
 - (STMCoreLocationTracker *)locationTracker;
 
 

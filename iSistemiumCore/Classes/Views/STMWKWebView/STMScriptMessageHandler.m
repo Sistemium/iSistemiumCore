@@ -10,6 +10,8 @@
 #import "STMImagePickerController.h"
 #import "STMCorePicturesController.h"
 #import "STMCorePhotosController.h"
+#import <Photos/Photos.h>
+#import "STMLogger.h"
 
 @implementation STMScriptMessagingSubscription
 
@@ -98,10 +100,118 @@
     
 }
 
+- (void)handleCopyToClipboardMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+    NSString *text = parameters[@"text"];
+    
+    UIPasteboard *pb = [UIPasteboard generalPasteboard];
+    [pb setString:text];
+    
+    [self.owner callbackWithData:@[]
+                      parameters:parameters
+              jsCallbackFunction:callback];
+    
+}
+
+- (void)handleSendToCameraRollMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+    NSString *imageID = parameters[@"imageID"];
+    
+    [STMCorePicturesController.sharedController loadImageForPrimaryKey:imageID]
+    .then(^ (NSDictionary *downloadedPicture){
+        
+        UIImage *image = [STMCorePicturesController.sharedController imageFileForPrimaryKey:downloadedPicture[STMPersistingKeyPrimary]];
+        
+        if (!image){
+
+            return [self.owner callbackWithData:@""
+                                     parameters:parameters
+                             jsCallbackFunction:callback];
+            
+        }
+        
+        UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), (__bridge_retained void * _Nullable)(parameters));
+        
+    })
+    .catch(^ (NSError *error) {
+       
+        return [self.owner callbackWithData:@""
+                                 parameters:parameters
+                         jsCallbackFunction:callback];
+        
+    });
+    
+}
+
+-(void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo{
+    
+    NSDictionary *parameters = (__bridge_transfer NSMutableDictionary *)(contextInfo);
+    
+    NSString *callback = parameters[@"callback"];
+    
+    if (error){
+        
+        [self.owner callbackWithData:NSLocalizedString(@"GIVE PERMISSIONS", nil)
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+        
+    }else{
+        
+        [self.owner callbackWithData:@[]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+        
+    }
+    
+}
+
+- (void)handleLoadImageMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    NSString *callback = parameters[@"callback"];
+    NSString *identifier = parameters[@"imageID"];
+    
+    [STMCorePicturesController.sharedController loadImageForPrimaryKey:identifier]
+    .then(^ (NSDictionary *downloadedPicture){
+        [self.owner callbackWithData:@[downloadedPicture]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+    })
+    .catch(^ (NSError *error) {
+        [self.owner callbackWithData:@""
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+    });
+    
+}
+
 - (void)handleGetPictureMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
     [self handleGetPictureParameters:parameters];
+    
+}
+
+- (void)handleSaveImageMessage:(WKScriptMessage *)message {
+    
+    self.takePhotoMessageParameters = message.body;
+    self.takePhotoCallbackJSFunction = self.takePhotoMessageParameters[@"callback"];
+    
+    self.photoEntityName = self.takePhotoMessageParameters[@"entityName"];
+    self.photoData = self.takePhotoMessageParameters[@"data"];
+    
+    NSString *base64String = self.takePhotoMessageParameters[@"imageData"];
+    NSURL *url = [NSURL URLWithString:base64String];
+    NSData *imageData = [NSData dataWithContentsOfURL:url];
+    UIImage *image = [UIImage imageWithData:imageData];
+    
+    [self saveImage:image];
     
 }
 
@@ -187,6 +297,31 @@
     
 }
 
+- (void)syncSubscriptions {
+    
+    for (STMScriptMessagingSubscription *subscription in self.subscriptions.allValues){
+        
+        for (NSString *entityName in subscription.ltsOffset.allKeys){
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ > %@", STMPersistingOptionLts, subscription.ltsOffset[entityName]];
+            NSError *error;
+            
+            NSArray *data = [self.persistenceDelegate findAllSync:entityName predicate:predicate options:nil error:&error];
+            
+            if (!data.count) {
+                continue;
+            }
+            
+            [self sendSubscribedBunchOfObjects:data entityName:entityName];
+            
+            [self updateLtsOffsetForEntityName:entityName subscription:subscription];
+            
+        }
+        
+    }
+    
+}
+
 - (void)receiveDestroyMessage:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
@@ -252,7 +387,7 @@
     imagePickerController.ownerVC = self;
     
     [self.owner.tabBarController presentViewController:imagePickerController animated:YES completion:^{
-        [self.owner.view addSubview:self.spinnerView];
+//        [self.owner.view addSubview:self.spinnerView];
     }];
     
 }
@@ -271,8 +406,8 @@
 
 - (void)imagePickerWasDissmised:(UIImagePickerController *)picker {
     
-    [self.spinnerView removeFromSuperview];
-    self.spinnerView = nil;
+//    [self.spinnerView removeFromSuperview];
+//    self.spinnerView = nil;
     
     self.waitingPhoto = NO;
     
@@ -295,7 +430,9 @@
     
     CGFloat jpgQuality = [STMCorePicturesController.sharedController jpgQuality];
     
-    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:UIImageJPEGRepresentation(image, jpgQuality)].mutableCopy;
+    NSData *jpgData = UIImageJPEGRepresentation(image, jpgQuality);
+    
+    NSMutableDictionary *attributes = [STMCorePhotosController newPhotoObjectEntityName:self.photoEntityName photoData:jpgData].mutableCopy;
     
     if (!attributes) {
         self.waitingPhoto = NO;
@@ -305,14 +442,25 @@
     [attributes addEntriesFromDictionary:self.photoData];
     
     [self.persistenceDelegate merge:self.photoEntityName attributes:attributes.copy options:nil]
-    .then(^(NSDictionary * result) {
+    .then(^(NSDictionary *result) {
+        
         [self.owner callbackWithData:@[result]
                     parameters:self.takePhotoMessageParameters
             jsCallbackFunction:self.takePhotoCallbackJSFunction];
+        
+        [STMCorePhotosController uploadPhotoEntityName:self.photoEntityName antributes:result photoData:jpgData];
+        
     })
     .catch(^(NSError *error) {
+        
         NSLog(error.localizedDescription);
+        
+        NSString *logMessage = [NSString stringWithFormat:@"Error on merge during saveImage: %@", error.localizedDescription];
+        
+        [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
+        
         [self.owner callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
+        
     })
     .always(^(){
         self.waitingPhoto = NO;

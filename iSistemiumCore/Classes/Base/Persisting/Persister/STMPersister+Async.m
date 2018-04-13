@@ -18,7 +18,7 @@
     dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
-        NSDictionary * result = [self findSync:entityName identifier:identifier options:options error:&error];
+        NSDictionary *result = [self findSync:entityName identifier:identifier options:options error:&error];
         if (completionHandler) {
             dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
@@ -34,7 +34,7 @@
     dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
-        NSArray * result = [self findAllSync:entityName predicate:predicate options:options error:&error];
+        NSArray *result = [self findAllSync:entityName predicate:predicate options:options error:&error];
         if (completionHandler) {
             dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
@@ -50,7 +50,7 @@
     dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
-        NSDictionary * result = [self mergeSync:entityName attributes:attributes options:options error:&error];
+        NSDictionary *result = [self mergeSync:entityName attributes:attributes options:options error:&error];
         if (completionHandler) {
             dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
@@ -66,7 +66,7 @@
     dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
-        NSArray * result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
+        NSArray *result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
         if (completionHandler) {
             dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
@@ -114,7 +114,7 @@
     dispatch_async(self.dispatchQueue, ^{
 
         NSError *error;
-        NSDictionary * result = [self updateSync:entityName attributes:attributes options:options error:&error];
+        NSDictionary *result = [self updateSync:entityName attributes:attributes options:options error:&error];
         if (completionHandler) {
             dispatch_async(self.dispatchQueue, ^{
                 completionHandler(!error, result, error);
@@ -131,11 +131,11 @@
 
 - (AnyPromise *)find:(NSString *)entityName identifier:(NSString *)identifier options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
-            NSDictionary * result = [self findSync:entityName identifier:identifier options:options error:&error];
+            NSDictionary *result = [self findSync:entityName identifier:identifier options:options error:&error];
 
             if (error) {
                 resolve(error);
@@ -150,11 +150,11 @@
 
 - (AnyPromise *)findAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
-            NSArray * result = [self findAllSync:entityName predicate:predicate options:options error:&error];
+            NSArray *result = [self findAllSync:entityName predicate:predicate options:options error:&error];
 
             if (error) {
                 resolve(error);
@@ -169,11 +169,11 @@
 
 - (AnyPromise *)merge:(NSString *)entityName attributes:(NSDictionary *)attributes options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
-            NSDictionary * result = [self mergeSync:entityName attributes:attributes options:options error:&error];
+            NSDictionary *result = [self mergeSync:entityName attributes:attributes options:options error:&error];
 
             if (error) {
                 resolve(error);
@@ -188,11 +188,11 @@
 
 - (AnyPromise *)mergeMany:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
-            NSArray * result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
+            NSArray *result = [self mergeManySync:entityName attributeArray:attributeArray options:options error:&error];
 
             if (error) {
                 resolve(error);
@@ -207,7 +207,7 @@
 
 - (AnyPromise *)destroy:(NSString *)entityName identifier:(NSString *)identifier options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
@@ -226,7 +226,7 @@
 
 - (AnyPromise *)destroyAll:(NSString *)entityName predicate:(NSPredicate *)predicate options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
@@ -245,11 +245,11 @@
 
 - (AnyPromise *)update:(NSString *)entityName attributes:(NSDictionary *)attributes options:(STMPersistingOptions)options {
 
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve){
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         dispatch_async(self.dispatchQueue, ^{
 
             NSError *error;
-            NSDictionary * result = [self updateSync:entityName attributes:attributes options:options error:&error];
+            NSDictionary *result = [self updateSync:entityName attributes:attributes options:options error:&error];
 
             if (error) {
                 resolve(error);

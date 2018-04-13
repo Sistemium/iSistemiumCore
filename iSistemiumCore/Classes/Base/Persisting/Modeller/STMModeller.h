@@ -15,9 +15,11 @@
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 
 - (instancetype)initWithModelName:(NSString *)modelName;
+
 - (instancetype)initWithModel:(NSManagedObjectModel *)model;
 
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName;
+
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
 
 @end

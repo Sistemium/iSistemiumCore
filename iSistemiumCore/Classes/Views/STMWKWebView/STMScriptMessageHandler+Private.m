@@ -269,16 +269,23 @@
     STMScriptMessagingSubscription *subscription = self.subscriptions[callbackName];
     
     if (!subscription) {
+        
         subscription = [[STMScriptMessagingSubscription alloc] init];
         subscription.entityNames = [NSMutableSet set];
         subscription.callbackName = callbackName;
+        subscription.ltsOffset = @{}.mutableCopy;
+        
     }
     
     for (NSString *entityName in entities) {
         
         if ([self.modellingDelegate isConcreteEntityName:entityName]) {
             
-            [subscription.entityNames addObject:[STMFunctions addPrefixToEntityName:entityName]];
+            NSString *prfixedEntityName = [STMFunctions addPrefixToEntityName:entityName];
+            
+            [subscription.entityNames addObject:prfixedEntityName];
+            
+            [self updateLtsOffsetForEntityName:prfixedEntityName subscription:subscription];
             
         }
         
@@ -295,8 +302,31 @@
         
         for (NSString *entityName in subscription.entityNames) {
             [persisterSubscriptions addObject:[self.persistenceDelegate observeEntity:entityName predicate:nil options:options callback:^(NSArray *data) {
-#warning need to check if we're in background
+                
+                if ([STMFunctions isAppInBackground]) {
+                    return;
+                }
+
                 [self sendSubscribedBunchOfObjects:data entityName:entityName];
+                
+                NSString *lts = data.firstObject[STMPersistingOptionLts];
+                
+                for (NSDictionary *object in data){
+                    
+                    if (object[STMPersistingOptionLts] > lts) {
+                        
+                        lts = object[STMPersistingOptionLts];
+                        
+                    }
+                    
+                }
+                
+                if (lts) {
+                    @synchronized (subscription) {
+                        [subscription.ltsOffset setObject:lts forKey:entityName];
+                    }
+                }
+                
             }]];
         }
         
@@ -311,6 +341,23 @@
     }
     
     return result;
+    
+}
+
+- (void)updateLtsOffsetForEntityName:(NSString *)entityName subscription:(STMScriptMessagingSubscription *)subscription {
+    
+    NSDictionary *options = @{STMPersistingOptionPageSize   : @1,
+                              STMPersistingOptionOrder      : STMPersistingOptionLts,
+                              STMPersistingOptionOrderDirectionDesc};
+    
+    NSError *error;
+    
+    
+    NSArray *objects = [self.persistenceDelegate findAllSync:entityName predicate:nil options:options error:&error];
+    
+    if (objects.firstObject) {
+        [subscription.ltsOffset setObject:objects.firstObject[STMPersistingOptionLts] forKey:entityName];
+    }
     
 }
 

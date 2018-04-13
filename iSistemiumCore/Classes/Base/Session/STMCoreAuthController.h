@@ -18,20 +18,25 @@
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic, strong) NSDictionary *rolesResponse;
 
-@property (nonatomic,strong) NSString *userName;
-@property (nonatomic,strong) NSString *userID;
-@property (nonatomic,strong) NSDate *lastAuth;
-@property (nonatomic,strong) NSString *accountOrg;
+@property (nonatomic, strong) NSString *userName;
+@property (nonatomic, strong) NSString *userID;
+@property (nonatomic, strong) NSDate *lastAuth;
+@property (nonatomic, strong) NSString *accountOrg;
 
-@property (nonatomic,readwrite) STMAuthState controllerState;
+@property (nonatomic, readwrite) STMAuthState controllerState;
 
 + (instancetype)authController;
 
 - (NSString *)dataModelName;
 
 - (BOOL)sendPhoneNumber:(NSString *)phoneNumber;
+
 - (BOOL)sendSMSCode:(NSString *)SMSCode;
+
 - (BOOL)requestNewSMSCode;
+
 - (BOOL)requestRoles;
+
+- (void)checkPhoneNumber;
 
 @end

@@ -364,7 +364,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     __kindof NSObject *argument = [NSNull null];
     
     if ([value isKindOfClass:[NSString class]]) {
-        value = [(NSString *)value stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        value = [(NSString *)value stringByRemovingPercentEncoding];
     }
     
     compOp = compOp.lowercaseString;

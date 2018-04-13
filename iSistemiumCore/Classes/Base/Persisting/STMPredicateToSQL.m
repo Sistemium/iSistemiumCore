@@ -15,11 +15,11 @@
 static NSString *SQLNullValueString = @"NULL";
 
 + (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling {
-    
+
     STMPredicateToSQL *instance = [[STMPredicateToSQL alloc] init];
-    
+
     instance.modellingDelegate = modelling;
-    
+
     return instance;
 }
 
@@ -27,14 +27,14 @@ static NSString *SQLNullValueString = @"NULL";
     return [NSString stringWithFormat:@"[%@]", name];
 }
 
-- (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath{
-    NSString     *retStr = nil;
-    NSDictionary *convertibleSetOperations = @{@"@avg" : @"avg",@"@max" : @"max",@"@min" : @"min",@"@sum" : @"sum",@"@distinctUnionOfObjects" : @"distinct" };
-    
-    for (NSString *setOpt in [convertibleSetOperations allKeys]){
-        if ([keyPath hasSuffix:setOpt]){
+- (NSString *)SQLExpressionForKeyPath:(NSString *)keyPath {
+    NSString *retStr = nil;
+    NSDictionary *convertibleSetOperations = @{@"@avg": @"avg", @"@max": @"max", @"@min": @"min", @"@sum": @"sum", @"@distinctUnionOfObjects": @"distinct"};
+
+    for (NSString *setOpt in [convertibleSetOperations allKeys]) {
+        if ([keyPath hasSuffix:setOpt]) {
             NSString *clean = [[keyPath stringByReplacingOccurrencesOfString:setOpt withString:@""] stringByReplacingOccurrencesOfString:@".." withString:@"."];
-            retStr = [NSString stringWithFormat:@"%@(%@)",convertibleSetOperations[setOpt], clean];
+            retStr = [NSString stringWithFormat:@"%@(%@)", convertibleSetOperations[setOpt], clean];
         }
     }
     if (retStr != nil) {
@@ -43,44 +43,41 @@ static NSString *SQLNullValueString = @"NULL";
     return keyPath;
 }
 
-- (NSString *) SQLSelectClauseForSubqueryExpression:(NSExpression *)expression{
+- (NSString *)SQLSelectClauseForSubqueryExpression:(NSExpression *)expression {
     NSLog(@"SQLSelectClauseForSubqueryExpression not implemented");
     return nil;
 }
 
-- (NSString *) SQLLiteralListForArray:(NSArray *)array{
+- (NSString *)SQLLiteralListForArray:(NSArray *)array {
     NSMutableArray *retArray = [NSMutableArray array];
-    
+
     for (NSExpression *obj in array) {
         [retArray addObject:[self SQLExpressionForNSExpression:obj]];
     }
-    return [NSString stringWithFormat:@"(%@)",[retArray componentsJoinedByString:@","]];
+    return [NSString stringWithFormat:@"(%@)", [retArray componentsJoinedByString:@","]];
 }
 
-- (NSString *) SQLFunctionLiteralForFunctionExpression:(NSExpression *)exp{
-    NSDictionary *convertibleNullaryFunctions = @{ @"now" : @"date('now')",@"random" : @"random()" };
-    NSDictionary *convertibleUnaryFunctions   = @{ @"uppercase:" : @"upper",@"lowercase:" : @"lower",@"abs:" : @"abs" };
-    NSDictionary *convertibleBinaryFunctions  = @{ @"add:to:"        : @"+" ,
-                                                   @"from:subtract:" : @"-" ,
-                                                   @"multiply:by:"   : @"*" ,
-                                                   @"divide:by:"     : @"/" ,
-                                                   @"modulus:by:"    : @"%" ,
-                                                   @"leftshift:by"   : @"<<",
-                                                   @"rightshift:by:" : @">>"
-                                                   };
-    
-    if ([[convertibleNullaryFunctions allKeys] containsObject:[exp function]]){
+- (NSString *)SQLFunctionLiteralForFunctionExpression:(NSExpression *)exp {
+    NSDictionary *convertibleNullaryFunctions = @{@"now": @"date('now')", @"random": @"random()"};
+    NSDictionary *convertibleUnaryFunctions = @{@"uppercase:": @"upper", @"lowercase:": @"lower", @"abs:": @"abs"};
+    NSDictionary *convertibleBinaryFunctions = @{@"add:to:": @"+",
+            @"from:subtract:": @"-",
+            @"multiply:by:": @"*",
+            @"divide:by:": @"/",
+            @"modulus:by:": @"%",
+            @"leftshift:by": @"<<",
+            @"rightshift:by:": @">>"
+    };
+
+    if ([[convertibleNullaryFunctions allKeys] containsObject:[exp function]]) {
         return convertibleNullaryFunctions[[exp function]];
-    }
-    else {
-        if ([[convertibleUnaryFunctions allKeys] containsObject:[exp function]]){
-            return [NSString stringWithFormat:@"%@(%@)",convertibleUnaryFunctions[[exp function]],[self SQLExpressionForNSExpression:[exp arguments][0]]];
-        }
-        else {
-            if ([[convertibleBinaryFunctions allKeys] containsObject:[exp function]]){
-                return ([NSString stringWithFormat:@"(%@ %@ %@)",[self SQLExpressionForNSExpression:[exp arguments][0]],convertibleBinaryFunctions[[exp function]],[self SQLExpressionForNSExpression:[exp arguments][1]]]);
-            }
-            else {
+    } else {
+        if ([[convertibleUnaryFunctions allKeys] containsObject:[exp function]]) {
+            return [NSString stringWithFormat:@"%@(%@)", convertibleUnaryFunctions[[exp function]], [self SQLExpressionForNSExpression:[exp arguments][0]]];
+        } else {
+            if ([[convertibleBinaryFunctions allKeys] containsObject:[exp function]]) {
+                return ([NSString stringWithFormat:@"(%@ %@ %@)", [self SQLExpressionForNSExpression:[exp arguments][0]], convertibleBinaryFunctions[[exp function]], [self SQLExpressionForNSExpression:[exp arguments][1]]]);
+            } else {
                 NSLog(@"SQLFunctionLiteralForFunctionExpression could not be converted because it uses an unconvertible function");
             }
         }
@@ -88,60 +85,60 @@ static NSString *SQLNullValueString = @"NULL";
     return nil;
 }
 
-- (NSString *) SQLNamedReplacementVariableForVariable:(NSString *)var{
+- (NSString *)SQLNamedReplacementVariableForVariable:(NSString *)var {
     return var;
 }
 
 
-- (NSString *)DatabaseKeyfor:(NSString *)obj{
-    
+- (NSString *)DatabaseKeyfor:(NSString *)obj {
+
     NSString *table = [STMFunctions uppercaseFirst:obj];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
-    
+
     if (isTable) {
         return [STMFunctions uppercaseFirst:obj];
     }
-    
+
     return obj;
 }
 
-- (NSString *)ToManyKeyToTablename:(NSString *)obj{
-    
+- (NSString *)ToManyKeyToTablename:(NSString *)obj {
+
     NSString *table = [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
-    
+
     if (isTable) {
         return [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
     }
-    
+
     return obj;
 }
 
-- (NSString *)FKToTablename:(NSString *)obj{
-    
+- (NSString *)FKToTablename:(NSString *)obj {
+
     NSString *table = [STMFunctions uppercaseFirst:obj];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
-    
+
     if (isTable) {
         return [obj stringByAppendingString:RELATIONSHIP_SUFFIX];
     }
-    
+
     obj = [self replaceKeyWords:obj];
-    
+
     return [obj containsString:@"."] ? obj : [self.class quotedName:obj];
 }
 
-- (NSString *)SQLExpressionForLeftKeyPath:(NSString *)keyPath{
+- (NSString *)SQLExpressionForLeftKeyPath:(NSString *)keyPath {
     NSString *retStr = nil;
-    NSDictionary *convertibleSetOperations = @{ @"@avg" : @"avg",@"@max" : @"max",@"@min" : @"min",@"@sum" : @"sum",@"@distinctUnionOfObjects" : @"distinct" };
-    
-    for (NSString *setOpt in [convertibleSetOperations allKeys]){
-        if ([keyPath hasSuffix:setOpt]){
+    NSDictionary *convertibleSetOperations = @{@"@avg": @"avg", @"@max": @"max", @"@min": @"min", @"@sum": @"sum", @"@distinctUnionOfObjects": @"distinct"};
+
+    for (NSString *setOpt in [convertibleSetOperations allKeys]) {
+        if ([keyPath hasSuffix:setOpt]) {
             NSString *clean = [[keyPath stringByReplacingOccurrencesOfString:setOpt withString:@""] stringByReplacingOccurrencesOfString:@".." withString:@"."];
-            retStr = [NSString stringWithFormat:@"%@(%@)",convertibleSetOperations[setOpt],clean];
+            retStr = [NSString stringWithFormat:@"%@(%@)", convertibleSetOperations[setOpt], clean];
         }
     }
-    
+
     if (retStr != nil) {
         return retStr;
     }
@@ -149,39 +146,37 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 
-- (NSString *) SQLConstantForLeftValue:(id) val{
+- (NSString *)SQLConstantForLeftValue:(id)val {
     if (val == nil) {
         return SQLNullValueString;
     }
     if ([val isEqual:[NSNull null]]) {
         return SQLNullValueString;
     }
-    
-    if ([val isKindOfClass:[NSString class]]){
+
+    if ([val isKindOfClass:[NSString class]]) {
         return [self FKToTablename:val];
-    }
-    else {
-        if ([val respondsToSelector:@selector(intValue)]){
+    } else {
+        if ([val respondsToSelector:@selector(intValue)]) {
             return [self FKToTablename:[val stringValue]];
-        }
-        else {
+        } else {
             return [self SQLConstantForLeftValue:[val description]];
         }
     };
     return nil;
 }
 
-- (NSString *) replaceKeyWords:(NSString*)keyword{
-    if ([keyword isEqualToString:@"xid"] || [keyword isEqualToString:@"SELF"]){
+- (NSString *)replaceKeyWords:(NSString *)keyword {
+    if ([keyword isEqualToString:@"xid"] || [keyword isEqualToString:@"SELF"]) {
         return @"id";
     }
     return keyword;
 }
 
--(NSString *)SQLExpressionForLeftNSExpression:(NSExpression *)expression{
+- (NSString *)SQLExpressionForLeftNSExpression:(NSExpression *)expression {
     NSString *retStr = nil;
-    
-    switch (expression.expressionType){
+
+    switch (expression.expressionType) {
         case NSConstantValueExpressionType: {
             retStr = [self SQLConstantForLeftValue:expression.constantValue];
             break;
@@ -222,52 +217,51 @@ static NSString *SQLNullValueString = @"NULL";
         case NSBlockExpressionType: {
             break;
         }
-        default:{
+        default: {
             break;
         }
     }
     return retStr;
 }
 
--(NSString *)SQLConstantForValue:(id) val{
+- (NSString *)SQLConstantForValue:(id)val {
     if (val == nil) {
         return SQLNullValueString;
     }
     if ([val isEqual:[NSNull null]]) {
         return SQLNullValueString;
     }
-    if ([val isKindOfClass:[NSString class]]){
+    if ([val isKindOfClass:[NSString class]]) {
         return val;
     }
-    if ([val isKindOfClass:[NSDate class]]){
+    if ([val isKindOfClass:[NSDate class]]) {
         return [STMFunctions stringFromDate:val];
     }
-    if ([val isKindOfClass:[NSData class]]){
+    if ([val isKindOfClass:[NSData class]]) {
         return [[STMFunctions UUIDStringFromUUIDData:val] lowercaseString];
     }
-    
+
     if ([val isKindOfClass:NSSet.class]) {
-        val = [(NSSet *)val allObjects];
+        val = [(NSSet *) val allObjects];
     }
-    
-    if ([val isKindOfClass:[NSArray class]]){
-        NSMutableArray* array = @[].mutableCopy;
-        for (NSDictionary* obj in val){
-            if ([obj isKindOfClass:[NSDictionary class]] && obj[@"id"]){
+
+    if ([val isKindOfClass:[NSArray class]]) {
+        NSMutableArray *array = @[].mutableCopy;
+        for (NSDictionary *obj in val) {
+            if ([obj isKindOfClass:[NSDictionary class]] && obj[@"id"]) {
                 [array addObject:obj[@"id"]];
-            }else{
+            } else {
                 [array addObject:[self SQLConstantForValue:obj]];
             }
         }
-        
-        NSString* rez = [array componentsJoinedByString:@"','"];
-        
+
+        NSString *rez = [array componentsJoinedByString:@"','"];
+
         return rez;
     } else {
-        if ([val respondsToSelector:@selector(intValue)]){
+        if ([val respondsToSelector:@selector(intValue)]) {
             return [val stringValue];
-        }
-        else {
+        } else {
             return [self SQLConstantForValue:[val description]];
         }
     }
@@ -276,15 +270,14 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 
-
--(NSString *)SQLExpressionForNSExpression:(NSExpression *)expression{
+- (NSString *)SQLExpressionForNSExpression:(NSExpression *)expression {
     NSString *retStr = nil;
-    
-    switch (expression.expressionType){
+
+    switch (expression.expressionType) {
         case NSConstantValueExpressionType: {
             retStr = [self SQLConstantForValue:expression.constantValue];
-            if (![retStr isEqual: @"NULL"]){
-                retStr = [NSString stringWithFormat:@"'%@'",retStr];
+            if (![retStr isEqual:@"NULL"]) {
+                retStr = [NSString stringWithFormat:@"'%@'", retStr];
             }
             break;
         }
@@ -323,91 +316,90 @@ static NSString *SQLNullValueString = @"NULL";
         case NSBlockExpressionType: {
             break;
         }
-        default:{
+        default: {
             break;
         }
     }
     return retStr;
 }
 
-- (NSString *) SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate{
-    
-    NSString *leftSQLExpression  = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
+- (NSString *)SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate {
+
+    NSString *leftSQLExpression = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
-    
-    NSArray* tables = [leftSQLExpression componentsSeparatedByString:@"."];
-    
-    NSMutableArray<NSString*>* mtables = tables.mutableCopy;
-    
-    for (int i=0; i < [mtables count]; i++){
-        if ([mtables[i] isEqualToString:@"xid"]){
+
+    NSArray *tables = [leftSQLExpression componentsSeparatedByString:@"."];
+
+    NSMutableArray<NSString *> *mtables = tables.mutableCopy;
+
+    for (int i = 0; i < [mtables count]; i++) {
+        if ([mtables[i] isEqualToString:@"xid"]) {
             mtables[i] = @"id";
         }
     }
-    
+
     tables = mtables.copy;
-    
-    if (tables.count > 1){
-        
-        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@",[self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]],[self FKToTablename:tables[1]]];
-        if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]){
-            
+
+    if (tables.count > 1) {
+
+        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@", [self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]], [self FKToTablename:tables[1]]];
+        if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]) {
+
             if ([rightSQLExpression isEqualToString:@"NULL"]) {
 #warning this won't work if relationship name isn't equal to column name
-                leftSQLExpression = [NSString stringWithFormat:@"%@%@" ,tables[0], RELATIONSHIP_SUFFIX];
+                leftSQLExpression = [NSString stringWithFormat:@"%@%@", tables[0], RELATIONSHIP_SUFFIX];
             } else {
-                rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )",tables[0]]];
+                rightSQLExpression = [rightSQLExpression stringByAppendingString:[NSString stringWithFormat:@" and id = %@Id )", tables[0]]];
             }
-            
-        }else{
+
+        } else {
             rightSQLExpression = [rightSQLExpression stringByAppendingString:@" and ?uncapitalizedTableName?Id = ?capitalizedTableName?.id )"];
         }
     }
-    
-    
-    
-    switch ([predicate predicateOperatorType]){
+
+
+    switch ([predicate predicateOperatorType]) {
         case NSLessThanPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ < %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ < %@)", leftSQLExpression, rightSQLExpression];
         }
         case NSLessThanOrEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ <= %@)",leftSQLExpression,rightSQLExpression] ;
+            return [NSString stringWithFormat:@"(%@ <= %@)", leftSQLExpression, rightSQLExpression];
         }
         case NSGreaterThanPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ > %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ > %@)", leftSQLExpression, rightSQLExpression];
         }
         case NSGreaterThanOrEqualToPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ >= %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ >= %@)", leftSQLExpression, rightSQLExpression];
         }
         case NSEqualToPredicateOperatorType: {
-            
+
             if ([predicate.rightExpression.constantValue isKindOfClass:[NSArray class]]) {
                 return [NSString stringWithFormat:@"(%@ in (%@))",
-                        leftSQLExpression,
-                        rightSQLExpression];
+                                                  leftSQLExpression,
+                                                  rightSQLExpression];
             }
-            
+
             return [NSString stringWithFormat:@"(%@ %@ %@)",
-                    leftSQLExpression,
-                    [rightSQLExpression isEqual: @"NULL"] ? @"IS" : @"=",
-                    rightSQLExpression];
+                                              leftSQLExpression,
+                                              [rightSQLExpression isEqual:@"NULL"] ? @"IS" : @"=",
+                                              rightSQLExpression];
         }
         case NSNotEqualToPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ %@ %@)",
-                    leftSQLExpression,
-                    [rightSQLExpression isEqual: @"NULL"] ? @"IS NOT" : @"=",
-                    rightSQLExpression];
+                                              leftSQLExpression,
+                                              [rightSQLExpression isEqual:@"NULL"] ? @"IS NOT" : @"<>",
+                                              rightSQLExpression];
         }
         case NSMatchesPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ MATCH %@)",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ MATCH %@)", leftSQLExpression, rightSQLExpression];
         }
         case NSInPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ IN (%@))",leftSQLExpression,rightSQLExpression];
+            return [NSString stringWithFormat:@"(%@ IN (%@))", leftSQLExpression, rightSQLExpression];
         }
         case NSBetweenPredicateOperatorType: {
-            return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')",[self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
-                    [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
-                    [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]] ;
+            return [NSString stringWithFormat:@"(%@ BETWEEN '%@' AND '%@')", [self SQLExpressionForLeftNSExpression:[predicate leftExpression]],
+                                              [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
+                                              [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]];
         }
         case NSLikePredicateOperatorType:
         case NSContainsPredicateOperatorType: {
@@ -424,28 +416,28 @@ static NSString *SQLNullValueString = @"NULL";
             break;
         }
     }
-    
+
     return nil;
 }
 
-- (NSString *) SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate{
-    
+- (NSString *)SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate {
+
     NSMutableArray *subs = [NSMutableArray array];
-    
+
     for (NSPredicate *sub in [predicate subpredicates]) {
         NSString *part = [self SQLFilterForPredicate:sub];
         if (part && part.length) [subs addObject:part];
     }
-    
-    if (subs.count == 1){
-        if ([(NSCompoundPredicate *)predicate compoundPredicateType] == NSNotPredicateType){
+
+    if (subs.count == 1) {
+        if ([(NSCompoundPredicate *) predicate compoundPredicateType] == NSNotPredicateType) {
             return [NSString stringWithFormat:@"NOT %@", subs[0]];
         }
         return subs[0];
     }
-    
+
     NSString *conjunction;
-    switch ([(NSCompoundPredicate *)predicate compoundPredicateType]){
+    switch ([(NSCompoundPredicate *) predicate compoundPredicateType]) {
         case NSAndPredicateType: {
             conjunction = @" AND ";
             break;
@@ -463,60 +455,60 @@ static NSString *SQLNullValueString = @"NULL";
             break;
         }
     }
-    
+
     return [NSString stringWithFormat:@"(%@)", [subs componentsJoinedByString:conjunction]];
 }
 
 - (NSString *)normalizeWhereClause:(NSString *)whereClause {
-    
-    NSRegularExpression* regex =
-    [NSRegularExpression regularExpressionWithPattern: @"[ ]*\\([ ]*\\)[ ]*"
-                                              options: NSRegularExpressionCaseInsensitive
-                                                error: nil];
-    
+
+    NSRegularExpression *regex =
+            [NSRegularExpression regularExpressionWithPattern:@"[ ]*\\([ ]*\\)[ ]*"
+                                                      options:NSRegularExpressionCaseInsensitive
+                                                        error:nil];
+
     NSString *result = [regex stringByReplacingMatchesInString:whereClause
                                                        options:0
                                                          range:NSMakeRange(0, whereClause.length)
-                                                  withTemplate: @""];
-    
+                                                  withTemplate:@""];
+
     return result;
-    
+
 }
 
 - (NSString *)unquoteString:(NSString *)aString {
-    
+
     if ([aString isEqualToString:@"''"]) return @"";
-    
-    NSRegularExpression* regex =
-    [NSRegularExpression regularExpressionWithPattern: @"^'.*'$"
-                                              options: NSRegularExpressionCaseInsensitive
-                                                error: nil];
-    
+
+    NSRegularExpression *regex =
+            [NSRegularExpression regularExpressionWithPattern:@"^'.*'$"
+                                                      options:NSRegularExpressionCaseInsensitive
+                                                        error:nil];
+
     NSUInteger matches = [regex numberOfMatchesInString:aString
                                                 options:0
                                                   range:NSMakeRange(0, aString.length)];
     if (!matches) return aString;
-    
+
     return [aString substringWithRange:NSMakeRange(1, aString.length - 2)];
-    
+
 }
 
-- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate{
-   
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate {
+
     NSString *result;
-    
-    if ([predicate respondsToSelector:@selector(compoundPredicateType)]){
-        result = [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate];
-    } else if ([predicate respondsToSelector:@selector(predicateOperatorType)]){
-        result = [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate];
+
+    if ([predicate respondsToSelector:@selector(compoundPredicateType)]) {
+        result = [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *) predicate];
+    } else if ([predicate respondsToSelector:@selector(predicateOperatorType)]) {
+        result = [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *) predicate];
     }
-    
+
     if (result) {
         return [self normalizeWhereClause:result];
     }
-    
+
     NSLog(@"SQLFilterForPredicate predicate is not of a convertible class");
-    
+
     return nil;
 }
 

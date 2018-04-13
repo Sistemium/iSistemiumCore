@@ -11,10 +11,20 @@
 
 @interface STMModeller (Interceptable) <STMPersistingIntercepting>
 
-- (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error;
+- (NSDictionary *)applyMergeInterceptors:(NSString *)entityName
+                              attributes:(NSDictionary *)attributes
+                                 options:(NSDictionary *)options
+                                   error:(NSError **)error;
 
-- (NSDictionary *)applyMergeInterceptors:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction;
+- (NSDictionary *)applyMergeInterceptors:(NSString *)entityName
+                              attributes:(NSDictionary *)attributes
+                                 options:(NSDictionary *)options
+                                   error:(NSError **)error
+                           inTransaction:(id <STMPersistingTransaction>)transaction;
 
-- (NSArray *)applyMergeInterceptors:(NSString *)entityName attributeArray:(NSArray *)attributeArray options:(NSDictionary *)options error:(NSError **)error;
+- (NSArray *)applyMergeInterceptors:(NSString *)entityName
+                     attributeArray:(NSArray *)attributeArray
+                            options:(NSDictionary *)options
+                              error:(NSError **)error;
 
 @end

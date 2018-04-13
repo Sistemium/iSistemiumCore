@@ -12,15 +12,14 @@
 
 @interface STMOperation : NSOperation
 
-@property (nonatomic,weak) STMOperationQueue *queue;
-@property (nonatomic,strong) NSDate *startedAt;
+@property (nonatomic, weak) STMOperationQueue *queue;
+@property (nonatomic, strong) NSDate *startedAt;
 @property (nonatomic) NSTimeInterval finishedIn;
 @property (readonly) NSString *printableFinishedIn;
 
 + (instancetype)asynchronousOperation;
 
 - (void)finish;
-
 
 
 @end

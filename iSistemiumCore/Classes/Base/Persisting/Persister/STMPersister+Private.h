@@ -9,8 +9,8 @@
 #import "STMPersister.h"
 #import "STMPersistingRunning.h"
 
-@interface STMPersister()
+@interface STMPersister ()
 
-@property (nonatomic,strong) NSString *fmdbFileName;
+@property (nonatomic, strong) NSString *fmdbFileName;
 
 @end

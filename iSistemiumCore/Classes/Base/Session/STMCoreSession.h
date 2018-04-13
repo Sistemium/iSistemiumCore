@@ -41,12 +41,14 @@
 @property (nonatomic, strong) NSDictionary *defaultSettings;
 @property (nonatomic, strong) NSDictionary *startSettings;
 
-@property (nonatomic,strong) STMSyncer *syncer;
+@property (nonatomic, strong) STMSyncer *syncer;
 
 - (void)stopSession;
+
 - (void)dismissSession;
 
 - (Class)settingsControllerClass;
+
 - (void)checkTrackersToStart;
 
 @end

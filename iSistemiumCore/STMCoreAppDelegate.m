@@ -43,6 +43,12 @@
     [STMFunctions stringFromNow];
     
     [self sessionManager];
+    
+    [self startAuthController];
+    
+    [self setupWindow];
+    
+    [STMCoreAuthController.authController checkPhoneNumber];
 
     [self startCrashlytics];
 
@@ -53,8 +59,6 @@
 //    NSString *logMessage = [NSString stringWithFormat:@"application didFinishLaunchingWithOptions: %@", launchOptions.description];
 //    [logger saveLogMessageWithText:logMessage
 //                           numType:STMLogMessageTypeImportant];
-
-    [self startAuthController];
     
     [self registerForNotification];
     
@@ -76,8 +80,6 @@
              object:[self sessionManager].currentSession];
     
     [STMSoundController initAudioSession];
-    
-    [self setupWindow];
 
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
     

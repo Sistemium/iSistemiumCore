@@ -21,4 +21,12 @@
 
 + (NSDictionary *)JSONOfFilesAtPath:(NSString *)path;
 
++ (NSDictionary *)levelFilesAtPath:(NSString *)path;
+
++ (NSString *)removeFilesAtPath:(NSString *)path;
+
++ (NSString *)base64ofFileAtPath:(NSString *)path;
+
++ (NSDictionary *)uploadFileAtPath:(NSDictionary *)data;
+
 @end

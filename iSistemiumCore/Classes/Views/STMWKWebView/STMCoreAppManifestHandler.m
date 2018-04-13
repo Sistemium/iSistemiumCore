@@ -197,7 +197,7 @@
 
     }
     
-    self.eTagFileName = [responseETag stringByAppendingString:@".eTag"];
+    self.eTagFileName = [[responseETag stringByReplacingOccurrencesOfString:@"/" withString:@""] stringByAppendingString:@".eTag"];
 
     if ([self shouldUpdateLocalHTML]) {
         

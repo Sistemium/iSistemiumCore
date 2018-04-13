@@ -19,11 +19,18 @@
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database;
 
 + (NSArray *)builtInAttributes;
+
 + (NSArray *)ignoredAttributes;
+
++ (NSArray *)numericAttributes;
+
++ (NSArray *)minMaxAttributes;
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;
 
 - (NSDictionary *)currentDBScheme;
+
+- (void)addEntity:(NSEntityDescription *)entity;
 
 
 @end

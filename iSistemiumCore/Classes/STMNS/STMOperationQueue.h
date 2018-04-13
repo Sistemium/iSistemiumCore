@@ -25,6 +25,7 @@
 @property (readonly) NSUInteger finishedOperationsCount;
 
 + (instancetype)queueWithDispatchQueue:(dispatch_queue_t)dispatchQueue;
+
 + (instancetype)queueWithDispatchQueue:(dispatch_queue_t)dispatchQueue maxConcurrent:(NSUInteger)maxConcurrent;
 
 @end

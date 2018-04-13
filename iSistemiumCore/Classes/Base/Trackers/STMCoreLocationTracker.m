@@ -329,9 +329,9 @@
         
         _currentAccuracy = currentAccuracy;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"currentAccuracyUpdated"
-                                                            object:self 
-                                                          userInfo:@{@"isAccuracySufficient":@(self.isAccuracySufficient)}];
+        NSDictionary *userInfo = @{@"isAccuracySufficient":@(self.isAccuracySufficient)};
+        
+        [self postAsyncMainQueueNotification:@"currentAccuracyUpdated" userInfo:userInfo];
 
     }
     
@@ -413,8 +413,7 @@
         if (status == kCLAuthorizationStatusRestricted || status == kCLAuthorizationStatusDenied) {
             
             NSString *errorString = @"location tracking is not permitted";
-            [[self.session logger] saveLogMessageWithText:errorString
-                                                  numType:STMLogMessageTypeError];
+            [[self.session logger] infoMessage:errorString];
             [self checkinLocationError:errorString];
             
             self.locationManager = nil;
@@ -436,8 +435,7 @@
             } else {
                 
                 NSString *errorString = @"location tracking disabled";
-                [[self.session logger] saveLogMessageWithText:errorString
-                                                      numType:STMLogMessageTypeError];
+                [[self.session logger] infoMessage:errorString];
                 [self checkinLocationError:errorString];
                 
                 [super stopTracking];
@@ -717,10 +715,9 @@
     CLLocationAccuracy previousAccuracy = self.currentAccuracy;
     self.currentAccuracy = newLocation.horizontalAccuracy;
     
-    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
-        self.currentAccuracy > 0) {
+    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL && self.currentAccuracy > 0) {
 
-        BOOL shouldSaveLocation = ([self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits]);
+        BOOL shouldSaveLocation = [self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits];
         
         if ([self isAccuracySufficient] && shouldSaveLocation) {
             

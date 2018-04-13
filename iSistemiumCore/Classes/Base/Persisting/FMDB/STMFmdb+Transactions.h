@@ -13,8 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface STMFmdbTransaction : NSObject <STMPersistingTransaction>
 
-+ (instancetype)persistingTransactionWithFMDatabase:(FMDatabase*)database stmFMDB:(STMFmdb *)stmFMDB;
-- (instancetype)initWithFMDatabase:(FMDatabase*)database stmFMDB:(STMFmdb *)stmFMDB;
++ (instancetype)persistingTransactionWithFMDatabase:(FMDatabase *)database stmFMDB:(STMFmdb *)stmFMDB;
+
+- (instancetype)initWithFMDatabase:(FMDatabase *)database stmFMDB:(STMFmdb *)stmFMDB;
+
 @property (nonatomic, weak) STMOperation *operation;
 
 @end

@@ -12,7 +12,9 @@
 @interface STMLogger (Logger) <STMLogger>
 
 + (void)requestInfo:(NSString *)xidString;
+
 + (void)requestObjects:(NSDictionary *)parameters;
+
 + (void)requestDefaults;
 
 - (NSArray *)syncingTypesForSettingType:(NSString *)settingType;

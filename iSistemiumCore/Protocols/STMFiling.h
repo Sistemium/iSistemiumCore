@@ -46,4 +46,6 @@
 
 - (BOOL)fileExistsAtPath:(NSString *)path;
 
+- (unsigned long long)fileSizeAtPath:(NSString *)path;
+
 @end

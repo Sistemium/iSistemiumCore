@@ -64,18 +64,18 @@
         CGRect screenFrame = [rootView convertRect:originalFrame fromView:nil];
         cameraOverlayView.frame = screenFrame;
         
-        if (IPHONE) {
+        if (IPHONE && SYSTEM_VERSION < 11.0) {
             
             CGFloat camHeight = screenFrame.size.width * 4 / 3; // 4/3 — camera aspect ratio
-            
+
             CGFloat toolbarHeight = TOOLBAR_HEIGHT;
-            
+
             for (UIView *subview in self.cameraOverlayView.subviews)
                 if ([subview isKindOfClass:[UIToolbar class]])
                     toolbarHeight = subview.frame.size.height;
-            
+
             CGFloat translationDistance = (screenFrame.size.height - toolbarHeight - camHeight) / 2;
-            
+
             CGAffineTransform translate = CGAffineTransformMakeTranslation(0.0, translationDistance);
             self.cameraViewTransform = translate;
             
@@ -151,7 +151,7 @@
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [picker dismissViewControllerAnimated:NO completion:^{
-        [self.ownerVC imagePickerWasDissmised:picker];
+        [self.ownerVC imagePickerControllerDidCancel:picker];
     }];
     
 }
@@ -167,15 +167,15 @@
         return [self checkAuthorizationStatus];
     }
     
-    UIView *view = [[UIView alloc] initWithFrame:self.cameraOverlayView.frame];
-    view.backgroundColor = [UIColor grayColor];
-    view.alpha = 0.75;
-    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    spinner.center = view.center;
-    [spinner startAnimating];
-    [view addSubview:spinner];
-    
-    [self.cameraOverlayView addSubview:view];
+//    UIView *view = [[UIView alloc] initWithFrame:self.cameraOverlayView.frame];
+//    view.backgroundColor = [UIColor grayColor];
+//    view.alpha = 0.75;
+//    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+//    spinner.center = view.center;
+//    [spinner startAnimating];
+//    [view addSubview:spinner];
+//    
+//    [self.cameraOverlayView addSubview:view];
     
     [self takePicture];
     
@@ -187,7 +187,9 @@
 
 - (IBAction)photoLibraryButtonPressed:(id)sender {
     
-    [self cancelButtonPressed:sender];
+    [self dismissViewControllerAnimated:NO completion:^{
+    }];
+    
     [self.ownerVC showImagePickerForSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
     
 }

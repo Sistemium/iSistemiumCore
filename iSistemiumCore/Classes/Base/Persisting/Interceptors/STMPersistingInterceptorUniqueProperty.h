@@ -11,7 +11,7 @@
 
 @interface STMPersistingInterceptorUniqueProperty : STMCoreController <STMPersistingMergeInterceptor>
 
-@property (nonatomic,strong) NSString *entityName;
-@property (nonatomic,strong) NSString *propertyName;
+@property (nonatomic, strong) NSString *entityName;
+@property (nonatomic, strong) NSString *propertyName;
 
 @end

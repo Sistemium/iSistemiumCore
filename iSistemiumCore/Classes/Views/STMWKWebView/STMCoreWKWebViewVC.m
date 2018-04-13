@@ -266,8 +266,8 @@ STMBarCodeScannerDelegate>
 
 - (void)loadURLString:(NSString *)urlString {
     
-    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
-                                numType:STMLogMessageTypeImportant];
+//    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
+//                                numType:STMLogMessageTypeImportant];
     
     NSURL *url = [NSURL URLWithString:urlString];
     [self loadURL:url];
@@ -303,8 +303,8 @@ STMBarCodeScannerDelegate>
 
 - (void)loadLocalHTML {
     
-    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
-                                numType:STMLogMessageTypeImportant];
+//    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
+//                                numType:STMLogMessageTypeImportant];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self.appManifestHandler startLoadLocalHTML];
@@ -316,9 +316,9 @@ STMBarCodeScannerDelegate>
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
-        [self.logger saveLogMessageWithText:logMessage
-                                    numType:STMLogMessageTypeImportant];
+//        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
+//        [self.logger saveLogMessageWithText:logMessage
+//                                    numType:STMLogMessageTypeImportant];
         
         if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
             
@@ -326,9 +326,8 @@ STMBarCodeScannerDelegate>
             
         } else {
             
-            logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
-            [self.logger saveLogMessageWithText:logMessage
-                                        numType:STMLogMessageTypeError];
+            NSString *logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
+            [self.logger  errorMessage:logMessage];
             
         }
         
@@ -340,9 +339,9 @@ STMBarCodeScannerDelegate>
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
-        [self.logger saveLogMessageWithText:logMessage
-                                    numType:STMLogMessageTypeImportant];
+//        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
+//        [self.logger saveLogMessageWithText:logMessage
+//                                    numType:STMLogMessageTypeImportant];
         
         [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
         
@@ -369,8 +368,7 @@ STMBarCodeScannerDelegate>
 - (void)appManifestLoadInfoText:(NSString *)infoText {
     
     infoText = [@"cache manifest load: " stringByAppendingString:infoText];
-    [self appManifestLoadLogMessage:infoText
-                            numType:STMLogMessageTypeImportant];
+    [self appManifestLoadLogMessage:infoText numType:STMLogMessageTypeInfo];
     
 }
 
@@ -411,8 +409,7 @@ STMBarCodeScannerDelegate>
 
 - (void)webViewInit {
     
-    [self.logger saveLogMessageWithText:@"webViewInit"
-                                numType:STMLogMessageTypeImportant];
+    [self.logger infoMessage:@"webViewInit"];
     
     [self flushWebView];
     
@@ -509,9 +506,9 @@ STMBarCodeScannerDelegate>
 
 - (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
     
-    NSString *logMessage = [NSString stringWithFormat:@"webView didCommitNavigation %@", webView.URL];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
+//    NSString *logMessage = [NSString stringWithFormat:@"webView didCommitNavigation %@", webView.URL];
+//    [self.logger saveLogMessageWithText:logMessage
+//                                numType:STMLogMessageTypeImportant];
     
 }
 
@@ -537,7 +534,7 @@ STMBarCodeScannerDelegate>
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeError];
     
-    if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+    if ([STMFunctions isAppInBackground]) {
         [self flushWebView];
     } else {
         [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
@@ -597,9 +594,9 @@ STMBarCodeScannerDelegate>
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     
-    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
+//    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
+//    [self.logger saveLogMessageWithText:logMessage
+//                                numType:STMLogMessageTypeImportant];
     
     self.wasLoadingOnce = YES;
     [self cancelWatingTimeout];
@@ -769,6 +766,14 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler handleTakePhotoMessage:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_CMERA_ROLL]) {
+        
+        [self.scriptMessageHandler handleSendToCameraRollMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_LOAD_IMAGE]) {
+        
+        [self.scriptMessageHandler handleLoadImageMessage:message];
+        
         // persistence messages
         
     } else if ([message.name isEqualToString:WK_MESSAGE_GET_PICTURE]) {
@@ -791,9 +796,17 @@ STMBarCodeScannerDelegate>
         
         [self.scriptMessageHandler receiveDestroyMessage:message];
         
-    } else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
-        
+    }else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
+
         [self handleUnsyncedInfoMessage:message];
+
+    }else if ([message.name isEqualToString:WK_MESSAGE_SAVE_IMAGE]) {
+        
+        [self.scriptMessageHandler handleSaveImageMessage:message];
+        
+    }else if ([message.name isEqualToString:WK_MESSAGE_COPY_CLIPBOARD]) {
+        
+        [self.scriptMessageHandler handleCopyToClipboardMessage:message];
         
     }
     
@@ -1028,15 +1041,23 @@ STMBarCodeScannerDelegate>
     
     //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
     
-    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         
-        //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
-        if (error) {
-            NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
+        if (!self.webView.window){
+//            NSLog(@"Not Visible, but handled");
+            return;
         }
         
+        [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
+            
+            //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
+            if (error) {
+                NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
+            }
+            
+        }];
     }];
-    
+
 }
 - (void)callbackWithData:(NSArray *)data parameters:(NSDictionary *)parameters {
     [self callbackWithData:data parameters:parameters jsCallbackFunction:self.iSistemiumIOSCallbackJSFunction];
@@ -1333,7 +1354,10 @@ int counter = 0;
 - (void)applicationDidBecomeActiveNotification:(NSNotification *)notification {
     
     if (self.isViewLoaded && self.view.window != nil) {
+        
+        [self.scriptMessageHandler syncSubscriptions];
         [self checkWebViewIsAlive];
+        
     }
     
 }
@@ -1351,6 +1375,11 @@ int counter = 0;
     
     NSString *checkJS = @"window.document.body.childNodes.length";
     
+    if (!self.webView.window) {
+        NSLog(@"Webview is not visible");
+        return;
+    }
+
     [self.webView evaluateJavaScript:checkJS completionHandler:^(id result, NSError *error) {
         
         if (error) {
@@ -1408,6 +1437,16 @@ int counter = 0;
 
 }
 
+- (void)syncerIsSendingData {
+    
+    if (!self.unsyncedInfoJSFunction) return;
+    
+    [self callbackWithData:@[@"syncerIsSendingData"]
+                parameters:nil
+        jsCallbackFunction:self.unsyncedInfoJSFunction];
+    
+}
+
 
 #pragma mark - view lifecycle
 
@@ -1433,6 +1472,11 @@ int counter = 0;
     [nc addObserver:self
            selector:@selector(haveNoUnsyncedObjects)
                name:NOTIFICATION_SYNCER_HAVE_NO_UNSYNCED_OBJECTS
+             object:nil];
+    
+    [nc addObserver:self
+           selector:@selector(syncerIsSendingData)
+               name:NOTIFICATION_SYNCER_SEND_STARTED
              object:nil];
 
 }
@@ -1477,26 +1521,22 @@ int counter = 0;
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeImportant];
     
-    logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
-    
-    [self flushWebView];
+    if ([STMFunctions isAppInBackground]) {
+        logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
+        [self.logger saveLogMessageWithText:logMessage
+                                    numType:STMLogMessageTypeImportant];
+        [self flushWebView];
+    }
     
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    
-    [super viewWillAppear:animated];
-    
-    [self checkWebViewIsAlive];
-    
-}
 
 - (void)viewDidAppear:(BOOL)animated {
     
     [super viewDidAppear:animated];
     
+    [self checkWebViewIsAlive];
+
     if (self.iOSModeBarCodeScanner) {
         self.iOSModeBarCodeScanner.delegate = self;
     }

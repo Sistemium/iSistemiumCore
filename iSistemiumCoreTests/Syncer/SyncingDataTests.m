@@ -212,7 +212,7 @@
     
     NSLog(@"haveUnsyncedObject %@ %@", entityName, itemData);
     
-    XCTAssertNotNil(itemVersion);
+  //  XCTAssertNotNil(itemVersion);
     XCTAssertNotNil(itemData);
     
 //    dispatch_async(dispatch_get_main_queue(), ^{
@@ -333,7 +333,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.downloadingDelegate dataReceivedSuccessfully:YES
                                                 entityName:entityName
-                                                    result:nil
+                                              dataRecieved:nil
                                                     offset:offset
                                                   pageSize:0
                                                      error:nil];

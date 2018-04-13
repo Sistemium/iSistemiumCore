@@ -30,8 +30,8 @@
 
 @interface STMCoreRootTBC () <UITabBarControllerDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, strong) UIAlertView *authAlert;
-@property (nonatomic, strong) UIAlertView *lowFreeSpaceAlert;
+@property (nonatomic, strong) UIAlertController *authAlert;
+@property (nonatomic, strong) UIAlertController *lowFreeSpaceAlert;
 @property (nonatomic) BOOL lowFreeSpaceAlertWasShown;
 @property (nonatomic, weak) STMCoreSession *session;
 
@@ -821,6 +821,7 @@
 
 - (void)releaseTabbarLock {
     self.isInHideTabbarProcess = NO;
+    [self.tabBar setHidden:YES];
 }
 
 - (void)showTabBar {
@@ -835,6 +836,7 @@
 
         if([view isKindOfClass:[UITabBar class]]) {
             [view setFrame:CGRectMake(view.frame.origin.x, viewHeight - tabbarHeight, view.frame.size.width, view.frame.size.height)];
+            [view setHidden:NO];
         } else {
             [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, viewHeight - tabbarHeight)];
         }
@@ -877,15 +879,17 @@
 
 #pragma mark - alertView & delegate
 
-- (UIAlertView *)authAlert {
+- (UIAlertController *)authAlert {
     
     if (!_authAlert) {
         
-        _authAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                message:NSLocalizedString(@"U R NOT AUTH", nil)
-                                               delegate:self
-                                      cancelButtonTitle:NSLocalizedString(@"OK", nil)
-                                      otherButtonTitles:nil];
+        _authAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"ERROR", nil) message:NSLocalizedString(@"U R NOT AUTH", nil) preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:nil];
+        
+        [_authAlert addAction:okButton];
         
     }
     return _authAlert;
@@ -894,10 +898,10 @@
 
 - (void)showAuthAlert {
     
-    if (!self.authAlert.visible && [STMCoreAuthController authController].controllerState != STMAuthEnterPhoneNumber) {
+    if (!self.presentedViewController && [STMCoreAuthController authController].controllerState != STMAuthEnterPhoneNumber) {
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self.authAlert show];
+            [self presentViewController:self.authAlert animated:YES completion:nil];
         }];
         [self showTabWithName:@"STMAuthTVC"];
         
@@ -905,15 +909,17 @@
     
 }
 
-- (UIAlertView *)lowFreeSpaceAlert {
+- (UIAlertController *)lowFreeSpaceAlert {
     
     if (!_lowFreeSpaceAlert) {
         
-        _lowFreeSpaceAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                                                        message:NSLocalizedString(@"LOW FREE SPACE ALERT", nil)
-                                                       delegate:nil
-                                              cancelButtonTitle:NSLocalizedString(@"OK", nil)
-                                              otherButtonTitles:nil];
+        _lowFreeSpaceAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"WARNING", nil) message:NSLocalizedString(@"LOW FREE SPACE ALERT", nil) preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:nil];
+        
+        [_lowFreeSpaceAlert addAction: okButton];
 
     }
     return _lowFreeSpaceAlert;
@@ -922,16 +928,16 @@
 
 - (void)showLowFreeSpaceAlert {
     
-    if (!self.lowFreeSpaceAlertWasShown) {
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    
+        if (!self.lowFreeSpaceAlertWasShown) {
             
-            self.lowFreeSpaceAlertWasShown = YES;
-            [self.lowFreeSpaceAlert show];
+                self.lowFreeSpaceAlertWasShown = YES;
+                [self presentViewController:self.lowFreeSpaceAlert animated:YES completion:nil];
             
-        }];
+        }
         
-    }
+    }];
     
 }
 
@@ -962,7 +968,7 @@
         
         [self initAuthTab];
         
-    } else if ([STMCoreAuthController authController].controllerState == STMAuthSuccess) {
+    } else if ([STMCoreAuthController authController].controllerState == STMAuthRequestRoles) {
 
         [self.view addSubview:self.spinnerView];
         

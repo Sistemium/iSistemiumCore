@@ -17,20 +17,22 @@
 
 @interface STMCoreController : STMCoreObject <STMCoreControlling>
 
-@property (nonatomic,weak) id <STMPersistingFullStack> persistenceDelegate;
+@property(nonatomic, weak) id <STMPersistingFullStack> persistenceDelegate;
 
 // TODO: maybe a better idea to subclass with STMCoreSessionController and mode session there
-@property (nonatomic,weak) id <STMSession> session;
-@property (readonly) id <STMLogger> logger;
+@property(nonatomic, weak) id <STMSession> session;
+@property(readonly) id <STMLogger> logger;
 
 + (id <STMSession>)session;
 
 + (STMDocument *)document;
 
-+ (id <STMPersistingFullStack>) persistenceDelegate;
++ (id <STMPersistingFullStack>)persistenceDelegate;
 
 - (id <STMCoreAuth>)authController;
+
 - (id <STMCoreUserDefaults>)userDefaults;
+
 + (id <STMCoreUserDefaults>)userDefaults;
 
 @end
