@@ -7,17 +7,12 @@
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMBarCodeScanner.h"
-
-#import <CoreData/CoreData.h>
-#import <AVFoundation/AVFoundation.h>
-#import "STMScanApiHelper.h"
-#import "STMCoreObjectsController.h"
-
-#import "STMCoreNS.h"
-#import "STMCoreDataModel.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreBarCodeController.h"
+#import "STMBarCodeScanner.h"
+
+#import <AVFoundation/AVFoundation.h>
+#import "STMScanApiHelper.h"
 
 
 @interface STMBarCodeScanner () <UITextFieldDelegate, AVCaptureMetadataOutputObjectsDelegate, STMScanApiHelperDelegate>
@@ -34,7 +29,6 @@
 @property (nonatomic, strong) NSTimer *scanApiConsumer;
 @property (nonatomic, strong) DeviceInfo *deviceInfo;
 
-//@property (nonatomic, strong) NSFetchedResultsController *barCodeTypesRC;
 @property (nonatomic, strong) NSArray *barCodeTypes;
 
 
