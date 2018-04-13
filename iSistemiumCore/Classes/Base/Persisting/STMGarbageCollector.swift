@@ -16,20 +16,20 @@ extension Set {
 }
 
 @objcMembers
-class STMGarbageCollector:NSObject{
-    
+class STMGarbageCollector: NSObject {
+
     static let sharedInstance = STMGarbageCollector()
-    
-    private var _unusedImageFiles:Set<String>?
-    
-    private var _filing:STMFiling?
-    
-    var filing:STMFiling{
-        get{
+
+    private var _unusedImageFiles: Set<String>?
+
+    private var _filing: STMFiling?
+
+    var filing: STMFiling {
+        get {
             return _filing != nil ? _filing! : STMCoreSessionManager.shared().currentSession.filing
-            
+
 //FIXME: app crash in line above if login and immediately logout, possibly due to checkNotUploadedPhotos process
-            
+
 //            Log info: Session #244 status changed to STMSessionFinishing
 //            Log info: Session #244 status changed to STMSessionStopped
 //            userID (null)
@@ -42,39 +42,39 @@ class STMGarbageCollector:NSObject{
 //            fatal error: unexpectedly found nil while unwrapping an Optional value
 
         }
-        set{
+        set {
             _filing = newValue
         }
-        
+
     }
-    
-    var unusedImageFiles : Set<String>{
-        get{
-            if _unusedImageFiles == nil{
+
+    var unusedImageFiles: Set<String> {
+        get {
+            if _unusedImageFiles == nil {
                 searchUnusedImages()
             }
             return _unusedImageFiles!
         }
-        
-        set{
+
+        set {
             _unusedImageFiles = newValue
         }
     }
-    
+
     @discardableResult
-    func removeUnusedImages() -> AnyPromise{
-        
+    func removeUnusedImages() -> AnyPromise {
+
         return AnyPromise.promiseWithResolverBlock({ resolve in
-            
-            DispatchQueue.global(qos: .default).async{[unowned self] in
-                var err:NSError? = nil
+
+            DispatchQueue.global(qos: .default).async { [unowned self] in
+                var err: NSError? = nil
                 do {
                     self.searchUnusedImages()
                     if self.unusedImageFiles.count > 0 {
-                        let logMessage = String(format: "Deleting %i images",self.unusedImageFiles.count)
-                        STMLogger.shared().saveLogMessage(withText: logMessage, numType:STMLogMessageType.important)
+                        let logMessage = String(format: "Deleting %i images", self.unusedImageFiles.count)
+                        STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.important)
                     }
-                    for unusedImage in self.unusedImageFiles{
+                    for unusedImage in self.unusedImageFiles {
                         try self.filing.removeItem(atPath: unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
                         NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
@@ -82,21 +82,21 @@ class STMGarbageCollector:NSObject{
                 } catch let error as NSError {
                     err = error
                     NSLog(error.description)
-                    
+
                 }
                 resolve(err)
             }
-            
+
         })
-        
+
     }
-    
-    func searchUnusedImages(){
+
+    func searchUnusedImages() {
         var unusedImageFiles = Set<String>()
         var allImageFiles = Set<String>()
         var usedImageFiles = Set<String>()
-        var imageFilePaths = Dictionary<String,String>()
-        
+        var imageFilePaths = Dictionary<String, String>()
+
         self.filing.enumerateDir(atPath: self.filing.picturesBasePath()) { (element, error) -> Bool in
             if element!.hasSuffix(".jpg") {
                 let components = element!.components(separatedBy: "/")
@@ -106,78 +106,84 @@ class STMGarbageCollector:NSObject{
             }
             return true
         }
-        
-        let allImages = STMCorePicturesController.shared().allPictures() as! Array<Dictionary<String,Any>>;
-        for image in allImages{
-            
-            let data = image["attributes"] as! Dictionary<String,Any>
-        
-            if let path = data["imagePath"] as? String{
+
+        let allImages = STMCorePicturesController.shared().allPictures() as! Array<Dictionary<String, Any>>;
+        for image in allImages {
+
+            let data = image["attributes"] as! Dictionary<String, Any>
+
+            if let path = data["imagePath"] as? String {
                 usedImageFiles.insert(path)
             }
-            if let resizedPath = data["resizedImagePath"] as? String{
+            if let resizedPath = data["resizedImagePath"] as? String {
                 usedImageFiles.insert(resizedPath)
             }
-            if let thumbnailPath = data["thumbnailPath"] as? String{
+            if let thumbnailPath = data["thumbnailPath"] as? String {
                 usedImageFiles.insert(thumbnailPath)
             }
         }
         unusedImageFiles = allImageFiles.subtracting(usedImageFiles)
-        unusedImageFiles = unusedImageFiles.setmap{imageFilePaths[$0]!}
-        
+        unusedImageFiles = unusedImageFiles.setmap {
+            imageFilePaths[$0]!
+        }
+
         self.unusedImageFiles = unusedImageFiles
     }
-    
-    func removeOutOfDateImages(){
+
+    func removeOutOfDateImages() {
         do {
             let entityPredicate = NSPredicate(format: "pictureLifeTime > 0")
-            
-            let stcEntities:Dictionary<String, NSDictionary>
-            
-            if STMEntityController.stcEntities() != nil{
+
+            let stcEntities: Dictionary<String, NSDictionary>
+
+            if STMEntityController.stcEntities() != nil {
                 stcEntities = STMEntityController.stcEntities() as Dictionary<String, NSDictionary>
-            }else{
+            } else {
                 return
             }
-            
-            let entities = stcEntities.filter{entityPredicate.evaluate(with: $1)}
-            
+
+            let entities = stcEntities.filter {
+                entityPredicate.evaluate(with: $1)
+            }
+
             let persistence: STMPersistingSync
-            
+
             persistence = STMCoreSessionManager.shared().currentSession.persistenceDelegate
 
-            for (key,value) in entities {
-                
+            for (key, value) in entities {
+
                 let entity = (value as! Dictionary<String, Any>)
                 let limitDate = Date().addingTimeInterval(-(entity["pictureLifeTime"] as! Double))
                 let dateString = STMFunctions.string(from: limitDate)
-                
+
                 let photoIsUploaded = NSPredicate(format: "href != nil")
                 let photoIsSynced = NSPredicate(format: "deviceTs <= lts")
                 let photoHaveFiles = NSPredicate(format: "imagePath != nil OR resizedImagePath != nil OR thumbnailPath != nil")
                 let photoIsOutOfDate = NSPredicate(format: "deviceAts < %@ OR (deviceAts == nil AND deviceTs < %@)", argumentArray: [dateString, dateString])
-                
+
                 let subpredicates = [photoIsUploaded, photoIsSynced, photoHaveFiles, photoIsOutOfDate]
-                
+
                 let photoPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: subpredicates)
-                
-                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String,Any>>
-                
-                images = images.filter{photoPredicate.evaluate(with: $0)};
-                
+
+                var images = try STMCoreSessionManager.shared().currentSession.persistenceDelegate.findAllSync(key, predicate: photoPredicate, options: nil) as! Array<Dictionary<String, Any>>
+
+                images = images.filter {
+                    photoPredicate.evaluate(with: $0)
+                };
+
                 let options: [String: Any] = [
                     STMPersistingOptionFieldstoUpdate: ["imagePath", "resizedImagePath"],
                     STMPersistingOptionSetTs: true
                 ]
-                
-                for var image in images{
-                    
+
+                for var image in images {
+
                     let logMessage = String(format: "removeOutOfDateImages for:\(String(describing: entity["name"])) deviceAts:\(String(describing: image["deviceAts"]))")
                     STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.info)
-                    
+
                     let imagePath = image["imagePath"] as? String
                     let resizedImagePath = image["resizedImagePath"] as? String
-                    
+
                     if (imagePath != nil) {
                         do {
                             try filing.removeItem(atPath: filing.picturesBasePath() + "/" + imagePath!)
@@ -186,7 +192,7 @@ class STMGarbageCollector:NSObject{
                         }
                         image["imagePath"] = nil
                     }
-                    
+
                     // TODO: need testing
                     if (resizedImagePath != nil && resizedImagePath != imagePath) {
                         do {
@@ -196,13 +202,13 @@ class STMGarbageCollector:NSObject{
                         }
                         image["resizedImagePath"] = nil
                     }
-                    
+
                     try persistence.update(key, attributes: image, options: options)
-                    
+
                 }
-                
+
             }
-            
+
         } catch let error as NSError {
             NSLog(error.description)
         }

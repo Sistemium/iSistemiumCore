@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithFMDatabase:(FMDatabase *)database stmFMDB:(STMFmdb *)stmFMDB;
 
-@property(nonatomic, weak) STMOperation *operation;
+@property (nonatomic, weak) STMOperation *operation;
 
 @end
 

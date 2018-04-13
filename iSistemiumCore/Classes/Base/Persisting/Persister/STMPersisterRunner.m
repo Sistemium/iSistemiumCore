@@ -12,7 +12,7 @@
 
 @interface STMPersisterRunner ()
 
-@property(nonatomic, strong) id <STMModelling, STMPersistingObserving> persister;
+@property (nonatomic, strong) id <STMModelling, STMPersistingObserving> persister;
 
 @end
 

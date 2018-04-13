@@ -11,6 +11,6 @@
 
 @interface STMPersister ()
 
-@property(nonatomic, strong) NSString *fmdbFileName;
+@property (nonatomic, strong) NSString *fmdbFileName;
 
 @end

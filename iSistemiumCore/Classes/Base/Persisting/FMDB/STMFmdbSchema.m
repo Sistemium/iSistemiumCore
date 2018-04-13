@@ -27,22 +27,22 @@
 
 @interface STMFmdbSchema ()
 
-@property(nonatomic, weak) FMDatabase *database;
+@property (nonatomic, weak) FMDatabase *database;
 
-@property(nonatomic, strong) NSArray *builtInAttributes;
-@property(nonatomic, strong) NSArray *ignoredAttributes;
+@property (nonatomic, strong) NSArray *builtInAttributes;
+@property (nonatomic, strong) NSArray *ignoredAttributes;
 
-@property(nonatomic, strong) NSMutableDictionary *columnsDictionary;
-@property(nonatomic, weak) id <STMModelMapping> modelMapping;
+@property (nonatomic, strong) NSMutableDictionary *columnsDictionary;
+@property (nonatomic, weak) id <STMModelMapping> modelMapping;
 
-@property(nonatomic, strong) NSMutableSet <NSString *> *tablesToReload;
-@property(nonatomic, strong) NSSet <NSString *> *recreatedTables;
+@property (nonatomic, strong) NSMutableSet <NSString *> *tablesToReload;
+@property (nonatomic, strong) NSSet <NSString *> *recreatedTables;
 
-@property(nonatomic) NSTimeInterval addEnititiesTime;
-@property(nonatomic) NSTimeInterval tablesCreateTime;
-@property(nonatomic) NSTimeInterval processingPropertiesTime;
-@property(nonatomic) NSTimeInterval addColumnsTime;
-@property(nonatomic) NSTimeInterval addRelationshipsTime;
+@property (nonatomic) NSTimeInterval addEnititiesTime;
+@property (nonatomic) NSTimeInterval tablesCreateTime;
+@property (nonatomic) NSTimeInterval processingPropertiesTime;
+@property (nonatomic) NSTimeInterval addColumnsTime;
+@property (nonatomic) NSTimeInterval addRelationshipsTime;
 
 
 @end
