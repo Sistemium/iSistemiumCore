@@ -650,9 +650,9 @@ STMBarCodeScannerDelegate>
 }
 
 - (void)webView:(WKWebView *)webView fail:(NSString *)failString withError:(NSString *)errorString {
-    
-    [self cancelWatingTimeout];
-    
+
+    [self cancelWaitingTimeout];
+
     if (webView && failString && errorString) {
         
         NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@", webView.URL, failString, errorString];
@@ -664,38 +664,42 @@ STMBarCodeScannerDelegate>
     [self.spinnerView removeFromSuperview];
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+
+        UIAlertController *alert = [UIAlertController
+                alertControllerWithTitle:NSLocalizedString(@"ERROR", nil)
+                                 message:NSLocalizedString(@"WEBVIEW FAIL TO LOAD", nil)
+                          preferredStyle:UIAlertControllerStyleAlert];
         
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil)
-                                                        message:NSLocalizedString(@"WEBVIEW FAIL TO LOAD", nil)
-                                                       delegate:self
-                                              cancelButtonTitle:NSLocalizedString(@"CANCEL", nil)
-                                              otherButtonTitles:NSLocalizedString(@"OK", nil), nil];
-        alert.tag = 666;
-        [alert show];
-        
+
+        UIAlertAction *yesButton = [UIAlertAction
+                actionWithTitle:NSLocalizedString(@"OK", nil)
+                          style:UIAlertActionStyleDefault
+                        handler:^(UIAlertAction * action) {
+                            [self reloadWebView];
+                        }];
+
+        UIAlertAction* noButton = [UIAlertAction
+                actionWithTitle:NSLocalizedString(@"CANCEL", nil)
+                          style:UIAlertActionStyleDefault
+                        handler:^(UIAlertAction * action) {
+                            //Handle no, thanks button
+                        }];
+
+        [alert addAction:yesButton];
+        [alert addAction:noButton];
+
+        [self presentViewController:alert animated:YES completion:nil];
+
     }];
     
 }
 
-- (void)cancelWatingTimeout {
-    
+- (void)cancelWaitingTimeout {
+
     [STMCoreWKWebViewVC cancelPreviousPerformRequestsWithTarget:self
                                                        selector:@selector(timeoutReached)
                                                          object:nil];
-    
-}
 
-
-#pragma mark - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    
-    if (alertView.tag == 666) {
-        
-        if (buttonIndex == 1) [self reloadWebView];
-        
-    }
-    
 }
 
 
