@@ -174,15 +174,8 @@
 
     NSUInteger pageSize = [options[STMPersistingOptionPageSize] integerValue];
     NSUInteger offset = [options[STMPersistingOptionStartPage] integerValue];
-<<<<<<< HEAD
-    NSMutableArray *groupBy = [options[STMPersistingOptionGroupBy] mutableCopy];
-    
-    [groupBy removeObject:@""];
-                               
-=======
     NSArray *groupBy = options[STMPersistingOptionGroupBy];
 
->>>>>>> socketio-v2
     if (offset) {
         offset -= 1;
         offset *= pageSize;
