@@ -232,8 +232,9 @@
     syncer.dataDownloadingDelegate = syncerHelper;
     syncer.defantomizingDelegate = syncerHelper;
     
-    STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:self.syncer];
+    STMUnsyncedDataHelper *unsyncedHelper = [STMUnsyncedDataHelper unsyncedDataHelperWithPersistence:self.persistenceDelegate subscriber:syncer];
     unsyncedHelper.session = self;
+    
     syncer.dataSyncingDelegate = unsyncedHelper;
     syncer.session = self;
     
