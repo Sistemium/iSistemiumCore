@@ -14,7 +14,7 @@
 
 @interface STMFmdbSchema : NSObject
 
-@property(nonatomic) BOOL migrationSuccessful;
+@property (nonatomic) BOOL migrationSuccessful;
 
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database;
 

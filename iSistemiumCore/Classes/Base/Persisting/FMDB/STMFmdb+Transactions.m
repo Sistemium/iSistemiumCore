@@ -11,9 +11,9 @@
 
 @interface STMFmdbTransaction ()
 
-@property(nonatomic, weak) FMDatabase *database;
-@property(nonatomic, weak) STMFmdb *stmFMDB;
-@property(nonatomic, readonly) STMPredicateToSQL *predicator;
+@property (nonatomic, weak) FMDatabase *database;
+@property (nonatomic, weak) STMFmdb *stmFMDB;
+@property (nonatomic, readonly) STMPredicateToSQL *predicator;
 
 @end
 

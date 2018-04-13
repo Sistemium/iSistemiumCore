@@ -10,13 +10,13 @@
 
 @interface STMPersistingObservingSubscription : NSObject
 
-@property(nonatomic, strong, nonnull) NSString *identifier;
+@property (nonatomic, strong, nonnull) NSString *identifier;
 
-@property(nonatomic, strong, nullable) NSString *entityName;
-@property(nonatomic, strong, nullable) NSPredicate *predicate;
-@property(nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
-@property(nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
-@property(nonatomic, strong, nullable) STMPersistingOptions options;
+@property (nonatomic, strong, nullable) NSString *entityName;
+@property (nonatomic, strong, nullable) NSPredicate *predicate;
+@property (nonatomic, strong, nullable) STMPersistingObservingSubscriptionCallback callback;
+@property (nonatomic, strong, nullable) STMPersistingObservingEntityNameArrayCallback callbackWithEntityName;
+@property (nonatomic, strong, nullable) STMPersistingOptions options;
 
 @end
 
@@ -40,7 +40,7 @@
 
 @interface STMPersistingObservable ()
 
-@property(nonatomic, strong) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
+@property (nonatomic, strong) NSMutableDictionary <STMPersistingObservingSubscriptionID, STMPersistingObservingSubscription *> *subscriptions;
 
 @end
 

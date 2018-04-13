@@ -8,10 +8,10 @@
 
 #import "STMModeller.h"
 
-@interface STMModeller()
+@interface STMModeller ()
 
-@property (nonatomic,strong) NSMutableDictionary *allEntitiesCache;
-@property (nonatomic,strong) NSMutableDictionary <NSString *, id> *beforeMergeInterceptors;
+@property (nonatomic, strong) NSMutableDictionary *allEntitiesCache;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, id> *beforeMergeInterceptors;
 
 @end
 

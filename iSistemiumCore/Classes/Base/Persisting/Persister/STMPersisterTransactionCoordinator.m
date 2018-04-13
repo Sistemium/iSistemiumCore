@@ -16,10 +16,10 @@
 
 @interface STMPersisterTransactionCoordinator ()
 
-@property(nonatomic, strong) NSDictionary<NSNumber *, id <STMAdapting>> *adapters;
-@property(nonatomic, strong) NSMutableDictionary<NSNumber *, id <STMPersistingTransaction>> *transactions;
-@property(nonatomic, strong) id <STMModelling, STMPersistingObserving> modellingDelegate;
-@property(nonatomic, strong) dispatch_queue_t dispatchQueue;
+@property (nonatomic, strong) NSDictionary<NSNumber *, id <STMAdapting>> *adapters;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, id <STMPersistingTransaction>> *transactions;
+@property (nonatomic, strong) id <STMModelling, STMPersistingObserving> modellingDelegate;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 @property BOOL readOnly;
 
 @end

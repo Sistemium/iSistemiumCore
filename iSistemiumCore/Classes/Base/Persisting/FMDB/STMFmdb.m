@@ -23,9 +23,9 @@
 
 @interface STMFmdbOperation : STMOperation
 
-@property(nonatomic, strong) STMFmdbTransaction *transaction;
-@property(nonatomic, weak) STMFmdb *stmFMDB;
-@property(nonatomic, strong) FMDatabase *database;
+@property (nonatomic, strong) STMFmdbTransaction *transaction;
+@property (nonatomic, weak) STMFmdb *stmFMDB;
+@property (nonatomic, strong) FMDatabase *database;
 @property BOOL readOnly;
 @property BOOL success;
 @property dispatch_semaphore_t sem;
