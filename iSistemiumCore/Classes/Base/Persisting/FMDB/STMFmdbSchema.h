@@ -14,13 +14,16 @@
 
 @interface STMFmdbSchema : NSObject
 
-@property (nonatomic) BOOL migrationSuccessful;
+@property(nonatomic) BOOL migrationSuccessful;
 
 + (instancetype)fmdbSchemaForDatabase:(FMDatabase *)database;
 
 + (NSArray *)builtInAttributes;
+
 + (NSArray *)ignoredAttributes;
+
 + (NSArray *)numericAttributes;
+
 + (NSArray *)minMaxAttributes;
 
 - (NSDictionary *)createTablesWithModelMapping:(id <STMModelMapping>)modelMapping;

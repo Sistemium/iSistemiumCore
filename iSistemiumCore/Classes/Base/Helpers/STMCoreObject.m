@@ -27,11 +27,11 @@
 }
 
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName userInfo:(NSDictionary *)aUserInfo {
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         [self postNotificationName:aName object:self userInfo:aUserInfo];
     });
-    
+
 }
 
 - (void)postAsyncMainQueueNotification:(NSNotificationName)aName {

@@ -13,12 +13,14 @@
 @interface STMIndexedArray : NSObject
 
 + (instancetype)array;
+
 + (instancetype)arrayWithPrimaryKey:(NSString *)key;
 
 - (NSString *)primaryKey;
 
 - (NSDictionary *)addObject:(NSDictionary *)anObject;
-- (NSArray <NSDictionary*> *)addObjectsFromArray:(NSArray <NSDictionary*> *)array;
+
+- (NSArray <NSDictionary *> *)addObjectsFromArray:(NSArray <NSDictionary *> *)array;
 
 - (BOOL)removeObjectWithKey:(NSString *)key;
 

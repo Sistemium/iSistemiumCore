@@ -10,9 +10,9 @@
 #import "STMPersisterTransactionCoordinator.h"
 #import "STMAdapting.h"
 
-@interface STMPersisterRunner()
+@interface STMPersisterRunner ()
 
-@property (nonatomic, strong) id <STMModelling,STMPersistingObserving> persister;
+@property(nonatomic, strong) id <STMModelling, STMPersistingObserving> persister;
 
 @end
 
@@ -20,39 +20,39 @@
 
 @synthesize adapters;
 
-- (instancetype)initWithPersister:(id <STMModelling,STMPersistingObserving>)persister adapters:(NSDictionary *)adapters{
-    
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters {
+
     self = [self init];
-    
+
     if (!self) {
         return nil;
     }
-    
+
     self.adapters = adapters;
     self.persister = persister;
-    
+
     return self;
-    
+
 }
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
-    
-    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *)self.adapters];
-    
+
+    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *) self.adapters];
+
     BOOL result = block(transactionCoordinator);
-    
+
     [transactionCoordinator endTransactionWithSuccess:result];
 
 }
 
-- (NSArray *)readOnly:(NSArray * (^)(id<STMPersistingTransaction>))block {
-    
+- (NSArray *)readOnly:(NSArray *(^)(id <STMPersistingTransaction>))block {
+
     __block NSArray *result;
-        
-    STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *)self.adapters readOny:YES];
+
+    STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *) self.adapters readOny:YES];
 
     result = block(readOnlyTransactionCoordinator);
-    
+
     [readOnlyTransactionCoordinator endTransactionWithSuccess:YES];
 
     return result;

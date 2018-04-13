@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface STMPersister : STMModeller <STMPersistingSync>
 
-@property (nonatomic,strong) id<STMPersistingRunning> runner;
-@property (nonatomic,strong) dispatch_queue_t dispatchQueue;
+@property(nonatomic, strong) id <STMPersistingRunning> runner;
+@property(nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 + (instancetype)persisterWithModelName:(NSString *)modelName
                      completionHandler:(void (^ _Nullable)(BOOL success))completionHandler;

@@ -11,7 +11,7 @@
 #import "STMFiling.h"
 #import "STMAdapting.h"
 
-@interface STMFmdb : NSObject<STMAdapting>
+@interface STMFmdb : NSObject <STMAdapting>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,8 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
                            dbPath:(NSString *)dbPath;
 
 - (BOOL)hasTable:(NSString *)name;
+
 - (NSString *)executePatchForCondition:(NSString *)condition
-                           patch:(NSString *)patch;
+                                 patch:(NSString *)patch;
 
 NS_ASSUME_NONNULL_END
 

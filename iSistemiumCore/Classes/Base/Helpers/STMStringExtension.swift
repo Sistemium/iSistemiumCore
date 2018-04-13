@@ -16,7 +16,7 @@ extension String {
     var uppercaseFirst: String {
         return first.uppercased() + String(dropFirst())
     }
-    var dropLast: String{
+    var dropLast: String {
         return String(dropLast())
     }
 }

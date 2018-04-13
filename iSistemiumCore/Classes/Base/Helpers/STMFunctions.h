@@ -18,21 +18,28 @@
 
 @end
 
-#define STMIsNull(a,b) a ? a : b
+#define STMIsNull(a, b) a ? a : b
 
 @interface STMFunctions : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)isCorrectPhoneNumber:(NSString *)phoneNumberString;
+
 + (BOOL)isCorrectSMSCode:(NSString *)SMSCode;
 
 + (NSData *)dataWithHexString:(NSString *)hexString;
+
 + (NSData *)dataFromString:(NSString *)string;
-+ (nullable NSData *)xidDataFromXidString:(nullable NSString  *)xidString;
+
++ (nullable NSData *)xidDataFromXidString:(nullable NSString *)xidString;
+
 + (NSData *)UUIDDataFromNSUUID:(NSUUID *)nsuuid;
+
 + (NSString *)UUIDStringFromUUIDData:(NSData *)UUIDData;
+
 + (NSString *)hexStringFromData:(NSData *)data;
+
 + (NSString *)base64HexStringFromData:(NSData *)data;
 
 + (NSString *)uuidString;
@@ -40,8 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)pluralTypeForCount:(NSUInteger)count;
 
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size;
+
 + (UIImage *)resizeImage:(nullable UIImage *)image toSize:(CGSize)size allowRetina:(BOOL)retina;
+
 + (UIImage *)colorImage:(UIImage *)origImage withColor:(UIColor *)color;
+
 + (UIImage *)drawText:(NSString *)text withFont:(UIFont *)font color:(UIColor *)color inImage:(UIImage *)image atCenter:(BOOL)atCenter;
 
 + (NSNumber *)daysFromTodayToDate:(NSDate *)date;
@@ -49,36 +59,55 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)displayDateInfo:(nullable NSString *)dateInfo;
 
 + (NSDate *)dateFromString:(NSString *)string;
+
 + (NSString *)stringFromDate:(NSDate *)date;
+
 + (NSString *)stringFromNow;
 
-+ (NSString *)addPrefixToEntityName:(NSString*)entityName;
-+ (NSString *)removePrefixFromEntityName:(NSString*)entityName;
++ (NSString *)addPrefixToEntityName:(NSString *)entityName;
+
++ (NSString *)removePrefixFromEntityName:(NSString *)entityName;
 
 + (NSDateFormatter *)dateNumbersFormatter;
+
 + (NSDateFormatter *)dateNumbersFormatterTwo;
+
 + (NSDateFormatter *)dateShortNoTimeFormatter;
+
 + (NSDateFormatter *)dateShortTimeShortFormatter;
+
 + (NSDateFormatter *)dateMediumNoTimeFormatter;
+
 + (NSDateFormatter *)dateLongNoTimeFormatter;
+
 + (NSDateFormatter *)dateMediumTimeMediumFormatter;
+
 + (NSDateFormatter *)dateMediumTimeShortFormatter;
+
 + (NSDateFormatter *)noDateShortTimeFormatter;
+
 + (NSDateFormatter *)noDateMediumTimeFormatter;
+
 + (NSDateFormatter *)noDateShortTimeFormatterAllowZero:(BOOL)allowZero;
 
 + (void)NSLogCurrentDateWithMilliseconds;
 
 + (NSDate *)dateFromDouble:(double)time;
+
 + (double)currentTimeInDouble;
 
 + (NSString *)trueMinus;
 
 + (NSNumberFormatter *)decimalFormatter;
+
 + (NSNumberFormatter *)decimalMaxTwoDigitFormatter;
+
 + (NSNumberFormatter *)decimalMinTwoDigitFormatter;
+
 + (NSNumberFormatter *)decimalMaxTwoMinTwoDigitFormatter;
+
 + (NSNumberFormatter *)currencyFormatter;
+
 + (NSNumberFormatter *)percentFormatter;
 
 + (NSString *)dayWithDayOfWeekFromDate:(NSDate *)date;
@@ -86,10 +115,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)MD5FromString:(nullable NSString *)string;
 
 + (NSString *)devicePlatform;
+
 + (NSString *)currentAppVersion;
 
 + (NSString *)documentsDirectory;
+
 + (NSString *)absolutePathForPath:(nullable NSString *)path;
+
 + (NSString *)absoluteDocumentsPathForPath:(nullable NSString *)path;
 
 + (UIColor *)colorForColorString:(NSString *)colorSting;
@@ -99,47 +131,65 @@ NS_ASSUME_NONNULL_BEGIN
 // - JSON representation
 
 + (id)jsonObjectFromString:(NSString *)string;
+
 + (NSString *)jsonStringFromObject:(id)object;
+
 + (NSString *)jsonStringFromArray:(NSArray *)objectArray;
+
 + (NSString *)jsonStringFromDictionary:(NSDictionary *)objectDic;
+
 + (NSDictionary *)validJSONDictionaryFromDictionary:(NSDictionary *)dictionary;
 
 + (NSString *)volumeStringWithVolume:(NSInteger)volume andPackageRel:(NSInteger)packageRel;
 
 + (BOOL)shouldHandleMemoryWarningFromVC:(UIViewController *)vc;
+
 + (void)nilifyViewForVC:(UIViewController *)vc;
+
 + (void)logMemoryStat;
+
 + (NSString *)memoryStatistic;
 
 + (nullable NSString *)shortCompanyName:(nullable NSString *)companyName;
 
 + (NSString *)appStateString;
+
 + (UIApplicationState)appState;
 
 + (uint64_t)freeDiskspace;
 
 + (NSString *)uppercaseFirst:(NSString *)inputString;
+
 + (NSString *)lowercaseFirst:(NSString *)inputString;
 
 + (nullable id)popArray:(NSMutableArray *)array;
+
 + (void)pushArray:(NSMutableArray *)array object:(_Nonnull id)object;
+
 + (void)moveObject:(id)object toTheHeadOfArray:(NSMutableArray *)array;
+
 + (void)moveObject:(id)object toTheTailOfArray:(NSMutableArray *)array;
 
-+ (NSDictionary*)mapDictionary:(NSDictionary*)dictionary withBlock:(id (^)(id value, id key))mapperBlock;
-+ (NSArray *)mapArray:(NSArray*)array withBlock:(id (^)(id value))mapperBlock;
++ (NSDictionary *)mapDictionary:(NSDictionary *)dictionary withBlock:(id (^)(id value, id key))mapperBlock;
+
++ (NSArray *)mapArray:(NSArray *)array withBlock:(id (^)(id value))mapperBlock;
+
 + (NSDictionary <NSString *, NSArray <NSDictionary <NSString *, id> *> *> *)groupArray:(NSArray <NSDictionary <NSString *, id> *> *)array byKey:(NSString *)key;
 
-+ (BOOL)error:(NSError **)error withMessage:(NSString * _Nullable)errorMessage;
++ (BOOL)error:(NSError **)error withMessage:(NSString *_Nullable)errorMessage;
+
 + (NSError *)errorWithMessage:(NSString *)errorMessage;
 
-+ (NSDictionary*)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary*)dictionary;
++ (NSDictionary *)setValue:(id)value forKey:(id)key inDictionary:(NSDictionary *)dictionary;
 
 + (nullable NSString *)currentTestTarget;
 
 + (BOOL)isNotNullAndTrue:(id)value;
+
 + (BOOL)isNotNull:(nullable id)value;
+
 + (BOOL)isNull:(nullable id)value;
+
 + (BOOL)isNullBoth:(id)value1 and:(id)value2;
 
 + (BOOL)isEmpty:(id)value;
@@ -149,6 +199,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary *)callerInfo;
 
 + (void)setNetworkActivityIndicatorVisible:(BOOL)visible;
+
 + (BOOL)isAppInBackground;
 
 

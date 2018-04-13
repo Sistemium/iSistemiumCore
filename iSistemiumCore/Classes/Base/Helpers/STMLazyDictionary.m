@@ -10,8 +10,8 @@
 
 @interface STMLazyDictionary ()
 
-@property (nonatomic, strong) NSMutableDictionary *privateData;
-@property (nonatomic, strong) Class itemsClass;
+@property(nonatomic, strong) NSMutableDictionary *privateData;
+@property(nonatomic, strong) Class itemsClass;
 
 @end
 
@@ -34,21 +34,21 @@
 }
 
 - (id)objectForKeyedSubscript:(id)key {
-    
+
     if (!self || !self.privateData) {
         return nil;
     }
-    
+
     id item;
-    
+
     @synchronized (self) {
-        
+
         item = self.privateData[key];
-        
+
         if (!item) {
             item = self.privateData[key] = [[self.itemsClass alloc] init];
         }
-    
+
     }
 
     return item;
@@ -56,7 +56,7 @@
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(id)key {
-    
+
     @synchronized (self) {
         if (obj) {
             self.privateData[key] = obj;
@@ -64,10 +64,10 @@
             [self removeObjectForKey:key];
         }
     }
-    
+
 }
 
-- (void)setObject:(id)anObject forKey:(id)aKey{
+- (void)setObject:(id)anObject forKey:(id)aKey {
     self[aKey] = anObject;
 }
 

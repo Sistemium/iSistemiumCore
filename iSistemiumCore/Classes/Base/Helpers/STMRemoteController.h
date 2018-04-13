@@ -15,6 +15,6 @@
 + (BOOL)receiveRemoteCommands:(NSDictionary *)remoteCommands
                         error:(NSError **)error;
 
-+ (NSDictionary*)receiveRemoteRequests:(NSDictionary *)remoteRequests;
++ (NSDictionary *)receiveRemoteRequests:(NSDictionary *)remoteRequests;
 
 @end
