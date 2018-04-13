@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreBarCodeController.h"
+#import "STMLogger.h"
 
 
 @implementation STMCoreBarCodeController

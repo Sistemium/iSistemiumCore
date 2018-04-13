@@ -12,12 +12,12 @@
 #import <CoreData/CoreData.h>
 #import <AVFoundation/AVFoundation.h>
 #import "STMScanApiHelper.h"
+#import "STMCoreObjectsController.h"
 
 #import "STMCoreNS.h"
 #import "STMCoreDataModel.h"
 #import "STMCoreSessionManager.h"
-#import "STMLogger.h"
-#import "STMCoreObjectsController.h"
+#import "STMCoreBarCodeController.h"
 
 
 @interface STMBarCodeScanner() <UITextFieldDelegate, AVCaptureMetadataOutputObjectsDelegate, STMScanApiHelperDelegate>
