@@ -15,7 +15,7 @@
 
 #define ATTRIBUTE_FILE_PROTECTION_NONE NSFileProtectionKey:NSFileProtectionNone
 
-@interface STMCoreSessionFiler()
+@interface STMCoreSessionFiler ()
 
 @property (nonatomic, strong) NSString *userDocuments;
 @property (nonatomic, strong) NSString *sharedDocuments;

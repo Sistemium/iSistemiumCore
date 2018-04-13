@@ -12,15 +12,18 @@
 
 #define STM_SETTING_NAME @"STMSetting"
 
-@interface STMCoreSettingsController : STMCoreController <STMSettingsController,STMPersistingMergeInterceptor>
+@interface STMCoreSettingsController : STMCoreController <STMSettingsController, STMPersistingMergeInterceptor>
 
 + (instancetype)controllerWithSettings:(NSDictionary *)startSettings defaultSettings:(NSDictionary *)defaultSettings;
 
 - (id)normalizeValue:(id)value forKey:(NSString *)key;
 
 - (BOOL)isPositiveDouble:(NSString *)value;
+
 - (BOOL)isBool:(NSString *)value;
+
 - (BOOL)isValidTime:(NSString *)value;
+
 - (BOOL)isValidURI:(NSString *)value;
 
 - (BOOL)key:(NSString *)key hasSuffixFromArray:(NSArray *)array;

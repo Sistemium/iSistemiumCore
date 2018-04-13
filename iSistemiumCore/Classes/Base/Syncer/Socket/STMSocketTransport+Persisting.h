@@ -14,6 +14,6 @@ static NSString *kSocketFindMethod = @"find";
 static NSString *kSocketUpdateMethod = @"update";
 static NSString *kSocketDestroyMethod = @"destroy";
 
-@interface STMSocketTransport (Persisting)  <STMPersistingWithHeadersAsync>
+@interface STMSocketTransport (Persisting) <STMPersistingWithHeadersAsync>
 
 @end

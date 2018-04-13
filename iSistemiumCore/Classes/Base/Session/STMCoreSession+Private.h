@@ -8,9 +8,9 @@
 
 #import "STMCoreSession.h"
 
-@interface STMCoreSession()
+@interface STMCoreSession ()
 
-@property (nonatomic,strong) NSMutableDictionary <NSString *,id> *controllers;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, id> *controllers;
 
 - (void)initController:(Class)controllerClass;
 

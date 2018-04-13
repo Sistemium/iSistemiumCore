@@ -13,19 +13,19 @@
 
 @implementation STMCoreSession
 
-@synthesize syncer =_syncer;
+@synthesize syncer = _syncer;
 @synthesize filing = _filing;
 
 
-- (instancetype)initWithAuthDelegate:(id<STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
-    
+- (instancetype)initWithAuthDelegate:(id <STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
+
     NSString *uid = authDelegate.userID;
-    
+
     if (!uid) {
         NSLog(@"no uid");
         return nil;
     }
-    
+
     self.uid = uid;
     self.status = STMSessionStarting;
     self.startSettings = startSettings;
@@ -35,9 +35,9 @@
 
     STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg
                                                                    userId:STMIsNull(authDelegate.iSisDB, uid)];
-    
+
     self.filing = filer;
-    
+
     [self addObservers];
 
     return [self initPersistable];
@@ -58,62 +58,62 @@
 }
 
 - (void)stopSession {
-    
+
     self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionFinishing;
 
     self.logger.session = nil;
-    
+
     [self removePersistable:^(BOOL success) {
-        
+
         if (!success) {
             NSLog(@"Can not stop session with uid %@", self.uid);
             return;
         }
-            
+
         self.status = (self.status == STMSessionRemoving) ? self.status : STMSessionStopped;
-        
+
         self.settingsController = nil;
         self.trackers = nil;
         self.logger = nil;
         self.syncer = nil;
-                
+
         [self.manager sessionStopped:self];
-        
+
     }];
-    
+
 }
 
 - (void)dismissSession {
-    
+
     if (self.status != STMSessionStopped) return;
-        
+
     [self removeObservers];
-    
+
     // TODO: move to +Persistable
     if (self.document.documentState == UIDocumentStateClosed) return;
-        
+
     [self.document closeWithCompletionHandler:^(BOOL success) {
-        
+
         if (!success) return;
-            
+
         for (STMCoreTracker *tracker in self.trackers.allValues) {
             [tracker prepareToDestroy];
         }
-        
+
         [self.syncer prepareToDestroy];
         [self.document.managedObjectContext reset];
         [self.manager removeSessionForUID:self.uid];
-        
+
     }];
-    
+
 }
 
 
 - (void)addObservers {
-    
+
     [self observeNotification:UIApplicationDidEnterBackgroundNotification
                      selector:@selector(applicationDidEnterBackground)];
-    
+
 }
 
 - (BOOL)isRunningTests {
@@ -139,21 +139,21 @@
 #pragma mark - handle notifications
 
 - (void)checkTrackersToStart {
-    
+
     if ([self.startTrackers containsObject:@"location"]) {
-        
+
         self.locationTracker = [[[self locationTrackerClass] alloc] init];
         self.trackers[self.locationTracker.group] = self.locationTracker;
         self.locationTracker.session = self;
-        
+
     }
-    
+
     if ([self.startTrackers containsObject:@"battery"]) {
-        
+
         self.batteryTracker = [[[self batteryTrackerClass] alloc] init];
         self.trackers[self.batteryTracker.group] = self.batteryTracker;
         self.batteryTracker.session = self;
-        
+
     }
 
 }
@@ -164,13 +164,13 @@
 }
 
 - (void)setStatus:(STMSessionStatus)status {
-    
+
     if (_status != status) {
-        
+
         _status = status;
-        
-            NSString *statusString = nil;
-        
+
+        NSString *statusString = nil;
+
         switch (_status) {
             case STMSessionIdle: {
                 statusString = @"STMSessionIdle";
@@ -197,15 +197,15 @@
                 break;
             }
         }
-        
-		[[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SESSION_STATUS_CHANGED
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:NOTIFICATION_SESSION_STATUS_CHANGED
                                                             object:self];
-        
+
         NSString *logMessage = [NSString stringWithFormat:@"Session #%@ status changed to %@", self.uid, statusString];
         [[STMLogger sharedLogger] saveLogMessageWithText:logMessage];
 
-	}
-    
+    }
+
 }
 
 

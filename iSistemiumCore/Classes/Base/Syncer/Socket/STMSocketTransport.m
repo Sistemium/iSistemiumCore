@@ -17,7 +17,7 @@
 #define AUTH_DELAY 30
 
 
-@interface STMSocketTransport()
+@interface STMSocketTransport ()
 
 @property (nonatomic, weak) STMLogger *logger;
 @property (nonatomic, strong) SocketIOClient *socket;
@@ -26,8 +26,8 @@
 @property (nonatomic) BOOL isAuthorized;
 @property (nonatomic) NSTimeInterval timeout;
 
-@property (nonatomic,strong) dispatch_queue_t handleQueue;
-@property (nonatomic,strong) SocketManager *socketManager;
+@property (nonatomic, strong) dispatch_queue_t handleQueue;
+@property (nonatomic, strong) SocketManager *socketManager;
 
 
 @end
@@ -35,34 +35,34 @@
 
 @implementation STMSocketTransport
 
-+ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner remoteDataEventHandling:(id <STMRemoteDataEventHandling>)remoteDataEventHandling{
-    
++ (instancetype)transportWithUrl:(NSString *)socketUrlString andEntityResource:(NSString *)entityResource owner:(id <STMSocketConnectionOwner>)owner remoteDataEventHandling:(id <STMRemoteDataEventHandling>)remoteDataEventHandling {
+
     STMLogger *logger = [STMLogger sharedLogger];
-    
+
     socketUrlString = [socketUrlString isKindOfClass:[NSNull class]] ? nil : socketUrlString;
     entityResource = [entityResource isKindOfClass:[NSNull class]] ? nil : entityResource;
 
     if (!socketUrlString || !entityResource || !owner) {
-        
+
         NSString *logMessage = [NSString stringWithFormat:@"have not enough parameters to init socket transport"];
         [logger errorMessage:logMessage];
 
         return nil;
-        
+
     }
-    
+
     STMSocketTransport *socketTransport = [[self alloc] init];
-    
+
     socketTransport.socketUrl = socketUrlString;
     socketTransport.entityResource = entityResource;
     socketTransport.owner = owner;
     socketTransport.logger = logger;
     socketTransport.remoteDataEventHandling = remoteDataEventHandling;
-    
+
     [socketTransport startSocket];
-    
+
     return socketTransport;
-    
+
 }
 
 - (NSTimeInterval)timeout {
@@ -70,7 +70,7 @@
 }
 
 - (void)startSocket {
-    
+
     [self.logger infoMessage:CurrentMethodName];
 
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
@@ -79,83 +79,83 @@
     if (!self.handleQueue) {
         self.handleQueue =
 //        dispatch_get_main_queue();
-        dispatch_queue_create("com.sistemium.STMSocketTransport",
-                              DISPATCH_QUEUE_CONCURRENT
+                dispatch_queue_create("com.sistemium.STMSocketTransport",
+                        DISPATCH_QUEUE_CONCURRENT
 //                              DISPATCH_QUEUE_SERIAL
-                              );
+                );
     }
-    
+
     NSDictionary *config = @{
-                             @"handleQueue"        : self.handleQueue,
+            @"handleQueue": self.handleQueue,
 //                             @"doubleEncodeUTF8"   : @YES,
 //                             @"voipEnabled"        : @YES,
-                             @"log"                : @NO,
-                             @"forceWebsockets"    : @NO,
-                             @"path"               : path,
-                             @"reconnects"         : @YES
-                             };
+            @"log": @NO,
+            @"forceWebsockets": @NO,
+            @"path": path,
+            @"reconnects": @YES
+    };
 
     if (!self.socketManager) {
         self.socketManager = [[SocketManager alloc] initWithSocketURL:socketUrl config:config];
     }
-    
+
     self.socketManager.reconnects = YES;
     self.socket = self.socketManager.defaultSocket;
 
     [self addEventObservers];
-    
+
     [self.socketManager connect];
-    
+
 }
 
 
 - (void)closeSocket {
-    
+
     [self.logger infoMessage:CurrentMethodName];
     [self.socket removeAllHandlers];
     self.socketManager.reconnects = NO;
     [self.socketManager disconnect];
     [self.owner socketWillClosed];
-    
+
     self.socket = nil;
     self.isAuthorized = NO;
-    
+
 }
 
 
 - (void)reconnectSocket {
-    
+
     [self closeSocket];
     [self startSocket];
-    
+
 }
 
 
 - (void)addEventObservers {
-    
+
     [self.socket removeAllHandlers];
-    
+
     NSString *logMessage = [NSString stringWithFormat:@"addEventObserversToSocket %@", self.socket];
     [self.logger infoMessage:logMessage];
-    
-    
+
+
 #ifdef DEBUG
     [self addOnAnyEventHandler];
 #endif
-    
+
     NSArray *events = @[@(STMSocketEventConnect),
-                        @(STMSocketEventDisconnect),
-                        @(STMSocketEventError),
-                        @(STMSocketEventReconnect),
-                        @(STMSocketEventReconnectAttempt),
-                        @(STMSocketEventRemoteCommands),
-                        @(STMSocketEventRemoteRequests),
-                        @(STMSocketEventData),
-                        @(STMSocketEventJSData),
-                        @(STMSocketEventUpdate),
-                        @(STMSocketEventUpdateCollection),
-                        @(STMSocketEventDestroy)];
-    
+            @(STMSocketEventDisconnect),
+            @(STMSocketEventError),
+            @(STMSocketEventReconnect),
+            @(STMSocketEventReconnectAttempt),
+            @(STMSocketEventRemoteCommands),
+            @(STMSocketEventRemoteRequests),
+            @(STMSocketEventData),
+            @(STMSocketEventJSData),
+            @(STMSocketEventUpdate),
+            @(STMSocketEventUpdateCollection),
+            @(STMSocketEventDestroy)];
+
     for (NSNumber *eventNum in events) {
         [self addHandlerForEvent:eventNum.integerValue];
     }
@@ -163,26 +163,26 @@
 }
 
 - (void)addOnAnyEventHandler {
-    
+
     [self.socket onAny:^(SocketAnyEvent *event) {
-        
+
         NSLog(@"%@ %@ ___ event %@", self.socket, self.socket.sid, event.event);
         NSLog(@"%@ %@ ___ items (", self.socket, self.socket.sid);
-        
+
         for (id item in event.items) NSLog(@"    %@", item);
-        
+
         NSLog(@"%@ %@           )", self.socket, self.socket.sid);
-        
+
     }];
-    
+
 }
 
 - (void)addHandlerForEvent:(STMSocketEvent)event {
-    
+
     NSString *eventString = [STMSocketTransport stringValueForEvent:event];
-    
+
     [self.socket on:eventString callback:^(NSArray *data, SocketAckEmitter *ack) {
-        
+
         switch (event) {
             case STMSocketEventConnect: {
                 [self connectEventHandleWithData:data ack:ack];
@@ -203,23 +203,23 @@
                 [self remoteCommandsEventHandleWithData:data ack:ack];
                 break;
             }
-                
+
             case STMSocketEventRemoteRequests: {
                 [self remoteRequestsEventHandleWithData:data ack:ack];
                 break;
             }
-            
+
             case STMSocketEventUpdateCollection:
             case STMSocketEventUpdate: {
                 [self updateEventHandleWithData:data ack:ack];
                 break;
             }
-                
+
             case STMSocketEventDestroy: {
                 [self destroyEventHandleWithData:data ack:ack];
                 break;
             }
-                
+
             case STMSocketEventReconnectAttempt:
             case STMSocketEventError:
             case STMSocketEventStatusChange:
@@ -229,11 +229,11 @@
             case STMSocketEventJSData:
             default:
                 break;
-                
+
         }
-        
+
     }];
-    
+
 }
 
 
@@ -249,116 +249,116 @@
 }
 
 - (void)checkSocket {
-    
+
     if (!self.isReady) {
         [self reconnectSocket];
     }
-    
+
 }
 
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value {
-    
-    [self socketSendEvent:event withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {}];
-    
+
+    [self socketSendEvent:event withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+    }];
+
 }
 
 - (void)socketSendEvent:(STMSocketEvent)event withValue:(id)value completionHandler:(void (^)(BOOL success, NSArray *data, NSError *error))completionHandler {
-    
+
     [self logSendEvent:event withValue:value];
-    
+
     if (!self.isReady) {
-        
+
         NSString *errorMessage = @"socket not connected while sendEvent";
-        
+
         [self socketLostConnection:errorMessage];
-        
+
         return completionHandler(NO, nil, [STMFunctions errorWithMessage:errorMessage]);
-        
+
     }
-        
+
     if (event == STMSocketEventJSData) {
-        
+
         if (![value isKindOfClass:[NSDictionary class]]) {
             return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"STMSocketEventJSData value is not NSDictionary"]);
         }
-            
+
         NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-        
+
         OnAckCallback *onAck = [self.socket emitWithAck:eventStringValue with:@[value]];
-        
+
         return [onAck timingOutAfter:self.timeout callback:^(NSArray *data) {
-            
+
             if ([data.firstObject isEqual:@"NO ACK"]) {
                 return completionHandler(NO, nil, [STMFunctions errorWithMessage:@"ack timeout"]);
             }
-            
+
             completionHandler(YES, data, nil);
-        
+
         }];
-        
+
     }
-        
+
     NSString *primaryKey = [STMSocketTransport primaryKeyForEvent:event];
-    
+
     NSString *eventStringValue = [STMSocketTransport stringValueForEvent:event];
-    
+
     if (value && primaryKey) {
-        
-        NSDictionary *dataDic = @{primaryKey : value};
-        
+
+        NSDictionary *dataDic = @{primaryKey: value};
+
         dataDic = [STMFunctions validJSONDictionaryFromDictionary:dataDic];
-        
+
         if (!dataDic) {
             NSString *message = [NSString stringWithFormat:@"%@ ___ no dataDic to send via socket for event: %@", self.socket, eventStringValue];
             NSLog(message);
             return completionHandler(NO, nil, [STMFunctions errorWithMessage:message]);
         }
-        
+
         [self.socket emit:eventStringValue with:@[dataDic]];
-        
-    }else if (value){
-    
+
+    } else if (value) {
+
         [self.socket emit:eventStringValue with:@[value]];
-        
-    }else{
-        
+
+    } else {
+
         [self.socket emit:eventStringValue with:@[]];
-        
+
     }
-    
-    
-    
+
+
 }
 
 #pragma mark - socket events handlers
 
 - (void)connectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    
+
     [self emitAuthorization];
 
 }
 
 - (void)emitAuthorization {
- 
+
     NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
-    
-    NSDictionary *authDic = @{@"userId"         : [STMCoreAuthController authController].userID,
-                              @"accessToken"    : [STMCoreAuthController authController].accessToken};
-    
+
+    NSDictionary *authDic = @{@"userId": [STMCoreAuthController authController].userID,
+            @"accessToken": [STMCoreAuthController authController].accessToken};
+
     [dataDic addEntriesFromDictionary:authDic];
-    
+
     NSString *logMessage = [NSString stringWithFormat:@"send authorization data %@ with socket %@ %@", dataDic, self.socket, self.socket.sid];
     [self.logger infoMessage:logMessage];
-    
+
     STMSocketEvent eventNum = STMSocketEventAuthorization;
     NSString *event = [STMSocketTransport stringValueForEvent:eventNum];
-    
+
     [[self.socket emitWithAck:event with:@[dataDic]] timingOutAfter:self.timeout callback:^(NSArray *data) {
-        
+
         [self receiveAckWithData:data forEventNum:eventNum];
-        
+
     }];
-    
+
 }
 
 - (void)disconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
@@ -371,7 +371,7 @@
 }
 
 - (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-        
+
     if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
         [STMRemoteController receiveRemoteCommands:data.firstObject];
     }
@@ -379,70 +379,70 @@
 }
 
 - (void)remoteRequestsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    
+
     if ([data.firstObject isKindOfClass:[NSDictionary class]]) {
-        NSDictionary* response = [STMRemoteController receiveRemoteRequests:data.firstObject];
-        
+        NSDictionary *response = [STMRemoteController receiveRemoteRequests:data.firstObject];
+
         response = [STMFunctions validJSONDictionaryFromDictionary:response];
-        
+
         [ack with:@[response]];
     }
-    
+
 }
 
 - (void)updateEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    
+
     NSDictionary *receivedData = data.firstObject;
-    
-    if ([STMFunctions isNotNull:receivedData[@"resource"]]){
-        
+
+    if ([STMFunctions isNotNull:receivedData[@"resource"]]) {
+
         NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
-        
+
         NSDictionary *data = receivedData[@"data"];
-        
-        if (data && data[@"id"]){
-            
+
+        if (data && data[@"id"]) {
+
             [self.remoteDataEventHandling remoteUpdated:entityName attributes:data];
-            
+
         } else {
             [self.remoteDataEventHandling remoteHasNewData:entityName];
         }
-        
+
     }
-    
+
 }
 
 - (void)destroyEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
-    
+
     NSDictionary *receivedData = data.firstObject;
-    
-    if ([STMFunctions isNotNull:receivedData[@"resource"]]){
-        
+
+    if ([STMFunctions isNotNull:receivedData[@"resource"]]) {
+
         NSString *entityName = [receivedData[@"resource"] componentsSeparatedByString:@"/"].lastObject;
-        
+
         NSString *identifier = receivedData[@"data"][@"id"];
-        
-        if (identifier){
-            
+
+        if (identifier) {
+
             [self.remoteDataEventHandling remoteDestroyed:entityName identifier:identifier];
-            
+
         }
-        
+
     }
-    
+
 }
 
 #pragma mark - ack handlers
 
 - (void)receiveAckWithData:(NSArray *)data forEvent:(NSString *)event {
-    
+
     STMSocketEvent eventNum = [STMSocketTransport eventForString:event];
     [self receiveAckWithData:data forEventNum:eventNum];
-    
+
 }
 
 - (void)receiveAckWithData:(NSArray *)data forEventNum:(STMSocketEvent)eventNum {
-    
+
     switch (eventNum) {
         case STMSocketEventAuthorization: {
             [self receiveAuthorizationAckWithData:data];
@@ -461,13 +461,13 @@
         default:
             NSLog(@"%@ %@ ___ receive Ack, event: %@, data: %@", self.socket, self.socket.sid, eventNum, data);
             break;
-            
+
     }
 
 }
 
 - (void)receiveAuthorizationAckWithData:(NSArray *)data {
-    
+
     if ([data.firstObject isEqual:@"NO ACK"]) {
         return [self notAuthorizedWithError:@"receiveAuthorizationAckWithData authorization timeout"];
     }
@@ -479,73 +479,73 @@
     if (![data.firstObject isKindOfClass:[NSDictionary class]]) {
         return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with data.firstObject is not a NSDictionary"];
     }
-    
+
     NSDictionary *dataDic = data.firstObject;
-    
+
     if (![dataDic objectForKey:@"isAuthorized"]) {
         NSLog(@"Socket auth error: %@", dataDic);
         return [self delayedAuthorization];
     }
-    
+
     BOOL isAuthorized = [dataDic[@"isAuthorized"] boolValue];
-    
+
     if (!isAuthorized) {
         return [self notAuthorizedWithError:@"socket receiveAuthorizationAck with dataDic.isAuthorized.boolValue == NO"];
     }
-        
+
     self.isAuthorized = YES;
     logMessage = [NSString stringWithFormat:@"socket %@ %@ authorized", self.socket, self.socket.sid];
-    
+
     [self.logger infoMessage:logMessage];
 
     [self.owner socketReceiveAuthorization];
     [self checkAppState];
-    
+
 }
 
 - (void)delayedAuthorization {
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(AUTH_DELAY * NSEC_PER_SEC)), self.handleQueue, ^{
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (AUTH_DELAY * NSEC_PER_SEC)), self.handleQueue, ^{
         [self emitAuthorization];
     });
-    
+
 }
 
 - (void)checkAppState {
-    
+
     NSString *appState = [STMFunctions appStateString];
-    
+
     [self socketSendEvent:STMSocketEventStatusChange withValue:appState];
-    
+
     if (![appState isEqualToString:@"UIApplicationStateActive"]) return;
-        
+
     UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
-    
+
     if (![selectedVC class]) return;
-        
-    Class _Nonnull rootVCClass = (Class _Nonnull)[selectedVC class];
-    
+
+    Class _Nonnull rootVCClass = (Class _Nonnull) [selectedVC class];
+
     NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
-    
+
     [self socketSendEvent:STMSocketEventStatusChange withValue:value];
 
 }
 
 - (void)logSendEvent:(STMSocketEvent)event withValue:(id)value {
-    
+
 #ifdef DEBUG
-    
+
     if (event == STMSocketEventData && [value isKindOfClass:[NSArray class]]) {
-        
+
         //        NSArray *valueArray = [(NSArray *)value valueForKeyPath:@"name"];
         //        NSLog(@"socket:%@ sendEvent:%@ withObjects:%@", socket, [self stringValueForEvent:event], valueArray);
-        
+
     } else if (event == STMSocketEventInfo || event == STMSocketEventStatusChange) {
-        
+
         NSLog(@"socket:%@ %@ sendEvent:%@ withValue:%@", self.socket, self.socket.sid, [STMSocketTransport stringValueForEvent:event], value);
-        
+
     }
-    
+
 #endif
 
 }
@@ -554,57 +554,56 @@
 #pragma mark - authorization check
 
 - (void)notAuthorizedWithError:(NSString *)errorString {
-    
+
     NSString *logMessage = [NSString stringWithFormat:@"socket connection %@ not authorized: %@", self.socket.sid, errorString];
     self.isAuthorized = NO;
     [self.owner socketAuthorizationError:[STMFunctions errorWithMessage:logMessage]];
-    
+
 }
 
 
 #pragma mark - checking connection
 
 - (void)checkReachabilityAndSocketStatus {
-    
+
     switch (self.socket.status) {
         case SocketIOStatusNotConnected:
         case SocketIOStatusDisconnected:
-            
+
 //            if ([Reachability reachabilityWithHostname:self.socketUrl].isReachable) {
 //
 //                [self.logger importantMessage:@"socket is not connected but host is reachable, reconnect it"];
 //                [self reconnectSocket];
 //
 //            }
-            
+
             break;
-            
+
         case SocketIOStatusConnecting:
         case SocketIOStatusConnected:
         default:
             break;
     }
-    
+
 }
 
 - (void)socketLostConnection:(NSString *)infoString {
-    
+
     NSLogMethodName;
 
     [self.logger infoMessage:infoString];
-    
-//    [self checkReachabilityAndSocketStatus];
-    
-    [self.owner socketLostConnection];
-    
-}
 
+//    [self checkReachabilityAndSocketStatus];
+
+    [self.owner socketLostConnection];
+
+}
 
 
 #pragma mark - socket events names and keys
 
 + (NSString *)stringValueForEvent:(STMSocketEvent)event {
-    
+
     switch (event) {
         case STMSocketEventConnect: {
             return @"connect";
@@ -675,11 +674,11 @@
             break;
         }
     }
-    
+
 }
 
 + (STMSocketEvent)eventForString:(NSString *)stringValue {
-    
+
     if ([stringValue isEqualToString:@"connect"]) {
         return STMSocketEventConnect;
     } else if ([stringValue isEqualToString:@"disconnect"]) {
@@ -702,17 +701,17 @@
         return STMSocketEventData;
     } else if ([stringValue isEqualToString:@"jsData"]) {
         return STMSocketEventJSData;
-        
+
     } else {
         return STMSocketEventInfo;
     }
-    
+
 }
 
 + (NSString *)primaryKeyForEvent:(STMSocketEvent)event {
-    
+
     NSString *primaryKey = @"url";
-    
+
     switch (event) {
         case STMSocketEventConnect:
         case STMSocketEventStatusChange:
@@ -732,7 +731,7 @@
         }
     }
     return primaryKey;
-    
+
 }
 
 

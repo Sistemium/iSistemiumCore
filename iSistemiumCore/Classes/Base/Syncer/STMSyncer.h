@@ -31,7 +31,9 @@
 - (void)closeSocketInBackground;
 
 - (void)upload;
+
 - (void)fullSync;
+
 - (void)receiveEntities:(NSArray *)entitiesNames;
 
 - (void)sendEventViaSocket:(STMSocketEvent)event

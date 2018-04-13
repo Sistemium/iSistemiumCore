@@ -19,8 +19,8 @@
 
 @interface STMSyncerHelper ()
 
-@property (nonatomic,strong) STMDataDownloadingState *downloadingState;
-@property (nonatomic,weak) id <STMDefantomizingOwner> defantomizingOwner;
+@property (nonatomic, strong) STMDataDownloadingState *downloadingState;
+@property (nonatomic, weak) id <STMDefantomizingOwner> defantomizingOwner;
 
 @property (nonatomic, strong) STMSyncerHelperDefantomizing *defantomizing;
 
