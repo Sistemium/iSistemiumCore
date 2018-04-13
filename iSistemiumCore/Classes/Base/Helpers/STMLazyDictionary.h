@@ -28,6 +28,6 @@
 
 - (BOOL)hasKey:(KeyType)aKey;
 
-@property(readonly, copy) NSArray <KeyType> *allKeys;
+@property (readonly, copy) NSArray <KeyType> *allKeys;
 
 @end

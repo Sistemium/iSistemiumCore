@@ -10,8 +10,8 @@
 
 @interface STMLazyDictionary ()
 
-@property(nonatomic, strong) NSMutableDictionary *privateData;
-@property(nonatomic, strong) Class itemsClass;
+@property (nonatomic, strong) NSMutableDictionary *privateData;
+@property (nonatomic, strong) Class itemsClass;
 
 @end
 

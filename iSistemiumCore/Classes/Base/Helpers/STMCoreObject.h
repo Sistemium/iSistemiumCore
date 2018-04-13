@@ -11,6 +11,6 @@
 
 @interface STMCoreObject : NSObject <STMNotifications>
 
-@property(nonatomic, readonly) NSNotificationCenter *notificationCenter;
+@property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 
 @end

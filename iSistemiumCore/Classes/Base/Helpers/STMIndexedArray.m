@@ -10,8 +10,8 @@
 
 @interface STMIndexedArray ()
 
-@property(nonatomic, strong) NSString *primaryKey;
-@property(nonatomic, strong) NSMutableDictionary <NSString *, NSNumber *> *primaryIndex;
+@property (nonatomic, strong) NSString *primaryKey;
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumber *> *primaryIndex;
 
 @end
 

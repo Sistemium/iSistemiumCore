@@ -17,8 +17,8 @@
 
 @interface STMUserDefaults ()
 
-@property(nonatomic, strong) NSMutableDictionary *defaultsDic;
-@property(nonatomic, strong) NSString *defaultsPath;
+@property (nonatomic, strong) NSMutableDictionary *defaultsDic;
+@property (nonatomic, strong) NSString *defaultsPath;
 
 
 @end

@@ -17,8 +17,8 @@
 
 @interface STMSoundController () <AVSpeechSynthesizerDelegate, AVAudioPlayerDelegate>
 
-@property(nonatomic, strong) AVSpeechSynthesizer *speechSynthesizer;
-@property(nonatomic, strong) AVAudioPlayer *player;
+@property (nonatomic, strong) AVSpeechSynthesizer *speechSynthesizer;
+@property (nonatomic, strong) AVAudioPlayer *player;
 
 
 @end

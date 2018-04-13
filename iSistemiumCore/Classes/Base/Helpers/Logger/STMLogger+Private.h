@@ -8,7 +8,7 @@
 
 #import "STMLogger.h"
 
-@interface STMLogger()
+@interface STMLogger ()
 
 @property (strong, nonatomic) STMDocument *document;
 @property (strong, nonatomic) NSFetchedResultsController *resultsController;

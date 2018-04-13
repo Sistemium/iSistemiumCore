@@ -12,7 +12,7 @@
 
 @interface STMSoundController : NSObject
 
-@property(nonatomic, strong) id <STMSoundCallbackable> sender;
+@property (nonatomic, strong) id <STMSoundCallbackable> sender;
 
 + (STMSoundController *)sharedController;
 
