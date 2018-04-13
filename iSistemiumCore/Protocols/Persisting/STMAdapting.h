@@ -10,8 +10,9 @@
 
 @protocol STMAdapting
 
-- (id<STMPersistingTransaction>)beginTransactionReadOnly:(BOOL)readOnly;
-- (void)endTransaction:(id<STMPersistingTransaction>)transaction withSuccess:(BOOL)success;
+- (id <STMPersistingTransaction>)beginTransactionReadOnly:(BOOL)readOnly;
+
+- (void)endTransaction:(id <STMPersistingTransaction>)transaction withSuccess:(BOOL)success;
 
 
 @end

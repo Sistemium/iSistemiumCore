@@ -16,12 +16,15 @@
 @required
 
 - (void)saveImage:(UIImage *)image withLocation:(CLLocation *)location;
+
 - (void)saveImage:(UIImage *)image andWaitForLocation:(BOOL)waitForLocation;
 
 - (BOOL)shouldWaitForLocation;
 
 - (void)showImagePickerForSourceType:(UIImagePickerControllerSourceType)imageSourceType;
+
 - (void)imagePickerWasDissmised:(UIImagePickerController *)picker;
+
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker;
 
 

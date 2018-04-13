@@ -18,6 +18,7 @@
 @property (nonatomic, weak) id <STMDataSyncingSubscriber> subscriberDelegate;
 
 - (void)startSyncing;
+
 - (void)pauseSyncing;
 
 - (BOOL)setSynced:(BOOL)success

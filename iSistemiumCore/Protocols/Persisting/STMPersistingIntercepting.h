@@ -9,21 +9,21 @@
 #import "STMPersistingTransaction.h"
 
 @protocol STMPersistingMergeInterceptor
-    
+
 @optional
 
 - (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error;
 
 - (NSArray *)interceptedAttributeArray:(NSArray *)attributesArray options:(NSDictionary *)options error:(NSError **)error;
 
-- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id<STMPersistingTransaction>)transaction;
+- (NSDictionary *)interceptedAttributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error inTransaction:(id <STMPersistingTransaction>)transaction;
 
 @end
 
 
 @protocol STMPersistingIntercepting
 
-@property (readonly,copy) NSDictionary <NSString *, id> *beforeMergeInterceptors;
+@property (readonly, copy) NSDictionary <NSString *, id> *beforeMergeInterceptors;
 
 - (void)beforeMergeEntityName:(NSString *)entityName interceptor:(id <STMPersistingMergeInterceptor>)interceptor;
 

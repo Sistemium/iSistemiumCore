@@ -11,6 +11,7 @@
 @protocol STMDefantomizingOwner <NSObject>
 
 - (void)defantomizeEntityName:(NSString *)entityName identifier:(NSString *)identifier;
+
 - (void)defantomizingFinished;
 
 @end
@@ -22,6 +23,7 @@
 @property (nonatomic, strong) id <STMPersistingFantoms> persistenceFantomsDelegate;
 
 - (void)startDefantomization;
+
 - (void)stopDefantomization;
 
 - (void)defantomizedEntityName:(NSString *)entityName

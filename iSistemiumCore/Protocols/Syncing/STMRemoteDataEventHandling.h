@@ -13,6 +13,7 @@
 - (void)remoteHasNewData:(NSString *)entityName;
 
 - (void)remoteUpdated:(NSString *)entityName attributes:(NSDictionary *)attributes;
+
 - (void)remoteDestroyed:(NSString *)entityName identifier:(NSString *)identifier;
 
 @end

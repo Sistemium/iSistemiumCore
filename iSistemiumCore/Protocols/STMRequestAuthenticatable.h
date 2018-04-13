@@ -10,7 +10,7 @@
 
 @protocol STMRequestAuthenticatable <NSObject>
 
-- (NSURLRequest *) authenticateRequest:(NSURLRequest *)request;
+- (NSURLRequest *)authenticateRequest:(NSURLRequest *)request;
 
 
 @end

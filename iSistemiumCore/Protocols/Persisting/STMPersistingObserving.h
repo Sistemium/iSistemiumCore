@@ -12,22 +12,23 @@
 
 #define STMPersistingObservingSubscriptionID NSString *
 
-typedef void (^STMPersistingObservingSubscriptionCallback)(NSArray * _Nullable data);
-typedef void (^STMPersistingObservingEntityNameArrayCallback)(NSString * _Nonnull entityName, NSArray * _Nullable data);
+typedef void (^STMPersistingObservingSubscriptionCallback)(NSArray *_Nullable data);
+
+typedef void (^STMPersistingObservingEntityNameArrayCallback)(NSString *_Nonnull entityName, NSArray *_Nullable data);
 
 @protocol STMPersistingObserving
 
 NS_ASSUME_NONNULL_BEGIN
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
-                                                     predicate:(NSPredicate * _Nullable)predicate
-                                                      callback:(STMPersistingObservingSubscriptionCallback)callback;
+                                            predicate:(NSPredicate *_Nullable)predicate
+                                             callback:(STMPersistingObservingSubscriptionCallback)callback;
 
-- (STMPersistingObservingSubscriptionID)observeAllWithPredicate:(NSPredicate * _Nullable)predicate
+- (STMPersistingObservingSubscriptionID)observeAllWithPredicate:(NSPredicate *_Nullable)predicate
                                                        callback:(STMPersistingObservingEntityNameArrayCallback)callback;
 
 - (STMPersistingObservingSubscriptionID)observeEntityNames:(NSArray *)entityNames
-                                                 predicate:(NSPredicate * _Nullable)predicate
+                                                 predicate:(NSPredicate *_Nullable)predicate
                                                   callback:(STMPersistingObservingEntityNameArrayCallback)callback;
 
 - (BOOL)cancelSubscription:(STMPersistingObservingSubscriptionID)subscriptionId;
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 - (STMPersistingObservingSubscriptionID)observeEntity:(NSString *)entityName
-                                            predicate:(NSPredicate * _Nullable)predicate
+                                            predicate:(NSPredicate *_Nullable)predicate
                                               options:(STMPersistingOptions _Nullable)options
                                              callback:(STMPersistingObservingSubscriptionCallback)callback;
 

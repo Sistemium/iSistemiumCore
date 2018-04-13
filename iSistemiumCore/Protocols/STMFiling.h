@@ -22,11 +22,15 @@
 @property (readonly) id <STMDirectoring> directoring;
 
 - (NSString *)persistenceBasePath;
+
 - (NSString *)picturesBasePath;
+
 - (NSString *)webViewsBasePath;
 
 - (NSString *)persistencePath:(NSString *)folderName;
+
 - (NSString *)picturesPath:(NSString *)folderName;
+
 - (NSString *)webViewsPath:(NSString *)folderName;
 
 - (NSString *)temporaryDirectoryPathWithPath:(NSString *)path;
@@ -39,6 +43,7 @@
                    error:(NSError **)error;
 
 - (NSString *)bundledModelFile:(NSString *)name;
+
 - (NSString *)userModelFile:(NSString *)name;
 
 - (BOOL)enumerateDirAtPath:(NSString *)dirPath

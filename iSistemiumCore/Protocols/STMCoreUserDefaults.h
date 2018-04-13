@@ -11,17 +11,22 @@
 @protocol STMCoreUserDefaults
 
 - (NSArray *)arrayForKey:(NSString *)defaultName;
+
 - (id)objectForKey:(NSString *)defaultName;
+
 - (BOOL)boolForKey:(NSString *)defaultName;
+
 - (NSInteger)integerForKey:(NSString *)defaultName;
 
 - (void)setObject:(id)value forKey:(NSString *)defaultName;
+
 - (void)setBool:(BOOL)value forKey:(NSString *)defaultName;
+
 - (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
 
 - (void)removeObjectForKey:(NSString *)defaultName;
 
-- (NSDictionary<NSString *,id> *)dictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
 
 - (BOOL)synchronize;
 

@@ -16,7 +16,7 @@
 
 @property (readonly) NSManagedObjectModel *managedObjectModel;
 
-@property (readonly,strong) NSDictionary <NSString *, NSEntityDescription *> *concreteEntities;
+@property (readonly, strong) NSDictionary <NSString *, NSEntityDescription *> *concreteEntities;
 
 - (STMStorageType)storageForEntityName:(NSString *)entityName;
 
@@ -26,20 +26,20 @@
 
 - (NSDictionary *)fieldsForEntityName:(NSString *)entityName;
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
-                                                                                   isToMany:(NSNumber *)isToMany
-                                                                                    cascade:(NSNumber *)cascade;
+- (NSDictionary <NSString *, NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                    isToMany:(NSNumber *)isToMany
+                                                                                     cascade:(NSNumber *)cascade;
 
-- (NSDictionary <NSString *,NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
-                                                                                   isToMany:(NSNumber *)isToMany
-                                                                                    cascade:(NSNumber *)cascade
-                                                                                   optional:(NSNumber *)optional;
+- (NSDictionary <NSString *, NSRelationshipDescription *> *)objectRelationshipsForEntityName:(NSString *)entityName
+                                                                                    isToMany:(NSNumber *)isToMany
+                                                                                     cascade:(NSNumber *)cascade
+                                                                                    optional:(NSNumber *)optional;
 
-- (NSDictionary <NSString *,NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName;
+- (NSDictionary <NSString *, NSString *> *)toOneRelationshipsForEntityName:(NSString *)entityName;
 
-- (NSDictionary <NSString *,NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
+- (NSDictionary <NSString *, NSString *> *)objectRelationshipsForEntityName:(NSString *)entityName isToMany:(NSNumber *)isToMany;
 
-- (NSSet<NSString*>*)hierarchyForEntityName:(NSString*)name;
+- (NSSet<NSString *> *)hierarchyForEntityName:(NSString *)name;
 
 - (NSPredicate *)primaryKeyPredicateEntityName:(NSString *)entityName values:(NSArray *)values;
 
@@ -53,9 +53,11 @@
                                       identifier:(NSString *)identifier;
 
 - (NSDictionary *)dictionaryFromManagedObject:(NSManagedObject *)object;
+
 - (NSSet *)ownObjectKeysForEntityName:(NSString *)entityName;
 
 - (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object withRelations:(BOOL)withRelations;
+
 - (void)setObjectData:(NSDictionary *)objectData toObject:(NSManagedObject *)object;
 
 @end

@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL isReady;
 
 - (void)closeSocket;
+
 - (void)checkSocket;
 
 - (void)socketSendEvent:(STMSocketEvent)event

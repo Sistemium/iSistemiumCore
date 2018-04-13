@@ -47,7 +47,9 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @protocol STMSettingsController <NSObject>
 
 - (NSDictionary *)currentSettingsForGroup:(NSString *)group;
+
 - (NSString *)setNewSettings:(NSDictionary *)newSettings forGroup:(NSString *)group;
+
 - (NSString *)stringValueForSettings:(NSString *)settingsName forGroup:(NSString *)group;
 
 @property (readonly) NSArray *currentSettings;
@@ -57,24 +59,25 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 #define STM_SESSION_SETTINGS_CHANGED @"SettingsChanged"
 
-@protocol STMSession <NSObject,STMNotifications>
+@protocol STMSession <NSObject, STMNotifications>
 
 @property (readonly) STMDocument *document; // have to remove document property after full implementation of persister
 
-@property (nonatomic, strong) NSObject <STMPersistingFullStack> * persistenceDelegate;
+@property (nonatomic, strong) NSObject <STMPersistingFullStack> *persistenceDelegate;
 @property (nonatomic, readonly) NSString *uid;
 @property (nonatomic) STMSessionStatus status;
 
 @property (nonatomic, strong) id <STMSettingsController> settingsController;
 @property (nonatomic, strong) NSDictionary *settingsControls;
 @property (readonly) id <STMLogger, UITableViewDataSource, UITableViewDelegate> logger;
-@property (nonatomic, strong) id <STMSyncer,STMDataSyncingSubscriber> syncer;
+@property (nonatomic, strong) id <STMSyncer, STMDataSyncingSubscriber> syncer;
 
 @property (nonatomic, strong) id <STMFiling> filing;
 
 - (BOOL)isRunningTests;
 
 - (id <STMCoreControlling>)controllerWithClass:(Class)controllerClass;
+
 - (id <STMCoreControlling>)controllerWithName:(NSString *)name;
 
 @optional
@@ -87,8 +90,11 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @protocol STMSessionManager <NSObject>
 
 - (void)stopSessionForUID:(NSString *)uid;
+
 - (void)sessionStopped:(id <STMSession>)session;
+
 - (void)cleanStoppedSessions;
+
 - (void)removeSessionForUID:(NSString *)uid;
 
 @end

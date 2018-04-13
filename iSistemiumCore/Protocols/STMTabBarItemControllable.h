@@ -11,9 +11,11 @@
 @protocol STMTabBarItemControllable <NSObject>
 
 - (BOOL)shouldShowOwnActions;
+
 - (void)showActionPopoverFromTabBarItem;
 
 - (void)selectSiblingAtIndex:(NSUInteger)index;
+
 - (void)selectActionAtIndex:(NSUInteger)index;
 
 
