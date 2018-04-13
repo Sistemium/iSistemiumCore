@@ -212,19 +212,21 @@
 
     NSMutableDictionary *columnsByTableWithTypes = @{}.mutableCopy;
 
-    for (NSString *tablename in self.columnsByTable.allKeys) {
+    for (NSString *tableName in self.columnsByTable.allKeys) {
 
         NSMutableDictionary *columns = @{}.mutableCopy;
+        NSString *entityName = [STMFunctions addPrefixToEntityName:tableName];
+        NSEntityDescription *entity = self.modellingDelegate.entitiesByName[entityName];
 
-        for (NSString *columnname in self.columnsByTable[tablename]) {
+        for (NSString *columnName in self.columnsByTable[tableName]) {
 
-            NSAttributeType attributeType = self.modellingDelegate.entitiesByName[[STMFunctions addPrefixToEntityName:tablename]].attributesByName[columnname].attributeType;
+            NSAttributeType attributeType = entity.attributesByName[columnName].attributeType;
 
-            [columns addEntriesFromDictionary:@{columnname: [NSNumber numberWithUnsignedInteger:attributeType]}];
+            [columns addEntriesFromDictionary:@{columnName: @(attributeType)}];
 
         }
 
-        columnsByTableWithTypes[tablename] = columns.copy;
+        columnsByTableWithTypes[tableName] = columns.copy;
 
     }
 
