@@ -62,7 +62,7 @@
 
 @implementation STMCoreWKWebViewVC
 
-- (NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync> *)persistenceDelegate {
+- (NSObject <STMPersistingFullStack> *)persistenceDelegate {
 
     if (!_persistenceDelegate) {
         _persistenceDelegate = STMCoreSessionManager.sharedManager.currentSession.persistenceDelegate;
@@ -200,30 +200,28 @@
 
     if ([self webViewAppManifestURI]) {
 
-        [self loadLocalHTML];
-
-    } else {
-
-        //    [self.webView reloadFromOrigin];
-
-        NSString *wvUrl = [self webViewUrlString];
-
-        __block NSString *jsString = [NSString stringWithFormat:@"('%@'.lastIndexOf(location.origin) >= 0) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
-
-        [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError *_Nullable error) {
-
-            if (error) {
-
-                NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
-                NSLog(@"trying to reload webView with loadRequest method");
-
-                [self loadWebView];
-
-            }
-
-        }];
+        return [self loadLocalHTML];
 
     }
+
+    //    [self.webView reloadFromOrigin];
+
+    NSString *wvUrl = [self webViewUrlString];
+
+    __block NSString *jsString = [NSString stringWithFormat:@"('%@'.lastIndexOf(location.origin) >= 0) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
+
+    [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError *_Nullable error) {
+
+        if (!error) {
+            return;
+        }
+
+        NSLog(@"evaluate \"%@\" with error: %@", jsString, error.localizedDescription);
+        NSLog(@"trying to reload webView with loadRequest method");
+
+        [self loadWebView];
+
+    }];
 
 }
 
@@ -233,16 +231,14 @@
 
     if ([self webViewAppManifestURI]) {
 
-        [self loadLocalHTML];
-
-    } else {
-
-        self.isAuthorizing = NO;
-
-        NSString *urlString = [self webViewUrlString];
-        [self loadURLString:urlString];
+        return [self loadLocalHTML];
 
     }
+
+    self.isAuthorizing = NO;
+
+    NSString *urlString = [self webViewUrlString];
+    [self loadURLString:urlString];
 
 }
 
@@ -255,8 +251,6 @@
 
     NSString *accessToken = [STMCoreAuthController authController].accessToken;
 
-    //    NSLog(@"accessToken %@", accessToken);
-
     NSString *urlString = [self webViewUrlString];
     urlString = [NSString stringWithFormat:@"%@?access-token=%@", urlString, accessToken];
 
@@ -265,9 +259,6 @@
 }
 
 - (void)loadURLString:(NSString *)urlString {
-
-//    [self.logger saveLogMessageWithText:[NSString stringWithFormat:@"loadURL: %@", urlString]
-//                                numType:STMLogMessageTypeImportant];
 
     NSURL *url = [NSURL URLWithString:urlString];
     [self loadURL:url];
@@ -303,9 +294,6 @@
 
 - (void)loadLocalHTML {
 
-//    [self.logger saveLogMessageWithText:@"startLoadLocalHTML"
-//                                numType:STMLogMessageTypeImportant];
-
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self.appManifestHandler startLoadLocalHTML];
     });
@@ -315,10 +303,6 @@
 - (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir {
 
     dispatch_async(dispatch_get_main_queue(), ^{
-
-//        NSString *logMessage = [NSString stringWithFormat:@"load fileurl: %@", fileUrl];
-//        [self.logger saveLogMessageWithText:logMessage
-//                                    numType:STMLogMessageTypeImportant];
 
         if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
 
@@ -338,10 +322,6 @@
 - (void)loadHTML:(NSString *)html atBaseDir:(NSString *)baseDir {
 
     dispatch_async(dispatch_get_main_queue(), ^{
-
-//        NSString *logMessage = [NSString stringWithFormat:@"loadHTMLString, length: %@", @(html.length)];
-//        [self.logger saveLogMessageWithText:logMessage
-//                                    numType:STMLogMessageTypeImportant];
 
         [self.webView loadHTMLString:html baseURL:[NSURL fileURLWithPath:baseDir]];
 
@@ -473,8 +453,6 @@
 
 - (void)showUpdateAvailableNavBar {
 
-    //    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}];
-
     self.navigationItem.title = NSLocalizedString(@"UPDATE AVAILABLE", nil);
 
     UIBarButtonItem *updateButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"UPDATE", nil)
@@ -594,10 +572,6 @@
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
 
-//    NSString *logMessage = [NSString stringWithFormat:@"webView didFinishNavigation %@", webView.URL];
-//    [self.logger saveLogMessageWithText:logMessage
-//                                numType:STMLogMessageTypeImportant];
-
     self.wasLoadingOnce = YES;
     [self cancelWaitingTimeout];
 
@@ -611,39 +585,37 @@
 
     [self.webView evaluateJavaScript:authCheck completionHandler:^(id result, NSError *error) {
 
-        NSString *resultString = nil;
+        if (error) {
+            NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+            return;
+        }
 
-        if (!error) {
+        if (!result) {
+            return;
+        }
 
-            if (result) {
+        NSString *resultString = [NSString stringWithFormat:@"%@", result];
 
-                resultString = [NSString stringWithFormat:@"%@", result];
+        NSString *bsAccessToken = resultString;
+        NSLog(@"bsAccessToken %@", bsAccessToken);
 
-                NSString *bsAccessToken = resultString;
-                NSLog(@"bsAccessToken %@", bsAccessToken);
+        if ([bsAccessToken isEqualToString:@""] || [result isKindOfClass:[NSNull class]]) {
 
-                if ([bsAccessToken isEqualToString:@""] || [result isKindOfClass:[NSNull class]]) {
+            if (!self.isAuthorizing) {
 
-                    if (!self.isAuthorizing) {
+                NSLog(@"no bsAccessToken, go to authorization");
 
-                        NSLog(@"no bsAccessToken, go to authorization");
-
-                        [self authLoadWebView];
-
-                    }
-
-                } else {
-
-                    self.isAuthorizing = NO;
-                    [self.spinnerView removeFromSuperview];
-
-                }
+                [self authLoadWebView];
 
             }
 
         } else {
-            NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+
+            self.isAuthorizing = NO;
+            [self.spinnerView removeFromSuperview];
+
         }
+
 
     }];
 
@@ -669,19 +641,19 @@
                 alertControllerWithTitle:NSLocalizedString(@"ERROR", nil)
                                  message:NSLocalizedString(@"WEBVIEW FAIL TO LOAD", nil)
                           preferredStyle:UIAlertControllerStyleAlert];
-        
+
 
         UIAlertAction *yesButton = [UIAlertAction
                 actionWithTitle:NSLocalizedString(@"OK", nil)
                           style:UIAlertActionStyleDefault
-                        handler:^(UIAlertAction * action) {
+                        handler:^(UIAlertAction *action) {
                             [self reloadWebView];
                         }];
 
-        UIAlertAction* noButton = [UIAlertAction
+        UIAlertAction *noButton = [UIAlertAction
                 actionWithTitle:NSLocalizedString(@"CANCEL", nil)
                           style:UIAlertActionStyleDefault
-                        handler:^(UIAlertAction * action) {
+                        handler:^(UIAlertAction *action) {
                             //Handle no, thanks button
                         }];
 
@@ -1215,30 +1187,31 @@ int counter = 0;
 
 - (void)barCodeScanner:(STMBarCodeScanner *)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan withType:(STMBarCodeScannedType)type {
 
-    if (self.isInActiveTab) {
-
-        //        NSMutableArray *arguments = @[].mutableCopy;
-        //
-        //        NSString *barcode = barCodeScan.code;
-        //        if (!barcode) barcode = @"";
-        //        [arguments addObject:barcode];
-        //
-        //        NSString *typeString = [STMBarCodeController barCodeTypeStringForType:type];
-        //        if (!typeString) typeString = @"";
-        //        [arguments addObject:typeString];
-        //
-        //        NSDictionary *barcodeDic = [STMObjectsController dictionaryForJSWithObject:barCodeScan];
-        //        [arguments addObject:barcodeDic];
-        //
-        //        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
-        //
-        //        NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.receiveBarCodeJSFunction, [STMFunctions jsonStringFromArray:arguments]];
-        //
-        //        [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-        //
-        //        }];
-
+    if (!self.isInActiveTab) {
+        return;
     }
+
+//    NSMutableArray *arguments = @[].mutableCopy;
+//
+//    NSString *barcode = barCodeScan.code;
+//    if (!barcode) barcode = @"";
+//    [arguments addObject:barcode];
+//
+//    NSString *typeString = [STMBarCodeController barCodeTypeStringForType:type];
+//    if (!typeString) typeString = @"";
+//    [arguments addObject:typeString];
+//
+//    NSDictionary *barcodeDic = [STMObjectsController dictionaryForJSWithObject:barCodeScan];
+//    [arguments addObject:barcodeDic];
+//
+//    NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+//
+//    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.receiveBarCodeJSFunction, [STMFunctions jsonStringFromArray:arguments]];
+//
+//    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError *_Nullable error) {
+//
+//    }];
+
 
 }
 
