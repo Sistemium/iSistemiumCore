@@ -218,7 +218,7 @@
         
         NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
         
-        NSError *error = [NSError errorWithDomain:(NSString * _Nonnull)bundleId
+        NSError *error = [NSError errorWithDomain:bundleId
                                              code:0
                                          userInfo:@{NSLocalizedDescriptionKey: @"No camera available"}];
         

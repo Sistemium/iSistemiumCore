@@ -1238,23 +1238,18 @@ int counter = 0;
 }
 
 - (void)barCodeScanner:(STMBarCodeScanner *)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
-    
-    if (self.isInActiveTab) {
-        
-        if (barcode) {
-            
-            NSMutableArray *arguments = @[].mutableCopy;
-            
-            [arguments addObject:barcode];
-            
-            [self checkBarCode:barcode withType:type arguments:arguments];
-            
-            [self evaluateReceiveBarCodeJSFunctionWithArguments:arguments];
-            
-        }
-        
+
+    if (!self.isInActiveTab || !barcode) {
+        return;
     }
-    
+
+    NSMutableArray *arguments = [@[barcode] mutableCopy];
+
+    [self checkBarCode:barcode withType:type arguments:arguments];
+
+    [self evaluateReceiveBarCodeJSFunctionWithArguments:arguments.copy];
+
+
 }
 
 - (void)checkBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type arguments:(NSMutableArray *)arguments {
