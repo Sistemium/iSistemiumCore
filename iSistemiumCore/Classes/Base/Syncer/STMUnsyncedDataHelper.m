@@ -162,9 +162,13 @@
 
 - (void)initPrivateData {
 
-    self.erroredObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableSet class]];
-    self.pendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableDictionary class]];
-    self.syncedPendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableArray class]];
+    @synchronized (self) {
+
+        self.erroredObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableSet class]];
+        self.pendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableDictionary class]];
+        self.syncedPendingObjectsByEntity = [STMLazyDictionary lazyDictionaryWithItemsClass:[NSMutableArray class]];
+
+    }
 
 }
 
