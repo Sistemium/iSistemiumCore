@@ -8,7 +8,7 @@
 
 #import "STMCoreController.h"
 #import "STMBarCodeType.h"
-#import "STMBarCodeScannerDelegate.h"
+#import "STMBarCodeScanning.h"
 
 @interface STMCoreBarCodeController : STMCoreController
 

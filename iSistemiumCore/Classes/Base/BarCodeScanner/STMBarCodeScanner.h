@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "STMBarCodeScannerDelegate.h"
+#import "STMBarCodeScanning.h"
 
 
 typedef NS_ENUM(NSUInteger, STMBarCodeScannerMode) {

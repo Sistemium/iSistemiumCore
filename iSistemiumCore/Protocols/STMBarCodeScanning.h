@@ -1,5 +1,5 @@
 //
-//  STMBarCodeScannerDelegate.h
+//  STMBarCodeScanning.h
 //  iSistemium
 //
 //  Created by Maxim Grigoriev on 09/11/15.
