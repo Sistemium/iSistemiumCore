@@ -11,7 +11,7 @@
 
 #import "STMCoreWKWebViewVC.h"
 #import "STMScriptMessaging.h"
-#import "STMPersistingObserving.h"
+#import "STMPersistingFullStack.h"
 #import "STMOperationQueue.h"
 #import "STMImagePickerOwnerProtocol.h"
 #import "STMSpinnerView.h"

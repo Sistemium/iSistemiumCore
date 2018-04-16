@@ -145,23 +145,23 @@
 
 #pragma mark - STMBarCodeScannerDelegate
 
-- (UIView *)viewForScanner:(STMBarCodeScanner *)scanner {
+- (UIView *)viewForScanner:(id <STMBarCodeScanningDevice>)scanner {
     return self.view;
 }
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan withType:(STMBarCodeScannedType)type {
     
 }
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
     self.lastScannedBarcode.text = barcode;
 }
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner receiveError:(NSError *)error {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveError:(NSError *)error {
     [self countdownRequestsCounter];
 }
 
-- (void)deviceArrivalForBarCodeScanner:(STMBarCodeScanner *)scanner {
+- (void)deviceArrivalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner {
     
     if (scanner == self.iOSModeBarCodeScanner) {
         
@@ -173,7 +173,7 @@
     
 }
 
-- (void)deviceRemovalForBarCodeScanner:(STMBarCodeScanner *)scanner {
+- (void)deviceRemovalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner {
     
     if (scanner == self.iOSModeBarCodeScanner) {
         

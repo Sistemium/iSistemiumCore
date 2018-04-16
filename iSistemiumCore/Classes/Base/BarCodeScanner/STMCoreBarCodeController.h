@@ -8,14 +8,7 @@
 
 #import "STMCoreController.h"
 #import "STMBarCodeType.h"
-
-typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
-    STMBarCodeTypeUnknown,
-    STMBarCodeTypeArticle,
-    STMBarCodeTypeExciseStamp,
-    STMBarCodeTypeStockBatch
-};
-
+#import "STMBarCodeScannerDelegate.h"
 
 @interface STMCoreBarCodeController : STMCoreController
 

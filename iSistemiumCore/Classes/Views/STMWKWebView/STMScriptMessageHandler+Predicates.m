@@ -6,6 +6,7 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
+#import "STMFunctions.h"
 #import "STMScriptMessageHandler+Predicates.h"
 
 typedef NSArray <STMScriptMessagingFilterDictionary *> STMScriptMessagingFiltersArray;

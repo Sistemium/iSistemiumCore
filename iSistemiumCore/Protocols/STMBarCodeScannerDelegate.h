@@ -9,35 +9,45 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "STMCoreBarCodeController.h"
 #import "STMBarCodeScan.h"
 #import "STMBarCodeType.h"
 
-@class STMBarCodeScanner;
+
+typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
+    STMBarCodeTypeUnknown,
+    STMBarCodeTypeArticle,
+    STMBarCodeTypeExciseStamp,
+    STMBarCodeTypeStockBatch
+};
+
+@protocol STMBarCodeScanningDevice <NSObject>
+
+
+@end
 
 @protocol STMBarCodeScannerDelegate <NSObject>
 
 @required
 
-- (UIView *)viewForScanner:(STMBarCodeScanner *)scanner;
+- (UIView *)viewForScanner:(id <STMBarCodeScanningDevice>)scanner;
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
     receiveBarCodeScan:(STMBarCodeScan *)barCodeScan
               withType:(STMBarCodeScannedType)type;
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
         receiveBarCode:(NSString *)barcode
               withType:(STMBarCodeScannedType)type;
 
-- (void)barCodeScanner:(STMBarCodeScanner *)scanner
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
           receiveError:(NSError *)error;
 
 
 @optional
 
-- (void)deviceArrivalForBarCodeScanner:(STMBarCodeScanner *)scanner;
+- (void)deviceArrivalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner;
 
-- (void)deviceRemovalForBarCodeScanner:(STMBarCodeScanner *)scanner;
+- (void)deviceRemovalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner;
 
 - (void)receiveScannerBeepStatus:(BOOL)isBeepEnabled;
 
@@ -47,7 +57,7 @@
 
 - (void)receiveVersion:(NSString *)version;
 
-- (void)powerButtonPressedOnBarCodeScanner:(STMBarCodeScanner *)scanner;
+- (void)powerButtonPressedOnBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner;
 
 
 @end

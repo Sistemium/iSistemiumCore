@@ -6,8 +6,8 @@
 //  Copyright © 2015 Sistemium UAB. All rights reserved.
 //
 
-#import "STMCoreBarCodeController.h"
 #import "STMLogger.h"
+#import "STMCoreBarCodeController.h"
 
 
 @implementation STMCoreBarCodeController
