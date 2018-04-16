@@ -419,8 +419,8 @@
 
 - (void)setBeepStatus:(BOOL)beepStatus andRumbleStatus:(BOOL)rumbleStatus {
 
-    int beepDecodeAction = (beepStatus) ? kSktScanLocalDecodeActionBeep : kSktScanLocalDecodeActionNone;
-    int rumbleDecodeAction = (rumbleStatus) ? kSktScanLocalDecodeActionRumble : kSktScanLocalDecodeActionNone;
+    int beepDecodeAction = beepStatus ? kSktScanLocalDecodeActionBeep : kSktScanLocalDecodeActionNone;
+    int rumbleDecodeAction = rumbleStatus ? kSktScanLocalDecodeActionRumble : kSktScanLocalDecodeActionNone;
     int flashDecodeAction = kSktScanLocalDecodeActionFlash;
 
     int combineDecodeAction = (beepDecodeAction | rumbleDecodeAction | flashDecodeAction);
@@ -469,7 +469,7 @@
 
     unsigned char currentLevel = SKTBATTERY_GETCURLEVEL(batteryStatus);
 
-    NSNumber *batteryLevel = [NSNumber numberWithUnsignedChar:currentLevel];
+    NSNumber *batteryLevel = @(currentLevel);
 
     if ([self.delegate respondsToSelector:@selector(receiveBatteryLevel:)]) {
         [self.delegate receiveBatteryLevel:batteryLevel];
@@ -505,47 +505,42 @@
 
     SKTRESULT result = [[scanObj Msg] Result];
 
-    if (SKTSUCCESS(result)) {
+    if (!SKTSUCCESS(result)) {
+        return;
+    }
 
-        DeviceInfo *deviceInfo = [self.iOSScanHelper getDeviceInfoFromScanObject:scanObj];
+    DeviceInfo *deviceInfo = [self.iOSScanHelper getDeviceInfoFromScanObject:scanObj];
 
-        if (deviceInfo) {
+    if (!deviceInfo) {
+        return;
+    }
 
-            ISktScanSymbology *symbology = [[scanObj Property] Symbology];
+    ISktScanSymbology *symbology = [[scanObj Property] Symbology];
 
-            enum ESktScanSymbologyID symbologyID = [symbology getID];
+    enum ESktScanSymbologyID symbologyID = [symbology getID];
 
-            NSArray *availableSymbologies = [self.barCodeTypes valueForKeyPath:@"symbology"];
+    NSArray *availableSymbologies = [self.barCodeTypes valueForKeyPath:@"symbology"];
 
-            if ([availableSymbologies containsObject:[symbology getName]]) {
+    if ([availableSymbologies containsObject:[symbology getName]]) {
 
-                if ([symbology getStatus] == kSktScanSymbologyStatusDisable) {
+        if ([symbology getStatus] == kSktScanSymbologyStatusDisable) {
 
-                    [self.iOSScanHelper postSetSymbologyInfo:deviceInfo
-                                                 SymbologyId:symbologyID
-                                                      Status:TRUE
-                                                      Target:nil
-                                                    Response:nil];
-
-                }
-
-            } else {
-
-                if ([symbology getStatus] == kSktScanSymbologyStatusEnable) {
-
-                    [self.iOSScanHelper postSetSymbologyInfo:deviceInfo
-                                                 SymbologyId:symbologyID
-                                                      Status:FALSE
-                                                      Target:nil
-                                                    Response:nil];
-
-                }
-
-            }
-
+            [self.iOSScanHelper postSetSymbologyInfo:deviceInfo
+                                         SymbologyId:symbologyID
+                                              Status:TRUE
+                                              Target:nil
+                                            Response:nil];
         }
 
+    } else if ([symbology getStatus] == kSktScanSymbologyStatusEnable) {
+
+        [self.iOSScanHelper postSetSymbologyInfo:deviceInfo
+                                     SymbologyId:symbologyID
+                                          Status:FALSE
+                                          Target:nil
+                                        Response:nil];
     }
+
 
 }
 
@@ -673,7 +668,7 @@
 
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier;
 
-    NSError *error = [NSError errorWithDomain:(NSString *_Nonnull) bundleId
+    NSError *error = [NSError errorWithDomain:bundleId
                                          code:0
                                      userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%@", @(result)]}];
 
