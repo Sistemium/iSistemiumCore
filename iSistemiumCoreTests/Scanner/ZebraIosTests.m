@@ -35,7 +35,7 @@
     NSString *status = [availableScanner isActive] ? @"active" : @"available";
     int scannerId = [availableScanner getScannerID];
 
-    NSLog(@"Scanner is %@: ID = %d name = %@", status, scannerId, [availableScanner getScannerName]);
+    NSLog(@"Scanner is %@: scannerId: %d name: %@", status, scannerId, [availableScanner getScannerName]);
 
     [self.discoveryExpectation fulfill];
     [self.apiInstance sbtEnableAvailableScannersDetection:NO];
@@ -43,15 +43,15 @@
     SBT_RESULT result = [self.apiInstance sbtEstablishCommunicationSession:scannerId];
 
     if (result == SBT_RESULT_SUCCESS) {
-        NSLog(@"Connection to scanner ID %d successful", scannerId);
+        NSLog(@"Connection to scannerId %d successful", scannerId);
     } else {
-        NSLog(@"Failed to establish a connection with scanner ID %d", scannerId);
+        NSLog(@"Failed to establish a connection with scannerId: %d", scannerId);
     }
 
 }
 
 - (void)sbtEventScannerDisappeared:(int)scannerID {
-    NSLog(@"sbtEventScannerDisappeared id = %d", scannerID);
+    NSLog(@"sbtEventScannerDisappeared scannerId: %d", scannerID);
 }
 
 - (void)sbtEventCommunicationSessionEstablished:(SbtScannerInfo *)activeScanner {
@@ -69,22 +69,22 @@
     [self getSymbologiesValuesFromScannerId:scannerId];
 
     if (result == SBT_RESULT_SUCCESS) {
-        NSLog(@"Automatic Session Reestablishment for scanner ID %d has been set successfully", scannerId);
+        NSLog(@"Automatic Session Reestablishment for scannerId %d has been set successfully", scannerId);
     } else {
-        NSLog(@"Automatic Session Reestablishment for scanner ID %d could not be set", scannerId);
+        NSLog(@"Automatic Session Reestablishment for scannerId %d could not be set", scannerId);
     }
 
 }
 
 - (void)sbtEventCommunicationSessionTerminated:(int)scannerID {
 
-    NSLog(@"sbtEventCommunicationSessionTerminated id = %d", scannerID);
+    NSLog(@"sbtEventCommunicationSessionTerminated scannerId: %d", scannerID);
     [self.disconnectExpectation fulfill];
 
 }
 
 - (void)sbtEventBarcode:(NSString *)barcodeData barcodeType:(int)barcodeType fromScanner:(int)scannerID {
-    NSLog(@"Got barcode: %@", barcodeData);
+    NSLog(@"Got barcode: %@ of type: %d from scannerId: %d", barcodeData, barcodeType, scannerID);
     [self.barcodeExpectation fulfill];
 }
 
@@ -197,7 +197,7 @@
     id <ISbtSdkApi> apiInstance = [SbtSdkFactory createSbtSdkApiInstance];
     NSString *version = [apiInstance sbtGetVersion];
 
-    NSLog(@"Zebra SDK version: %@\n", version);
+    NSLog(@"Zebra SDK version: %@", version);
 
     XCTAssertEqualObjects(@"1.3.23", version);
 
@@ -262,7 +262,7 @@
         
         [self waitForExpectations:(@[eventListener.disconnectExpectation]) timeout:5];
         
-        NSLog(@"Done all");
+        NSLog(@"Done all\n");
         
     }];
 
