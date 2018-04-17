@@ -13,7 +13,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import "STMScanApiHelper.h"
-
+#import "STMBarCodeZebra.h"
 
 @interface STMBarCodeScanner () <UITextFieldDelegate, AVCaptureMetadataOutputObjectsDelegate, STMScanApiHelperDelegate>
 
@@ -30,7 +30,7 @@
 @property (nonatomic, strong) DeviceInfo *deviceInfo;
 
 @property (nonatomic, strong) NSArray *barCodeTypes;
-
+@property (nonatomic, strong) STMBarCodeZebra *zebra;
 
 @end
 
@@ -358,13 +358,15 @@
 + (STMBarCodeScanner *)iOSModeScanner {
 
     static dispatch_once_t pred = 0;
-    __strong static id _iOSModeScanner = nil;
+    __strong static STMBarCodeScanner *_iOSModeScanner = nil;
 
     dispatch_once(&pred, ^{
 
         _iOSModeScanner = [[STMBarCodeScanner alloc] init];
         [self addScanHelperToScanner:_iOSModeScanner];
-
+        _iOSModeScanner.zebra = [[STMBarCodeZebra alloc] init];
+        _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner.delegate;
+        
     });
 
     return _iOSModeScanner;
@@ -383,6 +385,11 @@
                                                              userInfo:nil
                                                               repeats:YES];
 
+}
+
+- (void)setDelegate:(id <STMBarCodeScannerDelegate>)delegate {
+    self.zebra.stmScanningDelegate = delegate;
+    _delegate = delegate;
 }
 
 - (void)prepareForIOSScanMode {
