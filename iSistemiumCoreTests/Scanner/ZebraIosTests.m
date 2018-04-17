@@ -7,8 +7,10 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <zebraIos/RMDAttributes.h>
-#import <zebraIos/SbtSdkFactory.h>
+#import <ZebraIos/RMDAttributes.h>
+#import <ZebraIos/SbtSdkFactory.h>
+
+#import "ZBRBarcodeTypes.h"
 
 @interface ZebraIosTests : XCTestCase
 
@@ -84,7 +86,7 @@
 }
 
 - (void)sbtEventBarcode:(NSString *)barcodeData barcodeType:(int)barcodeType fromScanner:(int)scannerID {
-    NSLog(@"Got barcode: %@ of type: %d from scannerId: %d", barcodeData, barcodeType, scannerID);
+    NSLog(@"Got barcode: %@ of type: %@ from scannerId: %d", barcodeData, get_barcode_type_name(barcodeType), scannerID);
     [self.barcodeExpectation fulfill];
 }
 
