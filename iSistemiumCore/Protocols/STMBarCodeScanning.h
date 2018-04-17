@@ -29,21 +29,20 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
 
 @required
 
-- (UIView *)viewForScanner:(id <STMBarCodeScanningDevice>)scanner;
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
+        receiveBarCode:(NSString *)barcode
+              withType:(STMBarCodeScannedType)type;
+
+@optional
+
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
+          receiveError:(NSError *)error;
 
 - (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
     receiveBarCodeScan:(STMBarCodeScan *)barCodeScan
               withType:(STMBarCodeScannedType)type;
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
-        receiveBarCode:(NSString *)barcode
-              withType:(STMBarCodeScannedType)type;
-
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
-          receiveError:(NSError *)error;
-
-
-@optional
+- (UIView *)viewForScanner:(id <STMBarCodeScanningDevice>)scanner;
 
 - (void)deviceArrivalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner;
 
