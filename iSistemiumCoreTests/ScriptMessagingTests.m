@@ -12,6 +12,7 @@
 #import "STMCoreAuthController.h"
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMFakePersisting.h"
+#import "STMFunctions.h"
 
 #define SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION @"Expect no errors"
 #define SCRIPT_MESSAGING_TEST_TIMEOUT 2
