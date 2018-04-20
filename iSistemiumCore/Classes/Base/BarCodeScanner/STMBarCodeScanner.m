@@ -189,8 +189,6 @@
 
 - (void)checkScannedBarcode:(NSString *)barcode {
 
-//    STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypes:self.barCodeTypesRC.fetchedObjects forBarcode:barcode];
-
     STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypesDics:self.barCodeTypes forBarcode:barcode];
 
     STMBarCodeScan *barCodeScan = [[STMBarCodeScan alloc] init];
@@ -364,9 +362,10 @@
 
         _iOSModeScanner = [[STMBarCodeScanner alloc] init];
         [self addScanHelperToScanner:_iOSModeScanner];
-        _iOSModeScanner.zebra = [[STMBarCodeZebra alloc] init];
-        _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner.delegate;
-        
+        STMBarCodeZebra *zebra = [[STMBarCodeZebra alloc] init];
+        _iOSModeScanner.zebra = zebra;
+        _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner;
+
     });
 
     return _iOSModeScanner;
@@ -388,7 +387,6 @@
 }
 
 - (void)setDelegate:(id <STMBarCodeScannerDelegate>)delegate {
-    self.zebra.stmScanningDelegate = delegate;
     _delegate = delegate;
 }
 
@@ -638,9 +636,7 @@
     [self setPowerButtonPressNotificationForDevice:deviceInfo];
     [self getVersionForDevice:deviceInfo];
 
-    if ([self.delegate respondsToSelector:@selector(deviceArrivalForBarCodeScanner:)]) {
-        [self.delegate deviceArrivalForBarCodeScanner:self];
-    }
+    [self deviceArrivalForBarCodeScanner:self];
 
 }
 
@@ -651,9 +647,7 @@
     NSString *logMessage = [NSString stringWithFormat:@"Disconnect scanner: %@", [deviceRemoved getName]];
     [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeImportant];
 
-    if ([self.delegate respondsToSelector:@selector(deviceRemovalForBarCodeScanner:)]) {
-        [self.delegate deviceRemovalForBarCodeScanner:self];
-    }
+    [self deviceRemovalForBarCodeScanner:self];
 
 }
 
@@ -772,6 +766,24 @@
 
     }
 
+}
+
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
+
+    [self checkScannedBarcode:barcode];
+
+}
+
+- (void)deviceArrivalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner {
+    if ([self.delegate respondsToSelector:@selector(deviceArrivalForBarCodeScanner:)]) {
+        [self.delegate deviceArrivalForBarCodeScanner:self];
+    }
+}
+
+- (void)deviceRemovalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner {
+    if ([self.delegate respondsToSelector:@selector(deviceRemovalForBarCodeScanner:)]) {
+        [self.delegate deviceRemovalForBarCodeScanner:self];
+    }
 }
 
 
