@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannerStatus) {
 };
 
 
-@interface STMBarCodeScanner : NSObject <STMBarCodeScanningDevice>
+@interface STMBarCodeScanner : NSObject <STMBarCodeScanningDevice, STMBarCodeScannerDelegate>
 
 + (BOOL)isCameraAvailable;
 
