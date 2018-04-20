@@ -14,6 +14,7 @@
 @property (nonatomic, strong) id <ISbtSdkApi> api;
 @property (nonatomic) int connectedId;
 @property (nonatomic, weak) UIViewController *pairingAlert;
+@property (nonatomic) BOOL isConnected;
 
 @end
 
@@ -32,6 +33,7 @@
     NSLog(@"Zebra API init version %@", [api sbtGetVersion]);
 
     self.api = api;
+    self.connectedId = 0;
 
     [api sbtSetDelegate:self];
 
@@ -127,6 +129,10 @@
 
 }
 
+- (BOOL)isDeviceConnected {
+    return [self isConnected];
+}
+
 
 - (void)applySettingsToScanner:(int)scannerId {
 
@@ -178,6 +184,7 @@
     int scannerId = [activeScanner getScannerID];
 
     self.connectedId = scannerId;
+    self.isConnected = YES;
 
     SBT_RESULT result = [self.api sbtEnableAutomaticSessionReestablishment:YES forScanner:scannerId];
 
@@ -204,6 +211,8 @@
 - (void)sbtEventCommunicationSessionTerminated:(int)scannerID {
 
     NSLog(@"sbtEventCommunicationSessionTerminated scannerId: %d", scannerID);
+
+    self.isConnected = NO;
 
     [self.stmScanningDelegate deviceRemovalForBarCodeScanner:self];
     [self.api sbtEnableAvailableScannersDetection:YES];

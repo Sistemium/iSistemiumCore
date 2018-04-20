@@ -12,5 +12,6 @@
 @property (nonatomic, weak) id <STMBarCodeScannerDelegate> stmScanningDelegate;
 
 - (void)showPairingAlertInViewController:(UIViewController *)viewController;
+- (BOOL)isDeviceConnected;
 
 @end

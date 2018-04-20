@@ -69,7 +69,17 @@
 }
 
 - (BOOL)isDeviceConnected {
-    return self.mode == STMBarCodeScannerIOSMode ? [self.iOSScanHelper isDeviceConnected] : NO;
+
+    if (self.mode != STMBarCodeScannerIOSMode) {
+        return NO;
+    } else if (self.zebra) {
+        return [self.zebra isDeviceConnected];
+    } else if (self.iOSScanHelper) {
+        return  [self.iOSScanHelper isDeviceConnected];
+    }
+
+    return NO;
+
 }
 
 - (void)startScan {
@@ -353,6 +363,23 @@
 
 #pragma mark - STMBarCodeScannerIOSMode
 
++ (NSString *)scannerType {
+
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *scannerType = [defaults objectForKey:@"ScannerType"];
+
+    if (!scannerType) {
+        scannerType = @"socketMobile";
+        [defaults setValue:scannerType forKey:@"ScannerType"];
+        [defaults synchronize];
+    }
+
+    NSLog(@"ScannerType is %@", scannerType);
+
+    return scannerType;
+
+}
+
 + (STMBarCodeScanner *)iOSModeScanner {
 
     static dispatch_once_t pred = 0;
@@ -361,10 +388,16 @@
     dispatch_once(&pred, ^{
 
         _iOSModeScanner = [[STMBarCodeScanner alloc] init];
-        [self addScanHelperToScanner:_iOSModeScanner];
-        STMBarCodeZebra *zebra = [[STMBarCodeZebra alloc] init];
-        _iOSModeScanner.zebra = zebra;
-        _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner;
+
+        NSString *scannerType = [self scannerType];
+
+        if ([scannerType isEqualToString:@"socketMobile"]) {
+            [self addScanHelperToScanner:_iOSModeScanner];
+        } else if ([scannerType isEqualToString:@"zebra"]) {
+            STMBarCodeZebra *zebra = [[STMBarCodeZebra alloc] init];
+            _iOSModeScanner.zebra = zebra;
+            _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner;
+        }
 
     });
 
@@ -386,8 +419,14 @@
 
 }
 
-- (void)setDelegate:(id <STMBarCodeScannerDelegate>)delegate {
+- (void)setDelegate:(UIViewController <STMBarCodeScannerDelegate> *)delegate {
+
     _delegate = delegate;
+
+    if (delegate && self.zebra && !self.isDeviceConnected) {
+        [self.zebra showPairingAlertInViewController:delegate];
+    }
+
 }
 
 - (void)prepareForIOSScanMode {

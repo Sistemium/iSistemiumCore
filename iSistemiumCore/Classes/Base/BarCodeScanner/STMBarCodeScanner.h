@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannerStatus) {
 @property (nonatomic, readonly) NSString *scannerName;
 @property (nonatomic, readonly) BOOL isDeviceConnected;
 
-@property (nonatomic, strong) id <STMBarCodeScannerDelegate> delegate;
+@property (nonatomic, strong) UIViewController <STMBarCodeScannerDelegate> *delegate;
 
 - (instancetype)initWithMode:(STMBarCodeScannerMode)mode;
 
