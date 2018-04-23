@@ -390,10 +390,19 @@
         _iOSModeScanner = [[STMBarCodeScanner alloc] init];
 
         NSString *scannerType = [self scannerType];
+        
+        bool connectZebra = [scannerType isEqualToString:@"zebra"];
+        bool connectSocket = [scannerType isEqualToString:@"socketMobile"];
+        
+        if ([scannerType isEqualToString:@"both"]) {
+            connectZebra = connectSocket = YES;
+        }
 
-        if ([scannerType isEqualToString:@"socketMobile"]) {
+        if (connectSocket) {
             [self addScanHelperToScanner:_iOSModeScanner];
-        } else if ([scannerType isEqualToString:@"zebra"]) {
+        }
+        
+        if (connectZebra) {
             STMBarCodeZebra *zebra = [[STMBarCodeZebra alloc] init];
             _iOSModeScanner.zebra = zebra;
             _iOSModeScanner.zebra.stmScanningDelegate = _iOSModeScanner;
@@ -423,7 +432,7 @@
 
     _delegate = delegate;
 
-    if (delegate && self.zebra && !self.isDeviceConnected) {
+    if (delegate && self.zebra && !self.zebra.isDeviceConnected) {
         [self.zebra showPairingAlertInViewController:delegate];
     }
 
