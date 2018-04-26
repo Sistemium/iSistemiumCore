@@ -34,6 +34,7 @@
 
 - (void)dismissSpinner {
     [self.spinnerView removeFromSuperview];
+    self.spinnerView = nil;
 }
 
 - (BOOL)isCorrectValue:(NSString *)textFieldValue {
