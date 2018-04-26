@@ -49,13 +49,13 @@
 
     self.poolDatabases = @[].mutableCopy;
 
-    NSUInteger poolSize = [NSProcessInfo processInfo].processorCount;
+    NSUInteger poolSize = [NSProcessInfo processInfo].processorCount - 1;
 
     poolSize = poolSize > 2 ? 2 : poolSize;
 
     NSLog(@"Pool size: %@", @(poolSize));
 
-    for (int i = 0; i <= poolSize; i++) {
+    for (int i = 0; i < poolSize; i++) {
 
         FMDatabase *poolDb = [FMDatabase databaseWithPath:self.dbPath];
 
