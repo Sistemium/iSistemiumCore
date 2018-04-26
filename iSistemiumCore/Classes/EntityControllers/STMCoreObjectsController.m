@@ -224,7 +224,7 @@
         NSDictionary *relations = [self.persistenceDelegate objectRelationshipsForEntityName:prefixedName isToMany:@YES cascade:@NO];
         
         NSMutableDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
-                                         STMPersistingOptionPageSize: @(1000)
+                                         STMPersistingOptionPageSize: @(1500)
                                          }.mutableCopy;
         
         NSMutableArray *denyCascades = [NSMutableArray array];
