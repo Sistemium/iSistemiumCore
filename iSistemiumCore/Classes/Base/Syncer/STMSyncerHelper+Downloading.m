@@ -262,6 +262,7 @@
         NSLog(@"receivingDidFinish in %@ (%@ total of %@ operations)", finishedIn, duration, @(initialCount));
     }
 
+    self.downloadingState.queue = nil;
     self.downloadingState = nil;
     [self.dataDownloadingOwner dataDownloadingFinished];
 
