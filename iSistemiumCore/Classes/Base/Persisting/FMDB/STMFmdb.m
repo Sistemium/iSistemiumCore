@@ -49,9 +49,9 @@
 
     self.poolDatabases = @[].mutableCopy;
 
-    NSUInteger poolSize = [NSProcessInfo processInfo].processorCount - 1;
+    NSUInteger poolSize = [NSProcessInfo processInfo].processorCount;
 
-    poolSize = poolSize > 2 ? 2 : poolSize;
+    poolSize = poolSize > 3 ? 3 : poolSize;
 
     NSLog(@"Pool size: %@", @(poolSize));
 
@@ -65,7 +65,7 @@
 
     }
 
-    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMFmdbDispatchQueue", DISPATCH_QUEUE_SERIAL);
+    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMFmdbDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
     self.operationQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:1];
     self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:poolSize];
 

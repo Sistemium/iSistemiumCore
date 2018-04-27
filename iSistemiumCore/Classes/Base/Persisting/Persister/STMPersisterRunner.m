@@ -47,7 +47,7 @@
 
 - (NSArray *)readOnly:(NSArray *(^)(id <STMPersistingTransaction>))block {
 
-    __block NSArray *result;
+    NSArray *result;
 
     STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *) self.adapters readOny:YES];
 
