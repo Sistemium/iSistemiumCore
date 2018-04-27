@@ -131,7 +131,7 @@
 
 }
 
-- (BOOL)synchronize {
+- (BOOL)synchronizeThreadUnsafely {
 
     if (!self.defaultsPath) {
 
@@ -157,6 +157,14 @@
     }
 
     return writeResult;
+
+}
+
+- (BOOL)synchronize  {
+
+    @synchronized (self) {
+        return [self synchronizeThreadUnsafely];
+    }
 
 }
 
