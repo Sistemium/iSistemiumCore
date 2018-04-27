@@ -16,10 +16,9 @@
 
 @interface STMPersisterTransactionCoordinator ()
 
-@property (nonatomic, strong) NSDictionary<NSNumber *, id <STMAdapting>> *adapters;
-@property (nonatomic, strong) NSMutableDictionary<NSNumber *, id <STMPersistingTransaction>> *transactions;
+@property (nonatomic, strong) NSDictionary <NSNumber *, id <STMAdapting>> *adapters;
+@property (nonatomic, strong) NSMutableDictionary <NSNumber *, id <STMPersistingTransaction>> *transactions;
 @property (nonatomic, strong) id <STMModelling, STMPersistingObserving> modellingDelegate;
-@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 @property BOOL readOnly;
 
 @end
@@ -28,11 +27,11 @@
 
 - (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters {
 
-    return [self initWithPersister:persister adapters:(NSDictionary *) adapters readOny:NO];
+    return [self initWithPersister:persister adapters:adapters readOnly:NO];
 
 }
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL)readOnly {
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOnly:(BOOL)readOnly {
 
     self = [self init];
 
@@ -46,15 +45,11 @@
 
     self.adapters = adapters;
 
-    // TODO: use static
-    self.dispatchQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-
     return self;
-
 
 }
 
-- (NSMutableDictionary<NSNumber *, id <STMPersistingTransaction>> *)transactions {
+- (NSMutableDictionary <NSNumber *, id <STMPersistingTransaction>> *)transactions {
     if (!_transactions) {
         _transactions = @{}.mutableCopy;
     }

@@ -50,6 +50,7 @@
     NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
             @(STMStorageTypeFMDB): fmdb
     };
+
     id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
 
     persister.runner = runner;
@@ -58,7 +59,8 @@
 
     self.persistenceDelegate = persister;
 
-    STMPersistingInterceptorUniqueProperty *entityNameInterceptor = [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
+    STMPersistingInterceptorUniqueProperty *entityNameInterceptor =
+            [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
 
     entityNameInterceptor.entityName = STM_ENTITY_NAME;
     entityNameInterceptor.propertyName = @"name";

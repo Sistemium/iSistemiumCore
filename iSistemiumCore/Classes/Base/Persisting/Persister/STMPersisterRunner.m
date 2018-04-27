@@ -13,6 +13,8 @@
 @interface STMPersisterRunner ()
 
 @property (nonatomic, strong) id <STMModelling, STMPersistingObserving> persister;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+
 
 @end
 
@@ -30,6 +32,7 @@
 
     self.adapters = adapters;
     self.persister = persister;
+    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMRunnerDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
 
     return self;
 
@@ -37,11 +40,13 @@
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
 
-    STMPersisterTransactionCoordinator *transactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *) self.adapters];
+    STMPersisterTransactionCoordinator *coordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters];
 
-    BOOL result = block(transactionCoordinator);
+    coordinator.dispatchQueue = self.dispatchQueue;
 
-    [transactionCoordinator endTransactionWithSuccess:result];
+    BOOL result = block(coordinator);
+
+    [coordinator endTransactionWithSuccess:result];
 
 }
 
@@ -49,11 +54,13 @@
 
     NSArray *result;
 
-    STMPersisterTransactionCoordinator *readOnlyTransactionCoordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:(NSDictionary *) self.adapters readOny:YES];
+    STMPersisterTransactionCoordinator *coordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters readOnly:YES];
 
-    result = block(readOnlyTransactionCoordinator);
+    coordinator.dispatchQueue = self.dispatchQueue;
 
-    [readOnlyTransactionCoordinator endTransactionWithSuccess:YES];
+    result = block(coordinator);
+
+    [coordinator endTransactionWithSuccess:YES];
 
     return result;
 }

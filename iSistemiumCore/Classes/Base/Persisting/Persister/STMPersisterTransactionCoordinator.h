@@ -13,8 +13,10 @@
 
 - (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOny:(BOOL)readOnly;
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOnly:(BOOL)readOnly;
 
 - (void)endTransactionWithSuccess:(BOOL)success;
+
+@property (nonatomic, weak) dispatch_queue_t dispatchQueue;
 
 @end
