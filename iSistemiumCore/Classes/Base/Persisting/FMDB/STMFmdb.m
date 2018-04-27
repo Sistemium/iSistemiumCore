@@ -43,7 +43,7 @@
 
     [self.database executeUpdate:@"PRAGMA journal_mode=WAL;"];
 
-    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
+//    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
 
     if (![self checkModelMappingForDatabase:self.database model:modelling.managedObjectModel]) return nil;
 
