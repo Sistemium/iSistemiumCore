@@ -103,7 +103,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
         
         NSMutableArray *predicates = @[].mutableCopy;
         
-        if (options[STMPersistingOptionFantoms]) {
+        if (options[STMPersistingOptionPhantoms]) {
             [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 1"]];
         } else {
             [predicates addObject:[NSPredicate predicateWithFormat:@"isFantom == 0 OR isFantom == nil"]];

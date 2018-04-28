@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptions NSDictionary *
 
 #define STMPersistingOptionRecordstatuses @"createRecordStatuses"
-#define STMPersistingOptionFantoms @"fantoms"
+#define STMPersistingOptionPhantoms @"fantoms"
 #define STMPersistingOptionLts @"lts"
 #define STMPersistingOptionLtsNow STMPersistingOptionLts:[STMFunctions stringFromNow]
 #define STMPersistingOptionReturnSaved @"returnSaved"

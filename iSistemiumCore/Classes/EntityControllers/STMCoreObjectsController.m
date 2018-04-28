@@ -313,7 +313,7 @@
         NSUInteger countFantoms =
         [self.persistenceDelegate countSync:entityName
                                   predicate:nil
-                                    options:@{STMPersistingOptionFantoms:@YES}
+                                    options:@{STMPersistingOptionPhantoms:@YES}
                                       error:&error];
         
         NSLog(@"%@ count: %u%@",

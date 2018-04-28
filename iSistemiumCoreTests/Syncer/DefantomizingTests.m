@@ -17,7 +17,7 @@
 #define BAD_FANTOM @"bad fantom"
 #define BAD_FANTOM_DELETE @"bad fantom to delete"
 #define FANTOM_ENTITY_NAME @"STMArticle"
-#define FANTOM_OPTIONS @{STMPersistingOptionFantoms:@YES}
+#define FANTOM_OPTIONS @{STMPersistingOptionPhantoms:@YES}
 
 
 @interface DefantomizingTests : STMPersistingTests <STMDefantomizingOwner>

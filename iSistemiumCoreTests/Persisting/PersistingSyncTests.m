@@ -194,7 +194,7 @@
     
     XCTAssertTrue(count > 0, @"There should be some data");
     
-    options = @{STMPersistingOptionFantoms:@YES};
+    options = @{STMPersistingOptionPhantoms:@YES};
     
     count = [self.persister countSync:entityName
                             predicate:predicate

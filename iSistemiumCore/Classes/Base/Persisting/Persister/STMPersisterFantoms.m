@@ -16,7 +16,7 @@
 
     NSArray *result = [self.persistenceDelegate findAllSync:entityName
                                                   predicate:nil
-                                                    options:@{STMPersistingOptionFantoms: @YES}
+                                                    options:@{STMPersistingOptionPhantoms: @YES}
                                                       error:&error];
 
     result = [result valueForKeyPath:@"id"];

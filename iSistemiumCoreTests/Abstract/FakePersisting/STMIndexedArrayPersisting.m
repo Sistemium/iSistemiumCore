@@ -19,7 +19,7 @@
     NSMutableDictionary *theObjectCopy = anObject.mutableCopy;
     
     NSDictionary *existing = [self objectWithKey:anObject[self.primaryKey]];
-    NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionFantoms] && [options[STMPersistingOptionFantoms] boolValue]];
+    NSNumber *isFantom = [NSNumber numberWithBool:options[STMPersistingOptionPhantoms] && [options[STMPersistingOptionPhantoms] boolValue]];
     
     theObjectCopy[STMPersistingKeyPhantom] = isFantom;
     theObjectCopy[STMPersistingOptionLts] = existing[STMPersistingOptionLts];
