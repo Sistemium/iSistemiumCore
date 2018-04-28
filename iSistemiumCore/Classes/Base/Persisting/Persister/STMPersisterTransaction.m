@@ -26,7 +26,6 @@
 @implementation STMPersisterTransaction
 
 
-
 + (instancetype)writableWithPersister:(id <STMModelling, STMPersistingObserving>)persister
                              adapters:(NSDictionary *)adapters {
 
@@ -35,7 +34,7 @@
 }
 
 + (instancetype)readOnlyWithPersister:(id <STMModelling, STMPersistingObserving>)persister
-                            adapters:(NSDictionary *)adapters {
+                             adapters:(NSDictionary *)adapters {
 
     return [[self alloc] initWithPersister:persister adapters:adapters readOnly:YES];
 
@@ -89,26 +88,37 @@
 
 #pragma mark - PersistingTransaction protocol
 
-- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName 
+                                predicate:(NSPredicate *)predicate 
+                                  options:(NSDictionary *)options 
+                                    error:(NSError **)error {
 
     predicate = [self predicate:predicate withOptions:options];
 
-    id <STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    id <STMPersistingTransaction> transaction = 
+            [self transactionForEntityName:entityName options:options error:error];
 
     return [transaction findAllSync:entityName predicate:predicate options:options error:error];
 
 }
 
 
-- (NSDictionary *)mergeWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+- (NSDictionary *)mergeWithoutSave:(NSString *)entityName
+                        attributes:(NSDictionary *)attributes
+                           options:(NSDictionary *)options
+                             error:(NSError **)error {
 
-    id <STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    id <STMPersistingTransaction> transaction =
+            [self transactionForEntityName:entityName options:options error:error];
 
     return [transaction mergeWithoutSave:entityName attributes:attributes options:options error:error];
 
 }
 
-- (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+- (NSUInteger)destroyWithoutSave:(NSString *)entityName 
+                       predicate:(NSPredicate *)predicate 
+                         options:(NSDictionary *)options 
+                           error:(NSError **)error {
 
     NSArray *objects = @[];
 
@@ -116,7 +126,8 @@
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
 
-    id <STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    id <STMPersistingTransaction> transaction = 
+            [self transactionForEntityName:entityName options:options error:error];
 
     NSUInteger count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
 
@@ -132,7 +143,10 @@
                 @"isRemoved": @YES,
         };
 
-        recordStatus = [self mergeWithoutSave:recordStatusEntity attributes:recordStatus options:@{STMPersistingOptionRecordstatuses: @NO} error:error];
+        recordStatus = [self mergeWithoutSave:recordStatusEntity
+                                   attributes:recordStatus
+                                      options:@{STMPersistingOptionRecordstatuses: @NO}
+                                        error:error];
 
         if (recordStatus) {
             [recordStatuses addObject:recordStatus];
@@ -143,7 +157,8 @@
     if (recordStatuses.count) {
         // will crash if not async
         dispatch_async(self.dispatchQueue, ^{
-            [self.modellingDelegate notifyObservingEntityName:recordStatusEntity ofUpdatedArray:recordStatuses options:options];
+            [self.modellingDelegate notifyObservingEntityName:recordStatusEntity
+                                               ofUpdatedArray:recordStatuses options:options];
         });
     }
 
@@ -152,7 +167,10 @@
 }
 
 
-- (NSDictionary *)updateWithoutSave:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options error:(NSError **)error {
+- (NSDictionary *)updateWithoutSave:(NSString *)entityName
+                         attributes:(NSDictionary *)attributes
+                            options:(NSDictionary *)options
+                              error:(NSError **)error {
 
     if (!attributes[STMPersistingKeyPrimary]) {
         [STMFunctions error:error withMessage:@"Update requires primary key"];
@@ -175,17 +193,24 @@
         [attributesToUpdate removeObjectForKey:STMPersistingKeyVersion];
     }
 
-    id <STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    id <STMPersistingTransaction> transaction =
+            [self transactionForEntityName:entityName options:options error:error];
 
-    return [transaction updateWithoutSave:entityName attributes:attributesToUpdate.copy options:options error:error];
+    return [transaction updateWithoutSave:entityName
+                               attributes:attributesToUpdate.copy
+                                  options:options error:error];
 
 }
 
-- (NSUInteger)count:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
+- (NSUInteger)count:(NSString *)entityName
+          predicate:(NSPredicate *)predicate
+            options:(NSDictionary *)options
+              error:(NSError **)error {
 
     predicate = [self predicate:predicate withOptions:options];
 
-    id <STMPersistingTransaction> transaction = [self transactionForEntityName:entityName options:options error:error];
+    id <STMPersistingTransaction> transaction = 
+            [self transactionForEntityName:entityName options:options error:error];
 
     if ([STMFunctions isNull:transaction]) {
         return 0;
@@ -207,13 +232,15 @@
     STMStorageType storeTo = [self.modellingDelegate storageForEntityName:entityName];
 
     if (options[STMPersistingOptionForceStorage]) {
-        storeTo = [options[STMPersistingOptionForceStorage] integerValue];
+        storeTo = (STMStorageType) [options[STMPersistingOptionForceStorage] integerValue];
     }
 
     return storeTo;
 }
 
-- (id <STMPersistingTransaction>)transactionForEntityName:(NSString *)entityName options:(NSDictionary *)options error:(NSError **)error {
+- (id <STMPersistingTransaction>)transactionForEntityName:(NSString *)entityName
+                                                  options:(NSDictionary *)options
+                                                    error:(NSError **)error {
 
     STMStorageType storageType = [self storageForEntityName:entityName options:options];
 
@@ -245,8 +272,11 @@
 
 - (NSPredicate *)phantomPredicateForOptions:(NSDictionary *)options {
 
-    BOOL isFantom = [options[STMPersistingOptionFantoms] boolValue];
-    return [NSPredicate predicateWithFormat:@"isFantom == %@", @(isFantom)];
+    BOOL isPhantom = [options[STMPersistingOptionPhantoms] boolValue];
+    
+    NSString *format = [STMPersistingKeyPhantom stringByAppendingString::@" == %@"];
+    
+    return [NSPredicate predicateWithFormat:format, @(isPhantom)];
 
 }
 
