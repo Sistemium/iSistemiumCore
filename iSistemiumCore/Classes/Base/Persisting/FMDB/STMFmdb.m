@@ -65,9 +65,14 @@
 
     }
 
-    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMFmdbDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
-    self.operationQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:1];
-    self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:self.dispatchQueue maxConcurrent:poolSize];
+    dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbMainDispatchQueue", DISPATCH_QUEUE_SERIAL);
+//    dispatch_queue_t poq = dispatch_queue_create("com.sistemium.STMFmdbPoolDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+
+    self.operationQueue = [STMOperationQueue queueWithDispatchQueue:oq
+                                                      maxConcurrent:1];
+
+    self.operationPoolQueue = [STMOperationQueue queueWithDispatchQueue:oq
+                                                          maxConcurrent:poolSize];
 
     return self;
 

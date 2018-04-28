@@ -32,7 +32,7 @@
 
     self.adapters = adapters;
     self.persister = persister;
-    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMRunnerDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+    self.dispatchQueue = dispatch_queue_create("com.sistemium.STMRunnerDispatchQueue", DISPATCH_QUEUE_SERIAL);
 
     return self;
 
@@ -40,7 +40,8 @@
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
 
-    STMPersisterTransactionCoordinator *coordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters];
+    STMPersisterTransactionCoordinator *coordinator =
+            [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters];
 
     coordinator.dispatchQueue = self.dispatchQueue;
 
@@ -54,7 +55,8 @@
 
     NSArray *result;
 
-    STMPersisterTransactionCoordinator *coordinator = [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters readOnly:YES];
+    STMPersisterTransactionCoordinator *coordinator =
+            [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters readOnly:YES];
 
     coordinator.dispatchQueue = self.dispatchQueue;
 

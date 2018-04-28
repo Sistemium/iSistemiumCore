@@ -17,7 +17,7 @@
 @property (nonatomic, strong) NSMutableArray<FMDatabase *> *poolDatabases;
 @property (nonatomic, strong) STMOperationQueue *operationQueue;
 @property (nonatomic, strong) STMOperationQueue *operationPoolQueue;
-@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+//@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 
 @property (nonatomic, strong) NSDictionary *columnsByTable;
 @property (nonatomic, strong) NSArray *builtInAttributes;
