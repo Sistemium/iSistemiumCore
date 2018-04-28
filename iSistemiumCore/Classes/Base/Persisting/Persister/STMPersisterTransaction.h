@@ -1,5 +1,5 @@
 //
-//  STMPersisterTransactionCoordinator.h
+//  STMPersisterTransaction.h
 //  iSisSales
 //
 //  Created by Edgar Jan Vuicik on 25/05/2017.
@@ -9,7 +9,7 @@
 #import "STMPersistingTransaction.h"
 #import "STMPersistingObserving.h"
 
-@interface STMPersisterTransactionCoordinator : NSObject <STMPersistingTransaction>
+@interface STMPersisterTransaction : NSObject <STMPersistingTransaction>
 
 - (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
 

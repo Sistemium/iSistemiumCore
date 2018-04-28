@@ -1,5 +1,5 @@
 //
-//  STMPersisterTransactionCoordinator.m
+//  STMPersisterTransaction.m
 //  iSisSales
 //
 //  Created by Edgar Jan Vuicik on 25/05/2017.
@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "STMPersisterTransactionCoordinator.h"
+#import "STMPersisterTransaction.h"
 #import "STMPersisting.h"
 #import "STMPersister.h"
 #import "STMFunctions.h"
 #import "STMCoreSessionManager.h"
 #import "STMCoreAuthController.h"
 
-@interface STMPersisterTransactionCoordinator ()
+@interface STMPersisterTransaction ()
 
 @property (nonatomic, strong) NSDictionary <NSNumber *, id <STMAdapting>> *adapters;
 @property (nonatomic, strong) NSMutableDictionary <NSNumber *, id <STMPersistingTransaction>> *transactions;
@@ -23,7 +23,7 @@
 
 @end
 
-@implementation STMPersisterTransactionCoordinator
+@implementation STMPersisterTransaction
 
 
 

@@ -7,7 +7,7 @@
 //
 
 #import "STMPersisterRunner.h"
-#import "STMPersisterTransactionCoordinator.h"
+#import "STMPersisterTransaction.h"
 #import "STMAdapting.h"
 
 @interface STMPersisterRunner ()
@@ -48,7 +48,7 @@
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
 
-    STMPersisterTransactionCoordinator *coordinator = [STMPersisterTransactionCoordinator
+    STMPersisterTransaction *coordinator = [STMPersisterTransaction
             writableWithPersister:self.persister
                          adapters:self.adapters
     ];
@@ -65,7 +65,7 @@
 
     NSArray *result;
 
-    STMPersisterTransactionCoordinator *coordinator = [STMPersisterTransactionCoordinator
+    STMPersisterTransaction *coordinator = [STMPersisterTransaction
             readOnlyWithPersister:self.persister
                          adapters:self.adapters
     ];
