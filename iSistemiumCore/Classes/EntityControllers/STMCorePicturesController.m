@@ -319,7 +319,7 @@
             
             //---------
             // mv it in if(thumbnailData){…} ?
-            NSDictionary *options = @{STMPersistingOptionFieldstoUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
+            NSDictionary *options = @{STMPersistingOptionFieldsToUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
             
             [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
             .then(^(NSDictionary *result){
@@ -423,7 +423,7 @@
             [self.logger importantMessage:fieldsToUpdateMessage];
             
             NSDictionary *options = @{STMPersistingOptionSetTs          :   @NO,
-                                      STMPersistingOptionFieldstoUpdate :   fieldsToUpdate.copy};
+                                      STMPersistingOptionFieldsToUpdate :   fieldsToUpdate.copy};
 
             attributes = [self.persistenceDelegate updateSync:entityName
                                                    attributes:mutAttributes.copy
@@ -525,7 +525,7 @@
                                 @"thumbnailPath",
                                 @"imagePath"];
             
-            [self.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldstoUpdate:fields} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
+            [self.persistenceDelegate updateAsync:entityName attributes:attributes options:@{STMPersistingOptionSetTs:@NO,STMPersistingOptionFieldsToUpdate:fields} completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
                 
                 [self postAsyncMainQueueNotification:NOTIFICATION_PICTURE_WAS_DOWNLOADED
                                             userInfo:[STMFunctions setValue:result
@@ -888,7 +888,7 @@
             NSArray *attributesToUpdate = @[@"imagePath", @"resizedImagePath", @"thumbnailPath"];
             
             NSDictionary *options = @{
-                                      STMPersistingOptionFieldstoUpdate: attributesToUpdate,
+                                      STMPersistingOptionFieldsToUpdate: attributesToUpdate,
                                       STMPersistingOptionSetTs: @NO
                                       };
             
@@ -989,7 +989,7 @@
         
         picture[@"imagePath"] = picture[@"resizedImagePath"];
         
-        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
+        NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldsToUpdate:@[@"href", @"picturesInfo", @"imagePath"]};
         
         [self.persistenceDelegate updateAsync:entityName attributes:picture options:fieldstoUpdate completionHandler:^(BOOL success, NSDictionary *result, NSError *error) {
             

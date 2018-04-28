@@ -103,7 +103,7 @@
 
             mPatch[@"isProcessed"] = @YES;
 
-            NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldstoUpdate: @[@"isProcessed"]};
+            NSDictionary *fieldstoUpdate = @{STMPersistingOptionFieldsToUpdate: @[@"isProcessed"]};
 
             NSError *error;
 

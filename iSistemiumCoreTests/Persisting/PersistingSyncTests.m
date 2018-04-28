@@ -267,7 +267,7 @@
     NSDictionary *testData = @{@"id" : self.ownerXid, @"text": @"updated test data", @"type": @"should not be updated"};
     
     NSDictionary *testOptions = @{
-                                  STMPersistingOptionFieldstoUpdate : @[@"text"],
+                                  STMPersistingOptionFieldsToUpdate : @[@"text"],
                                   STMPersistingOptionSetTs:@NO
                                   };
     

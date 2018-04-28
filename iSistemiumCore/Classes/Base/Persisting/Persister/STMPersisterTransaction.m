@@ -88,14 +88,14 @@
 
 #pragma mark - PersistingTransaction protocol
 
-- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName 
-                                predicate:(NSPredicate *)predicate 
-                                  options:(NSDictionary *)options 
+- (NSArray <NSDictionary *> *)findAllSync:(NSString *)entityName
+                                predicate:(NSPredicate *)predicate
+                                  options:(NSDictionary *)options
                                     error:(NSError **)error {
 
     predicate = [self predicate:predicate withOptions:options];
 
-    id <STMPersistingTransaction> transaction = 
+    id <STMPersistingTransaction> transaction =
             [self transactionForEntityName:entityName options:options error:error];
 
     return [transaction findAllSync:entityName predicate:predicate options:options error:error];
@@ -115,9 +115,9 @@
 
 }
 
-- (NSUInteger)destroyWithoutSave:(NSString *)entityName 
-                       predicate:(NSPredicate *)predicate 
-                         options:(NSDictionary *)options 
+- (NSUInteger)destroyWithoutSave:(NSString *)entityName
+                       predicate:(NSPredicate *)predicate
+                         options:(NSDictionary *)options
                            error:(NSError **)error {
 
     NSArray *objects = @[];
@@ -126,7 +126,7 @@
         objects = [self findAllSync:entityName predicate:predicate options:options error:error];
     }
 
-    id <STMPersistingTransaction> transaction = 
+    id <STMPersistingTransaction> transaction =
             [self transactionForEntityName:entityName options:options error:error];
 
     NSUInteger count = [transaction destroyWithoutSave:entityName predicate:predicate options:options error:error];
@@ -180,7 +180,7 @@
     NSMutableDictionary *attributesToUpdate = attributes.mutableCopy;
 
     for (NSString *attributeName in attributesToUpdate.allKeys) {
-        if (![options[STMPersistingOptionFieldstoUpdate] containsObject:attributeName]) {
+        if (![options[STMPersistingOptionFieldsToUpdate] containsObject:attributeName]) {
             [attributesToUpdate removeObjectForKey:attributeName];
         }
     }
@@ -209,7 +209,7 @@
 
     predicate = [self predicate:predicate withOptions:options];
 
-    id <STMPersistingTransaction> transaction = 
+    id <STMPersistingTransaction> transaction =
             [self transactionForEntityName:entityName options:options error:error];
 
     if ([STMFunctions isNull:transaction]) {
@@ -273,9 +273,9 @@
 - (NSPredicate *)phantomPredicateForOptions:(NSDictionary *)options {
 
     BOOL isPhantom = [options[STMPersistingOptionPhantoms] boolValue];
-    
-    NSString *format = [STMPersistingKeyPhantom stringByAppendingString::@" == %@"];
-    
+
+    NSString *format = [STMPersistingKeyPhantom stringByAppendingString:@" == %@"];
+
     return [NSPredicate predicateWithFormat:format, @(isPhantom)];
 
 }

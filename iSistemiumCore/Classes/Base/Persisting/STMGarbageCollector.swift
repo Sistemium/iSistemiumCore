@@ -172,7 +172,7 @@ class STMGarbageCollector: NSObject {
                 };
 
                 let options: [String: Any] = [
-                    STMPersistingOptionFieldstoUpdate: ["imagePath", "resizedImagePath"],
+                    STMPersistingOptionFieldsToUpdate: ["imagePath", "resizedImagePath"],
                     STMPersistingOptionSetTs: true
                 ]
 

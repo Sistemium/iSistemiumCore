@@ -39,7 +39,7 @@ typedef NS_ENUM(NSInteger, STMStorageType) {
 #define STMPersistingOptionOffset @"offset"
 #define STMPersistingOptionOrder @"sortBy"
 #define STMPersistingOptionOrderDirection @"direction"
-#define STMPersistingOptionFieldstoUpdate @"fieldsToUpdate"
+#define STMPersistingOptionFieldsToUpdate @"fieldsToUpdate"
 #define STMPersistingOptionSetTs @"setTs"
 #define STMPersistingOptionOrderDirectionDescValue @"DESC"
 #define STMPersistingOptionOrderDirectionAscValue @"ASC"

@@ -271,7 +271,7 @@ if (self.options[STMFakePersistingOptionInMemoryDBKey])
         // TODO: maybe need an option to control if not found updates return errors
         if (!found) return nil;
         
-        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldstoUpdate];
+        NSArray *fieldsToUpdate = options[STMPersistingOptionFieldsToUpdate];
         
         if (fieldsToUpdate) {
             attributes = [attributes dictionaryWithValuesForKeys:fieldsToUpdate];
