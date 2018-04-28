@@ -11,6 +11,10 @@
 
 @interface STMPersisterRunner : NSObject <STMPersistingRunning>
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters;
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                         adapters:(NSDictionary *)adapters;
+
++ (instancetype)withPersister:(id <STMModelling, STMPersistingObserving>)persister
+                     adapters:(NSDictionary *)adapters;
 
 @end

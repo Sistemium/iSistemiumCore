@@ -25,13 +25,32 @@
 
 @implementation STMPersisterTransactionCoordinator
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters {
+
+
++ (instancetype)writableWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                             adapters:(NSDictionary *)adapters {
+
+    return [[self alloc] initWithPersister:persister adapters:adapters];
+
+}
+
++ (instancetype)readOnlyWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                            adapters:(NSDictionary *)adapters {
+
+    return [[self alloc] initWithPersister:persister adapters:adapters readOnly:YES];
+
+}
+
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                         adapters:(NSDictionary *)adapters {
 
     return [self initWithPersister:persister adapters:adapters readOnly:NO];
 
 }
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters readOnly:(BOOL)readOnly {
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                         adapters:(NSDictionary *)adapters
+                         readOnly:(BOOL)readOnly {
 
     self = [self init];
 

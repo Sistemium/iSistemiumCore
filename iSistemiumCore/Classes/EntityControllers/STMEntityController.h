@@ -10,6 +10,7 @@
 #import "STMEntity.h"
 
 #define STM_ENTITY_NAME @"STMEntity"
+#define STM_NAME @"name";
 
 
 @interface STMEntityController : STMCoreController

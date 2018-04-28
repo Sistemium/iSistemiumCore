@@ -66,7 +66,7 @@
     }
 
     dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbMainDispatchQueue", DISPATCH_QUEUE_SERIAL);
-//    dispatch_queue_t poq = dispatch_queue_create("com.sistemium.STMFmdbPoolDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+//    dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbPoolDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
 
     self.operationQueue = [STMOperationQueue queueWithDispatchQueue:oq
                                                       maxConcurrent:1];

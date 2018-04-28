@@ -17,6 +17,13 @@
 
 - (void)endTransactionWithSuccess:(BOOL)success;
 
++ (instancetype)writableWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                             adapters:(NSDictionary *)adapters;
+
++ (instancetype)readOnlyWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                             adapters:(NSDictionary *)adapters;
+
+
 @property (nonatomic, weak) dispatch_queue_t dispatchQueue;
 
 @end

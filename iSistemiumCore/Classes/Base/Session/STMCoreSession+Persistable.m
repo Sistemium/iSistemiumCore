@@ -41,19 +41,17 @@
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
 
-    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName completionHandler:^(BOOL success) {
+    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName
+                                                 completionHandler:^(BOOL success) {
 
-    }];
+                                                 }];
 
     STMFmdb *fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
 
-    NSDictionary<NSNumber *, id <STMAdapting>> *adapters = @{
-            @(STMStorageTypeFMDB): fmdb
-    };
-
-    id <STMPersistingRunning> runner = [[STMPersisterRunner alloc] initWithPersister:persister adapters:adapters];
-
-    persister.runner = runner;
+    persister.runner = [STMPersisterRunner withPersister:persister
+                                                adapters:@{
+                                                        @(STMStorageTypeFMDB): fmdb
+                                                }];
 
     [self applyPatchesWithFmdb:fmdb persister:persister];
 
@@ -62,11 +60,11 @@
     STMPersistingInterceptorUniqueProperty *entityNameInterceptor =
             [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
 
-    entityNameInterceptor.entityName = STM_ENTITY_NAME;
-    entityNameInterceptor.propertyName = @"name";
+    NSString *entityName = entityNameInterceptor.entityName = STM_ENTITY_NAME;
 
-    [persister beforeMergeEntityName:entityNameInterceptor.entityName
-                         interceptor:entityNameInterceptor];
+    entityNameInterceptor.propertyName = STM_NAME;
+
+    [persister beforeMergeEntityName:entityName interceptor:entityNameInterceptor];
 
     [self addPersistenceObservers];
 
@@ -91,7 +89,7 @@
     NSArray *result = [persister findAllSync:@"STMSQLPatch" predicate:notProcessed options:options error:&error];
 
     if (!result.count) {
-        NSLog(@"No not-processed pathes");
+        NSLog(@"No not-processed patches");
         return;
     }
 

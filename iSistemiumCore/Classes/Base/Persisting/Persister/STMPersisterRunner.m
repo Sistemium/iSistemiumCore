@@ -22,7 +22,15 @@
 
 @synthesize adapters;
 
-- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister adapters:(NSDictionary *)adapters {
++ (instancetype)withPersister:(id <STMModelling, STMPersistingObserving>)persister
+                     adapters:(NSDictionary *)adapters {
+
+    return [[self alloc] initWithPersister:persister adapters:adapters];
+
+}
+
+- (instancetype)initWithPersister:(id <STMModelling, STMPersistingObserving>)persister
+                         adapters:(NSDictionary *)adapters {
 
     self = [self init];
 
@@ -40,8 +48,10 @@
 
 - (void)execute:(BOOL (^)(id <STMPersistingTransaction> transaction))block {
 
-    STMPersisterTransactionCoordinator *coordinator =
-            [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters];
+    STMPersisterTransactionCoordinator *coordinator = [STMPersisterTransactionCoordinator
+            writableWithPersister:self.persister
+                         adapters:self.adapters
+    ];
 
     coordinator.dispatchQueue = self.dispatchQueue;
 
@@ -55,8 +65,10 @@
 
     NSArray *result;
 
-    STMPersisterTransactionCoordinator *coordinator =
-            [[STMPersisterTransactionCoordinator alloc] initWithPersister:self.persister adapters:self.adapters readOnly:YES];
+    STMPersisterTransactionCoordinator *coordinator = [STMPersisterTransactionCoordinator
+            readOnlyWithPersister:self.persister
+                         adapters:self.adapters
+    ];
 
     coordinator.dispatchQueue = self.dispatchQueue;
 
