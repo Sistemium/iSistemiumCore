@@ -65,8 +65,12 @@
 
     }
 
-    dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbMainDispatchQueue", DISPATCH_QUEUE_SERIAL);
-//    dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbPoolDispatchQueue", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_queue_t oq = dispatch_queue_create(
+            "com.sistemium.STMFmdbMainDispatchQueue",
+            DISPATCH_QUEUE_SERIAL
+    );
+//    dispatch_queue_t oq = dispatch_queue_create("com.sistemium.STMFmdbPoolDispatchQueue",
+// DISPATCH_QUEUE_CONCURRENT);
 
     self.operationQueue = [STMOperationQueue queueWithDispatchQueue:oq
                                                       maxConcurrent:1];
@@ -106,13 +110,18 @@
 
     BOOL needToMigrate = !savedVersion || [savedVersion compare:bundleVersion] != NSOrderedDescending;
 
-    NSLog(@"Saved model version: %@, bundle version: %@, maybe need to migrate: %@", savedVersion, bundleVersion, needToMigrate ? @"yes" : @"no");
+    NSLog(@"Saved model version: %@, bundle version: %@, maybe need to migrate: %@",
+            savedVersion, bundleVersion, needToMigrate ? @"yes" : @"no");
 
     NSError *error = nil;
     STMModelMapper *modelMapper;
 
     if (needToMigrate) {
-        modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel destinationModel:model error:&error];
+
+        modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel
+                                                 destinationModel:model
+                                                            error:&error];
+
         needToMigrate = modelMapper.needToMigrate;
     }
 
@@ -120,7 +129,8 @@
 
         if (error) {
 
-            NSString *errorMessage = [NSString stringWithFormat:@"can't create modelMapping: %@", error.localizedDescription];
+            NSString *errorMessage =
+                    [NSString stringWithFormat:@"can't create modelMapping: %@", error.localizedDescription];
             [[STMLogger sharedLogger] errorMessage:errorMessage];
 
             // TODO: maybe need to start with savedModel
@@ -199,21 +209,21 @@
 
 - (STMFmdbTransaction *)beginTransactionReadOnly:(BOOL)readOnly {
 
-    STMFmdbOperation *operation = [[STMFmdbOperation asynchronousOperation] initWithReadOnly:readOnly stmFMDB:self];
+    STMFmdbOperation *operation = [[STMFmdbOperation asynchronousOperation]
+            initWithReadOnly:readOnly stmFMDB:self];
 
     if (readOnly) {
 
         [self.operationPoolQueue addOperation:operation];
 
-        [operation waitUntilTransactionIsReady];
 
     } else {
 
         [self.operationQueue addOperation:operation];
 
-        [operation waitUntilTransactionIsReady];
-
     }
+
+    [operation waitUntilTransactionIsReady];
 
     return operation.transaction;
 
