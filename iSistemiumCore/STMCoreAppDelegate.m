@@ -201,6 +201,8 @@
     NSString *logMessage = @"applicationDidEnterBackground";
     [logger infoMessage:logMessage];
 
+    NSLog(@"%@", [STMFunctions memoryStatistic]);
+
     UIBackgroundTaskIdentifier bgTask;
 
     bgTask = [application beginBackgroundTaskWithExpirationHandler:^{
