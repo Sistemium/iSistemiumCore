@@ -41,6 +41,7 @@
 
     dispatch_semaphore_signal(self.sem);
 
+
 }
 
 - (void)finish {
@@ -67,10 +68,7 @@
 
     [super finish];
 
-    self.transaction.operation = nil;
-    self.transaction = nil;
-    self.sem = nil;
-    self.database = nil;
+//    NSLogMethodName;
 
 }
 
