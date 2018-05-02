@@ -1195,7 +1195,7 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 }
 
 + (void)logMemoryStat {
-    [[STMLogger sharedLogger] saveLogMessageWithText:[self memoryStatistic] numType:STMLogMessageTypeImportant];
+    [[STMLogger sharedLogger] importantMessage:[self memoryStatistic]];
 }
 
 + (NSString *)memoryStatistic {
