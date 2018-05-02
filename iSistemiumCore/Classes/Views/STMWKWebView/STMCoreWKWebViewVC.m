@@ -1006,7 +1006,7 @@
         return;
     }
 
-    //    NSLog(@"callbackWithData %@", @([NSDate timeIntervalSinceReferenceDate]));
+//    NSDate *startedAt = [NSDate date];
 
     NSMutableArray *arguments = @[].mutableCopy;
 
@@ -1014,9 +1014,6 @@
     if (parameters) [arguments addObject:parameters];
 
     NSString *jsFunction = [NSString stringWithFormat:@"window.%1$@ && %1$@.apply(null,%2$@)", jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
-
-    //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
-
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
 
@@ -1027,7 +1024,8 @@
 
         [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
 
-            //        NSLog(@"evaluateJavaScript completionHandler %@", @([NSDate timeIntervalSinceReferenceDate]));
+//            NSLog(@"evaluateJS requestId: %@ ms: %@", requestId, @(ceil(-1000 * [startedAt timeIntervalSinceNow])));
+
             if (error) {
                 NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);
             }
