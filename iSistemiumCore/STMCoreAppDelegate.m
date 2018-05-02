@@ -29,6 +29,8 @@
 
 #import "UITestSetup.h"
 
+#import <WebKit/WebKit.h>
+
 @interface STMCoreAppDelegate()
 
 @property (nonatomic, strong) NSMutableArray *fetchCompletionHandlers;
@@ -261,7 +263,19 @@
     
     [[STMLogger sharedLogger] saveLogMessageWithText:@"applicationDidReceiveMemoryWarning" numType:STMLogMessageTypeImportant];
     [STMFunctions logMemoryStat];
+    [self clearWebViewCache];
     
+}
+
+- (void)clearWebViewCache {
+
+    NSSet *websiteDataTypes = [NSSet setWithArray:@[WKWebsiteDataTypeMemoryCache]];
+    NSDate *dateFrom = [NSDate dateWithTimeIntervalSince1970:0];
+
+    [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:websiteDataTypes modifiedSince:dateFrom completionHandler:^{
+        NSLog(@"Done cleaning webView: %@", [STMFunctions memoryStatistic]);
+    }];
+
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
