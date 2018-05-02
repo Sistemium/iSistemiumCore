@@ -208,9 +208,11 @@
 
     NSString *wvUrl = [self webViewUrlString];
 
-    __block NSString *jsString = [NSString stringWithFormat:@"('%@'.lastIndexOf(location.origin) >= 0) ? location.reload (true) : location.replace ('%@')", wvUrl, wvUrl];
+    NSString *format = @"('%@'.lastIndexOf(location.origin) >= 0) ? location.reload (true) : location.replace ('%@')";
 
-    [self.webView evaluateJavaScript:jsString completionHandler:^(id _Nullable result, NSError *_Nullable error) {
+    NSString *jsString = [NSString stringWithFormat:format, wvUrl, wvUrl];
+
+    [self.webView evaluateJavaScript:jsString completionHandler:^(id result, NSError *error) {
 
         if (!error) {
             return;
@@ -627,7 +629,9 @@
 
     if (webView && failString && errorString) {
 
-        NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@", webView.URL, failString, errorString];
+        NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@",
+                webView.URL, failString, errorString];
+
         [self.logger saveLogMessageWithText:logMessage
                                     numType:STMLogMessageTypeError];
 
@@ -975,7 +979,15 @@
 
     if (requestId && [data isKindOfClass:[NSArray class]]) {
 
-        NSString *entityName = parameters[@"entity"] ? parameters[@"entity"] : parameters[@"entityName"] ? parameters[@"entityName"] : @"unknown entity";
+        NSString *entityName = parameters[@"entity"];
+
+        if (!entityName) {
+            entityName = parameters[@"entityName"];
+        }
+
+        if (!entityName) {
+            entityName = @"unknown entity";
+        }
 
         if ([entityName isEqualToString:@"unknown entity"]) {
             NSLog(@"parameters %@", parameters);
@@ -1006,14 +1018,20 @@
         return;
     }
 
-//    NSDate *startedAt = [NSDate date];
 
     NSMutableArray *arguments = @[].mutableCopy;
 
     if (data) [arguments addObject:data];
     if (parameters) [arguments addObject:parameters];
 
-    NSString *jsFunction = [NSString stringWithFormat:@"window.%1$@ && %1$@.apply(null,%2$@)", jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
+    NSDate *startedAt = [NSDate date];
+
+    NSString *jsFunction = [NSString stringWithFormat:@"window.%1$@ && %1$@.apply(null,%2$@)",
+            jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
+
+    NSLog(@"jsonStringFromArray requestId: %@ ms: %@", requestId, @(ceil(-1000 * [startedAt timeIntervalSinceNow])));
+
+    startedAt = [NSDate date];
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
 
@@ -1024,7 +1042,7 @@
 
         [self.webView evaluateJavaScript:jsFunction completionHandler:^(id result, NSError *error) {
 
-//            NSLog(@"evaluateJS requestId: %@ ms: %@", requestId, @(ceil(-1000 * [startedAt timeIntervalSinceNow])));
+            NSLog(@"evaluateJS requestId: %@ ms: %@", requestId, @(ceil(-1000 * [startedAt timeIntervalSinceNow])));
 
             if (error) {
                 NSLog(@"Error evaluating function '%@': '%@'", jsCallbackFunction, error.localizedDescription);

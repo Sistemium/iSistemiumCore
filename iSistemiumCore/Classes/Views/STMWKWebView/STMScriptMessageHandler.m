@@ -221,13 +221,11 @@
     
     [self arrayOfObjectsRequestedByScriptMessage:message].then(^(NSArray *result){
         
-        [self.owner callbackWithData:result
-                          parameters:parameters];
+        [self.owner callbackWithData:result parameters:parameters];
         
     }).catch(^(NSError *error){
         
-        [self.owner callbackWithError:error.localizedDescription
-                           parameters:parameters];
+        [self.owner callbackWithError:error.localizedDescription parameters:parameters];
         
     });
     
@@ -241,11 +239,9 @@
                    withCompletionHandler:^(BOOL success, NSArray *updatedObjects, NSError *error) {
         
         if (success) {
-            [self.owner callbackWithData:updatedObjects
-                              parameters:parameters];
+            [self.owner callbackWithData:updatedObjects parameters:parameters];
         } else {
-            [self.owner callbackWithError:error.localizedDescription
-                               parameters:parameters];
+            [self.owner callbackWithError:error.localizedDescription parameters:parameters];
         }
         
     }];
