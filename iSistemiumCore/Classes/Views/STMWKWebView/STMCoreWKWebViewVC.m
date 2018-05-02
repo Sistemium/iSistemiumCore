@@ -1017,6 +1017,7 @@
 
     //    NSLog(@"data complete %@", @([NSDate timeIntervalSinceReferenceDate]));
 
+
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
 
         if (!self.webView.window) {
@@ -1476,7 +1477,7 @@ int counter = 0;
 
             [self handleMemoryWarning];
 
-        } else if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+        } else if ([STMFunctions isAppInBackground]) {
 
             [self handleMemoryWarning];
 
@@ -1491,13 +1492,12 @@ int counter = 0;
 - (void)handleMemoryWarning {
 
     NSString *logMessage = [NSString stringWithFormat:@"%@ receive memory warning.", NSStringFromClass([self class])];
-    [self.logger saveLogMessageWithText:logMessage
-                                numType:STMLogMessageTypeImportant];
+
+    [self.logger importantMessage:logMessage];
 
     if ([STMFunctions isAppInBackground]) {
         logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
-        [self.logger saveLogMessageWithText:logMessage
-                                    numType:STMLogMessageTypeImportant];
+        [self.logger importantMessage:logMessage];
         [self flushWebView];
     }
 
