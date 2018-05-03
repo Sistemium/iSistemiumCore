@@ -1062,28 +1062,31 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
     for (id key in dictionary.allKeys) {
 
         NSString *keyString = ([key isKindOfClass:[NSString class]]) ? key : [key description];
+        
+        id value = dictionary[key];
 
-        if ([dictionary[key] isKindOfClass:[NSDictionary class]]) {
+        if ([value isKindOfClass:[NSDictionary class]]) {
 
-            validDictionary[keyString] = [self validJSONDictionaryFromDictionary:(NSDictionary *) dictionary[key]];
+            validDictionary[keyString] = [self validJSONDictionaryFromDictionary:(NSDictionary *) value];
 
-        } else if ([dictionary[key] isKindOfClass:[NSArray class]]) {
+        } else if ([value isKindOfClass:[NSArray class]]) {
 
-            validDictionary[keyString] = [self validJSONArrayFromArray:dictionary[key]];
+            validDictionary[keyString] = [self validJSONArrayFromArray:value];
 
-        } else if ([dictionary[key] isKindOfClass:[NSDate class]]) {
+        } else if ([value isKindOfClass:[NSDate class]]) {
 
-            validDictionary[keyString] = [[STMFunctions dateFormatterWithMilliseconds] stringFromDate:dictionary[key]];
+            validDictionary[keyString] = [[STMFunctions dateFormatterWithMilliseconds] stringFromDate:value];
 
-        } else if (![dictionary[key] isKindOfClass:[NSString class]]
-                && ![dictionary[key] isKindOfClass:[@YES class]]
-                && ![dictionary[key] isKindOfClass:[NSNull class]]) {
+        } else if (![value isKindOfClass:[NSString class]]
+                && ![value isKindOfClass:[NSNumber class]]
+                && ![value isKindOfClass:[@YES class]]
+                && ![value isKindOfClass:[NSNull class]]) {
 
-            validDictionary[keyString] = [dictionary[key] description];
+            validDictionary[keyString] = [value description];
 
         } else {
 
-            validDictionary[keyString] = dictionary[key];
+            validDictionary[keyString] = value;
 
         }
 
@@ -1107,7 +1110,10 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
             [validArray addObject:[self validJSONArrayFromArray:arrayItem]];
 
-        } else if (![arrayItem isKindOfClass:[NSString class]]) {
+        } else if (![arrayItem isKindOfClass:[NSString class]]
+                   && ![arrayItem isKindOfClass:[NSNumber class]]
+                   && ![arrayItem isKindOfClass:[@YES class]]
+                   && ![arrayItem isKindOfClass:[NSNull class]]) {
 
             [validArray addObject:[arrayItem description]];
 
