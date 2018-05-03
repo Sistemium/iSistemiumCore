@@ -257,9 +257,11 @@
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 
-    [[STMLogger sharedLogger] importantMessage:@"applicationDidReceiveMemoryWarning"];
 
-    [STMFunctions logMemoryStat];
+    NSString *log = [@"applicationDidReceiveMemoryWarning: " stringByAppendingString:[STMFunctions memoryStatistic]];
+
+    [[STMLogger sharedLogger] importantMessage:log];
+
     [self clearWebViewCache];
 
 }
