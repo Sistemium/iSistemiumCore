@@ -233,18 +233,30 @@
 
     [self.view addSubview:self.spinnerView];
 
-    if ([self webViewAppManifestURI] && !self.lastUrl) {
+    if ([self webViewAppManifestURI]) {
 
-        return [self loadLocalHTML];
+
+        if (!self.lastUrl) {
+
+            [self loadLocalHTML];
+
+        } else {
+        
+            [self.webView loadFileURL:[NSURL URLWithString:self.lastUrl]
+              allowingReadAccessToURL:[NSURL fileURLWithPath:[self.filer.directoring sharedDocuments]]];
+
+        }
+
+        return;
 
     }
 
     self.isAuthorizing = NO;
 
     NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
-    
+
     self.lastUrl = nil;
-    
+
     [self loadURLString:urlString];
 
 }
@@ -516,7 +528,7 @@
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
 
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
-    
+
     self.lastUrl = webView.URL.absoluteString;
 
     [self.logger saveLogMessageWithText:logMessage
@@ -639,7 +651,7 @@
     if (webView && failString && errorString) {
 
         NSString *logMessage = [NSString stringWithFormat:@"webView %@ %@ withError: %@",
-                webView.URL, failString, errorString];
+                                                          webView.URL, failString, errorString];
 
         [self.logger saveLogMessageWithText:logMessage
                                     numType:STMLogMessageTypeError];
@@ -1036,7 +1048,7 @@
     NSDate *startedAt = [NSDate date];
 
     NSString *jsFunction = [NSString stringWithFormat:@"window.%1$@ && %1$@.apply(null,%2$@)",
-            jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
+                                                      jsCallbackFunction, [STMFunctions jsonStringFromArray:arguments]];
 
     NSLog(@"jsonStringFromArray requestId: %@ ms: %@", requestId, @(ceil(-1000 * [startedAt timeIntervalSinceNow])));
 
@@ -1342,6 +1354,11 @@ int counter = 0;
 
 #pragma mark - white screen of death
 
+- (void)applicationDidEnterBackground:(NSNotification *)notification {
+    self.lastUrl = self.webView.URL.absoluteString;
+//    [self flushWebView];
+}
+
 - (void)applicationWillEnterForegroundNotification:(NSNotification *)notification {
 
     if (self.isViewLoaded && self.view.window != nil) {
@@ -1457,6 +1474,8 @@ int counter = 0;
     //           selector:@selector(applicationWillEnterForegroundNotification:)
     //               name:UIApplicationWillEnterForegroundNotification
     //             object:nil];
+
+    [nc addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
 
     [nc addObserver:self
            selector:@selector(applicationDidBecomeActiveNotification:)
