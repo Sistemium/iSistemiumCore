@@ -56,6 +56,7 @@
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
 @property (nonatomic, strong) NSString *lastUrl;
+@property (readonly) id <STMFiling> filer;
 
 @property (nonatomic, strong) NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> *persistenceDelegate;
 
@@ -63,6 +64,10 @@
 
 
 @implementation STMCoreWKWebViewVC
+
+- (id <STMFiling>)filer {
+    return STMCoreSessionManager.sharedManager.currentSession.filing;
+}
 
 - (NSObject <STMPersistingFullStack> *)persistenceDelegate {
 
