@@ -55,6 +55,8 @@
 @property (nonatomic) BOOL waitingCheckinLocation;
 @property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
+@property (nonatomic, strong) NSString *lastUrl;
+
 @property (nonatomic, strong) NSObject <STMPersistingPromised, STMPersistingAsync, STMPersistingSync, STMModelling, STMPersistingObserving> *persistenceDelegate;
 
 @end
@@ -231,7 +233,7 @@
 
     [self.view addSubview:self.spinnerView];
 
-    if ([self webViewAppManifestURI]) {
+    if ([self webViewAppManifestURI] && !self.lastUrl) {
 
         return [self loadLocalHTML];
 
@@ -239,7 +241,10 @@
 
     self.isAuthorizing = NO;
 
-    NSString *urlString = [self webViewUrlString];
+    NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
+    
+    self.lastUrl = nil;
+    
     [self loadURLString:urlString];
 
 }
@@ -511,13 +516,17 @@
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
 
     NSString *logMessage = [NSString stringWithFormat:@"webViewWebContentProcessDidTerminate %@", webView.URL];
+    
+    self.lastUrl = webView.URL.absoluteString;
+
     [self.logger saveLogMessageWithText:logMessage
                                 numType:STMLogMessageTypeError];
 
     if ([STMFunctions isAppInBackground]) {
         [self flushWebView];
     } else {
-        [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
+//        [self webViewAppManifestURI] ? [self loadLocalHTML] : [self loadURL:webView.URL];
+        [self loadWebView];
     }
 
 }
@@ -1512,6 +1521,7 @@ int counter = 0;
     [self.logger importantMessage:logMessage];
 
     if ([STMFunctions isAppInBackground]) {
+        self.lastUrl = self.webView.URL.absoluteString;
         logMessage = [NSString stringWithFormat:@"%@ set it's webView to nil. %@", NSStringFromClass([self class]), [STMFunctions memoryStatistic]];
         [self.logger importantMessage:logMessage];
         [self flushWebView];
