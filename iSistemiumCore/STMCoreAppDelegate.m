@@ -202,8 +202,10 @@
     [logger infoMessage:logMessage];
 
     NSLog(@"%@", [STMFunctions memoryStatistic]);
+    
+    [self clearWebViewCache];
 
-    UIBackgroundTaskIdentifier bgTask;
+    __block UIBackgroundTaskIdentifier bgTask;
 
     bgTask = [application beginBackgroundTaskWithExpirationHandler:^{
         [self backgroundTask:bgTask endedInApplication:application];
