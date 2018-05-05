@@ -238,6 +238,10 @@
 
     [self.view addSubview:self.spinnerView];
 
+    self.isAuthorizing = NO;
+
+    NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
+
     if ([self webViewAppManifestURI]) {
 
 
@@ -252,17 +256,11 @@
 
         }
 
-        return;
-
+    } else {
+        [self loadURLString:urlString];
     }
 
-    self.isAuthorizing = NO;
-
-    NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
-
     self.lastUrl = nil;
-
-    [self loadURLString:urlString];
 
 }
 
