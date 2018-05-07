@@ -34,8 +34,8 @@
 
 - (NSData *)saveImageFile:(NSString *)fileName forPicture:(NSMutableDictionary *)picture fromImageData:(NSData *)data withEntityName:(NSString *)entityName;
 
-- (UIImage *)imageFileForPrimaryKey:(NSString *)idendtifier;
+- (UIImage *)imageFileForPrimaryKey:(NSString *)identifier;
 
-- (AnyPromise *)loadImageForPrimaryKey:(NSString *)idendtifier;
+- (AnyPromise *)loadImageForPrimaryKey:(NSString *)identifier;
 
 @end

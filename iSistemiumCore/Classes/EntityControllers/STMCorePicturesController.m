@@ -772,9 +772,9 @@
     
 }
 
-- (UIImage *)imageFileForPrimaryKey:(NSString *)idendtifier{
+- (UIImage *)imageFileForPrimaryKey:(NSString *)identifier {
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, idendtifier];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, identifier];
     
     NSDictionary *picture = [self allPicturesWithPredicate:predicate].firstObject;
     
@@ -802,9 +802,9 @@
     
 }
 
-- (AnyPromise *)loadImageForPrimaryKey:(NSString *)idendtifier{
+- (AnyPromise *)loadImageForPrimaryKey:(NSString *)identifier {
 
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, idendtifier];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ == %@", STMPersistingKeyPrimary, identifier];
     
     NSDictionary *picture = [self allPicturesWithPredicate:predicate].firstObject;
     
