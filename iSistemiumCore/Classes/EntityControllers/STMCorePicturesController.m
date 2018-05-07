@@ -809,7 +809,8 @@
     NSDictionary *picture = [self allPicturesWithPredicate:predicate].firstObject;
     
     if (!picture){
-        return nil;
+        [self.logger errorMessage:[NSString stringWithFormat:@"Picture not found id = %@", identifier]];
+        return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"Picture not found"]];
     }
     
     NSDictionary *attributes = picture[@"attributes"];
