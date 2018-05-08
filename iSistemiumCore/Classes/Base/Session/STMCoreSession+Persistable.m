@@ -57,6 +57,8 @@
 
     self.persistenceDelegate = persister;
 
+    // Unique Entity.name
+
     STMPersistingInterceptorUniqueProperty *entityNameInterceptor =
             [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
 
@@ -65,6 +67,18 @@
     entityNameInterceptor.propertyName = STM_NAME;
 
     [persister beforeMergeEntityName:entityName interceptor:entityNameInterceptor];
+
+    // Unique ClientEntity.name
+
+    entityNameInterceptor =
+            [STMPersistingInterceptorUniqueProperty controllerWithPersistenceDelegate:persister];
+
+    entityName = entityNameInterceptor.entityName = @"STMClientEntity";
+
+    entityNameInterceptor.propertyName = STM_NAME;
+
+    [persister beforeMergeEntityName:entityName interceptor:entityNameInterceptor];
+
 
     [self addPersistenceObservers];
 
