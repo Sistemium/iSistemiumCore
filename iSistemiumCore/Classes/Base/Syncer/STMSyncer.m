@@ -192,10 +192,10 @@
 - (void)turnOffNetworkActivityIndicator {
 
     if (!self.isUsingNetwork) {
-
-        STMFunctions.networkActivityIndicatorVisible = NO;
-        [self checkSyncerState];
-
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            STMFunctions.networkActivityIndicatorVisible = NO;
+            [self checkSyncerState];
+        }];
     }
 
 }
