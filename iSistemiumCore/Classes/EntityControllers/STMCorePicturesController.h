@@ -11,7 +11,7 @@
 @interface STMCorePicturesController : STMCoreController
 
 @property (nonatomic) BOOL downloadingPictures;
-@property (nonatomic, readonly) NSUInteger nonloadedPicturesCount;
+@property (nonatomic) NSUInteger nonloadedPicturesCount;
 @property (nonatomic, weak) id <STMFiling> filing;
 
 + (STMCorePicturesController *)sharedController;

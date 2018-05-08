@@ -226,6 +226,8 @@
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"href != %@", nil];
     
+    __weak STMCorePicturesController *wself = self;
+    
     self.nonloadedPicturesSubscriptionID = [self.persistenceDelegate observeEntityNames:self.pictureEntitiesNames.allObjects predicate:predicate callback:^(NSString *entityName, NSArray *data) {
         
         NSDictionary *pic = data.firstObject;
@@ -235,11 +237,14 @@
         NSString *dataId = pic[@"id"];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"attributes.id != %@", dataId];
-        self.nonloadedPictures = [self.nonloadedPictures filteredArrayUsingPredicate:predicate];
         
-        _nonloadedPicturesCount = self.nonloadedPictures.count;
-        
-        [self postAsyncMainQueueNotification:@"nonloadedPicturesCountDidChange"];
+        @synchronized (wself) {
+            wself.nonloadedPictures = [wself.nonloadedPictures filteredArrayUsingPredicate:predicate];
+            
+            wself.nonloadedPicturesCount = wself.nonloadedPictures.count;
+            
+            [wself postAsyncMainQueueNotification:@"nonloadedPicturesCountDidChange"];
+        }
         
     }];
 
