@@ -77,12 +77,10 @@
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
 
     if (!self.handleQueue) {
-        self.handleQueue =
-//        dispatch_get_main_queue();
-                dispatch_queue_create("com.sistemium.STMSocketTransport",
-                        DISPATCH_QUEUE_CONCURRENT
-//                              DISPATCH_QUEUE_SERIAL
-                );
+        self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport",
+//                                                 DISPATCH_QUEUE_CONCURRENT
+                                                 DISPATCH_QUEUE_SERIAL
+        );
     }
 
     NSDictionary *config = @{
