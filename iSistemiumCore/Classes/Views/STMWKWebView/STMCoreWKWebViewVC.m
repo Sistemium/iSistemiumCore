@@ -325,18 +325,10 @@
 - (void)loadUrl:(NSURL *)fileUrl atBaseDir:(NSString *)baseDir {
 
     dispatch_async(dispatch_get_main_queue(), ^{
-
-        if ([self.webView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
-
-            [self.webView loadFileURL:fileUrl allowingReadAccessToURL:[NSURL fileURLWithPath:baseDir]];
-
-        } else {
-
-            NSString *logMessage = @"u should not use loadFileURL:allowingReadAccessToURL: before iOS 9.0";
-            [self.logger errorMessage:logMessage];
-
+        if (!self.webView) {
+            [self.logger errorMessage:@"empty webView in loadUrl:atBaseDir"];
         }
-
+        [self.webView loadFileURL:fileUrl allowingReadAccessToURL:[NSURL fileURLWithPath:baseDir]];
     });
 
 }
