@@ -1077,6 +1077,9 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
             validDictionary[keyString] = [[STMFunctions dateFormatterWithMilliseconds] stringFromDate:value];
 
+        } else if ([value isKindOfClass:[NSNumber class]]
+                   && [value isEqualToNumber:NSDecimalNumber.notANumber]) {
+            validDictionary[keyString] = [NSNull null];
         } else if (![value isKindOfClass:[NSString class]]
                 && ![value isKindOfClass:[NSNumber class]]
                 && ![value isKindOfClass:[@YES class]]
@@ -1110,6 +1113,9 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
             [validArray addObject:[self validJSONArrayFromArray:arrayItem]];
 
+        } else if ([arrayItem isKindOfClass:[NSNumber class]]
+                   && [arrayItem isEqualToNumber:NSDecimalNumber.notANumber]) {
+            [validArray addObject: [NSNull null]];
         } else if (![arrayItem isKindOfClass:[NSString class]]
                    && ![arrayItem isKindOfClass:[NSNumber class]]
                    && ![arrayItem isKindOfClass:[@YES class]]
