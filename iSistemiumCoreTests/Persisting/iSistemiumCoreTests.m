@@ -40,6 +40,39 @@ XCTAssertEqualObjects([self.predicateToSQL SQLFilterForPredicate:predicate], exp
     [super tearDown];
 }
 
+- (void)testJsonObjectSerialization {
+    
+    NSDictionary *object = @{
+                             @"null": [NSNull null],
+                             @"num": @(2),
+                             @"bool": @(YES),
+                             @"nan": @(NAN),
+                             @"nan2": [NSDecimalNumber notANumber]
+                             };
+    
+    NSString *result = [STMFunctions jsonStringFromObject:object];
+    
+    XCTAssertEqualObjects(result, @"{\"bool\":true,\"num\":2,\"nan\":null,\"null\":null,\"nan2\":null}");
+    
+}
+
+- (void)testJsonArraySerialization {
+    
+    NSArray *object = @[
+                        [NSNull null],
+                        @(2),
+                        @(YES),
+                        @(NAN),
+                        [NSDecimalNumber notANumber]
+                        ];
+    
+    NSString *result = [STMFunctions jsonStringFromObject:object];
+    
+    XCTAssertEqualObjects(result, @"[null,2,true,null,null]");
+    
+}
+
+
 - (void)testSQLFiltersSubqueries {
 
     NSPredicate *predicate;
