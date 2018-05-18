@@ -693,10 +693,10 @@
 
     if (!self.isRunning) return;
 
-    [[self.session logger] saveLogMessageWithText:CurrentMethodName
-                                          numType:STMLogMessageTypeInfo];
+    [[self.session logger] infoMessage:CurrentMethodName];
 
     if ([self.dataDownloadingDelegate downloadingState]) {
+        NSLog(@"repeat download");
 //        self.needRepeatDownload = YES;
 //        return;
         [[self.session logger] importantMessage:@"receiveData is stopping downloading"];
