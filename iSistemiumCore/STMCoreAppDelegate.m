@@ -431,7 +431,13 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:@"applicationDidReceiveRemoteNotification"
                                                             object:[UIApplication sharedApplication]
                                                           userInfo:userInfo];
-        [[self syncer] receiveData];
+        STMSyncer *syncer = [self syncer];
+        
+        if (syncer.transportIsReady) {
+            [syncer receiveData];
+        } else {
+            [syncer checkSocket];
+        }
 
     }
 
