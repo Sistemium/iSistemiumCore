@@ -121,13 +121,22 @@
 
     @synchronized (self) {
 
-        if (self.downloadingState) return self.downloadingState;
+        if (self.downloadingState && !entitiesNames) {
+            NSLog(@"Can't repeat downloading");
+            return self.downloadingState;
+        }
+        
+        STMDataDownloadingState *state;
+        
+        if (!self.downloadingState) {
+            state = [[STMDataDownloadingState alloc] init];
+            self.downloadingState = state;
+            state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue];
+            state.queue.owner = self;
+        } else {
+            state = self.downloadingState;
+        }
 
-        STMDataDownloadingState *state = [[STMDataDownloadingState alloc] init];
-        self.downloadingState = state;
-
-        state.queue = [STMDownloadingQueue queueWithDispatchQueue:self.dispatchQueue];
-        state.queue.owner = self;
         state.queue.suspended = YES;
 
         if (!entitiesNames) {
