@@ -133,6 +133,10 @@
     return [self isConnected];
 }
 
+- (void)disconnect {
+    [self.api sbtEnableAutomaticSessionReestablishment:NO forScanner:self.connectedId];
+    [self.api sbtTerminateCommunicationSession:self.connectedId];
+}
 
 - (void)applySettingsToScanner:(int)scannerId {
 

@@ -13,5 +13,6 @@
 
 - (void)showPairingAlertInViewController:(UIViewController *)viewController;
 - (BOOL)isDeviceConnected;
+- (void)disconnect;
 
 @end
