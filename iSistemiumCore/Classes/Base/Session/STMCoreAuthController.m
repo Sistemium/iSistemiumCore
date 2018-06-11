@@ -521,6 +521,13 @@
     dataModelName = @"iSisWarehouse";
 
 #endif
+    
+#if defined (CONFIGURATION_DebugDriver) || defined (CONFIGURATION_ReleaseDriver)
+    
+    NSLog(@"USE DRIVER DATA MODEL");
+    dataModelName = @"iSisDriver";
+    
+#endif
 
     return dataModelName;
 
