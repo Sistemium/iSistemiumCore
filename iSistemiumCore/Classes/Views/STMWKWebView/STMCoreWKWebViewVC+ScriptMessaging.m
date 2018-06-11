@@ -536,9 +536,9 @@ int counter = 0;
 - (void)stopIOSModeScanner {
 
     [self.iOSModeBarCodeScanner stopScan];
-    self.iOSModeBarCodeScanner = nil;
+    [self deviceRemovalForBarCodeScanner:self.iOSModeBarCodeScanner];
 
-    [self scannerIsDisconnected];
+    self.iOSModeBarCodeScanner = nil;
 
 }
 
