@@ -30,6 +30,8 @@
 
 @property (nonatomic, strong) NSString *scannerScanJSFunction;
 @property (nonatomic, strong) NSString *scannerPowerButtonJSFunction;
+@property (nonatomic, strong) NSString *scannerStatusJSFunction;
+
 @property (nonatomic, strong) NSString *unsyncedInfoJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSCallbackJSFunction;
 @property (nonatomic, strong) NSString *iSistemiumIOSErrorCallbackJSFunction;

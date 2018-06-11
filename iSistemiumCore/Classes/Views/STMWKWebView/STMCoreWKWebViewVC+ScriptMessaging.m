@@ -218,6 +218,7 @@
 
     self.scannerScanJSFunction = message.body[@"scanCallback"];
     self.scannerPowerButtonJSFunction = message.body[@"powerButtonCallback"];
+    self.scannerStatusJSFunction = message.body[@"statusCallback"];
 
     [self startBarcodeScanning];
 
@@ -529,6 +530,7 @@ int counter = 0;
 
 - (void)stopBarcodeScanning {
     [self stopIOSModeScanner];
+    self.scannerStatusJSFunction = nil;
 }
 
 - (void)stopIOSModeScanner {
@@ -541,11 +543,15 @@ int counter = 0;
 }
 
 - (void)scannerIsConnected {
-
+    if (self.scannerStatusJSFunction) {
+        [self callbackWithData:@"connected" parameters:@{} jsCallbackFunction:self.scannerStatusJSFunction];
+    }
 }
 
 - (void)scannerIsDisconnected {
-
+    if (self.scannerStatusJSFunction) {
+        [self callbackWithData:@"disconnected" parameters:@{} jsCallbackFunction:self.scannerStatusJSFunction];
+    }
 }
 
 
