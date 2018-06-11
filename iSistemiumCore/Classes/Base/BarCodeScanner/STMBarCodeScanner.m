@@ -144,7 +144,7 @@
             }
         }
 
-        self.delegate = nil;
+//        self.delegate = nil;
 
     }
 
@@ -451,7 +451,9 @@
 }
 
 - (void)finishIOSScanMode {
-
+    if (self.zebra) {
+        [self.zebra disconnect];
+    }
 }
 
 - (void)getBeepStatus {
