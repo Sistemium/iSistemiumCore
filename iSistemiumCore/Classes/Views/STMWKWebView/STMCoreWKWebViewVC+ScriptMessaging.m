@@ -153,7 +153,8 @@
 
     NSDictionary *parameters = message.body;
 
-    NSNumber *requestId = [parameters[@"options"][@"requestId"] isKindOfClass:[NSNumber class]] ? parameters[@"options"][@"requestId"] : nil;
+    NSNumber *requestId = [parameters[@"options"][@"requestId"] isKindOfClass:[NSNumber class]] ?
+            parameters[@"options"][@"requestId"] : nil;
 
     if (requestId) {
 
@@ -166,7 +167,8 @@
         NSNumber *accuracy = parameters[@"accuracy"];
         NSTimeInterval timeout = [parameters[@"timeout"] doubleValue] / 1000;
 
-        STMCoreLocationTracker *locationTracker = [(STMCoreSession *) [STMCoreSessionManager sharedManager].currentSession locationTracker];
+        STMCoreLocationTracker *locationTracker =
+                [(STMCoreSession *) [STMCoreSessionManager sharedManager].currentSession locationTracker];
 
         [locationTracker checkinWithAccuracy:accuracy
                                  checkinData:checkinData
@@ -204,7 +206,8 @@
     [STMRemoteController receiveRemoteCommands:parameters[@"remoteCommands"] error:&error];
 
     if (!error) {
-        [self callbackWithData:@[@"remoteCommands ok"] parameters:parameters jsCallbackFunction:self.remoteControlCallbackJSFunction];
+        [self callbackWithData:@[@"remoteCommands ok"]
+                    parameters:parameters jsCallbackFunction:self.remoteControlCallbackJSFunction];
     } else {
         [self callbackWithError:error.localizedDescription parameters:parameters];
     }
@@ -239,7 +242,8 @@
         self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, tabbarHeight, insets.right);
 
         UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-        self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, tabbarHeight, scrollIndicatorInsets.right);
+        self.webView.scrollView.scrollIndicatorInsets =
+                UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, tabbarHeight, scrollIndicatorInsets.right);
 
         [self callbackWithData:@[@"tabbar show success"] parameters:parameters];
 
@@ -253,7 +257,8 @@
             self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
 
             UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-            self.webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
+            self.webView.scrollView.scrollIndicatorInsets =
+                    UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
 
             [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
 
@@ -422,7 +427,9 @@
     [arguments addObject:errorDescription];
     [arguments addObject:parameters];
 
-    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.iSistemiumIOSErrorCallbackJSFunction, [STMFunctions jsonStringFromArray:arguments]];
+    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)",
+                                                      self.iSistemiumIOSErrorCallbackJSFunction,
+                                                      [STMFunctions jsonStringFromArray:arguments]];
 
     [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError *_Nullable error) {
 
@@ -548,7 +555,9 @@ int counter = 0;
     return self.view;
 }
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
+    receiveBarCodeScan:(STMBarCodeScan *)barCodeScan
+              withType:(STMBarCodeScannedType)type {
 
     if (!self.isInActiveTab) {
         return;
@@ -569,7 +578,8 @@ int counter = 0;
 //
 //    NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
 //
-//    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.receiveBarCodeJSFunction, [STMFunctions jsonStringFromArray:arguments]];
+//    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)",
+//          self.receiveBarCodeJSFunction, [STMFunctions jsonStringFromArray:arguments]];
 //
 //    [self.webView evaluateJavaScript:jsFunction completionHandler:^(id _Nullable result, NSError *_Nullable error) {
 //
@@ -578,7 +588,9 @@ int counter = 0;
 
 }
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
+        receiveBarCode:(NSString *)barcode
+              withType:(STMBarCodeScannedType)type {
 
     if (!self.isInActiveTab || !barcode) {
         return;
@@ -630,7 +642,8 @@ int counter = 0;
 
 - (void)evaluateReceiveBarCodeJSFunctionWithArguments:(NSArray *)arguments {
 
-    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)", self.scannerScanJSFunction, [STMFunctions jsonStringFromArray:arguments]];
+    NSString *jsFunction = [NSString stringWithFormat:@"%@.apply(null,%@)",
+                                                      self.scannerScanJSFunction, [STMFunctions jsonStringFromArray:arguments]];
 
     [self evaluateJavaScriptAndWait:jsFunction];
 
