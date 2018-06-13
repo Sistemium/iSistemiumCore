@@ -365,7 +365,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     __kindof NSObject *argument = [NSNull null];
     
     if ([value isKindOfClass:[NSString class]]) {
-        value = [(NSString *)value stringByRemovingPercentEncoding];
+//        value = [(NSString *)value stringByRemovingPercentEncoding];
     }
     
     compOp = compOp.lowercaseString;
@@ -373,7 +373,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     if ([compOp hasPrefix:@"like"]) {
         
         if ([compOp hasSuffix:@"i"]) compOp = @"like[cd]";
-        if (value) value = [NSString stringWithFormat:@"*%@*", value];
+        if (value) value = [(NSString *)value stringByReplacingOccurrencesOfString:@"%" withString:@"*"];
         
     }
     

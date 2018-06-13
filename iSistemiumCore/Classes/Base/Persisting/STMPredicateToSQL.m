@@ -401,7 +401,9 @@ static NSString *SQLNullValueString = @"NULL";
                                               [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][0]],
                                               [self SQLExpressionForNSExpression:[[predicate rightExpression] collection][1]]];
         }
-        case NSLikePredicateOperatorType:
+        case NSLikePredicateOperatorType:{
+            return [NSString stringWithFormat:@"(%@ LIKE '%@')", leftSQLExpression, [self unquoteString:[rightSQLExpression stringByReplacingOccurrencesOfString:@"*" withString:@"%"]]];
+        }
         case NSContainsPredicateOperatorType: {
             return [NSString stringWithFormat:@"(%@ LIKE '%%%@%%')", leftSQLExpression, [self unquoteString:rightSQLExpression]];
         }
