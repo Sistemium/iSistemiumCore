@@ -293,77 +293,81 @@
 
     for (NSDictionary *picture in allPictures) {
         
-        NSString *entityName = picture[@"entityName"];
-        NSDictionary *attributes = picture[@"attributes"];
-        
-        if ([STMFunctions isNull:attributes[@"thumbnailPath"]] &&
-            [STMFunctions isNotNull:attributes[@"thumbnailHref"]]) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             
-            NSString *thumbnailHref = attributes[@"thumbnailHref"];
-            NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
-            NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
+            NSString *entityName = picture[@"entityName"];
+            NSDictionary *attributes = picture[@"attributes"];
             
-            if (thumbnailData) {
-            
-                NSString *xid = attributes[STMPersistingKeyPrimary];
-                NSString *fileName = [@[@"thumbnail_", xid, @".jpg"] componentsJoinedByString:@""];
+            if ([STMFunctions isNull:attributes[@"thumbnailPath"]] &&
+                [STMFunctions isNotNull:attributes[@"thumbnailHref"]]) {
                 
-                // we already have thumbnail data and in method below generate it via resizeImage: and UIImageJPEGRepresentation() again
-                // have to check if filename already exist?
+                NSString *thumbnailHref = attributes[@"thumbnailHref"];
+                NSURL *thumbnailUrl = [NSURL URLWithString: thumbnailHref];
+                NSData *thumbnailData = [[NSData alloc] initWithContentsOfURL: thumbnailUrl];
                 
-                NSMutableDictionary *mutablePicture = attributes.mutableCopy;
+                if (thumbnailData) {
+                    
+                    NSString *xid = attributes[STMPersistingKeyPrimary];
+                    NSString *fileName = [@[@"thumbnail_", xid, @".jpg"] componentsJoinedByString:@""];
+                    
+                    // we already have thumbnail data and in method below generate it via resizeImage: and UIImageJPEGRepresentation() again
+                    // have to check if filename already exist?
+                    
+                    NSMutableDictionary *mutablePicture = attributes.mutableCopy;
+                    
+                    [self saveThumbnailImageFile:fileName
+                                      forPicture:mutablePicture
+                                   fromImageData:thumbnailData
+                                  withEntityName:entityName];
+                    
+                    attributes = mutablePicture.copy;
+                    
+                }
                 
-                [self saveThumbnailImageFile:fileName
-                                  forPicture:mutablePicture
-                               fromImageData:thumbnailData
-                              withEntityName:entityName];
+                //---------
+                // mv it in if(thumbnailData){…} ?
+                NSDictionary *options = @{STMPersistingOptionFieldsToUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
                 
-                attributes = mutablePicture.copy;
-
+                [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
+                .then(^(NSDictionary *result){
+                    NSLog(@"thumbnail set %@ id: %@", entityName, attributes[STMPersistingKeyPrimary]);
+                })
+                .catch(^(NSError *error){
+                    NSLog(@"thumbnail set %@ id: %@ error:",entityName, attributes[STMPersistingKeyPrimary], [error localizedDescription]);
+                });
+                //---------
+                
+                return;
             }
             
-            //---------
-            // mv it in if(thumbnailData){…} ?
-            NSDictionary *options = @{STMPersistingOptionFieldsToUpdate : @[@"thumbnailPath"],STMPersistingOptionSetTs:@NO};
+            NSArray *pathComponents = [STMFunctions isNotNull:attributes[@"imagePath"]] ? [attributes[@"imagePath"] pathComponents] : nil;
             
-            [self.persistenceDelegate update:entityName attributes:attributes.copy options:options]
-            .then(^(NSDictionary *result){
-                NSLog(@"thumbnail set %@ id: %@", entityName, attributes[STMPersistingKeyPrimary]);
-            })
-            .catch(^(NSError *error){
-                NSLog(@"thumbnail set %@ id: %@ error:",entityName, attributes[STMPersistingKeyPrimary], [error localizedDescription]);
-            });
-            //---------
-            
-            continue;
-        }
-        
-        NSArray *pathComponents = [STMFunctions isNotNull:attributes[@"imagePath"]] ? [attributes[@"imagePath"] pathComponents] : nil;
-        
-        if (pathComponents.count == 0) {
-            
-            if ([STMFunctions isNotNull:attributes[@"href"]]) {
+            if (pathComponents.count == 0) {
                 
-                [self hrefProcessingForObject:picture.copy];
+                if ([STMFunctions isNotNull:attributes[@"href"]]) {
+                    
+                    [self hrefProcessingForObject:picture.copy];
+                    
+                } else {
+                    
+                    NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", attributes[@"id"]];
+                    [self.logger errorMessage:logMessage];
+                    [self deletePicture:picture];
+                    
+                }
                 
             } else {
                 
-                NSString *logMessage = [NSString stringWithFormat:@"checkingPicturesPaths picture %@ has no both imagePath and href, will be deleted", attributes[@"id"]];
-                [self.logger errorMessage:logMessage];
-                [self deletePicture:picture];
+                if (pathComponents.count > 2) {
+                    
+                    NSLog(@"pathComponents.count > 2");
+                    NSLog(@"this should not happened, was used earlier to convert image's paths from absolute to relative");
+                    
+                }
                 
             }
             
-        } else {
-            
-            if (pathComponents.count > 2) {
-                
-                NSLog(@"pathComponents.count > 2");
-                NSLog(@"this should not happened, was used earlier to convert image's paths from absolute to relative");
-                
-            }
-            
-        }
+        }];
         
     }
     
