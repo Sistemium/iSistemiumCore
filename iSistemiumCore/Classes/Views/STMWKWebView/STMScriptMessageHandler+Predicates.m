@@ -317,6 +317,8 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
             value = [value stringByReplacingOccurrencesOfString:@"-" withString:@""];
         } else if ([value isEqual:[NSNull null]]) {
             value = nil;
+        } else if ([value isKindOfClass:[NSMutableArray class]] || [value isKindOfClass:[NSArray class]]) {
+            
         } else {
             NSLog(@"value is neither a String nor Null, but it should be to get xid or uuid value");
             return nil;
@@ -337,7 +339,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
         value = [self normalizeValue:value className:className];
         
-    } else if (isRelationship) {
+    } else if (isRelationship && ![value isKindOfClass:[NSMutableArray class]] && ![value isKindOfClass:[NSArray class]]) {
         
         if (relationships[localKey].toMany) {
             
@@ -406,7 +408,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
         return [STMFunctions dateFromString:value];
         
-    } else if ([className isEqualToString:NSStringFromClass([NSData class])]) {
+    } else if ([className isEqualToString:NSStringFromClass([NSData class])] && [value isKindOfClass:[NSData class]]) {
         
         return [STMFunctions dataFromString:value];
         
