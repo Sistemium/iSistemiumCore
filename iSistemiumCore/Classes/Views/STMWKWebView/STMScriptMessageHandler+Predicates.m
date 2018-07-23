@@ -330,9 +330,10 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
         if (!className) {
             
-            NSLog(@"%@ have no class type for key %@", entityName, localKey);
-            return nil;
             
+            NSLog(@"%@ have no class type for key %@", entityName, localKey);
+//            return nil;
+            className = NSStringFromClass(NSString.class);
         }
         
         value = [self normalizeValue:value className:className];
