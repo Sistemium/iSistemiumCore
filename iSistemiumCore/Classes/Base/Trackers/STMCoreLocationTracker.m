@@ -564,8 +564,7 @@
     NSTimeInterval locationAge = -[lastLocation.timestamp timeIntervalSinceNow];
     
     if (lastLocation &&
-        self.tracking &&
-        locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL &&
+        (self.tracking || locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL) &&
         lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
 
         NSString *logMessage = @"have recent location for checkin";
