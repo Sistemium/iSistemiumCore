@@ -62,7 +62,7 @@
         
     }
     
-    if ([STMFunctions isNotNullAndTrue:attributes[@"isTemporary"]]) return nil;
+    //if ([STMFunctions isNotNullAndTrue:attributes[@"isTemporary"]]) return nil;
 
     return attributes;
 }
