@@ -123,7 +123,8 @@
 
 - (NSString *)webViewUrlString {
 
-//        return @"http://maxbook.local:3000";
+//    return @"http://lamac.local:8080";
+//        return @"http://localhost:8080";
     //    return @"https://isissales.sistemium.com/";
     //    return @"https://sistemium.com";
 
@@ -134,12 +135,18 @@
 
 - (NSString *)webViewAppManifestURI {
 
+    NSString *manifestUri = self.webViewStoryboardParameters[@"appManifestURI"];
+    
+//    if (manifestUri) {
+//        return @"http://lamac.local:8090/appcache.manifest";
+//    }
+//    return @"https://drv.sistemium.com/appcache.manifest";
 //        return nil;
     //    return @"https://isd.sistemium.com/app.manifest";
     //    return @"https://r50.sistemium.com/app.manifest";
     //    return @"https://sistemium.com/r50/tp/cache.manifest.php";
 
-    return self.webViewStoryboardParameters[@"appManifestURI"];
+    return manifestUri;
 
 }
 
