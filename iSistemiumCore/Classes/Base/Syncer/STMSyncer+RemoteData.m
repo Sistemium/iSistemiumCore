@@ -33,7 +33,9 @@
         NSString *errorMessage = [NSString stringWithFormat:@"Error update event handle with data: %@", error.localizedDescription];
 
         [self.logger errorMessage:errorMessage];
-
+#warning need to defantomize the received object
+//    } else {
+//        [self.defantomizingDelegate startDefantomization];
     }
 
 }
