@@ -408,7 +408,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
         return [STMFunctions dateFromString:value];
         
-    } else if ([className isEqualToString:NSStringFromClass([NSData class])] && [value isKindOfClass:[NSData class]]) {
+    } else if ([className isEqualToString:NSStringFromClass([NSData class])] && [value isKindOfClass:[NSString class]]) {
         
         return [STMFunctions dataFromString:value];
         
