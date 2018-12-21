@@ -221,6 +221,16 @@
             [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
         }
         
+        NSString *lifeTimePredicate = entity[@"lifeTimePredicate"];
+        
+        if ([STMFunctions isNotNull:lifeTimePredicate]) {
+            
+            NSPredicate *lifeTimeSubPredicate = [NSPredicate predicateWithFormat:lifeTimePredicate];
+            
+            [subpredicates addObject:lifeTimeSubPredicate];
+        
+        }
+        
         NSDictionary *relations = [self.persistenceDelegate objectRelationshipsForEntityName:prefixedName isToMany:@YES cascade:@NO];
         
         NSMutableDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
