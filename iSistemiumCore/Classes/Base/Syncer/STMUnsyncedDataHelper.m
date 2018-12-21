@@ -17,6 +17,8 @@
 
 #import "STMLazyDictionary.h"
 
+#import "STMClientEntityController.h"
+
 @interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
 
 @end
@@ -112,6 +114,14 @@
 
             NSError *error;
             NSDictionary *options = @{STMPersistingOptionLts: itemVersion};
+            
+            NSString *lastSent = itemData[@"ts"];
+            
+            if (!self.erroredObjectsByEntity[entityName].count){
+                
+                [STMClientEntityController clientEntityWithName:entityName setLastSent:lastSent];
+                
+            }
 
             [self.persistenceDelegate mergeSync:entityName attributes:itemData options:options error:&error];
 
@@ -144,8 +154,18 @@
         [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceCts > %@", [STMFunctions stringFromDate:[NSDate dateWithTimeIntervalSinceNow:-LOGMESSAGE_MAX_TIME_INTERVAL_TO_UPLOAD]]]];
 
     }
+    
+    NSDictionary *clientEntity = [STMClientEntityController clientEntityWithName:entityName];
+    
+    NSString* lastSent = clientEntity[@"lastSent"];
 
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs != nil and (deviceTs > lts OR lts == nil)"]];
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs != nil and deviceTs > lts"]];
+    
+    if (lastSent){
+        
+        [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs >= %@", lastSent]];
+        
+    }
 
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
 
@@ -381,7 +401,7 @@
     NSError *error = nil;
 
     NSMutableArray *subpredicates = [NSMutableArray array];
-
+    
     NSPredicate *unsyncedPredicate = [self predicateForUnsyncedObjectsWithEntityName:entityName];
 
     if (!unsyncedPredicate) return nil;

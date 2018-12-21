@@ -16,5 +16,7 @@
 + (void)clientEntityWithName:(NSString *)name
                      setETag:(NSString *)eTag;
 
++ (void)clientEntityWithName:(NSString *)name
+                     setLastSent:(NSString *)lastSent;
 
 @end

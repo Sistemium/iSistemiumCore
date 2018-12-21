@@ -32,6 +32,21 @@
     
 }
 
++ (void)clientEntityWithName:(NSString *)name setLastSent:(NSString *)lastSent {
+    
+    NSMutableDictionary *clientEntity = [self clientEntityWithName:name].mutableCopy;
+    
+    clientEntity[@"lastSent"] = lastSent ? lastSent : [NSNull null];
+    
+    NSError *error = nil;
+    
+    [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
+                               attributes:clientEntity
+                                  options:nil
+                                    error:&error];
+    
+}
+
 + (NSDictionary *)clientEntityWithName:(NSString *)name {
     
     name = [STMFunctions removePrefixFromEntityName:name];
