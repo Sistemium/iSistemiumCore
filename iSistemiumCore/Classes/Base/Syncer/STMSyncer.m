@@ -699,8 +699,8 @@
         NSLog(@"repeat download");
 //        self.needRepeatDownload = YES;
 //        return;
-        [[self.session logger] importantMessage:@"receiveData is stopping downloading"];
-        [self.dataDownloadingDelegate stopDownloading];
+//        [[self.session logger] importantMessage:@"receiveData is stopping downloading"];
+//        [self.dataDownloadingDelegate stopDownloading];
     }
 
     [self.dataDownloadingDelegate startDownloading];

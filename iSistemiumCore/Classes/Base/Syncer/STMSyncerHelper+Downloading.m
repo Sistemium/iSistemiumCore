@@ -81,7 +81,12 @@
 
 
 - (void)downloadEntityName:(NSString *)entityName {
-    [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
+    
+    if (![self operationForEntityName:entityName]) {
+        [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
+    } else {
+        NSLog(@"ignore existing %@", entityName);
+    }
 }
 
 
@@ -122,8 +127,8 @@
     @synchronized (self) {
 
         if (self.downloadingState && !entitiesNames) {
-            NSLog(@"Can't repeat downloading");
-            return self.downloadingState;
+            NSLog(@"Continue downloading");
+//            return self.downloadingState;
         }
         
         STMDataDownloadingState *state;
