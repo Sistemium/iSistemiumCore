@@ -332,9 +332,10 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
         
         if (!className) {
             
-            NSLog(@"%@ have no class type for key %@", entityName, localKey);
-            return nil;
             
+            NSLog(@"%@ have no class type for key %@", entityName, localKey);
+//            return nil;
+            className = NSStringFromClass(NSString.class);
         }
         
         value = [self normalizeValue:value className:className];
@@ -367,7 +368,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     __kindof NSObject *argument = [NSNull null];
     
     if ([value isKindOfClass:[NSString class]]) {
-        value = [(NSString *)value stringByRemovingPercentEncoding];
+//        value = [(NSString *)value stringByRemovingPercentEncoding];
     }
     
     compOp = compOp.lowercaseString;
@@ -375,7 +376,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     if ([compOp hasPrefix:@"like"]) {
         
         if ([compOp hasSuffix:@"i"]) compOp = @"like[cd]";
-        if (value) value = [NSString stringWithFormat:@"*%@*", value];
+        if (value) value = [(NSString *)value stringByReplacingOccurrencesOfString:@"%" withString:@"*"];
         
     }
     
