@@ -456,7 +456,7 @@ int counter = 0;
         int counterWas = counter;
         int count = 0;
 
-        while (count++ < 50 && counter == counterWas) {
+        while (count++ < 150 && counter == counterWas) {
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
         }
 
