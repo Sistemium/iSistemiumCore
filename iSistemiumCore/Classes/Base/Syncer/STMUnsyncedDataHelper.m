@@ -115,11 +115,9 @@
             NSError *error;
             NSDictionary *options = @{STMPersistingOptionLts: itemVersion};
             
-            NSString *lastSent = itemData[@"ts"];
-            
             if (!self.erroredObjectsByEntity[entityName].count){
                 
-                [STMClientEntityController clientEntityWithName:entityName setLastSent:lastSent];
+                [STMClientEntityController clientEntityWithName:entityName setLastSent:itemVersion];
                 
             }
 
@@ -158,6 +156,10 @@
     NSDictionary *clientEntity = [STMClientEntityController clientEntityWithName:entityName];
     
     NSString* lastSent = STMIsNull(clientEntity[@"lastSent"], @"");
+    
+    if ([STMFunctions isEmpty:lastSent]) {
+        lastSent = @"";
+    }
 
     [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts"]];
     
