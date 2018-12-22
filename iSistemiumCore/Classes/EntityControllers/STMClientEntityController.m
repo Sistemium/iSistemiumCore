@@ -36,14 +36,17 @@
     
     NSMutableDictionary *clientEntity = [self clientEntityWithName:name].mutableCopy;
     
-    clientEntity[@"lastSent"] = lastSent ? lastSent : [NSNull null];
+    NSDictionary *options = @{STMPersistingOptionSetTs: @NO,
+                              STMPersistingOptionFieldsToUpdate: @[@"lastSent"]};
+    
+    clientEntity[@"lastSent"] = STMIsNull(lastSent, @"");
     
     NSError *error = nil;
     
-    [[self persistenceDelegate] mergeSync:[self clientEntityClassName]
-                               attributes:clientEntity
-                                  options:nil
-                                    error:&error];
+    [[self persistenceDelegate] updateSync:[self clientEntityClassName]
+                                attributes:clientEntity
+                                   options:options
+                                     error:&error];
     
 }
 

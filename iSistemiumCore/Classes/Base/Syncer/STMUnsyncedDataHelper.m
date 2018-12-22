@@ -157,15 +157,11 @@
     
     NSDictionary *clientEntity = [STMClientEntityController clientEntityWithName:entityName];
     
-    NSString* lastSent = clientEntity[@"lastSent"];
+    NSString* lastSent = STMIsNull(clientEntity[@"lastSent"], @"");
 
-    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs != nil and deviceTs > lts"]];
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs > lts"]];
     
-    if (lastSent){
-        
-        [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs >= %@", lastSent]];
-        
-    }
+    [subpredicates addObject:[NSPredicate predicateWithFormat:@"deviceTs >= %@", lastSent]];
 
     NSPredicate *predicate = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
 
