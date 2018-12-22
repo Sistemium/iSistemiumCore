@@ -245,12 +245,16 @@
 
 }
 
+- (NSString *)phantomFix:(NSString *)where {
+    return [where stringByReplacingOccurrencesOfString:@"[isFantom] = '0'" withString:@"+[isFantom] = 0"];
+}
+
 - (NSArray *)selectFrom:(NSString *)tableName columns:(NSString *)columns where:(NSString *)where orderBy:(NSString *)orderBy {
 
     NSMutableArray *rez = @[].mutableCopy;
 
     if (where.length) {
-        where = [@" WHERE " stringByAppendingString:where];
+        where = [@" WHERE " stringByAppendingString:[self phantomFix:where]];
     } else {
         where = @"";
     }
