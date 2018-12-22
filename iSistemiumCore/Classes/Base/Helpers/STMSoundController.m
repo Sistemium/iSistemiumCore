@@ -269,7 +269,7 @@ static void completionCallback(SystemSoundID sysSound, void *data) {
 #pragma mark - AVSpeechSynthesizerDelegate
 
 - (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance {
-    [self.sender didFinishSpeaking];
+//    [self.sender didFinishSpeaking];
 }
 
 
