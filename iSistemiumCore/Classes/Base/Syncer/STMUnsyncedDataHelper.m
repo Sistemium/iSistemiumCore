@@ -115,7 +115,9 @@
             NSError *error;
             NSDictionary *options = @{STMPersistingOptionLts: itemVersion};
             
-            if (!self.erroredObjectsByEntity[entityName].count){
+            if (!self.erroredObjectsByEntity[entityName].count
+                && !self.pendingObjectsByEntity[entityName].count
+                && !self.syncedPendingObjectsByEntity[entityName].count){
                 
                 [STMClientEntityController clientEntityWithName:entityName setLastSent:itemVersion];
                 
