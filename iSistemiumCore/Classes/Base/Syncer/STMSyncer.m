@@ -15,11 +15,10 @@
 #import "STMClientDataController.h"
 
 #import "STMSyncer+RemoteData.h"
+#import "STMSocketTransport.h"
 
 
 @interface STMSyncer ()
-
-@property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 @property (nonatomic, strong) NSDictionary *settings;
 @property (nonatomic, strong) NSTimer *syncTimer;

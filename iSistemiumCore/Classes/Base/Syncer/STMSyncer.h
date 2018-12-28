@@ -12,7 +12,7 @@
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
-#import "STMSocketTransport+Persisting.h"
+#import "STMPersistingWithHeadersAsync.h"
 
 @interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
