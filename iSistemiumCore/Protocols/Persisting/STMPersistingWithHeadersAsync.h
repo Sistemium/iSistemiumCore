@@ -29,5 +29,10 @@ completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncArrayResultCallback)c
                      options:(NSDictionary *)options
 completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler;
 
+- (void)           destroyAsync:(NSString *)entityName
+                  identifier:(NSString *)identifier
+                     options:(NSDictionary *)options
+completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler;
+
 
 @end

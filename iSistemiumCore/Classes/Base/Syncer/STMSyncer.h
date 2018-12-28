@@ -12,6 +12,7 @@
 #import "STMDataSyncing.h"
 #import "STMDefantomizing.h"
 #import "STMDataDownloading.h"
+#import "STMSocketTransport+Persisting.h"
 
 @interface STMSyncer : STMCoreController <STMSyncer, STMSocketConnectionOwner, STMDataSyncingSubscriber, STMDataDownloadingOwner, STMDefantomizingOwner>
 
@@ -25,6 +26,7 @@
 @property (nonatomic, readwrite) BOOL isReceivingData;
 @property (nonatomic, readwrite) BOOL isSendingData;
 @property (nonatomic, strong) NSString *socketUrlString;
+@property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 - (void)checkSocket;
 

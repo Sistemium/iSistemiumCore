@@ -98,6 +98,27 @@
 
 }
 
+- (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options
+   completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
+
+    NSString *resource = [STMEntityController resourceForEntity:entityName];
+
+    NSDictionary *value = @{@"method": kSocketDestroyMethod,
+                            @"resource": resource,
+                            @"id": identifier};
+
+    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+
+        if (!success) {
+            return completionHandler(NO, nil, nil, error);
+        }
+
+        [self respondOnData:data dictionaryHandler:completionHandler];
+
+    }];
+    
+}
+
 
 #pragma mark - Responders
 

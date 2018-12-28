@@ -14,7 +14,6 @@
 #import "STMClientEntityController.h"
 #import "STMClientDataController.h"
 
-#import "STMSocketTransport+Persisting.h"
 #import "STMSyncer+RemoteData.h"
 
 

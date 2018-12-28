@@ -30,6 +30,8 @@
     
     NSDictionary *parameters = scriptMessage.body;
     NSString *entityName = parameters[@"entity"];
+    
+    NSDictionary *options = parameters[@"options"];
 
     if (!entityName) {
         return [self rejectWithErrorMessage:@"entity is not specified"];
@@ -46,6 +48,32 @@
         if (!xidString || [xidString isKindOfClass:NSNull.class]) {
             return [self rejectWithErrorMessage:@"empty xid"];
         }
+        
+        if (options[DIRECT_ENTITY_OPTION]) {
+            
+            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+                
+                [STMSyncer.sharedInstance.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+                    
+                    id errorHeader = headers[@"error"];
+                    
+                    if (errorHeader) {
+                        
+                        error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                        
+                    }
+                    
+                    if (error) {
+                        resolve(error);
+                    } else {
+                        resolve(result);
+                    }
+                    
+                }];
+                
+            }];
+            
+        }
             
         return [self findEntityName:entityName xidString:xidString];
         
@@ -56,7 +84,30 @@
     
     if (error) return [AnyPromise promiseWithValue:error];
     
-    NSDictionary *options = parameters[@"options"];
+    if (options[DIRECT_ENTITY_OPTION]) {
+        
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+            
+            [STMSyncer.sharedInstance.socketTransport findAllAsync:entityName predicate:predicate options:nil completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+                
+                    id errorHeader = headers[@"error"];
+                
+                    if (errorHeader) {
+                        
+                        error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                        
+                    }
+                
+                    if (error) {
+                        resolve(error);
+                    } else {
+                        resolve(result);
+                    }
+            }];
+            
+        }];
+        
+    }
     
     return [self.persistenceDelegate findAll:entityName
                                    predicate:predicate
@@ -125,6 +176,29 @@
         return;
     }
     
+    NSDictionary *options = parameters[@"options"];
+    
+    if (options[DIRECT_ENTITY_OPTION]) {
+        
+        [STMSyncer.sharedInstance.socketTransport mergeAsync:entityName attributes:parametersData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+            id errorHeader = headers[@"error"];
+            
+            if (errorHeader) {
+                
+                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                
+            }
+            
+            if (error) {
+                completionHandler(YES, @[result], nil);
+            } else {
+                completionHandler(YES, @[result], nil);
+            }
+            
+        }];
+        
+    }
+    
     [self.persistenceDelegate mergeMany:entityName
                          attributeArray:parametersData
                                 options:nil]
@@ -157,6 +231,32 @@
     
     if (!xidString) {
         return [self rejectWithErrorMessage:@"empty xid"];
+    }
+    
+    NSDictionary *options = parameters[@"options"];
+    
+    if (options[DIRECT_ENTITY_OPTION]) {
+        
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+            
+            [STMSyncer.sharedInstance.socketTransport destroyAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+                id errorHeader = headers[@"error"];
+                
+                if (errorHeader) {
+                    
+                    error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                    
+                }
+                
+                if (error) {
+                    resolve(error);
+                } else {
+                    resolve(result);
+                }
+            }];
+            
+        }];
+        
     }
     
     return [self.persistenceDelegate destroy:entityName
