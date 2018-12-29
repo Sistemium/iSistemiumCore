@@ -113,7 +113,20 @@
             return completionHandler(NO, nil, nil, error);
         }
 
-        [self respondOnData:data dictionaryHandler:completionHandler];
+        STSocketsJSDataResponse *decoded = [self STSocketsJSDataResponseFromSocketIO:data];
+        
+        if ([decoded isKindOfClass:STSocketsJSDataResponseError.class]) {
+            
+            STSocketsJSDataResponseError *errorResponse = (STSocketsJSDataResponseError *) decoded;
+            [STMFunctions error:&error withMessage:errorResponse.errorText];
+            completionHandler(NO, nil, errorResponse.headers, error);
+            
+        } else {
+            
+            STSocketsJSDataResponseSuccessObject *response = (STSocketsJSDataResponseSuccessObject *) decoded;
+            completionHandler(YES, response.data, response.headers, nil);
+            
+        }
 
     }];
     

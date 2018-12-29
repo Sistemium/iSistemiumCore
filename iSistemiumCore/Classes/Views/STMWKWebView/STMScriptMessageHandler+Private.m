@@ -88,7 +88,7 @@
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
-            [self.socketTransport findAllAsync:entityName predicate:predicate options:nil completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+            [self.socketTransport findAllAsync:entityName predicate:predicate options:@{} completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
                 
                     id errorHeader = headers[@"error"];
                 
@@ -180,22 +180,35 @@
     
     if (options[DIRECT_ENTITY_OPTION]) {
         
-        [self.socketTransport mergeAsync:entityName attributes:parametersData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
-            id errorHeader = headers[@"error"];
+        for (NSDictionary *data in parametersData) {
             
-            if (errorHeader) {
+            NSMutableArray *response = @[].mutableCopy;
+            
+            [self.socketTransport mergeAsync:entityName attributes:data options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+                id errorHeader = headers[@"error"];
                 
-                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                if (errorHeader) {
+                    
+                    error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                    
+                }
                 
-            }
+                if (error) {
+                    completionHandler(NO, nil, error);
+                } else {
+                    [response addObject:result];
+                    if (((NSArray *)parametersData).count == response.count){
+                        
+                        completionHandler(YES, response.copy, nil);
+                        
+                    }
+                }
+                
+            }];
             
-            if (error) {
-                completionHandler(YES, @[result], nil);
-            } else {
-                completionHandler(YES, @[result], nil);
-            }
-            
-        }];
+        }
+        
+        return;
         
     }
     
