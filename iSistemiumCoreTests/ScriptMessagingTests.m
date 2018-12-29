@@ -13,11 +13,19 @@
 #import "STMScriptMessageHandler+Predicates.h"
 #import "STMFakePersisting.h"
 #import "STMFunctions.h"
+#import "STMSocketTransport+Persisting.h"
+
 
 #define SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION @"Expect no errors"
 #define SCRIPT_MESSAGING_TEST_TIMEOUT 2
 #define SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS \
 [self waitForExpectationsWithTimeout:SCRIPT_MESSAGING_TEST_TIMEOUT handler:nil]
+
+#define TEST_SOCKET_ENTITY_NAME @"STMSetting"
+#define TEST_SOCKET_URL @"https://socket2.sistemium.com/socket.io-client"
+#define TEST_SOCKET_TIMEOUT 5
+
+
 
 @interface ScriptMessagingTestsExpectation : NSObject
 
@@ -29,7 +37,7 @@
 
 @end
 
-@interface ScriptMessagingTests : XCTestCase <STMScriptMessagingOwner>
+@interface ScriptMessagingTests : XCTestCase <STMScriptMessagingOwner, STMSocketConnectionOwner>
 
 @property (nonatomic, strong) STMModeller *modeller;
 @property (nonatomic, strong) STMScriptMessageHandler *scriptMessenger;
@@ -38,6 +46,8 @@
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, ScriptMessagingTestsExpectation *> *expectations;
 @property (nonatomic) NSUInteger requestId;
+
+@property (nonatomic) BOOL isReady;
 
 @end
 
@@ -86,12 +96,27 @@
         self.fakePerster = [STMFakePersisting fakePersistingWithModelName:modelName options:nil];
         self.modeller = self.fakePerster;
         self.scriptMessenger.persistenceDelegate = self.fakePerster;
+        
+        self.scriptMessenger.socketTransport = [STMSocketTransport transportWithUrl:TEST_SOCKET_URL
+                                            andEntityResource:TEST_SOCKET_ENTITY_NAME
+                                                        owner:self
+                                      remoteDataEventHandling:nil];
+        [self waitConnection];
+        
         self.scriptMessagingDelegate = self.scriptMessenger;
         
         self.requestId = 0;
     }
     
     self.fakePerster.options = nil;
+    
+}
+
+- (void)waitConnection {
+    
+    [self keyValueObservingExpectationForObject:self keyPath:@"isReady" expectedValue:@YES];
+    
+    [self waitForExpectationsWithTimeout:TEST_SOCKET_TIMEOUT handler:nil];
     
 }
 
@@ -304,6 +329,60 @@
     SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
 }
+
+- (void)testSocketSource {
+    
+    NSString *entityName = @"STMLogMessage";
+    NSString *xid = [STMFunctions uuidString];
+
+    self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
+
+    NSDictionary *body = @{@"entity":entityName, @"options":@{DIRECT_ENTITY_OPTION:@YES}};
+
+    [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body] expect:@"404"];
+    
+    STMScriptMessage *message = [self doRequestName:WK_MESSAGE_FIND_ALL
+                                               body:body
+                                        description:@"Expect no errors"];
+    
+    NSNumber *savedCount = self.expectations[message.body[@"requestId"]].count;
+    
+    [self.scriptMessagingDelegate receiveFindMessage:message];
+
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+
+    NSError *error;
+
+    NSDictionary* result = [self.fakePerster findSync:entityName identifier:xid options:nil error:&error];
+
+    XCTAssertNil(result);
+
+    XCTAssertNil(error);
+
+    [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid} forKey:@"data" inDictionary:body]
+                   expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+
+    [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body] expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+
+    result = [self.fakePerster findSync:entityName identifier:xid options:nil error:&error];
+
+    XCTAssertNil(result);
+
+    [self doDestroyRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
+                    expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+    
+    [self doFindAllRequest:body expectCount:savedCount];
+    
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+    
+}
+
 
 
 - (void)testSubscriptions {
@@ -531,5 +610,29 @@
     
 }
 
+#pragma mark - STMSocketConnectionOwner
+
+- (void)socketReceiveAuthorization {
+    
+    NSLog(@"STMSocketTransportTests socketReceiveAuthorization");
+    self.isReady = YES;
+    
+}
+
+- (void)socketWillClosed {
+    NSLog(@"STMSocketTransportTests socketWillClosed");
+}
+
+- (void)socketLostConnection {
+    NSLog(@"STMSocketTransportTests socketLostConnection");
+}
+
+- (NSTimeInterval)timeout {
+    return TEST_SOCKET_TIMEOUT;
+}
+
+- (void)socketAuthorizationError:(NSError *)error {
+    // TODO: test socketAuthorizationError
+}
 
 @end
