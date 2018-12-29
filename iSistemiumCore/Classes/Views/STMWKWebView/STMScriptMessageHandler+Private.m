@@ -53,7 +53,7 @@
             
             return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
                 
-                [STMSyncer.sharedInstance.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+                [self.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
                     
                     id errorHeader = headers[@"error"];
                     
@@ -88,7 +88,7 @@
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
-            [STMSyncer.sharedInstance.socketTransport findAllAsync:entityName predicate:predicate options:nil completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+            [self.socketTransport findAllAsync:entityName predicate:predicate options:nil completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
                 
                     id errorHeader = headers[@"error"];
                 
@@ -180,7 +180,7 @@
     
     if (options[DIRECT_ENTITY_OPTION]) {
         
-        [STMSyncer.sharedInstance.socketTransport mergeAsync:entityName attributes:parametersData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+        [self.socketTransport mergeAsync:entityName attributes:parametersData options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
             id errorHeader = headers[@"error"];
             
             if (errorHeader) {
@@ -239,7 +239,7 @@
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
-            [STMSyncer.sharedInstance.socketTransport destroyAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+            [self.socketTransport destroyAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
                 id errorHeader = headers[@"error"];
                 
                 if (errorHeader) {

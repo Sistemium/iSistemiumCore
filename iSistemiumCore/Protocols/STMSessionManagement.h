@@ -16,6 +16,7 @@
 #import "STMDataSyncingSubscriber.h"
 #import "STMLogging.h"
 #import "STMFiling.h"
+#import "STMPersistingWithHeadersAsync.h"
 
 typedef NS_ENUM(NSInteger, STMSessionStatus) {
     STMSessionIdle,
@@ -33,6 +34,7 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 @property (readonly) BOOL isReceivingData;
 @property (readonly) BOOL isSendingData;
 @property (readonly) NSString *socketUrlString;
+@property (nonatomic, strong) id <STMSocketConnection, STMPersistingWithHeadersAsync> socketTransport;
 
 - (void)sendData; // only used for checkClientData — may be do it some other way
 - (void)receiveData;

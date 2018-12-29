@@ -45,6 +45,7 @@
     if (!_scriptMessageHandler) {
         STMScriptMessageHandler *scriptMessageHandler = [[STMScriptMessageHandler alloc] initWithOwner:self];
         scriptMessageHandler.persistenceDelegate = self.persistenceDelegate;
+        scriptMessageHandler.socketTransport = [STMCoreSessionManager sharedManager].currentSession.syncer.socketTransport;
         _scriptMessageHandler = scriptMessageHandler;
     }
     return _scriptMessageHandler;

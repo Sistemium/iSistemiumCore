@@ -15,6 +15,7 @@
 #import "STMOperationQueue.h"
 #import "STMImagePickerOwnerProtocol.h"
 #import "STMSpinnerView.h"
+#import "STMPersistingWithHeadersAsync.h"
 
 @interface STMScriptMessagingSubscription : NSObject
 
@@ -36,6 +37,8 @@
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
 @property (nonatomic, weak) id <STMPersistingPromised, STMPersistingObserving, STMModelling, STMPersistingSync> persistenceDelegate;
+
+@property (nonatomic, strong) id <STMPersistingWithHeadersAsync> socketTransport;
 
 @property (nonatomic) BOOL waitingPhoto;
 @property (nonatomic, strong) NSString *photoEntityName;
