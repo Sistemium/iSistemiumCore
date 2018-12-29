@@ -14,6 +14,8 @@
 #pragma mark - STMPersistingWithHeadersAsync
 
 - (void)findAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
+    
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
 
     NSString *errorMessage = [self preFindAsyncCheckForEntityName:entityName
                                                        identifier:identifier];
@@ -42,6 +44,8 @@
 }
 
 - (void)findAllAsync:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncArrayResultCallback)completionHandler {
+    
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
 
     NSString *errorMessage = [self preFindAllAsyncCheckForEntityName:entityName];
 
@@ -56,9 +60,10 @@
     NSString *resource = [STMEntityController resourceForEntity:entityName];
 
     NSDictionary *value = @{@"method": kSocketFindAllMethod,
-            @"resource": resource,
-            @"options": options
-    };
+                            @"resource": resource,
+                            @"options": options,
+                            @"params": options[@"params"]
+                                };
 
     [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
 
@@ -73,6 +78,8 @@
 }
 
 - (void)mergeAsync:(NSString *)entityName attributes:(NSDictionary *)attributes options:(NSDictionary *)options completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
+    
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
 
     NSString *resource = [STMEntityController resourceForEntity:entityName];
 
@@ -100,6 +107,8 @@
 
 - (void)destroyAsync:(NSString *)entityName identifier:(NSString *)identifier options:(NSDictionary *)options
    completionHandlerWithHeaders:(STMPersistingWithHeadersAsyncDictionaryResultCallback)completionHandler {
+    
+    entityName = [STMFunctions addPrefixToEntityName:entityName];
 
     NSString *resource = [STMEntityController resourceForEntity:entityName];
 

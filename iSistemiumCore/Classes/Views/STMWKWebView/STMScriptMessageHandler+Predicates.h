@@ -19,4 +19,6 @@
                             whereFilter:(STMScriptMessagingWhereFilterDictionary *)whereFilter
                                   error:(NSError **)error;
 
+- (NSDictionary *)paramsForScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error;
+
 @end

@@ -332,7 +332,7 @@
 
 - (void)testSocketSource {
     
-    NSString *entityName = @"STMLogMessage";
+    NSString *entityName = @"LogMessage";
     NSString *xid = [STMFunctions uuidString];
 
     self.fakePerster.options = @{STMFakePersistingOptionInMemoryDB};
@@ -340,14 +340,6 @@
     NSDictionary *body = @{@"entity":entityName, @"options":@{DIRECT_ENTITY_OPTION:@YES}};
 
     [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body] expect:@"404"];
-    
-    STMScriptMessage *message = [self doRequestName:WK_MESSAGE_FIND_ALL
-                                               body:body
-                                        description:@"Expect no errors"];
-    
-    NSNumber *savedCount = self.expectations[message.body[@"requestId"]].count;
-    
-    [self.scriptMessagingDelegate receiveFindMessage:message];
 
     SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
 
@@ -359,12 +351,18 @@
 
     XCTAssertNil(error);
 
-    [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid} forKey:@"data" inDictionary:body]
+    [self doUpdateRequest:[STMFunctions setValue:@{@"id": xid, @"source": xid} forKey:@"data" inDictionary:body]
                    expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
 
     SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
 
     [self doFindRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body] expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
+    
+    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
+    
+    NSDictionary *filter = [STMFunctions setValue:@{@"source": xid} forKey:@"filter" inDictionary:body];
+    
+    [self doFindAllRequest:filter expectCount:@(1)];
 
     SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
 
@@ -375,10 +373,6 @@
     [self doDestroyRequest:[STMFunctions setValue:xid forKey:@"id" inDictionary:body]
                     expect:SCRIPT_MESSAGING_TEST_NO_ERRORS_DESCRIPTION];
 
-    SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
-    
-    [self doFindAllRequest:body expectCount:savedCount];
-    
     SCRIPT_MESSAGING_TEST_WAITFOR_EXPECTATIONS;
     
 }

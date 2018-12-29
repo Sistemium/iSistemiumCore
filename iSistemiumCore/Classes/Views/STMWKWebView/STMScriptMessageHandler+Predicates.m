@@ -72,6 +72,61 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
     
 }
 
+- (NSDictionary *)paramsForScriptMessage:(WKScriptMessage *)scriptMessage error:(NSError **)error {
+    
+    if (![scriptMessage.body isKindOfClass:[NSDictionary class]]) {
+        
+        [self error:error withMessage:@"message body is not a Dictionary"];
+        return nil;
+        
+    }
+    
+    NSDictionary *body = scriptMessage.body;
+    
+    if (![body[@"entity"] isKindOfClass:[NSString class]]) {
+        
+        [self error:error withMessage:@"message body have no entity name"];
+        return nil;
+        
+    }
+        
+    if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND]) {
+        
+        if (![body[@"id"] isKindOfClass:[NSString class]]) {
+            
+            [self error:error withMessage:[NSString stringWithFormat:@"where is no xid in %@ script message", scriptMessage.name]];
+            return nil;
+            
+        }
+        
+        NSData *xid = [STMFunctions xidDataFromXidString:body[@"id"]];
+        
+        return @{@"xid":xid};
+        
+    } else if ([scriptMessage.name isEqualToString:WK_MESSAGE_FIND_ALL]) {
+        
+        NSDictionary *filter = ([body[@"filter"] isKindOfClass:[self filterClass]]) ? body[@"filter"] : @{};
+        
+        NSMutableDictionary *mFilter = filter.mutableCopy;
+        
+        NSDictionary *whereFilter = ([body[@"where"] isKindOfClass:[self whereFilterClass]]) ? body[@"where"] : nil;
+        
+        if (whereFilter) {
+            
+            [mFilter setObject:whereFilter forKey:@"where:"];
+            
+        }
+        
+        return mFilter.copy;
+        
+    } else {
+        
+        [self error:error withMessage:[NSString stringWithFormat:@"unknown script message with name %@", scriptMessage.name]];
+        return nil;
+        
+    }
+    
+}
 
 #pragma mark - Private helpers
 
