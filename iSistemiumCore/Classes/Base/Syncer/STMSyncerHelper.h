@@ -14,6 +14,7 @@
 @interface STMSyncerHelper : STMCoreController
 
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+@property (nonatomic) NSTimeInterval aliveTimeout;
 
 @end
 

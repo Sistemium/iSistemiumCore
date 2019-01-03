@@ -25,6 +25,9 @@
 @interface STMDownloadingOperation : STMOperation
 
 @property (nonatomic, strong) NSString *entityName;
+@property (nonatomic, strong) NSDate *lastAlive;
+
+- (void)updateAlive;
 
 @end
 
@@ -74,6 +77,15 @@
     NSLog(@"cancel downloading entityName: %@", self.entityName);
 }
 
+- (void)updateAlive {
+    self.lastAlive = [NSDate date];
+}
+
+- (BOOL)isNotAlive {
+    NSDate *untilIsAlive = [NSDate dateWithTimeInterval:30 sinceDate:self.lastAlive];
+    return [untilIsAlive compare:[NSDate date]] == kCFCompareLessThan;
+}
+
 @end
 
 
@@ -82,7 +94,13 @@
 
 - (void)downloadEntityName:(NSString *)entityName {
     
-    if (![self operationForEntityName:entityName]) {
+    STMDownloadingOperation *existing = [self operationForEntityName:entityName];
+    
+    if ([existing isNotAlive]) {
+        [existing cancel];
+    }
+    
+    if (!existing || existing.isCancelled) {
         [self addOperation:[[STMDownloadingOperation asynchronousOperation] initWithEntityName:entityName]];
     } else {
         NSLog(@"ignore existing %@", entityName);
@@ -300,11 +318,13 @@
 
     }
 
-    STMOperation *op = [self.downloadingState.queue operationForEntityName:entityName];
+    STMDownloadingOperation *op = [self.downloadingState.queue operationForEntityName:entityName];
 
     if (!op) return [self.logger warningMessage:@"no operation"];
 
     if (op.isCancelled) return [self.logger warningMessage:@"operation is cancelled"];
+    
+    [op updateAlive];
 
     [self.dataDownloadingOwner receiveData:entityName offset:offset];
 
