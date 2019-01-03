@@ -59,13 +59,18 @@
 
     NSString *resource = [STMEntityController resourceForEntity:entityName];
 
-    NSDictionary *value = @{@"method": kSocketFindAllMethod,
-                            @"resource": resource,
-                            @"options": options,
-                            @"params": options[@"params"]
-                                };
+    NSMutableDictionary *value = @{@"method": kSocketFindAllMethod,
+                                   @"resource": resource,
+                                   @"options": options
+                                   }.mutableCopy;
+    
+    if ([STMFunctions isNotNull:options] && [options.allKeys containsObject:@"params"]){
+        
+        value[@"params"] = options[@"params"];
+        
+    }
 
-    [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {
+    [self socketSendEvent:STMSocketEventJSData withValue:value.copy completionHandler:^(BOOL success, NSArray *data, NSError *error) {
 
         if (!success) {
             return completionHandler(NO, nil, nil, error);
