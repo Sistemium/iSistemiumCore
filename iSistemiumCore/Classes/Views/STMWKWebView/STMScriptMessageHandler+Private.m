@@ -49,7 +49,7 @@
             return [self rejectWithErrorMessage:@"empty xid"];
         }
         
-        if (options[DIRECT_ENTITY_OPTION]) {
+        if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
             
             return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
                 
@@ -84,7 +84,7 @@
     
     if (error) return [AnyPromise promiseWithValue:error];
     
-    if (options[DIRECT_ENTITY_OPTION]) {
+    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
         
         NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
         
@@ -182,7 +182,7 @@
     
     NSDictionary *options = parameters[@"options"];
     
-    if (options[DIRECT_ENTITY_OPTION]) {
+    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
         
         for (NSDictionary *data in parametersData) {
             
@@ -252,7 +252,7 @@
     
     NSDictionary *options = parameters[@"options"];
     
-    if (options[DIRECT_ENTITY_OPTION]) {
+    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
