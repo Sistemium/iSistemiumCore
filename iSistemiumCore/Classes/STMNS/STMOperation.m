@@ -63,7 +63,7 @@
         self.finishedIn = -[self.startedAt timeIntervalSinceNow];
     }
 
-    if (!_finished && !self.isCancelled && _executing) {
+    if (!_finished) {
         [self willChangeValueForKey:@"isFinished"];
         _finished = YES;
         [self didChangeValueForKey:@"isFinished"];
