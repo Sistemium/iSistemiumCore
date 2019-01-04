@@ -26,8 +26,9 @@
 
 @property (nonatomic, strong) NSString *entityName;
 @property (nonatomic, strong) NSDate *lastAlive;
+@property (nonatomic, strong) NSString *lastOffset;
 
-- (void)updateAlive;
+- (void)updateAlive:(NSString *)offset;
 
 @end
 
@@ -77,8 +78,9 @@
     NSLog(@"cancel downloading entityName: %@", self.entityName);
 }
 
-- (void)updateAlive {
+- (void)updateAlive:(NSString *)offset {
     self.lastAlive = [NSDate date];
+    self.lastOffset = offset;
 }
 
 - (BOOL)isNotAlive {
@@ -320,11 +322,24 @@
 
     STMDownloadingOperation *op = [self.downloadingState.queue operationForEntityName:entityName];
 
-    if (!op) return [self.logger warningMessage:@"no operation"];
-
-    if (op.isCancelled) return [self.logger warningMessage:@"operation is cancelled"];
+    if (!op) {
+        [self.logger warningMessage:@"no operation"];
+        NSLog(@"no operation on entity: %@", entityName);
+        return;
+    }
     
-    [op updateAlive];
+    if (op.isCancelled) {
+        [self.logger warningMessage:@"operation is cancelled"];
+        NSLog(@"operation isCancelled on entity: %@", entityName);
+        return;
+    }
+    
+    if ([op.lastOffset compare:offset] == kCFCompareGreaterThan) {
+        NSLog(@"operation lastOffset is greater on %@", entityName);
+        return;
+    }
+    
+    [op updateAlive:offset];
 
     [self.dataDownloadingOwner receiveData:entityName offset:offset];
 
