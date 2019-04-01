@@ -458,7 +458,7 @@
         [self.owner callbackWithError:error.localizedDescription parameters:self.takePhotoMessageParameters];
         
     })
-    .always(^(){
+    .ensure(^(){
         self.waitingPhoto = NO;
     });
     
