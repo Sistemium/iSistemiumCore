@@ -214,11 +214,12 @@
         
         NSPredicate *datePredicate = [NSPredicate predicateWithFormat:@"%@ < %@", dateField, terminatorDate];
         NSPredicate *unsyncedPredicate = [self.session.syncer predicateForUnsyncedObjectsWithEntityName:prefixedName];
+        NSPredicate *deviceTsIsNull = [NSPredicate predicateWithFormat:@"deviceTs == %@", [NSNull null]];
         
         NSMutableArray *subpredicates = @[datePredicate].mutableCopy;
         
         if (unsyncedPredicate) {
-            [subpredicates addObject:[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate]];
+            [subpredicates addObject:[[NSCompoundPredicate alloc] initWithType:NSOrPredicateType subpredicates:@[[NSCompoundPredicate notPredicateWithSubpredicate:unsyncedPredicate], deviceTsIsNull]]];
         }
         
         NSString *lifeTimePredicate = entity[@"lifeTimePredicate"];
@@ -234,7 +235,7 @@
         NSDictionary *relations = [self.persistenceDelegate objectRelationshipsForEntityName:prefixedName isToMany:@YES cascade:@NO];
         
         NSMutableDictionary *options = @{STMPersistingOptionRecordstatuses: @NO,
-                                         STMPersistingOptionPageSize: @(1500)
+                                         STMPersistingOptionPageSize: @(1750)
                                          }.mutableCopy;
         
         NSMutableArray *denyCascades = [NSMutableArray array];
