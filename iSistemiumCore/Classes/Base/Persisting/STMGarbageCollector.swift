@@ -62,9 +62,10 @@ class STMGarbageCollector: NSObject {
     }
 
     @discardableResult
+    @objc
     func removeUnusedImages() -> AnyPromise {
 
-        return AnyPromise.promiseWithResolverBlock({ resolve in
+        return AnyPromise(Promise<Any>{ seal in
 
             DispatchQueue.global(qos: .default).async { [unowned self] in
                 var err: NSError? = nil
@@ -84,7 +85,7 @@ class STMGarbageCollector: NSObject {
                     NSLog(error.description)
 
                 }
-                resolve(err)
+                seal.resolve("", err)
             }
 
         })
