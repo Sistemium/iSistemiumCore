@@ -87,12 +87,16 @@
     if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
         
         NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
+        NSDictionary *options = @{
+                                  @"params":params,
+                                  @"pageSize": @(500)
+                                  };
         
         if (error) return [AnyPromise promiseWithValue:error];
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
-            [self.socketTransport findAllAsync:entityName predicate:predicate options:@{@"params":params} completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+            [self.socketTransport findAllAsync:entityName predicate:predicate options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
                 
                     id errorHeader = headers[@"error"];
                 
