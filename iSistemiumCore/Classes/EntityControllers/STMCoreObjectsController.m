@@ -179,10 +179,6 @@
 + (void)checkObjectsForFlushing {
     
     NSLogMethodName;
-
-    STMCoreObjectsController *sc = [self sharedController];
-    
-    sc.isInFlushingProcess = NO;
     
     if (![STMFunctions isAppInBackground]) {
         
@@ -190,6 +186,17 @@
         return;
         
     }
+    
+    STMCoreObjectsController *sc = [self sharedController];
+    
+    if (sc.isInFlushingProcess) {
+        
+        NSLog(@"attempt to call flushing while it is already working, flushing skiped");
+        return;
+        
+    }
+    
+    sc.isInFlushingProcess = YES;
     
     if (!self.session.syncer) return;
 
@@ -285,6 +292,8 @@
         }
        
     }
+    
+    sc.isInFlushingProcess = NO;
     
 }
 

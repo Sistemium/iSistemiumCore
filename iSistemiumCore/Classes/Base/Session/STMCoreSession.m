@@ -16,6 +16,7 @@
 @synthesize syncer = _syncer;
 @synthesize filing = _filing;
 
+NSTimer *flushTimer;
 
 - (instancetype)initWithAuthDelegate:(id <STMCoreAuth>)authDelegate trackers:(NSArray *)trackers startSettings:(NSDictionary *)startSettings {
 
@@ -113,6 +114,9 @@
 
     [self observeNotification:UIApplicationDidEnterBackgroundNotification
                      selector:@selector(applicationDidEnterBackground)];
+    
+    [self observeNotification:UIApplicationWillEnterForegroundNotification
+                     selector:@selector(applicationWillEnterForeground)];
 
 }
 
@@ -160,7 +164,22 @@
 
 
 - (void)applicationDidEnterBackground {
+    
     [STMCoreObjectsController checkObjectsForFlushing];
+    
+    flushTimer = [NSTimer scheduledTimerWithTimeInterval:90.0
+                                                  target:[STMCoreObjectsController class]
+                                                selector:@selector(checkObjectsForFlushing)
+                                                userInfo:nil
+                                                 repeats:YES];
+    
+}
+
+- (void)applicationWillEnterForeground {
+    
+    [flushTimer invalidate];
+    flushTimer = nil;
+    
 }
 
 - (void)setStatus:(STMSessionStatus)status {
