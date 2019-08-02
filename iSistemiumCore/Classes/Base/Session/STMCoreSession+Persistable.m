@@ -79,11 +79,9 @@
 
     [persister beforeMergeEntityName:entityName interceptor:entityNameInterceptor];
 
-
-    [self addPersistenceObservers];
-
     dispatch_async(dispatch_get_main_queue(), ^{
         [self persisterCompleteInitializationWithSuccess:YES];
+        [self addPersistenceObservers];
     });
 
     return self;
@@ -210,12 +208,22 @@
     [self observeNotification:NOTIFICATION_DOCUMENT_NOT_READY
                      selector:@selector(persisterDocumentNotReady:)
                        object:self.document];
+    
+    self.subscriptionId = [self.persistenceDelegate observeEntity:self.locationTracker.geotrackerControl predicate:nil callback:^(NSArray * _Nullable data) {
+        
+        [self.locationTracker checkTrackerAutoStart];
+        
+    }];
 
 }
 
 - (void)removePersistenceObservers {
 
     [NSNotificationCenter.defaultCenter removeObserver:self];
+
+    if (!self.subscriptionId) return;
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
+    self.subscriptionId = nil;
 
 }
 

@@ -70,7 +70,7 @@
     
 }
 
-- (id <STMPersistingAsync, STMModelling>)persistenceDelegate {
+- (id <STMPersistingSync ,STMPersistingAsync, STMModelling, STMPersistingObserving>)persistenceDelegate {
     return [self.session persistenceDelegate];
 }
 
@@ -81,7 +81,6 @@
     [super customInit];
     
     [self initAppStateObservers];
-    [self shipmentRoutesObservers];
     
 }
 
@@ -105,21 +104,6 @@
                name:@"appSettingsSettingsChanged"
              object:self.session];
     
-}
-
-- (void)shipmentRoutesObservers {
-    
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-
-    [nc addObserver:self
-           selector:@selector(shipmentRouteProcessingChanged)
-               name:@"shipmentRouteProcessingChanged"
-             object:nil];
-    
-}
-
-- (void)shipmentRouteProcessingChanged {
-    [self checkTrackerAutoStart];
 }
 
 - (void)appStateDidChange {
@@ -958,7 +942,27 @@
         [self requestAuthorization:^(BOOL success) {
             
             if (success) {
-                [self successAuthorization];
+               
+                if ([self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE]) {
+                    
+                    NSUInteger startedRoutesCount = [self.persistenceDelegate countSync:self.geotrackerControl predicate:[NSPredicate predicateWithFormat:@"processing == %@", @"started"] options:nil error:nil];
+                    
+                    if (startedRoutesCount > 0) {
+                        
+                        [self checkAccuracyToStartTracking];
+                        
+                    } else {
+                        
+                        if (self.tracking) [self stopTracking];
+                        
+                    }
+                    
+                } else {
+                    
+                    [self successAuthorization];
+                                        
+                }
+                
             }
             
         }];

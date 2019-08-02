@@ -32,5 +32,6 @@
 - (void)checkAccuracyToStartTracking;
 - (void)initTimers;
 
+- (void)checkTrackerAutoStart;
 
 @end
