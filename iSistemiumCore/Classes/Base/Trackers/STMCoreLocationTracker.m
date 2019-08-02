@@ -194,7 +194,7 @@
     
     if ([self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits]) {
         
-        UIApplicationState appState = [UIApplication sharedApplication].applicationState;
+        UIApplicationState appState = [STMFunctions appState];
         
         switch (appState) {
             case UIApplicationStateActive: {
