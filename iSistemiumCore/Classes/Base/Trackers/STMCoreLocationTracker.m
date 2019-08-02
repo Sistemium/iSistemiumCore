@@ -606,7 +606,16 @@
     
     if (!_locationManager) {
         
-        _locationManager = [[CLLocationManager alloc] init];
+        if (![NSThread isMainThread]) {
+            
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                self->_locationManager = [[CLLocationManager alloc] init];
+            });
+            
+        } else {
+            _locationManager = [[CLLocationManager alloc] init];
+        }
+        
         _locationManager.delegate = self;
         _locationManager.distanceFilter = self.distanceFilter;
         _locationManager.desiredAccuracy = [self currentDesiredAccuracy];
