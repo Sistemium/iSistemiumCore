@@ -12,8 +12,6 @@
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, id> *controllers;
 
-@property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
-
 - (void)initController:(Class)controllerClass;
 
 @end
