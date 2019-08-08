@@ -55,6 +55,8 @@
 @property (nonatomic, strong) NSString *requestLocationServiceAuthorization;
 @property (nonatomic, strong) NSMutableArray *checkinRequests;
 
+@property (nonatomic, strong) STMPersistingObservingSubscriptionID subscriptionId;
+
 
 @end
 
@@ -107,7 +109,39 @@
 }
 
 - (void)appStateDidChange {
+    
     [self checkTrackerAutoStart];
+    
+    [self subscribeGeotrackerControl];
+    
+}
+
+- (void)subscribeGeotrackerControl {
+    
+    if (!self.persistenceDelegate || !self.geotrackerControl) {
+        
+        [self unsubscribeGeotrackerControl];
+        
+        return;
+        
+    }
+    
+    if (self.subscriptionId) return;
+    
+    self.subscriptionId = [self.persistenceDelegate observeEntity:self.geotrackerControl predicate:nil callback:^(NSArray * _Nullable data) {
+        
+        [self checkTrackerAutoStart];
+        
+    }];
+    
+}
+
+- (void)unsubscribeGeotrackerControl {
+    
+    if (!self.subscriptionId) return;
+    [self.persistenceDelegate cancelSubscription:self.subscriptionId];
+    self.subscriptionId = nil;
+    
 }
 
 - (void)appSettingsChanged:(NSNotification *)notification {
@@ -954,7 +988,7 @@
                     } else {
                         
                         if (self.tracking) [self stopTracking];
-                        
+                                                
                     }
                     
                 } else {
