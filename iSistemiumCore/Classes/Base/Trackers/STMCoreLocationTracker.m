@@ -152,6 +152,10 @@
         
         [self checkTrackerAutoStart];
         
+        [self unsubscribeGeotrackerControl];
+        
+        [self subscribeGeotrackerControl];
+        
     }
 
 }
@@ -988,7 +992,7 @@
                     } else {
                         
                         if (self.tracking) [self stopTracking];
-                                                
+                        
                     }
                     
                 } else {
