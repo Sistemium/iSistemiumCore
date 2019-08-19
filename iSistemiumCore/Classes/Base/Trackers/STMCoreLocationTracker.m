@@ -118,7 +118,7 @@
 
 - (void)subscribeGeotrackerControl {
     
-    if (!self.persistenceDelegate || !self.geotrackerControl) {
+    if (!self.persistenceDelegate || !self.geotrackerControl || [self.geotrackerControl isEqualToString:@""]) {
         
         [self unsubscribeGeotrackerControl];
         
