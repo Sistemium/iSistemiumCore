@@ -369,7 +369,7 @@
     NSString *scannerType = [defaults objectForKey:@"ScannerType"];
 
     if (!scannerType) {
-        scannerType = @"socketMobile";
+        scannerType = @"zebra";
         [defaults setValue:scannerType forKey:@"ScannerType"];
         [defaults synchronize];
     }
