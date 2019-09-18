@@ -551,7 +551,7 @@
 - (void)fullSync {
 
     [self receiveData];
-    [self sendData];
+    [self upload];
 
 }
 
