@@ -661,7 +661,7 @@
 
     // Create Phantom triggers
 
-    NSString *phantomFields = [NSString stringWithFormat:@"INSERT INTO [%@] (%@, %@, %@)", parentName, STMPersistingKeyPrimary, STMPersistingOptionLts, STMPersistingKeyVersion];
+    NSString *phantomFields = [NSString stringWithFormat:@"INSERT INTO [%@] (%@, %@, %@)", parentName, STMPersistingKeyPrimary, STMPersistingKeyPhantom, STMPersistingKeyVersion];
 
     NSString *phantomData = [NSString stringWithFormat:@"SELECT NEW.%@, 1, null", columnName];
 
