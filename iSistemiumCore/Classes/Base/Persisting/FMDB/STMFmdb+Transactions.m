@@ -315,21 +315,13 @@
 
     if (!self.database.changes) {
         
-        [keys addObject:[STMPredicateToSQL quotedName:STMPersistingKeyCreationTimestamp]];
-        
-        id last = [values lastObject];
-        
-        [values removeLastObject];
-        
         [values addObject:dictionary[STMPersistingKeyCreationTimestamp]];
         
-        [values addObject:last];
-
         NSArray *questionMarks = [STMFunctions mapArray:keys withBlock:^id(id key) {
             return @"?";
         }];
 
-        NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, [isFantom], [id]) VALUES(%@, 0, ?)", tablename, [keys componentsJoinedByString:@", "], [questionMarks componentsJoinedByString:@", "]];
+        NSString *insertSQL = [NSString stringWithFormat:@"INSERT INTO %@ (%@, [isFantom], [id], [%@]) VALUES(%@, 0, ?, ?)", tablename, [keys componentsJoinedByString:@", "], STMPersistingKeyCreationTimestamp, [questionMarks componentsJoinedByString:@", "]];
 
         if (![self.database executeUpdate:insertSQL values:values error:error]) {
             return nil;
