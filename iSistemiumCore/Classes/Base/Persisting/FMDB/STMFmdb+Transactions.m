@@ -314,6 +314,16 @@
     }
 
     if (!self.database.changes) {
+        
+        [keys addObject:[STMPredicateToSQL quotedName:STMPersistingKeyCreationTimestamp]];
+        
+        id last = [values lastObject];
+        
+        [values removeLastObject];
+        
+        [values addObject:dictionary[STMPersistingKeyCreationTimestamp]];
+        
+        [values addObject:last];
 
         NSArray *questionMarks = [STMFunctions mapArray:keys withBlock:^id(id key) {
             return @"?";
