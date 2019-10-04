@@ -20,6 +20,63 @@
     [self flushSubscribedViewController];
 }
 
+- (AnyPromise *)findOneWithSocket:(NSString *)entityName xidString:(NSString *)xidString {
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+        
+        [self.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
+            
+            id errorHeader = headers[@"error"];
+            
+            if (errorHeader) {
+                
+                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                
+            }
+            
+            if (error) {
+                resolve(error);
+            } else {
+                resolve(result);
+            }
+            
+        }];
+        
+    }];
+}
+
+- (AnyPromise *)findWithSocket:(WKScriptMessage *)scriptMessage entityName:(NSString *)entityName predicate:(NSPredicate *)predicate {
+    
+    NSError *error;
+    NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
+    NSDictionary *options = @{
+                              @"params":params,
+                              @"pageSize": @(500)
+                              };
+    
+    if (error) return [AnyPromise promiseWithValue:error];
+    
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+        
+        [self.socketTransport findAllAsync:entityName predicate:predicate options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+            
+            id errorHeader = headers[@"error"];
+            
+            if (errorHeader) {
+                
+                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+                
+            }
+            
+            if (error) {
+                resolve(error);
+            } else {
+                resolve(result);
+            }
+        }];
+        
+    }];
+}
+
 #pragma mark - find objects for WKWebView
 
 - (AnyPromise *)arrayOfObjectsRequestedByScriptMessage:(WKScriptMessage *)scriptMessage{
@@ -51,27 +108,7 @@
         
         if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
             
-            return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
-                
-                [self.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
-                    
-                    id errorHeader = headers[@"error"];
-                    
-                    if (errorHeader) {
-                        
-                        error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
-                        
-                    }
-                    
-                    if (error) {
-                        resolve(error);
-                    } else {
-                        resolve(result);
-                    }
-                    
-                }];
-                
-            }];
+            return [self findOneWithSocket:entityName xidString:xidString];
             
         }
             
@@ -86,34 +123,7 @@
     
     if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
         
-        NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
-        NSDictionary *options = @{
-                                  @"params":params,
-                                  @"pageSize": @(500)
-                                  };
-        
-        if (error) return [AnyPromise promiseWithValue:error];
-        
-        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
-            
-            [self.socketTransport findAllAsync:entityName predicate:predicate options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
-                
-                    id errorHeader = headers[@"error"];
-                
-                    if (errorHeader) {
-                        
-                        error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
-                        
-                    }
-                
-                    if (error) {
-                        resolve(error);
-                    } else {
-                        resolve(result);
-                    }
-            }];
-            
-        }];
+        return [self findWithSocket:scriptMessage entityName:entityName predicate:predicate];
         
     }
     
