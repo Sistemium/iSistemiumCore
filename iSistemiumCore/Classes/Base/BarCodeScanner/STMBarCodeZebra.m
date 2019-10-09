@@ -172,14 +172,14 @@
     NSLog(@"Scanner is %@: scannerId: %d name: %@", status, scannerId, [availableScanner getScannerName]);
 
 
-    SBT_RESULT result = [self.api sbtEstablishCommunicationSession:scannerId];
-
-    if (result == SBT_RESULT_SUCCESS) {
-        NSLog(@"Connection to scannerId %d successful", scannerId);
-        [self.api sbtEnableAvailableScannersDetection:NO];
-    } else {
-        NSLog(@"Failed to establish a connection with scannerId: %d", scannerId);
-    }
+//    SBT_RESULT result = [self.api sbtEstablishCommunicationSession:scannerId];
+//
+//    if (result == SBT_RESULT_SUCCESS) {
+//        NSLog(@"Connection to scannerId %d successful", scannerId);
+//        [self.api sbtEnableAvailableScannersDetection:NO];
+//    } else {
+//        NSLog(@"Failed to establish a connection with scannerId: %d", scannerId);
+//    }
 
 }
 
