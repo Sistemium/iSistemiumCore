@@ -20,7 +20,23 @@
     [self flushSubscribedViewController];
 }
 
-- (AnyPromise *)findOneWithSocket:(NSString *)entityName xidString:(NSString *)xidString {
+- (AnyPromise *)UNSYNCED_OBJECTS_ERROR {
+    return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"THERE_ARE_UNSYNCED_OBJECTS"]];
+}
+
+
+- (AnyPromise *)findOneWithSocket:(NSString *)entityName xidString:(NSString *)xidString options:(NSDictionary *)options {
+    
+    
+    NSError *error;
+    
+    NSDictionary *unsynced = [self.persistenceDelegate findSync:entityName identifier:xidString
+                                                        options:options error:&error];
+
+    if (unsynced && unsynced[@"deviceTs"] > unsynced[@"lts"]) {
+        return [self UNSYNCED_OBJECTS_ERROR];
+    }
+    
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         
         [self.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
@@ -44,27 +60,42 @@
     }];
 }
 
-- (AnyPromise *)findWithSocket:(WKScriptMessage *)scriptMessage entityName:(NSString *)entityName predicate:(NSPredicate *)predicate {
+- (AnyPromise *)findWithSocket:(WKScriptMessage *)scriptMessage entityName:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
     
     NSError *error;
+
+    if (error) return [AnyPromise promiseWithValue:error];
+
+    NSMutableArray *checkUnsynced = @[[NSPredicate predicateWithFormat:@"deviceTs > lts"]].mutableCopy;
+    
+    if (predicate) {
+        [checkUnsynced addObject:predicate];
+    }
+    
+    NSArray *unsynced = [self.persistenceDelegate findAllSync:entityName
+                                                    predicate:[NSCompoundPredicate
+                                                               andPredicateWithSubpredicates:checkUnsynced]
+                                                      options:options error:&error];
+    if (unsynced.count) {
+        return [self UNSYNCED_OBJECTS_ERROR];
+    }
+    
     NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
-    NSDictionary *options = @{
+    NSDictionary *socketOptions = @{
                               @"params":params,
-                              @"pageSize": @(500)
+                              @"pageSize": @(5000)
                               };
     
     if (error) return [AnyPromise promiseWithValue:error];
     
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         
-        [self.socketTransport findAllAsync:entityName predicate:predicate options:options completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+        [self.socketTransport findAllAsync:entityName predicate:predicate options:socketOptions completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
             
             id errorHeader = headers[@"error"];
             
             if (errorHeader) {
-                
                 error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
-                
             }
             
             if (error) {
@@ -107,9 +138,7 @@
         }
         
         if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
-            
-            return [self findOneWithSocket:entityName xidString:xidString];
-            
+            return [self findOneWithSocket:entityName xidString:xidString options:options];
         }
             
         return [self findEntityName:entityName xidString:xidString];
@@ -122,14 +151,10 @@
     if (error) return [AnyPromise promiseWithValue:error];
     
     if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
-        
-        return [self findWithSocket:scriptMessage entityName:entityName predicate:predicate];
-        
+        return [self findWithSocket:scriptMessage entityName:entityName predicate:predicate options:options];
     }
     
-    return [self.persistenceDelegate findAll:entityName
-                                   predicate:predicate
-                                     options:options];
+    return [self.persistenceDelegate findAll:entityName predicate:predicate options:options];
     
 }
 
