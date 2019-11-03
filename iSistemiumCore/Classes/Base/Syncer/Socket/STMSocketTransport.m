@@ -88,7 +88,7 @@
 //                             @"doubleEncodeUTF8"   : @YES,
 //                             @"voipEnabled"        : @YES,
             @"log": @NO,
-            @"forceWebsockets": @NO,
+            @"forceWebsockets": @YES,
             @"path": path,
             @"reconnects": @YES
     };
