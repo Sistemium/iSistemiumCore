@@ -40,8 +40,6 @@
 
 @implementation STMCoreAppDelegate
 
-UIBackgroundTaskIdentifier bgTask;
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     [STMFunctions stringFromNow];
@@ -207,7 +205,11 @@ UIBackgroundTaskIdentifier bgTask;
     
     [self clearWebViewCache];
 
-    bgTask = [application beginBackgroundTaskWithExpirationHandler:^{}];
+    __block UIBackgroundTaskIdentifier bgTask;
+
+    bgTask = [application beginBackgroundTaskWithExpirationHandler:^{
+        [self backgroundTask:bgTask endedInApplication:application];
+    }];
 
     [self backgroundTask:bgTask startedInApplication:application];
 
@@ -223,8 +225,6 @@ UIBackgroundTaskIdentifier bgTask;
 
     NSString *logMessage = @"applicationWillEnterForeground";
     [[STMLogger sharedLogger] infoMessage:logMessage];
-    
-    [self backgroundTask:bgTask endedInApplication:application];
 
     [[self syncer] sendEventViaSocket:STMSocketEventStatusChange withValue:logMessage];
 
