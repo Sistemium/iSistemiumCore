@@ -19,6 +19,8 @@
 
 #import "STMClientEntityController.h"
 
+#import "STMFunctions.h"
+
 @interface STMUnsyncedDataHelperState : NSObject <STMDataSyncingState>
 
 @end
@@ -246,9 +248,9 @@
 
     NSLog(@"unsubscribeUnsynced");
 
-    [self initPrivateData];
+//    [self initPrivateData];
 
-    [self checkUnsyncedObjects];
+//    [self checkUnsyncedObjects];
 
     [self finishHandleUnsyncedObjects];
 
@@ -305,7 +307,10 @@
 
     self.syncingState = nil;
 
-    [self checkUnsyncedObjects];
+    if (![STMFunctions isAppInBackground]) {
+        [self checkUnsyncedObjects];
+    }
+
     [self initPrivateData];
 
     [self.subscriberDelegate finishUnsyncedProcess];
