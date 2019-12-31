@@ -983,6 +983,10 @@
         [self removeSpinner];
     }
     
+    if (!self.session) {
+        [self removeSpinner];
+    }
+    
 }
 
 - (void)showUnreadMessageCount {
