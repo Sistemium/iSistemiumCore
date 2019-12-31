@@ -12,6 +12,8 @@
 #import "STMCoreObjectsController.h"
 #import "STMCoreAuthController.h"
 
+#define STM_MODEL_REQUEST_TIMEOUT 3;
+
 @implementation STMCoreSession
 
 @synthesize syncer = _syncer;
@@ -64,8 +66,6 @@ NSTimer *flushTimer;
                 [alertView show];
                 
             }];
-
-//            [[STMCoreAuthController authController] logout];
 
         });
 
@@ -282,6 +282,7 @@ NSTimer *flushTimer;
     if (etagData && [self.filing fileExistsAtPath:momPath]) {
         NSString *etag = [[NSString alloc] initWithData:etagData encoding:NSASCIIStringEncoding];
         [req setValue:etag forHTTPHeaderField:@"if-none-match"];
+        req.timeoutInterval = STM_MODEL_REQUEST_TIMEOUT;
         NSLog(@"Model request with etag: %@", etag);
     }
 
