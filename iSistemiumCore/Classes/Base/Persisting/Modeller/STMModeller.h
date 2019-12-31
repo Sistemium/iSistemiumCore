@@ -22,4 +22,6 @@
 
 + (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
 
++ (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath;
+
 @end
