@@ -51,6 +51,8 @@
 
 - (BOOL)fileExistsAtPath:(NSString *)path;
 
+- (NSData *)fileAtPath:(NSString *)path;
+
 - (unsigned long long)fileSizeAtPath:(NSString *)path;
 
 @end

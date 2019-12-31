@@ -226,6 +226,10 @@
 
 }
 
+- (NSData *)fileAtPath:(NSString *)path {
+    return [self.fileManager contentsAtPath:path];
+}
+
 - (unsigned long long)fileSizeAtPath:(NSString *)path {
 
     NSError *attributesError = nil;
