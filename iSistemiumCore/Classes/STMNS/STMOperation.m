@@ -82,8 +82,8 @@
 }
 
 - (void)cancel {
-    [super cancel];
     [self finish];
+    [super cancel];
 }
 
 @end
