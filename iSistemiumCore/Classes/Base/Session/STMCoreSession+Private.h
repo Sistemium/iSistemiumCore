@@ -7,11 +7,13 @@
 //
 
 #import "STMCoreSession.h"
+#import "PromiseKit.h"
 
 @interface STMCoreSession ()
 
 @property (nonatomic, strong) NSMutableDictionary <NSString *, id> *controllers;
 
 - (void)initController:(Class)controllerClass;
+- (AnyPromise *)downloadModel;
 
 @end
