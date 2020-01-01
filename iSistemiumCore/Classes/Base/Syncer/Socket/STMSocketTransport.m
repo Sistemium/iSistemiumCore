@@ -75,6 +75,11 @@
 
     NSURL *socketUrl = [NSURL URLWithString:self.socketUrl];
     NSString *path = [socketUrl.path stringByAppendingString:@"/"];
+    
+//    NSString *dataModelName = [[STMCoreAuthController authController] dataModelName];
+//    NSString *version = [self.entityResource];
+//    NSString *userAgent = [dataModelName stringByAppendingPathComponent:version];
+    
 
     if (!self.handleQueue) {
         self.handleQueue = dispatch_queue_create("com.sistemium.STMSocketTransport",
@@ -90,7 +95,8 @@
             @"log": @NO,
             @"forceWebsockets": @YES,
             @"path": path,
-            @"reconnects": @YES
+            @"reconnects": @YES,
+//            @"extraHeaders": @{@"x-user-agent":self.userAgent}
     };
 
     if (!self.socketManager) {
