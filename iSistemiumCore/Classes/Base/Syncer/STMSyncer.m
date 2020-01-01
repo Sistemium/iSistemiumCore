@@ -15,7 +15,7 @@
 #import "STMClientDataController.h"
 
 #import "STMSyncer+RemoteData.h"
-#import "STMSocketTransport.h"
+#import "STMSocketTransport+Persisting.h"
 
 
 @interface STMSyncer ()
