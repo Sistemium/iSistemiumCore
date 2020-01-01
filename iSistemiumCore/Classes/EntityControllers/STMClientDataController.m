@@ -36,12 +36,13 @@
 }
 
 + (NSString *)appVersion {
-    return BUILD_VERSION;
+    return [self persistenceDelegate].modelVersion;
 }
 
 + (NSString *)bundleVersion {
     return APP_VERSION;
 }
+
 
 + (NSString *)buildType {
     
@@ -215,11 +216,11 @@
         return;
     }
     
-    NSString *buildVersion = BUILD_VERSION;
+    NSString *appVersion = [self appVersion];
     
-    if (![clientData[@"appVersion"] isEqualToString:buildVersion]) {
+    if (![clientData[@"appVersion"] isEqualToString:appVersion]) {
         
-        clientData[@"appVersion"] = buildVersion;
+        clientData[@"appVersion"] = appVersion;
         
         [[self persistenceDelegate] mergeAsync:NSStringFromClass([STMClientData class])
                                     attributes:clientData

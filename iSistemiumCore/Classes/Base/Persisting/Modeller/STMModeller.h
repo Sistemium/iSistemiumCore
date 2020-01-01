@@ -16,12 +16,14 @@
 
 - (instancetype)initWithModelName:(NSString *)modelName;
 
-- (instancetype)initWithModel:(NSManagedObjectModel *)model;
+- (instancetype)initWithModel:(NSManagedObjectModel *)model modelName:(NSString *)modelName;
 
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName;
 
-+ (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
+//+ (instancetype)modellerWithModel:(NSManagedObjectModel *)model;
 
 + (NSManagedObjectModel *)modelWithPath:(NSString *)modelPath;
+
+@property (nonatomic, strong) NSString *modelName;
 
 @end

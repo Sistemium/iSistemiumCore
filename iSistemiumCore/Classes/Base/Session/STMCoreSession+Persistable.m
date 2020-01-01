@@ -43,7 +43,7 @@
     
     NSManagedObjectModel *model = [STMModeller modelWithPath:modelPath];
 
-    STMPersister *persister = [[STMPersister alloc] initWithModel:model];
+    STMPersister *persister = [[STMPersister alloc] initWithModel:model modelName:dataModelName];
 
     STMFmdb *fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
 

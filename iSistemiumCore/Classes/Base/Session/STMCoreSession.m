@@ -259,6 +259,18 @@ NSTimer *flushTimer;
 //    [[NSURLSession sessionWithConfiguration:(nonnull NSURLSessionConfiguration *)] dow
 //}
 
+- (NSString *)currentAppVersion {
+    
+    NSString *displayName = BUNDLE_DISPLAY_NAME;
+    NSString *appVersionString = APP_VERSION;
+    NSString *modelVersion = self.persistenceDelegate.modelVersion;
+    
+    NSString *result = [NSString stringWithFormat:@"%@ %@ (%@)", displayName, appVersionString, modelVersion];
+
+    return result;
+    
+}
+
 - (AnyPromise *)downloadModel {
     
     NSString *dataModelName = self.startSettings[@"dataModelName"];

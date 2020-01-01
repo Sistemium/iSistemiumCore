@@ -832,20 +832,6 @@ STMDateFormatter *sharedDateFormatterWithoutTime;
 
 }
 
-+ (NSString *)currentAppVersion {
-
-    NSString *displayName = BUNDLE_DISPLAY_NAME;
-    NSString *appVersionString = APP_VERSION;
-    NSString *buildVersion = BUILD_VERSION;
-
-    NSString *result = [NSString stringWithFormat:@"%@ %@ (%@)", displayName, appVersionString, buildVersion];
-
-//    NSLog(@"infoDictionary %@", infoDictionary);
-
-    return result;
-
-}
-
 
 #pragma mark - some methods with paths/dirs/files handling
 
