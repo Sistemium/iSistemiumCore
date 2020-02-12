@@ -10,7 +10,7 @@
 
 @interface STMCoreSession (Persistable)
 
-- (instancetype)initPersistable;
+- (instancetype)initPersistableWithModelPath:(NSString *)modelPath;
 
 - (void)removePersistable:(void (^)(BOOL success))completionHandler;
 

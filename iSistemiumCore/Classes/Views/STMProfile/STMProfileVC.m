@@ -84,6 +84,10 @@
 
 @implementation STMProfileVC
 
+- (STMCoreSession *)currentSession {
+    return (STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession;
+}
+
 - (STMCoreLocationTracker *)locationTracker {
     return [(STMCoreSession *)[STMCoreSessionManager sharedManager].currentSession locationTracker];
 }
@@ -1299,7 +1303,7 @@
 
 - (void)customInit {
     
-    self.navigationItem.title = [STMFunctions currentAppVersion];
+    self.navigationItem.title = [self currentSession].currentAppVersion;
     
     self.numberOfObjectLabel.text = @"";
     

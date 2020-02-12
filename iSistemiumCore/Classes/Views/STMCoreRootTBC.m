@@ -527,9 +527,10 @@
     NSString *minBuild = parameters[@"minBuild"];
     NSString *maxBuild = parameters[@"maxBuild"];
     NSString *minOS = parameters[@"minOs"];
+    NSString *modelVersion = self.session.persistenceDelegate.modelVersion;
     
-    if (minBuild && ([BUILD_VERSION integerValue] < [minBuild integerValue])) return;
-    if (maxBuild && ([BUILD_VERSION integerValue] > [maxBuild integerValue])) return;
+    if (minBuild && ([modelVersion integerValue] < [minBuild integerValue])) return;
+    if (maxBuild && ([modelVersion integerValue] > [maxBuild integerValue])) return;
     if (minOS && (SYSTEM_VERSION < [minOS integerValue])) return;
 
     BOOL isDebug = [parameters[@"ifdef"] isEqualToString:@"DEBUG"];
@@ -980,6 +981,10 @@
     
     if (self.session.status == STMSessionRunning) {
         [self initAllTabs];
+        [self removeSpinner];
+    }
+    
+    if (!self.session) {
         [self removeSpinner];
     }
     

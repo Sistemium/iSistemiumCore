@@ -30,7 +30,7 @@
 
 @implementation STMCoreSession (Persistable)
 
-- (instancetype)initPersistable {
+- (instancetype)initPersistableWithModelPath:(NSString *)modelPath {
 
     NSString *dataModelName = self.startSettings[@"dataModelName"];
 
@@ -40,11 +40,10 @@
 
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
+    
+    NSManagedObjectModel *model = [STMModeller modelWithPath:modelPath];
 
-    STMPersister *persister = [STMPersister persisterWithModelName:dataModelName
-                                                 completionHandler:^(BOOL success) {
-
-                                                 }];
+    STMPersister *persister = [[STMPersister alloc] initWithModel:model modelName:dataModelName];
 
     STMFmdb *fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
 

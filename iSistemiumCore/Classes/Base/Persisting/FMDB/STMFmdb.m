@@ -106,7 +106,7 @@
     NSData *versionData = [NSData dataWithContentsOfFile:versionPath];
 
     NSString *savedVersion = versionData ? [NSString stringWithUTF8String:versionData.bytes] : nil;
-    NSString *bundleVersion = BUILD_VERSION;
+    NSString *bundleVersion = [model.versionIdentifiers anyObject];
 
     BOOL needToMigrate = !savedVersion || [savedVersion compare:bundleVersion] != NSOrderedDescending;
 

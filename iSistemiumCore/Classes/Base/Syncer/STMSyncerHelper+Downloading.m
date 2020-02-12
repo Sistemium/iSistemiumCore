@@ -195,9 +195,13 @@
 
     NSLogMethodName;
 
-    [self.downloadingState.queue cancelAllOperations];
+    STMDownloadingQueue *queue = self.downloadingState.queue;
+    
     self.downloadingState = nil;
-//    [self receivingDidFinishWithError:nil];
+    
+    if (queue) {
+        [self.downloadingState.queue cancelAllOperations];
+    }
 
 }
 

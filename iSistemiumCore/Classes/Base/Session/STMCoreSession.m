@@ -10,6 +10,9 @@
 #import "STMCoreSession+Persistable.h"
 #import "STMCoreSessionFiler.h"
 #import "STMCoreObjectsController.h"
+#import "STMCoreAuthController.h"
+
+#define STM_MODEL_REQUEST_TIMEOUT 3;
 
 @implementation STMCoreSession
 
@@ -34,14 +37,39 @@ NSTimer *flushTimer;
     self.startTrackers = trackers;
     self.controllers = [NSMutableDictionary dictionary];
 
-    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg
-                                                                   userId:STMIsNull(authDelegate.iSisDB, uid)];
+    STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg userId:STMIsNull(authDelegate.iSisDB, uid)];
 
     self.filing = filer;
 
     [self addObservers];
+    
+    [self downloadModel]
+        .then(^(NSString *modelPath) {
+            
+            if (!modelPath) {
+                return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"Empty model file"]];
+            }
+            
+            NSLog(@"Model file success: %@", modelPath);
+            return [AnyPromise promiseWithValue:[self initPersistableWithModelPath:modelPath]];
+            
+        })
+        .catch(^(NSError *error) {
+            NSLog(@"Error downloading model: %@", error);
+            
+            NSString *message = error.localizedDescription;
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil) message:message delegate:STMCoreAuthController.authController cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                alertView.tag = 1;
+                [alertView show];
+                
+            }];
 
-    return [self initPersistable];
+        });
+
+    return self;
 }
 
 - (void)initController:(Class)controllerClass {
@@ -225,6 +253,114 @@ NSTimer *flushTimer;
 
     }
 
+}
+
+//- (void)checkModelToDownload {
+//    [[NSURLSession sessionWithConfiguration:(nonnull NSURLSessionConfiguration *)] dow
+//}
+
+- (NSString *)currentAppVersion {
+    
+    NSString *displayName = BUNDLE_DISPLAY_NAME;
+    NSString *appVersionString = APP_VERSION;
+    NSString *modelVersion = self.persistenceDelegate.modelVersion;
+    
+    NSString *result = [NSString stringWithFormat:@"%@ %@ (%@)", displayName, appVersionString, modelVersion];
+
+    return result;
+    
+}
+
+- (AnyPromise *)downloadModel {
+    
+    NSString *dataModelName = self.startSettings[@"dataModelName"];
+    
+    if (!dataModelName) {
+        dataModelName = [[STMCoreAuthController authController] dataModelName];
+    }
+
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://sistemium.com/%@.mom", dataModelName]];
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
+    
+    NSString *modelPath = [self.filing persistencePath:@"model"];
+    NSString *etagPath = [modelPath stringByAppendingPathComponent:@"etag"];
+    NSString *momPath = [modelPath stringByAppendingPathComponent:@"mom"];
+    
+    NSData *etagData = [self.filing fileAtPath:etagPath];
+    
+    Boolean modelExists = [self.filing fileExistsAtPath:momPath];
+    
+    if (etagData && [self.filing fileExistsAtPath:momPath]) {
+        NSString *etag = [[NSString alloc] initWithData:etagData encoding:NSASCIIStringEncoding];
+        [req setValue:etag forHTTPHeaderField:@"if-none-match"];
+        req.timeoutInterval = STM_MODEL_REQUEST_TIMEOUT;
+        NSLog(@"Model request with etag: %@", etag);
+    }
+
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+        
+        NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:req completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+            
+            if (error) {
+                NSLog(@"Error downloading: %@", error.description);
+                resolve(error);
+                return;
+            }
+            
+            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+            
+            if (httpResponse.statusCode == 304) {
+                NSLog(@"Not modified model");
+                resolve(momPath);
+                return;
+            }
+            
+            if (httpResponse.statusCode != 200) {
+                NSString *otherError = [NSString stringWithFormat:@"Error downloading model: %li", (long)httpResponse.statusCode];
+                resolve([STMFunctions errorWithMessage:otherError]);
+                return;
+            }
+            
+            NSString *gotEtag = httpResponse.allHeaderFields[@"etag"];
+            
+            NSLog(@"Model response status %u %@", httpResponse.statusCode, gotEtag);
+            
+            if (gotEtag) {
+                [gotEtag writeToFile:etagPath atomically:YES encoding:NSASCIIStringEncoding error:&error];
+                if (error) {
+                    NSLog(@"Error saving etag: %@", error.description);
+                    resolve(error);
+                    return;
+                }
+                NSLog(@"Model etag saved");
+            }
+            
+            [self.filing copyItemAtPath:location.path
+                                 toPath:momPath
+                                  error:&error];
+            if (error) {
+                NSLog(@"Error copying: %@", error.description);
+                resolve(error);
+                return;
+            }
+            
+            NSLog(@"Model download complete %@", location.path);
+            
+            resolve(momPath);
+            
+        }];
+        
+        [task resume];
+    
+    }]
+    .catch(^(NSError *error) {
+        if (modelExists) {
+            return [AnyPromise promiseWithValue:momPath];
+        }
+        return [AnyPromise promiseWithValue:error];;
+    });
+    
 }
 
 

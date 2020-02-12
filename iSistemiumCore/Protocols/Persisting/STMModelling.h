@@ -18,6 +18,10 @@
 
 @property (readonly, strong) NSDictionary <NSString *, NSEntityDescription *> *concreteEntities;
 
+@property (readonly) NSString *modelVersion;
+@property (readonly) NSString *modelName;
+
+
 - (STMStorageType)storageForEntityName:(NSString *)entityName;
 
 - (BOOL)isConcreteEntityName:(NSString *)entityName;

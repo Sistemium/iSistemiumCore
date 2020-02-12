@@ -19,11 +19,11 @@
 @implementation STMModeller
 
 @synthesize concreteEntities = _concreteEntities;
+@synthesize modelName;
 
-
-+ (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
-    return [[self alloc] initWithModel:model];
-}
+//+ (instancetype)modellerWithModel:(NSManagedObjectModel *)model {
+//    return [[self alloc] initWithModel:model];
+//}
 
 
 + (NSManagedObjectModel *)modelWithName:(NSString *)modelName {
@@ -57,7 +57,7 @@
 #pragma mark - init methods
 
 - (instancetype)initWithModelName:(NSString *)modelName {
-    return [self initWithModel:[self.class modelWithName:modelName]];
+    return [self initWithModel:[self.class modelWithName:modelName] modelName:modelName];
 }
 
 - (instancetype)init {
@@ -66,11 +66,13 @@
     return self;
 }
 
-- (instancetype)initWithModel:(NSManagedObjectModel *)model {
+- (instancetype)initWithModel:(NSManagedObjectModel *)model modelName:(NSString *)modelName {
 
     self = [self init];
 
     self.managedObjectModel = model;
+    self.modelName = modelName;
+    
     NSMutableDictionary *cache = @{}.mutableCopy;
 
     for (NSString *entityKey in self.entitiesByName) {
@@ -93,6 +95,10 @@
 
 
 #pragma mark - STMModelling
+
+- (NSString *)modelVersion {
+    return [self.managedObjectModel.versionIdentifiers anyObject];
+}
 
 - (NSManagedObject *)newObjectForEntityName:(NSString *)entityName {
 // Override the method in persister to set proper context

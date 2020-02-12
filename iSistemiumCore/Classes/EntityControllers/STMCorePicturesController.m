@@ -429,7 +429,7 @@
             
             NSString *fieldsToUpdateMessage = [NSString stringWithFormat:@"broken photo fieldsToUpdate id = %@", attributes[STMPersistingKeyPrimary]];
             
-            [self.logger importantMessage:fieldsToUpdateMessage];
+            [self.logger infoMessage:fieldsToUpdateMessage];
             
             NSDictionary *options = @{STMPersistingOptionSetTs          :   @NO,
                                       STMPersistingOptionFieldsToUpdate :   fieldsToUpdate.copy};
@@ -467,7 +467,7 @@
             } else if ([STMFunctions isNotNull:picture[@"thumbnailHref"]]) {
 
                 NSString *logMessage = [NSString stringWithFormat:@"Broken picture with thumbnailHref id = '%@'", picture[STMPersistingKeyPrimary]];
-                [self.logger errorMessage:logMessage];
+                [self.logger infoMessage:logMessage];
                 
                 continue;
                 
