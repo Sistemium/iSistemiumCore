@@ -528,6 +528,13 @@
     dataModelName = @"iSisDriver";
     
 #endif
+    
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+    
+    NSLog(@"USE VFSplaye DATA MODEL");
+    dataModelName = @"vfs";
+    
+#endif
 
     return dataModelName;
 
