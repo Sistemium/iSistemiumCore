@@ -9,12 +9,14 @@
 #import "STMAuthNC.h"
 #import "STMAuthPhoneVC.h"
 #import "STMAuthSMSVC.h"
+#import "STMCoreWKWebViewVC.h"
 
 @interface STMAuthNC () <UINavigationControllerDelegate, UIAlertViewDelegate, UIActionSheetDelegate>
 
 @property (nonatomic, strong) STMAuthPhoneVC *phoneVC;
 @property (nonatomic, strong) STMAuthSMSVC *smsVC;
 @property (nonatomic, strong) STMAuthVC *requestRolesVC;
+@property (nonatomic, strong) STMCoreWKWebViewVC *webVC;
 
 @end
 
@@ -39,6 +41,15 @@
         _phoneVC = [self.storyboard instantiateViewControllerWithIdentifier:@"authPhoneVC"];
     }
     return _phoneVC;
+    
+}
+
+- (STMCoreWKWebViewVC *)webVC {
+    
+    if (!_webVC) {
+        _webVC = [self.storyboard instantiateViewControllerWithIdentifier:@"coreWKWebViewVC"];
+    }
+    return _webVC;
     
 }
 
@@ -70,7 +81,16 @@
             break;
 
         case STMAuthEnterPhoneNumber:
-            [self setViewControllers:@[self.phoneVC] animated:YES];
+            
+            #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+            
+                [self setViewControllers:@[self.webVC] animated:YES];
+                                    
+            #else
+            
+                [self setViewControllers:@[self.phoneVC] animated:YES];
+            
+            #endif
             
             break;
             
