@@ -123,6 +123,12 @@
 }
 
 - (NSString *)webViewUrlString {
+    
+    if (self.directLoadUrl){
+        
+        return self.directLoadUrl;
+        
+    }
 
 //    return @"http://lamac.local:8080";
 //        return @"http://localhost:8080";
@@ -135,6 +141,12 @@
 }
 
 - (NSString *)webViewAppManifestURI {
+    
+    if (self.directLoadUrl){
+        
+        return nil;
+        
+    }
 
     NSString *manifestUri = self.webViewStoryboardParameters[@"appManifestURI"];
     

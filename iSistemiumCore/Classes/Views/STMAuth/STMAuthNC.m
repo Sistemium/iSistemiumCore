@@ -11,6 +11,8 @@
 #import "STMAuthSMSVC.h"
 #import "STMCoreWKWebViewVC.h"
 
+#define VFS_AUTH_URL @"https://vfsm.sistemium.com/"
+
 @interface STMAuthNC () <UINavigationControllerDelegate, UIAlertViewDelegate, UIActionSheetDelegate>
 
 @property (nonatomic, strong) STMAuthPhoneVC *phoneVC;
@@ -48,6 +50,7 @@
     
     if (!_webVC) {
         _webVC = [self.storyboard instantiateViewControllerWithIdentifier:@"coreWKWebViewVC"];
+        _webVC.directLoadUrl = VFS_AUTH_URL;
     }
     return _webVC;
     
@@ -84,8 +87,10 @@
             
             #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
             
+                [self setNavigationBarHidden:YES animated:NO];
+            
                 [self setViewControllers:@[self.webVC] animated:YES];
-                                    
+                                                
             #else
             
                 [self setViewControllers:@[self.phoneVC] animated:YES];
