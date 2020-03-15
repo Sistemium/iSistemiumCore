@@ -5,6 +5,7 @@
 
 #import "STMCoreWKWebViewVC+Navigation.h"
 #import "STMCoreWKWebViewVC+Private.h"
+#import "STMCoreAuthController.h"
 
 
 @implementation STMCoreWKWebViewVC (Navigation)
@@ -87,6 +88,20 @@
 
     UIApplication *app = [UIApplication sharedApplication];
     NSURL *url = navigationAction.request.URL;
+    
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+        
+        if ([url.absoluteString containsString:@"access-token"]){
+            
+            NSString *authToken = [url.absoluteString componentsSeparatedByString:@"access-token="].lastObject;
+            
+            STMCoreAuthController.authController.accessToken = authToken;
+            
+            STMCoreAuthController.authController.controllerState = STMAuthRequestRoles;
+                        
+        }
+        
+    #endif
 
     if ([url.scheme isEqualToString:@"tel"]) {
 
