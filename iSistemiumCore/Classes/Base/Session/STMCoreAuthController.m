@@ -27,6 +27,10 @@
 
 #define ROLES_URL @"https://api.sistemium.com/pha/roles"
 
+#define VFS_ROLES_URL @"https://oauth.it/api/roles"
+
+#define VFS_SOCKET_URL @"https://socket3.sistemium.com/socket.io-client"
+
 #define TIMEOUT 15.0
 
 #define KC_PHONE_NUMBER @"phoneNumber"
@@ -742,6 +746,13 @@
     }
 
     NSURLRequest *request = [self authenticateRequest:[self requestForURL:ROLES_URL]];
+    
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+        
+        request = [self authenticateRequest:[self requestForURL:VFS_ROLES_URL]];
+        
+    #endif
+    
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 
     if (connection) {
@@ -981,25 +992,56 @@
             if (roles) {
 
                 self.rolesResponse = responseJSON;
+                
+                #if defined (CONFIGURATION_DebugVfs)
+                
+                    self.accountOrg = @"vfsd";
+                    self.userID = responseJSON[@"account"][@"id"];
+                    self.userName = responseJSON[@"account"][@"name"];
+                    self.socketURL = VFS_SOCKET_URL;
+                    self.entityResource = @"vfsd/Entity";
+                    self.iSisDB = self.userID;
+                    self.stcTabs = @[@{
+                                         @"name": @"STMWKWebView",
+                                         @"title": @"VFS",
+                                         @"imageName": @"3colors-colorless.png",
+                                         @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                                         @"url": @"https://vfsm2.sistemium.com"
+                                         
+                    }];
+                
+                #elif defined (CONFIGURATION_ReleaseVfs)
+                
+                    self.accountOrg = @"vfs";
+                    self.userID = responseJSON[@"account"][@"id"];
+                    self.userName = responseJSON[@"account"][@"name"];
+                    self.socketURL = VFS_SOCKET_URL;
+                    self.entityResource = @"vfs/Entity";
+                    self.iSisDB = self.userID;
+                                    
+                #else
 
-                self.accountOrg = roles[@"org"];
-                self.iSisDB = roles[@"iSisDB"];
-                id stcTabs = roles[@"stcTabs"];
+                    self.accountOrg = roles[@"org"];
+                    self.iSisDB = roles[@"iSisDB"];
+                
+                    id stcTabs = roles[@"stcTabs"];
 
-                if ([stcTabs isKindOfClass:[NSArray class]]) {
+                    if ([stcTabs isKindOfClass:[NSArray class]]) {
 
-                    self.stcTabs = stcTabs;
+                        self.stcTabs = stcTabs;
 
-                } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
+                    } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
 
-                    self.stcTabs = @[stcTabs];
+                        self.stcTabs = @[stcTabs];
 
-                } else {
+                    } else {
 
-                    [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
-                                                             numType:STMLogMessageTypeError];
+                        [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
+                                                                 numType:STMLogMessageTypeError];
 
-                }
+                    }
+                
+                #endif
 
             } else {
 
