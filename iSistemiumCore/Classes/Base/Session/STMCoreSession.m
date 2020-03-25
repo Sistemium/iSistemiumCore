@@ -279,7 +279,7 @@ NSTimer *flushTimer;
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
 
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://sistemium.com/%@.mom", dataModelName]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.sistemium.com/models/%@.mom", dataModelName]];
     NSURLSession *session = [NSURLSession sharedSession];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
     
