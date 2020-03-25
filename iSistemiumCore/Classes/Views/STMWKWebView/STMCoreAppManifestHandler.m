@@ -308,6 +308,12 @@
     [manifestLines removeObject:@"robots.txt"];
 
     NSUInteger cacheManifestLineIndex = [manifestLines indexOfObject:MANIFEST_CACHE_MANIFEST_LINE];
+    
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+        
+        cacheManifestLineIndex = 0;
+        
+    #endif
 
     if (cacheManifestLineIndex == NSNotFound) {
 
