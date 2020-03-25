@@ -229,6 +229,12 @@
 }
 
 - (void)handleTabbarMessage:(WKScriptMessage *)message {
+    
+    if (self.directLoadUrl != nil) {
+        
+        return;
+        
+    }
 
     NSDictionary *parameters = message.body;
 
