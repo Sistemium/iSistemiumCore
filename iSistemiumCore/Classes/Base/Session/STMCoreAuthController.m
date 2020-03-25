@@ -535,7 +535,7 @@
     
 #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
     
-    NSLog(@"USE VFSplaye DATA MODEL");
+    NSLog(@"USE VFS DATA MODEL");
     dataModelName = @"vfs";
     
 #endif
