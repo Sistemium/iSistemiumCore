@@ -1007,14 +1007,22 @@
                     self.socketURL = VFS_SOCKET_URL;
                     self.entityResource = @"vfsd/Entity";
                     self.iSisDB = self.userID;
-                    self.stcTabs = @[@{
-                                         @"name": @"STMWKWebView",
-                                         @"title": @"VFS",
-                                         @"imageName": @"3colors-colorless.png",
-                                         @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
-                                         @"url": @"https://vfsm2.sistemium.com"
+                    self.phoneNumber = @"";
+                    self.stcTabs = @[
+                        @{
+                            @"name": @"STMProfile",
+                            @"title": @"Профиль",
+                            @"imageName": @"checked_user-128.png",
+                        },
+                        @{
+                            @"name": @"STMWKWebView",
+                            @"title": @"VFS",
+                            @"imageName": @"3colors-colorless.png",
+                            @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                            @"url": @"https://vfsm2.sistemium.com"
                                          
-                    }];
+                        }
+                    ];
                 
                 #elif defined (CONFIGURATION_ReleaseVfs)
                 
@@ -1024,6 +1032,22 @@
                     self.socketURL = VFS_SOCKET_URL;
                     self.entityResource = @"vfs/Entity";
                     self.iSisDB = self.userID;
+                    self.phoneNumber = @"";
+                    self.stcTabs = @[
+                        @{
+                            @"name": @"STMProfile",
+                            @"title": @"Профиль",
+                            @"imageName": @"checked_user-128.png",
+                        },
+                        @{
+                            @"name": @"STMWKWebView",
+                            @"title": @"VFS",
+                            @"imageName": @"3colors-colorless.png",
+                            @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                            @"url": @"https://vfsm2.sistemium.com"
+                                         
+                        }
+                    ];
                                     
                 #else
 
