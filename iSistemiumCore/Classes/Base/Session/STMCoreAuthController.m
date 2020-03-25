@@ -613,6 +613,12 @@
     }
 
 //    self.socketURL = @"http://lamac.local:8000/socket.io-client/";
+    
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+        
+        self.socketURL = VFS_SOCKET_URL;
+        
+    #endif
 
     if (self.socketURL) {
 
