@@ -185,33 +185,10 @@
     
     id parametersData = parameters[@"data"];
     
-    if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE]) {
+    if ([parametersData isKindOfClass:NSDictionary.class]) {
         
-        if (![parametersData isKindOfClass:NSDictionary.class]) {
-            
-            [STMFunctions error:&resultError
-                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSDictionary class",
-                                 scriptMessage.name]];
-        } else {
-            
-            parametersData = @[parametersData];
-            
-        }
+        parametersData = @[parametersData];
         
-    } else if ([scriptMessage.name isEqualToString:WK_MESSAGE_UPDATE_ALL]) {
-        
-        if (![parametersData isKindOfClass:[NSArray <NSDictionary *> class]]) {
-            
-            [STMFunctions error:&resultError
-                    withMessage:[NSString stringWithFormat:@"message.body.data for %@ message is not a NSArray<NSDictionary> class",
-                                 scriptMessage.name]];
-        }
-        
-    } else {
-        
-        [STMFunctions error:&resultError
-                withMessage:[NSString stringWithFormat:@"unknown update message name: %@",
-                             scriptMessage.name]];
     }
     
     if (resultError) {
