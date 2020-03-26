@@ -157,6 +157,7 @@
     NSString *where = @"";
 
     if (predicate) {
+        self.predicator.referenceEntityName = entityName;
         where = [self.predicator SQLFilterForPredicate:predicate];
         where = [where stringByReplacingOccurrencesOfString:@" AND ()"
                                                  withString:@""];

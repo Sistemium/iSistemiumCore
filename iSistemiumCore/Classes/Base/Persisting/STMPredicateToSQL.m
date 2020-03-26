@@ -91,6 +91,20 @@ static NSString *SQLNullValueString = @"NULL";
 
 
 - (NSString *)DatabaseKeyfor:(NSString *)obj {
+    
+    if (_referenceEntityName){
+        
+        NSDictionary <NSString *, NSString *> *relations = [self.modellingDelegate objectRelationshipsForEntityName:[STMFunctions addPrefixToEntityName:_referenceEntityName] isToMany:nil];
+            
+        NSString *table = [STMFunctions removePrefixFromEntityName:relations[obj]];
+        
+        if (table){
+            
+            return table;
+            
+        }
+        
+    }
 
     NSString *table = [STMFunctions uppercaseFirst:obj];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
@@ -103,7 +117,7 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 - (NSString *)ToManyKeyToTablename:(NSString *)obj {
-
+    
     NSString *table = [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
 
