@@ -139,7 +139,7 @@ typedef NSMutableArray <STMScriptMessagingFilterDictionary *> STMScriptMessaging
 }
 
 - (NSArray <NSString *> *)comparisonOperators {
-    return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like", @"likei"];
+    return @[@"==", @"!=", @">=", @"<=", @">", @"<", @"like", @"likei", @"in"];
 }
 
 
