@@ -16,6 +16,8 @@
 
 @implementation STMCoreSession
 
+NSString *const STM_MODELS_URL = @"https://api.sistemium.com/models/%@.mom";
+
 @synthesize syncer = _syncer;
 @synthesize filing = _filing;
 
@@ -271,17 +273,35 @@ NSTimer *flushTimer;
     
 }
 
-- (AnyPromise *)downloadModel {
+- (NSURL *)modelURL {
     
     NSString *dataModelName = self.startSettings[@"dataModelName"];
     
     if (!dataModelName) {
         dataModelName = [[STMCoreAuthController authController] dataModelName];
     }
+    
+    NSString *modelsRole = [STMCoreAuthController authController].rolesResponse[@"roles"][@"models"];
+   
+    NSString *modelName = dataModelName.mutableCopy;
+    
+    if (modelsRole) {
+        modelName = [NSString stringWithFormat:@"%@/%@", modelsRole, modelName];
+    }
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:STM_MODELS_URL, modelName]];
+    
+    NSLog(@"Model URI: %@", url);
 
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://sistemium.com/%@.mom", dataModelName]];
+    return url;
+
+}
+
+- (AnyPromise *)downloadModel {
+    
+
     NSURLSession *session = [NSURLSession sharedSession];
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[self modelURL]];
     
     NSString *modelPath = [self.filing persistencePath:@"model"];
     NSString *etagPath = [modelPath stringByAppendingPathComponent:@"etag"];
@@ -356,6 +376,7 @@ NSTimer *flushTimer;
     }]
     .catch(^(NSError *error) {
         if (modelExists) {
+            NSLog(@"Use cached model after: %@", error.localizedDescription);
             return [AnyPromise promiseWithValue:momPath];
         }
         return [AnyPromise promiseWithValue:error];;
