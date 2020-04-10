@@ -795,8 +795,8 @@
         
     } else {
         
-        if (!self.bestCheckinLocation || (location.horizontalAccuracy <= self.bestCheckinLocation.horizontalAccuracy
-                                          && [self checkNANValues:location])) {
+        if ((!self.bestCheckinLocation || location.horizontalAccuracy <= self.bestCheckinLocation.horizontalAccuracy)
+                                          && [self checkNANValues:location]) {
             self.bestCheckinLocation = location;
         }
         
