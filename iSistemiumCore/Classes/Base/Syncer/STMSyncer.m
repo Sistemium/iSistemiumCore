@@ -795,6 +795,7 @@
 //        }
 
         if (error) {
+            [self checkGoneEntity:entityName itemData:itemData headers:headers];
             NSLog(@"updateResource error: %@", error.localizedDescription);
         }
 
@@ -809,6 +810,30 @@
 
     }];
 
+}
+
+- (void)checkGoneEntity:(NSString *)entityName itemData:(NSDictionary *)itemData headers:(NSDictionary *)headers {
+    
+    if ([headers[@"error"] intValue] == 410){
+        
+        NSLog(@"destroy gone entity name: %@, id: %@", entityName, itemData[@"id"]);
+
+        NSError *error = nil;
+        
+        NSDictionary *options = @{STMPersistingOptionRecordstatuses: @NO};
+        
+        [self.persistenceDelegate destroySync:entityName identifier:itemData[@"id"] options:options error:&error];
+        
+        if (error) {
+
+            NSString *errorMessage = [NSString stringWithFormat:@"Error destroy gone entity: %@", error.localizedDescription];
+
+            [self.logger errorMessage:errorMessage];
+
+        }
+        
+    }
+    
 }
 
 - (void)finishUnsyncedProcess {
