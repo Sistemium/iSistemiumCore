@@ -565,7 +565,7 @@
     
     if (lastLocation &&
         (self.tracking || locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL) &&
-        lastLocation.horizontalAccuracy <= self.checkinAccuracy) {
+        lastLocation.horizontalAccuracy <= self.checkinAccuracy && [self checkNANValues:lastLocation]) {
 
         NSString *logMessage = @"have recent location for checkin";
         [[self.session logger] saveLogMessageWithText:logMessage
@@ -714,7 +714,7 @@
     CLLocationAccuracy previousAccuracy = self.currentAccuracy;
     self.currentAccuracy = newLocation.horizontalAccuracy;
     
-    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL && self.currentAccuracy > 0) {
+    if (locationAge < ACTUAL_LOCATION_CHECK_TIME_INTERVAL && self.currentAccuracy > 0 && [self checkNANValues:newLocation]) {
 
         BOOL shouldSaveLocation = [self.geotrackerControl isEqualToString:GEOTRACKER_CONTROL_SHIPMENT_ROUTE] || [self currentTimeIsInsideOfScheduleLimits];
         
@@ -774,7 +774,7 @@
 
 - (void)handleCheckinModeLocation:(CLLocation *)location {
     
-    if (location.horizontalAccuracy <= self.checkinAccuracy) {
+    if (location.horizontalAccuracy <= self.checkinAccuracy && [self checkNANValues:location]) {
         
         [self receiveCheckinLocation:location];
 
@@ -795,7 +795,8 @@
         
     } else {
         
-        if (!self.bestCheckinLocation || location.horizontalAccuracy <= self.bestCheckinLocation.horizontalAccuracy) {
+        if ((!self.bestCheckinLocation || location.horizontalAccuracy <= self.bestCheckinLocation.horizontalAccuracy)
+                                          && [self checkNANValues:location]) {
             self.bestCheckinLocation = location;
         }
         
@@ -984,6 +985,16 @@
 
 - (void)checkTimeForTracking {
     // prevent from super class method execute - causes to undesirable stop of tracker
+}
+
+- (BOOL)checkNANValues:(CLLocation *)location {
+    
+    return location.coordinate.latitude != NAN
+    && location.coordinate.longitude != NAN
+    && location.horizontalAccuracy != NAN
+    && location.verticalAccuracy != NAN
+    && location.altitude != NAN;
+    
 }
 
 

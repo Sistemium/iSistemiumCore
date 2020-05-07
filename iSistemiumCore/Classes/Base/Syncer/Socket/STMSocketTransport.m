@@ -516,21 +516,30 @@
 }
 
 - (void)checkAppState {
+    
 
     NSString *appState = [STMFunctions appStateString];
 
     [self socketSendEvent:STMSocketEventStatusChange withValue:appState];
 
     if (![appState isEqualToString:@"UIApplicationStateActive"]) return;
-
-    UIViewController *selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
+    
+    __block UIViewController *selectedVC = nil;
+    
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        selectedVC = [STMCoreRootTBC sharedRootVC].selectedViewController;
+    });
 
     if (![selectedVC class]) return;
 
     Class _Nonnull rootVCClass = (Class _Nonnull) [selectedVC class];
 
-    NSString *value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
-
+    __block NSString *value = nil;
+    
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        value = [NSString stringWithFormat:@"selectedViewController: %@ %@ %@", selectedVC.title, selectedVC, NSStringFromClass(rootVCClass)];
+    });
+    
     [self socketSendEvent:STMSocketEventStatusChange withValue:value];
 
 }
