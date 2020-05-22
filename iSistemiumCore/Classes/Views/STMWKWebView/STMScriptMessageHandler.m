@@ -13,6 +13,8 @@
 #import <Photos/Photos.h>
 #import "STMLogger.h"
 
+@import Contacts;
+
 @implementation STMScriptMessagingSubscription
 
 @end
@@ -292,6 +294,59 @@
     }
     
 }
+
+- (void)loadContactsMessage:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+
+    CNContactStore *store = [[CNContactStore alloc] init];
+    [store requestAccessForEntityType:CNEntityTypeContacts completionHandler:^(BOOL granted, NSError * _Nullable error) {
+
+        if (!granted) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                [self.owner callbackWithError:NSLocalizedString(@"CONTACT PERMISSION DENIED", nil) parameters:parameters];
+                
+            });
+            return;
+        }
+
+        NSMutableArray *contacts = [NSMutableArray array];
+
+        NSError *fetchError;
+        CNContactFetchRequest *request = [[CNContactFetchRequest alloc] initWithKeysToFetch:@[CNContactIdentifierKey, [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName], CNContactPhoneNumbersKey]];
+
+        BOOL success = [store enumerateContactsWithFetchRequest:request error:&fetchError usingBlock:^(CNContact *contact, BOOL *stop) {
+            [contacts addObject:contact];
+        }];
+        if (!success) {
+            [self.owner callbackWithError:NSLocalizedString(@"CONTACT PERMISSION DENIED", nil) parameters:parameters];
+            return;
+        }
+
+        CNContactFormatter *formatter = [[CNContactFormatter alloc] init];
+        
+        NSMutableDictionary *result = @{}.mutableCopy;
+        
+        for (CNContact *contact in contacts) {
+            NSString *string = [formatter stringFromContact:contact];
+            NSMutableArray *phoneArray = @[].mutableCopy;
+            for (CNLabeledValue *phone in contact.phoneNumbers){
+                [phoneArray addObject:[[phone value] stringValue]];
+            }
+            result[string] = phoneArray.copy;
+        }
+        [self.owner callbackWithData:@[result.copy]
+                          parameters:parameters
+                  jsCallbackFunction:callback];
+    }];
+    
+}
+
+
+
 
 - (void)syncSubscriptions {
     

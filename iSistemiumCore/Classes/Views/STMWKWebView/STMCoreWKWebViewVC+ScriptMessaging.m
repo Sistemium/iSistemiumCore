@@ -89,7 +89,7 @@
         [self handleCheckinMessage:message];
 
     } else if ([message.name isEqualToString:WK_MESSAGE_TAKE_PHOTO]) {
-
+        
         [self.scriptMessageHandler handleTakePhotoMessage:message];
 
     } else if ([message.name isEqualToString:WK_MESSAGE_CMERA_ROLL]) {
@@ -133,6 +133,10 @@
     } else if ([message.name isEqualToString:WK_MESSAGE_COPY_CLIPBOARD]) {
 
         [self.scriptMessageHandler handleCopyToClipboardMessage:message];
+
+    } else if ([message.name isEqualToString:WK_MESSAGE_GET_CONTACTS]) {
+
+        [self.scriptMessageHandler loadContactsMessage:message];
 
     }
 
