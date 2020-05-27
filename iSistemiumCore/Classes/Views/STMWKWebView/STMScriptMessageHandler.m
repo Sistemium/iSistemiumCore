@@ -316,7 +316,7 @@
         NSMutableArray *contacts = [NSMutableArray array];
 
         NSError *fetchError;
-        CNContactFetchRequest *request = [[CNContactFetchRequest alloc] initWithKeysToFetch:@[CNContactIdentifierKey, [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName], CNContactPhoneNumbersKey]];
+        CNContactFetchRequest *request = [[CNContactFetchRequest alloc] initWithKeysToFetch:@[CNContactIdentifierKey, [CNContactFormatter descriptorForRequiredKeysForStyle:CNContactFormatterStyleFullName], CNContactPhoneNumbersKey, CNContactEmailAddressesKey]];
 
         BOOL success = [store enumerateContactsWithFetchRequest:request error:&fetchError usingBlock:^(CNContact *contact, BOOL *stop) {
             [contacts addObject:contact];
@@ -328,15 +328,24 @@
 
         CNContactFormatter *formatter = [[CNContactFormatter alloc] init];
         
-        NSMutableDictionary *result = @{}.mutableCopy;
+        NSMutableArray *result = @[].mutableCopy;
         
         for (CNContact *contact in contacts) {
-            NSString *string = [formatter stringFromContact:contact];
+            NSString *contactName = [formatter stringFromContact:contact];
+            NSMutableDictionary *contactDictionary = @{}.mutableCopy;
             NSMutableArray *phoneArray = @[].mutableCopy;
             for (CNLabeledValue *phone in contact.phoneNumbers){
                 [phoneArray addObject:[[phone value] stringValue]];
             }
-            result[string] = phoneArray.copy;
+            contactDictionary[@"phones"] = phoneArray.copy;
+            NSMutableArray *emailArray = @[].mutableCopy;
+            for (CNLabeledValue *email in contact.emailAddresses){
+                [emailArray addObject:[[email value] stringValue]];
+            }
+            contactDictionary[@"emails"] = emailArray.copy;
+            contactDictionary[@"name"] = contactName;
+            contactDictionary[@"id"] = contact.identifier;
+            [result addObject:contactDictionary.copy];
         }
         [self.owner callbackWithData:@[result.copy]
                           parameters:parameters
