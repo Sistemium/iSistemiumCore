@@ -347,7 +347,7 @@
             contactDictionary[@"id"] = contact.identifier;
             [result addObject:contactDictionary.copy];
         }
-        [self.owner callbackWithData:@[result.copy]
+        [self.owner callbackWithData:result.copy
                           parameters:parameters
                   jsCallbackFunction:callback];
     }];
