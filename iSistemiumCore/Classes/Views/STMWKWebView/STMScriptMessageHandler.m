@@ -340,7 +340,7 @@
             contactDictionary[@"phones"] = phoneArray.copy;
             NSMutableArray *emailArray = @[].mutableCopy;
             for (CNLabeledValue *email in contact.emailAddresses){
-                [emailArray addObject:[[email value] stringValue]];
+                [emailArray addObject:[email value]];
             }
             contactDictionary[@"emails"] = emailArray.copy;
             contactDictionary[@"name"] = contactName;
