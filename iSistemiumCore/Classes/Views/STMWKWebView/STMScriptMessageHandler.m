@@ -354,8 +354,37 @@
     
 }
 
+- (void)navigate:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+    
+    NSString *callback = parameters[@"callback"];
+    
+    NSString *latitude = parameters[@"latitude"];
+    
+    NSString *longitude = parameters[@"longitude"];
+    
+    if ([parameters[@"navigator"] isEqualToString:@"Waze"]) {
 
+        if ([[UIApplication sharedApplication]
+          canOpenURL:[NSURL URLWithString:@"waze://"]]) {
+            NSString *urlStr =
+              [NSString stringWithFormat:@"https://waze.com/ul?ll=%@,%@&navigate=yes",
+              latitude, longitude];
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlStr]];
+        } else {
+          [[UIApplication sharedApplication] openURL:[NSURL
+            URLWithString:@"http://itunes.apple.com/us/app/id323229106"]];
+        }
 
+    } else {
+        
+        [[UIApplication sharedApplication] openURL:
+         [NSURL URLWithString:[NSString stringWithFormat:@"http://maps.google.com/maps?daddr=%@,%@", latitude, longitude]]];
+        
+    }
+    
+}
 
 - (void)syncSubscriptions {
     

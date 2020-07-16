@@ -53,6 +53,8 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (void)loadContactsMessage:(WKScriptMessage *)message;
 
+- (void)navigate:(WKScriptMessage *)message;
+
 - (void)syncSubscriptions;
 
 - (void)cancelSubscriptions;

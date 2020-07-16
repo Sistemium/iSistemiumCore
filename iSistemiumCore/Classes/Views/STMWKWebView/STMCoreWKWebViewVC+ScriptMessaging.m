@@ -138,6 +138,10 @@
 
         [self.scriptMessageHandler loadContactsMessage:message];
 
+    } else if ([message.name isEqualToString:WK_MESSAGE_NAVIGATE]) {
+
+        [self.scriptMessageHandler navigate:message];
+        
     }
 
 }
