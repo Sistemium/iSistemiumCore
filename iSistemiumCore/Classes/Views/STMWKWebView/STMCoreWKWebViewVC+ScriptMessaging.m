@@ -250,30 +250,20 @@
 
     if ([action isEqualToString:@"show"]) {
 
-        [[STMCoreRootTBC sharedRootVC] showTabBar];
-
         CGFloat tabbarHeight = CGRectGetHeight(self.tabBarController.tabBar.frame);
-        UIEdgeInsets insets = self.webView.scrollView.contentInset;
-        self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, tabbarHeight, insets.right);
-
-        UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-        self.webView.scrollView.scrollIndicatorInsets =
-                UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, tabbarHeight, scrollIndicatorInsets.right);
-
-        [self callbackWithData:@[@"tabbar show success"] parameters:parameters];
+        
+        self.bottomConstraint.constant = tabbarHeight;
+        
+        [[STMCoreRootTBC sharedRootVC] showTabBar];
+        
 
     } else if ([action isEqualToString:@"hide"]) {
 
         if (self.isInActiveTab) {
+            
+            self.bottomConstraint.constant = 0;
 
             [[STMCoreRootTBC sharedRootVC] hideTabBar];
-
-            UIEdgeInsets insets = self.webView.scrollView.contentInset;
-            self.webView.scrollView.contentInset = UIEdgeInsetsMake(insets.top, insets.left, 0, insets.right);
-
-            UIEdgeInsets scrollIndicatorInsets = self.webView.scrollView.scrollIndicatorInsets;
-            self.webView.scrollView.scrollIndicatorInsets =
-                    UIEdgeInsetsMake(scrollIndicatorInsets.top, scrollIndicatorInsets.left, 0, scrollIndicatorInsets.right);
 
             [self callbackWithData:@[@"tabbar hide success"] parameters:parameters];
 

@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSDictionary *webViewStoryboardParameters;
 @property (nonatomic) BOOL haveLocalHTML;
 @property (nonatomic) NSString *directLoadUrl;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomConstraint;
 
 - (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;
