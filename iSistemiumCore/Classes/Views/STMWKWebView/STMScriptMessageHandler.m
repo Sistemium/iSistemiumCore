@@ -357,9 +357,7 @@
 - (void)navigate:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;
-    
-    NSString *callback = parameters[@"callback"];
-    
+        
     NSString *latitude = parameters[@"latitude"];
     
     NSString *longitude = parameters[@"longitude"];
@@ -383,6 +381,28 @@
          [NSURL URLWithString:[NSString stringWithFormat:@"http://maps.google.com/maps?daddr=%@,%@", latitude, longitude]]];
         
     }
+        
+}
+
+- (void)switchTab:(WKScriptMessage *)message {
+    
+    NSDictionary *parameters = message.body;
+        
+    NSString *tabName = parameters[@"tabName"];
+            
+    for (UIViewController *controller in self.owner.tabBarController.viewControllers){
+
+        if ([controller.tabBarItem.title isEqualToString:tabName]){
+            
+            self.owner.tabBarController.selectedViewController = controller;
+            
+            return;
+
+        }
+
+    }
+    
+     
     
 }
 

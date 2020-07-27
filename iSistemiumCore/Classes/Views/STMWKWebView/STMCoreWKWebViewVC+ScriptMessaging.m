@@ -75,7 +75,7 @@
     } else if ([message.name isEqualToString:WK_MESSAGE_TABBAR]) {
 
         [self handleTabbarMessage:message];
-
+        
     } else if ([message.name isEqualToString:WK_MESSAGE_REMOTE_CONTROL]) {
 
         [self handleRemoteControlMessage:message];
@@ -142,7 +142,11 @@
 
         [self.scriptMessageHandler navigate:message];
         
-    }
+    } else if ([message.name isEqualToString:WK_MESSAGE_SWITCH_TAB]) {
+
+           [self.scriptMessageHandler switchTab:message];
+           
+       }
 
 }
 
