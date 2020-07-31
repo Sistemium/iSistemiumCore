@@ -418,7 +418,11 @@
     self.webView.navigationDelegate = self;
 
     self.webView.scrollView.scrollEnabled = ![self disableScroll];
+    
+    CGFloat tabbarHeight = CGRectGetHeight(self.tabBarController.tabBar.frame);
 
+    self.bottomConstraint.constant = tabbarHeight;
+    
     [self loadWebView];
 
 }
