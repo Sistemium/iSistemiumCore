@@ -11,7 +11,6 @@
 @interface STMPredicateToSQL : NSObject
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
-@property (nonatomic, nullable) NSString *referenceEntityName;
 
 - (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate;
 
