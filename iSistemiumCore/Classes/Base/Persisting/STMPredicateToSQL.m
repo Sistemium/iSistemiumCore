@@ -90,7 +90,21 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 
-- (NSString *)DatabaseKeyfor:(NSString *)obj {
+- (NSString *)DatabaseKeyfor:(NSString *)obj entityName:(NSString *)entityName {
+    
+    if (entityName){
+        
+        NSDictionary <NSString *, NSString *> *relations = [self.modellingDelegate objectRelationshipsForEntityName:[STMFunctions addPrefixToEntityName:entityName] isToMany:nil];
+            
+        NSString *table = [STMFunctions removePrefixFromEntityName:relations[obj]];
+        
+        if (table){
+            
+            return table;
+            
+        }
+        
+    }
 
     NSString *table = [STMFunctions uppercaseFirst:obj];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
@@ -103,7 +117,7 @@ static NSString *SQLNullValueString = @"NULL";
 }
 
 - (NSString *)ToManyKeyToTablename:(NSString *)obj {
-
+    
     NSString *table = [STMFunctions uppercaseFirst:[obj substringToIndex:obj.length - 1]];
     BOOL isTable = [self.modellingDelegate storageForEntityName:table] == STMStorageTypeFMDB;
 
@@ -323,7 +337,7 @@ static NSString *SQLNullValueString = @"NULL";
     return retStr;
 }
 
-- (NSString *)SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate {
+- (NSString *)SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *)predicate  entityName:(NSString *)entityName {
 
     NSString *leftSQLExpression = [self SQLExpressionForLeftNSExpression:[predicate leftExpression]];
     NSString *rightSQLExpression = [self SQLExpressionForNSExpression:[predicate rightExpression]];
@@ -342,7 +356,7 @@ static NSString *SQLNullValueString = @"NULL";
 
     if (tables.count > 1) {
 
-        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@", [self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0]]], [self FKToTablename:tables[1]]];
+        leftSQLExpression = [NSString stringWithFormat:@"exists ( select * from %@ where %@", [self ToManyKeyToTablename:[self DatabaseKeyfor:tables[0] entityName:entityName]], [self FKToTablename:tables[1]]];
         if ([[self ToManyKeyToTablename:tables[0]] isEqualToString:tables[0]]) {
 
             if ([rightSQLExpression isEqualToString:@"NULL"]) {
@@ -422,12 +436,12 @@ static NSString *SQLNullValueString = @"NULL";
     return nil;
 }
 
-- (NSString *)SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate {
+- (NSString *)SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *)predicate entityName:(NSString *)entityName {
 
     NSMutableArray *subs = [NSMutableArray array];
 
     for (NSPredicate *sub in [predicate subpredicates]) {
-        NSString *part = [self SQLFilterForPredicate:sub];
+        NSString *part = [self SQLFilterForPredicate:sub entityName:entityName];
         if (part && part.length) [subs addObject:part];
     }
 
@@ -495,14 +509,14 @@ static NSString *SQLNullValueString = @"NULL";
 
 }
 
-- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate {
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName {
 
     NSString *result;
 
     if ([predicate respondsToSelector:@selector(compoundPredicateType)]) {
-        result = [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *) predicate];
+        result = [self SQLWhereClauseForCompoundPredicate:(NSCompoundPredicate *) predicate entityName:entityName];
     } else if ([predicate respondsToSelector:@selector(predicateOperatorType)]) {
-        result = [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *) predicate];
+        result = [self SQLWhereClauseForComparisonPredicate:(NSComparisonPredicate *) predicate entityName:(NSString *)entityName];
     }
 
     if (result) {

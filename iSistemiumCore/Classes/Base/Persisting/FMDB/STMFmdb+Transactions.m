@@ -78,7 +78,7 @@
 
 - (NSUInteger)destroyWithoutSave:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options error:(NSError **)error {
 
-    NSString *where = [self.predicator SQLFilterForPredicate:predicate];
+    NSString *where = [self.predicator SQLFilterForPredicate:predicate entityName:nil];
     NSString *tablename = [STMFunctions removePrefixFromEntityName:entityName];
 
     if ([where isEqualToString:@"( )"] || [where isEqualToString:@"()"]) {
@@ -157,7 +157,7 @@
     NSString *where = @"";
 
     if (predicate) {
-        where = [self.predicator SQLFilterForPredicate:predicate];
+        where = [self.predicator SQLFilterForPredicate:predicate entityName:entityName];
         where = [where stringByReplacingOccurrencesOfString:@" AND ()"
                                                  withString:@""];
         where = [where stringByReplacingOccurrencesOfString:@"?uncapitalizedTableName?"
@@ -215,7 +215,7 @@
 
     if (options[STMPersistingOptionForceStorage] && ![self.stmFMDB hasTable:entityName]) return 0;
 
-    NSString *where = [self.predicator SQLFilterForPredicate:predicate];
+    NSString *where = [self.predicator SQLFilterForPredicate:predicate entityName:nil];
 
     if (where.length) {
         where = [NSString stringWithFormat:@"WHERE %@", where];

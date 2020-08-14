@@ -12,7 +12,7 @@
 
 @property (nonatomic, weak) id <STMModelling> modellingDelegate;
 
-- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate;
+- (NSString *)SQLFilterForPredicate:(NSPredicate *)predicate entityName:(NSString *)entityName;
 
 + (instancetype)predicateToSQLWithModelling:(id <STMModelling>)modelling;
 
