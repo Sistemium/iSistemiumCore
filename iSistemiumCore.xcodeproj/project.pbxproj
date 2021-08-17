@@ -242,6 +242,7 @@
 		2CD977771D2569E5005FBC6C /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD9775F1D2569E5005FBC6C /* WebSocket.swift */; };
 		2CD9777B1D257012005FBC6C /* SSLSecurity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD9777A1D257012005FBC6C /* SSLSecurity.swift */; };
 		2CFA302D1D47E4D800BB9E35 /* STMUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CFA302C1D47E4D800BB9E35 /* STMUserDefaults.m */; };
+		35A230E526CBEF1700EA0F1A /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A230E426CBEF1700EA0F1A /* Login.swift */; };
 		516D2EE99677948E62127DC5 /* Pods_iSistemiumCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 76C4530E39F4A0FBFFA98B4C /* Pods_iSistemiumCore.framework */; };
 		6CD3B0656CADFE9F10860176 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2601ACE60FE95DF35F6F37B8 /* Pods.framework */; };
 /* End PBXBuildFile section */
@@ -654,6 +655,7 @@
 		2CE77BFD1CD3A2DC0034E469 /* STMSoundCallbackable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STMSoundCallbackable.h; sourceTree = "<group>"; };
 		2CFA302B1D47E4D800BB9E35 /* STMUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STMUserDefaults.h; sourceTree = "<group>"; };
 		2CFA302C1D47E4D800BB9E35 /* STMUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STMUserDefaults.m; sourceTree = "<group>"; };
+		35A230E426CBEF1700EA0F1A /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
 		3EC6EC8B00B17412AB815609 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		76C4530E39F4A0FBFFA98B4C /* Pods_iSistemiumCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iSistemiumCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9215A61EDE47C6631F35D0BD /* Pods-iSistemiumCore.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iSistemiumCore.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iSistemiumCore/Pods-iSistemiumCore.debug.xcconfig"; sourceTree = "<group>"; };
@@ -727,6 +729,7 @@
 		2C3F72C01CBBD46400F8BFB8 /* iSistemiumCore */ = {
 			isa = PBXGroup;
 			children = (
+				35A230E326CBEF0100EA0F1A /* Login */,
 				2C3F73F91CBBD75A00F8BFB8 /* Classes */,
 				2C3F73A11CBBD6CC00F8BFB8 /* DataModel */,
 				2C3F737A1CBBD62100F8BFB8 /* Frameworks */,
@@ -1316,6 +1319,14 @@
 			path = WebSocket;
 			sourceTree = "<group>";
 		};
+		35A230E326CBEF0100EA0F1A /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				35A230E426CBEF1700EA0F1A /* Login.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
 		7EF1977DB6872C616B454979 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1429,6 +1440,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				ru,
 			);
@@ -1661,6 +1673,7 @@
 				2C3F742A1CBBD78300F8BFB8 /* STMCoreLocationTracker.m in Sources */,
 				2C3F73E31CBBD6FE00F8BFB8 /* STMClientEntity.m in Sources */,
 				2C3F74261CBBD78300F8BFB8 /* STMCoreBatteryTracker.m in Sources */,
+				35A230E526CBEF1700EA0F1A /* Login.swift in Sources */,
 				2C3F742D1CBBD78300F8BFB8 /* STMScanApiHelper.m in Sources */,
 				2C13F50F1CE30D2000A5F129 /* STMWorkflowEditablesVC.m in Sources */,
 				2C3F73F61CBBD6FE00F8BFB8 /* STMWorkflow+CoreDataProperties.m in Sources */,
