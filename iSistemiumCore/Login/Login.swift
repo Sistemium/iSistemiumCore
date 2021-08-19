@@ -24,8 +24,10 @@ struct Login: View {
             .onClear { _ in isEditing.toggle() }
             .accentColor(Color.orange)
             .padding()
+            .scaleEffect(0.9)
             .background(Color.white)
             .cornerRadius(10)
+            .shadow(color: isEditing ? .gray : .white, radius: 5)
             .padding()
     }
 }
