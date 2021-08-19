@@ -17,7 +17,7 @@ struct Login: View {
         iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
             .flagHidden(false)
             .prefixHidden(false)
-            .defaultRegion("RUS")
+            .defaultRegion("RU")
             .font(UIFont(size: 30, weight: .light, design: .monospaced))
             .maximumDigits(10)
             .clearButtonMode(.whileEditing)
