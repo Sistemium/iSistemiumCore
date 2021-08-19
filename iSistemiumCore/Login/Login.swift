@@ -7,10 +7,26 @@
 //
 
 import SwiftUI
+import iPhoneNumberField
 
 struct Login: View {
+    @State var text: String = ""
+    @State var isEditing: Bool = false
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
+            .flagHidden(false)
+            .prefixHidden(false)
+            .defaultRegion("RUS")
+            .font(UIFont(size: 30, weight: .light, design: .monospaced))
+            .maximumDigits(10)
+            .clearButtonMode(.whileEditing)
+            .onClear { _ in isEditing.toggle() }
+            .accentColor(Color.orange)
+            .padding()
+            .background(Color.white)
+            .cornerRadius(10)
+            .padding()
     }
 }
 
