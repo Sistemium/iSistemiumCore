@@ -14,28 +14,31 @@ struct Login: View {
     @State var isEditing: Bool = false
 
     var body: some View {
-        VStack{
-            Spacer().frame(height: 50)
-            iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
-                .flagHidden(false)
-                .prefixHidden(false)
-                .defaultRegion("RU")
-                .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                .clearButtonMode(.whileEditing)
-                .onClear { _ in isEditing.toggle() }
-                .accentColor(Color.orange)
-                .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .shadow(color: .gray, radius: 5)
-                .padding()
-                .scaleEffect(0.9)
-            Button("Send") {
-                CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
-                    
+        NavigationView{
+            VStack{
+                Spacer().frame(height: 50)
+                iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
+                    .flagHidden(false)
+                    .prefixHidden(false)
+                    .defaultRegion("RU")
+                    .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                    .clearButtonMode(.whileEditing)
+                    .onClear { _ in isEditing.toggle() }
+                    .accentColor(Color.orange)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(10)
+                    .shadow(color: .gray, radius: 5)
+                    .padding()
+                    .scaleEffect(0.9)
+                Button("Send") {
+                    CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
+                        
+                    }
                 }
+                Spacer()
             }
-            Spacer()
+            .navigationBarTitle("Navigation", displayMode: .inline)
         }
     }
 }
