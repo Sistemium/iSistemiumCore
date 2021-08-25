@@ -15,12 +15,12 @@ struct Login: View {
 
     var body: some View {
         VStack{
+            Spacer().frame(height: 50)
             iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
                 .flagHidden(false)
                 .prefixHidden(false)
                 .defaultRegion("RU")
                 .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                .maximumDigits(10)
                 .clearButtonMode(.whileEditing)
                 .onClear { _ in isEditing.toggle() }
                 .accentColor(Color.orange)
@@ -31,8 +31,11 @@ struct Login: View {
                 .padding()
                 .scaleEffect(0.9)
             Button("Send") {
-                
+                CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
+                    
+                }
             }
+            Spacer()
         }
     }
 }
