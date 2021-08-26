@@ -13,13 +13,13 @@ struct Login: View {
     @State private var text: String = ""
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
-    @State private var authId?:String = nil
+    @State private var authId:String? = nil
 
 
     var body: some View {
         NavigationView{
             VStack{
-                NavigationLink(destination: Text("Second View"), isActive: $showPasswordView) { EmptyView() }
+                NavigationLink(destination: Password(authId: $authId), isActive: $showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)
                 iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
                     .flagHidden(false)
@@ -37,14 +37,23 @@ struct Login: View {
                     .scaleEffect(0.9)
                 Button("Send") {
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
+                        authId = ((try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)) as? [String:String])?.first?.value
                         showPasswordView = true
-                        authId = (JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:String])?.first?.value
                     }
                 }
                 Spacer()
             }
             .navigationBarTitle("Navigation", displayMode: .inline)
         }
+    }
+}
+
+struct Password: View{
+    
+    @Binding var authId: String?
+    
+    var body: some View {
+        Text(authId ?? "")
     }
 }
 
