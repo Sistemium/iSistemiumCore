@@ -10,12 +10,16 @@ import SwiftUI
 import iPhoneNumberField
 
 struct Login: View {
-    @State var text: String = ""
-    @State var isEditing: Bool = false
+    @State private var text: String = ""
+    @State private var isEditing: Bool = false
+    @State private var showPasswordView = false
+    @State private var authId?:String = nil
+
 
     var body: some View {
         NavigationView{
             VStack{
+                NavigationLink(destination: Text("Second View"), isActive: $showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)
                 iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
                     .flagHidden(false)
@@ -33,7 +37,8 @@ struct Login: View {
                     .scaleEffect(0.9)
                 Button("Send") {
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
-                        
+                        showPasswordView = true
+                        authId = (JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:String])?.first?.value
                     }
                 }
                 Spacer()
