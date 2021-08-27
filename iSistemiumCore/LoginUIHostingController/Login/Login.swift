@@ -19,7 +19,7 @@ struct Login: View {
     var body: some View {
         NavigationView{
             VStack{
-                NavigationLink(destination: Password(authId: $authId), isActive: $showPasswordView) { EmptyView() }
+                NavigationLink(destination: PasswordView(authId: $authId), isActive: $showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)
                 iPhoneNumberField(nil, text: $text, isEditing: $isEditing)
                     .flagHidden(false)
@@ -45,15 +45,6 @@ struct Login: View {
             }
             .navigationBarTitle("Navigation", displayMode: .inline)
         }
-    }
-}
-
-struct Password: View{
-    
-    @Binding var authId: String?
-    
-    var body: some View {
-        Text(authId ?? "")
     }
 }
 
