@@ -9,18 +9,7 @@
 import SwiftUI
 import Introspect
 
-struct PasswordView: View{
-    
-    @Binding var authId: String?
-    
-    var body: some View {
-        PasscodeField { _String, _functionWithBoolArg in
-            print("")
-        }
-    }
-}
-
-public struct PasscodeField: View {
+public struct PasswordView: View {
     
     var maxDigits: Int = 6
     var label = "Enter One Time Password"
