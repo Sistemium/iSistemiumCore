@@ -8,6 +8,7 @@
 
 import SwiftUI
 import iPhoneNumberField
+import Introspect
 
 struct Login: View {
     @State private var text: String = ""
@@ -35,6 +36,9 @@ struct Login: View {
                     .shadow(color: .gray, radius: 5)
                     .padding()
                     .scaleEffect(0.9)
+                    .introspectTextField { textField in
+                        textField.becomeFirstResponder()
+                    }
                 Button("Send") {
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
                         authId = ((try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)) as? [String:String])?.first?.value
