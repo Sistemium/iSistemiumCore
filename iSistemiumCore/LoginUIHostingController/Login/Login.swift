@@ -14,7 +14,7 @@ struct Login: View {
     @State private var text: String = ""
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
-    @State private var authId:String? = nil
+    @State private var requestID:String? = nil
 
 
     var body: some View {
@@ -44,7 +44,7 @@ struct Login: View {
                     }
                 Button("Send") {
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
-                        authId = ((try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)) as? [String:String])?.first?.value
+                        requestID = data
                         showPasswordView = true
                     }
                 }

@@ -12,7 +12,20 @@ class CoreAuthController{
     
     private static let AUTH_URL =  "https://api.sistemium.com/pha/auth"
     
-    static func sendPhoneNumber(phoneNumber:String) -> Promise<Data>{
+    var phoneNumber: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "phoneNumber")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "phoneNumber")
+            defaults.synchronize()
+        }
+    }
+    
+    static func sendPhoneNumber(phoneNumber:String) -> Promise<String>{
         
         return Promise { promise in
             
@@ -26,7 +39,9 @@ class CoreAuthController{
                 let request = AF.request(AUTH_URL + "?mobileNumber=" + _phoneNumber)
                 request.responseJSON { (data) in
                     if (data.data != nil){
-                        promise.fulfill(data.data!)
+                        let unwrappedData = data.data!
+                        let responseID = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:String])?.first?.value
+                        promise.fulfill(responseID!)
                     } else {
                         promise.reject(NSError())
                     }
