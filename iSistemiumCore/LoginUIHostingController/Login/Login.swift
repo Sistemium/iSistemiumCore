@@ -22,6 +22,7 @@ struct Login: View {
             VStack{
                 NavigationLink(destination:
                                 PasswordView { _String, _functionWithBoolArg in
+                                    CoreAuthController.sendSMSCode()
                                 }
                     , isActive: $showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)

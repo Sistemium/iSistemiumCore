@@ -12,7 +12,7 @@ class CoreAuthController{
     
     private static let AUTH_URL =  "https://api.sistemium.com/pha/auth"
     
-    var phoneNumber: String?{
+    static var phoneNumber: String?{
 
         get {
             return UserDefaults.standard.string(forKey: "phoneNumber")
@@ -32,6 +32,7 @@ class CoreAuthController{
             var _phoneNumber = phoneNumber;
             
             if (phoneNumber.starts(with: "+7")){
+                self.phoneNumber = phoneNumber
                 _phoneNumber = _phoneNumber.replacingOccurrences(of: "+7", with: "8")
             }
             
@@ -48,6 +49,26 @@ class CoreAuthController{
                 }
             }
                         
+        }
+        
+    }
+    
+    static func sendSMSCode(requestID:String, SMSCode:String) -> Promise<Void>{
+        
+        return Promise { promise in
+            
+            if(STMFunctions.isCorrectSMSCode(SMSCode)){
+                let request = AF.request(AUTH_URL + "?smsCode="+SMSCode+"&ID=" + requestID)
+                request.responseJSON { (data) in
+                    if (data.data != nil){
+                        let unwrappedData = data.data!
+                        promise.fulfill(Void())
+                    } else {
+                        promise.reject(NSError())
+                    }
+                }
+            }
+            
         }
         
     }
