@@ -62,6 +62,7 @@ class CoreAuthController{
                 request.responseJSON { (data) in
                     if (data.data != nil){
                         let unwrappedData = data.data!
+                        print(unwrappedData)
                         promise.fulfill(Void())
                     } else {
                         promise.reject(NSError())
