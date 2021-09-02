@@ -22,7 +22,7 @@ struct Login: View {
             VStack{
                 NavigationLink(destination:
                                 PasswordView { SMSCode in
-                                    CoreAuthController.sendSMSCode(requestID: requestID!, SMSCode: SMSCode).done { data in
+                                    CoreAuthController.sendSMSCode(requestID: requestID!, SMSCode: SMSCode).done {
                                         print("______________")
                                     }
                                 }

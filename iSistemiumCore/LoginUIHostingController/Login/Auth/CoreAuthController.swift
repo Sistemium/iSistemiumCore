@@ -10,7 +10,9 @@ import Alamofire
 
 class CoreAuthController{
     
-    private static let AUTH_URL =  "https://api.sistemium.com/pha/auth"
+    private static let AUTH_URL = "https://api.sistemium.com/pha/auth"
+    private static let ROLES_URL = "https://api.sistemium.com/pha/roles"
+    private static let VFS_ROLES_URL = "https://oauth.it/api/roles"
     
     static var phoneNumber: String?{
 
@@ -21,6 +23,71 @@ class CoreAuthController{
         set {
             let defaults = UserDefaults.standard
             defaults.setValue(newValue, forKey: "phoneNumber")
+            defaults.synchronize()
+        }
+    }
+    
+    static var entityResource: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "entityResource")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "entityResource")
+            defaults.synchronize()
+        }
+    }
+    
+    static var socketURL: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "socketURL")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "socketURL")
+            defaults.synchronize()
+        }
+    }
+    
+    static var userID: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "userID")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "userID")
+            defaults.synchronize()
+        }
+    }
+    
+    static var userName: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "userName")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "userName")
+            defaults.synchronize()
+        }
+    }
+    
+    static var accessToken: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "accessToken")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "accessToken")
             defaults.synchronize()
         }
     }
@@ -62,11 +129,44 @@ class CoreAuthController{
                 request.responseJSON { (data) in
                     if (data.data != nil){
                         let unwrappedData = data.data!
-                        print(unwrappedData)
+                        let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:String])!
+                        self.entityResource = data["redirectUri"]
+                        self.socketURL = data["apiUrl"]
+                        self.userID = data["ID"]
+                        self.userName = data["name"]
+                        self.accessToken = data["accessToken"]
                         promise.fulfill(Void())
                     } else {
                         promise.reject(NSError())
                     }
+                }
+            }
+            
+        }
+        
+    }
+    
+    static func requestRoles() -> Promise<Void>{
+        
+        return Promise { promise in
+            
+            #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+                
+            #endif
+            
+            let request = AF.request(ROLES_URL + "?smsCode="+SMSCode+"&ID=" + requestID)
+            request.responseJSON { (data) in
+                if (data.data != nil){
+                    let unwrappedData = data.data!
+                    let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:String])!
+                    self.entityResource = data["redirectUri"]
+                    self.socketURL = data["apiUrl"]
+                    self.userID = data["ID"]
+                    self.userName = data["name"]
+                    self.accessToken = data["accessToken"]
+                    promise.fulfill(Void())
+                } else {
+                    promise.reject(NSError())
                 }
             }
             
