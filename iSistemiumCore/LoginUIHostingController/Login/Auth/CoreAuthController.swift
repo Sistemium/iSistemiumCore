@@ -150,21 +150,111 @@ class CoreAuthController{
         
         return Promise { promise in
             
-            #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+            let deviceUUIDString = STMClientDataController.deviceUUID()
+            
+            var request = AF.request(ROLES_URL, headers: [HTTPHeader(name: "Authorization", value: self.accessToken!), HTTPHeader(name: "DeviceUUID", value: deviceUUIDString!)])
+            
+            #if CONFIGURATION_DebugVfs || CONFIGURATION_ReleaseVfs
                 
+                request = AF.request(VFS_ROLES_URL, headers: [HTTPHeader(name: "Authorization", value: self.accessToken!), HTTPHeader(name: "DeviceUUID", value: deviceUUIDString!)])
+            
             #endif
             
-            let request = AF.request(ROLES_URL + "?smsCode="+SMSCode+"&ID=" + requestID)
             request.responseJSON { (data) in
                 if (data.data != nil){
+//                    BOOL wasLogged = !!self.stcTabs;
                     let unwrappedData = data.data!
-                    let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:String])!
-                    self.entityResource = data["redirectUri"]
-                    self.socketURL = data["apiUrl"]
-                    self.userID = data["ID"]
-                    self.userName = data["name"]
-                    self.accessToken = data["accessToken"]
-                    promise.fulfill(Void())
+                    let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:Any])
+                    let roles = data?["roles"]
+                    
+                    if (roles != nil){
+                        //                        self.rolesResponse = responseJSON;
+                        //
+                        //                        #if defined (CONFIGURATION_DebugVfs)
+                        //
+                        //                            self.accountOrg = @"vfsd";
+                        //                            self.userID = responseJSON[@"account"][@"id"];
+                        //                            self.userName = responseJSON[@"account"][@"name"];
+                        //                            self.socketURL = VFS_SOCKET_URL;
+                        //                            self.entityResource = @"vfsd/Entity";
+                        //                            self.iSisDB = self.userID;
+                        //                            self.phoneNumber = @"";
+                        //                            self.stcTabs = @[
+                        //                                @{
+                        //                                    @"name": @"STMProfile",
+                        //                                    @"title": @"Профиль",
+                        //                                    @"imageName": @"checked_user-128.png",
+                        //                                },
+                        //                                @{
+                        //                                    @"name": @"STMWKWebView",
+                        //                                    @"title": @"VFS",
+                        //                                    @"imageName": @"3colors-colorless.png",
+                        //                                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                        //                                    @"url": @"https://vfsm2.sistemium.com"
+                        //
+                        //                                }
+                        //                            ];
+                        //
+                        //                        #elif defined (CONFIGURATION_ReleaseVfs)
+                        //
+                        //                            self.accountOrg = @"vfs";
+                        //                            self.userID = responseJSON[@"account"][@"id"];
+                        //                            self.userName = responseJSON[@"account"][@"name"];
+                        //                            self.socketURL = VFS_SOCKET_URL;
+                        //                            self.entityResource = @"vfs/Entity";
+                        //                            self.iSisDB = self.userID;
+                        //                            self.phoneNumber = @"";
+                        //                            self.stcTabs = @[
+                        //                                @{
+                        //                                    @"name": @"STMProfile",
+                        //                                    @"title": @"Профиль",
+                        //                                    @"imageName": @"checked_user-128.png",
+                        //                                },
+                        //                                @{
+                        //                                    @"name": @"STMWKWebView",
+                        //                                    @"title": @"VFS",
+                        //                                    @"imageName": @"3colors-colorless.png",
+                        //                                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                        //                                    @"url": @"https://vfsm2.sistemium.com"
+                        //
+                        //                                }
+                        //                            ];
+                        //
+                        //                        #else
+                        //
+                        //                            self.accountOrg = roles[@"org"];
+                        //                            self.iSisDB = roles[@"iSisDB"];
+                        //
+                        //                            id stcTabs = roles[@"stcTabs"];
+                        //
+                        //                            if ([stcTabs isKindOfClass:[NSArray class]]) {
+                        //
+                        //                                self.stcTabs = stcTabs;
+                        //
+                        //                            } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
+                        //
+                        //                                self.stcTabs = @[stcTabs];
+                        //
+                        //                            } else {
+                        //
+                        //                                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
+                        //                                                                         numType:STMLogMessageTypeError];
+                        //
+                        //                            }
+                        //
+                        //                        #endif
+                        //                    if (!wasLogged) {
+                        //
+                        //                        [self startSession];
+                        //
+                        //                    }
+                    } else {
+                        //                        [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
+                        //                                                                 numType:STMLogMessageTypeError];
+                    }
+                    
+                    
+
                 } else {
                     promise.reject(NSError())
                 }

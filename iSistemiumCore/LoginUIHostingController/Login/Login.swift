@@ -23,7 +23,7 @@ struct Login: View {
                 NavigationLink(destination:
                                 PasswordView { SMSCode in
                                     CoreAuthController.sendSMSCode(requestID: requestID!, SMSCode: SMSCode).done {
-                                        print("______________")
+                                        CoreAuthController.requestRoles()
                                     }
                                 }
                     , isActive: $showPasswordView) { EmptyView() }

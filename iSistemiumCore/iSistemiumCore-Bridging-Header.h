@@ -8,3 +8,4 @@
 #import "STMEntityController.h"
 #import "STMEntity.h"
 #import "STMCorePicturesController.h"
+#import "STMClientDataController.h"
