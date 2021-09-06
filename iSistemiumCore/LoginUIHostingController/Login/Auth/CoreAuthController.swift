@@ -92,6 +92,46 @@ class CoreAuthController{
         }
     }
     
+    static var stcTabs: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "stcTabs")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "stcTabs")
+            defaults.synchronize()
+        }
+    }
+    
+    static var accountOrg: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "accountOrg")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "accountOrg")
+            defaults.synchronize()
+        }
+    }
+    
+    
+    static var iSisDB: String?{
+
+        get {
+            return UserDefaults.standard.string(forKey: "iSisDB")
+        }
+
+        set {
+            let defaults = UserDefaults.standard
+            defaults.setValue(newValue, forKey: "iSisDB")
+            defaults.synchronize()
+        }
+    }
+    
     static func sendPhoneNumber(phoneNumber:String) -> Promise<String>{
         
         return Promise { promise in
@@ -162,66 +202,63 @@ class CoreAuthController{
             
             request.responseJSON { (data) in
                 if (data.data != nil){
-//                    BOOL wasLogged = !!self.stcTabs;
+                    let wasLogged = stcTabs != nil
                     let unwrappedData = data.data!
                     let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:Any])
                     let roles = data?["roles"]
                     
                     if (roles != nil){
-                        //                        self.rolesResponse = responseJSON;
-                        //
-                        //                        #if defined (CONFIGURATION_DebugVfs)
-                        //
-                        //                            self.accountOrg = @"vfsd";
-                        //                            self.userID = responseJSON[@"account"][@"id"];
-                        //                            self.userName = responseJSON[@"account"][@"name"];
-                        //                            self.socketURL = VFS_SOCKET_URL;
-                        //                            self.entityResource = @"vfsd/Entity";
-                        //                            self.iSisDB = self.userID;
-                        //                            self.phoneNumber = @"";
-                        //                            self.stcTabs = @[
-                        //                                @{
-                        //                                    @"name": @"STMProfile",
-                        //                                    @"title": @"Профиль",
-                        //                                    @"imageName": @"checked_user-128.png",
-                        //                                },
-                        //                                @{
-                        //                                    @"name": @"STMWKWebView",
-                        //                                    @"title": @"VFS",
-                        //                                    @"imageName": @"3colors-colorless.png",
-                        //                                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
-                        //                                    @"url": @"https://vfsm2.sistemium.com"
-                        //
-                        //                                }
-                        //                            ];
-                        //
-                        //                        #elif defined (CONFIGURATION_ReleaseVfs)
-                        //
-                        //                            self.accountOrg = @"vfs";
-                        //                            self.userID = responseJSON[@"account"][@"id"];
-                        //                            self.userName = responseJSON[@"account"][@"name"];
-                        //                            self.socketURL = VFS_SOCKET_URL;
-                        //                            self.entityResource = @"vfs/Entity";
-                        //                            self.iSisDB = self.userID;
-                        //                            self.phoneNumber = @"";
-                        //                            self.stcTabs = @[
-                        //                                @{
-                        //                                    @"name": @"STMProfile",
-                        //                                    @"title": @"Профиль",
-                        //                                    @"imageName": @"checked_user-128.png",
-                        //                                },
-                        //                                @{
-                        //                                    @"name": @"STMWKWebView",
-                        //                                    @"title": @"VFS",
-                        //                                    @"imageName": @"3colors-colorless.png",
-                        //                                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
-                        //                                    @"url": @"https://vfsm2.sistemium.com"
-                        //
-                        //                                }
-                        //                            ];
-                        //
-                        //                        #else
-                        //
+                        
+                        #if CONFIGURATION_DebugVfs
+                        
+                        accountOrg = "vfsd"
+                        userID = roles["account"]["id"]
+                        userName = roles["account"]["name"]
+                        socketURL = VFS_SOCKET_URL
+                        entityResource = "vfsd/Entity"
+                        iSisDB = userID
+                        phoneNumber = ""
+                        stcTabs = [
+                            [
+                                "name": "STMProfile",
+                                "title": "Профиль",
+                                "imageName": "checked_user-128.png",
+                            ],
+                            [
+                                "name":"STMWKWebView",
+                                "title": "VFS",
+                                "imageName": "3colors-colorless.png",
+                                "appManifestURI": "https://vfsm2.sistemium.com/app.manifest",
+                                "url": "https://vfsm2.sistemium.com"
+                            ]
+                        ]
+                                                
+                        #elseif CONFIGURATION_ReleaseVfs
+                        
+                        accountOrg = "vfs"
+                        userID = roles["account"]["id"]
+                        userName = roles["account"]["name"]
+                        socketURL = VFS_SOCKET_URL
+                        entityResource = "vfsd/Entity"
+                        iSisDB = userID
+                        phoneNumber = ""
+                        stcTabs = [
+                            [
+                                "name": "STMProfile",
+                                "title": "Профиль",
+                                "imageName": "checked_user-128.png",
+                            ],
+                            [
+                                "name":"STMWKWebView",
+                                "title": "VFS",
+                                "imageName": "3colors-colorless.png",
+                                "appManifestURI": "https://vfsm2.sistemium.com/app.manifest",
+                                "url": "https://vfsm2.sistemium.com"
+                            ]
+                        ]
+                        
+                        #else
+                        
                         //                            self.accountOrg = roles[@"org"];
                         //                            self.iSisDB = roles[@"iSisDB"];
                         //
@@ -241,20 +278,17 @@ class CoreAuthController{
                         //                                                                         numType:STMLogMessageTypeError];
                         //
                         //                            }
-                        //
-                        //                        #endif
+                        
+                        #endif
+                        
                         //                    if (!wasLogged) {
                         //
                         //                        [self startSession];
                         //
                         //                    }
-                    } else {
-                        //                        [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
-                        //                                                                 numType:STMLogMessageTypeError];
+
                     }
                     
-                    
-
                 } else {
                     promise.reject(NSError())
                 }
