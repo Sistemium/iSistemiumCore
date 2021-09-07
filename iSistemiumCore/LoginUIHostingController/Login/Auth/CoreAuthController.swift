@@ -13,6 +13,7 @@ class CoreAuthController{
     private static let AUTH_URL = "https://api.sistemium.com/pha/auth"
     private static let ROLES_URL = "https://api.sistemium.com/pha/roles"
     private static let VFS_ROLES_URL = "https://oauth.it/api/roles"
+    private static let VFS_SOCKET_URL = "https://socket3.sistemium.com/socket.io-client"
     
     static var phoneNumber: String?{
 
@@ -92,10 +93,10 @@ class CoreAuthController{
         }
     }
     
-    static var stcTabs: String?{
+    static var stcTabs: [[String:Any]]?{
 
         get {
-            return UserDefaults.standard.string(forKey: "stcTabs")
+            return UserDefaults.standard.object(forKey: "stcTabs") as? [[String : Any]]
         }
 
         set {
@@ -205,15 +206,15 @@ class CoreAuthController{
                     let wasLogged = stcTabs != nil
                     let unwrappedData = data.data!
                     let data = ((try? JSONSerialization.jsonObject(with: unwrappedData, options: .mutableContainers)) as? [String:Any])
-                    let roles = data?["roles"]
+                    let roles:[String:Any]? = data?["roles"] as? [String:Any]
                     
                     if (roles != nil){
                         
                         #if CONFIGURATION_DebugVfs
                         
                         accountOrg = "vfsd"
-                        userID = roles["account"]["id"]
-                        userName = roles["account"]["name"]
+                        userID = (roles!["account"] as? [String:String])?["id"]
+                        userName = (roles!["account"] as? [String:String])?["name"]
                         socketURL = VFS_SOCKET_URL
                         entityResource = "vfsd/Entity"
                         iSisDB = userID
@@ -236,8 +237,8 @@ class CoreAuthController{
                         #elseif CONFIGURATION_ReleaseVfs
                         
                         accountOrg = "vfs"
-                        userID = roles["account"]["id"]
-                        userName = roles["account"]["name"]
+                        userID = (roles!["account"] as? [String:String])?["id"]
+                        userName = (roles!["account"] as? [String:String])?["name"]
                         socketURL = VFS_SOCKET_URL
                         entityResource = "vfsd/Entity"
                         iSisDB = userID
@@ -258,28 +259,27 @@ class CoreAuthController{
                         ]
                         
                         #else
+
+                        accountOrg = roles!["org"] as? String
+                        iSisDB = roles!["iSisDB"] as? String
                         
-                        //                            self.accountOrg = roles[@"org"];
-                        //                            self.iSisDB = roles[@"iSisDB"];
-                        //
-                        //                            id stcTabs = roles[@"stcTabs"];
-                        //
-                        //                            if ([stcTabs isKindOfClass:[NSArray class]]) {
-                        //
-                        //                                self.stcTabs = stcTabs;
-                        //
-                        //                            } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
-                        //
-                        //                                self.stcTabs = @[stcTabs];
-                        //
-                        //                            } else {
-                        //
-                        //                                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
-                        //                                                                         numType:STMLogMessageTypeError];
-                        //
-                        //                            }
+                        let tabs = roles!["stcTabs"]
+                        
+                        if let stc = tabs as? [[String:Any]]{
+                            stcTabs = stc
+                        } else if let stc = tabs as? [String:Any]{
+                            stcTabs = [stc]
+                        } else {
+                            STMLogger.shared()?.errorMessage("recieved stcTabs is not an array or dictionary")
+                        }
                         
                         #endif
+                        
+                        if (!wasLogged){
+                            
+                            startSession()
+                            
+                        }
                         
                         //                    if (!wasLogged) {
                         //
@@ -295,6 +295,10 @@ class CoreAuthController{
             }
             
         }
+        
+    }
+    
+    static func startSession(){
         
     }
     
