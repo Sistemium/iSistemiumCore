@@ -172,7 +172,7 @@
     
     NSDictionary *entity = [self stcEntities][entityName];
 
-    return [STMFunctions isNotNull:entity[@"url"]] ? entity[@"url"] : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController authController].accountOrg, entity[@"name"]];
+    return [STMFunctions isNotNull:entity[@"url"]] ? entity[@"url"] : [NSString stringWithFormat:@"%@/%@", [STMCoreAuthController sharedAuthController].accountOrg, entity[@"name"]];
 
 }
 

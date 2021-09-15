@@ -131,7 +131,7 @@
                                    actionWithTitle:NSLocalizedString(@"OK", nil)
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction *action){
-                                       [[STMCoreAuthController authController] logout];
+                                       [[STMCoreAuthController sharedAuthController] logout];
                                    }];
         
         UIAlertAction *cancelAction = [UIAlertAction
@@ -514,7 +514,7 @@
 
 - (void)updateSyncDatesLabels {
     
-    NSString *userID = [STMCoreAuthController authController].userID;
+    NSString *userID = [STMCoreAuthController sharedAuthController].userID;
     
     if (!userID) return;
     
@@ -882,8 +882,8 @@
 
 - (void)setupLabels {
     
-    self.nameLabel.text = [STMCoreAuthController authController].userName;
-    self.phoneNumberLabel.text = [STMCoreAuthController authController].phoneNumber;
+    self.nameLabel.text = [STMCoreAuthController sharedAuthController].userName;
+    self.phoneNumberLabel.text = [STMCoreAuthController sharedAuthController].phoneNumber;
 
     BOOL syncerIsIdle = YES;
     self.progressBar.hidden = syncerIsIdle;

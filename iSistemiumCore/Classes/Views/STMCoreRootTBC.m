@@ -373,7 +373,7 @@
     
     NSLog(@"device is iPad type");
     
-    NSArray *stcTabs = [STMCoreAuthController authController].stcTabs;
+    NSArray *stcTabs = [STMCoreAuthController sharedAuthController].stcTabs;
 
     [self setupTabs:stcTabs];
     
@@ -383,7 +383,7 @@
     
     NSLog(@"device is iPhone type");
 
-    NSArray *iPhoneStcTabs = [self iPhoneStcTabsForStcTabs:[STMCoreAuthController authController].stcTabs];
+    NSArray *iPhoneStcTabs = [self iPhoneStcTabsForStcTabs:[STMCoreAuthController sharedAuthController].stcTabs];
     
     [self setupTabs:iPhoneStcTabs];
     
@@ -457,7 +457,7 @@
 
 - (void)setupTabs:(NSArray *)stcTabs {
     
-    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController sharedAuthController].controllerState != STMAuthSuccess) {
         
         [self registerTabWithStoryboardParameters:@{@"name": @"STMAuth",
                                                     @"title": NSLocalizedString(@"AUTHORIZATION", nil),
@@ -899,7 +899,7 @@
 
 - (void)showAuthAlert {
     
-    if (!self.presentedViewController && [STMCoreAuthController authController].controllerState != STMAuthEnterPhoneNumber) {
+    if (!self.presentedViewController && [STMCoreAuthController sharedAuthController].controllerState != STMAuthEnterPhoneNumber) {
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [self presentViewController:self.authAlert animated:YES completion:nil];
@@ -965,11 +965,11 @@
 
 - (void)authStateChanged {
 
-    if ([STMCoreAuthController authController].controllerState == STMAuthEnterPhoneNumber) {
+    if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthEnterPhoneNumber) {
         
         [self initAuthTab];
         
-    } else if ([STMCoreAuthController authController].controllerState == STMAuthRequestRoles) {
+    } else if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthRequestRoles) {
 
         [self.view addSubview:self.spinnerView];
         
@@ -1091,7 +1091,7 @@
     [nc addObserver:self
            selector:@selector(authStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMCoreAuthController authController]];
+             object:[STMCoreAuthController sharedAuthController]];
     
 //    [nc addObserver:self
 //           selector:@selector(showUnreadMessageCount)

@@ -19,6 +19,8 @@
 #import "STMUserDefaults.h"
 
 #import "STMClientDataController.h"
+#import "iSistemiumCore-Swift.h"
+
 
 //#import "STMSocketController.h"
 
@@ -63,7 +65,7 @@
 
 #pragma mark - singletone init
 
-+ (instancetype)authController {
++ (instancetype)sharedAuthController {
 
     static dispatch_once_t pred = 0;
     __strong static id _authController = nil;
@@ -960,6 +962,8 @@
 
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
+            
+            [CoreAuthController resolve];
 
             break;
 
@@ -983,6 +987,7 @@
 
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
+        
 
             break;
 

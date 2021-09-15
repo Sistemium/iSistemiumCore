@@ -124,7 +124,7 @@
 
     self.isAuthorizing = YES;
 
-    NSString *accessToken = [STMCoreAuthController authController].accessToken;
+    NSString *accessToken = [STMCoreAuthController sharedAuthController].accessToken;
     
 //    NSLog(@"accessToken %@", accessToken);
 

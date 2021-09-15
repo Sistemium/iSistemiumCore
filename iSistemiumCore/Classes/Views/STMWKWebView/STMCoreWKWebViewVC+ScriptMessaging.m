@@ -198,7 +198,7 @@
 
     NSString *rolesCallbackJSFunction = parameters[@"callback"];
 
-    NSDictionary *roles = [STMCoreAuthController authController].rolesResponse;
+    NSDictionary *roles = [STMCoreAuthController sharedAuthController].rolesResponse;
 
     if (roles) {
         [self callbackWithData:@[roles] parameters:parameters jsCallbackFunction:rolesCallbackJSFunction];

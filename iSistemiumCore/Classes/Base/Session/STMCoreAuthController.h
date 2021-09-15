@@ -25,7 +25,7 @@
 
 @property (nonatomic, readwrite) STMAuthState controllerState;
 
-+ (instancetype)authController;
++ (instancetype)sharedAuthController;
 
 - (NSString *)dataModelName;
 

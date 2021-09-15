@@ -246,7 +246,7 @@
 
     self.isAuthorizing = YES;
 
-    NSString *accessToken = [STMCoreAuthController authController].accessToken;
+    NSString *accessToken = [STMCoreAuthController sharedAuthController].accessToken;
 
     NSString *urlString = [self webViewUrlString];
     urlString = [NSString stringWithFormat:@"%@?access-token=%@", urlString, accessToken];

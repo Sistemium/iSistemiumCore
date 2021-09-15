@@ -20,7 +20,7 @@
 @implementation STMAuthSMSVC
 
 - (void)backButtonPressed {
-    [STMCoreAuthController authController].controllerState = STMAuthEnterPhoneNumber;
+    [STMCoreAuthController sharedAuthController].controllerState = STMAuthEnterPhoneNumber;
 }
 
 - (BOOL)isCorrectValue:(NSString *)textFieldValue {
@@ -28,7 +28,7 @@
 }
 
 - (BOOL)sendTextFieldValue {
-    return [[STMCoreAuthController authController] sendSMSCode:self.textField.text];
+    return [[STMCoreAuthController sharedAuthController] sendSMSCode:self.textField.text];
 }
 
 

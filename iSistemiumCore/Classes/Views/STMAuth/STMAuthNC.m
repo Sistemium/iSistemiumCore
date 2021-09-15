@@ -77,7 +77,7 @@
 
 - (void)authControllerStateChanged {
     
-    switch ([STMCoreAuthController authController].controllerState) {
+    switch ([STMCoreAuthController sharedAuthController].controllerState) {
             
         case STMAuthStarted:
             
@@ -213,12 +213,12 @@
     [nc addObserver:self
            selector:@selector(authControllerStateChanged)
                name:@"authControllerStateChanged"
-             object:[STMCoreAuthController authController]];
+             object:[STMCoreAuthController sharedAuthController]];
     
     [nc addObserver:self
            selector:@selector(authControllerError:)
                name:@"authControllerError"
-             object:[STMCoreAuthController authController]];
+             object:[STMCoreAuthController sharedAuthController]];
 
 }
 

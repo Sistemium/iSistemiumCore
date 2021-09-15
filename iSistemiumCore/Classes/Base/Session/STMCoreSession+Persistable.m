@@ -35,7 +35,7 @@
     NSString *dataModelName = self.startSettings[@"dataModelName"];
 
     if (!dataModelName) {
-        dataModelName = [[STMCoreAuthController authController] dataModelName];
+        dataModelName = [[STMCoreAuthController sharedAuthController] dataModelName];
     }
 
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];

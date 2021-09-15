@@ -56,7 +56,7 @@
 }
 
 - (id)authController {
-    return [STMCoreAuthController authController];
+    return [STMCoreAuthController sharedAuthController];
 }
 
 - (id)userDefaults {

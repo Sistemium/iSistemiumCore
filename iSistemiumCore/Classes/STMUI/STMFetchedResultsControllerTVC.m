@@ -95,7 +95,7 @@
 
 - (void)authControllerStateChanged {
     
-    if ([STMCoreAuthController authController].controllerState != STMAuthSuccess) {
+    if ([STMCoreAuthController sharedAuthController].controllerState != STMAuthSuccess) {
         self.resultsController = nil;
     }
     
@@ -413,7 +413,7 @@
     
     [super viewDidLoad];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authControllerStateChanged) name:@"authControllerStateChanged" object:[STMCoreAuthController authController]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(authControllerStateChanged) name:@"authControllerStateChanged" object:[STMCoreAuthController sharedAuthController]];
     
     [self customInit];
     

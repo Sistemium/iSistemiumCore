@@ -14,7 +14,6 @@ struct Login: View {
     @State private var text: String = ""
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
-    @State private var requestID:String? = nil
 
 
     var body: some View {
@@ -22,9 +21,7 @@ struct Login: View {
             VStack{
                 NavigationLink(destination:
                                 PasswordView { SMSCode in
-                                    CoreAuthController.sendSMSCode(requestID: requestID!, SMSCode: SMSCode).done {
-                                        CoreAuthController.requestRoles()
-                                    }
+                                    
                                 }
                     , isActive: $showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)
@@ -46,8 +43,7 @@ struct Login: View {
                         textField.becomeFirstResponder()
                     }
                 Button("Send") {
-                    CoreAuthController.sendPhoneNumber(phoneNumber: text).done { data in
-                        requestID = data
+                    CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
                         showPasswordView = true
                     }
                 }

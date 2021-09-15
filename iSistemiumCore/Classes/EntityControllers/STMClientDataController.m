@@ -67,7 +67,7 @@
 }
 
 + (NSString *)lastAuth {
-    return [STMFunctions stringFromDate:[STMCoreAuthController authController].lastAuth];
+    return [STMFunctions stringFromDate:[STMCoreAuthController sharedAuthController].lastAuth];
 }
 
 + (NSString *)locationServiceStatus {
@@ -75,7 +75,7 @@
 }
 
 + (NSString *)tokenHash {
-    return [STMCoreAuthController authController].tokenHash;
+    return [STMCoreAuthController sharedAuthController].tokenHash;
 }
 
 + (NSString *)notificationTypes {

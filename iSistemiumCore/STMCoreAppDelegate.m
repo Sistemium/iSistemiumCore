@@ -50,7 +50,7 @@
 
     [self setupWindow];
 
-    [STMCoreAuthController.authController checkPhoneNumber];
+    [STMCoreAuthController.sharedAuthController checkPhoneNumber];
 
     [self startCrashlytics];
 
@@ -96,7 +96,7 @@
 }
 
 - (void)startAuthController {
-    [STMCoreAuthController authController];
+    [STMCoreAuthController sharedAuthController];
 }
 
 - (STMCoreSessionManager *)sessionManager {

@@ -63,7 +63,7 @@ NSTimer *flushTimer;
             
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil) message:message delegate:STMCoreAuthController.authController cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil) message:message delegate:STMCoreAuthController.sharedAuthController cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 alertView.tag = 1;
                 [alertView show];
                 
@@ -278,10 +278,10 @@ NSTimer *flushTimer;
     NSString *dataModelName = self.startSettings[@"dataModelName"];
     
     if (!dataModelName) {
-        dataModelName = [[STMCoreAuthController authController] dataModelName];
+        dataModelName = [[STMCoreAuthController sharedAuthController] dataModelName];
     }
     
-    NSString *modelsRole = [STMCoreAuthController authController].rolesResponse[@"roles"][@"models"];
+    NSString *modelsRole = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
    
     NSString *modelName = dataModelName.mutableCopy;
     

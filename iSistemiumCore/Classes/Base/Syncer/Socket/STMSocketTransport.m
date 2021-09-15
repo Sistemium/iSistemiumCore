@@ -346,8 +346,8 @@
 
     NSMutableDictionary *dataDic = [STMClientDataController clientData].mutableCopy;
 
-    NSDictionary *authDic = @{@"userId": [STMCoreAuthController authController].userID,
-            @"accessToken": [STMCoreAuthController authController].accessToken};
+    NSDictionary *authDic = @{@"userId": [STMCoreAuthController sharedAuthController].userID,
+            @"accessToken": [STMCoreAuthController sharedAuthController].accessToken};
 
     [dataDic addEntriesFromDictionary:authDic];
 
