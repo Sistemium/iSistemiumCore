@@ -963,8 +963,6 @@
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
             
-            [CoreAuthController resolve];
-
             break;
 
         }
@@ -978,7 +976,7 @@
             self.accessToken = responseJSON[@"accessToken"];
 
             self.controllerState = STMAuthRequestRoles;
-
+            
             break;
 
         }
@@ -988,7 +986,6 @@
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
         
-
             break;
 
         }
@@ -1102,6 +1099,8 @@
         }
 
     }
+    
+    [CoreAuthController resolve];
 
 }
 
