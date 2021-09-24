@@ -190,8 +190,19 @@
     self.delegate = self;
 
     self.tabBar.hidden = NO;
-
+    
     [self initAuthTab];
+    
+    if (@available(iOS 15.0, *)) {
+        UIColor *barBackground = [UIColor whiteColor];
+        UIBarAppearance *barAppearance = [[UIBarAppearance alloc] init];
+        [barAppearance configureWithOpaqueBackground];
+        barAppearance.backgroundColor = barBackground;
+
+        self.tabBar.standardAppearance = [[UITabBarAppearance alloc] initWithBarAppearance:barAppearance];
+        self.tabBar.scrollEdgeAppearance = [[UITabBarAppearance alloc] initWithBarAppearance:barAppearance];
+        self.tabBar.translucent = YES;
+    }
     
 }
 
@@ -650,28 +661,28 @@
     NSArray *tabBarControlsArray = [self tabBarControlsArray];
     
     for (UIViewController *vc in self.viewControllers) {
-        
+
         if ([vc conformsToProtocol:@protocol(STMTabBarItemControllable)]) {
-            
+
             NSUInteger siblingsCount = [self siblingsForViewController:vc].count;
             
             if (siblingsCount > 1 || [(id <STMTabBarItemControllable>)vc shouldShowOwnActions]) {
-                
+
                 NSUInteger index = [self.viewControllers indexOfObject:vc];
-                
+
                 if (tabBarControlsArray.count > index) {
-                    
+
                     UIControl *tabBarControl = tabBarControlsArray[index];
                     [self addMoreMarkLabelToControl:tabBarControl];
 
                 }
-                
+
             }
-            
+
         } else {
             NSLog(@"%@ is not conforms to protocol <STMTabBarItemControllable>", vc);
         }
-        
+
     }
     
 }
