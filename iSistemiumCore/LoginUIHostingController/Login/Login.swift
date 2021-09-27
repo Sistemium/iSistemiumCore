@@ -14,8 +14,7 @@ struct Login: View {
     @State private var text: String = ""
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
-    @State private var showLoadingView = false
-
+    @State private var loading = false
 
     var body: some View {
         NavigationView{
@@ -24,21 +23,15 @@ struct Login: View {
                 NavigationLink(destination: EmptyView()) {
                     EmptyView()
                 }
-
-                NavigationLink(destination:
-                                ActivityIndicator()
-                                .frame(width: 50, height: 50)
-                                .background(Color.blue)
-                               , isActive: self.$showLoadingView) { EmptyView() }
                 NavigationLink(destination:
                                 PasswordView { SMSCode in
                                     CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
                                         self.showPasswordView = false
-                                        self.showLoadingView = true
                                     }
                                 }
                                , isActive: self.$showPasswordView) { EmptyView() }
                 Spacer().frame(height: 50)
+                ActivityIndicator(isAnimating: $loading, style: .large)
                 iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
                     .flagHidden(false)
                     .prefixHidden(false)
@@ -56,11 +49,14 @@ struct Login: View {
                     .introspectTextField { textField in
                         textField.becomeFirstResponder()
                     }
+                    .isHidden(loading)
                 Button("Send") {
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
-                        self.showPasswordView = true
+                        loading = true
+//                        self.showPasswordView = true
                     }
                 }
+                .isHidden(loading)
                 Spacer()
             }
             .navigationBarTitle("Navigation", displayMode: .inline)
@@ -74,28 +70,28 @@ struct Login_Previews: PreviewProvider {
     }
 }
 
-struct ActivityIndicator: View {
+struct ActivityIndicator: UIViewRepresentable {
 
-  @State private var isAnimating: Bool = false
+    @Binding var isAnimating: Bool
+    let style: UIActivityIndicatorView.Style
 
-  var body: some View {
-    GeometryReader { (geometry: GeometryProxy) in
-      ForEach(0..<5) { index in
-        Group {
-          Circle()
-            .frame(width: geometry.size.width / 5, height: geometry.size.height / 5)
-            .scaleEffect(!self.isAnimating ? 1 - CGFloat(index) / 5 : 0.2 + CGFloat(index) / 5)
-            .offset(y: geometry.size.width / 10 - geometry.size.height / 2)
-          }.frame(width: geometry.size.width, height: geometry.size.height)
-            .rotationEffect(!self.isAnimating ? .degrees(0) : .degrees(360))
-            .animation(Animation
-              .timingCurve(0.5, 0.15 + Double(index) / 5, 0.25, 1, duration: 1.5)
-              .repeatForever(autoreverses: false))
-        }
-      }
-    .aspectRatio(1, contentMode: .fit)
-    .onAppear {
-        self.isAnimating = true
+    func makeUIView(context: UIViewRepresentableContext<ActivityIndicator>) -> UIActivityIndicatorView {
+        return UIActivityIndicatorView(style: style)
     }
-  }
+
+    func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityIndicator>) {
+        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
+    }
+}
+
+extension View {
+    @ViewBuilder func isHidden(_ hidden: Bool, remove: Bool = false) -> some View {
+        if hidden {
+            if !remove {
+                self.hidden()
+            }
+        } else {
+            self
+        }
+    }
 }
