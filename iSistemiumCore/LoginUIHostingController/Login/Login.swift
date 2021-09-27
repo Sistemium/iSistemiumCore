@@ -19,45 +19,46 @@ struct Login: View {
     var body: some View {
         NavigationView{
             VStack{
-                //https://developer.apple.com/forums/thread/677333
-                NavigationLink(destination: EmptyView()) {
-                    EmptyView()
-                }
-                NavigationLink(destination:
-                                PasswordView { SMSCode in
-                                    CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
-                                        self.showPasswordView = false
+                if (loading){
+                    ActivityIndicator(isAnimating: $loading, style: .large)
+                }else{
+                    //https://developer.apple.com/forums/thread/677333
+                    NavigationLink(destination: EmptyView()) {
+                        EmptyView()
+                    }
+                    NavigationLink(destination:
+                                    PasswordView { SMSCode in
+                                        CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                                            self.showPasswordView = false
+                                        }
                                     }
-                                }
-                               , isActive: self.$showPasswordView) { EmptyView() }
-                Spacer().frame(height: 50)
-                ActivityIndicator(isAnimating: $loading, style: .large)
-                iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
-                    .flagHidden(false)
-                    .prefixHidden(false)
-                    .defaultRegion("RU")
-                    .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                    .clearButtonMode(.whileEditing)
-                    .onClear { _ in isEditing.toggle() }
-                    .accentColor(Color.orange)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(color: .gray, radius: 5)
-                    .padding()
-                    .scaleEffect(0.9)
-                    .introspectTextField { textField in
-                        textField.becomeFirstResponder()
+                                   , isActive: self.$showPasswordView) { EmptyView() }
+                    Spacer().frame(height: 50)
+                    iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
+                        .flagHidden(false)
+                        .prefixHidden(false)
+                        .defaultRegion("RU")
+                        .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                        .clearButtonMode(.whileEditing)
+                        .onClear { _ in isEditing.toggle() }
+                        .accentColor(Color.orange)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(color: .gray, radius: 5)
+                        .padding()
+                        .scaleEffect(0.9)
+                        .introspectTextField { textField in
+                            textField.becomeFirstResponder()
+                        }
+                    Button("Send") {
+                        CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
+                            loading = true
+    //                        self.showPasswordView = true
+                        }
                     }
-                    .isHidden(loading)
-                Button("Send") {
-                    CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
-                        loading = true
-//                        self.showPasswordView = true
-                    }
+                    Spacer()
                 }
-                .isHidden(loading)
-                Spacer()
             }
             .navigationBarTitle("Navigation", displayMode: .inline)
         }
