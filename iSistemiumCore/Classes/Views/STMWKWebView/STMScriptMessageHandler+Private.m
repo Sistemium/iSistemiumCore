@@ -294,7 +294,7 @@
     
     return [self.persistenceDelegate destroy:entityName
                                   identifier:xidString
-                                     options:nil]
+                                     options:options]
     .then(^(NSNumber *result){
         return @[@{@"objectXid":xidString}];
     });
