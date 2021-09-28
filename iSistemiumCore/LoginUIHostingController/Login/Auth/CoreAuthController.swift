@@ -43,7 +43,7 @@ class CoreAuthController:NSObject{
                         
             self.resolver = _promise
             
-            STMCoreAuthController.shared().sendSMSCode(SMSCode)
+//            STMCoreAuthController.shared().sendSMSCode(SMSCode)
                         
         }
         
