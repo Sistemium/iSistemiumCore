@@ -54,11 +54,12 @@ public struct PasswordView: View {
             .introspectTextField { textField in
                 textField.tintColor = .clear
                 textField.textColor = .clear
+                textField.backgroundColor = .clear
                 textField.keyboardType = .numberPad
                 textField.becomeFirstResponder()
                 textField.isEnabled = !self.isDisabled
         }
-      
+            .foregroundColor(.clear)
 
     }
     
@@ -95,8 +96,6 @@ public struct PasswordView: View {
             handler(pin)
         }
         
-        // this code is never reached under  normal circumstances. If the user pastes a text with count higher than the
-        // max digits, we remove the additional characters and make a recursive call.
         if pin.count > maxDigits {
             pin = String(pin.prefix(maxDigits))
             submitPin()
