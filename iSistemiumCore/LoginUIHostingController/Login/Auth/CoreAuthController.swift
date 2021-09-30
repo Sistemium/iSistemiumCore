@@ -25,9 +25,11 @@ class CoreAuthController:NSObject{
             
             var _phoneNumber = phoneNumber;
             
-            if (phoneNumber.starts(with: "+7")){
+            if (_phoneNumber.starts(with: "+7")){
                 _phoneNumber = _phoneNumber.replacingOccurrences(of: "+7", with: "8")
             }
+            
+            _phoneNumber = _phoneNumber.replacingOccurrences(of: " ", with: "")
             
             self.resolver = _promise
             
@@ -43,7 +45,7 @@ class CoreAuthController:NSObject{
                         
             self.resolver = _promise
             
-//            STMCoreAuthController.shared().sendSMSCode(SMSCode)
+            STMCoreAuthController.shared().sendSMSCode(SMSCode)
                         
         }
         
