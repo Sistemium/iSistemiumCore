@@ -19,6 +19,11 @@ class CoreAuthController:NSObject{
         resolver?.fulfill(Void())
     }
     
+    @objc
+    static func reject(error:String){
+        resolver?.reject(NSError(domain: "", code: 0, userInfo: ["error": error]))
+    }
+    
     static func sendPhoneNumber(phoneNumber:String) -> Promise<Void>{
                 
         return Promise { _promise in

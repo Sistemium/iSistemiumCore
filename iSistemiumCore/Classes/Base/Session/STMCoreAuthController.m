@@ -448,7 +448,7 @@
     } else {
 
         NSString *logMessage = [NSString stringWithFormat:@"keychainPhoneNumber %@ != userDefaultsPhoneNumber %@", keychainPhoneNumber, self.phoneNumber];
-
+        
         [[STMLogger sharedLogger] errorMessage:logMessage];
 
         self.controllerState = STMAuthEnterPhoneNumber;
@@ -467,6 +467,7 @@
     if (!self.userID || [self.userID isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No userID or userID is empty string"];
+        [CoreAuthController rejectWithError:@"No userID or userID is empty string"];
         checkValue = NO;
 
     } else {
@@ -475,6 +476,7 @@
     if (!self.accessToken || [self.accessToken isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No accessToken or accessToken is empty string"];
+        [CoreAuthController rejectWithError:@"No accessToken or accessToken is empty string"];
         checkValue = NO;
 
     } else {
@@ -687,6 +689,8 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
                                                                 object:self
                                                               userInfo:@{@"error": @"No connection"}];
+            
+            [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 
             [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
@@ -695,6 +699,7 @@
         }
 
     } else {
+        [CoreAuthController rejectWithError:NSLocalizedString(@"WRONG PHONE NUMBER", nil)];
         return NO;
     }
 
@@ -719,6 +724,8 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
                                                                 object:self
                                                               userInfo:@{@"error": NSLocalizedString(@"NO CONNECTION", nil)}];
+            
+            [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 
             [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
@@ -1118,10 +1125,12 @@
 
             errorString = NSLocalizedString(@"WRONG PHONE NUMBER", nil);
             self.controllerState = STMAuthEnterPhoneNumber;
+            [CoreAuthController rejectWithError:errorString];
 
         } else if (self.controllerState == STMAuthEnterSMSCode) {
 
             errorString = NSLocalizedString(@"WRONG SMS CODE", nil);
+            [CoreAuthController rejectWithError:errorString];
             self.controllerState = STMAuthEnterSMSCode;
 
 //        } else if (self.controllerState == STMAuthRequestRoles) {
