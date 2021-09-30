@@ -27,11 +27,10 @@ struct Login: View {
                                 VStack{
                     if (loading){
                             ActivityIndicator(isAnimating: $loading, style: .large)
-                    }else {
+                    } else {
                         PasswordView { SMSCode in
                             self.loading = true
                             CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
-                                
                             }
                         }
                     }
@@ -55,7 +54,7 @@ struct Login: View {
                     .introspectTextField { textField in
                         textField.becomeFirstResponder()
                     }
-                Button("Send") {
+                Button("SEND") {
                     loading = true
                     self.showPasswordView = true
                     CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
@@ -64,7 +63,7 @@ struct Login: View {
                 }
                 Spacer()
             }
-            .navigationBarTitle("Navigation", displayMode: .inline)
+            .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
         }
     }
 }
