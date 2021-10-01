@@ -15,6 +15,7 @@ struct Login: View {
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
+    @State private var showingAlert = false
 
     var body: some View {
         NavigationView{
@@ -57,9 +58,17 @@ struct Login: View {
                 Button("SEND") {
                     loading = true
                     self.showPasswordView = true
-                    CoreAuthController.sendPhoneNumber(phoneNumber: text).done {
-                        self.loading = false
-                    }
+                    CoreAuthController.sendPhoneNumber(phoneNumber: text)
+                        .done { (promise) in
+                            loading = false
+                        }
+                        .catch { (error) in
+                            showPasswordView = false
+                            loading = false
+                            showingAlert = true
+                        }
+                }.alert(isPresented: self.$showingAlert) {
+                    Alert(title: Text("WRONG PHONE NUMBER"))
                 }
                 Spacer()
             }
