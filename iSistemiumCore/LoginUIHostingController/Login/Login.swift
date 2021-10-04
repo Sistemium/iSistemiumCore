@@ -15,6 +15,7 @@ struct Login: View {
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
+    @State private var alertText = ""
     @State private var showingAlert = false
 
     var body: some View {
@@ -32,6 +33,11 @@ struct Login: View {
                         PasswordView { SMSCode in
                             self.loading = true
                             CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                            }
+                            .catch { (error) in
+                                alertText = (error as NSError).userInfo.first!.value as! String
+                                loading = false
+                                showingAlert = true
                             }
                         }
                     }
@@ -63,12 +69,13 @@ struct Login: View {
                             loading = false
                         }
                         .catch { (error) in
+                            alertText = (error as NSError).userInfo.first!.value as! String
                             showPasswordView = false
                             loading = false
                             showingAlert = true
                         }
                 }.alert(isPresented: self.$showingAlert) {
-                    Alert(title: Text("WRONG PHONE NUMBER"))
+                    Alert(title: Text(alertText))
                 }
                 Spacer()
             }

@@ -12,7 +12,6 @@ import Introspect
 public struct PasswordView: View {
     
     var maxDigits: Int = 6
-    var label = "Enter One Time Password"
     
     @State var pin: String = ""
     @State var showPin = false
@@ -23,7 +22,11 @@ public struct PasswordView: View {
     
     public var body: some View {
         VStack(spacing: 20) {
-            Text(label).font(.title)
+            Text("ENTER PASSWORD")
+                .font(.title)
+                .lineLimit(1)
+                .frame(maxWidth: UIScreen.main.bounds.size.width * 0.5)
+            
             ZStack {
                 pinDots
                 backgroundField
