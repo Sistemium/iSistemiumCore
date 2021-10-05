@@ -17,23 +17,24 @@ public struct PasswordView: View {
     @State var showPin = false
     @State var isDisabled = false
     
-    
     var handler: (String) -> Void
     
     public var body: some View {
         VStack(spacing: 20) {
+            Spacer().frame(height: 100)
             Text("ENTER PASSWORD")
                 .font(.title)
                 .lineLimit(1)
-                .frame(maxWidth: UIScreen.main.bounds.size.width * 0.5)
+                .padding(10)
+                .minimumScaleFactor(0.01)
             
             ZStack {
                 pinDots
                 backgroundField
             }
             showPinStack
+            Spacer()
         }
-        
     }
     
     private var pinDots: some View {

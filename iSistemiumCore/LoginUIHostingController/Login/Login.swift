@@ -43,7 +43,7 @@ struct Login: View {
                     }
                 }
                                , isActive: self.$showPasswordView) { EmptyView() }
-                Spacer().frame(height: 50)
+                Spacer().frame(height: 100)
                 iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
                     .flagHidden(false)
                     .prefixHidden(false)
