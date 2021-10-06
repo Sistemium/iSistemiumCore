@@ -56,4 +56,16 @@ class CoreAuthController:NSObject{
         
     }
     
+    static func demoAuth(){
+        
+        STMCoreAuthController.shared().phoneNumber = "+7 DEMO 000"
+        STMCoreAuthController.shared().accessToken = "DEMO TOKEN"
+        STMCoreAuthController.shared().accountOrg = "DEMO ORG"
+        STMCoreAuthController.shared().socketURL = "DEMO SOCKET"
+        STMCoreAuthController.shared().entityResource = "DEMO SOCKET"
+        STMCoreAuthController.shared().userID = "DEMO USER ID"
+        STMCoreAuthController.shared().userName = "DEMO USER";
+        
+    }
+    
 }

@@ -17,7 +17,6 @@ struct Login: View {
     @State private var loading = false
     @State private var alertText = ""
     @State private var showingAlert = false
-    @State private var showingDemoAlert = false
 
     var body: some View {
         NavigationView{
@@ -84,11 +83,8 @@ struct Login: View {
             .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
             .navigationBarItems(trailing:
                 Button(action: {
-                    print("User icon pressed...")
                 }) {
-                    Image(systemName: "info.circle").imageScale(.large)
-                }.alert(isPresented: self.$showingDemoAlert) {
-                    Alert(title: Text(""))
+                    Text("DEMO")
                 }
             )
         }

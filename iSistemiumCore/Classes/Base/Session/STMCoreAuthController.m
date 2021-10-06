@@ -45,8 +45,6 @@
 
 @property (nonatomic, strong) NSMutableData *responseData;
 @property (nonatomic, strong) NSString *requestID;
-@property (nonatomic, strong) NSString *entityResource;
-@property (nonatomic, strong) NSString *socketURL;
 
 @end
 
@@ -1000,102 +998,7 @@
         case STMAuthSuccess:
         case STMAuthRequestRoles: {
 
-            BOOL wasLogged = !!self.stcTabs;
-
-            NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
-
-            if (roles) {
-
-                self.rolesResponse = responseJSON;
-                
-                #if defined (CONFIGURATION_DebugVfs)
-                
-                    self.accountOrg = @"vfsd";
-                    self.userID = responseJSON[@"account"][@"id"];
-                    self.userName = responseJSON[@"account"][@"name"];
-                    self.socketURL = VFS_SOCKET_URL;
-                    self.entityResource = @"vfsd/Entity";
-                    self.iSisDB = self.userID;
-                    self.phoneNumber = @"";
-                    self.stcTabs = @[
-                        @{
-                            @"name": @"STMProfile",
-                            @"title": @"Профиль",
-                            @"imageName": @"checked_user-128.png",
-                        },
-                        @{
-                            @"name": @"STMWKWebView",
-                            @"title": @"VFS",
-                            @"imageName": @"3colors-colorless.png",
-                            @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
-                            @"url": @"https://vfsm2.sistemium.com"
-                                         
-                        }
-                    ];
-                
-                #elif defined (CONFIGURATION_ReleaseVfs)
-                
-                    self.accountOrg = @"vfs";
-                    self.userID = responseJSON[@"account"][@"id"];
-                    self.userName = responseJSON[@"account"][@"name"];
-                    self.socketURL = VFS_SOCKET_URL;
-                    self.entityResource = @"vfs/Entity";
-                    self.iSisDB = self.userID;
-                    self.phoneNumber = @"";
-                    self.stcTabs = @[
-                        @{
-                            @"name": @"STMProfile",
-                            @"title": @"Профиль",
-                            @"imageName": @"checked_user-128.png",
-                        },
-                        @{
-                            @"name": @"STMWKWebView",
-                            @"title": @"VFS",
-                            @"imageName": @"3colors-colorless.png",
-                            @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
-                            @"url": @"https://vfsm2.sistemium.com"
-                                         
-                        }
-                    ];
-                                    
-                #else
-
-                    self.accountOrg = roles[@"org"];
-                    self.iSisDB = roles[@"iSisDB"];
-                
-                    id stcTabs = roles[@"stcTabs"];
-
-                    if ([stcTabs isKindOfClass:[NSArray class]]) {
-
-                        self.stcTabs = stcTabs;
-
-                    } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
-
-                        self.stcTabs = @[stcTabs];
-
-                    } else {
-
-                        [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
-                                                                 numType:STMLogMessageTypeError];
-
-                    }
-                
-                #endif
-
-            } else {
-
-                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
-                                                         numType:STMLogMessageTypeError];
-
-            }
-
-            self.controllerState = STMAuthSuccess;
-
-            if (!wasLogged) {
-
-                [self startSession];
-
-            }
+            [self processRoles:responseJSON];
 
             break;
 
@@ -1109,6 +1012,105 @@
     
     [CoreAuthController resolve];
 
+}
+
+- (void)processRoles:(NSDictionary *)responseJSON {
+    BOOL wasLogged = !!self.stcTabs;
+
+    NSDictionary *roles = ([responseJSON[@"roles"] isKindOfClass:[NSDictionary class]]) ? responseJSON[@"roles"] : nil;
+
+    if (roles) {
+
+        self.rolesResponse = responseJSON;
+        
+        #if defined (CONFIGURATION_DebugVfs)
+        
+            self.accountOrg = @"vfsd";
+            self.userID = responseJSON[@"account"][@"id"];
+            self.userName = responseJSON[@"account"][@"name"];
+            self.socketURL = VFS_SOCKET_URL;
+            self.entityResource = @"vfsd/Entity";
+            self.iSisDB = self.userID;
+            self.phoneNumber = @"";
+            self.stcTabs = @[
+                @{
+                    @"name": @"STMProfile",
+                    @"title": @"Профиль",
+                    @"imageName": @"checked_user-128.png",
+                },
+                @{
+                    @"name": @"STMWKWebView",
+                    @"title": @"VFS",
+                    @"imageName": @"3colors-colorless.png",
+                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                    @"url": @"https://vfsm2.sistemium.com"
+                                 
+                }
+            ];
+        
+        #elif defined (CONFIGURATION_ReleaseVfs)
+        
+            self.accountOrg = @"vfs";
+            self.userID = responseJSON[@"account"][@"id"];
+            self.userName = responseJSON[@"account"][@"name"];
+            self.socketURL = VFS_SOCKET_URL;
+            self.entityResource = @"vfs/Entity";
+            self.iSisDB = self.userID;
+            self.phoneNumber = @"";
+            self.stcTabs = @[
+                @{
+                    @"name": @"STMProfile",
+                    @"title": @"Профиль",
+                    @"imageName": @"checked_user-128.png",
+                },
+                @{
+                    @"name": @"STMWKWebView",
+                    @"title": @"VFS",
+                    @"imageName": @"3colors-colorless.png",
+                    @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
+                    @"url": @"https://vfsm2.sistemium.com"
+                                 
+                }
+            ];
+                            
+        #else
+
+            self.accountOrg = roles[@"org"];
+            self.iSisDB = roles[@"iSisDB"];
+        
+            id stcTabs = roles[@"stcTabs"];
+
+            if ([stcTabs isKindOfClass:[NSArray class]]) {
+
+                self.stcTabs = stcTabs;
+
+            } else if ([stcTabs isKindOfClass:[NSDictionary class]]) {
+
+                self.stcTabs = @[stcTabs];
+
+            } else {
+
+                [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved stcTabs is not an array or dictionary"
+                                                         numType:STMLogMessageTypeError];
+
+            }
+        
+        #endif
+
+    } else {
+
+        [[STMLogger sharedLogger] saveLogMessageWithText:@"recieved roles is not a dictionary"
+                                                 numType:STMLogMessageTypeError];
+
+    }
+
+    self.controllerState = STMAuthSuccess;
+
+    if (!wasLogged) {
+
+        [self startSession];
+
+    }
 }
 
 - (void)processingResponseJSONError {

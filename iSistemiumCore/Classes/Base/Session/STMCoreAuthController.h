@@ -17,6 +17,8 @@
 @property (nonatomic, strong) NSArray *stcTabs;
 @property (nonatomic, strong) NSString *iSisDB;
 @property (nonatomic, strong) NSDictionary *rolesResponse;
+@property (nonatomic, strong) NSString *entityResource;
+@property (nonatomic, strong) NSString *socketURL;
 
 @property (nonatomic, strong) NSString *userName;
 @property (nonatomic, strong) NSString *userID;
