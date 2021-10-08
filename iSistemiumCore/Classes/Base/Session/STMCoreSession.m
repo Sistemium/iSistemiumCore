@@ -40,33 +40,33 @@ NSTimer *flushTimer;
     self.controllers = [NSMutableDictionary dictionary];
 
     STMCoreSessionFiler *filer = [[STMCoreSessionFiler alloc] initWithOrg:authDelegate.accountOrg userId:STMIsNull(authDelegate.iSisDB, uid)];
-
+    
     self.filing = filer;
 
     [self addObservers];
     
     [self downloadModel]
         .then(^(NSString *modelPath) {
-            
+
             if (!modelPath) {
                 return [AnyPromise promiseWithValue:[STMFunctions errorWithMessage:@"Empty model file"]];
             }
-            
+
             NSLog(@"Model file success: %@", modelPath);
             return [AnyPromise promiseWithValue:[self initPersistableWithModelPath:modelPath]];
-            
+
         })
         .catch(^(NSError *error) {
             NSLog(@"Error downloading model: %@", error);
-            
+
             NSString *message = error.localizedDescription;
-            
+
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                
+
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"ERROR", nil) message:message delegate:STMCoreAuthController.sharedAuthController cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 alertView.tag = 1;
                 [alertView show];
-                
+
             }];
 
         });
@@ -298,6 +298,14 @@ NSTimer *flushTimer;
 }
 
 - (AnyPromise *)downloadModel {
+    
+    if ([[STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"org"] isEqual:@"DEMO ORG"]){
+        NSString *model = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
+        NSString *bundledModelFile = [self.filing bundledModelFile:model];
+        return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+            resolve(bundledModelFile);
+        }];
+    }
     
     NSURLSession *session = [NSURLSession sharedSession];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[self modelURL]];

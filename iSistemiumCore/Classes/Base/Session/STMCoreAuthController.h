@@ -41,4 +41,6 @@
 
 - (void)checkPhoneNumber;
 
+- (void)processRoles:(NSDictionary *)responseJSON;
+
 @end

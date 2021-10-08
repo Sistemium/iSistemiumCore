@@ -64,8 +64,71 @@ class CoreAuthController:NSObject{
         STMCoreAuthController.shared().socketURL = "DEMO SOCKET"
         STMCoreAuthController.shared().entityResource = "DEMO SOCKET"
         STMCoreAuthController.shared().userID = "DEMO USER ID"
-        STMCoreAuthController.shared().userName = "DEMO USER";
-        
+        STMCoreAuthController.shared().userName = "DEMO USER"
+        STMCoreAuthController.shared().processRoles(
+            [
+                "ts" : "2021-10-06 11:47:03.522",
+                "token": [
+                    "expiresAt": "2022-10-06 11:46:20.764",
+                    "expiresIn": 31533909,
+                ],
+                "account": [
+                    "authId": "DEMO AUTH ID",
+                    "code": 635,
+                    "email": "email@email.com",
+                    "mobile-number": "+7 DEMO 000",
+                    "org" : "DEMO ORG",
+                    "name": "DEMO ACC",
+                ],
+                "cts": "2021-10-06 11:46:20.764",
+                "id": "DEMO ID",
+                "roles": [
+                    "authenticated": 1,
+                    "mailer": 1,
+                    "models": "iSisSales",
+                    "org": "DEMO ORG",
+                    "saleType": "op",
+                    "salesman": 77495,
+                    "stc": 1,
+                    "tester": 1,
+                    "stcTabs": [
+                        [
+                            "imageName": "checked_user-128.png",
+                            "name": "STMProfile",
+                            "title": "Профиль",
+                        ],
+                        [
+                            "disableScroll": 1,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "Маркетинг",
+                            "url": "https://cm.sistemium.com/#/campaigns"
+                        ],
+                        [
+                            "appManifestURI": "https://isd.sistemium.com/app.manifest",
+                            "disableScroll": true,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "ISD"
+                        ],
+                        [
+                            "appManifestURI": "https://i.sistemium.com/app.manifest",
+                            "disableScroll": true,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "I"
+                        ],
+                        [
+                            "disableScroll": true,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "JS lamac",
+                            "url": "http://lamac16.local:3000",
+                        ],
+                    ]
+                ],
+            ]
+        )
     }
     
 }

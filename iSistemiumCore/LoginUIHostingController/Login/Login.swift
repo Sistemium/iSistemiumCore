@@ -83,6 +83,7 @@ struct Login: View {
             .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
             .navigationBarItems(trailing:
                 Button(action: {
+                    CoreAuthController.demoAuth()
                 }) {
                     Text("DEMO")
                 }
