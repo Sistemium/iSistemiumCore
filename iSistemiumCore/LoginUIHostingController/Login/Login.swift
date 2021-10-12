@@ -15,79 +15,87 @@ struct Login: View {
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
+    @State private var loading2 = false
     @State private var alertText = ""
     @State private var showingAlert = false
 
     var body: some View {
-        NavigationView{
-            VStack{
-                //https://developer.apple.com/forums/thread/677333
-                NavigationLink(destination: EmptyView()) {
-                    EmptyView()
-                }
-                NavigationLink(destination:
-                                VStack{
-                    if (loading){
-                            ActivityIndicator(isAnimating: $loading, style: .large)
-                    } else {
-                        PasswordView { SMSCode in
-                            self.loading = true
-                            CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+        if (loading2){
+            ActivityIndicator(isAnimating: $loading2, style: .large)
+        } else {
+            NavigationView{
+                VStack{
+                    //https://developer.apple.com/forums/thread/677333
+                    NavigationLink(destination: EmptyView()) {
+                        EmptyView()
+                    }
+                    NavigationLink(destination:
+                                    VStack{
+                        if (loading){
+                                ActivityIndicator(isAnimating: $loading, style: .large)
+                        } else {
+                            PasswordView { SMSCode in
+                                self.loading = true
+                                CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                                }
+                                .catch { (error) in
+                                    alertText = (error as NSError).userInfo.first!.value as! String
+                                    loading = false
+                                    showingAlert = true
+                                }
+                            }
+                        }
+                    }
+                                   , isActive: self.$showPasswordView) { EmptyView() }
+                    Spacer().frame(height: 100)
+                    iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
+                        .flagHidden(false)
+                        .prefixHidden(false)
+                        .defaultRegion("RU")
+                        .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                        .clearButtonMode(.whileEditing)
+                        .onClear { _ in isEditing.toggle() }
+                        .accentColor(Color.orange)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(color: .gray, radius: 5)
+                        .padding()
+                        .scaleEffect(0.9)
+                        .introspectTextField { textField in
+                            textField.becomeFirstResponder()
+                        }
+                    Spacer().frame(height: 20)
+                    Button("SEND") {
+                        loading = true
+                        self.showPasswordView = true
+                        CoreAuthController.sendPhoneNumber(phoneNumber: text)
+                            .done { (promise) in
+                                loading = false
                             }
                             .catch { (error) in
                                 alertText = (error as NSError).userInfo.first!.value as! String
+                                showPasswordView = false
                                 loading = false
                                 showingAlert = true
                             }
-                        }
+                    }.alert(isPresented: self.$showingAlert) {
+                        Alert(title: Text(alertText))
                     }
+                    Spacer()
                 }
-                               , isActive: self.$showPasswordView) { EmptyView() }
-                Spacer().frame(height: 100)
-                iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
-                    .flagHidden(false)
-                    .prefixHidden(false)
-                    .defaultRegion("RU")
-                    .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                    .clearButtonMode(.whileEditing)
-                    .onClear { _ in isEditing.toggle() }
-                    .accentColor(Color.orange)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .shadow(color: .gray, radius: 5)
-                    .padding()
-                    .scaleEffect(0.9)
-                    .introspectTextField { textField in
-                        textField.becomeFirstResponder()
+                .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
+                .navigationBarItems(trailing:
+                    Button(action: {
+                        loading2 = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            CoreAuthController.demoAuth()
+                        }
+                    }) {
+                        Text("DEMO")
                     }
-                Spacer().frame(height: 20)
-                Button("SEND") {
-                    loading = true
-                    self.showPasswordView = true
-                    CoreAuthController.sendPhoneNumber(phoneNumber: text)
-                        .done { (promise) in
-                            loading = false
-                        }
-                        .catch { (error) in
-                            alertText = (error as NSError).userInfo.first!.value as! String
-                            showPasswordView = false
-                            loading = false
-                            showingAlert = true
-                        }
-                }.alert(isPresented: self.$showingAlert) {
-                    Alert(title: Text(alertText))
-                }
-                Spacer()
+                )
             }
-            .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
-            .navigationBarItems(trailing:
-                Button(action: {
-                    CoreAuthController.demoAuth()
-                }) {
-                    Text("DEMO")
-                }
-            )
         }
     }
 }

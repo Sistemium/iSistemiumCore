@@ -1,5 +1,5 @@
 //
-//  PasswordView.dart.swift
+//  PasswordView.swift
 //  iSisSales
 //
 //  Created by Edgar Jan Vuicik on 2021-08-27.
