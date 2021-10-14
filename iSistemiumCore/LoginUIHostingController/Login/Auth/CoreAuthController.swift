@@ -24,6 +24,16 @@ class CoreAuthController:NSObject{
         resolver?.reject(NSError(domain: "", code: 0, userInfo: ["error": error]))
     }
     
+    static func checkPhoneNumber() -> Promise<Void>{
+                
+        return Promise { _promise in
+            
+            self.resolver = _promise
+                        
+        }
+        
+    }
+    
     static func sendPhoneNumber(phoneNumber:String) -> Promise<Void>{
                 
         return Promise { _promise in
@@ -101,29 +111,22 @@ class CoreAuthController:NSObject{
                             "disableScroll": 1,
                             "imageName": "3colors-colorless.png",
                             "name": "STMWKWebView",
-                            "title": "Маркетинг",
-                            "url": "https://cm.sistemium.com/#/campaigns"
+                            "title": "Демо1",
+                            "url": "DEMO URL"
                         ],
                         [
+                            "disableScroll": 1,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "Демо2",
+                            "url": "DEMO URL"
+                        ],
+                        [
+                            "disableScroll": 1,
+                            "imageName": "3colors-colorless.png",
+                            "name": "STMWKWebView",
+                            "title": "Демо3",
                             "appManifestURI": "https://isd.sistemium.com/app.manifest",
-                            "disableScroll": true,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "ISD"
-                        ],
-                        [
-                            "appManifestURI": "https://i.sistemium.com/app.manifest",
-                            "disableScroll": true,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "I"
-                        ],
-                        [
-                            "disableScroll": true,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "JS lamac",
-                            "url": "http://lamac16.local:3000",
                         ],
                     ]
                 ],

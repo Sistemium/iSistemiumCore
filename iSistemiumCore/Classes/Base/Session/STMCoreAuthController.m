@@ -448,8 +448,10 @@
         NSString *logMessage = [NSString stringWithFormat:@"keychainPhoneNumber %@ != userDefaultsPhoneNumber %@", keychainPhoneNumber, self.phoneNumber];
         
         [[STMLogger sharedLogger] errorMessage:logMessage];
-
+        
         self.controllerState = STMAuthEnterPhoneNumber;
+        
+        [CoreAuthController resolve];
 
     }
 
@@ -818,6 +820,8 @@
     } else {
 
         self.controllerState = STMAuthEnterPhoneNumber;
+        
+        [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 
         [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
                                                             object:self

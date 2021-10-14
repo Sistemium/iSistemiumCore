@@ -15,13 +15,22 @@ struct Login: View {
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
-    @State private var loading2 = false
+    @State private var loading2 = true
     @State private var alertText = ""
     @State private var showingAlert = false
-
+    
     var body: some View {
         if (loading2){
-            ActivityIndicator(isAnimating: $loading2, style: .large)
+            ActivityIndicator(isAnimating: $loading2, style: .large).onAppear{
+                if (STMCoreAuthController.shared().controllerState == STMAuthState.enterPhoneNumber){
+                    self.loading2 = false
+                } else {
+                    CoreAuthController.checkPhoneNumber().done {
+                        self.loading2 = false
+                    }
+                }
+
+            }
         } else {
             NavigationView{
                 VStack{
