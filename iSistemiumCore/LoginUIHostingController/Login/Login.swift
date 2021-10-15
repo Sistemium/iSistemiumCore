@@ -103,7 +103,8 @@ struct Login: View {
                 .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
                 .navigationBarItems(trailing:
                     Button(action: {
-                        loading2 = true
+                        loading = true
+                        showPasswordView = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             CoreAuthController.demoAuth()
                         }
