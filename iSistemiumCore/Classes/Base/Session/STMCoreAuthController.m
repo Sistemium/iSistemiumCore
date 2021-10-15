@@ -818,8 +818,6 @@
 
 
     } else {
-
-        self.controllerState = STMAuthEnterPhoneNumber;
         
         [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 

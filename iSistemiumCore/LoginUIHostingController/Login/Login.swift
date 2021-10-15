@@ -18,6 +18,7 @@ struct Login: View {
     @State private var loading2 = true
     @State private var alertText = ""
     @State private var showingAlert = false
+
     
     var body: some View {
         if (loading2){
@@ -84,12 +85,18 @@ struct Login: View {
                             }
                             .catch { (error) in
                                 alertText = (error as NSError).userInfo.first!.value as! String
-                                showPasswordView = false
-                                loading = false
                                 showingAlert = true
                             }
                     }.alert(isPresented: self.$showingAlert) {
-                        Alert(title: Text(alertText))
+                        Alert(title: Text(alertText),
+                            dismissButton: Alert.Button.default(
+                                Text("OK"), action: {
+                                    showPasswordView = false
+                                    loading = false
+
+                                }
+                            )
+                        )
                     }
                     Spacer()
                 }
