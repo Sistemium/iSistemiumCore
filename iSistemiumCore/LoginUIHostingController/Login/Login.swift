@@ -70,7 +70,6 @@ struct Login: View {
                         .background(Color.white)
                         .cornerRadius(10)
                         .shadow(color: .gray, radius: 5)
-                        .padding()
                         .scaleEffect(0.9)
                         .introspectTextField { textField in
                             textField.becomeFirstResponder()
