@@ -216,9 +216,14 @@
     self.isAuthorizing = NO;
 
     NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
+    
+    if ([urlString containsString:@"DEMO"]){
+        [self loadDemoWebView];
+        [self loadLocalHTML];
+        return;
+    }
 
     if ([self webViewAppManifestURI]) {
-
 
         if (!self.lastUrl) {
 
@@ -237,6 +242,27 @@
 
     self.lastUrl = nil;
 
+}
+
+- (void)loadDemoWebView {
+    
+    NSString *sourcePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"DEMO"];
+    NSString *ownerName = self.webViewStoryboardParameters[@"name"];
+    NSString *ownerTitle = self.webViewStoryboardParameters[@"title"];
+
+    NSString *destPath = [NSString pathWithComponents:@[ownerName, ownerTitle]];
+
+    destPath = [self.filer webViewsPath:destPath];
+    
+    NSArray* resContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:sourcePath error:nil];
+    
+    for (NSString* obj in resContents){
+        NSError* error;
+        if (![[NSFileManager defaultManager] copyItemAtPath:[sourcePath stringByAppendingPathComponent:obj] toPath:[destPath stringByAppendingPathComponent:obj] error:&error]) {
+            NSLog(@"Error: %@", error);;
+        }
+    }
+    
 }
 
 
