@@ -37,12 +37,17 @@
     if (!dataModelName) {
         dataModelName = [[STMCoreAuthController sharedAuthController] dataModelName];
     }
-
+    
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
     
+    if ([STMCoreAuthController.sharedAuthController.userID containsString:@"DEMO"]){
+        NSString *sourcePath = [[NSBundle mainBundle] pathForResource:[dataModelName stringByAppendingString:@"-DEMO"] ofType:@"db"];
+        [[NSFileManager defaultManager] copyItemAtPath:sourcePath toPath:fmdbPath error:nil];
+    }
+    
     NSManagedObjectModel *model = [STMModeller modelWithPath:modelPath];
-
+    
     STMPersister *persister = [[STMPersister alloc] initWithModel:model modelName:dataModelName];
 
     STMFmdb *fmdb = [[STMFmdb alloc] initWithModelling:persister dbPath:fmdbPath];
