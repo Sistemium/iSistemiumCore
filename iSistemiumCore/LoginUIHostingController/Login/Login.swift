@@ -34,71 +34,71 @@ struct Login: View {
             }
         } else {
             NavigationView{
-                VStack{
-                    //https://developer.apple.com/forums/thread/677333
-                    NavigationLink(destination: EmptyView()) {
-                        EmptyView()
-                    }
-                    NavigationLink(destination:
-                                    VStack{
-                        if (loading){
-                                ActivityIndicator(isAnimating: $loading, style: .large)
-                        } else {
-                            PasswordView { SMSCode in
-                                self.loading = true
-                                CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                    VStack{
+                        //https://developer.apple.com/forums/thread/677333
+                        NavigationLink(destination: EmptyView()) {
+                            EmptyView()
+                        }
+                        NavigationLink(destination:
+                                        VStack{
+                            if (loading){
+                                    ActivityIndicator(isAnimating: $loading, style: .large)
+                            } else {
+                                PasswordView { SMSCode in
+                                    self.loading = true
+                                    CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                                    }
+                                    .catch { (error) in
+                                        alertText = (error as NSError).userInfo.first!.value as! String
+                                        loading = false
+                                        showingAlert = true
+                                    }
+                                }
+                            }
+                        }
+                                       , isActive: self.$showPasswordView) { EmptyView() }
+                        Spacer().frame(height: 100)
+                        iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
+                            .flagHidden(false)
+                            .prefixHidden(false)
+                            .defaultRegion("RU")
+                            .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                            .clearButtonMode(.whileEditing)
+                            .onClear { _ in isEditing.toggle() }
+                            .accentColor(Color.orange)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(color: .gray, radius: 5)
+                            .scaleEffect(0.9)
+                            .introspectTextField { textField in
+                                textField.becomeFirstResponder()
+                            }
+                        Spacer().frame(height: 20)
+                        Button("SEND") {
+                            loading = true
+                            self.showPasswordView = true
+                            CoreAuthController.sendPhoneNumber(phoneNumber: text)
+                                .done { (promise) in
+                                    loading = false
                                 }
                                 .catch { (error) in
                                     alertText = (error as NSError).userInfo.first!.value as! String
-                                    loading = false
                                     showingAlert = true
                                 }
-                            }
-                        }
-                    }
-                                   , isActive: self.$showPasswordView) { EmptyView() }
-                    Spacer().frame(height: 100)
-                    iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
-                        .flagHidden(false)
-                        .prefixHidden(false)
-                        .defaultRegion("RU")
-                        .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                        .clearButtonMode(.whileEditing)
-                        .onClear { _ in isEditing.toggle() }
-                        .accentColor(Color.orange)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(color: .gray, radius: 5)
-                        .scaleEffect(0.9)
-                        .introspectTextField { textField in
-                            textField.becomeFirstResponder()
-                        }
-                    Spacer().frame(height: 20)
-                    Button("SEND") {
-                        loading = true
-                        self.showPasswordView = true
-                        CoreAuthController.sendPhoneNumber(phoneNumber: text)
-                            .done { (promise) in
-                                loading = false
-                            }
-                            .catch { (error) in
-                                alertText = (error as NSError).userInfo.first!.value as! String
-                                showingAlert = true
-                            }
-                    }.alert(isPresented: self.$showingAlert) {
-                        Alert(title: Text(alertText),
-                            dismissButton: Alert.Button.default(
-                                Text("OK"), action: {
-                                    showPasswordView = false
-                                    loading = false
+                        }.alert(isPresented: self.$showingAlert) {
+                            Alert(title: Text(alertText),
+                                dismissButton: Alert.Button.default(
+                                    Text("OK"), action: {
+                                        showPasswordView = false
+                                        loading = false
 
-                                }
+                                    }
+                                )
                             )
-                        )
+                        }
+                        Spacer()
                     }
-                    Spacer()
-                }
                 .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
                 .navigationBarItems(trailing:
                     Button(action: {
@@ -113,12 +113,6 @@ struct Login: View {
                 )
             }
         }
-    }
-}
-
-struct Login_Previews: PreviewProvider {
-    static var previews: some View {
-        Login()
     }
 }
 

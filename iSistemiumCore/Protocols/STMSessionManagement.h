@@ -76,6 +76,8 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 @property (nonatomic, strong) id <STMFiling> filing;
 
+@property (readonly) NSString *currentAppVersion;
+
 - (BOOL)isRunningTests;
 
 - (id <STMCoreControlling>)controllerWithClass:(Class)controllerClass;

@@ -51,6 +51,4 @@
 
 - (void)checkTrackersToStart;
 
-@property (readonly) NSString *currentAppVersion;
-
 @end
