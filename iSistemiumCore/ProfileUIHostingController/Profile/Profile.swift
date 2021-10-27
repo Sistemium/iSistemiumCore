@@ -26,8 +26,8 @@ struct Profile: View {
                     Image(uiImage: STMFunctions.resize(UIImage(named: "exit-128.png")?.withTintColor(.blue), to: CGSize(width: 22,height: 22)))
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
-                        primaryButton: Alert.Button.default(
-                            Text("OK"), action: {
+                          primaryButton: Alert.Button.destructive(
+                            Text("LOGOUT"), action: {
                                 STMCoreAuthController.shared().logout()
                                 showingAlert = false
                             }
