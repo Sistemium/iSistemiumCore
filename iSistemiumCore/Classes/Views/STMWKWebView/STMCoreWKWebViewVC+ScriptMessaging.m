@@ -142,6 +142,10 @@
 
         [self.scriptMessageHandler navigate:message];
         
+    } else if ([message.name isEqualToString:WK_MESSAGE_OPEN_URL]) {
+
+        [self.scriptMessageHandler openUrl:message];
+        
     } else if ([message.name isEqualToString:WK_MESSAGE_SWITCH_TAB]) {
 
            [self.scriptMessageHandler switchTab:message];

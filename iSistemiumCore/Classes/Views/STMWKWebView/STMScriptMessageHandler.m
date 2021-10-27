@@ -354,6 +354,13 @@
     
 }
 
+
+- (void)openUrl:(WKScriptMessage *)message {
+    NSDictionary *parameters = message.body;
+    NSString *url = parameters[@"url"];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
+}
+
 - (void)navigate:(WKScriptMessage *)message {
     
     NSDictionary *parameters = message.body;

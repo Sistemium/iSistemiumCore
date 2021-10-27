@@ -55,6 +55,8 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (void)navigate:(WKScriptMessage *)message;
 
+- (void)openUrl:(WKScriptMessage *)message;
+
 - (void)switchTab:(WKScriptMessage *)message;
 
 - (void)syncSubscriptions;
