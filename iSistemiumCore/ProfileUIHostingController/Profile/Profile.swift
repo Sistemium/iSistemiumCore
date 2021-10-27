@@ -11,11 +11,16 @@ import SwiftUI
 struct Profile: View {
     
     @State private var showingAlert = false
+    @State var progressValue: Float = 0.5
     
     var body: some View {
         NavigationView{
             VStack{
-                Text("test")
+                Spacer().frame(height: 100)
+                Text(STMCoreAuthController.shared().userName)
+                Text(STMCoreAuthController.shared().phoneNumber)
+                ProgressBar(value: $progressValue).frame(height: 20).padding()
+                Spacer()
             }
             .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
             .navigationBarItems(leading:
@@ -40,6 +45,24 @@ struct Profile: View {
                     )
                 }
             )
+        }
+    }
+}
+
+struct ProgressBar: View {
+    @Binding var value: Float
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Rectangle().frame(width: geometry.size.width , height: geometry.size.height)
+                    .opacity(0.3)
+                    .foregroundColor(Color(UIColor.systemTeal))
+                
+                Rectangle().frame(width: min(CGFloat(self.value)*geometry.size.width, geometry.size.width), height: geometry.size.height)
+                    .foregroundColor(Color(UIColor.systemBlue))
+                    .animation(.linear)
+            }.cornerRadius(45.0)
         }
     }
 }
