@@ -379,15 +379,11 @@
         
     NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:req completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
         
-        if (error) {
-            NSLog(@"Error downloading: %@", error.description);
-            return;
-        }
-        
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         
         if (httpResponse.statusCode != 200) {
             NSLog(@"Error downloading, status code: %@", @(httpResponse.statusCode));
+            [self.owner callbackWithError:@"No internet connection" parameters:parameters];
             return;
         }
         
@@ -398,10 +394,6 @@
         [STMCoreSessionManager.sharedManager.currentSession.filing copyItemAtPath:location.path
                              toPath:filePath
                               error:&error];
-        if (error) {
-            NSLog(@"Error copying: %@", error.description);
-            return;
-        }
 
         UIActivityViewController* activityViewController =[[UIActivityViewController alloc] initWithActivityItems:@[[NSURL fileURLWithPath:filePath]] applicationActivities:nil];
         activityViewController.excludedActivityTypes = @[UIActivityTypeAirDrop];
