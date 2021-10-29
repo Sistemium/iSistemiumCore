@@ -383,10 +383,16 @@
         
         if (httpResponse.statusCode != 200) {
             NSLog(@"Error downloading, status code: %@", @(httpResponse.statusCode));
-            [self.owner callbackWithError:@"No internet connection" parameters:parameters];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.owner callbackWithError:@"No internet connection" parameters:parameters];
+            });
             return;
         }
         
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.owner callbackWithData:@[] parameters:parameters];
+        });
+
         NSString *documentsDirectory = [NSURL fileURLWithPath:NSTemporaryDirectory()].path;
 
         NSString *filePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, filename];
@@ -403,7 +409,6 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.owner presentViewController:activityViewController animated:YES completion:^{}];
         });
-        
     }];
 
     [task resume];
