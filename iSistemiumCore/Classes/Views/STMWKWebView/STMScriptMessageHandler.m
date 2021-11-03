@@ -12,6 +12,7 @@
 #import "STMCorePhotosController.h"
 #import <Photos/Photos.h>
 #import "STMLogger.h"
+#import "STMCoreSessionManager.h"
 
 @import Contacts;
 
@@ -352,6 +353,66 @@
                   jsCallbackFunction:callback];
     }];
     
+}
+
+
+- (void)openUrl:(WKScriptMessage *)message {
+
+    NSDictionary *parameters = message.body;
+    NSString *url = parameters[@"url"];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
+    
+}
+
+
+//TODO content-disposition
+- (void)share:(WKScriptMessage *)message {
+    NSDictionary *parameters = message.body;
+    NSString *stringURL = parameters[@"url"];
+    NSString *filename = parameters[@"name"];
+    NSURL *url = [NSURL URLWithString:stringURL];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
+    
+    req.timeoutInterval = 3;
+        
+    NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:req completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+        
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        
+        if (httpResponse.statusCode != 200) {
+            NSLog(@"Error downloading, status code: %@", @(httpResponse.statusCode));
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.owner callbackWithError:@"No internet connection" parameters:parameters];
+            });
+            return;
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.owner callbackWithData:@[] parameters:parameters];
+        });
+
+        NSString *documentsDirectory = [NSURL fileURLWithPath:NSTemporaryDirectory()].path;
+
+        NSString *filePath = [NSString stringWithFormat:@"%@/%@", documentsDirectory, filename];
+
+        [STMCoreSessionManager.sharedManager.currentSession.filing copyItemAtPath:location.path
+                             toPath:filePath
+                              error:&error];
+
+        UIActivityViewController* activityViewController =[[UIActivityViewController alloc] initWithActivityItems:@[[NSURL fileURLWithPath:filePath]] applicationActivities:nil];
+        activityViewController.excludedActivityTypes = @[UIActivityTypeAirDrop];
+        if (activityViewController == nil){
+            return;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.owner presentViewController:activityViewController animated:YES completion:^{}];
+        });
+    }];
+
+    [task resume];
+
 }
 
 - (void)navigate:(WKScriptMessage *)message {
