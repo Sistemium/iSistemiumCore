@@ -31,7 +31,10 @@ struct Profile: View {
                 Spacer().frame(height: 100)
                 Text(STMCoreAuthController.shared().userName)
                 Text(STMCoreAuthController.shared().phoneNumber)
-                ProgressBar(value: $profileData.progressValue).frame(height: 20).padding()
+                CircularProgressBar(value: $profileData.progressValue)
+                        .frame(width: 150.0, height: 150.0)
+                        .padding(40.0)
+                Text("SYNCING DATA")
                 Spacer()
             }
                     .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
@@ -61,20 +64,25 @@ struct Profile: View {
     }
 }
 
-struct ProgressBar: View {
+struct CircularProgressBar: View {
     @Binding var value: Float
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Rectangle().frame(width: geometry.size.width, height: geometry.size.height)
-                        .opacity(0.3)
-                        .foregroundColor(Color(UIColor.systemTeal))
+        ZStack {
+            Circle()
+                    .stroke(lineWidth: 10.0)
+                    .opacity(0.3)
+                    .foregroundColor(Color.blue)
 
-                Rectangle().frame(width: min(CGFloat(self.value) * geometry.size.width, geometry.size.width), height: geometry.size.height)
-                        .foregroundColor(Color(UIColor.systemBlue))
-                        .animation(.linear)
-            }.cornerRadius(45.0)
+            Circle()
+                    .trim(from: 0.0, to: CGFloat(min(value, 1.0)))
+                    .stroke(style: StrokeStyle(lineWidth: 10.0, lineCap: .round, lineJoin: .round))
+                    .opacity(0.6)
+                    .foregroundColor(Color.blue)
+                    .rotationEffect(Angle(degrees: 270.0))
+
+            Text(String(format: "%.0f %%", min(value, 1.0) * 100.0))
+                    .font(.largeTitle)
         }
     }
 }
