@@ -9,6 +9,7 @@
 #import "STMConstants.h"
 
 #import "STMSyncerHelper+Private.h"
+#import "iSistemiumCore-Swift.h"
 #import "STMSyncerHelper+Downloading.h"
 
 #import "STMClientEntityController.h"
@@ -274,6 +275,10 @@
 
     [self postAsyncMainQueueNotification:NOTIFICATION_SYNCER_ENTITY_COUNTDOWN_CHANGE
                                 userInfo:@{@"countdownValue": @(remainCount)}];
+
+    float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
+
+    [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
 
     if (remainCount) return;
 
