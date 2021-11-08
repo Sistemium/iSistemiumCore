@@ -11,19 +11,27 @@ import SwiftUI
 class ProfileDataObjc: NSObject {
     @objc
     static func setProgress(value: Float) {
-        ProfileData.shared.progressValue = value
+        DispatchQueue.main.async {
+            ProfileData.shared.progressValue = value
+        }
     }
 }
 
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
-    @Published var progressValue: Float = 0.5
+    @Published var progressValue: Float = 0
 }
 
 struct Profile: View {
 
     @State private var showingAlert = false
     @ObservedObject var profileData: ProfileData = ProfileData.shared
+    
+    var repeatingTextAnimation: Animation {
+        Animation
+                .linear(duration: 1)
+                .repeatForever()
+    }
 
     var body: some View {
         NavigationView {
@@ -34,7 +42,7 @@ struct Profile: View {
                 CircularProgressBar(value: $profileData.progressValue)
                         .frame(width: 150.0, height: 150.0)
                         .padding(40.0)
-                Text("SYNCING DATA")
+                SyncingData()
                 Spacer()
             }
                     .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
@@ -64,6 +72,28 @@ struct Profile: View {
     }
 }
 
+//
+
+struct SyncingData: View {
+    @State private var text = "SYNCING DATA".localizedCapitalized
+    @State private var index = 0
+    @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        Text(text)
+                .frame(minWidth: 120, alignment: .leading)
+                .onReceive(timer) { _ in
+                    if index < 3 {
+                        text += "."
+                        index += 1
+                    } else {
+                        text = "SYNCING DATA".localizedCapitalized
+                        index = 0
+                    }
+                }
+    }
+}
+
 struct CircularProgressBar: View {
     @Binding var value: Float
 
@@ -80,6 +110,7 @@ struct CircularProgressBar: View {
                     .opacity(0.6)
                     .foregroundColor(Color.blue)
                     .rotationEffect(Angle(degrees: 270.0))
+                    .animation(.linear)
 
             Text(String(format: "%.0f %%", min(value, 1.0) * 100.0))
                     .font(.largeTitle)
