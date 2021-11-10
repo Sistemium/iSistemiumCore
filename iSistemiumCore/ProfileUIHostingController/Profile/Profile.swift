@@ -13,6 +13,9 @@ class ProfileDataObjc: NSObject {
     static func setProgress(value: Float) {
         DispatchQueue.main.async {
             ProfileData.shared.progressValue = value
+            if (value == 1.0){
+                ProfileData.shared.isLoading = false
+            }
         }
     }
 }
@@ -20,13 +23,14 @@ class ProfileDataObjc: NSObject {
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
+    @Published var isLoading: Bool = true
 }
 
 struct Profile: View {
 
     @State private var showingAlert = false
     @ObservedObject var profileData: ProfileData = ProfileData.shared
-    
+
     var repeatingTextAnimation: Animation {
         Animation
                 .linear(duration: 1)
@@ -37,13 +41,35 @@ struct Profile: View {
         NavigationView {
             VStack {
                 Spacer().frame(height: 100)
-                Text(STMCoreAuthController.shared().userName)
-                Text(STMCoreAuthController.shared().phoneNumber)
-                CircularProgressBar(value: $profileData.progressValue)
-                        .frame(width: 150.0, height: 150.0)
-                        .padding(40.0)
-                SyncingData()
-                Spacer()
+                Text(STMCoreAuthController.shared().userName).font(.headline)
+                Text(STMCoreAuthController.shared().phoneNumber).font(.headline)
+                if(profileData.isLoading){
+                    CircularProgressBar(value: $profileData.progressValue)
+                            .frame(width: 150.0, height: 150.0)
+                            .padding(.bottom, 20)
+                            .padding(.trailing, 40)
+                            .padding(.leading, 40)
+                            .padding(.top, 40)
+                    SyncingData()
+                    Spacer()
+                } else {
+                    Spacer()
+                    Button(action: {
+                        STMCoreSessionManager.shared()?.currentSession.syncer.sendData()
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.title)
+                            Text("SYNC DATA")
+                                    .fontWeight(.semibold)
+                                    .font(.headline)
+                        }
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .padding()
+                                .padding(.horizontal, 20)
+                    }
+                    Spacer().frame(height: 30)
+                }
             }
                     .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
                     .navigationBarItems(leading:
@@ -71,8 +97,6 @@ struct Profile: View {
         }
     }
 }
-
-//
 
 struct SyncingData: View {
     @State private var text = "SYNCING DATA".localizedCapitalized
