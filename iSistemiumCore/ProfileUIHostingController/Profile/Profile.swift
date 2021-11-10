@@ -55,7 +55,7 @@ struct Profile: View {
                 } else {
                     Spacer()
                     Button(action: {
-                        STMCoreSessionManager.shared()?.currentSession.syncer.sendData()
+                        STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
                     }) {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
