@@ -9,3 +9,4 @@
 #import "STMEntity.h"
 #import "STMCorePicturesController.h"
 #import "STMClientDataController.h"
+#import "STMCoreRootTBC.h"

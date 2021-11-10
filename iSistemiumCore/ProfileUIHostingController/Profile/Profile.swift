@@ -14,7 +14,11 @@ class ProfileDataObjc: NSObject {
         DispatchQueue.main.async {
             ProfileData.shared.progressValue = value
             if (value == 1.0){
-                ProfileData.shared.isLoading = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    ProfileData.shared.isLoading = false
+                }
+            } else {
+                ProfileData.shared.isLoading = true
             }
         }
     }
@@ -56,6 +60,17 @@ struct Profile: View {
                     Spacer()
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
+                        if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                ProfileDataObjc.setProgress(value: 0.1)
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                ProfileDataObjc.setProgress(value: 0.9)
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                ProfileDataObjc.setProgress(value: 1.0)
+                            }
+                        }
                     }) {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
@@ -83,6 +98,7 @@ struct Profile: View {
                                 primaryButton: Alert.Button.destructive(
                                         Text("LOGOUT"), action: {
                                     STMCoreAuthController.shared().logout()
+                                            STMCoreRootTBC.sharedRootVC().initAuthTab()
                                     showingAlert = false
                                 }
                                 ),
@@ -94,6 +110,18 @@ struct Profile: View {
                         )
                     }
                     )
+        }.onAppear {
+            if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    ProfileDataObjc.setProgress(value: 0.1)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    ProfileDataObjc.setProgress(value: 0.9)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    ProfileDataObjc.setProgress(value: 1.0)
+                }
+            }
         }
     }
 }

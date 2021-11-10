@@ -35,7 +35,7 @@ class CoreAuthController:NSObject{
     }
     
     static func sendPhoneNumber(phoneNumber:String) -> Promise<Void>{
-                
+        
         return Promise { _promise in
             
             var _phoneNumber = phoneNumber;
@@ -45,6 +45,8 @@ class CoreAuthController:NSObject{
             }
             
             _phoneNumber = _phoneNumber.replacingOccurrences(of: " ", with: "")
+            
+            _phoneNumber = _phoneNumber.replacingOccurrences(of: "-", with: "")
             
             self.resolver = _promise
             

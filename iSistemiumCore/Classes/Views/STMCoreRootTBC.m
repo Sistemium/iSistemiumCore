@@ -976,15 +976,15 @@
 
 - (void)authStateChanged {
 
-    if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthEnterPhoneNumber) {
-        
-        [self initAuthTab];
-        
-    } else if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthRequestRoles) {
-
-        [self.view addSubview:self.spinnerView];
-        
-    }
+//    if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthEnterPhoneNumber) {
+//        
+//        [self initAuthTab];
+//        
+//    } else if ([STMCoreAuthController sharedAuthController].controllerState == STMAuthRequestRoles) {
+//
+//        [self.view addSubview:self.spinnerView];
+//        
+//    }
     
 }
 

@@ -19,7 +19,6 @@ struct Login: View {
     @State private var alertText = ""
     @State private var showingAlert = false
 
-    
     var body: some View {
         if (loading2){
             ActivityIndicator(isAnimating: $loading2, style: .large).onAppear{
@@ -98,6 +97,8 @@ struct Login: View {
                             )
                         }
                         Spacer()
+                    }.onAppear {
+                        STMCoreAuthController.shared().logout()
                     }
                 .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
                 .navigationBarItems(trailing:

@@ -17,6 +17,7 @@
 - (void)initAllTabs;
 - (void)setDocumentReady;
 - (void)addObservers;
+- (void)initAuthTab;
 
 - (NSArray *)siblingsForViewController:(UIViewController *)vc;
 - (void)replaceVC:(UIViewController *)currentVC withVC:(UIViewController *)vc;
