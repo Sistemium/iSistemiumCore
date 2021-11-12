@@ -50,11 +50,13 @@ public struct PasswordView: View {
     
     private var backgroundField: some View {
         let boundPin = Binding<String>(get: { self.pin }, set: { newValue in
-            self.pin = newValue
-            self.submitPin()
+            if (self.pin != newValue){
+                self.pin = newValue
+                self.submitPin()
+            }
         })
         
-        return TextField("", text: boundPin, onCommit: submitPin)
+        return TextField("", text: boundPin)
             .introspectTextField { textField in
                 textField.tintColor = .clear
                 textField.textColor = .clear
@@ -99,11 +101,7 @@ public struct PasswordView: View {
             
             handler(pin)
         }
-        
-        if pin.count > maxDigits {
-            pin = String(pin.prefix(maxDigits))
-            submitPin()
-        }
+
     }
     
     private func getImageName(at index: Int) -> String {
