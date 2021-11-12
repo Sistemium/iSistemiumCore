@@ -11,7 +11,7 @@ import iPhoneNumberField
 import Introspect
 
 struct Login: View {
-    @State private var text: String = ""
+    @State private var text: String = "+7 "
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
@@ -20,9 +20,9 @@ struct Login: View {
     @State private var showingAlert = false
 
     var body: some View {
-        if (loading2){
-            ActivityIndicator(isAnimating: $loading2, style: .large).onAppear{
-                if (STMCoreAuthController.shared().controllerState == STMAuthState.enterPhoneNumber){
+        if (loading2) {
+            ActivityIndicator(isAnimating: $loading2, style: .large).onAppear {
+                if (STMCoreAuthController.shared().controllerState == STMAuthState.enterPhoneNumber) {
                     self.loading2 = false
                 } else {
                     CoreAuthController.checkPhoneNumber().done {
@@ -32,90 +32,99 @@ struct Login: View {
 
             }
         } else {
-            NavigationView{
-                    VStack{
-                        //https://developer.apple.com/forums/thread/677333
-                        NavigationLink(destination: EmptyView()) {
-                            EmptyView()
-                        }
-                        NavigationLink(destination:
-                                        VStack{
-                            if (loading){
-                                    ActivityIndicator(isAnimating: $loading, style: .large)
-                            } else {
-                                PasswordView { SMSCode in
-                                    self.loading = true
-                                    CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
-                                    }
-                                    .catch { (error) in
-                                        alertText = (error as NSError).userInfo.first!.value as! String
-                                        loading = false
-                                        showingAlert = true
-                                    }
-                                }
+            NavigationView {
+                VStack {
+                    //https://developer.apple.com/forums/thread/677333
+                    NavigationLink(destination: EmptyView()) {
+                        EmptyView()
+                    }
+                    NavigationLink(destination:
+                    VStack {
+                        if (loading) {
+                            ActivityIndicator(isAnimating: $loading, style: .large)
+                        } else {
+                            PasswordView { SMSCode in
+                                self.loading = true
+                                CoreAuthController.sendSMSCode(SMSCode: SMSCode).done {
+                                        }
+                                        .catch { (error) in
+                                            alertText = (error as NSError).userInfo.first!.value as! String
+                                            loading = false
+                                            showingAlert = true
+                                        }
                             }
                         }
-                                       , isActive: self.$showPasswordView) { EmptyView() }
-                        Spacer().frame(height: 100)
-                        iPhoneNumberField(nil, text: self.$text, isEditing: $isEditing)
-                            .flagHidden(false)
-                            .prefixHidden(false)
-                            .defaultRegion("RU")
-                            .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                            .clearButtonMode(.whileEditing)
-                            .onClear { _ in isEditing.toggle() }
-                            .accentColor(Color.orange)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: .gray, radius: 5)
-                            .scaleEffect(0.9)
-                            .introspectTextField { textField in
-                                textField.becomeFirstResponder()
-                            }
-                        Spacer().frame(height: 20)
-                        Button("SEND") {
-                            loading = true
-                            self.showPasswordView = true
-                            CoreAuthController.sendPhoneNumber(phoneNumber: text)
-                                .done { (promise) in
-                                    loading = false
+                    }
+                            , isActive: self.$showPasswordView) {
+                        EmptyView()
+                    }
+                    Spacer().frame(height: 50)
+                    HStack{
+                        iPhoneNumberField(text: self.$text, isEditing: $isEditing)
+                                .flagHidden(false)
+                                .prefixHidden(false)
+                                .defaultRegion("RU")
+                                .maximumDigits(12)
+                                .onEdit { _ in
+                                    if (text.count == 12) {
+                                        loading = true
+                                        self.showPasswordView = true
+                                        CoreAuthController.sendPhoneNumber(phoneNumber: text)
+                                                .done { (promise) in
+                                                    loading = false
+                                                }
+                                                .catch { (error) in
+                                                    alertText = (error as NSError).userInfo.first!.value as! String
+                                                    showingAlert = true
+                                                }
+                                    }
                                 }
-                                .catch { (error) in
-                                    alertText = (error as NSError).userInfo.first!.value as! String
-                                    showingAlert = true
+                                .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                                .clearButtonMode(.whileEditing)
+                                .onClear { _ in
+                                    isEditing.toggle()
                                 }
-                        }.alert(isPresented: self.$showingAlert) {
-                            Alert(title: Text(alertText),
-                                dismissButton: Alert.Button.default(
+                                .accentColor(Color.orange)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: .gray, radius: 5)
+                                .scaleEffect(0.9)
+                                .introspectTextField { textField in
+                                    textField.becomeFirstResponder()
+                                }
+                    }
+                    Spacer()
+                }.alert(isPresented: self.$showingAlert) {
+                    Alert(title: Text(alertText),
+                            dismissButton: Alert.Button.default(
                                     Text("OK"), action: {
-                                        showPasswordView = false
-                                        loading = false
+                                showPasswordView = false
+                                loading = false
 
-                                    }
-                                )
+                            }
                             )
-                        }
-                        Spacer()
-                    }.onAppear {
+                    )
+                }
+            }.onAppear {
                         STMCoreAuthController.shared().logout()
                     }
-                .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
-                .navigationBarItems(trailing:
+                    .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
+                    .navigationBarItems(trailing:
                     Button(action: {
                         loading = true
                         showPasswordView = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             CoreAuthController.demoAuth()
                         }
                     }) {
                         Text("DEMO")
                     }
-                )
-            }
+                    )
         }
     }
 }
+
 
 struct ActivityIndicator: UIViewRepresentable {
 
