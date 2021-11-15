@@ -11,7 +11,7 @@ import iPhoneNumberField
 import Introspect
 
 struct Login: View {
-    @State private var text: String = "+7 "
+    @State private var text: String = "+7"
     @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
@@ -59,41 +59,39 @@ struct Login: View {
                         EmptyView()
                     }
                     Spacer().frame(height: 50)
-                    HStack{
-                        iPhoneNumberField(text: self.$text, isEditing: $isEditing)
-                                .flagHidden(false)
-                                .prefixHidden(false)
-                                .defaultRegion("RU")
-                                .maximumDigits(12)
-                                .onEdit { _ in
-                                    if (text.count == 12) {
-                                        loading = true
-                                        self.showPasswordView = true
-                                        CoreAuthController.sendPhoneNumber(phoneNumber: text)
-                                                .done { (promise) in
-                                                    loading = false
-                                                }
-                                                .catch { (error) in
-                                                    alertText = (error as NSError).userInfo.first!.value as! String
-                                                    showingAlert = true
-                                                }
-                                    }
+                    iPhoneNumberField(text: self.$text, isEditing: $isEditing)
+                            .flagHidden(false)
+                            .prefixHidden(false)
+                            .defaultRegion("RU")
+                            .maximumDigits(12)
+                            .onEdit { _ in
+                                if (text.count == 12) {
+                                    loading = true
+                                    self.showPasswordView = true
+                                    CoreAuthController.sendPhoneNumber(phoneNumber: text)
+                                            .done { (promise) in
+                                                loading = false
+                                            }
+                                            .catch { (error) in
+                                                alertText = (error as NSError).userInfo.first!.value as! String
+                                                showingAlert = true
+                                            }
                                 }
-                                .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                                .clearButtonMode(.whileEditing)
-                                .onClear { _ in
-                                    isEditing.toggle()
-                                }
-                                .accentColor(Color.orange)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .gray, radius: 5)
-                                .scaleEffect(0.9)
-                                .introspectTextField { textField in
-                                    textField.becomeFirstResponder()
-                                }
-                    }
+                            }
+                            .font(UIFont(size: 30, weight: .light, design: .monospaced))
+                            .clearButtonMode(.whileEditing)
+                            .onClear { _ in
+                                isEditing.toggle()
+                            }
+                            .accentColor(Color.orange)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(color: .gray, radius: 5)
+                            .scaleEffect(0.9)
+                            .introspectTextField { textField in
+                                textField.becomeFirstResponder()
+                            }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text(alertText),
@@ -132,7 +130,7 @@ struct ActivityIndicator: UIViewRepresentable {
     let style: UIActivityIndicatorView.Style
 
     func makeUIView(context: UIViewRepresentableContext<ActivityIndicator>) -> UIActivityIndicatorView {
-        return UIActivityIndicatorView(style: style)
+        UIActivityIndicatorView(style: style)
     }
 
     func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityIndicator>) {
