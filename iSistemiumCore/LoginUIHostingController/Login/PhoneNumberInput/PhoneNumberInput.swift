@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Introspect
 
 struct CountryCodes : View {
     @Binding var countryCode : String
@@ -116,6 +117,9 @@ struct PhoneNumberInput : View {
                         .padding()
                         .frame(width: 200, height: 50)
                         .keyboardType(.phonePad)
+                        .introspectTextField { textField in
+                            textField.becomeFirstResponder()
+                        }
             }.padding()
 
             CountryCodes(countryCode: $countryCode, countryFlag: $countryFlag, y: $y)

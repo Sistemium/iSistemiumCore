@@ -8,7 +8,6 @@
 
 import SwiftUI
 import iPhoneNumberField
-import Introspect
 
 struct Login: View {
     @State private var text: String = "+7"
