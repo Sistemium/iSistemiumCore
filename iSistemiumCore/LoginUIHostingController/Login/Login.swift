@@ -12,7 +12,6 @@ import Introspect
 
 struct Login: View {
     @State private var text: String = "+7"
-    @State private var isEditing: Bool = false
     @State private var showPasswordView = false
     @State private var loading = false
     @State private var loading2 = true
@@ -59,39 +58,7 @@ struct Login: View {
                         EmptyView()
                     }
                     Spacer().frame(height: 50)
-                    iPhoneNumberField(text: self.$text, isEditing: $isEditing)
-                            .flagHidden(false)
-                            .prefixHidden(false)
-                            .defaultRegion("RU")
-                            .maximumDigits(12)
-                            .onEdit { _ in
-                                if (text.count == 12) {
-                                    loading = true
-                                    self.showPasswordView = true
-                                    CoreAuthController.sendPhoneNumber(phoneNumber: text)
-                                            .done { (promise) in
-                                                loading = false
-                                            }
-                                            .catch { (error) in
-                                                alertText = (error as NSError).userInfo.first!.value as! String
-                                                showingAlert = true
-                                            }
-                                }
-                            }
-                            .font(UIFont(size: 30, weight: .light, design: .monospaced))
-                            .clearButtonMode(.whileEditing)
-                            .onClear { _ in
-                                isEditing.toggle()
-                            }
-                            .accentColor(Color.orange)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: .gray, radius: 5)
-                            .scaleEffect(0.9)
-                            .introspectTextField { textField in
-                                textField.becomeFirstResponder()
-                            }
+                    PhoneNumberInput(countryCode: "7", countryFlag: "🇷🇺")
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text(alertText),
