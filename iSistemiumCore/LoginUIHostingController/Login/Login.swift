@@ -8,9 +8,10 @@
 
 import SwiftUI
 import iPhoneNumberField
+import Combine
 
 struct Login: View {
-    @State private var text: String = "+7"
+    @State private var phoneNumber: String = ""
     @State private var showPasswordView = false
     @State private var loading = false
     @State private var loading2 = true
@@ -57,7 +58,40 @@ struct Login: View {
                         EmptyView()
                     }
                     Spacer().frame(height: 50)
-                    PhoneNumberInput(countryCode: "7", countryFlag: "🇷🇺")
+                    ZStack {
+                        HStack (spacing: 0) {
+                            Text("🇷🇺 +7")
+                                    .frame(width: 90, height: 50)
+                                    .background(Color.secondary.opacity(0.2))
+                                    .cornerRadius(10)
+                                    .foregroundColor(.black)
+                            TextField("(123) 456-78-90", text: $phoneNumber)
+                                    .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                                    .padding()
+                                    .frame(width: 225, height: 50)
+                                    .keyboardType(.phonePad)
+                                    .introspectTextField { textField in
+                                        textField.becomeFirstResponder()
+                                    }
+                                    .onReceive(Just(phoneNumber)) { number in
+                                        if (number.count >= 10) {
+                                            loading = true
+                                            self.showPasswordView = true
+                                            CoreAuthController.sendPhoneNumber(phoneNumber: "+7" + phoneNumber)
+                                                    .done { (promise) in
+                                                        loading = false
+                                                    }
+                                                    .catch { (error) in
+                                                        alertText = (error as NSError).userInfo.first!.value as! String
+                                                        showingAlert = true
+                                                    }
+                                        }
+                                    }
+                        }.padding()
+
+                        RoundedRectangle(cornerRadius: 10).stroke()
+                                .frame(width: 315, height: 50)
+                    }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text(alertText),
