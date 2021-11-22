@@ -26,9 +26,9 @@ class CoreAuthController:NSObject{
     
     static func checkPhoneNumber() -> Promise<Void>{
                 
-        return Promise { _promise in
+        Promise { _promise in
             
-            self.resolver = _promise
+            resolver = _promise
                         
         }
         
@@ -36,7 +36,7 @@ class CoreAuthController:NSObject{
     
     static func sendPhoneNumber(phoneNumber:String) -> Promise<Void>{
         
-        return Promise { _promise in
+        Promise { _promise in
             
             var _phoneNumber = phoneNumber;
             
@@ -48,7 +48,7 @@ class CoreAuthController:NSObject{
             
             _phoneNumber = _phoneNumber.replacingOccurrences(of: "-", with: "")
             
-            self.resolver = _promise
+            resolver = _promise
             
             STMCoreAuthController.shared().sendPhoneNumber(_phoneNumber)
                         

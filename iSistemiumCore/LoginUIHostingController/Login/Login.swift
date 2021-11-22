@@ -59,7 +59,7 @@ struct Login: View {
                     }
                     Spacer().frame(height: 50)
                     ZStack {
-                        HStack (spacing: 0) {
+                        HStack(spacing: 0) {
                             Text("🇷🇺 +7")
                                     .frame(width: 90, height: 50)
                                     .background(Color.secondary.opacity(0.2))
@@ -68,16 +68,17 @@ struct Login: View {
                             TextField("(123) 456-78-90", text: $phoneNumber)
                                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                                     .padding()
-                                    .frame(width: 225, height: 50)
+                                    .frame(width: 250, height: 50)
                                     .keyboardType(.phonePad)
                                     .introspectTextField { textField in
                                         textField.becomeFirstResponder()
                                     }
                                     .onReceive(Just(phoneNumber)) { number in
-                                        if (number.count >= 10) {
-                                            loading = true
+                                        //showPasswordView check fixes weird bug with onReceive called twice
+                                        if (number.count >= 10 && !showPasswordView) {
                                             self.showPasswordView = true
-                                            CoreAuthController.sendPhoneNumber(phoneNumber: "+7" + phoneNumber)
+                                            loading = true
+                                            CoreAuthController.sendPhoneNumber(phoneNumber: "+7" + number)
                                                     .done { (promise) in
                                                         loading = false
                                                     }
@@ -90,7 +91,7 @@ struct Login: View {
                         }.padding()
 
                         RoundedRectangle(cornerRadius: 10).stroke()
-                                .frame(width: 315, height: 50)
+                                .frame(width: 340, height: 50)
                     }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
