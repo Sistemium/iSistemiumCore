@@ -98,7 +98,7 @@ struct Profile: View {
                                 primaryButton: Alert.Button.destructive(
                                         Text("LOGOUT"), action: {
                                     STMCoreAuthController.shared().logout()
-                                            STMCoreRootTBC.sharedRootVC().initAuthTab()
+                                    STMCoreRootTBC.sharedRootVC().initAuthTab()
                                     showingAlert = false
                                 }
                                 ),

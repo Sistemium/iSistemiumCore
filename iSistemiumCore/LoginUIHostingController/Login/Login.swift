@@ -10,6 +10,11 @@ import SwiftUI
 import iPhoneNumberField
 import Combine
 
+//for some reason I cannot make responder a property of swiftUI and modify it from introspect
+class Responder{
+    static var responder:UIResponder?
+}
+
 struct Login: View {
     @State private var phoneNumber: String = ""
     @State private var showPasswordView = false
@@ -17,6 +22,7 @@ struct Login: View {
     @State private var loading2 = true
     @State private var alertText = ""
     @State private var showingAlert = false
+
 
     var body: some View {
         if (loading2) {
@@ -53,7 +59,14 @@ struct Login: View {
                                         }
                             }
                         }
-                    }
+                    }.navigationBarBackButtonHidden(true)
+                            .navigationBarItems(leading: Button(action : {
+                                showPasswordView = false
+                                Responder.responder?.becomeFirstResponder()
+                                STMCoreAuthController.shared().controllerState = STMAuthState.enterPhoneNumber
+                            }){
+                                Image(systemName: "arrow.left")
+                            })
                             , isActive: self.$showPasswordView) {
                         EmptyView()
                     }
@@ -71,6 +84,7 @@ struct Login: View {
                                     .frame(width: 250, height: 50)
                                     .keyboardType(.phonePad)
                                     .introspectTextField { textField in
+                                        Responder.responder = textField
                                         textField.becomeFirstResponder()
                                     }
                                     .onReceive(Just(phoneNumber)) { number in
@@ -86,6 +100,7 @@ struct Login: View {
                                                         alertText = (error as NSError).userInfo.first!.value as! String
                                                         showingAlert = true
                                                     }
+                                            phoneNumber = ""
                                         }
                                     }
                         }.padding()
@@ -105,9 +120,7 @@ struct Login: View {
                             )
                     )
                 }
-            }.onAppear {
-                        STMCoreAuthController.shared().logout()
-                    }
+            }
                     .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
                     .navigationBarItems(trailing:
                     Button(action: {
