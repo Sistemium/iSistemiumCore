@@ -27,6 +27,8 @@
 
 @property (nonatomic, readwrite) STMAuthState controllerState;
 
+@property BOOL initialLoadingCompleted;
+
 + (instancetype)sharedAuthController;
 
 - (NSString *)dataModelName;

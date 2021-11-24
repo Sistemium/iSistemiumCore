@@ -52,6 +52,7 @@
 @implementation STMCoreAuthController
 
 @synthesize phoneNumber = _phoneNumber;
+@synthesize initialLoadingCompleted = _initialLoadingCompleted;
 @synthesize userID = _userID;
 @synthesize userName = _userName;
 @synthesize accessToken = _accessToken;
@@ -126,6 +127,33 @@
         [STMKeychain saveValue:phoneNumber forKey:KC_PHONE_NUMBER];
 
         _phoneNumber = phoneNumber;
+
+    }
+
+}
+
+- (BOOL)initialLoadingCompleted {
+
+    if (!_initialLoadingCompleted) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        _initialLoadingCompleted = [defaults boolForKey:@"initialLoadingCompleted"];
+
+    }
+
+    return _initialLoadingCompleted;
+
+}
+
+- (void)setInitialLoadingCompleted:(BOOL)completed {
+
+    if (completed != _initialLoadingCompleted) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        [defaults setBool:completed forKey:@"initialLoadingCompleted"];
+        [defaults synchronize];
+
+        _initialLoadingCompleted = completed;
 
     }
 
@@ -508,6 +536,7 @@
     self.accessToken = nil;
     self.stcTabs = nil;
     self.iSisDB = nil;
+    self.initialLoadingCompleted = NO;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
 
 }

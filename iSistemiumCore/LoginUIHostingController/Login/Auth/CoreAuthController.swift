@@ -8,10 +8,9 @@
 
 import Alamofire
 
-@objc
 class CoreAuthController:NSObject{
 
-    // old obc code uses observer pattern. It is hard to revrite it, better to call this resolve from observers
+    // old obc code uses observer pattern. It is hard to rewrite it, better to call this resolve from observers
     static private var resolver:Resolver<Void>? = nil
     
     @objc
@@ -58,9 +57,9 @@ class CoreAuthController:NSObject{
     
     static func sendSMSCode(SMSCode:String) -> Promise<Void>{
                 
-        return Promise { _promise in
+        Promise { _promise in
                         
-            self.resolver = _promise
+            resolver = _promise
             
             STMCoreAuthController.shared().sendSMSCode(SMSCode)
                         
