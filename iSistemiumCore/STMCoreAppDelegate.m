@@ -488,15 +488,15 @@
 
 - (void)setupWindow {
     
-    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
-        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMProfile" bundle:nil];
-        
-        UIViewController *vc = [storyboard instantiateInitialViewController];
-        self.window.rootViewController = vc;
-        [self.window makeKeyAndVisible];
-        return;
-    }
+//    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
+//        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+//        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMProfile" bundle:nil];
+//        
+//        UIViewController *vc = [storyboard instantiateInitialViewController];
+//        self.window.rootViewController = vc;
+//        [self.window makeKeyAndVisible];
+//        return;
+//    }
 
     if (!self.window) {
 
