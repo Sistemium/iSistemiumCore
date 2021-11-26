@@ -69,7 +69,7 @@ struct Login: View {
                             , isActive: self.$showPasswordView) {
                         EmptyView()
                     }
-                    Spacer().frame(height: 50)
+                    Spacer().frame(height: 150)
                     ZStack {
                         HStack(spacing: 0) {
                             Text("🇷🇺 +7")
