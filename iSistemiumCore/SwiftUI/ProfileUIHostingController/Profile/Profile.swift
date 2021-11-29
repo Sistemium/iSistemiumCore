@@ -27,7 +27,7 @@ class ProfileDataObjc: NSObject {
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
-    @Published var isLoading: Bool = true
+    @Published var isLoading: Bool = false
 }
 
 struct Profile: View {
@@ -45,8 +45,6 @@ struct Profile: View {
         NavigationView {
             VStack {
                 Spacer().frame(height: 100)
-                Text(STMCoreAuthController.shared().userName).font(.headline)
-                Text(STMCoreAuthController.shared().phoneNumber).font(.headline)
                 if(profileData.isLoading){
                     CircularProgressBar(value: $profileData.progressValue)
                             .frame(width: 150.0, height: 150.0)
@@ -54,7 +52,7 @@ struct Profile: View {
                             .padding(.trailing, 40)
                             .padding(.leading, 40)
                             .padding(.top, 40)
-                    SyncingData()
+                    AnimatedText(text: "SYNCING DATA".localizedCapitalized)
                     Spacer()
                 } else {
                     Spacer()
@@ -122,50 +120,6 @@ struct Profile: View {
                     ProfileDataObjc.setProgress(value: 1.0)
                 }
             }
-        }
-    }
-}
-
-struct SyncingData: View {
-    @State private var text = "SYNCING DATA".localizedCapitalized
-    @State private var index = 0
-    @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        Text(text)
-                .frame(minWidth: 120, alignment: .leading)
-                .onReceive(timer) { _ in
-                    if index < 3 {
-                        text += "."
-                        index += 1
-                    } else {
-                        text = "SYNCING DATA".localizedCapitalized
-                        index = 0
-                    }
-                }
-    }
-}
-
-struct CircularProgressBar: View {
-    @Binding var value: Float
-
-    var body: some View {
-        ZStack {
-            Circle()
-                    .stroke(lineWidth: 10.0)
-                    .opacity(0.3)
-                    .foregroundColor(Color.blue)
-
-            Circle()
-                    .trim(from: 0.0, to: CGFloat(min(value, 1.0)))
-                    .stroke(style: StrokeStyle(lineWidth: 10.0, lineCap: .round, lineJoin: .round))
-                    .opacity(0.6)
-                    .foregroundColor(Color.blue)
-                    .rotationEffect(Angle(degrees: 270.0))
-                    .animation(.linear)
-
-            Text(String(format: "%.0f %%", min(value, 1.0) * 100.0))
-                    .font(.largeTitle)
         }
     }
 }

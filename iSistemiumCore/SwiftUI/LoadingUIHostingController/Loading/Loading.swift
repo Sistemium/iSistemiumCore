@@ -13,13 +13,10 @@ class LoadingDataObjc: NSObject {
     static func setProgress(value: Float) {
         DispatchQueue.main.async {
             LoadingData.shared.progressValue = value
-            if (value == 1.0){
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    LoadingData.shared.isLoading = false
-                }
-            } else {
-                LoadingData.shared.isLoading = true
-            }
+        }
+        if (value >= 1.0){
+            STMCoreAuthController.shared().initialLoadingCompleted = true
+            (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
         }
     }
 }
@@ -27,54 +24,50 @@ class LoadingDataObjc: NSObject {
 class LoadingData: ObservableObject {
     static let shared = LoadingData()
     @Published var progressValue: Float = 0
-    @Published var isLoading: Bool = true
 }
 
 struct Loading: View{
 
     @ObservedObject var loadingData: LoadingData = LoadingData.shared
+    @State private var showingAlert = false
+
 
     var body: some View {
-        VStack {
-            Spacer().frame(height: 100)
-            if(loadingData.isLoading){
+        NavigationView {
+            VStack {
+                Spacer()
                 CircularProgressBar(value: $loadingData.progressValue)
-                        .frame(width: 150.0, height: 150.0)
+                        .frame(width: 200.0, height: 200.0)
                         .padding(.bottom, 20)
                         .padding(.trailing, 40)
                         .padding(.leading, 40)
                         .padding(.top, 40)
-                SyncingData()
+                AnimatedText(text: "SYNCING DATA".localizedCapitalized)
                 Spacer()
-            } else {
-                Spacer()
-                Button(action: {
-                    STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
-                    if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            ProfileDataObjc.setProgress(value: 0.1)
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                            ProfileDataObjc.setProgress(value: 0.9)
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            ProfileDataObjc.setProgress(value: 1.0)
-                        }
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.title)
-                        Text("SYNC DATA")
-                                .fontWeight(.semibold)
-                                .font(.headline)
-                    }
-                            .frame(minWidth: 0, maxWidth: .infinity)
-                            .padding()
-                            .padding(.horizontal, 20)
-                }
-                Spacer().frame(height: 30)
             }
         }
+                .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
+                .navigationBarItems(leading:
+                Button(action: {
+                    showingAlert = true
+
+                }) {
+                    Image(uiImage: STMFunctions.resize(UIImage(named: "exit-128.png")?.withTintColor(.blue), to: CGSize(width: 22, height: 22)))
+                }.alert(isPresented: self.$showingAlert) {
+                    Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
+                            primaryButton: Alert.Button.destructive(
+                                    Text("LOGOUT"), action: {
+                                STMCoreAuthController.shared().logout()
+                                STMCoreRootTBC.sharedRootVC().initAuthTab()
+                                showingAlert = false
+                            }
+                            ),
+                            secondaryButton: Alert.Button.cancel(
+                                    Text("CANCEL"), action: {
+                                showingAlert = false
+                            }
+                            )
+                    )
+                })
     }
 }

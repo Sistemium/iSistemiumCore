@@ -23,6 +23,8 @@
 @property (nonatomic, strong) NSString *deviceTokenError;
 @property (nonatomic) BOOL haveFetchCompletionHandlers;
 
+- (void)setupWindow;
+
 - (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result;
 
 - (NSString *)currentNotificationTypes;

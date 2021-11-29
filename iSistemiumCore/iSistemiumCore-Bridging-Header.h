@@ -10,3 +10,4 @@
 #import "STMCorePicturesController.h"
 #import "STMClientDataController.h"
 #import "STMCoreRootTBC.h"
+#import "STMCoreAppDelegate.h"
