@@ -21,7 +21,6 @@ struct CircularProgressBar: View {
                     .opacity(0.6)
                     .foregroundColor(Color.blue)
                     .rotationEffect(Angle(degrees: 270.0))
-                    .animation(.linear)
 
             Text(String(format: "%.0f %%", min(value, 1.0) * 100.0))
                     .font(.largeTitle)

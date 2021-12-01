@@ -205,6 +205,10 @@
 
     } else if (controllerState == STMAuthSuccess) {
 
+        UIApplication *app = [UIApplication sharedApplication];
+        STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *) app.delegate;
+        [appDelegate setupWindow];
+
         [[STMLogger sharedLogger] importantMessage:@"login success"];
 
     }

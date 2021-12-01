@@ -11,8 +11,10 @@ import SwiftUI
 class LoadingDataObjc: NSObject {
     @objc
     static func setProgress(value: Float) {
-        DispatchQueue.main.async {
-            LoadingData.shared.progressValue = value
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(Animation.linear(duration: 0.1)) {
+                LoadingData.shared.progressValue = value
+            }
         }
         if (value >= 1.0){
             STMCoreAuthController.shared().initialLoadingCompleted = true
@@ -45,29 +47,31 @@ struct Loading: View{
                 AnimatedText(text: "SYNCING DATA".localizedCapitalized)
                 Spacer()
             }
-        }
-                .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
-                .navigationBarItems(leading:
-                Button(action: {
-                    showingAlert = true
+                    .navigationBarItems(leading:
+                    Button(action: {
+                        showingAlert = true
 
-                }) {
-                    Image(uiImage: STMFunctions.resize(UIImage(named: "exit-128.png")?.withTintColor(.blue), to: CGSize(width: 22, height: 22)))
-                }.alert(isPresented: self.$showingAlert) {
-                    Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
-                            primaryButton: Alert.Button.destructive(
-                                    Text("LOGOUT"), action: {
-                                STMCoreAuthController.shared().logout()
-                                STMCoreRootTBC.sharedRootVC().initAuthTab()
-                                showingAlert = false
-                            }
-                            ),
-                            secondaryButton: Alert.Button.cancel(
-                                    Text("CANCEL"), action: {
-                                showingAlert = false
-                            }
-                            )
-                    )
-                })
+                    }) {
+                        Image(uiImage: STMFunctions.resize(UIImage(named: "exit-128.png")?.withTintColor(.blue), to: CGSize(width: 22, height: 22)))
+                    }.alert(isPresented: self.$showingAlert) {
+                        Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
+                                primaryButton: Alert.Button.destructive(
+                                        Text("LOGOUT"), action: {
+                                    STMCoreAuthController.shared().logout()
+                                    STMCoreRootTBC.sharedRootVC().initAuthTab()
+                                    showingAlert = false
+                                    LoadingData.shared.progressValue = 0
+                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).window = nil
+                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+                                }
+                                ),
+                                secondaryButton: Alert.Button.cancel(
+                                        Text("CANCEL"), action: {
+                                    showingAlert = false
+                                }
+                                )
+                        )
+                    })
+        }
     }
 }

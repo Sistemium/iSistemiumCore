@@ -15,7 +15,7 @@ class ProfileDataObjc: NSObject {
             ProfileData.shared.progressValue = value
             if (value == 1.0){
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    ProfileData.shared.isLoading = false
+                    ProfileData.shared.progressValue = value
                 }
             } else {
                 ProfileData.shared.isLoading = true
@@ -98,6 +98,9 @@ struct Profile: View {
                                     STMCoreAuthController.shared().logout()
                                     STMCoreRootTBC.sharedRootVC().initAuthTab()
                                     showingAlert = false
+                                    STMCoreAuthController.shared().initialLoadingCompleted = false
+                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).window = nil
+                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
                                 }
                                 ),
                                 secondaryButton: Alert.Button.cancel(
