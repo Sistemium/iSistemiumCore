@@ -487,9 +487,14 @@
 }
 
 - (void)setupWindow {
+
+    if (!self.window) {
+
+        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    }
     
     if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
-        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
         STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
 
         UIViewController *vc = [storyboard instantiateInitialViewController];
@@ -498,13 +503,8 @@
         return;
     }
 
-    if (!self.window) {
-
-        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
-        [self.window makeKeyAndVisible];
-
-    }
+    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+    [self.window makeKeyAndVisible];
 
 }
 

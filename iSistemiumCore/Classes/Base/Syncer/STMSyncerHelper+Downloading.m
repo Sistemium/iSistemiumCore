@@ -279,6 +279,8 @@
     float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
 
     [LoadingDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+    
+    [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
 
     if (remainCount) return;
 

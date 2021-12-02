@@ -15,7 +15,7 @@ class ProfileDataObjc: NSObject {
             ProfileData.shared.progressValue = value
             if (value == 1.0){
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    ProfileData.shared.progressValue = value
+                    ProfileData.shared.isLoading = false
                 }
             } else {
                 ProfileData.shared.isLoading = true
@@ -47,7 +47,7 @@ struct Profile: View {
                 Spacer().frame(height: 100)
                 if(profileData.isLoading){
                     CircularProgressBar(value: $profileData.progressValue)
-                            .frame(width: 150.0, height: 150.0)
+                            .frame(width: 175.0, height: 175.0)
                             .padding(.bottom, 20)
                             .padding(.trailing, 40)
                             .padding(.leading, 40)
@@ -99,7 +99,6 @@ struct Profile: View {
                                     STMCoreRootTBC.sharedRootVC().initAuthTab()
                                     showingAlert = false
                                     STMCoreAuthController.shared().initialLoadingCompleted = false
-                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).window = nil
                                     (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
                                 }
                                 ),

@@ -15,10 +15,10 @@ class LoadingDataObjc: NSObject {
             withAnimation(Animation.linear(duration: 0.1)) {
                 LoadingData.shared.progressValue = value
             }
-        }
-        if (value >= 1.0){
-            STMCoreAuthController.shared().initialLoadingCompleted = true
-            (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+            if (value >= 1.0){
+                STMCoreAuthController.shared().initialLoadingCompleted = true
+                (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+            }
         }
     }
 }
@@ -39,12 +39,13 @@ struct Loading: View{
             VStack {
                 Spacer()
                 CircularProgressBar(value: $loadingData.progressValue)
-                        .frame(width: 200.0, height: 200.0)
+                        .frame(width: 250.0, height: 250.0)
                         .padding(.bottom, 20)
                         .padding(.trailing, 40)
                         .padding(.leading, 40)
                         .padding(.top, 40)
                 AnimatedText(text: "SYNCING DATA".localizedCapitalized)
+                Spacer()
                 Spacer()
             }
                     .navigationBarItems(leading:
@@ -61,7 +62,6 @@ struct Loading: View{
                                     STMCoreRootTBC.sharedRootVC().initAuthTab()
                                     showingAlert = false
                                     LoadingData.shared.progressValue = 0
-                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).window = nil
                                     (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
                                 }
                                 ),
