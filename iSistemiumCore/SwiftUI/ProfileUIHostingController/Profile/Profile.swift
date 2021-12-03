@@ -11,14 +11,25 @@ import SwiftUI
 class ProfileDataObjc: NSObject {
     @objc
     static func setProgress(value: Float) {
-        DispatchQueue.main.async {
-            ProfileData.shared.progressValue = value
-            if (value == 1.0){
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    ProfileData.shared.isLoading = false
-                }
-            } else {
-                ProfileData.shared.isLoading = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(Animation.easeInOut(duration: 0.5)) {
+                ProfileData.shared.error = nil
+            }
+            withAnimation(Animation.linear(duration: 0.1)) {
+                ProfileData.shared.progressValue = value
+            }
+            if (value >= 1.0) {
+                STMCoreAuthController.shared().initialLoadingCompleted = true
+                (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+            }
+        }
+    }
+
+    @objc
+    static func setError(error: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(Animation.easeInOut(duration: 0.5)) {
+                ProfileData.shared.error = error
             }
         }
     }
@@ -28,6 +39,7 @@ class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
     @Published var isLoading: Bool = false
+    @Published var error: String? = nil
 }
 
 struct Profile: View {

@@ -278,9 +278,17 @@
 
     float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
 
-    [LoadingDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
-    
-    [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+    if (queue == nil){
+
+        [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+
+        [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+
+    } else {
+        [LoadingDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+
+        [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+    }
 
     if (remainCount) return;
 
