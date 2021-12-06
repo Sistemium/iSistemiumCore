@@ -18,10 +18,6 @@ class ProfileDataObjc: NSObject {
             withAnimation(Animation.linear(duration: 0.1)) {
                 ProfileData.shared.progressValue = value
             }
-            if (value >= 1.0) {
-                STMCoreAuthController.shared().initialLoadingCompleted = true
-                (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
-            }
         }
     }
 

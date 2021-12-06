@@ -6,6 +6,7 @@
 //  Copyright © 2017 Sistemium UAB. All rights reserved.
 //
 
+#import <iSistemiumCore-Swift.h>
 #import "STMSyncerHelper+Defantomizing.h"
 #import "STMSyncerHelper+Private.h"
 
@@ -109,6 +110,7 @@
 
 #pragma mark - defantomizing
 
+NSUInteger fantomsCount = 100;
 
 - (void)startDefantomization {
 
@@ -156,6 +158,8 @@
     if (!count) return [self defantomizingFinished];
 
     NSLog(@"DEFANTOMIZING_START with queue of %@", @(count));
+
+    fantomsCount = count;
 
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_START
                                 userInfo:@{@"fantomsCount": @(count)}];
@@ -233,6 +237,10 @@
 
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_UPDATE
                                 userInfo:@{@"fantomsCount": @(count)}];
+
+    [LoadingDataObjc setProgressWithValue:0.98 + (double)(fantomsCount - count) / fantomsCount * 0.02];
+
+    [ProfileDataObjc setProgressWithValue:(double)(fantomsCount - count) / fantomsCount];
 
     NSLog(@"doneWith %@ %@ (%@)", entityName, identifier, @(count));
 
