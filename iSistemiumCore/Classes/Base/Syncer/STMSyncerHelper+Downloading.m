@@ -283,9 +283,10 @@
         [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 
         [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-
+        
     } else {
-        [LoadingDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount * 0.98];
+
+        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount * 0.98)];
 
         [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
     }

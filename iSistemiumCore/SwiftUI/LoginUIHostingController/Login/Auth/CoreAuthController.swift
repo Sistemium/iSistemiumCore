@@ -133,6 +133,7 @@ class CoreAuthController:NSObject{
                 ],
             ]
         )
+        LoadingDataObjc.setProgress(value: 1.0)
     }
     
 }

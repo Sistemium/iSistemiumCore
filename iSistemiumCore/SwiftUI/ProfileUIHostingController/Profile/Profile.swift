@@ -12,11 +12,16 @@ class ProfileDataObjc: NSObject {
     @objc
     static func setProgress(value: Float) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            ProfileData.shared.isLoading = true;
             withAnimation(Animation.easeInOut(duration: 0.5)) {
                 ProfileData.shared.error = nil
             }
             withAnimation(Animation.linear(duration: 0.1)) {
                 ProfileData.shared.progressValue = value
+            }
+            if (value >= 1.0){
+                ProfileData.shared.isLoading = false;
+                ProfileData.shared.progressValue = 0
             }
         }
     }

@@ -21,6 +21,7 @@ class LoadingDataObjc: NSObject {
             if (value >= 1.0){
                 STMCoreAuthController.shared().initialLoadingCompleted = true
                 (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+                LoadingData.shared.progressValue = 0
             }
         }
     }
