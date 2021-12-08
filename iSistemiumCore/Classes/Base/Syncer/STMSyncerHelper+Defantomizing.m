@@ -238,10 +238,6 @@ NSUInteger fantomsCount = 100;
     [self postAsyncMainQueueNotification:NOTIFICATION_DEFANTOMIZING_UPDATE
                                 userInfo:@{@"fantomsCount": @(count)}];
 
-    [LoadingDataObjc setProgressWithValue:0.98 + (double)(fantomsCount - count) / fantomsCount * 0.02];
-
-    [ProfileDataObjc setProgressWithValue:(double)(fantomsCount - count) / fantomsCount];
-
     NSLog(@"doneWith %@ %@ (%@)", entityName, identifier, @(count));
 
     if (!count) [self startDefantomization];
@@ -260,6 +256,8 @@ NSUInteger fantomsCount = 100;
     self.defantomizing = nil;
 
     [self.defantomizingOwner defantomizingFinished];
+    
+    [LoadingDataObjc finishLoading];
 
 }
 

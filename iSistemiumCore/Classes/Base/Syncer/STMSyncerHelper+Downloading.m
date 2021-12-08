@@ -286,7 +286,7 @@
         
     } else {
 
-        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount * 0.98)];
+        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount)];
 
         [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
     }

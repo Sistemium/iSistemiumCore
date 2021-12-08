@@ -10,19 +10,28 @@ import SwiftUI
 
 class LoadingDataObjc: NSObject {
     @objc
+    static func finishLoading(){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if (LoadingData.shared.progressValue >= 0.98){
+                STMCoreAuthController.shared().initialLoadingCompleted = true
+                (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+                LoadingData.shared.progressValue = 0
+            }
+        }
+    }
+    @objc
     static func setProgress(value: Float) {
+        let _value = value * 0.98
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(Animation.easeInOut(duration: 0.5)) {
                 LoadingData.shared.error = nil
             }
             withAnimation(Animation.linear(duration: 0.1)) {
-                LoadingData.shared.progressValue = value
+                LoadingData.shared.progressValue = _value
             }
-            if (value >= 1.0){
-                STMCoreAuthController.shared().initialLoadingCompleted = true
-                (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
-                LoadingData.shared.progressValue = 0
-            }
+        }
+        if(STMCoreAuthController.shared().userName.contains("DEMO") || value >= 1.0){
+            finishLoading()
         }
     }
     @objc
