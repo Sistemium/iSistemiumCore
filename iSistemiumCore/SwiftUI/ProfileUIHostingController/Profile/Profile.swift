@@ -67,8 +67,14 @@ struct Profile: View {
                             .padding(.top, 40)
                     AnimatedText(text: "SYNCING DATA".localizedCapitalized)
                     Spacer()
-                } else {
-                    Spacer()
+                }
+                Spacer()
+                if profileData.error != nil {
+                    Text(profileData.error!)
+                            .font(.title)
+                            .foregroundColor(Color.red)
+                }
+                if(!profileData.isLoading){
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
                         if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
@@ -96,6 +102,7 @@ struct Profile: View {
                     }
                     Spacer().frame(height: 30)
                 }
+
             }
                     .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
                     .navigationBarItems(leading:
