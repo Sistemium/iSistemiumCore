@@ -8,11 +8,12 @@ import SwiftUI
 struct AnimatedText: View {
     @State var text = ""
     @State private var index = 0
-    @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @State private var timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
         Text(text)
-                .frame(minWidth: 120, alignment: .leading)
+            .font(.system(size: 20))
+                .frame(minWidth: 140, alignment: .leading)
                 .onReceive(timer) { _ in
                     if index < 3 {
                         text += "."
