@@ -13,7 +13,7 @@ struct AnimatedText: View {
     var body: some View {
         Text(text)
             .font(.system(size: 20))
-                .frame(minWidth: 140, alignment: .leading)
+                .frame(minWidth: 160, alignment: .leading)
                 .onReceive(timer) { _ in
                     if index < 3 {
                         text += "."

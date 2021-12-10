@@ -65,7 +65,7 @@ struct Profile: View {
                             .padding(.trailing, 40)
                             .padding(.leading, 40)
                             .padding(.top, 40)
-                    AnimatedText(text: "SYNCING DATA".localizedCapitalized)
+                    AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
                     Spacer()
                 }
                 Spacer()
@@ -130,7 +130,8 @@ struct Profile: View {
                         )
                     }
                     )
-        }.onAppear {
+        }.navigationViewStyle(StackNavigationViewStyle())
+            .onAppear {
             if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     ProfileDataObjc.setProgress(value: 0.1)

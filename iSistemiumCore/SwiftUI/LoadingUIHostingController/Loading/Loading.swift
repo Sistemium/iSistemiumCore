@@ -30,7 +30,7 @@ class LoadingDataObjc: NSObject {
                 LoadingData.shared.progressValue = _value
             }
         }
-        if(STMCoreAuthController.shared().userName.contains("DEMO") || value >= 1.0){
+        if(STMCoreAuthController.shared().userName.contains("DEMO") || _value >= 1.0){
             finishLoading()
         }
     }
@@ -66,7 +66,7 @@ struct Loading: View{
                         .padding(.leading, 40)
                         .padding(.top, 40)
                 if loadingData.error == nil {
-                    AnimatedText(text: "SYNCING DATA".localizedCapitalized)
+                    AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
                 } else {
                     Text(loadingData.error!)
                         .font(.title)
@@ -99,6 +99,6 @@ struct Loading: View{
                                 )
                         )
                     })
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
     }
 }

@@ -131,7 +131,7 @@ struct Login: View {
                     Text("DEMO")
                 }
                 )
-            }
+            }.navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }
