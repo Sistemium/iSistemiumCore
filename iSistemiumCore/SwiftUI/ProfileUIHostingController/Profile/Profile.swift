@@ -58,6 +58,7 @@ struct Profile: View {
         NavigationView {
             VStack {
                 Spacer().frame(height: 100)
+                Text(STMCoreAuthController.shared().userName).font(.headline)
                 if(profileData.isLoading){
                     CircularProgressBar(value: $profileData.progressValue)
                             .frame(width: 175.0, height: 175.0)
@@ -68,26 +69,40 @@ struct Profile: View {
                     AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
                     Spacer()
                 }
+                if (STMCorePicturesController.shared().nonloadedPicturesCount > 0){
+                    let pluralString = STMFunctions.pluralType(forCount: STMCorePicturesController.shared().nonloadedPicturesCount)
+                    let picturesCount = pluralString + "UPICTURES"
+                    let title = String(STMCorePicturesController.shared().nonloadedPicturesCount) + " " + NSLocalizedString(picturesCount, comment: "")
+                    let detail = NSLocalizedString("WAITING FOR DOWNLOAD", comment: "")
+                    HStack{
+                        Button(action: {
+                            STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
+                        }) {
+                            VStack {
+                                Image(systemName: "photo")
+                                        .font(.title)
+                                Text(title)
+                                    .font(.system(size: 16))
+                                Text(detail)
+                                    .font(.system(size: 14))
+                            }
+                            .padding()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.blue, lineWidth: 3)
+                            )
+                        }
+                    }
+                }
                 Spacer()
                 if profileData.error != nil {
                     Text(profileData.error!)
                             .font(.title)
                             .foregroundColor(Color.red)
                 }
-                if(!profileData.isLoading){
+                if(!profileData.isLoading && !STMCoreAuthController.shared().userName.contains("DEMO")){
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
-                        if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                ProfileDataObjc.setProgress(value: 0.1)
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                ProfileDataObjc.setProgress(value: 0.9)
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                ProfileDataObjc.setProgress(value: 1.0)
-                            }
-                        }
                     }) {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
@@ -131,18 +146,5 @@ struct Profile: View {
                     }
                     )
         }.navigationViewStyle(StackNavigationViewStyle())
-            .onAppear {
-            if (STMCoreAuthController.shared().userName.contains("DEMO") && STMCoreSessionManager.shared()?.currentSession != nil){
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    ProfileDataObjc.setProgress(value: 0.1)
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    ProfileDataObjc.setProgress(value: 0.9)
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    ProfileDataObjc.setProgress(value: 1.0)
-                }
-            }
-        }
     }
 }
