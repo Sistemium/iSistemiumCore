@@ -13,6 +13,7 @@
 #import "STMCoreObjectsController.h"
 #import "STMOperationQueue.h"
 #import "STMEntityController.h"
+#import "iSistemiumCore-Swift.h"
 
 
 #define THUMBNAIL_SIZE CGSizeMake(150, 150)
@@ -929,7 +930,7 @@
 
     [self hrefDictionaryRemove:href];
     [self downloadNextPicture];
-
+    [ProfileDataObjc setUnloadedPhotosWithValue:_nonloadedPictures.count];
 }
 
 - (void)uploadImageEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes data:(NSData *)data {

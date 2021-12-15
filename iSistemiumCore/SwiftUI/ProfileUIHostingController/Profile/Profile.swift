@@ -34,11 +34,19 @@ class ProfileDataObjc: NSObject {
             }
         }
     }
+    
+    @objc
+    static func setUnloadedPhotos(value: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            ProfileData.shared.nonloadedPictures = value
+        }
+    }
 }
 
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
+    @Published var nonloadedPictures: Int = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
 }
@@ -47,6 +55,7 @@ struct Profile: View {
 
     @State private var showingAlert = false
     @ObservedObject var profileData: ProfileData = ProfileData.shared
+    @State private var isDownloadingPictures: Bool = false
 
     var repeatingTextAnimation: Animation {
         Animation
@@ -69,30 +78,36 @@ struct Profile: View {
                     AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
                     Spacer()
                 }
-                if (STMCorePicturesController.shared().nonloadedPicturesCount > 0){
+                if (profileData.nonloadedPictures > 0 && !profileData.isLoading){
                     let pluralString = STMFunctions.pluralType(forCount: STMCorePicturesController.shared().nonloadedPicturesCount)
                     let picturesCount = pluralString + "UPICTURES"
                     let title = String(STMCorePicturesController.shared().nonloadedPicturesCount) + " " + NSLocalizedString(picturesCount, comment: "")
                     let detail = NSLocalizedString("WAITING FOR DOWNLOAD", comment: "")
-                    HStack{
-                        Button(action: {
-                            STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
-                        }) {
-                            VStack {
-                                Image(systemName: "photo")
-                                        .font(.title)
-                                Text(title)
-                                    .font(.system(size: 16))
-                                Text(detail)
-                                    .font(.system(size: 14))
-                            }
-                            .padding()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(Color.blue, lineWidth: 3)
-                            )
+                    Spacer()
+                    Button(action: {
+                        if (isDownloadingPictures){
+                            STMCorePicturesController.shared().downloadingPictures = false
+                            isDownloadingPictures = false
+                        }else {
+                            STMCorePicturesController.shared().checkPhotos()
+                            STMCorePicturesController.shared().downloadingPictures = true
+                            isDownloadingPictures = true
                         }
-                    }
+                    }) {
+                        VStack {
+                            Image(systemName: "photo")
+                                    .font(.title)
+                            Text(title)
+                                .font(.system(size: 16))
+                            Text(detail)
+                                .font(.system(size: 14))
+                        }
+                        .padding()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(isDownloadingPictures ? Color.red : Color.blue, lineWidth: 3)
+                        )
+                    }.accentColor(isDownloadingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
                 if profileData.error != nil {
