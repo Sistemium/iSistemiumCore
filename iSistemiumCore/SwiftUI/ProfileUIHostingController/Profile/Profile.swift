@@ -41,12 +41,20 @@ class ProfileDataObjc: NSObject {
             ProfileData.shared.nonloadedPictures = value
         }
     }
+    
+    @objc
+    static func setUnusedPhotos(value: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            ProfileData.shared.unusedPictures = value
+        }
+    }
 }
 
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
     @Published var nonloadedPictures: Int = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+    @Published var unusedPictures: Int = STMGarbageCollector.sharedInstance.unusedImageFiles.count
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
 }
@@ -56,6 +64,7 @@ struct Profile: View {
     @State private var showingAlert = false
     @ObservedObject var profileData: ProfileData = ProfileData.shared
     @State private var isDownloadingPictures: Bool = false
+    @State private var isFlushingPictures: Bool = false
 
     var repeatingTextAnimation: Animation {
         Animation
@@ -79,9 +88,9 @@ struct Profile: View {
                     Spacer()
                 }
                 if (profileData.nonloadedPictures > 0 && !profileData.isLoading){
-                    let pluralString = STMFunctions.pluralType(forCount: STMCorePicturesController.shared().nonloadedPicturesCount)
+                    let pluralString = STMFunctions.pluralType(forCount: UInt(profileData.nonloadedPictures))
                     let picturesCount = pluralString + "UPICTURES"
-                    let title = String(STMCorePicturesController.shared().nonloadedPicturesCount) + " " + NSLocalizedString(picturesCount, comment: "")
+                    let title = String(profileData.nonloadedPictures) + " " + NSLocalizedString(picturesCount, comment: "")
                     let detail = NSLocalizedString("WAITING FOR DOWNLOAD", comment: "")
                     Spacer()
                     Button(action: {
@@ -97,6 +106,7 @@ struct Profile: View {
                         VStack {
                             Image(systemName: "photo")
                                     .font(.title)
+                            Spacer().frame(height: 3)
                             Text(title)
                                 .font(.system(size: 16))
                             Text(detail)
@@ -108,6 +118,35 @@ struct Profile: View {
                                 .stroke(isDownloadingPictures ? Color.red : Color.blue, lineWidth: 3)
                         )
                     }.accentColor(isDownloadingPictures ? Color.red : Color.blue)
+                }
+                if (profileData.unusedPictures > 0 && !profileData.isLoading){
+                    let pluralString = STMFunctions.pluralType(forCount: UInt(profileData.unusedPictures + 1))
+                    let picturesCount = pluralString + "UPICTURES"
+                    let unusedCount = pluralString + "UNUSED"
+                    let title = String(profileData.unusedPictures) +  " " + NSLocalizedString(unusedCount, comment: "") + " " + NSLocalizedString(picturesCount, comment: "")
+                    Spacer()
+                    Button(action: {
+                        if (isFlushingPictures){
+                            STMGarbageCollector.sharedInstance.stopRemoveUnusedImages()
+                            isFlushingPictures = false
+                        }else {
+                            STMGarbageCollector.sharedInstance.removeUnusedImages()
+                            isFlushingPictures = true
+                        }
+                    }) {
+                        VStack {
+                            Image(systemName: "photo")
+                                    .font(.title)
+                            Spacer().frame(height: 3)
+                            Text(title)
+                                .font(.system(size: 16))
+                        }
+                        .padding()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(isFlushingPictures ? Color.red : Color.blue, lineWidth: 3)
+                        )
+                    }.accentColor(isFlushingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
                 if profileData.error != nil {

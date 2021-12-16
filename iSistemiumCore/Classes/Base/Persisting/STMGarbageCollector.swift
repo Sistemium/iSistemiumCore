@@ -19,6 +19,8 @@ extension Set {
 class STMGarbageCollector: NSObject {
 
     static let sharedInstance = STMGarbageCollector()
+    
+    private var removingUnusedImages = false
 
     private var _unusedImageFiles: Set<String>?
 
@@ -64,6 +66,8 @@ class STMGarbageCollector: NSObject {
     @discardableResult
     @objc
     func removeUnusedImages() -> AnyPromise {
+        
+        removingUnusedImages = true
 
         return AnyPromise(Promise<Any>{ seal in
 
@@ -76,9 +80,12 @@ class STMGarbageCollector: NSObject {
                         STMLogger.shared().saveLogMessage(withText: logMessage, numType: STMLogMessageType.important)
                     }
                     for unusedImage in self.unusedImageFiles {
+                        if (!removingUnusedImages){
+                            break;
+                        }
                         try self.filing.removeItem(atPath: unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
-                        NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFICATION_PICTURE_UNUSED_CHANGE), object: nil)
+                        ProfileDataObjc.setUnusedPhotos(value: unusedImageFiles.count)
                     }
                 } catch let error as NSError {
                     err = error
@@ -89,6 +96,12 @@ class STMGarbageCollector: NSObject {
             }
 
         })
+
+    }
+    
+    func stopRemoveUnusedImages(){
+        
+        removingUnusedImages = false
 
     }
 
