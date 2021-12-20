@@ -90,8 +90,10 @@ struct Profile: View {
                 if (profileData.nonloadedPictures > 0 && !profileData.isLoading){
                     let pluralString = STMFunctions.pluralType(forCount: UInt(profileData.nonloadedPictures))
                     let picturesCount = pluralString + "UPICTURES"
-                    let title = String(profileData.nonloadedPictures) + " " + NSLocalizedString(picturesCount, comment: "")
                     let detail = NSLocalizedString("WAITING FOR DOWNLOAD", comment: "")
+                    let title = String(profileData.nonloadedPictures) + " " + NSLocalizedString(picturesCount, comment: "") + " " + detail
+                    let download = NSLocalizedString("DOWNLOAD NOW", comment: "")
+                    let stop = NSLocalizedString("DOWNLOAD STOP", comment: "")
                     Spacer()
                     Button(action: {
                         if (isDownloadingPictures){
@@ -109,8 +111,8 @@ struct Profile: View {
                             Spacer().frame(height: 3)
                             Text(title)
                                 .font(.system(size: 16))
-                            Text(detail)
-                                .font(.system(size: 14))
+                            Text(isDownloadingPictures ? stop : download)
+                                .font(.system(size: 16))
                         }
                         .padding()
                         .overlay(
