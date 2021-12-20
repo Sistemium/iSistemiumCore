@@ -731,7 +731,9 @@
     [[self.session logger] saveLogMessageWithText:CurrentMethodName
                                           numType:STMLogMessageTypeInfo];
 
-    [self startDefantomization];
+    if(!STMCoreAuthController.sharedAuthController.initialLoadingError){
+        [self startDefantomization];
+    }
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         UIApplication *app = [UIApplication sharedApplication];

@@ -28,6 +28,7 @@
 @property (nonatomic, readwrite) STMAuthState controllerState;
 
 @property BOOL initialLoadingCompleted;
+@property BOOL initialLoadingError;
 
 + (instancetype)sharedAuthController;
 

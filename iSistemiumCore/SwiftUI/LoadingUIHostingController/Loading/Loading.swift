@@ -42,12 +42,22 @@ class LoadingDataObjc: NSObject {
             }
         }
     }
+    
+    @objc
+    static func setWarning(warning: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(Animation.easeInOut(duration: 0.5)) {
+                LoadingData.shared.warning = warning
+            }
+        }
+    }
 }
 
 class LoadingData: ObservableObject {
     static let shared = LoadingData()
     @Published var progressValue: Float = 0
     @Published var error: String? = nil
+    @Published var warning: String? = nil
 }
 
 struct Loading: View{
@@ -65,12 +75,34 @@ struct Loading: View{
                         .padding(.trailing, 40)
                         .padding(.leading, 40)
                         .padding(.top, 40)
-                if loadingData.error == nil {
+                if loadingData.error == nil && loadingData.warning == nil {
                     AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
-                } else {
+                }
+                if (loadingData.error != nil){
                     Text(loadingData.error!)
                         .font(.title)
                         .foregroundColor(Color.red)
+                }
+                if loadingData.warning != nil {
+                    Text(loadingData.warning!)
+                            .font(.title)
+                            .foregroundColor(Color.orange)
+                    Button(action: {
+                        STMCoreAuthController.shared().initialLoadingError = false
+                        STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
+                        loadingData.warning = nil
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.title)
+                            Text("TRY AGAIN")
+                                    .fontWeight(.semibold)
+                                    .font(.headline)
+                        }
+                                .frame(minWidth: 0, maxWidth: .infinity)
+                                .padding()
+                                .padding(.horizontal, 20)
+                    }
                 }
                 Spacer()
                 Spacer()

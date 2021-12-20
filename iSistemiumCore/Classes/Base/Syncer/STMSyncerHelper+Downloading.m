@@ -261,6 +261,9 @@
 - (void)doneDownloadingEntityName:(NSString *)entityName errorMessage:(NSString *)errorMessage {
 
     if (errorMessage) {
+        if (!STMCoreAuthController.sharedAuthController.initialLoadingCompleted){
+            STMCoreAuthController.sharedAuthController.initialLoadingError = true;
+        }
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
     }
 
@@ -277,8 +280,12 @@
                                 userInfo:@{@"countdownValue": @(remainCount)}];
 
     float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
-
-    if (queue == nil){
+    
+    if (STMCoreAuthController.sharedAuthController.initialLoadingError){
+        
+        [LoadingDataObjc setWarningWithWarning:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        
+    } else if (queue == nil){
 
         [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
 
