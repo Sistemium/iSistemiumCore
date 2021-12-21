@@ -342,7 +342,9 @@
 - (void)socketReceiveAuthorization {
 
     NSLogMethodName;
-
+    
+    STMCoreAuthController.sharedAuthController.initialLoadingError = false;
+    
     [self postAsyncMainQueueNotification:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
 
     [self subscribeToUnsyncedObjects];

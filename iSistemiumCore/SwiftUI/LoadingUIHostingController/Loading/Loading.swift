@@ -26,6 +26,9 @@ class LoadingDataObjc: NSObject {
             withAnimation(Animation.easeInOut(duration: 0.5)) {
                 LoadingData.shared.error = nil
             }
+            withAnimation(Animation.easeInOut(duration: 0.5)) {
+                LoadingData.shared.warning = nil
+            }
             withAnimation(Animation.linear(duration: 0.1)) {
                 LoadingData.shared.progressValue = _value
             }
@@ -82,8 +85,7 @@ struct Loading: View{
                     Text(loadingData.error!)
                         .font(.title)
                         .foregroundColor(Color.red)
-                }
-                if loadingData.warning != nil {
+                } else if loadingData.warning != nil {
                     Text(loadingData.warning!)
                             .font(.title)
                             .foregroundColor(Color.orange)
