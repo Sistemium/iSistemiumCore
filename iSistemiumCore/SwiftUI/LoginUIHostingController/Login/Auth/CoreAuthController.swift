@@ -76,6 +76,7 @@ class CoreAuthController:NSObject{
         STMCoreAuthController.shared().entityResource = "DEMO SOCKET"
         STMCoreAuthController.shared().userID = "DEMO USER ID"
         STMCoreAuthController.shared().userName = "DEMO USER"
+        STMCoreAuthController.shared().isDemo = true
         STMCoreAuthController.shared().processRoles(
             [
                 "ts" : "2021-10-06 11:47:03.522",

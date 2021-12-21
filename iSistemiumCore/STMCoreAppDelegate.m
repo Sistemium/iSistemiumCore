@@ -50,6 +50,10 @@
     [self startAuthController];
 
     [self setupWindow];
+    
+    if ([STMCoreAuthController sharedAuthController].isDemo){
+        [STMCoreAuthController.sharedAuthController logout];
+    }
 
     [STMCoreAuthController.sharedAuthController checkPhoneNumber];
 

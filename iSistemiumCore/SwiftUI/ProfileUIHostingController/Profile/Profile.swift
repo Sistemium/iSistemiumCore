@@ -53,7 +53,7 @@ class ProfileDataObjc: NSObject {
 class ProfileData: ObservableObject {
     static let shared = ProfileData()
     @Published var progressValue: Float = 0
-    @Published var nonloadedPictures: Int = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+    @Published var nonloadedPictures: Int = 0
     @Published var unusedPictures: Int = STMGarbageCollector.sharedInstance.unusedImageFiles.count
     @Published var isLoading: Bool = false
     @Published var error: String? = nil
@@ -151,12 +151,12 @@ struct Profile: View {
                     }.accentColor(isFlushingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
-                if profileData.error != nil {
+                if profileData.error != nil && !STMCoreAuthController.shared().isDemo {
                     Text(profileData.error!)
                             .font(.title)
                             .foregroundColor(Color.red)
                 }
-                if(!profileData.isLoading && !STMCoreAuthController.shared().userName.contains("DEMO")){
+                if(!profileData.isLoading && !STMCoreAuthController.shared().isDemo){
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
                     }) {
@@ -201,6 +201,12 @@ struct Profile: View {
                         )
                     }
                     )
-        }.navigationViewStyle(StackNavigationViewStyle())
+        }.navigationViewStyle(StackNavigationViewStyle()).onAppear(){
+            if (!STMCoreAuthController.shared().isDemo){
+                ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+            } else {
+                ProfileData.shared.nonloadedPictures = 0
+            }
+        }
     }
 }

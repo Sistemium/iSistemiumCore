@@ -208,7 +208,7 @@
 
 + (BOOL)downloadableEntityReady {
     
-    if ([STMCoreAuthController.sharedAuthController.userID containsString:@"DEMO"]){
+    if ([STMCoreAuthController sharedAuthController].isDemo){
         return YES;
     }
     
