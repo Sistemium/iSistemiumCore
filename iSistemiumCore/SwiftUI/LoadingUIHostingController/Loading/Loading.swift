@@ -33,7 +33,7 @@ class LoadingDataObjc: NSObject {
                 LoadingData.shared.progressValue = _value
             }
         }
-        if(STMCoreAuthController.shared().userName.contains("DEMO") || _value >= 1.0){
+        if(STMCoreAuthController.shared().isDemo || _value >= 1.0){
             finishLoading()
         }
     }

@@ -60,6 +60,7 @@
 @synthesize stcTabs = _stcTabs;
 @synthesize iSisDB = _iSisDB;
 @synthesize rolesResponse = _rolesResponse;
+@synthesize isDemo = _isDemo;
 
 
 #pragma mark - singletone init
@@ -127,6 +128,35 @@
         [STMKeychain saveValue:phoneNumber forKey:KC_PHONE_NUMBER];
 
         _phoneNumber = phoneNumber;
+
+    }
+
+}
+
+- (BOOL)isDemo {
+
+    if (!_isDemo) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        BOOL demo = [defaults boolForKey:@"isDemo"];
+        
+        _isDemo = demo;
+
+    }
+
+    return _isDemo;
+
+}
+
+- (void)setIsDemo:(BOOL)demo {
+
+    if (_isDemo != demo) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        [defaults setBool:demo forKey:@"isDemo"];
+        [defaults synchronize];
+
+        _isDemo = demo;
 
     }
 
@@ -541,6 +571,7 @@
     self.stcTabs = nil;
     self.iSisDB = nil;
     self.initialLoadingCompleted = NO;
+    self.isDemo = false;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
 
 }

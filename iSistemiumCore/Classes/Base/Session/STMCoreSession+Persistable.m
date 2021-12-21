@@ -41,7 +41,7 @@
     NSString *fmdbFile = [dataModelName stringByAppendingString:@".db"];
     NSString *fmdbPath = [[self.filing persistencePath:FMDB_PATH] stringByAppendingPathComponent:fmdbFile];
     
-    if ([STMCoreAuthController.sharedAuthController.userID containsString:@"DEMO"]){
+    if ([STMCoreAuthController sharedAuthController].isDemo){
         NSString *sourcePath = [[NSBundle mainBundle] pathForResource:[dataModelName stringByAppendingString:@"-DEMO"] ofType:@"db"];
         [[NSFileManager defaultManager] copyItemAtPath:sourcePath toPath:fmdbPath error:nil];
     }

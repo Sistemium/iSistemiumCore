@@ -299,7 +299,7 @@ NSTimer *flushTimer;
 
 - (AnyPromise *)downloadModel {
     
-    if ([[STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"org"] isEqual:@"DEMO ORG"]){
+    if ([STMCoreAuthController sharedAuthController].isDemo){
         NSString *model = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
         NSString *bundledModelFile = [self.filing bundledModelFile:model];
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {

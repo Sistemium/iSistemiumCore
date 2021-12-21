@@ -151,12 +151,12 @@ struct Profile: View {
                     }.accentColor(isFlushingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
-                if profileData.error != nil && !STMCoreAuthController.shared().userName.contains("DEMO") {
+                if profileData.error != nil && !STMCoreAuthController.shared().isDemo {
                     Text(profileData.error!)
                             .font(.title)
                             .foregroundColor(Color.red)
                 }
-                if(!profileData.isLoading && !STMCoreAuthController.shared().userName.contains("DEMO")){
+                if(!profileData.isLoading && !STMCoreAuthController.shared().isDemo){
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
                     }) {
@@ -202,8 +202,10 @@ struct Profile: View {
                     }
                     )
         }.navigationViewStyle(StackNavigationViewStyle()).onAppear(){
-            if (!STMCoreAuthController.shared().userName.contains("DEMO")){
+            if (!STMCoreAuthController.shared().isDemo){
                 ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+            } else {
+                ProfileData.shared.nonloadedPictures = 0
             }
         }
     }

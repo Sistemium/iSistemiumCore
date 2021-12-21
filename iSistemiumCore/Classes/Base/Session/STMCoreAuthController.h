@@ -24,6 +24,7 @@
 @property (nonatomic, strong) NSString *userID;
 @property (nonatomic, strong) NSDate *lastAuth;
 @property (nonatomic, strong) NSString *accountOrg;
+@property (nonatomic) BOOL isDemo;
 
 @property (nonatomic, readwrite) STMAuthState controllerState;
 

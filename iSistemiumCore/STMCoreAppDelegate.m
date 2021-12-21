@@ -50,7 +50,7 @@
 
     [self setupWindow];
     
-    if ([STMCoreAuthController.sharedAuthController.userID containsString:@"DEMO"]){
+    if ([STMCoreAuthController sharedAuthController].isDemo){
         [STMCoreAuthController.sharedAuthController logout];
     }
 

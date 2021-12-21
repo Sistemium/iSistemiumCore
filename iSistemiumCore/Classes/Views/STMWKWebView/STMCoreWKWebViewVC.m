@@ -175,6 +175,12 @@
 }
 
 - (void)reloadWebView {
+    
+    if ([STMCoreAuthController sharedAuthController].isDemo){
+        [self loadDemoWebView];
+        [self loadLocalHTML];
+        return;
+    }
 
     [self hideNavBar];
     [self.scriptMessageHandler cancelSubscriptions];
@@ -217,7 +223,7 @@
 
     NSString *urlString = self.lastUrl ? self.lastUrl : [self webViewUrlString];
     
-    if ([urlString containsString:@"DEMO"]){
+    if ([STMCoreAuthController sharedAuthController].isDemo){
         [self loadDemoWebView];
         [self loadLocalHTML];
         return;
