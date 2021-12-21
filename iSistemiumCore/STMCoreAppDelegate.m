@@ -7,6 +7,7 @@
 //
 
 #import "STMCoreAppDelegate.h"
+#import "STMCoreAuthController.h"
 
 #import "STMCoreAuthController.h"
 #import "STMRemoteController.h"
@@ -190,7 +191,9 @@
     [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
                             withValue:logMessage];
 
-    [STMSoundController startBackgroundPlay];
+    if (STMCoreAuthController.sharedAuthController.lastAuth) {
+        [STMSoundController startBackgroundPlay];
+    }
 
 }
 
@@ -252,8 +255,9 @@
 
     [[self syncer] sendEventViaSocket:STMSocketEventStatusChange
                             withValue:logMessage];
-
-    [STMSoundController stopBackgroundPlay];
+    if (STMCoreAuthController.sharedAuthController.lastAuth) {
+        [STMSoundController stopBackgroundPlay];
+    }
 
 }
 
