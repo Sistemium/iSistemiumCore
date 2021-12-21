@@ -49,6 +49,10 @@
     [self startAuthController];
 
     [self setupWindow];
+    
+    if ([STMCoreAuthController.sharedAuthController.userID containsString:@"DEMO"]){
+        [STMCoreAuthController.sharedAuthController logout];
+    }
 
     [STMCoreAuthController.sharedAuthController checkPhoneNumber];
 
