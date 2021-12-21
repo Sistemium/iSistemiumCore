@@ -151,7 +151,7 @@ struct Profile: View {
                     }.accentColor(isFlushingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
-                if profileData.error != nil {
+                if profileData.error != nil && !STMCoreAuthController.shared().userName.contains("DEMO") {
                     Text(profileData.error!)
                             .font(.title)
                             .foregroundColor(Color.red)
