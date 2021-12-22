@@ -9,7 +9,6 @@
 #import "STMSoundController.h"
 
 #import <AVFoundation/AVFoundation.h>
-#import <Crashlytics/Crashlytics.h>
 
 #import "STMConstants.h"
 #import "STMLogger.h"

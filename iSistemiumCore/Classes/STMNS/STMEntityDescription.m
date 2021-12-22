@@ -9,8 +9,6 @@
 #import "STMEntityDescription.h"
 #import "STMCoreSessionManager.h"
 
-#import <Crashlytics/Crashlytics.h>
-
 
 @implementation STMEntityDescription
 

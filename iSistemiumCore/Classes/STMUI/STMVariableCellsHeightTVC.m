@@ -8,7 +8,6 @@
 
 #import "STMVariableCellsHeightTVC.h"
 
-#import <Crashlytics/Crashlytics.h>
 
 
 @interface STMVariableCellsHeightTVC ()

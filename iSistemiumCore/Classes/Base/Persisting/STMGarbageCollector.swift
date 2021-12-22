@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Crashlytics
 
 extension Set {
     func setmap<U>(transform: (Element) -> U) -> Set<U> {

@@ -31,6 +31,8 @@
 #import "UITestSetup.h"
 
 #import <WebKit/WebKit.h>
+@import Firebase;
+@import FirebaseCrashlytics;
 
 @interface STMCoreAppDelegate ()
 
@@ -57,8 +59,8 @@
 
     [STMCoreAuthController.sharedAuthController checkPhoneNumber];
 
-    [self startCrashlytics];
-
+    [FIRApp configure];
+    
     NSLog(@"deviceUUID %@", [STMClientDataController deviceUUID]);
 
 //    STMLogger *logger = [STMLogger sharedLogger];
@@ -603,7 +605,7 @@
         [defaults setObject:deviceToken forKey:@"deviceToken"];
         [defaults synchronize];
 
-        [[Crashlytics sharedInstance] setObjectValue:deviceToken forKey:@"deviceToken"];
+        [[FIRCrashlytics crashlytics] setCustomValue:deviceToken forKey:@"deviceToken"];
 
     }
 
@@ -653,15 +655,8 @@
     return self.fetchCompletionHandlers.count;
 }
 
-
-#pragma mark - Crashlytics
-
-- (void)startCrashlytics {
-
-}
-
 - (void)testCrash {
-    [[Crashlytics sharedInstance] crash];
+    @[][1];
 }
 
 @end

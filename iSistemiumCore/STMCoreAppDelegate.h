@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 
 #import <AdSupport/AdSupport.h>
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
 
 #import "STMClientDataController.h"
 
