@@ -8,3 +8,4 @@ iSistemiumCore/Frameworks/ScanAPI/*
 node_modules
 iSistemiumCore/Resources/DEMO/
 iSistemiumCore/Resources/iSisSales-DEMO.db
+iSistemiumCore/Resources/GoogleService-Info.plist
