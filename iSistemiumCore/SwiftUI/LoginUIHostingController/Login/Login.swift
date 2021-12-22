@@ -107,6 +107,17 @@ struct Login: View {
                         RoundedRectangle(cornerRadius: 10).stroke()
                                 .frame(width: 340, height: 50)
                     }
+                    HStack {
+                        Spacer()
+                        Button(action:{
+                            if let url = URL(string: NSLocalizedString("POLICY_URL", comment: "")) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        ){
+                            Text("POLICY")
+                        }.padding(.trailing, 30)
+                    }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text(alertText),
