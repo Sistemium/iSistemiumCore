@@ -69,8 +69,6 @@
 //    [logger saveLogMessageWithText:logMessage
 //                           numType:STMLogMessageTypeImportant];
 
-    [self registerForNotification];
-
     if (launchOptions != nil) {
 
         NSDictionary *remoteNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
@@ -113,6 +111,8 @@
 - (void)statusChanged {
 
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
+        
+        [self registerForNotification];
 
     }
 
