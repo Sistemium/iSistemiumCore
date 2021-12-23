@@ -59,7 +59,9 @@
     socketTransport.logger = logger;
     socketTransport.remoteDataEventHandling = remoteDataEventHandling;
 
-    [socketTransport startSocket];
+    if (!STMCoreAuthController.sharedAuthController.isDemo){
+        [socketTransport startSocket];
+    }
 
     return socketTransport;
 
