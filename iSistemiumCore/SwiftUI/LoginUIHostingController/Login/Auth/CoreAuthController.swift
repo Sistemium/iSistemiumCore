@@ -77,63 +77,19 @@ class CoreAuthController:NSObject{
         STMCoreAuthController.shared().userID = "DEMO USER ID"
         STMCoreAuthController.shared().userName = "DEMO USER"
         STMCoreAuthController.shared().isDemo = true
-        STMCoreAuthController.shared().processRoles(
-            [
-                "ts" : "2021-10-06 11:47:03.522",
-                "token": [
-                    "expiresAt": "2022-10-06 11:46:20.764",
-                    "expiresIn": 31533909,
-                ],
-                "account": [
-                    "authId": "DEMO AUTH ID",
-                    "code": 635,
-                    "email": "email@email.com",
-                    "mobile-number": "+7 DEMO 000",
-                    "org" : "DEMO ORG",
-                    "name": "DEMO ACC",
-                ],
-                "cts": "2021-10-06 11:46:20.764",
-                "id": "DEMO ID",
-                "roles": [
-                    "authenticated": 1,
-                    "mailer": 1,
-                    "models": "iSisSales",
-                    "org": "DEMO ORG",
-                    "saleType": "op",
-                    "salesman": 77495,
-                    "stc": 1,
-                    "tester": 1,
-                    "stcTabs": [
-                        [
-                            "imageName": "checked_user-128.png",
-                            "name": "STMProfile",
-                            "title": "Профиль",
-                        ],
-                        [
-                            "disableScroll": 1,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "Демо1",
-                            "url": "DEMO URL"
-                        ],
-                        [
-                            "disableScroll": 1,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "Демо2",
-                            "url": "DEMO URL"
-                        ],
-                        [
-                            "disableScroll": 1,
-                            "imageName": "3colors-colorless.png",
-                            "name": "STMWKWebView",
-                            "title": "Демо3",
-                            "appManifestURI": "https://isd.sistemium.com/app.manifest",
-                        ],
-                    ]
-                ],
-            ]
-        )
+        if let path = Bundle.main.path(forResource: "roles-DEMO", ofType: "json") {
+            do {
+                  let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
+                  let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
+                  if let jsonResult = jsonResult as? Dictionary<String, AnyObject> {
+                      STMCoreAuthController.shared().processRoles(
+                        jsonResult
+                      )
+                  }
+              } catch let error {
+                  print(error)
+              }
+        }
         LoadingDataObjc.setProgress(value: 1.0)
     }
     
