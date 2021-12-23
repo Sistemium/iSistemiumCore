@@ -192,7 +192,7 @@
 
     self.status = STMSessionRunning;
 
-    if (!self.isRunningTests) {
+    if (!self.isRunningTests && !STMCoreAuthController.sharedAuthController.isDemo) {
         [self setupSyncer];
     }
 
