@@ -580,7 +580,7 @@
 
     NSString *dataModelName = @"";
 
-#if defined (CONFIGURATION_DebugSales) || defined (CONFIGURATION_ReleaseSales)
+#if defined (CONFIGURATION_DebugSales) || defined (CONFIGURATION_ReleaseSales) || defined (CONFIGURATION_DebugSalesApple) || defined (CONFIGURATION_ReleaseSalesApple)
 
     NSLog(@"USE SALES DATA MODEL");
     dataModelName = @"iSisSales";
