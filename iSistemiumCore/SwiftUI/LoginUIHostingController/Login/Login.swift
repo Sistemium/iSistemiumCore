@@ -108,15 +108,8 @@ struct Login: View {
                                 .frame(width: 340, height: 50)
                     }
                     HStack {
-                        Spacer()
-                        Button(action:{
-                            if let url = URL(string: NSLocalizedString("POLICY_URL", comment: "")) {
-                                UIApplication.shared.open(url)
-                            }
-                        }
-                        ){
-                            Text("POLICY")
-                        }.padding(.trailing, 30)
+                        let privacyPolicyText = NSLocalizedString("POLICY_DESC", comment: "") + "["+NSLocalizedString("POLICY", comment: "")+"]("+NSLocalizedString("POLICY_URL", comment: "")+")"
+                        Text(.init(privacyPolicyText)).padding(.horizontal, 15)
                     }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
