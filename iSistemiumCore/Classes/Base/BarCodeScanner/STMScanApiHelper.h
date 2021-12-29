@@ -7,12 +7,10 @@
 //  Copyright © 2016 Sistemium UAB. All rights reserved.
 //
 
-#import <ScanApi/ScanApiHelper.h>
-
 #import "STMScanApiHelperDelegate.h"
 
 
-@interface STMScanApiHelper : ScanApiHelper
+@interface STMScanApiHelper : NSObject
 
 
 @end

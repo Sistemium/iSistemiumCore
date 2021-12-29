@@ -4,10 +4,9 @@
 //
 
 #import "ZBRBarcodeTypes.h"
-#import <ZebraIos/SbtSdkFactory.h>
 #import "STMBarCodeScanning.h"
 
-@interface STMBarCodeZebra : NSObject <ISbtSdkApiDelegate, STMBarCodeScanningDevice>
+@interface STMBarCodeZebra : NSObject <STMBarCodeScanningDevice>
 
 @property (nonatomic, weak) id <STMBarCodeScannerDelegate> stmScanningDelegate;
 

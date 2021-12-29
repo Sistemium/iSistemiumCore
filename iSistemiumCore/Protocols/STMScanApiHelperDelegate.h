@@ -7,11 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ScanApiHelper.h"
 
-@protocol STMScanApiHelperDelegate <ScanApiHelperDelegate>
-
-- (void)onButtonsEvent:(ISktScanObject *)scanObj;
-
+@protocol STMScanApiHelperDelegate
 
 @end
