@@ -108,15 +108,13 @@ struct Login: View {
                                 .frame(width: 340, height: 50)
                     }
                     VStack {
-                                Text("POLICY_DESC1")
-                                HStack(spacing: 0) {
-                                    Text("POLICY_DESC2")
-                                    Button(NSLocalizedString("POLICY", comment: "")) {
-                                        if let url = URL(string: NSLocalizedString("POLICY_URL", comment: "")) {
-                                            UIApplication.shared.open(url)
-                                        }
-                                    }
-                                }
+                        Text("POLICY_DESC1")
+                        Text("POLICY_DESC2")
+                        Button(NSLocalizedString("POLICY", comment: "")) {
+                            if let url = URL(string: NSLocalizedString("POLICY_URL", comment: "")) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
                             }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
