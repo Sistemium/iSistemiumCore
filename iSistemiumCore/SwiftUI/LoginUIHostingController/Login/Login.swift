@@ -107,10 +107,17 @@ struct Login: View {
                         RoundedRectangle(cornerRadius: 10).stroke()
                                 .frame(width: 340, height: 50)
                     }
-                    HStack {
-                        let privacyPolicyText = NSLocalizedString("POLICY_DESC", comment: "") + "["+NSLocalizedString("POLICY", comment: "")+"]("+NSLocalizedString("POLICY_URL", comment: "")+")"
-                        Text(.init(privacyPolicyText)).padding(.horizontal, 15)
-                    }
+                    VStack {
+                                Text("POLICY_DESC1")
+                                HStack(spacing: 0) {
+                                    Text("POLICY_DESC2")
+                                    Button(NSLocalizedString("POLICY", comment: "")) {
+                                        if let url = URL(string: NSLocalizedString("POLICY_URL", comment: "")) {
+                                            UIApplication.shared.open(url)
+                                        }
+                                    }
+                                }
+                            }
                     Spacer()
                 }.alert(isPresented: self.$showingAlert) {
                     Alert(title: Text(alertText),
