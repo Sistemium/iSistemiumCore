@@ -19,7 +19,7 @@ class ProfileDataObjc: NSObject {
             withAnimation(Animation.linear(duration: 0.1)) {
                 ProfileData.shared.progressValue = value
             }
-            if (value >= 1.0){
+            if (value >= 1.0) {
                 ProfileData.shared.isLoading = false;
                 ProfileData.shared.progressValue = 0
             }
@@ -34,14 +34,14 @@ class ProfileDataObjc: NSObject {
             }
         }
     }
-    
+
     @objc
     static func setUnloadedPhotos(value: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             ProfileData.shared.nonloadedPictures = value
         }
     }
-    
+
     @objc
     static func setUnusedPhotos(value: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -61,7 +61,11 @@ class ProfileData: ObservableObject {
 
 struct Profile: View {
 
-    @State private var showingAlert = false
+    @State private var isLocationAllowed = false
+    @State private var isPushAllowed = false
+    @State private var showingLogoutAlert = false
+    @State private var showingLocationPermissionsAlert = false
+    @State private var showingNotificationPermissionsAlert = false
     @ObservedObject var profileData: ProfileData = ProfileData.shared
     @State private var isDownloadingPictures: Bool = false
     @State private var isFlushingPictures: Bool = false
@@ -77,7 +81,7 @@ struct Profile: View {
             VStack {
                 Spacer().frame(height: 100)
                 Text(STMCoreAuthController.shared().userName).font(.headline)
-                if(profileData.isLoading){
+                if (profileData.isLoading) {
                     CircularProgressBar(value: $profileData.progressValue)
                             .frame(width: 175.0, height: 175.0)
                             .padding(.bottom, 20)
@@ -87,7 +91,34 @@ struct Profile: View {
                     AnimatedText(text: NSLocalizedString("SYNCING DATA", comment: ""))
                     Spacer()
                 }
-                if (profileData.nonloadedPictures > 0 && !profileData.isLoading){
+                VStack {
+                    Toggle("GEOLOCATION", isOn: $isLocationAllowed)
+                            .onTapGesture {
+                                getLocationPermissions(activeActions: true)
+                            }
+                            .alert(isPresented: $showingLocationPermissionsAlert) {
+                                Alert (title: Text("Camera access required to take photos"),
+                                        message: Text("Go to Settings?"),
+                                        primaryButton: .default(Text("Settings"), action: {
+                                            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                        }),
+                                        secondaryButton: .default(Text("Cancel")))
+                            }
+                    Toggle("PUSH", isOn: $isPushAllowed)
+                            .onTapGesture {
+                                getNotificationPermissions(activeActions: true)
+                            }
+                            .alert(isPresented: $showingNotificationPermissionsAlert) {
+                                Alert (title: Text("Camera access required to take photos"),
+                                        message: Text("Go to Settings?"),
+                                        primaryButton: .default(Text("Settings"), action: {
+                                            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                        }),
+                                        secondaryButton: .default(Text("Cancel")))
+                            }
+                }
+                        .padding(50)
+                if (profileData.nonloadedPictures > 0 && !profileData.isLoading) {
                     let pluralString = STMFunctions.pluralType(forCount: UInt(profileData.nonloadedPictures))
                     let picturesCount = pluralString + "UPICTURES"
                     let detail = NSLocalizedString("WAITING FOR DOWNLOAD", comment: "")
@@ -96,10 +127,10 @@ struct Profile: View {
                     let stop = NSLocalizedString("DOWNLOAD STOP", comment: "")
                     Spacer()
                     Button(action: {
-                        if (isDownloadingPictures){
+                        if (isDownloadingPictures) {
                             STMCorePicturesController.shared().downloadingPictures = false
                             isDownloadingPictures = false
-                        }else {
+                        } else {
                             STMCorePicturesController.shared().checkPhotos()
                             STMCorePicturesController.shared().downloadingPictures = true
                             isDownloadingPictures = true
@@ -110,28 +141,29 @@ struct Profile: View {
                                     .font(.title)
                             Spacer().frame(height: 3)
                             Text(title)
-                                .font(.system(size: 16))
+                                    .font(.system(size: 16))
                             Text(isDownloadingPictures ? stop : download)
-                                .font(.system(size: 16))
+                                    .font(.system(size: 16))
                         }
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(isDownloadingPictures ? Color.red : Color.blue, lineWidth: 3)
-                        )
-                    }.accentColor(isDownloadingPictures ? Color.red : Color.blue)
+                                .padding()
+                                .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                                .stroke(isDownloadingPictures ? Color.red : Color.blue, lineWidth: 3)
+                                )
+                    }
+                            .accentColor(isDownloadingPictures ? Color.red : Color.blue)
                 }
-                if (profileData.unusedPictures > 0 && !profileData.isLoading){
+                if (profileData.unusedPictures > 0 && !profileData.isLoading) {
                     let pluralString = STMFunctions.pluralType(forCount: UInt(profileData.unusedPictures + 1))
                     let picturesCount = pluralString + "UPICTURES"
                     let unusedCount = pluralString + "UNUSED"
-                    let title = String(profileData.unusedPictures) +  " " + NSLocalizedString(unusedCount, comment: "") + " " + NSLocalizedString(picturesCount, comment: "")
+                    let title = String(profileData.unusedPictures) + " " + NSLocalizedString(unusedCount, comment: "") + " " + NSLocalizedString(picturesCount, comment: "")
                     Spacer()
                     Button(action: {
-                        if (isFlushingPictures){
+                        if (isFlushingPictures) {
                             STMGarbageCollector.sharedInstance.stopRemoveUnusedImages()
                             isFlushingPictures = false
-                        }else {
+                        } else {
                             STMGarbageCollector.sharedInstance.removeUnusedImages()
                             isFlushingPictures = true
                         }
@@ -141,14 +173,15 @@ struct Profile: View {
                                     .font(.title)
                             Spacer().frame(height: 3)
                             Text(title)
-                                .font(.system(size: 16))
+                                    .font(.system(size: 16))
                         }
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(isFlushingPictures ? Color.red : Color.blue, lineWidth: 3)
-                        )
-                    }.accentColor(isFlushingPictures ? Color.red : Color.blue)
+                                .padding()
+                                .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                                .stroke(isFlushingPictures ? Color.red : Color.blue, lineWidth: 3)
+                                )
+                    }
+                            .accentColor(isFlushingPictures ? Color.red : Color.blue)
                 }
                 Spacer()
                 if profileData.error != nil && !STMCoreAuthController.shared().isDemo {
@@ -156,7 +189,7 @@ struct Profile: View {
                             .font(.title)
                             .foregroundColor(Color.red)
                 }
-                if(!profileData.isLoading && !STMCoreAuthController.shared().isDemo){
+                if (!profileData.isLoading && !STMCoreAuthController.shared().isDemo) {
                     Button(action: {
                         STMCoreSessionManager.shared()?.currentSession.syncer.receiveData()
                     }) {
@@ -178,35 +211,115 @@ struct Profile: View {
                     .navigationBarTitle("\(STMCoreSessionManager.shared()?.currentSession?.currentAppVersion ?? "")", displayMode: .inline)
                     .navigationBarItems(leading:
                     Button(action: {
-                        showingAlert = true
+                        showingLogoutAlert = true
 
                     }) {
                         Image(uiImage: STMFunctions.resize(UIImage(named: "exit-128.png")?.withTintColor(.blue), to: CGSize(width: 22, height: 22)))
-                    }.alert(isPresented: self.$showingAlert) {
-                        Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
-                                primaryButton: Alert.Button.destructive(
-                                        Text("LOGOUT"), action: {
-                                    STMCoreAuthController.shared().logout()
-                                    STMCoreRootTBC.sharedRootVC().initAuthTab()
-                                    showingAlert = false
-                                    STMCoreAuthController.shared().initialLoadingCompleted = false
-                                    (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
-                                }
-                                ),
-                                secondaryButton: Alert.Button.cancel(
-                                        Text("CANCEL"), action: {
-                                    showingAlert = false
-                                }
-                                )
-                        )
                     }
+                            .alert(isPresented: self.$showingLogoutAlert) {
+                                Alert(title: Text("LOGOUT"), message: Text("R U SURE TO LOGOUT"),
+                                        primaryButton: Alert.Button.destructive(
+                                                Text("LOGOUT"), action: {
+                                            STMCoreAuthController.shared().logout()
+                                            STMCoreRootTBC.sharedRootVC().initAuthTab()
+                                            showingLogoutAlert = false
+                                            STMCoreAuthController.shared().initialLoadingCompleted = false
+                                            (UIApplication.shared.delegate as! STMCoreAppDelegate).setupWindow()
+                                        }
+                                        ),
+                                        secondaryButton: Alert.Button.cancel(
+                                                Text("CANCEL"), action: {
+                                            showingLogoutAlert = false
+                                        }
+                                        )
+                                )
+                            }
                     )
-        }.navigationViewStyle(StackNavigationViewStyle()).onAppear(){
-            if (!STMCoreAuthController.shared().isDemo){
-                ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
-            } else {
-                ProfileData.shared.nonloadedPictures = 0
+        }
+                .navigationViewStyle(StackNavigationViewStyle()).onAppear {
+                    if (!STMCoreAuthController.shared().isDemo) {
+                        ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+                    } else {
+                        ProfileData.shared.nonloadedPictures = 0
+                    }
+
+                    getNotificationPermissions(activeActions: false)
+
+                    getLocationPermissions(activeActions: false)
+
+                }
+    }
+
+    func getNotificationPermissions(activeActions:Bool){
+        let current = UNUserNotificationCenter.current()
+
+        current.getNotificationSettings(completionHandler: { (settings) in
+            if settings.authorizationStatus == .notDetermined {
+                if(activeActions){
+                    current.requestAuthorization(options: [.sound, .alert, .badge]) { (granted, error) in
+                        if error == nil {
+                            UIApplication.shared.registerForRemoteNotifications()
+                            self.isPushAllowed = true
+                        }
+                    }
+                }
+            } else if settings.authorizationStatus == .denied {
+                if (activeActions){
+                    showingNotificationPermissionsAlert = true
+                }
+                self.isPushAllowed = false
+            } else if settings.authorizationStatus == .authorized {
+                if (activeActions){
+                    showingNotificationPermissionsAlert = true
+                }
+                self.isPushAllowed = true
             }
+        })
+    }
+
+    func getLocationPermissions(activeActions:Bool){
+        if CLLocationManager.locationServicesEnabled() {
+            switch CLLocationManager.authorizationStatus() {
+            case .notDetermined:
+                if (activeActions){
+                    let locationTracker = (STMCoreSessionManager.shared().currentSession as? STMCoreSession)?.locationTracker
+                    locationTracker?.checkStatus()
+                }
+                break;
+            case .restricted:
+                if (activeActions){
+                    showingLocationPermissionsAlert = true
+                }
+                self.isLocationAllowed = false
+                break;
+            case .denied:
+                if (activeActions){
+                    showingLocationPermissionsAlert = true
+                }
+                self.isLocationAllowed = false
+                break;
+            case .authorizedAlways:
+                if (activeActions){
+                    showingLocationPermissionsAlert = true
+                }
+                self.isLocationAllowed = true
+                break;
+            case .authorizedWhenInUse:
+                if (activeActions){
+                    showingLocationPermissionsAlert = true
+                }
+                self.isLocationAllowed = true
+                break;
+            @unknown default:
+                if (activeActions){
+                    showingLocationPermissionsAlert = true
+                }
+                self.isLocationAllowed = false
+                break;
+            }
+        } else {
+            self.isLocationAllowed = false
         }
     }
+
 }
