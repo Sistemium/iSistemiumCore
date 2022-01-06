@@ -8,6 +8,18 @@
 
 import SwiftUI
 
+extension Binding {
+    func didSet(execute: @escaping (Value) -> Void) -> Binding {
+        return Binding(
+                get: { self.wrappedValue },
+                set: {
+                    self.wrappedValue = $0
+                    execute($0)
+                }
+        )
+    }
+}
+
 class ProfileDataObjc: NSObject {
     @objc
     static func setProgress(value: Float) {
@@ -92,24 +104,22 @@ struct Profile: View {
                     Spacer()
                 }
                 VStack {
-                    Toggle("GEOLOCATION", isOn: $isLocationAllowed)
-                            .onTapGesture {
-                                getLocationPermissions(activeActions: true)
-                            }
+                    Toggle("GEOLOCATION", isOn: $isLocationAllowed.didSet { (state) in
+                        getLocationPermissions(activeActions: true)
+                    })
                             .alert(isPresented: $showingLocationPermissionsAlert) {
-                                Alert (title: Text("Camera access required to take photos"),
+                                Alert(title: Text("Camera access required to take photos"),
                                         message: Text("Go to Settings?"),
                                         primaryButton: .default(Text("Settings"), action: {
                                             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                                         }),
                                         secondaryButton: .default(Text("Cancel")))
                             }
-                    Toggle("PUSH", isOn: $isPushAllowed)
-                            .onTapGesture {
-                                getNotificationPermissions(activeActions: true)
-                            }
+                    Toggle("PUSH", isOn: $isPushAllowed.didSet { (state) in
+                        getNotificationPermissions(activeActions: true)
+                    })
                             .alert(isPresented: $showingNotificationPermissionsAlert) {
-                                Alert (title: Text("Camera access required to take photos"),
+                                Alert(title: Text("Camera access required to take photos"),
                                         message: Text("Go to Settings?"),
                                         primaryButton: .default(Text("Settings"), action: {
                                             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -236,26 +246,21 @@ struct Profile: View {
                             }
                     )
         }
-                .navigationViewStyle(StackNavigationViewStyle()).onAppear {
-                    if (!STMCoreAuthController.shared().isDemo) {
-                        ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
-                    } else {
-                        ProfileData.shared.nonloadedPictures = 0
-                    }
-
-                    getNotificationPermissions(activeActions: false)
-
-                    getLocationPermissions(activeActions: false)
-
+                .onAppear{
+                    onAppear()
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    onAppear()
                 }
     }
 
-    func getNotificationPermissions(activeActions:Bool){
+    func getNotificationPermissions(activeActions: Bool) {
         let current = UNUserNotificationCenter.current()
 
         current.getNotificationSettings(completionHandler: { (settings) in
             if settings.authorizationStatus == .notDetermined {
-                if(activeActions){
+                if (activeActions) {
                     current.requestAuthorization(options: [.sound, .alert, .badge]) { (granted, error) in
                         if error == nil {
                             UIApplication.shared.registerForRemoteNotifications()
@@ -264,12 +269,12 @@ struct Profile: View {
                     }
                 }
             } else if settings.authorizationStatus == .denied {
-                if (activeActions){
+                if (activeActions) {
                     showingNotificationPermissionsAlert = true
                 }
                 self.isPushAllowed = false
             } else if settings.authorizationStatus == .authorized {
-                if (activeActions){
+                if (activeActions) {
                     showingNotificationPermissionsAlert = true
                 }
                 self.isPushAllowed = true
@@ -277,41 +282,41 @@ struct Profile: View {
         })
     }
 
-    func getLocationPermissions(activeActions:Bool){
+    func getLocationPermissions(activeActions: Bool) {
         if CLLocationManager.locationServicesEnabled() {
             switch CLLocationManager.authorizationStatus() {
             case .notDetermined:
-                if (activeActions){
+                if (activeActions) {
                     let locationTracker = (STMCoreSessionManager.shared().currentSession as? STMCoreSession)?.locationTracker
                     locationTracker?.checkStatus()
                 }
                 break;
             case .restricted:
-                if (activeActions){
+                if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
                 self.isLocationAllowed = false
                 break;
             case .denied:
-                if (activeActions){
+                if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
                 self.isLocationAllowed = false
                 break;
             case .authorizedAlways:
-                if (activeActions){
+                if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
                 self.isLocationAllowed = true
                 break;
             case .authorizedWhenInUse:
-                if (activeActions){
+                if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
                 self.isLocationAllowed = true
                 break;
             @unknown default:
-                if (activeActions){
+                if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
                 self.isLocationAllowed = false
@@ -320,6 +325,18 @@ struct Profile: View {
         } else {
             self.isLocationAllowed = false
         }
+    }
+
+    func onAppear(){
+        if (!STMCoreAuthController.shared().isDemo) {
+            ProfileData.shared.nonloadedPictures = Int(STMCorePicturesController.shared().nonloadedPicturesCount)
+        } else {
+            ProfileData.shared.nonloadedPictures = 0
+        }
+
+        getNotificationPermissions(activeActions: false)
+
+        getLocationPermissions(activeActions: false)
     }
 
 }
