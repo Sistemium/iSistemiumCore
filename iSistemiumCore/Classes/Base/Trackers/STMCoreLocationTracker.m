@@ -470,13 +470,13 @@
         if (systemVersion >= 8.0) {
 
             if ([self.requestLocationServiceAuthorization isEqualToString:@"requestWhenInUseAuthorization"]) {
-                
-                [self.requestManager requestWhenInUseAuthorization];
-                
+
+//                [self.requestManager requestWhenInUseAuthorization];
+
             } else if ([self.requestLocationServiceAuthorization isEqualToString:@"requestAlwaysAuthorization"]) {
-                
-                [self.requestManager requestAlwaysAuthorization];
-                
+
+//                [self.requestManager requestAlwaysAuthorization];
+
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"requestLocationServiceAuthorization wrong value: %@", self.requestLocationServiceAuthorization];

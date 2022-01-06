@@ -287,8 +287,8 @@ struct Profile: View {
             switch CLLocationManager.authorizationStatus() {
             case .notDetermined:
                 if (activeActions) {
-                    let locationTracker = (STMCoreSessionManager.shared().currentSession as? STMCoreSession)?.locationTracker
-                    locationTracker?.checkStatus()
+                    let locationManager = CLLocationManager()
+                    locationManager.requestAlwaysAuthorization()
                 }
                 break;
             case .restricted:
