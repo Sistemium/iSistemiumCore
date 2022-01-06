@@ -108,23 +108,23 @@ struct Profile: View {
                         getLocationPermissions(activeActions: true)
                     })
                             .alert(isPresented: $showingLocationPermissionsAlert) {
-                                Alert(title: Text("Camera access required to take photos"),
-                                        message: Text("Go to Settings?"),
-                                        primaryButton: .default(Text("Settings"), action: {
+                                Alert(title: Text("YOU NEED GO SETTING LOCATION"),
+                                        message: Text("GO SETTINGS?"),
+                                        primaryButton: .default(Text("SETTINGS"), action: {
                                             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                                         }),
-                                        secondaryButton: .default(Text("Cancel")))
+                                        secondaryButton: .default(Text("CANCEL")))
                             }
                     Toggle("PUSH", isOn: $isPushAllowed.didSet { (state) in
                         getNotificationPermissions(activeActions: true)
                     })
                             .alert(isPresented: $showingNotificationPermissionsAlert) {
-                                Alert(title: Text("Camera access required to take photos"),
-                                        message: Text("Go to Settings?"),
-                                        primaryButton: .default(Text("Settings"), action: {
+                                Alert(title: Text("YOU NEED GO SETTING NOTIFICATIONS"),
+                                        message: Text("GO SETTINGS?"),
+                                        primaryButton: .default(Text("SETTINGS"), action: {
                                             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                                         }),
-                                        secondaryButton: .default(Text("Cancel")))
+                                        secondaryButton: .default(Text("CANCEL")))
                             }
                 }
                         .padding(50)
