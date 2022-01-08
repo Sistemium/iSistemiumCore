@@ -22,6 +22,13 @@ extension Binding {
 
 class ProfileDataObjc: NSObject {
     @objc
+    static func setIsLocationAllowed(allowed: Bool) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            ProfileData.shared.isLocationAllowed = allowed
+        }
+    }
+
+    @objc
     static func setProgress(value: Float) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             ProfileData.shared.isLoading = true;
@@ -68,12 +75,12 @@ class ProfileData: ObservableObject {
     @Published var nonloadedPictures: Int = 0
     @Published var unusedPictures: Int = STMGarbageCollector.sharedInstance.unusedImageFiles.count
     @Published var isLoading: Bool = false
+    @Published var isLocationAllowed: Bool = false
     @Published var error: String? = nil
 }
 
 struct Profile: View {
 
-    @State private var isLocationAllowed = false
     @State private var isPushAllowed = false
     @State private var showingLogoutAlert = false
     @State private var showingLocationPermissionsAlert = false
@@ -104,7 +111,7 @@ struct Profile: View {
                     Spacer()
                 }
                 VStack {
-                    Toggle("GEOLOCATION", isOn: $isLocationAllowed.didSet { (state) in
+                    Toggle("GEOLOCATION", isOn: $profileData.isLocationAllowed.didSet { (state) in
                         getLocationPermissions(activeActions: true)
                     })
                             .alert(isPresented: $showingLocationPermissionsAlert) {
@@ -262,9 +269,11 @@ struct Profile: View {
             if settings.authorizationStatus == .notDetermined {
                 if (activeActions) {
                     current.requestAuthorization(options: [.sound, .alert, .badge]) { (granted, error) in
-                        if error == nil {
+                        if error == nil && granted {
                             UIApplication.shared.registerForRemoteNotifications()
                             self.isPushAllowed = true
+                        } else {
+                            self.isPushAllowed = false
                         }
                     }
                 }
@@ -283,6 +292,8 @@ struct Profile: View {
     }
 
     func getLocationPermissions(activeActions: Bool) {
+        let locationTracker = (STMCoreSessionManager.shared().currentSession as? STMCoreSession)?.locationTracker
+        locationTracker?.checkStatus()
         if CLLocationManager.locationServicesEnabled() {
             switch CLLocationManager.authorizationStatus() {
             case .notDetermined:
@@ -295,35 +306,35 @@ struct Profile: View {
                 if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
-                self.isLocationAllowed = false
+                profileData.isLocationAllowed = false
                 break;
             case .denied:
                 if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
-                self.isLocationAllowed = false
+                profileData.isLocationAllowed = false
                 break;
             case .authorizedAlways:
                 if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
-                self.isLocationAllowed = true
+                profileData.isLocationAllowed = true
                 break;
             case .authorizedWhenInUse:
                 if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
-                self.isLocationAllowed = true
+                profileData.isLocationAllowed = true
                 break;
             @unknown default:
                 if (activeActions) {
                     showingLocationPermissionsAlert = true
                 }
-                self.isLocationAllowed = false
+                profileData.isLocationAllowed = false
                 break;
             }
         } else {
-            self.isLocationAllowed = false
+            profileData.isLocationAllowed = false
         }
     }
 
