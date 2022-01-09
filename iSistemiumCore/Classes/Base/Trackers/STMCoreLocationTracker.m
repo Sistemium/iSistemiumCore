@@ -682,22 +682,17 @@
     
     switch (status) {
         case kCLAuthorizationStatusNotDetermined: {
-            [ProfileDataObjc setIsLocationAllowedWithAllowed:false];
             break;
         }
         case kCLAuthorizationStatusRestricted:
-            [ProfileDataObjc setIsLocationAllowedWithAllowed:false];
         case kCLAuthorizationStatusDenied: {
-            [ProfileDataObjc setIsLocationAllowedWithAllowed:false];
             [self checkinLocationError:@"location tracking is not permitted"];
             break;
         }
         case kCLAuthorizationStatusAuthorizedAlways: {
-            [ProfileDataObjc setIsLocationAllowedWithAllowed:true];
             break;
         }
         case kCLAuthorizationStatusAuthorizedWhenInUse: {
-            [ProfileDataObjc setIsLocationAllowedWithAllowed:true];
             break;
         }
     }
