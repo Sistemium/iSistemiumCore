@@ -10,8 +10,8 @@ import SwiftUI
 import Combine
 
 //for some reason I cannot make responder a property of swiftUI and modify it from introspect
-class Responder{
-    static var responder:UIResponder?
+class Responder {
+    static var responder: UIResponder?
 }
 
 struct Login: View {
@@ -58,12 +58,13 @@ struct Login: View {
                                         }
                             }
                         }
-                    }.navigationBarBackButtonHidden(true)
-                            .navigationBarItems(leading: Button(action : {
+                    }
+                            .navigationBarBackButtonHidden(true)
+                            .navigationBarItems(leading: Button(action: {
                                 showPasswordView = false
                                 Responder.responder?.becomeFirstResponder()
                                 STMCoreAuthController.shared().controllerState = STMAuthState.enterPhoneNumber
-                            }){
+                            }) {
                                 Image(systemName: "arrow.left")
                             })
                             , isActive: self.$showPasswordView) {
@@ -102,7 +103,8 @@ struct Login: View {
                                             phoneNumber = ""
                                         }
                                     }
-                        }.padding()
+                        }
+                                .padding()
 
                         RoundedRectangle(cornerRadius: 10).stroke()
                                 .frame(width: 340, height: 50)
@@ -115,32 +117,34 @@ struct Login: View {
                                 UIApplication.shared.open(url)
                             }
                         }
-                            }
-                    Spacer()
-                }.alert(isPresented: self.$showingAlert) {
-                    Alert(title: Text(alertText),
-                            dismissButton: Alert.Button.default(
-                                    Text("OK"), action: {
-                                showPasswordView = false
-                                loading = false
-
-                            }
-                            )
-                    )
-                }
-                .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
-                .navigationBarItems(trailing:
-                Button(action: {
-                    loading = true
-                    showPasswordView = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        CoreAuthController.demoAuth()
                     }
-                }) {
-                    Text("DEMO")
+                    Spacer()
                 }
-                )
-            }.navigationViewStyle(StackNavigationViewStyle())
+                        .alert(isPresented: self.$showingAlert) {
+                            Alert(title: Text(alertText),
+                                    dismissButton: Alert.Button.default(
+                                            Text("OK"), action: {
+                                        if (alertText == NSLocalizedString("WRONG PHONE NUMBER", comment: "")) {
+                                            showPasswordView = false
+                                        }
+                                        loading = false
+                                    })
+                            )
+                        }
+                        .navigationBarTitle("ENTER TO SISTEMIUM", displayMode: .inline)
+                        .navigationBarItems(trailing:
+                        Button(action: {
+                            loading = true
+                            showPasswordView = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                CoreAuthController.demoAuth()
+                            }
+                        }) {
+                            Text("DEMO")
+                        }
+                        )
+            }
+                    .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }
