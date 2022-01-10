@@ -21,7 +21,7 @@ struct Login: View {
     @State private var loading2 = true
     @State private var alertText = ""
     @State private var showingAlert = false
-
+    @State private var wrongSMSCount = 0
 
     var body: some View {
         if (loading2) {
@@ -124,8 +124,11 @@ struct Login: View {
                             Alert(title: Text(alertText),
                                     dismissButton: Alert.Button.default(
                                             Text("OK"), action: {
-                                        if (alertText == NSLocalizedString("WRONG PHONE NUMBER", comment: "")) {
+                                        if (alertText == NSLocalizedString("WRONG PHONE NUMBER", comment: "") || wrongSMSCount >= 2) {
                                             showPasswordView = false
+                                            wrongSMSCount = 0
+                                        } else {
+                                            wrongSMSCount += 1
                                         }
                                         loading = false
                                     })
