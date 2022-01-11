@@ -86,7 +86,11 @@
             [defaults setObject:[NSDate date] forKey:@"lastVacuumFinish"];
             [defaults synchronize];
         }
-    }
+    } else {
+        if([self.lastVacuumFinish compare:self.lastVacuumStart] != NSOrderedDescending){
+            [[STMLogger sharedLogger] importantMessage:@"found unfinished VACUUM attempt, decided to skim VACUUM"];
+        }
+    };
 
 //    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
 
