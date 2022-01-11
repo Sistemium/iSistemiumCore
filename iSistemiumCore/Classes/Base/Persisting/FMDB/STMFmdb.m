@@ -23,10 +23,9 @@
 
 
 @interface STMFmdb ()
-@property (nonatomic, strong) NSDate *lastVacuumStart;
-@property (nonatomic, strong) NSDate *lastVacuumFinish;
+@property(nonatomic, strong) NSDate *lastVacuumStart;
+@property(nonatomic, strong) NSDate *lastVacuumFinish;
 @end
-
 
 
 @implementation STMFmdb
@@ -77,12 +76,13 @@
 
     [self.database executeUpdate:@"PRAGMA journal_mode=WAL;"];
 
-    if (self.lastVacuumStart == nil || [self.lastVacuumFinish compare:self.lastVacuumStart] == NSOrderedDescending){
+    if (self.lastVacuumStart == nil || [self.lastVacuumFinish compare:self.lastVacuumStart] == NSOrderedDescending
+            && [[NSDate dateWithTimeInterval:24 * 3600 sinceDate:self.lastVacuumFinish] compare:[NSDate date]] == NSOrderedAscending) {
         STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setObject:[NSDate date] forKey:@"lastVacuumStart"];
         [defaults synchronize];
         BOOL vacuum = [self.database executeUpdate:@"VACUUM;"];
-        if (vacuum){
+        if (vacuum) {
             [defaults setObject:[NSDate date] forKey:@"lastVacuumFinish"];
             [defaults synchronize];
         }
