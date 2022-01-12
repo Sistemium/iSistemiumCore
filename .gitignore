@@ -9,3 +9,5 @@ node_modules
 iSistemiumCore/Resources/DEMO/
 iSistemiumCore/Resources/iSisSales-DEMO.db
 iSistemiumCore/Resources/GoogleService-Info.plist
+iSistemiumCore/Resources/iSisDriver-DEMO.db
+iSistemiumCore/Resources/iSisWarehouse-DEMO.db
