@@ -252,7 +252,9 @@
 
 - (void)loadDemoWebView {
     
-    NSString *sourcePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"DEMO"];
+    NSString *dataModelName = STMCoreAuthController.sharedAuthController.dataModelName;
+    
+    NSString *sourcePath = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"DEMO"] stringByAppendingPathComponent:dataModelName];
     NSString *ownerName = self.webViewStoryboardParameters[@"name"];
     NSString *ownerTitle = self.webViewStoryboardParameters[@"title"];
 
