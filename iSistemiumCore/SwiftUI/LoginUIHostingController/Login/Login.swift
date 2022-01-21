@@ -38,10 +38,6 @@ struct Login: View {
         } else {
             NavigationView {
                 VStack {
-                    //https://developer.apple.com/forums/thread/677333
-                    NavigationLink(destination: EmptyView()) {
-                        EmptyView()
-                    }
                     NavigationLink(destination:
                     VStack {
                         if (loading) {
