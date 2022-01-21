@@ -82,12 +82,13 @@ struct Login: View {
                                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                                     .padding()
                                     .frame(width: 250, height: 50)
-                                    .keyboardType(.phonePad)
+                                    .keyboardType(.numberPad)
                                     .introspectTextField { textField in
                                         Responder.responder = textField
                                         textField.becomeFirstResponder()
                                     }
-                                    .onReceive(Just(phoneNumber)) { number in
+                                    .onReceive(Just(phoneNumber)) { _number in
+                                        let number = _number.filter { "0123456789".contains($0) }
                                         //showPasswordView check fixes weird bug with onReceive called twice
                                         if (number.count >= 10 && !showPasswordView) {
                                             self.showPasswordView = true
