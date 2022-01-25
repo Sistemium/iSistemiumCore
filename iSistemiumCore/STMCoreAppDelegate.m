@@ -112,7 +112,7 @@
 
     if ([self sessionManager].currentSession.status == STMSessionRunning) {
         
-        [self registerForNotification];
+//        [self registerForNotification];
 
     }
 

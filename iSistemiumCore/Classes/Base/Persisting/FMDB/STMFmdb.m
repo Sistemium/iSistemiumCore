@@ -16,15 +16,48 @@
 #import "STMLogger.h"
 #import "NSManagedObjectModel+Serialization.h"
 #import "STMFmdbOperation.h"
+#import "STMUserDefaults.h"
+#import "STMKeychain.h"
 #import <sqlite3.h>
+#import <Foundation/Foundation.h>
 
 
 @interface STMFmdb ()
-
+@property(nonatomic, strong) NSDate *lastVacuumStart;
+@property(nonatomic, strong) NSDate *lastVacuumFinish;
 @end
 
 
 @implementation STMFmdb
+
+@synthesize lastVacuumStart = _lastVacuumStart;
+@synthesize lastVacuumFinish = _lastVacuumFinish;
+
+- (NSDate *)lastVacuumStart {
+
+    if (!_lastVacuumStart) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        _lastVacuumStart = [defaults objectForKey:@"lastVacuumStart"];
+
+    }
+
+    return _lastVacuumStart;
+
+}
+
+- (NSDate *)lastVacuumFinish {
+
+    if (!_lastVacuumFinish) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        _lastVacuumFinish = [defaults objectForKey:@"lastVacuumFinish"];
+
+    }
+
+    return _lastVacuumFinish;
+
+}
 
 - (instancetype)initWithModelling:(id <STMModelling>)modelling dbPath:(NSString *)dbPath {
 
@@ -42,6 +75,22 @@
     [self.database openWithFlags:flags];
 
     [self.database executeUpdate:@"PRAGMA journal_mode=WAL;"];
+
+    if (self.lastVacuumStart == nil || [self.lastVacuumFinish compare:self.lastVacuumStart] == NSOrderedDescending
+            && [[NSDate dateWithTimeInterval:24 * 3600 sinceDate:self.lastVacuumFinish] compare:[NSDate date]] == NSOrderedAscending) {
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        [defaults setObject:[NSDate date] forKey:@"lastVacuumStart"];
+        [defaults synchronize];
+        BOOL vacuum = [self.database executeUpdate:@"VACUUM;"];
+        if (vacuum) {
+            [defaults setObject:[NSDate date] forKey:@"lastVacuumFinish"];
+            [defaults synchronize];
+        }
+    } else {
+        if([self.lastVacuumFinish compare:self.lastVacuumStart] != NSOrderedDescending){
+            [[STMLogger sharedLogger] importantMessage:@"found unfinished VACUUM attempt, decided to skim VACUUM"];
+        }
+    };
 
 //    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
 

@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSString *geotrackerControl;
 
 - (void)getLocation;
+- (void)checkStatus;
 
 - (void)checkinWithAccuracy:(NSNumber *)checkinAccuracy
                 checkinData:(NSDictionary *)checkinData

@@ -13,6 +13,7 @@
 #import "STMCoreObjectsController.h"
 #import "STMLocationController.h"
 #import "STMCoreSession.h"
+#import "STMSocketTransport.h"
 
 
 #define ACTUAL_LOCATION_CHECK_TIME_INTERVAL 5.0
@@ -470,13 +471,13 @@
         if (systemVersion >= 8.0) {
 
             if ([self.requestLocationServiceAuthorization isEqualToString:@"requestWhenInUseAuthorization"]) {
-                
-                [self.requestManager requestWhenInUseAuthorization];
-                
+
+//                [self.requestManager requestWhenInUseAuthorization];
+
             } else if ([self.requestLocationServiceAuthorization isEqualToString:@"requestAlwaysAuthorization"]) {
-                
-                [self.requestManager requestAlwaysAuthorization];
-                
+
+//                [self.requestManager requestAlwaysAuthorization];
+
             } else {
                 
                 NSString *logMessage = [NSString stringWithFormat:@"requestLocationServiceAuthorization wrong value: %@", self.requestLocationServiceAuthorization];
@@ -695,7 +696,7 @@
             break;
         }
     }
-    
+
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {

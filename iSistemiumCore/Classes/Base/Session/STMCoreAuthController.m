@@ -587,14 +587,14 @@
 
 #endif
 
-#if defined (CONFIGURATION_DebugWarehouse) || defined (CONFIGURATION_ReleaseWarehouse)
+#if defined (CONFIGURATION_DebugWarehouse) || defined (CONFIGURATION_ReleaseWarehouse) || defined (CONFIGURATION_DebugWarehouseApple) || defined (CONFIGURATION_ReleaseWarehouseApple)
 
     NSLog(@"USE WAREHOUSE DATA MODEL");
     dataModelName = @"iSisWarehouse";
 
 #endif
     
-#if defined (CONFIGURATION_DebugDriver) || defined (CONFIGURATION_ReleaseDriver)
+#if defined (CONFIGURATION_DebugDriver) || defined (CONFIGURATION_ReleaseDriver) || defined (CONFIGURATION_DebugDriverApple) || defined (CONFIGURATION_ReleaseDriverApple)
     
     NSLog(@"USE DRIVER DATA MODEL");
     dataModelName = @"iSisDriver";
