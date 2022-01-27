@@ -64,7 +64,7 @@
         CGRect screenFrame = [rootView convertRect:originalFrame fromView:nil];
         cameraOverlayView.frame = screenFrame;
         
-        if (IPHONE && SYSTEM_VERSION < 11.0) {
+        if (IPHONE) {
             
             CGFloat camHeight = screenFrame.size.width * 4 / 3; // 4/3 — camera aspect ratio
 
