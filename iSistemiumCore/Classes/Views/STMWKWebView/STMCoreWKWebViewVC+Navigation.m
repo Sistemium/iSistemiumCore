@@ -95,9 +95,9 @@
             
             NSString *authToken = [url.absoluteString componentsSeparatedByString:@"access-token="].lastObject;
             
-            STMCoreAuthController.authController.accessToken = authToken;
+            STMCoreAuthController.sharedAuthController.accessToken = authToken;
             
-            STMCoreAuthController.authController.controllerState = STMAuthRequestRoles;
+            STMCoreAuthController.sharedAuthController.controllerState = STMAuthRequestRoles;
                         
         }
         
