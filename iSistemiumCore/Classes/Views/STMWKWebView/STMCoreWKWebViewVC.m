@@ -443,7 +443,9 @@
 
     }
 
-    configuration.userContentController = contentController;
+    if (!self.directLoadUrl){
+        configuration.userContentController = contentController;
+    }
 
     self.webView = [[WKWebView alloc] initWithFrame:self.localView.bounds configuration:configuration];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
