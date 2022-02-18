@@ -6,10 +6,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
     </dependencies>
     <scenes>
-        <!--AuthNC-->
+        <!--LoginUI Hosting Controller-->
         <scene sceneID="ddL-zZ-FbR">
             <objects>
-                <hostingController id="Bku-uq-dOw" customClass="STMAuthNC" sceneMemberID="viewController"/>
+                <hostingController id="Bku-uq-dOw" customClass="LoginUIHostingController" customModule="iSisSales" customModuleProvider="target" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0nn-ZQ-Rxe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-188" y="184"/>
