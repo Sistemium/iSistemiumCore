@@ -470,9 +470,19 @@
     
     if ([STMCoreAuthController sharedAuthController].controllerState != STMAuthSuccess) {
         
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+
+        [self registerTabWithStoryboardParameters:@{@"name": @"STMAuthOld",
+                                                    @"title": NSLocalizedString(@"AUTHORIZATION", nil),
+                                                    @"imageName": @"password2-128.png"} atIndex:0];
+                                        
+    #else
+
         [self registerTabWithStoryboardParameters:@{@"name": @"STMAuth",
                                                     @"title": NSLocalizedString(@"AUTHORIZATION", nil),
                                                     @"imageName": @"password2-128.png"} atIndex:0];
+
+    #endif
         
     } else {
         

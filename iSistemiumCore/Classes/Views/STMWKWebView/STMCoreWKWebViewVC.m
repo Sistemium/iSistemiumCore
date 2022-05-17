@@ -418,12 +418,6 @@
     [self flushWebView];
 
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-    
-    if (self.directLoadUrl){
-        
-        configuration.applicationNameForUserAgent = @"Version/8.0.2 Safari/600.2.5";
-        
-    }
 
     WKUserContentController *contentController = [[WKUserContentController alloc] init];
 
@@ -443,7 +437,17 @@
 
     }
 
-    configuration.userContentController = contentController;
+    if (!self.directLoadUrl){
+        configuration.userContentController = contentController;
+    } else {
+        configuration.applicationNameForUserAgent = @"Version/8.0.2 Safari/600.2.5";
+
+        
+        [[WKWebsiteDataStore defaultDataStore] fetchDataRecordsOfTypes:WKWebsiteDataStore.allWebsiteDataTypes completionHandler:^(NSArray<WKWebsiteDataRecord *> * _Nonnull records) {
+                [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:WKWebsiteDataStore.allWebsiteDataTypes forDataRecords:records completionHandler:^{
+                }];
+            }];
+    }
 
     self.webView = [[WKWebView alloc] initWithFrame:self.localView.bounds configuration:configuration];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
