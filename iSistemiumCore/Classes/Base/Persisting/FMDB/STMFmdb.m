@@ -12,6 +12,7 @@
 #import "STMFunctions.h"
 #import "STMFmdbSchema.h"
 #import "STMModelMapper.h"
+#import "STMCoreAuthController.h"
 
 #import "STMLogger.h"
 #import "NSManagedObjectModel+Serialization.h"
@@ -165,7 +166,7 @@
     NSError *error = nil;
     STMModelMapper *modelMapper;
 
-    if (needToMigrate) {
+    if (needToMigrate && ![STMCoreAuthController sharedAuthController].isDemo) {
 
         modelMapper = [[STMModelMapper alloc] initWithSourceModel:savedModel
                                                  destinationModel:model
@@ -174,7 +175,7 @@
         needToMigrate = modelMapper.needToMigrate;
     }
 
-    if (needToMigrate) {
+    if (needToMigrate && ![STMCoreAuthController sharedAuthController].isDemo) {
 
         if (error) {
 
