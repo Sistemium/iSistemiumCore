@@ -77,7 +77,7 @@ class CoreAuthController:NSObject{
         STMCoreAuthController.shared().userID = "DEMO USER ID"
         STMCoreAuthController.shared().userName = "DEMO USER"
         STMCoreAuthController.shared().isDemo = true
-        if let path = Bundle.main.path(forResource: "DEMO/\(STMCoreAuthController.shared().dataModelName() ?? "iSisSales")/roles-DEMO", ofType: "json") {
+        if let path = Bundle.main.path(forResource: "DEMO/roles-DEMO", ofType: "json") {
             do {
                   let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                   let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableLeaves)
