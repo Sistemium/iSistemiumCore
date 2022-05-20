@@ -615,7 +615,7 @@
         
         if ([_locationManager respondsToSelector:@selector(allowsBackgroundLocationUpdates)]) {
             
-            _locationManager.allowsBackgroundLocationUpdates = YES;
+//            _locationManager.allowsBackgroundLocationUpdates = YES;
             NSLog(@"locationManager allowsBackgroundLocationUpdates set");
             
         }
