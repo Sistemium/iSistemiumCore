@@ -112,17 +112,19 @@ struct Profile: View {
                     Spacer()
                 }
                 VStack {
-                    Toggle("GEOLOCATION", isOn: $profileData.isLocationAllowed.didSet { (state) in
-                        getLocationPermissions(activeActions: true)
-                    })
-                            .alert(isPresented: $showingLocationPermissionsAlert) {
-                                Alert(title: Text("YOU NEED GO SETTING LOCATION"),
-                                        message: Text("GO SETTINGS?"),
-                                        primaryButton: .default(Text("SETTINGS"), action: {
-                                            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-                                        }),
-                                        secondaryButton: .default(Text("CANCEL")))
-                            }
+                    if STMCoreAuthController.shared().dataModelName() != "iSisWarehouse" {
+                        Toggle("GEOLOCATION", isOn: $profileData.isLocationAllowed.didSet { (state) in
+                            getLocationPermissions(activeActions: true)
+                        })
+                                .alert(isPresented: $showingLocationPermissionsAlert) {
+                                    Alert(title: Text("YOU NEED GO SETTING LOCATION"),
+                                            message: Text("GO SETTINGS?"),
+                                            primaryButton: .default(Text("SETTINGS"), action: {
+                                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                            }),
+                                            secondaryButton: .default(Text("CANCEL")))
+                                }
+                    }
                     Toggle("PUSH", isOn: $isPushAllowed.didSet { (state) in
                         getNotificationPermissions(activeActions: true)
                     })
