@@ -375,7 +375,7 @@
     NSURLSession *session = [NSURLSession sharedSession];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
     
-    req.timeoutInterval = 3;
+    req.timeoutInterval = 30;
         
     NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:req completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
         
