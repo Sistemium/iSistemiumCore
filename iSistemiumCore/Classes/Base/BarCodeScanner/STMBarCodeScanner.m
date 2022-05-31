@@ -465,6 +465,10 @@
 }
 
 - (void)deviceArrivalForBarCodeScanner:(id <STMBarCodeScanningDevice>)scanner {
+    
+    if ([self.delegate respondsToSelector:@selector(deviceArrivalForBarCodeScanner:)]) {
+            [self.delegate deviceArrivalForBarCodeScanner:self];
+        }
 
 }
 
