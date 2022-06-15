@@ -31,6 +31,8 @@
 #import "UITestSetup.h"
 
 #import <WebKit/WebKit.h>
+#import <FlutterPluginRegistrant/GeneratedPluginRegistrant.h>
+
 @import Firebase;
 @import FirebaseCrashlytics;
 
@@ -44,6 +46,10 @@
 @implementation STMCoreAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    self.flutterEngine = [[FlutterEngine alloc] initWithName:@"my flutter engine"];
+    [self.flutterEngine run];
+    [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
 
     [STMFunctions stringFromNow];
 
@@ -499,21 +505,35 @@
 - (void)setupWindow {
 
     if (!self.window) {
+        
+        FlutterViewController *flutterViewController =
+            [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
 
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+        
+        self.window.rootViewController = flutterViewController;
+
+        
+        FlutterMethodChannel* batteryChannel = [FlutterMethodChannel
+                                                  methodChannelWithName:@"com.sistemium.flutterchanel"
+                                                  binaryMessenger:flutterViewController.binaryMessenger];
+
+          [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+            NSLog(@"Message from flutter chanel!!!")
+          }];
 
     }
     
-    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
-        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
-
-        UIViewController *vc = [storyboard instantiateInitialViewController];
-        self.window.rootViewController = vc;
-        [self.window makeKeyAndVisible];
-        return;
-    }
-
-    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+//    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
+//        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
+//
+//        UIViewController *vc = [storyboard instantiateInitialViewController];
+//        self.window.rootViewController = vc;
+//        [self.window makeKeyAndVisible];
+//        return;
+//    }
+//
+//    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
     [self.window makeKeyAndVisible];
 
 }

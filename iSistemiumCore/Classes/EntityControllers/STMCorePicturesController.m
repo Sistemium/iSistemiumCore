@@ -930,7 +930,9 @@
 
     [self hrefDictionaryRemove:href];
     [self downloadNextPicture];
-    [ProfileDataObjc setUnloadedPhotosWithValue:_nonloadedPictures.count];
+    //flutter todo
+
+//    [ProfileDataObjc setUnloadedPhotosWithValue:_nonloadedPictures.count];
 }
 
 - (void)uploadImageEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes data:(NSData *)data {

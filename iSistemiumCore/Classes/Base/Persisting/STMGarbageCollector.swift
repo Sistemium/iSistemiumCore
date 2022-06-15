@@ -84,7 +84,8 @@ class STMGarbageCollector: NSObject {
                         }
                         try self.filing.removeItem(atPath: unusedImage)
                         self.unusedImageFiles.remove(unusedImage)
-                        ProfileDataObjc.setUnusedPhotos(value: unusedImageFiles.count)
+//                        flutter todo
+//                        ProfileDataObjc.setUnusedPhotos(value: unusedImageFiles.count)
                     }
                 } catch let error as NSError {
                     err = error

@@ -283,19 +283,24 @@
     
     if (STMCoreAuthController.sharedAuthController.initialLoadingError){
         
-        [LoadingDataObjc setWarningWithWarning:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        //flutter todo
+//        [LoadingDataObjc setWarningWithWarning:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
         
     } else if (queue == nil){
 
-        [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+        //flutter todo
 
-        [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-        
+//        [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+//
+//        [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+//
     } else {
+        //flutter todo
 
-        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount)];
-
-        [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+//
+//        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount)];
+//
+//        [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
     }
 
     if (remainCount) return;

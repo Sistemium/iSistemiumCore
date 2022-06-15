@@ -257,7 +257,8 @@ NSUInteger fantomsCount = 100;
 
     [self.defantomizingOwner defantomizingFinished];
     
-    [LoadingDataObjc finishLoading];
+    //flutter todo
+//    [LoadingDataObjc finishLoading];
 
 }
 
