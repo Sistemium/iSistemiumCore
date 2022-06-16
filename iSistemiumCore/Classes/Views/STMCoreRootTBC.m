@@ -331,6 +331,11 @@
             
             UIViewController *vc = [storyboard instantiateInitialViewController];
             
+            if ([name hasPrefix:@"STMAuth"]) {
+                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
+                [self hideTabBar];
+            }
+            
             vc.title = title;
             
             UIImage *image = [UIImage imageNamed:imageName];

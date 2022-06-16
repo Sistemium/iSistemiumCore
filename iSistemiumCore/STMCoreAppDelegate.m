@@ -520,20 +520,20 @@
         
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
         
-        self.window.rootViewController = self.flutterViewController;
+//        self.window.rootViewController = self.flutterViewController;
 
     }
     
-//    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
-//        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
-//
-//        UIViewController *vc = [storyboard instantiateInitialViewController];
-//        self.window.rootViewController = vc;
-//        [self.window makeKeyAndVisible];
-//        return;
-//    }
+    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
+        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
 
-//    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+        UIViewController *vc = [storyboard instantiateInitialViewController];
+        self.window.rootViewController = vc;
+        [self.window makeKeyAndVisible];
+        return;
+    }
+
+    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
     [self.window makeKeyAndVisible];
 
 }
