@@ -19,6 +19,7 @@
 
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) FlutterViewController *flutterViewController;
 
 @property (nonatomic, strong) NSData *deviceToken;
 @property (nonatomic, strong) NSString *deviceTokenError;

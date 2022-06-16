@@ -330,6 +330,7 @@
             storyboard.parameters = parameters;
             
             UIViewController *vc = [storyboard instantiateInitialViewController];
+            
             vc.title = title;
             
             UIImage *image = [UIImage imageNamed:imageName];

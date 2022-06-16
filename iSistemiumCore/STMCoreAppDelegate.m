@@ -50,6 +50,18 @@
     self.flutterEngine = [[FlutterEngine alloc] initWithName:@"my flutter engine"];
     [self.flutterEngine run];
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
+    self.flutterViewController =
+        [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
+    
+    FlutterMethodChannel* batteryChannel = [FlutterMethodChannel
+                                              methodChannelWithName:@"com.sistemium.flutterchanel"
+                                              binaryMessenger:self.flutterViewController.binaryMessenger];
+
+      [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+          if ([call.method isEqual: @"demoAuth"]){
+              [CoreAuthController demoAuth];
+          }
+      }];
 
     [STMFunctions stringFromNow];
 
@@ -506,21 +518,9 @@
 
     if (!self.window) {
         
-        FlutterViewController *flutterViewController =
-            [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
-
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
         
-        self.window.rootViewController = flutterViewController;
-
-        
-        FlutterMethodChannel* batteryChannel = [FlutterMethodChannel
-                                                  methodChannelWithName:@"com.sistemium.flutterchanel"
-                                                  binaryMessenger:flutterViewController.binaryMessenger];
-
-          [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
-            NSLog(@"Message from flutter chanel!!!")
-          }];
+        self.window.rootViewController = self.flutterViewController;
 
     }
     
@@ -532,7 +532,7 @@
 //        [self.window makeKeyAndVisible];
 //        return;
 //    }
-//
+
 //    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
     [self.window makeKeyAndVisible];
 
