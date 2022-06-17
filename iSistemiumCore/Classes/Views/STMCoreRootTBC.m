@@ -333,7 +333,6 @@
             
             if ([name hasPrefix:@"STMAuth"]) {
                 vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
-                [self hideTabBar];
             }
 //            else if ([name hasPrefix:@"STMProfile"]) {
 //                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
