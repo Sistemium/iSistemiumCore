@@ -329,11 +329,20 @@
             STMStoryboard *storyboard = [STMStoryboard storyboardWithName:name bundle:nil];
             storyboard.parameters = parameters;
             
-            UIViewController *vc = [storyboard instantiateInitialViewController];
+            UIViewController *vc;
             
             if ([name hasPrefix:@"STMAuth"]) {
                 vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
                 [self hideTabBar];
+            }
+//            else if ([name hasPrefix:@"STMProfile"]) {
+//                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+//                [channel invokeMethod:@"STMProfile" arguments:nil];
+//                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
+//            }
+            
+            else {
+                vc = [storyboard instantiateInitialViewController];
             }
             
             vc.title = title;
@@ -673,15 +682,15 @@
 - (void)showTabs {
     
     self.viewControllers = self.currentTabsVCs;
-    
+
     NSArray *tabBarControlsArray = [self tabBarControlsArray];
-    
+
     for (UIViewController *vc in self.viewControllers) {
 
         if ([vc conformsToProtocol:@protocol(STMTabBarItemControllable)]) {
 
             NSUInteger siblingsCount = [self siblingsForViewController:vc].count;
-            
+
             if (siblingsCount > 1 || [(id <STMTabBarItemControllable>)vc shouldShowOwnActions]) {
 
                 NSUInteger index = [self.viewControllers indexOfObject:vc];
@@ -821,26 +830,26 @@
 - (void)hideTabBar {
     
     NSTimeInterval animationDuration = 0.5;
-    
+
     self.isInHideTabbarProcess = YES;
-    
+
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationDuration:animationDuration];
-    
+
     CGFloat viewHeight = CGRectGetHeight(self.view.frame);
-    
+
     for (UIView *view in self.view.subviews) {
-        
+
         if([view isKindOfClass:[UITabBar class]]) {
             [view setFrame:CGRectMake(view.frame.origin.x, viewHeight, view.frame.size.width, view.frame.size.height)];
         } else {
             [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, viewHeight)];
         }
-        
+
     }
-    
+
     [UIView commitAnimations];
-    
+
     [self performSelector:@selector(releaseTabbarLock)
                withObject:nil
                afterDelay:animationDuration];

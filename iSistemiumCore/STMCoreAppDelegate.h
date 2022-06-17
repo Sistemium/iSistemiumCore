@@ -20,10 +20,12 @@
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) FlutterViewController *flutterViewController;
+@property (strong, nonatomic) FlutterMethodChannel *flutterChannel;
 
 @property (nonatomic, strong) NSData *deviceToken;
 @property (nonatomic, strong) NSString *deviceTokenError;
 @property (nonatomic) BOOL haveFetchCompletionHandlers;
+
 
 - (void)setupWindow;
 

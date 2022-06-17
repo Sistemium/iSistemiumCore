@@ -40,7 +40,6 @@
 
 @property (nonatomic, strong) NSMutableArray *fetchCompletionHandlers;
 
-
 @end
 
 @implementation STMCoreAppDelegate
@@ -53,16 +52,16 @@
     self.flutterViewController =
         [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
     
-    FlutterMethodChannel* batteryChannel = [FlutterMethodChannel
+    self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
-
-      [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
-          if ([call.method isEqual: @"demoAuth"]){
-              [CoreAuthController demoAuth];
-          }
-      }];
-
+    
+    [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+        if ([call.method isEqual: @"demoAuth"]){
+            [CoreAuthController demoAuth];
+        }
+    }];
+    
     [STMFunctions stringFromNow];
 
     [self sessionManager];
@@ -116,6 +115,12 @@
 
     return YES;
 
+}
+
+- (void)sendToFlutter:(NSString *)message {
+    
+    [self.flutterChannel invokeMethod:message arguments:nil];
+    
 }
 
 - (void)startAuthController {
