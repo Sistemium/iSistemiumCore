@@ -60,6 +60,9 @@
         if ([call.method isEqual: @"demoAuth"]){
             [CoreAuthController demoAuth];
         }
+        if ([call.method isEqual: @"sendPhone"]){
+            [CoreAuthController sendPhoneNumberWithPhoneNumber:call.arguments];
+        }
     }];
     
     [STMFunctions stringFromNow];

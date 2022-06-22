@@ -513,8 +513,6 @@
         
         self.controllerState = STMAuthEnterPhoneNumber;
         
-        [CoreAuthController resolve];
-
     }
 
 }
@@ -1030,7 +1028,10 @@
     switch (self.controllerState) {
 
         case STMAuthEnterPhoneNumber: {
-
+            
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"validPhoneNumber" arguments:nil];
+            
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
             
@@ -1076,8 +1077,6 @@
 
     }
     
-    [CoreAuthController resolve];
-
 }
 
 - (void)processRoles:(NSDictionary *)responseJSON {
