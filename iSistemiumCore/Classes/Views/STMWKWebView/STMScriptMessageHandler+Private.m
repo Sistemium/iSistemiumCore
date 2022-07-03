@@ -30,13 +30,15 @@
     
     NSError *error;
     
-    NSDictionary *unsynced = [self.persistenceDelegate findSync:entityName identifier:xidString
-                                                        options:options error:&error];
+    if ([self.modellingDelegate isConcreteEntityName:entityName]) {
+        NSDictionary *unsynced = [self.persistenceDelegate findSync:entityName identifier:xidString
+                                                            options:options error:&error];
 
-    if (unsynced && unsynced[@"deviceTs"] > unsynced[@"lts"]) {
-        return [self UNSYNCED_OBJECTS_ERROR];
+        if (unsynced && unsynced[@"deviceTs"] > unsynced[@"lts"]) {
+            return [self UNSYNCED_OBJECTS_ERROR];
+        }
     }
-    
+
     return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
         
         [self.socketTransport findAsync:entityName identifier:xidString options:nil completionHandlerWithHeaders:^(BOOL success, NSDictionary *result, NSDictionary *headers, NSError *error) {
@@ -66,18 +68,20 @@
 
     if (error) return [AnyPromise promiseWithValue:error];
 
-    NSMutableArray *checkUnsynced = @[[NSPredicate predicateWithFormat:@"deviceTs > lts"]].mutableCopy;
-    
-    if (predicate) {
-        [checkUnsynced addObject:predicate];
-    }
-    
-    NSArray *unsynced = [self.persistenceDelegate findAllSync:entityName
-                                                    predicate:[NSCompoundPredicate
-                                                               andPredicateWithSubpredicates:checkUnsynced]
-                                                      options:options error:&error];
-    if (unsynced.count) {
-        return [self UNSYNCED_OBJECTS_ERROR];
+    if ([self.modellingDelegate isConcreteEntityName:entityName]) {
+        NSMutableArray *checkUnsynced = @[[NSPredicate predicateWithFormat:@"deviceTs > lts"]].mutableCopy;
+        
+        if (predicate) {
+            [checkUnsynced addObject:predicate];
+        }
+        
+        NSArray *unsynced = [self.persistenceDelegate findAllSync:entityName
+                                                        predicate:[NSCompoundPredicate
+                                                                   andPredicateWithSubpredicates:checkUnsynced]
+                                                          options:options error:&error];
+        if (unsynced.count) {
+            return [self UNSYNCED_OBJECTS_ERROR];
+        }
     }
     
     NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
@@ -120,12 +124,14 @@
     NSString *entityName = parameters[@"entity"];
     
     NSDictionary *options = parameters[@"options"];
+    
+    BOOL isDirectSocket = [options[DIRECT_ENTITY_OPTION] boolValue];
 
     if (!entityName) {
         return [self rejectWithErrorMessage:@"entity is not specified"];
     }
     
-    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
+    if (!isDirectSocket && ![self.modellingDelegate isConcreteEntityName:entityName]) {
         return [self rejectWithErrorMessage:[entityName stringByAppendingString:@": not found in data model"]];
     }
 
@@ -137,7 +143,7 @@
             return [self rejectWithErrorMessage:@"empty xid"];
         }
         
-        if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
+        if (isDirectSocket) {
             return [self findOneWithSocket:entityName xidString:xidString options:options];
         }
             
@@ -150,7 +156,7 @@
     
     if (error) return [AnyPromise promiseWithValue:error];
     
-    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
+    if (isDirectSocket) {
         return [self findWithSocket:scriptMessage entityName:entityName predicate:predicate options:options];
     }
     
@@ -165,7 +171,7 @@
                  withCompletionHandler:(void (^)(BOOL success, NSArray *updatedObjects, NSError *error))completionHandler {
     
     NSError *resultError = nil;
-    
+
     if (![scriptMessage.body isKindOfClass:NSDictionary.class]) {
         
         [STMFunctions error:&resultError
@@ -175,8 +181,11 @@
     
     NSDictionary *parameters = scriptMessage.body;
     NSString *entityName = parameters[@"entity"];
+    NSDictionary *options = parameters[@"options"];
     
-    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
+    BOOL isDirectSocket = [options[DIRECT_ENTITY_OPTION] boolValue];
+
+    if (!isDirectSocket && ![self.modellingDelegate isConcreteEntityName:entityName]) {
         
         [STMFunctions error:&resultError
                 withMessage:[entityName stringByAppendingString:@": not found in data model"]];
@@ -196,9 +205,7 @@
         return;
     }
     
-    NSDictionary *options = parameters[@"options"];
-    
-    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
+    if (isDirectSocket) {
         
         for (NSDictionary *data in parametersData) {
             
@@ -255,8 +262,11 @@
     
     NSDictionary *parameters = scriptMessage.body;
     NSString *entityName = parameters[@"entity"];
+    NSDictionary *options = parameters[@"options"];
     
-    if (![self.modellingDelegate isConcreteEntityName:entityName]) {
+    BOOL isDirectSocket = [options[DIRECT_ENTITY_OPTION] boolValue];
+
+    if (!isDirectSocket && ![self.modellingDelegate isConcreteEntityName:entityName]) {
         return [self rejectWithErrorMessage:[entityName stringByAppendingString:@": not found in data model"]];
     }
     
@@ -266,9 +276,7 @@
         return [self rejectWithErrorMessage:@"empty xid"];
     }
     
-    NSDictionary *options = parameters[@"options"];
-    
-    if ([options[DIRECT_ENTITY_OPTION] boolValue]) {
+    if (isDirectSocket) {
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
             
