@@ -529,12 +529,12 @@ int counter = 0;
 #pragma mark - barcode scanning
 
 - (void)startBarcodeScanning {
-    [self startIOSModeScanner];
+    [self startIOSModeScanner:STMBarCodeScannerIOSMode];
 }
 
-- (void)startIOSModeScanner {
+- (void)startIOSModeScanner:(STMBarCodeScannerMode)mode {
 
-    self.iOSModeBarCodeScanner = [[STMBarCodeScanner alloc] initWithMode:STMBarCodeScannerIOSMode];
+    self.iOSModeBarCodeScanner = [[STMBarCodeScanner alloc] initWithMode:mode];
     self.iOSModeBarCodeScanner.delegate = self;
     [self.iOSModeBarCodeScanner startScan];
 
@@ -612,6 +612,7 @@ int counter = 0;
 
 - (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
         receiveBarCode:(NSString *)barcode
+             symbology:(NSString *)symbology
               withType:(STMBarCodeScannedType)type {
 
     if (!self.isInActiveTab || !barcode) {
@@ -621,6 +622,10 @@ int counter = 0;
     NSMutableArray *arguments = [@[barcode] mutableCopy];
 
     [self checkBarCode:barcode withType:type arguments:arguments];
+
+    if (symbology) {
+        [arguments addObject:symbology];
+    }
 
     [self evaluateReceiveBarCodeJSFunctionWithArguments:arguments.copy];
 
@@ -634,13 +639,15 @@ int counter = 0;
     if (!typeString) {
 
         NSLog(@"send received barcode %@ to WKWebView", barcode);
+        [arguments addObject:[NSNull null]];
         return;
 
     }
 
     if (type != STMBarCodeTypeStockBatch) {
 
-        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+        NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);\
+        [arguments addObject:[NSNull null]];
         return;
 
     }
@@ -652,6 +659,7 @@ int counter = 0;
     if (!stockBatch) {
 
         NSLog(@"send received barcode %@ with type %@ to WKWebView", barcode, typeString);
+        [arguments addObject:[NSNull null]];
         return;
 
     }

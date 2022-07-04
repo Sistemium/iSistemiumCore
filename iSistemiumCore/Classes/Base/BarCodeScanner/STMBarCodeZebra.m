@@ -229,7 +229,7 @@
 
     NSLog(@"Got barcode: '%@' of type: '%@' from scannerId: %d", barcodeData, typeName, scannerID);
 
-    [self.stmScanningDelegate barCodeScanner:self receiveBarCode:barcodeData withType:STMBarCodeTypeUnknown];
+    [self.stmScanningDelegate barCodeScanner:self receiveBarCode:barcodeData symbology:typeName withType:STMBarCodeTypeUnknown];
 
 }
 

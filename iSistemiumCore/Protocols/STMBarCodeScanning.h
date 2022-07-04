@@ -31,6 +31,7 @@ typedef NS_ENUM(NSUInteger, STMBarCodeScannedType) {
 
 - (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner
         receiveBarCode:(NSString *)barcode
+             symbology:(NSString *)symbology
               withType:(STMBarCodeScannedType)type;
 
 @optional
