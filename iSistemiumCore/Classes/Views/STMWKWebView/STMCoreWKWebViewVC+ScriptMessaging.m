@@ -238,7 +238,12 @@
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *scannerType = [defaults objectForKey:@"ScannerType"];
+
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
     return STMIsNull(scannerType, @"camera");
+#else
+    return STMIsNull(scannerType, @"zebra");
+#endif
 
 }
 
