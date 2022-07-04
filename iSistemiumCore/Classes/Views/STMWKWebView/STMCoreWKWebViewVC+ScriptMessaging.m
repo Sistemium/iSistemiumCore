@@ -234,13 +234,25 @@
 
 }
 
++ (NSString *)scannerType {
+
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *scannerType = [defaults objectForKey:@"ScannerType"];
+    return STMIsNull(scannerType, @"camera");
+
+}
+
 - (void)handleScannerMessage:(WKScriptMessage *)message {
 
     self.scannerScanJSFunction = message.body[@"scanCallback"];
     self.scannerPowerButtonJSFunction = message.body[@"powerButtonCallback"];
     self.scannerStatusJSFunction = message.body[@"statusCallback"];
 
-    [self startBarcodeScanning];
+    if ([[self.class scannerType] isEqualToString:@"camera"]) {
+        [self startIOSModeScanner:STMBarCodeScannerCameraMode];
+    } else {
+        [self startIOSModeScanner:STMBarCodeScannerIOSMode];
+    }
 
 }
 
