@@ -17,6 +17,7 @@
 @interface STMBarCodeScanner () <UITextFieldDelegate, AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) UITextField *hiddenBarCodeTextField;
+@property (nonatomic, strong) UIView *overlayView;
 
 @property (nonatomic, strong) AVCaptureDevice *device;
 @property (nonatomic, strong) AVCaptureDeviceInput *input;
@@ -278,9 +279,68 @@
     con.videoOrientation = AVCaptureVideoOrientationPortrait;
 
     [superView.layer insertSublayer:self.preview above:superView.layer];
-
+    
+    self.overlayView = [[UIView alloc] initWithFrame:superView.frame];
+                
+    [self setOverlayPickerView:self.overlayView];
+    
+    [superView addSubview:self.overlayView];
+        
     [self.session startRunning];
 
+}
+
+- (void)setOverlayPickerView:(UIView *)view{
+    UIImageView *leftView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 30, view.frame.size.height)];
+    leftView.alpha = 0.5;
+    leftView.backgroundColor = [UIColor blackColor];
+    [view addSubview:leftView];
+
+    UIImageView *rightView = [[UIImageView alloc] initWithFrame:CGRectMake(view.frame.size.width-30, 0, 30, view.frame.size.height)];
+    rightView.alpha = 0.5;
+    rightView.backgroundColor = [UIColor blackColor];
+    [view addSubview:rightView];
+    
+    UIImageView* upView = [[UIImageView alloc] initWithFrame:CGRectMake(30, 0, view.frame.size.width-60, (view.center.y-(view.frame.size.width-60)/2))];
+    upView.alpha = 0.5;
+    upView.backgroundColor = [UIColor blackColor];
+    [view addSubview:upView];
+    
+    UIImageView * downView = [[UIImageView alloc] initWithFrame:CGRectMake(30, (view.center.y+(view.frame.size.width-60)/2), (view.frame.size.width-60), (view.frame.size.height-(view.center.y-(view.frame.size.width-60)/2)))];
+    downView.alpha = 0.5;
+    downView.backgroundColor = [UIColor blackColor];
+    [view addSubview:downView];
+    
+    UIImageView *centerView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, view.frame.size.width-60, view.frame.size.width-60)];
+    centerView.center = view.center;
+    centerView.image = [UIImage imageNamed:@"QRCodeFrame"];
+    centerView.contentMode = UIViewContentModeScaleAspectFit;
+    centerView.backgroundColor = [UIColor clearColor];
+    [view addSubview:centerView];
+    
+    UIImageView *line = [[UIImageView alloc] initWithFrame:CGRectMake(30, CGRectGetMaxY(upView.frame), view.frame.size.width-60, 2)];
+    line.image = [UIImage imageNamed:@"QRCodeLine"];
+    line.contentMode = UIViewContentModeScaleAspectFill;
+    line.backgroundColor = [UIColor clearColor];
+    [view addSubview:line];
+    
+    UILabel *msg = [[UILabel alloc] initWithFrame:CGRectMake(30, CGRectGetMinY(downView.frame), view.frame.size.width-60, 60)];
+    msg.backgroundColor = [UIColor clearColor];
+    msg.textColor = [UIColor whiteColor];
+    msg.textAlignment = NSTextAlignmentCenter;
+    msg.font = [UIFont systemFontOfSize:16];
+    msg.text = NSLocalizedString(@"Put the QR Code into the frame", nil);
+    [view addSubview:msg];
+
+    CGRect closeFrame;
+    closeFrame = CGRectMake(30, CGRectGetMinY(downView.frame) + 80, view.frame.size.width-60, 60);
+    UIButton *leftButton= [UIButton buttonWithType:UIButtonTypeCustom];
+    leftButton.tintColor = [UIColor whiteColor];
+    leftButton.frame =closeFrame;
+    [leftButton addTarget:self action:@selector(dismissOverlayView:) forControlEvents:UIControlEventTouchUpInside];
+    UIImage *image = [STMFunctions resizeImage:[UIImage imageNamed:@"close-128.png"] toSize:CGSizeMake(60, 60)];
+    [leftButton setImage:[image imageWithTintColor:[UIColor redColor]] forState:UIControlStateNormal];
+    [view addSubview:leftButton];
 }
 
 
@@ -306,6 +366,8 @@
 - (void)didSuccessfullyScan:(NSString *)aScannedValue withType:(AVMetadataObjectType)type {
 
         NSLog(@"aScannedValue %@ %@", aScannedValue, type);
+    
+    [self.overlayView removeFromSuperview];
 
     [self checkScannedBarcode:aScannedValue symbology:type];
     [self stopScan];
@@ -340,12 +402,11 @@
 }
 
 - (void)finishHIDScanMode {
-
+    
     [self.hiddenBarCodeTextField resignFirstResponder];
     [self.hiddenBarCodeTextField removeFromSuperview];
     self.hiddenBarCodeTextField.delegate = nil;
     self.hiddenBarCodeTextField = nil;
-
 }
 
 
