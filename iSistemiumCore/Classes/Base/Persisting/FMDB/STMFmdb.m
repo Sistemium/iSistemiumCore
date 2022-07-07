@@ -76,7 +76,9 @@
     [self.database openWithFlags:flags];
 
     [self.database executeUpdate:@"PRAGMA journal_mode=WAL;"];
-
+    
+    if (![self checkModelMappingForDatabase:self.database model:modelling.managedObjectModel]) return nil;
+    
     if (self.lastVacuumStart == nil || [self.lastVacuumFinish compare:self.lastVacuumStart] == NSOrderedDescending
             && [[NSDate dateWithTimeInterval:24 * 3600 sinceDate:self.lastVacuumFinish] compare:[NSDate date]] == NSOrderedAscending) {
         STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
@@ -87,15 +89,16 @@
             [defaults setObject:[NSDate date] forKey:@"lastVacuumFinish"];
             [defaults synchronize];
         }
+        NSString *insertLog = [NSString stringWithFormat:@"INSERT INTO LogMessage (isFantom, id, type, deviceTs, text) VALUES (0, '%@', 'important', '%@', 'VCUUM SUCCESS' )", STMFunctions.uuidString, [STMFunctions stringFromDate:[NSDate date]]];
+        [self.database executeUpdate:insertLog];
     } else {
         if([self.lastVacuumFinish compare:self.lastVacuumStart] != NSOrderedDescending){
-            [[STMLogger sharedLogger] importantMessage:@"found unfinished VACUUM attempt, decided to skim VACUUM"];
+            NSString *insertLog = [NSString stringWithFormat:@"INSERT INTO LogMessage (isFantom, id, type, deviceTs, text) VALUES (0, '%@', 'important', '%@', 'found unfinished VACUUM attempt, decided to skim VACUUM' )", STMFunctions.uuidString, [STMFunctions stringFromDate:[NSDate date]]];
+            [self.database executeUpdate:insertLog];
         }
     };
 
 //    [self.database executeUpdate:@"PRAGMA TEMP_STORE=MEMORY;"];
-
-    if (![self checkModelMappingForDatabase:self.database model:modelling.managedObjectModel]) return nil;
 
     self.poolDatabases = @[].mutableCopy;
 

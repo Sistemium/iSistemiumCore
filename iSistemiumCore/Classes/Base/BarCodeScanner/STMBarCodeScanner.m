@@ -337,12 +337,18 @@
     UIButton *leftButton= [UIButton buttonWithType:UIButtonTypeCustom];
     leftButton.tintColor = [UIColor whiteColor];
     leftButton.frame =closeFrame;
-    [leftButton addTarget:self action:@selector(dismissOverlayView:) forControlEvents:UIControlEventTouchUpInside];
+    [leftButton addTarget:self action:@selector(dismissOverlayView) forControlEvents:UIControlEventTouchUpInside];
     UIImage *image = [STMFunctions resizeImage:[UIImage imageNamed:@"close-128.png"] toSize:CGSizeMake(60, 60)];
     [leftButton setImage:[image imageWithTintColor:[UIColor redColor]] forState:UIControlStateNormal];
     [view addSubview:leftButton];
 }
 
+- (void)dismissOverlayView {
+    
+    [self.overlayView removeFromSuperview];
+    [self stopScan];
+    
+}
 
 #pragma mark AVCaptureMetadataOutputObjectsDelegate
 
