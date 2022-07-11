@@ -1111,13 +1111,6 @@
                     @"appManifestURI": @"https://vfsm2.sistemium.com/app.manifest",
                     @"url": @"https://vfsm2.sistemium.com"
                                  
-                },
-                @{
-                    @"name": @"STMWKWebView",
-                    @"title": @"STW",
-                    @"imageName": @"3colors-colorless.png",
-                    @"url": @"https://stw.sistemium.com"
-                                                 
                 }
             ];
         
