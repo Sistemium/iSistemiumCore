@@ -339,7 +339,7 @@
     msg.textColor = [UIColor whiteColor];
     msg.textAlignment = NSTextAlignmentCenter;
     msg.font = [UIFont systemFontOfSize:16];
-    msg.text = NSLocalizedString(@"Put the QR Code into the frame", nil);
+    msg.text = NSLocalizedString(@"PUT QR", nil);
     [view addSubview:msg];
 
     CGRect closeFrame;
