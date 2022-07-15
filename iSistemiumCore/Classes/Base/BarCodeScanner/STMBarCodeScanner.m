@@ -10,6 +10,7 @@
 #import "STMCoreSessionManager.h"
 #import "STMCoreBarCodeController.h"
 #import "STMBarCodeScanner.h"
+#import "STMCoreAppDelegate.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import "STMBarCodeZebra.h"
@@ -254,6 +255,15 @@
 }
 
 - (void)setupScanner {
+    
+    UIApplication *app = [UIApplication sharedApplication];
+    
+    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *) app.delegate;
+    
+    appDelegate.orientation = UIInterfaceOrientationMaskPortrait;
+    
+    NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationMaskPortrait];
+    [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
 
     self.device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     self.input = [AVCaptureDeviceInput deviceInputWithDevice:self.device error:nil];
@@ -285,7 +295,7 @@
     [self setOverlayPickerView:self.overlayView];
     
     [superView addSubview:self.overlayView];
-        
+                
     [self.session startRunning];
 
 }
@@ -346,6 +356,13 @@
 - (void)dismissOverlayView {
     
     [self.overlayView removeFromSuperview];
+    self.overlayView = nil;
+    UIApplication *app = [UIApplication sharedApplication];
+    
+    STMCoreAppDelegate *appDelegate = (STMCoreAppDelegate *) app.delegate;
+    
+    appDelegate.orientation = UIInterfaceOrientationMaskAllButUpsideDown;
+
     [self stopScan];
     
 }

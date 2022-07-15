@@ -95,9 +95,15 @@
         [self setupUITests];
 
     }
+    
+    _orientation = UIInterfaceOrientationMaskAllButUpsideDown;
 
     return YES;
 
+}
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window{
+    return _orientation;
 }
 
 - (void)startAuthController {
