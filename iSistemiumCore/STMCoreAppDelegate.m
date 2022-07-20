@@ -115,6 +115,8 @@
         [self setupUITests];
 
     }
+    
+    _orientation = UIInterfaceOrientationMaskAllButUpsideDown;
 
     return YES;
 
@@ -123,7 +125,11 @@
 - (void)sendToFlutter:(NSString *)message {
     
     [self.flutterChannel invokeMethod:message arguments:nil];
+
+}
     
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window{
+    return _orientation;
 }
 
 - (void)startAuthController {
