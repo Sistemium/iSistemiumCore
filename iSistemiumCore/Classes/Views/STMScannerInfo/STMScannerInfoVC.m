@@ -149,11 +149,12 @@
     return self.view;
 }
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCodeScan:(STMBarCodeScan *)barCodeScan
+              withType:(STMBarCodeScannedType)type {
     
 }
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode symbology:(NSString *)symbology withType:(STMBarCodeScannedType)type {
     self.lastScannedBarcode.text = barcode;
 }
 

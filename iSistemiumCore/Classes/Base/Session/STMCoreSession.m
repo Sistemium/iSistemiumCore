@@ -282,7 +282,13 @@ NSTimer *flushTimer;
     }
     
     NSString *modelsRole = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
-   
+
+#if defined (CONFIGURATION_DebugVfs)
+    if (!modelsRole) {
+        modelsRole = @"dev";
+    }
+#endif
+
     NSString *modelName = dataModelName.mutableCopy;
     
     if (modelsRole) {

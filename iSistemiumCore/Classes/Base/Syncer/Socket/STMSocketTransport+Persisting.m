@@ -95,7 +95,7 @@
 
     NSDictionary *value = @{@"method": kSocketUpdateMethod,
             @"resource": resource,
-            @"id": attributes[@"id"],
+            @"id": STMIsNull(attributes[@"id"], [STMFunctions uuidString]),
             @"attrs": attributes};
 
     [self socketSendEvent:STMSocketEventJSData withValue:value completionHandler:^(BOOL success, NSArray *data, NSError *error) {

@@ -192,14 +192,17 @@
 
 }
 
-- (void)checkScannedBarcode:(NSString *)barcode {
+- (void)checkScannedBarcode:(NSString *)barcode symbology:(NSString *)symbology {
 
     STMBarCodeScannedType type = [STMCoreBarCodeController barcodeTypeFromTypesDics:self.barCodeTypes forBarcode:barcode];
 
     STMBarCodeScan *barCodeScan = [[STMBarCodeScan alloc] init];
     barCodeScan.code = barcode;
 
-    [self.delegate barCodeScanner:self receiveBarCode:barcode withType:type];
+    [self.delegate barCodeScanner:self
+                   receiveBarCode:barcode
+                        symbology:symbology
+                         withType:type];
     [self.delegate barCodeScanner:self receiveBarCodeScan:barCodeScan withType:type];
 
 }
@@ -289,8 +292,10 @@
 
         if ([current isKindOfClass:[AVMetadataMachineReadableCodeObject class]]) {
 
-            NSString *scannedValue = [(AVMetadataMachineReadableCodeObject *) current stringValue];
-            [self didSuccessfullyScan:scannedValue];
+            const AVMetadataMachineReadableCodeObject *barcode = (AVMetadataMachineReadableCodeObject*)current;
+            
+            [self didSuccessfullyScan:barcode.stringValue
+                             withType:barcode.type];
 
         }
 
@@ -298,11 +303,11 @@
 
 }
 
-- (void)didSuccessfullyScan:(NSString *)aScannedValue {
+- (void)didSuccessfullyScan:(NSString *)aScannedValue withType:(AVMetadataObjectType)type {
 
-    //    NSLog(@"aScannedValue %@", aScannedValue);
+        NSLog(@"aScannedValue %@ %@", aScannedValue, type);
 
-    [self checkScannedBarcode:aScannedValue];
+    [self checkScannedBarcode:aScannedValue symbology:type];
     [self stopScan];
 
 }
@@ -348,7 +353,7 @@
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
 
-    [self checkScannedBarcode:textField.text];
+    [self checkScannedBarcode:textField.text symbology:nil];
     textField.text = @"";
 
     return NO;
@@ -458,9 +463,9 @@
 - (void)getVersion {
 }
 
-- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode withType:(STMBarCodeScannedType)type {
+- (void)barCodeScanner:(id <STMBarCodeScanningDevice>)scanner receiveBarCode:(NSString *)barcode symbology:(NSString *)symbology withType:(STMBarCodeScannedType)type {
 
-    [self checkScannedBarcode:barcode];
+    [self checkScannedBarcode:barcode symbology:symbology];
 
 }
 
