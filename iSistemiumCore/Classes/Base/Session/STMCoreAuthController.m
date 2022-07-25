@@ -1046,6 +1046,9 @@
             self.userID = responseJSON[@"ID"];
             self.userName = responseJSON[@"name"];
             self.accessToken = responseJSON[@"accessToken"];
+            
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"validPassword" arguments:nil];
 
             self.controllerState = STMAuthRequestRoles;
             

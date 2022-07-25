@@ -63,6 +63,9 @@
         if ([call.method isEqual: @"sendPhone"]){
             [CoreAuthController sendPhoneNumberWithPhoneNumber:call.arguments];
         }
+        if ([call.method isEqual: @"sendPassword"]){
+            [CoreAuthController sendSMSCodeWithSMSCode:call.arguments];
+        }
     }];
     
     [STMFunctions stringFromNow];
