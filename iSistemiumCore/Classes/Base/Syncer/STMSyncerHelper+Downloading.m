@@ -283,24 +283,19 @@
     
     if (STMCoreAuthController.sharedAuthController.initialLoadingError){
         
-        //flutter todo
-//        [LoadingDataObjc setWarningWithWarning:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
         
     } else if (queue == nil){
+        
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
 
-        //flutter todo
-
-//        [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-//
-//        [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-//
     } else {
-        //flutter todo
-
-//
-//        [LoadingDataObjc setProgressWithValue:(float) ((totalEntityCount - remainCount) / totalEntityCount)];
-//
-//        [ProfileDataObjc setProgressWithValue:(totalEntityCount - remainCount) / totalEntityCount];
+        
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setSetupProgress" arguments:[[NSNumber numberWithFloat:(totalEntityCount - remainCount) / totalEntityCount] stringValue]];
+        
     }
 
     if (remainCount) return;

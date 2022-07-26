@@ -176,11 +176,10 @@
         NSLog(@"%@ %@ ___ items (", self.socket, self.socket.sid);
         //flutter todo
 
-//        if ([event.event isEqualToString:@"error"]) {
-//            [LoadingDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-//
-//            [ProfileDataObjc setErrorWithError:NSLocalizedString(@"NO CONNECTION", nil)];
-//        }
+        if ([event.event isEqualToString:@"error"]) {
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+        }
 
         for (id item in event.items) NSLog(@"    %@", item);
 
