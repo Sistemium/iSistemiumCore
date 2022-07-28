@@ -283,18 +283,24 @@
     
     if (STMCoreAuthController.sharedAuthController.initialLoadingError){
         
-        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        });
         
     } else if (queue == nil){
         
-        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+        });
 
     } else {
         
-        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"setSetupProgress" arguments:[[NSNumber numberWithFloat:(totalEntityCount - remainCount) / totalEntityCount] stringValue]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setSetupProgress" arguments:[[NSNumber numberWithFloat:(totalEntityCount - remainCount) / totalEntityCount] stringValue]];
+        });
         
     }
 

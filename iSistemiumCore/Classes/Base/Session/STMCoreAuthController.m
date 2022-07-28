@@ -1029,8 +1029,10 @@
 
         case STMAuthEnterPhoneNumber: {
             
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"validPhoneNumber" arguments:nil];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"validPhoneNumber" arguments:nil];
+            });
             
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
@@ -1047,9 +1049,11 @@
             self.userName = responseJSON[@"name"];
             self.accessToken = responseJSON[@"accessToken"];
             
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"validPassword" arguments:nil];
-
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"validPassword" arguments:nil];
+            });
+                
             self.controllerState = STMAuthRequestRoles;
             
             break;

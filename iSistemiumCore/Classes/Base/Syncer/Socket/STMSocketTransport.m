@@ -177,8 +177,10 @@
         //flutter todo
 
         if ([event.event isEqualToString:@"error"]) {
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+            });
         }
 
         for (id item in event.items) NSLog(@"    %@", item);

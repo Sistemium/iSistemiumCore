@@ -1014,7 +1014,7 @@
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
     if (self.session.status == STMSessionRunning) {
-        [self initAllTabs];
+//        [self initAllTabs];
         [self removeSpinner];
     }
     
