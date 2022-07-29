@@ -1014,7 +1014,9 @@
 - (void)sessionStatusChanged:(NSNotification *)notification {
     
     if (self.session.status == STMSessionRunning) {
-//        [self initAllTabs];
+        if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted){
+            [self initAllTabs];
+        }
         [self removeSpinner];
     }
     

@@ -534,15 +534,6 @@
 //        self.window.rootViewController = self.flutterViewController;
 
     }
-    
-//    if (STMCoreAuthController.sharedAuthController.controllerState == STMAuthSuccess && STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
-//        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMLoading" bundle:nil];
-//
-//        UIViewController *vc = [storyboard instantiateInitialViewController];
-//        self.window.rootViewController = vc;
-//        [self.window makeKeyAndVisible];
-//        return;
-//    }
 
     self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
     [self.window makeKeyAndVisible];
