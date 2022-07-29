@@ -258,7 +258,7 @@ NSUInteger fantomsCount = 100;
     [self.defantomizingOwner defantomizingFinished];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-//        [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate setupWindow];
+        [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate setupWindow];
 //        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
 //        [channel invokeMethod:@"finishSetup" arguments:nil];
     });

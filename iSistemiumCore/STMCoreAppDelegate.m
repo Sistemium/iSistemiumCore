@@ -531,11 +531,14 @@
         
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
         
-//        self.window.rootViewController = self.flutterViewController;
-
     }
-
-    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+    
+    if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO){
+        self.window.rootViewController = self.flutterViewController;
+    } else {
+        self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+    }
+        
     [self.window makeKeyAndVisible];
 
 }
