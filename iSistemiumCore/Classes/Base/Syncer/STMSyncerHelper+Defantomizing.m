@@ -259,8 +259,6 @@ NSUInteger fantomsCount = 100;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate setupWindow];
-//        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-//        [channel invokeMethod:@"finishSetup" arguments:nil];
     });
     
 }
