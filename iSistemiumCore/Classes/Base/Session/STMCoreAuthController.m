@@ -1207,10 +1207,10 @@
             [CoreAuthController rejectWithError:errorString];
             self.controllerState = STMAuthEnterSMSCode;
 
-//        } else if (self.controllerState == STMAuthRequestRoles) {
-//            
-//            errorString = [NSLocalizedString(@"ROLES REQUEST ERROR", nil) stringByAppendingString:errorString];
-//            self.controllerState = STMAuthEnterPhoneNumber;
+        } else if (self.controllerState == STMAuthRequestRoles) {
+            
+            errorString = [NSLocalizedString(@"ROLES REQUEST ERROR", nil) stringByAppendingString:errorString];
+            self.controllerState = STMAuthEnterPhoneNumber;
 
         }
 
