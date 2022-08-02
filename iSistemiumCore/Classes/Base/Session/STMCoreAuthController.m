@@ -571,6 +571,9 @@
     self.initialLoadingCompleted = NO;
     self.isDemo = false;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate setupWindow];
+    });
 
 }
 
