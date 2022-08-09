@@ -357,12 +357,14 @@
 #pragma mark - callbacks
 
 - (void)callbackWithData:(id)data parameters:(NSDictionary *)parameters jsCallbackFunction:(NSString *)jsCallbackFunction {
+    
+    BOOL isArray = [data isKindOfClass:[NSArray class]];
 
 #ifdef DEBUG
 
     NSNumber *requestId = parameters[@"options"][@"requestId"];
 
-    if (requestId && [data isKindOfClass:[NSArray class]]) {
+    if (requestId && isArray) {
 
         NSString *entityName = parameters[@"entity"];
 
@@ -402,11 +404,14 @@
         NSLog(@"have no jsCallbackFunction");
         return;
     }
-
+    
+    BOOL isSubscription = [parameters[@"reason"] isEqualToString:@"subscription"];
+    
+    NSArray *arrayData = (isArray || isSubscription) ? data : @[data];
 
     NSMutableArray *arguments = @[].mutableCopy;
 
-    if (data) [arguments addObject:data];
+    if (data) [arguments addObject:arrayData];
     if (parameters) [arguments addObject:parameters];
 
     NSDate *startedAt = [NSDate date];
