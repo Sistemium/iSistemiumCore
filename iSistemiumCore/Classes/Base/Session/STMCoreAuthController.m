@@ -542,8 +542,16 @@
     } else {
         NSLog(@"accessToken %@", self.accessToken);
     }
-
-    self.controllerState = checkValue ? STMAuthRequestRoles : STMAuthEnterPhoneNumber;
+    
+    if (checkValue){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"validPassword" arguments:nil];
+        });
+        self.controllerState = STMAuthRequestRoles;
+    } else {
+        self.controllerState = STMAuthEnterPhoneNumber;
+    }
 
 }
 
@@ -573,6 +581,8 @@
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
     dispatch_async(dispatch_get_main_queue(), ^{
         [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate setupWindow];
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"login" arguments:nil];
     });
 
 }

@@ -66,6 +66,9 @@
         if ([call.method isEqual: @"sendPassword"]){
             [CoreAuthController sendSMSCodeWithSMSCode:call.arguments];
         }
+        if ([call.method isEqual: @"logout"]){
+            [STMCoreAuthController.sharedAuthController logout];
+        }
     }];
     
     [STMFunctions stringFromNow];
