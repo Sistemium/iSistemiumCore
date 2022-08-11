@@ -185,6 +185,7 @@
     [self hideNavBar];
     [self.scriptMessageHandler cancelSubscriptions];
     self.unsyncedInfoJSFunction = nil;
+    [self.scriptMessageHandler handleSyncerInfoJSFunction:nil];
 
     if ([self webViewAppManifestURI]) {
 
@@ -404,6 +405,7 @@
         self.webView = nil;
 
         [self.scriptMessageHandler cancelSubscriptions];
+        [self.scriptMessageHandler handleSyncerInfoJSFunction:nil];
 
     }
 
