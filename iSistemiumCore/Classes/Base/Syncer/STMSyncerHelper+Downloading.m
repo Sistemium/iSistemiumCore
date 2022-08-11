@@ -285,7 +285,7 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"setError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+            [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
         });
         
     } else if (queue == nil){

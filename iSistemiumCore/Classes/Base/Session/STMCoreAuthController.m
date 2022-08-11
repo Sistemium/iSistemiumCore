@@ -527,7 +527,10 @@
     if (!self.userID || [self.userID isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No userID or userID is empty string"];
-        [CoreAuthController rejectWithError:@"No userID or userID is empty string"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"loginError" arguments:@"No userID or userID is empty string"];
+        });
         checkValue = NO;
 
     } else {
@@ -536,7 +539,10 @@
     if (!self.accessToken || [self.accessToken isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No accessToken or accessToken is empty string"];
-        [CoreAuthController rejectWithError:@"No accessToken or accessToken is empty string"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"loginError" arguments:@"No accessToken or accessToken is empty string"];
+        });
         checkValue = NO;
 
     } else {
@@ -765,7 +771,10 @@
                                                                 object:self
                                                               userInfo:@{@"error": @"No connection"}];
             
-            [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+            });
 
             [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
@@ -774,7 +783,10 @@
         }
 
     } else {
-        [CoreAuthController rejectWithError:NSLocalizedString(@"WRONG PHONE NUMBER", nil)];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"WRONG PHONE NUMBER", nil)];
+        });
         return NO;
     }
 
@@ -800,7 +812,10 @@
                                                                 object:self
                                                               userInfo:@{@"error": NSLocalizedString(@"NO CONNECTION", nil)}];
             
-            [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+            });
 
             [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
@@ -893,8 +908,11 @@
 
 
     } else {
-        
-        [CoreAuthController rejectWithError:NSLocalizedString(@"NO CONNECTION", nil)];
+                
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+        });
 
         [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
                                                             object:self
@@ -1226,17 +1244,27 @@
 
             errorString = NSLocalizedString(@"WRONG PHONE NUMBER", nil);
             self.controllerState = STMAuthEnterPhoneNumber;
-            [CoreAuthController rejectWithError:errorString];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"loginError" arguments:errorString];
+            });
 
         } else if (self.controllerState == STMAuthEnterSMSCode) {
 
             errorString = NSLocalizedString(@"WRONG SMS CODE", nil);
-            [CoreAuthController rejectWithError:errorString];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"loginError" arguments:errorString];
+            });
             self.controllerState = STMAuthEnterSMSCode;
 
         } else if (self.controllerState == STMAuthRequestRoles) {
             
             errorString = [NSLocalizedString(@"ROLES REQUEST ERROR", nil) stringByAppendingString:errorString];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"loginError" arguments:errorString];
+            });
             self.controllerState = STMAuthEnterPhoneNumber;
 
         }

@@ -330,18 +330,8 @@
             storyboard.parameters = parameters;
             
             UIViewController *vc;
-//
-//            if ([name hasPrefix:@"STMAuth"]) {
-//                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
-//            }
-//            else if ([name hasPrefix:@"STMProfile"]) {
-//                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-//                [channel invokeMethod:@"STMProfile" arguments:nil];
-//                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
-//            }
-//            else {
-                vc = [storyboard instantiateInitialViewController];
-//            }
+
+            vc = [storyboard instantiateInitialViewController];
             
             vc.title = title;
             

@@ -55,7 +55,7 @@
     self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
-    
+        
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"demoAuth"]){
             [CoreAuthController demoAuth];
@@ -68,6 +68,9 @@
         }
         if ([call.method isEqual: @"logout"]){
             [STMCoreAuthController.sharedAuthController logout];
+        }
+        if ([call.method isEqual: @"syncData"]){
+            [STMCoreSessionManager.sharedManager.currentSession.syncer receiveData];
         }
     }];
     
