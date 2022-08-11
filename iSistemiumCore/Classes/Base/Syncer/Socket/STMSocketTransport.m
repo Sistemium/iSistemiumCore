@@ -29,6 +29,7 @@
 @property (nonatomic, strong) dispatch_queue_t handleQueue;
 @property (nonatomic, strong) SocketManager *socketManager;
 
+@property (nonatomic) SocketIOStatus socketStatus;
 
 @end
 
@@ -65,6 +66,16 @@
 
     return socketTransport;
 
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+    NSMutableSet *keyPaths = [NSMutableSet setWithSet:[super keyPathsForValuesAffectingValueForKey:key]];
+    if ([key isEqualToString:@"isReady"]) {
+        [keyPaths addObject:@"isAuthorized"];
+        [keyPaths addObject:@"socketStatus"];
+    }
+        
+    return keyPaths;
 }
 
 - (NSTimeInterval)timeout {
@@ -346,6 +357,7 @@
 
 - (void)connectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
 
+    self.socketStatus = self.socket.status;
     [self emitAuthorization];
 
 }
@@ -374,12 +386,14 @@
 }
 
 - (void)disconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
+    self.socketStatus = self.socket.status;
     [self.owner socketLostConnection];
 }
 
 - (void)reconnectEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
     // May be it's too early to report lost connection because we'll reconnect soon
     // [self.owner socketLostConnection];
+    self.socketStatus = self.socket.status;
 }
 
 - (void)remoteCommandsEventHandleWithData:(NSArray *)data ack:(SocketAckEmitter *)ack {
@@ -587,6 +601,8 @@
 
 - (void)checkReachabilityAndSocketStatus {
 
+    self.socketStatus = self.socket.status;
+    
     switch (self.socket.status) {
         case SocketIOStatusNotConnected:
         case SocketIOStatusDisconnected:
