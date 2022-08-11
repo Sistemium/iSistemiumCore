@@ -46,5 +46,6 @@
 @property (nonatomic, strong) NSDictionary *photoData;
 @property (nonatomic, strong) NSString *takePhotoCallbackJSFunction;
 @property (nonatomic, strong) STMSpinnerView *spinnerView;
+@property (nonatomic, strong) NSString *syncerInfoJSFunction;
 
 @end

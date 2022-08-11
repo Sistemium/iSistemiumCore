@@ -57,6 +57,51 @@
     
 }
 
+- (void)dealloc {
+    [self unsubscribeSocketTransport];
+}
+
+- (void)unsubscribeSocketTransport {
+    if (!self.syncerInfoJSFunction) {
+        return;
+    }
+    self.syncerInfoJSFunction = nil;
+    [(NSObject*) self.socketTransport removeObserver:self forKeyPath:@"isReady" context:nil];
+}
+
+- (void)handleSyncerInfoJSFunction:(WKScriptMessage *)message {
+    
+    if (!message) {
+        [self unsubscribeSocketTransport];
+        return;
+    }
+    
+    self.syncerInfoJSFunction = message.body[WK_MESSAGE_SYNCER_INFO];
+    
+    [(NSObject*) self.socketTransport addObserver:self
+           forKeyPath:@"isReady"
+              options:(NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial)
+              context:nil];
+
+}
+
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (![keyPath isEqualToString:@"isReady"]) {
+        return;
+    }
+    NSLog(@"Syncer isReady: %@", [[change valueForKey:@"new"] boolValue] ? @"Yes" : @"No");
+
+    if (!self.syncerInfoJSFunction) {
+        return;
+    }
+
+    [self.owner callbackWithData:@{ @"isReady": [change valueForKey:@"new"] }
+                parameters:nil
+        jsCallbackFunction:self.syncerInfoJSFunction];
+}
+
+
 - (void)handleTakePhotoMessage:(WKScriptMessage *)message {
     
     if (self.waitingPhoto) return;
