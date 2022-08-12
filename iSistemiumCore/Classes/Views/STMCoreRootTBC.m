@@ -333,6 +333,10 @@
 
             vc = [storyboard instantiateInitialViewController];
             
+            if ([name hasPrefix:@"STMProfile"]) {
+                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
+            }
+            
             vc.title = title;
             
             UIImage *image = [UIImage imageNamed:imageName];
