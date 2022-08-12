@@ -527,10 +527,6 @@
     if (!self.userID || [self.userID isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No userID or userID is empty string"];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"loginError" arguments:@"No userID or userID is empty string"];
-        });
         checkValue = NO;
 
     } else {
@@ -539,10 +535,6 @@
     if (!self.accessToken || [self.accessToken isEqualToString:@""]) {
 
         [[STMLogger sharedLogger] errorMessage:@"No accessToken or accessToken is empty string"];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"loginError" arguments:@"No accessToken or accessToken is empty string"];
-        });
         checkValue = NO;
 
     } else {
