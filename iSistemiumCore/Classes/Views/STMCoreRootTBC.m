@@ -316,75 +316,62 @@
     NSString *name = parameters[@"name"];
     NSString *title = parameters[@"title"];
     NSString *imageName = parameters[@"imageName"];
-
-    if (name) {
         
-        NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:@"storyboardc"];
+    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:@"storyboardc"];
+    
+    UIViewController *vc;
+    
+    title = (title) ? title : name;
+    
+    if ([name hasPrefix:@"STMProfile"]) {
+        vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
+    } else {
+        [self.storyboardTitles addObject:title];
         
-        if (path) {
-            
-            title = (title) ? title : name;
-            [self.storyboardTitles addObject:title];
-            
-            STMStoryboard *storyboard = [STMStoryboard storyboardWithName:name bundle:nil];
-            storyboard.parameters = parameters;
-            
-            UIViewController *vc;
+        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:name bundle:nil];
+        storyboard.parameters = parameters;
+        
+        vc = [storyboard instantiateInitialViewController];
+    }
+    
+    vc.title = title;
+    
+    UIImage *image = [UIImage imageNamed:imageName];
+    
+    image = (image) ? image : [UIImage imageNamed:@"full_moon-128.png"];
+    
+    if (image) vc.tabBarItem.image = [STMFunctions resizeImage:image toSize:CGSizeMake(30, 30)];
 
-            vc = [storyboard instantiateInitialViewController];
-            
-            if ([name hasPrefix:@"STMProfile"]) {
-                vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
-            }
-            
-            vc.title = title;
-            
-            UIImage *image = [UIImage imageNamed:imageName];
-            
-            image = (image) ? image : [UIImage imageNamed:@"full_moon-128.png"];
-            
-            if (image) vc.tabBarItem.image = [STMFunctions resizeImage:image toSize:CGSizeMake(30, 30)];
+    if (!self.allTabsVCs[@(index)]) {
+    
+        self.allTabsVCs[@(index)] = @[vc];
+        [self.currentTabsVCs addObject:vc];
 
-            if (!self.allTabsVCs[@(index)]) {
+    } else {
+        
+        NSMutableArray *tabs = [self.allTabsVCs[@(index)] mutableCopy];
+        [tabs addObject:vc];
+        self.allTabsVCs[@(index)] = tabs;
+        
+        if (self.orderedStcTabs[@(index)]) {
             
-                self.allTabsVCs[@(index)] = @[vc];
-                [self.currentTabsVCs addObject:vc];
-
-            } else {
+            NSUInteger showIndex = [self.orderedStcTabs[@(index)] integerValue];
+            
+            if ([tabs indexOfObject:vc] == showIndex) {
                 
-                NSMutableArray *tabs = [self.allTabsVCs[@(index)] mutableCopy];
-                [tabs addObject:vc];
-                self.allTabsVCs[@(index)] = tabs;
-                
-                if (self.orderedStcTabs[@(index)]) {
-                    
-                    NSUInteger showIndex = [self.orderedStcTabs[@(index)] integerValue];
-                    
-                    if ([tabs indexOfObject:vc] == showIndex) {
-                        
-                        self.currentTabsVCs[index] = vc;
-                        
-                    }
-                    
-                }
+                self.currentTabsVCs[index] = vc;
                 
             }
-            
-            self.tabs[name] = vc;
-            
-            if ([name hasPrefix:@"STMAuth"]) {
-                [self.authVCs addObject:vc];
-            }
-            
-        } else {
-            
-            NSString *logMessage = [NSString stringWithFormat:@"Storyboard %@ not found in app's bundle", name];
-            [[STMLogger sharedLogger] saveLogMessageWithText:logMessage numType:STMLogMessageTypeWarning];
             
         }
         
     }
-
+    
+    self.tabs[name] = vc;
+    
+    if ([name hasPrefix:@"STMAuth"]) {
+        [self.authVCs addObject:vc];
+    }
 }
 
 - (void)setupIPadTabs {

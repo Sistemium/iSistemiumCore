@@ -79,12 +79,12 @@
     [self sessionManager];
 
     [self startAuthController];
-
-    [self setupWindow];
     
     if ([STMCoreAuthController sharedAuthController].isDemo){
         [STMCoreAuthController.sharedAuthController logout];
     }
+
+    [self setupWindow];
 
     [STMCoreAuthController.sharedAuthController checkPhoneNumber];
 
