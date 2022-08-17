@@ -299,11 +299,6 @@
         
         if ((totalEntityCount - remainCount) / totalEntityCount >= 1.0){
             STMCoreAuthController.sharedAuthController.initialLoadingCompleted = YES;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-                [channel invokeMethod:@"finishSetup" arguments:nil];
-            });
-        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
