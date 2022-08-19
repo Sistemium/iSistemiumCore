@@ -578,6 +578,8 @@
     self.initialDefantomizingCompleted = NO;
     self.isDemo = false;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
+    [STMCoreRootTBC.sharedRootVC hideTabBar];
+
 }
 
 - (NSString *)dataModelName {

@@ -204,6 +204,8 @@
         self.tabBar.translucent = YES;
     }
     
+    [self hideTabBar];
+    
 }
 
 - (void)prepareTabs {
@@ -323,7 +325,7 @@
     
     title = (title) ? title : name;
     
-    if ([name hasPrefix:@"STMProfile"]) {
+    if ([name hasPrefix:@"STMProfile"] || [name hasPrefix:@"STMAuth"]) {
         vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
     } else {
         [self.storyboardTitles addObject:title];
