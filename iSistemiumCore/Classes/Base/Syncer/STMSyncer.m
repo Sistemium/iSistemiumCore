@@ -647,11 +647,12 @@
 
 - (void)defantomizingFinished {
     self.isDefantomizing = NO;
-    if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted){
+    if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted && !STMCoreAuthController.sharedAuthController.initialDefantomizingCompleted){
         dispatch_async(dispatch_get_main_queue(), ^{
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"finishSetup" arguments:nil];
         });
+        STMCoreAuthController.sharedAuthController.initialDefantomizingCompleted = true;
     }
 }
 

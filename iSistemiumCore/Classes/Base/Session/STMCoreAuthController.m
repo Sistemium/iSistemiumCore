@@ -177,7 +177,7 @@
 
 - (void)setInitialLoadingCompleted:(BOOL)completed {
 
-    if (completed != _initialLoadingCompleted) {
+     if (completed != _initialLoadingCompleted) {
 
         STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
         [defaults setBool:completed forKey:@"initialLoadingCompleted"];
@@ -575,6 +575,7 @@
     self.stcTabs = nil;
     self.iSisDB = nil;
     self.initialLoadingCompleted = NO;
+    self.initialDefantomizingCompleted = NO;
     self.isDemo = false;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
 }
