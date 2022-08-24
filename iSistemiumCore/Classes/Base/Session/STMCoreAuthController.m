@@ -1071,7 +1071,7 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-                [channel invokeMethod:@"validPassword" arguments:nil];
+                [channel invokeMethod:@"validPassword" arguments:responseJSON];
             });
                 
             self.controllerState = STMAuthRequestRoles;
