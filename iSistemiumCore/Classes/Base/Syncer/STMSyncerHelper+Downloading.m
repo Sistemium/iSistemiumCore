@@ -261,9 +261,6 @@
 - (void)doneDownloadingEntityName:(NSString *)entityName errorMessage:(NSString *)errorMessage {
 
     if (errorMessage) {
-        if (!STMCoreAuthController.sharedAuthController.initialLoadingCompleted){
-            STMCoreAuthController.sharedAuthController.initialLoadingError = true;
-        }
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
     }
 
@@ -281,14 +278,12 @@
 
     float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
     
-    if (STMCoreAuthController.sharedAuthController.initialLoadingError){
+    dispatch_async(dispatch_get_main_queue(), ^{
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+    });
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
-        });
-        
-    } else if (queue == nil){
+    if (queue == nil){
         
         dispatch_async(dispatch_get_main_queue(), ^{
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
@@ -296,10 +291,6 @@
         });
 
     } else {
-        
-        if ((totalEntityCount - remainCount) / totalEntityCount >= 1.0){
-            STMCoreAuthController.sharedAuthController.initialLoadingCompleted = YES;
-        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];

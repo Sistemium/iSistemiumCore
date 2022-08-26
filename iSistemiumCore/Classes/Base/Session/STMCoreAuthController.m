@@ -52,7 +52,6 @@
 @implementation STMCoreAuthController
 
 @synthesize phoneNumber = _phoneNumber;
-@synthesize initialLoadingCompleted = _initialLoadingCompleted;
 @synthesize userID = _userID;
 @synthesize userName = _userName;
 @synthesize accessToken = _accessToken;
@@ -157,33 +156,6 @@
         [defaults synchronize];
 
         _isDemo = demo;
-
-    }
-
-}
-
-- (BOOL)initialLoadingCompleted {
-
-    if (!_initialLoadingCompleted) {
-
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        _initialLoadingCompleted = [defaults boolForKey:@"initialLoadingCompleted"];
-
-    }
-
-    return _initialLoadingCompleted;
-
-}
-
-- (void)setInitialLoadingCompleted:(BOOL)completed {
-
-     if (completed != _initialLoadingCompleted) {
-
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        [defaults setBool:completed forKey:@"initialLoadingCompleted"];
-        [defaults synchronize];
-
-        _initialLoadingCompleted = completed;
 
     }
 
@@ -574,8 +546,6 @@
     self.accessToken = nil;
     self.stcTabs = nil;
     self.iSisDB = nil;
-    self.initialLoadingCompleted = NO;
-    self.initialDefantomizingCompleted = NO;
     self.isDemo = false;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
     [STMCoreRootTBC.sharedRootVC hideTabBar];

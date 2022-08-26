@@ -539,12 +539,8 @@
         
     }
     
-//    if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted == NO && !STMCoreAuthController.sharedAuthController.isDemo){
-//        self.window.rootViewController = self.flutterViewController;
-//    } else {
-        self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
-        [STMCoreRootTBC.sharedRootVC initAllTabs];
-//    }
+    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+    [STMCoreRootTBC.sharedRootVC initAllTabs];
         
     [self.window makeKeyAndVisible];
 

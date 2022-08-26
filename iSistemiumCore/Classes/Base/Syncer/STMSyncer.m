@@ -342,9 +342,7 @@
 - (void)socketReceiveAuthorization {
 
     NSLogMethodName;
-    
-    STMCoreAuthController.sharedAuthController.initialLoadingError = false;
-    
+        
     [self postAsyncMainQueueNotification:NOTIFICATION_SOCKET_AUTHORIZATION_SUCCESS];
 
     [self subscribeToUnsyncedObjects];
@@ -647,14 +645,11 @@
 
 - (void)defantomizingFinished {
     self.isDefantomizing = NO;
-    if (STMCoreAuthController.sharedAuthController.initialLoadingCompleted && !STMCoreAuthController.sharedAuthController.initialDefantomizingCompleted){
-        dispatch_async(dispatch_get_main_queue(), ^{
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"finishSetup" arguments:nil];
-            [STMCoreRootTBC.sharedRootVC showTabBar];
-        });
-        STMCoreAuthController.sharedAuthController.initialDefantomizingCompleted = true;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"finishSetup" arguments:nil];
+        [STMCoreRootTBC.sharedRootVC showTabBar];
+    });
 }
 
 
@@ -741,9 +736,7 @@
     [[self.session logger] saveLogMessageWithText:CurrentMethodName
                                           numType:STMLogMessageTypeInfo];
 
-    if(!STMCoreAuthController.sharedAuthController.initialLoadingError){
-        [self startDefantomization];
-    }
+    [self startDefantomization];
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         UIApplication *app = [UIApplication sharedApplication];
