@@ -262,6 +262,11 @@
 
     if (errorMessage) {
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+        });
     }
 
     STMDownloadingQueue *queue = self.downloadingState.queue;
@@ -277,11 +282,6 @@
                                 userInfo:@{@"countdownValue": @(remainCount)}];
 
     float totalEntityCount = (float)[STMEntityController stcEntities].allKeys.count;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
-    });
         
     if (queue == nil){
         
