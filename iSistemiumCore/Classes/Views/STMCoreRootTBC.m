@@ -326,6 +326,7 @@
     title = (title) ? title : name;
     
     if ([name hasPrefix:@"STMProfile"] || [name hasPrefix:@"STMAuth"]) {
+        [self showTabBar];
         vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
     } else {
         [self.storyboardTitles addObject:title];
@@ -809,7 +810,7 @@
 #pragma mark - show/hide tabbar
 
 - (void)hideTabBar {
-    
+        
     NSTimeInterval animationDuration = 0.5;
 
     self.isInHideTabbarProcess = YES;
@@ -843,6 +844,8 @@
 }
 
 - (void)showTabBar {
+    
+    if (!self.tabBar.hidden) return;
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationDuration:0.5];

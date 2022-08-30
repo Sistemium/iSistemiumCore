@@ -645,11 +645,13 @@
 
 - (void)defantomizingFinished {
     self.isDefantomizing = NO;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"finishSetup" arguments:nil];
-        [STMCoreRootTBC.sharedRootVC showTabBar];
-    });
+    if (self.socketTransport.isReady){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"finishSetup" arguments:nil];
+            [STMCoreRootTBC.sharedRootVC showTabBar];
+        });
+    }
 }
 
 
