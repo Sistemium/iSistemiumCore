@@ -65,4 +65,6 @@ typedef NSDictionary <NSString *, STMScriptMessagingFilterDictionary *> STMScrip
 
 - (void)cancelSubscriptions;
 
+- (void)handleSyncerInfoJSFunction:(WKScriptMessage *)message;
+
 @end

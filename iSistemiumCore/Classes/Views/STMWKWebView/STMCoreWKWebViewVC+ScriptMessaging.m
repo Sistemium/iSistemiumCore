@@ -125,6 +125,10 @@
     } else if ([message.name isEqualToString:WK_MESSAGE_UNSYNCED_INFO]) {
 
         [self handleUnsyncedInfoMessage:message];
+        
+    } else if ([message.name isEqualToString:WK_MESSAGE_SYNCER_INFO]) {
+        
+        [self.scriptMessageHandler handleSyncerInfoJSFunction:message];
 
     } else if ([message.name isEqualToString:WK_MESSAGE_SAVE_IMAGE]) {
 
