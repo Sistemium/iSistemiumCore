@@ -50,8 +50,9 @@
 }
 
 + (void)checkNotUploadedPhotos {
-    
+        
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[self sharedInstance] updatePictureInfo];
         [[self sharedInstance] checkNotUploadedPhotos];
     });
     
@@ -68,7 +69,6 @@
         
         [self observeNotification:NOTIFICATION_SYNCER_BUNCH_OF_OBJECTS_RECEIVED
                          selector:@selector(syncerGetBunchOfObjects)];
-        
     }
     return self;
     
@@ -930,9 +930,28 @@
 
     [self hrefDictionaryRemove:href];
     [self downloadNextPicture];
-    //flutter todo
+    [self updatePictureInfo];
+}
 
-//    [ProfileDataObjc setUnloadedPhotosWithValue:_nonloadedPictures.count];
+- (void)updatePictureInfo{
+    NSString *title = @"";
+    
+    if (self.nonloadedPicturesCount > 0) {
+        
+        NSString *pluralString = [STMFunctions pluralTypeForCount:self.nonloadedPicturesCount];
+        NSString *picturesCount = [NSString stringWithFormat:@"%@UPICTURES", pluralString];
+        title = [NSString stringWithFormat:@"%lu %@ %@", (unsigned long)(self.nonloadedPicturesCount), NSLocalizedString(picturesCount, nil), NSLocalizedString(@"WAITING FOR DOWNLOAD", nil)];
+                
+    } else {
+                
+        [STMCorePicturesController sharedController].downloadingPictures = NO;
+
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"imageInfo" arguments:title];
+    });
 }
 
 - (void)uploadImageEntityName:(NSString *)entityName attributes:(NSDictionary *)attributes data:(NSData *)data {

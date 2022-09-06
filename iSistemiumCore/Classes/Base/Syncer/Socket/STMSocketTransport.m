@@ -174,8 +174,7 @@
 
         NSLog(@"%@ %@ ___ event %@", self.socket, self.socket.sid, event.event);
         NSLog(@"%@ %@ ___ items (", self.socket, self.socket.sid);
-        //flutter todo
-
+        
         if ([event.event isEqualToString:@"error"]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];

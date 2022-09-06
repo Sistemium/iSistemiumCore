@@ -72,6 +72,13 @@
         if ([call.method isEqual: @"syncData"]){
             [STMCoreSessionManager.sharedManager.currentSession.syncer receiveData];
         }
+        if ([call.method isEqual: @"startImageDownload"]){
+            [STMCorePicturesController.sharedController checkPhotos];
+            STMCorePicturesController.sharedController.downloadingPictures = YES;
+        }
+        if ([call.method isEqual: @"stopImageDownload"]){
+            STMCorePicturesController.sharedController.downloadingPictures = NO;
+        }
     }];
     
     [STMFunctions stringFromNow];

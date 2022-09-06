@@ -46,4 +46,6 @@
 
 - (AnyPromise *)loadImageForPrimaryKey:(NSString *)identifier;
 
+- (void)updatePictureInfo;
+
 @end
