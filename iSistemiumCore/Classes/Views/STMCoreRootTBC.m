@@ -318,14 +318,13 @@
     NSString *name = parameters[@"name"];
     NSString *title = parameters[@"title"];
     NSString *imageName = parameters[@"imageName"];
-        
-    NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:@"storyboardc"];
-    
+            
     UIViewController *vc;
     
     title = (title) ? title : name;
     
-    if ([name hasPrefix:@"STMProfile"] || [name hasPrefix:@"STMAuth"]) {
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+    if ([name hasPrefix:@"STMProfile"]) {
         [self showTabBar];
         vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
     } else {
@@ -336,6 +335,18 @@
         
         vc = [storyboard instantiateInitialViewController];
     }
+    #else
+    if ([name hasPrefix:@"STMProfile"] || [name hasPrefix:@"STMAuth"]) {
+        vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
+    } else {
+        [self.storyboardTitles addObject:title];
+        
+        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:name bundle:nil];
+        storyboard.parameters = parameters;
+        
+        vc = [storyboard instantiateInitialViewController];
+    }
+    #endif
     
     vc.title = title;
     
@@ -466,20 +477,10 @@
 - (void)setupTabs:(NSArray *)stcTabs {
     
     if ([STMCoreAuthController sharedAuthController].controllerState != STMAuthSuccess) {
-        
-    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
-
-        [self registerTabWithStoryboardParameters:@{@"name": @"STMAuthOld",
-                                                    @"title": NSLocalizedString(@"AUTHORIZATION", nil),
-                                                    @"imageName": @"password2-128.png"} atIndex:0];
-                                        
-    #else
 
         [self registerTabWithStoryboardParameters:@{@"name": @"STMAuth",
                                                     @"title": NSLocalizedString(@"AUTHORIZATION", nil),
                                                     @"imageName": @"password2-128.png"} atIndex:0];
-
-    #endif
         
     } else {
         

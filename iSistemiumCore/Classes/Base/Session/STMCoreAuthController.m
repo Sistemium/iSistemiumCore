@@ -514,10 +514,6 @@
     }
     
     if (checkValue){
-        dispatch_async(dispatch_get_main_queue(), ^{
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"validPassword" arguments:nil];
-        });
         self.controllerState = STMAuthRequestRoles;
     } else {
         self.controllerState = STMAuthEnterPhoneNumber;
@@ -1087,6 +1083,11 @@
         
         #if defined (CONFIGURATION_DebugVfs)
         
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"validPassword" arguments:@{@"name": responseJSON[@"account"][@"name"]}];
+            });
+        
             self.accountOrg = @"vfsd";
             self.userID = responseJSON[@"account"][@"id"];
             self.userName = responseJSON[@"account"][@"name"];
@@ -1118,6 +1119,11 @@
             ];
         
         #elif defined (CONFIGURATION_ReleaseVfs)
+        
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"validPassword" arguments:@{@"name": responseJSON[@"account"][@"name"]}];
+            });
         
             self.accountOrg = @"vfs";
             self.userID = responseJSON[@"account"][@"id"];
