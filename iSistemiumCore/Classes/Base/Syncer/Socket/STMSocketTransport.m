@@ -188,6 +188,7 @@
         
         if ([event.event isEqualToString:@"error"]) {
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod setupError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
             });

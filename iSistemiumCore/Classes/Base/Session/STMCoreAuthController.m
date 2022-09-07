@@ -727,6 +727,7 @@
                                                               userInfo:@{@"error": @"No connection"}];
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod loginError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
             });
@@ -739,6 +740,7 @@
 
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod loginError");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"WRONG PHONE NUMBER", nil)];
         });
@@ -768,6 +770,7 @@
                                                               userInfo:@{@"error": NSLocalizedString(@"NO CONNECTION", nil)}];
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod loginError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
             });
@@ -865,6 +868,7 @@
     } else {
                 
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod loginError");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
         });
@@ -1016,6 +1020,7 @@
         case STMAuthEnterPhoneNumber: {
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod validPhoneNumber");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"validPhoneNumber" arguments:nil];
             });
@@ -1036,6 +1041,7 @@
             self.accessToken = responseJSON[@"accessToken"];
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod validPassword");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"validPassword" arguments:responseJSON];
             });
@@ -1080,10 +1086,11 @@
     if (roles) {
 
         self.rolesResponse = responseJSON;
-        
+                
         #if defined (CONFIGURATION_DebugVfs)
         
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod validPassword");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"validPassword" arguments:@{@"name": responseJSON[@"account"][@"name"]}];
             });
@@ -1121,6 +1128,7 @@
         #elif defined (CONFIGURATION_ReleaseVfs)
         
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod validPassword");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"validPassword" arguments:@{@"name": responseJSON[@"account"][@"name"]}];
             });
@@ -1210,6 +1218,7 @@
             errorString = NSLocalizedString(@"WRONG PHONE NUMBER", nil);
             self.controllerState = STMAuthEnterPhoneNumber;
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod loginError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"loginError" arguments:errorString];
             });
@@ -1218,6 +1227,7 @@
 
             errorString = NSLocalizedString(@"WRONG SMS CODE", nil);
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod loginError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"loginError" arguments:errorString];
             });
@@ -1227,6 +1237,7 @@
             
             errorString = [NSLocalizedString(@"ROLES REQUEST ERROR", nil) stringByAppendingString:errorString];
             dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod loginError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"loginError" arguments:errorString];
             });

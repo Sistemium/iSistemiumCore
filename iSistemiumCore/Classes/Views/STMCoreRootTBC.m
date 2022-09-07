@@ -325,7 +325,6 @@
     
     #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
     if ([name hasPrefix:@"STMProfile"]) {
-        [self showTabBar];
         vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
     } else {
         [self.storyboardTitles addObject:title];

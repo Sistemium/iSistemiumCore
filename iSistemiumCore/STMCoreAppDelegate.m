@@ -79,6 +79,9 @@
         if ([call.method isEqual: @"stopImageDownload"]){
             STMCorePicturesController.sharedController.downloadingPictures = NO;
         }
+        if ([call.method isEqual: @"initialLoadingCompleted"]){
+            [STMCoreRootTBC.sharedRootVC showTabBar];
+        }
     }];
     
     [STMFunctions stringFromNow];

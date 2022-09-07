@@ -647,6 +647,7 @@
     self.isDefantomizing = NO;
     if (self.socketTransport.isReady){
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod finishSetup");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"finishSetup" arguments:nil];
             [STMCoreRootTBC.sharedRootVC showTabBar];

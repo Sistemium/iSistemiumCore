@@ -949,6 +949,7 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"flutter invokeMethod imageInfo");
         FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
         [channel invokeMethod:@"imageInfo" arguments:title];
     });

@@ -264,6 +264,7 @@
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod setupError");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
         });
@@ -286,6 +287,7 @@
     if (queue == nil){
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod setupError");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
         });
@@ -293,6 +295,7 @@
     } else {
         
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"flutter invokeMethod setSetupProgress");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"setSetupProgress" arguments:[[NSNumber numberWithFloat:(totalEntityCount - remainCount) / totalEntityCount * 0.99] stringValue]];
         });
