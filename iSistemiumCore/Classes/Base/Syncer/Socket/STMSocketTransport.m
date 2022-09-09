@@ -192,11 +192,6 @@
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
             });
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-                [channel invokeMethod:@"setupError" arguments:@""];
-            });
         }
 
         for (id item in event.items) NSLog(@"    %@", item);

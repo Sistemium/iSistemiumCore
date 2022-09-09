@@ -209,7 +209,7 @@ NSUInteger fantomsCount = 100;
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"flutter invokeMethod setupError");
         FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-        [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+        [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
     });
 
     NSLog(@"defantomize %@ %@ error: %@", entityName, identifier, errorString.length ? errorString : @"no description");
