@@ -203,9 +203,7 @@
         self.tabBar.scrollEdgeAppearance = [[UITabBarAppearance alloc] initWithBarAppearance:barAppearance];
         self.tabBar.translucent = YES;
     }
-    
-    [self hideTabBar];
-    
+        
 }
 
 - (void)prepareTabs {

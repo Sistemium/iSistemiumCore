@@ -268,6 +268,11 @@
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
         });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+            [channel invokeMethod:@"setupError" arguments:@""];
+        });
     }
 
     STMDownloadingQueue *queue = self.downloadingState.queue;

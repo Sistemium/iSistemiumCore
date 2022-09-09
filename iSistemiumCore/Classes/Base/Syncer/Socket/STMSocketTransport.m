@@ -186,11 +186,16 @@
         NSLog(@"%@ %@ ___ event %@", self.socket, self.socket.sid, event.event);
         NSLog(@"%@ %@ ___ items (", self.socket, self.socket.sid);
         
-        if ([event.event isEqualToString:@"error"]) {
+        if ([event.event isEqualToString:@"error"] || [event.event isEqualToString:@"disconnect"]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSLog(@"flutter invokeMethod setupError");
                 FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
                 [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+            });
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"setupError" arguments:@""];
             });
         }
 

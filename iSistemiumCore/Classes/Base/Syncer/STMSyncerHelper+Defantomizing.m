@@ -205,6 +205,12 @@ NSUInteger fantomsCount = 100;
 
 
 - (void)defantomizedEntityName:(NSString *)entityName identifier:(NSString *)identifier errorString:(NSString *)errorString {
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"flutter invokeMethod setupError");
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
+    });
 
     NSLog(@"defantomize %@ %@ error: %@", entityName, identifier, errorString.length ? errorString : @"no description");
 

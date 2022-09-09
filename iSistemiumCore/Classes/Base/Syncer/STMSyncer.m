@@ -650,7 +650,6 @@
             NSLog(@"flutter invokeMethod finishSetup");
             FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
             [channel invokeMethod:@"finishSetup" arguments:nil];
-            [STMCoreRootTBC.sharedRootVC showTabBar];
         });
     }
 }
