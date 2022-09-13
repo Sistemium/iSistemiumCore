@@ -549,17 +549,7 @@
     if (maxBuild && ([modelVersion integerValue] > [maxBuild integerValue])) return;
     if (minOS && (SYSTEM_VERSION < [minOS integerValue])) return;
 
-    BOOL isDebug = [parameters[@"ifdef"] isEqualToString:@"DEBUG"];
-
-    if (isDebug) {
-#ifdef DEBUG
-        [self registerTabWithStoryboardParameters:parameters atIndex:index];
-#endif
-    } else {
-        
-        [self registerTabWithStoryboardParameters:parameters atIndex:index];
-        
-    }
+    [self registerTabWithStoryboardParameters:parameters atIndex:index];
 
 }
 
