@@ -734,21 +734,6 @@
         }
         
     }
-    
-    NSComparator frameComparator = ^NSComparisonResult(id obj1, id obj2) {
-        
-        CGRect frame1 = [(UIView *)obj1 frame];
-        CGRect frame2 = [(UIView *)obj2 frame];
-        
-        if (frame1.origin.x > frame2.origin.x) return (NSComparisonResult)NSOrderedDescending;
-        
-        if (frame1.origin.x < frame2.origin.x) return (NSComparisonResult)NSOrderedAscending;
-        
-        return (NSComparisonResult)NSOrderedSame;
-        
-    };
-    
-    [tabBarControlsArray sortUsingComparator:frameComparator];
 
     return tabBarControlsArray;
     
