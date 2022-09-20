@@ -60,11 +60,8 @@
         if ([call.method isEqual: @"demoAuth"]){
             [CoreAuthController demoAuth];
         }
-        if ([call.method isEqual: @"sendPhone"]){
-            [CoreAuthController sendPhoneNumberWithPhoneNumber:call.arguments];
-        }
-        if ([call.method isEqual: @"sendPassword"]){
-            [CoreAuthController sendSMSCodeWithSMSCode:call.arguments];
+        if ([call.method isEqual: @"startSyncer"]){
+            [STMCoreAuthController.sharedAuthController startSession];
         }
         if ([call.method isEqual: @"logout"]){
             [STMCoreAuthController.sharedAuthController logout];

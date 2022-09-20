@@ -44,4 +44,6 @@
 
 - (void)processRoles:(NSDictionary *)responseJSON;
 
+- (void)startSession;
+
 @end

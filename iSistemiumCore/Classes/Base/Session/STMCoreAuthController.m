@@ -724,12 +724,6 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"authControllerError"
                                                                 object:self
                                                               userInfo:@{@"error": @"No connection"}];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSLog(@"flutter invokeMethod loginError");
-                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-                [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"NO CONNECTION", nil)];
-            });
 
             [STMFunctions setNetworkActivityIndicatorVisible:NO];
 
@@ -738,11 +732,6 @@
         }
 
     } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSLog(@"flutter invokeMethod loginError");
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"loginError" arguments:NSLocalizedString(@"WRONG PHONE NUMBER", nil)];
-        });
         return NO;
     }
 
@@ -802,7 +791,7 @@
     if (self.stcTabs) {
 
         self.controllerState = STMAuthSuccess;
-
+ 
         [self startSession];
 
     }
@@ -1017,12 +1006,6 @@
     switch (self.controllerState) {
 
         case STMAuthEnterPhoneNumber: {
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSLog(@"flutter invokeMethod validPhoneNumber");
-                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-                [channel invokeMethod:@"validPhoneNumber" arguments:nil];
-            });
             
             self.requestID = responseJSON[@"ID"];
             self.controllerState = STMAuthEnterSMSCode;
