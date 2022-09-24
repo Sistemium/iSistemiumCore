@@ -475,7 +475,7 @@
 
     if ([self.phoneNumber isEqualToString:keychainPhoneNumber]) {
 
-        [self checkAccessToken];
+//        [self checkAccessToken];
 
     } else {
 

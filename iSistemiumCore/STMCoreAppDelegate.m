@@ -55,12 +55,22 @@
     self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
-        
+         
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"demoAuth"]){
             [CoreAuthController demoAuth];
         }
         if ([call.method isEqual: @"startSyncer"]){
+            NSDictionary * arguments = [call arguments];
+            STMCoreAuthController.sharedAuthController.userName = arguments[@"userName"];
+            STMCoreAuthController.sharedAuthController.phoneNumber = arguments[@"phoneNumber"];
+            STMCoreAuthController.sharedAuthController.accessToken = arguments[@"accessToken"];
+            STMCoreAuthController.sharedAuthController.userID = arguments[@"id"];
+            STMCoreAuthController.sharedAuthController.entityResource = arguments[@"redirectUri"];
+            STMCoreAuthController.sharedAuthController.socketURL = arguments[@"apiUrl"];
+            STMCoreAuthController.sharedAuthController.accountOrg = arguments[@"accountOrg"];
+            STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
+            STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
             [STMCoreAuthController.sharedAuthController startSession];
         }
         if ([call.method isEqual: @"logout"]){
