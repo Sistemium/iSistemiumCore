@@ -71,6 +71,7 @@
             STMCoreAuthController.sharedAuthController.accountOrg = arguments[@"accountOrg"];
             STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
             STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
+            [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
             [STMCoreAuthController.sharedAuthController startSession];
         }
         if ([call.method isEqual: @"logout"]){
