@@ -51,6 +51,7 @@
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
     self.flutterViewController =
         [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
+    self.flutterViewController.view.backgroundColor = [UIColor whiteColor];
     
     self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
