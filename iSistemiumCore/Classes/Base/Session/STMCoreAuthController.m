@@ -543,6 +543,7 @@
     self.stcTabs = nil;
     self.iSisDB = nil;
     self.isDemo = false;
+    self.rolesResponse = nil;
     [STMKeychain deleteValueForKey:KC_PHONE_NUMBER];
 
 }
