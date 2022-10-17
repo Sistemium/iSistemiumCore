@@ -47,7 +47,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     self.flutterEngine = [[FlutterEngine alloc] initWithName:@"my flutter engine"];
-    [self.flutterEngine run];
+    [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"--dart-define=test=yourDataHere"]];
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
     self.flutterViewController =
         [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
@@ -56,6 +56,12 @@
     self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
+    
+    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+        [self.flutterChannel invokeMethod:@"setConfig" arguments:@"vfs"];
+    #else
+        [self.flutterChannel invokeMethod:@"setConfig" arguments:@"iSisSales"];
+    #endif
          
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"demoAuth"]){

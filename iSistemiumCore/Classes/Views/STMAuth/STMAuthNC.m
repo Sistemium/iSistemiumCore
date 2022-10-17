@@ -85,17 +85,7 @@
 
         case STMAuthEnterPhoneNumber:
             
-            #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
-            
-                [self setNavigationBarHidden:YES animated:NO];
-            
-                [self setViewControllers:@[self.webVC] animated:YES];
-                                                
-            #else
-            
-                [self setViewControllers:@[self.phoneVC] animated:YES];
-            
-            #endif
+            [self setViewControllers:@[self.phoneVC] animated:YES];
             
             break;
             

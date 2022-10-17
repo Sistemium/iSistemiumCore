@@ -321,18 +321,6 @@
     
     title = (title) ? title : name;
     
-    #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
-    if ([name hasPrefix:@"STMProfile"]) {
-        vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
-    } else {
-        [self.storyboardTitles addObject:title];
-        
-        STMStoryboard *storyboard = [STMStoryboard storyboardWithName:name bundle:nil];
-        storyboard.parameters = parameters;
-        
-        vc = [storyboard instantiateInitialViewController];
-    }
-    #else
     if ([name hasPrefix:@"STMProfile"] || [name hasPrefix:@"STMAuth"]) {
         vc = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController];
     } else {
@@ -343,7 +331,6 @@
         
         vc = [storyboard instantiateInitialViewController];
     }
-    #endif
     
     vc.title = title;
     

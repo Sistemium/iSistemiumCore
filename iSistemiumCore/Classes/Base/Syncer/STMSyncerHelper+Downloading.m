@@ -263,11 +263,13 @@
     if (errorMessage) {
         [self logErrorMessage:[NSString stringWithFormat:@"doneDownloadingEntityName error: %@", errorMessage]];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSLog(@"flutter invokeMethod setupError");
-            FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
-            [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
-        });
+        if (![errorMessage isEqualToString:@"Not Found"]){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"flutter invokeMethod setupError");
+                FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+                [channel invokeMethod:@"setupError" arguments:NSLocalizedString(@"INITIAL LOADING ERROR", nil)];
+            });
+        }
     }
 
     STMDownloadingQueue *queue = self.downloadingState.queue;
