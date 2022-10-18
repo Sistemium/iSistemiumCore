@@ -75,6 +75,7 @@
             STMCoreAuthController.sharedAuthController.accountOrg = arguments[@"accountOrg"];
             STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
             STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
+            STMCoreAuthController.sharedAuthController.rolesResponse = arguments[@"rolesResponse"];
             [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
             [STMCoreAuthController.sharedAuthController startSession];
         }
