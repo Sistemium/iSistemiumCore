@@ -65,6 +65,10 @@
             [CoreAuthController demoAuth];
         }
         if ([call.method isEqual: @"startSyncer"]){
+            [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
+            [STMCoreAuthController.sharedAuthController startSession];
+        }
+        if ([call.method isEqual: @"completeAuth"]){
             NSDictionary * arguments = [call arguments];
             STMCoreAuthController.sharedAuthController.userName = arguments[@"userName"];
             STMCoreAuthController.sharedAuthController.phoneNumber = arguments[@"phoneNumber"];
@@ -76,8 +80,6 @@
             STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
             STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
             STMCoreAuthController.sharedAuthController.rolesResponse = arguments[@"rolesResponse"];
-            [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
-            [STMCoreAuthController.sharedAuthController startSession];
         }
         if ([call.method isEqual: @"logout"]){
             [STMCoreAuthController.sharedAuthController logout];
