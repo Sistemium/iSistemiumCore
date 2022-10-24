@@ -49,6 +49,8 @@
     self.flutterEngine = [[FlutterEngine alloc] initWithName:@"my flutter engine"];
     #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfs"]];
+    #elif defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
+        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfsClient"]];
     #else
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"iSisSales"]];
     #endif
