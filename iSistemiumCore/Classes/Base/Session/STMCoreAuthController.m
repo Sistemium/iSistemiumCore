@@ -60,6 +60,7 @@
 @synthesize iSisDB = _iSisDB;
 @synthesize rolesResponse = _rolesResponse;
 @synthesize isDemo = _isDemo;
+@synthesize accountOrg = _accountOrg;
 
 
 #pragma mark - singletone init
@@ -458,9 +459,36 @@
 - (NSString *)accountOrg {
 
     if (!_accountOrg) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        id accountOrg = [defaults objectForKey:@"accountOrg"];
+
+        if ([accountOrg isKindOfClass:[NSString class]]) {
+            _accountOrg = accountOrg;
+            NSLog(@"accountOrg %@", accountOrg);
+        }
+
+    }
+    
+    if (!_accountOrg) {
         _accountOrg = self.rolesResponse[@"roles"][@"org"];
     }
+
     return _accountOrg;
+
+}
+
+- (void)setAccountOrg:(NSString *)accountOrg {
+
+    if (accountOrg != _accountOrg) {
+
+        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
+        [defaults setObject:accountOrg forKey:@"accountOrg"];
+        [defaults synchronize];
+
+        _accountOrg = accountOrg;
+
+    }
 
 }
 
