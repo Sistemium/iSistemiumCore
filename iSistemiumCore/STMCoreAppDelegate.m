@@ -63,9 +63,6 @@
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
-        if ([call.method isEqual: @"demoAuth"]){
-            [CoreAuthController demoAuth];
-        }
         if ([call.method isEqual: @"startSyncer"]){
             [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
             [STMCoreAuthController.sharedAuthController startSession];
@@ -95,12 +92,6 @@
         }
         if ([call.method isEqual: @"stopImageDownload"]){
             STMCorePicturesController.sharedController.downloadingPictures = NO;
-        }
-        if ([call.method isEqual: @"showTabs"]){
-            [STMCoreRootTBC.sharedRootVC showTabBar];
-        }
-        if ([call.method isEqual: @"hideTabs"]){
-            [STMCoreRootTBC.sharedRootVC hideTabBar];
         }
     }];
     
@@ -569,7 +560,7 @@
         
     }
     
-    self.window.rootViewController = [STMCoreRootTBC sharedRootVC];
+    self.window.rootViewController = [self flutterViewController];
     
     [self.window makeKeyAndVisible];
 
