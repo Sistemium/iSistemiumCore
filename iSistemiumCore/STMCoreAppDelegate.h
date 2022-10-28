@@ -29,6 +29,7 @@
 
 
 - (void)setupWindow;
+- (void)goFlutter;
 
 - (void)completeFetchCompletionHandlersWithResult:(UIBackgroundFetchResult)result;
 

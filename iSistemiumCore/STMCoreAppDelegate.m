@@ -93,6 +93,12 @@
         if ([call.method isEqual: @"stopImageDownload"]){
             STMCorePicturesController.sharedController.downloadingPictures = NO;
         }
+        if ([call.method isEqual: @"loadURL"]){
+            NSDictionary * arguments = [call arguments];
+            STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMWKWebView" bundle:nil];
+            storyboard.parameters = arguments;
+            self.window.rootViewController = [storyboard instantiateInitialViewController];
+        }
     }];
     
     [STMFunctions stringFromNow];
@@ -564,6 +570,12 @@
     
     [self.window makeKeyAndVisible];
 
+}
+
+- (void)goFlutter {
+    NSLog(@"flutter invokeMethod handleTabbarMessage");
+    [self.flutterChannel invokeMethod:@"handleTabbarMessage" arguments:nil];
+    self.window.rootViewController = [self flutterViewController];
 }
 
 - (void)setupUITests {

@@ -8,6 +8,7 @@
 #import "STMCoreAuthController.h"
 #import "STMRemoteController.h"
 #import "STMCoreRootTBC.h"
+#import "STMCoreAppDelegate.h"
 
 @implementation STMCoreWKWebViewVC (ScriptMessaging)
 
@@ -278,22 +279,23 @@
     }
 
     NSDictionary *parameters = message.body;
-
+    
     NSString *action = parameters[@"action"];
 
     if ([action isEqualToString:@"show"]) {
 
         CGFloat tabbarHeight = CGRectGetHeight(self.tabBarController.tabBar.frame);
-        
+
         self.bottomConstraint.constant = tabbarHeight;
-        
+
         [[STMCoreRootTBC sharedRootVC] showTabBar];
         
+        [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate goFlutter];
 
     } else if ([action isEqualToString:@"hide"]) {
 
         if (self.isInActiveTab) {
-            
+
             self.bottomConstraint.constant = 0;
 
             [[STMCoreRootTBC sharedRootVC] hideTabBar];
