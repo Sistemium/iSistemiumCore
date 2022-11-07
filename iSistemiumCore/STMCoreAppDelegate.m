@@ -106,10 +106,6 @@
     [self sessionManager];
 
     [self startAuthController];
-    
-    if ([STMCoreAuthController sharedAuthController].isDemo){
-        [STMCoreAuthController.sharedAuthController logout];
-    }
 
     [self setupWindow];
 
