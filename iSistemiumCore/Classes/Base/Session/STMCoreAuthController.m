@@ -612,6 +612,42 @@
 
 }
 
++ (NSString *)configuration {
+
+    NSString *dataModelName = @"";
+
+#if defined (CONFIGURATION_DebugSales) || defined (CONFIGURATION_ReleaseSales) || defined (CONFIGURATION_DebugSalesApple) || defined (CONFIGURATION_ReleaseSalesApple)
+
+    NSLog(@"USE SALES DATA MODEL");
+    dataModelName = @"sissales";
+
+#endif
+
+#if defined (CONFIGURATION_DebugWarehouse) || defined (CONFIGURATION_ReleaseWarehouse) || defined (CONFIGURATION_DebugWarehouseApple) || defined (CONFIGURATION_ReleaseWarehouseApple)
+
+    NSLog(@"USE WAREHOUSE DATA MODEL");
+    dataModelName = @"siswarehouse";
+
+#endif
+    
+#if defined (CONFIGURATION_DebugDriver) || defined (CONFIGURATION_ReleaseDriver) || defined (CONFIGURATION_DebugDriverApple) || defined (CONFIGURATION_ReleaseDriverApple)
+    
+    NSLog(@"USE DRIVER DATA MODEL");
+    dataModelName = @"sisdriver";
+    
+#endif
+    
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+    
+    NSLog(@"USE VFS DATA MODEL");
+    dataModelName = @"vfs";
+    
+#endif
+
+    return dataModelName;
+
+}
+
 - (void)startSession {
 
 #if defined CONFIGURATION_DebugWarehouse || CONFIGURATION_DebugShipping

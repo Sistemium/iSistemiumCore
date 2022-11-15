@@ -11,6 +11,9 @@
 #import "STMCoreSessionFiler.h"
 #import "STMCoreObjectsController.h"
 #import "STMCoreAuthController.h"
+#import "STMCoreAppDelegate.h"
+#import "GeneratedPluginRegistrant.h"
+
 
 #define STM_MODEL_REQUEST_TIMEOUT 3;
 
@@ -307,9 +310,13 @@ NSTimer *flushTimer;
     
     if ([STMCoreAuthController sharedAuthController].isDemo){
         NSString *model = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
-        NSString *bundledModelFile = [self.filing bundledModelFile:model];
+                        
+        NSString* key = [[(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController]
+                         lookupKeyForAsset: [NSString stringWithFormat:@"assets/demo/%@/model.json", [STMCoreAuthController configuration]]];
+        NSString* path = [[NSBundle mainBundle] pathForResource:key ofType:nil];
+        
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
-            resolve(bundledModelFile);
+            resolve(path);
         }];
     }
     

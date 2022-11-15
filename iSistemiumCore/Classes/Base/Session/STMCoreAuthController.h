@@ -32,6 +32,8 @@
 
 - (NSString *)dataModelName;
 
++ (NSString *)configuration;
+
 - (BOOL)sendPhoneNumber:(NSString *)phoneNumber;
 
 - (BOOL)sendSMSCode:(NSString *)SMSCode;
