@@ -309,14 +309,13 @@ NSTimer *flushTimer;
 - (AnyPromise *)downloadModel {
     
     if ([STMCoreAuthController sharedAuthController].isDemo){
+        
         NSString *model = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
                         
-        NSString* key = [[(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController]
-                         lookupKeyForAsset: [NSString stringWithFormat:@"assets/demo/%@/model.json", [STMCoreAuthController configuration]]];
-        NSString* path = [[NSBundle mainBundle] pathForResource:key ofType:nil];
+        NSString *bundledModelFile = [self.filing bundledModelFile:model];
         
         return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
-            resolve(path);
+            resolve(bundledModelFile);
         }];
     }
     

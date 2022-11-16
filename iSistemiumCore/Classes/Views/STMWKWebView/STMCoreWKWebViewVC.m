@@ -20,7 +20,7 @@
 
 #import "STMFunctions.h"
 #import "STMCoreUI.h"
-
+#import "STMCoreAppDelegate.h"
 
 
 
@@ -256,17 +256,19 @@
     NSString *ownerName = self.webViewStoryboardParameters[@"name"];
     NSString *ownerTitle = self.webViewStoryboardParameters[@"title"];
 
-    NSString *sourcePath = [NSString pathWithComponents:@[[[NSBundle mainBundle] resourcePath], @"DEMO", ownerTitle]];
+    NSString* key = [[(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController]
+                            lookupKeyForAsset: [NSString stringWithFormat:@"assets/demo/%@/%@", [STMCoreAuthController configuration], [ownerTitle stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]]];
+    NSString* path = [[NSBundle mainBundle] pathForResource:key ofType:nil];
     
     NSString *destPath = [NSString pathWithComponents:@[ownerName, ownerTitle]];
 
     destPath = [self.filer webViewsPath:destPath];
     
-    NSArray* resContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:sourcePath error:nil];
+    NSArray* resContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
     
     for (NSString* obj in resContents){
         NSError* error;
-        if (![[NSFileManager defaultManager] copyItemAtPath:[sourcePath stringByAppendingPathComponent:obj] toPath:[destPath stringByAppendingPathComponent:obj] error:&error]) {
+        if (![[NSFileManager defaultManager] copyItemAtPath:[path stringByAppendingPathComponent:obj] toPath:[destPath stringByAppendingPathComponent:obj] error:&error]) {
             NSLog(@"Error: %@", error);;
         }
     }

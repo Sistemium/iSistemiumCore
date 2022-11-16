@@ -25,6 +25,7 @@
 
 #import "STMPersisterFantoms.h"
 #import "STMPersisterRunner.h"
+#import "STMCoreAppDelegate.h"
 
 #define FMDB_PATH @"fmdb"
 
@@ -43,8 +44,12 @@
     
     if ([STMCoreAuthController sharedAuthController].isDemo){
         NSString *db = [NSString pathWithComponents:@[@"DEMO", @"DEMO"]];
-        NSString *sourcePath = [[NSBundle mainBundle] pathForResource:db ofType:@"db"];
-        [[NSFileManager defaultManager] copyItemAtPath:sourcePath toPath:fmdbPath error:nil];
+        NSString* key = [[(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterViewController]
+                         lookupKeyForAsset: [NSString stringWithFormat:@"assets/demo/%@/DEMO.db", [STMCoreAuthController configuration]]];
+        NSString* path = [[NSBundle mainBundle] pathForResource:key ofType:nil];
+        [[NSFileManager defaultManager] copyItemAtPath:path toPath:fmdbPath error:nil];
+        
+        
     }
     
     NSManagedObjectModel *model = [STMModeller modelWithPath:modelPath];
