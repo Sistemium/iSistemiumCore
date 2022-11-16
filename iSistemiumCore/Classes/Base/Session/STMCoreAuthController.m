@@ -133,35 +133,6 @@
 
 }
 
-- (BOOL)isDemo {
-
-    if (!_isDemo) {
-
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        BOOL demo = [defaults boolForKey:@"isDemo"];
-        
-        _isDemo = demo;
-
-    }
-
-    return _isDemo;
-
-}
-
-- (void)setIsDemo:(BOOL)demo {
-
-    if (_isDemo != demo) {
-
-        STMUserDefaults *defaults = [STMUserDefaults standardUserDefaults];
-        [defaults setBool:demo forKey:@"isDemo"];
-        [defaults synchronize];
-
-        _isDemo = demo;
-
-    }
-
-}
-
 - (NSString *)userName {
 
     if (!_userName) {

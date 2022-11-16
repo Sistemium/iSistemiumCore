@@ -79,7 +79,7 @@
             STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
             STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
             STMCoreAuthController.sharedAuthController.rolesResponse = arguments[@"rolesResponse"];
-            STMCoreAuthController.sharedAuthController.isDemo = arguments[@"isDemo"];
+            STMCoreAuthController.sharedAuthController.isDemo = [arguments[@"isDemo"] boolValue];
         }
         if ([call.method isEqual: @"logout"]){
             [STMCoreAuthController.sharedAuthController logout];
