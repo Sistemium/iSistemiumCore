@@ -52,7 +52,7 @@
     #elif defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfsClient"]];
     #else
-        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"iSisSales"]];
+        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"SisSales"]];
     #endif
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
     self.flutterViewController =
