@@ -310,8 +310,6 @@
     NSString *logMessage = [NSString stringWithFormat:@"applicationDidBecomeActive"];
     [[STMLogger sharedLogger] infoMessage:logMessage];
 
-    [self setupWindow];
-
     id <STMSession> session = [self sessionManager].currentSession;
 
     if (session.status == STMSessionRunning) {
