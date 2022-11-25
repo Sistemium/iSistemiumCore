@@ -50,7 +50,7 @@
     #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfs"]];
     #elif defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
-        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfsClient"]];
+        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfsc"]];
     #else
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"SisSales"]];
     #endif
