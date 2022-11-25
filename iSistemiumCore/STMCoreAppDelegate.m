@@ -62,6 +62,19 @@
     self.flutterChannel = [FlutterMethodChannel
                                               methodChannelWithName:@"com.sistemium.flutterchanel"
                                               binaryMessenger:self.flutterViewController.binaryMessenger];
+    [self.flutterChannel invokeMethod:@"ensureUpgrade" arguments:@{
+        @"userName": STMCoreAuthController.sharedAuthController.userName,
+        @"phoneNumber": STMCoreAuthController.sharedAuthController.phoneNumber,
+        @"accessToken": STMCoreAuthController.sharedAuthController.accessToken,
+        @"id": STMCoreAuthController.sharedAuthController.userID,
+        @"redirectUri": STMCoreAuthController.sharedAuthController.entityResource,
+//        @"apiUrl": STMCoreAuthController.sharedAuthController.socketURL,
+        @"accountOrg": STMCoreAuthController.sharedAuthController.accountOrg,
+        @"iSisDB": STMCoreAuthController.sharedAuthController.iSisDB,
+        @"stcTabs": STMCoreAuthController.sharedAuthController.stcTabs,
+        @"rolesResponse": STMCoreAuthController.sharedAuthController.rolesResponse,
+        @"isDemo": STMCoreAuthController.sharedAuthController.isDemo,
+    }];
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"startSyncer"]){
             [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
