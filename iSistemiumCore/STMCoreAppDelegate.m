@@ -72,8 +72,7 @@
         @"accountOrg": STMCoreAuthController.sharedAuthController.accountOrg ?: [NSNull null],
         @"iSisDB": STMCoreAuthController.sharedAuthController.iSisDB ?: [NSNull null],
         @"stcTabs": STMCoreAuthController.sharedAuthController.stcTabs ?: [NSNull null],
-        @"rolesResponse": STMCoreAuthController.sharedAuthController.rolesResponse ?: [NSNull null],
-        @"isDemo": [NSNumber numberWithBool:STMCoreAuthController.sharedAuthController.isDemo]
+        @"rolesResponse": STMCoreAuthController.sharedAuthController.rolesResponse ?: [NSNull null]
     }];
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"startSyncer"]){
