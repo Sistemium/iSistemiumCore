@@ -68,9 +68,7 @@
         @"accessToken": STMCoreAuthController.sharedAuthController.accessToken ?: [NSNull null],
         @"id": STMCoreAuthController.sharedAuthController.userID ?: [NSNull null],
         @"redirectUri": STMCoreAuthController.sharedAuthController.entityResource ?: [NSNull null],
-        @"apiUrl": STMCoreAuthController.sharedAuthController.socketURL ?: [NSNull null],
         @"accountOrg": STMCoreAuthController.sharedAuthController.accountOrg ?: [NSNull null],
-        @"iSisDB": STMCoreAuthController.sharedAuthController.iSisDB ?: [NSNull null],
         @"stcTabs": STMCoreAuthController.sharedAuthController.stcTabs ?: [NSNull null],
         @"rolesResponse": STMCoreAuthController.sharedAuthController.rolesResponse ?: [NSNull null]
     }];
@@ -86,9 +84,13 @@
             STMCoreAuthController.sharedAuthController.accessToken = arguments[@"accessToken"];
             STMCoreAuthController.sharedAuthController.userID = arguments[@"id"];
             STMCoreAuthController.sharedAuthController.entityResource = arguments[@"redirectUri"];
-            STMCoreAuthController.sharedAuthController.socketURL = arguments[@"apiUrl"];
+            if (arguments[@"apiUrl"] != @""){
+                STMCoreAuthController.sharedAuthController.socketURL = arguments[@"apiUrl"];
+            }
             STMCoreAuthController.sharedAuthController.accountOrg = arguments[@"accountOrg"];
-            STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
+            if (arguments[@"iSisDB"] != @""){
+                STMCoreAuthController.sharedAuthController.iSisDB = arguments[@"iSisDB"];
+            }
             STMCoreAuthController.sharedAuthController.stcTabs = arguments[@"stcTabs"];
             STMCoreAuthController.sharedAuthController.rolesResponse = arguments[@"rolesResponse"];
             STMCoreAuthController.sharedAuthController.isDemo = [arguments[@"isDemo"] boolValue];
