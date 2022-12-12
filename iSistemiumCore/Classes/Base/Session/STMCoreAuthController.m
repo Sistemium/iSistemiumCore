@@ -572,7 +572,7 @@
     
 #endif
     
-#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs) || defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
     
     NSLog(@"USE VFS DATA MODEL");
     dataModelName = @"vfs";
@@ -608,7 +608,7 @@
     
 #endif
     
-#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs) || defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
     
     NSLog(@"USE VFS DATA MODEL");
     dataModelName = @"vfs";

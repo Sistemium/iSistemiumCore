@@ -286,7 +286,7 @@ NSTimer *flushTimer;
     
     NSString *modelsRole = [STMCoreAuthController sharedAuthController].rolesResponse[@"roles"][@"models"];
 
-#if defined (CONFIGURATION_DebugVfs)
+#if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_DebugVfsClient)
     if (!modelsRole) {
         modelsRole = @"dev";
     }
