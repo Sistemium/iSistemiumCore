@@ -32,6 +32,7 @@
 
 #import <WebKit/WebKit.h>
 #import <FlutterPluginRegistrant/GeneratedPluginRegistrant.h>
+#import "STMCoreWKWebViewVC.h"
 
 @import Firebase;
 @import FirebaseCrashlytics;
@@ -113,6 +114,11 @@
             STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMWKWebView" bundle:nil];
             storyboard.parameters = arguments;
             self.window.rootViewController = [storyboard instantiateInitialViewController];
+        }
+        if ([call.method isEqual: @"findWithSocket"]){
+            NSDictionary * arguments = [call arguments];
+            STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMAuth" bundle:nil];
+            STMCoreWKWebViewVC *webVC = [storyboard instantiateViewControllerWithIdentifier:@"coreWKWebViewVC"];
         }
     }];
     
