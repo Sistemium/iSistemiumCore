@@ -43,6 +43,8 @@ typedef NS_ENUM(NSInteger, STMSessionStatus) {
 
 - (void)prepareToDestroy;
 
+- (AnyPromise *)findWithSocket:(NSDictionary *)params entityName:(NSString *)entityName predicate:(NSPredicate *)predicates;
+
 @end
 
 

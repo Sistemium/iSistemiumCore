@@ -42,5 +42,6 @@
 
 - (void)sendFindWithValue:(NSDictionary *)value;
 
+- (AnyPromise *)findWithSocket:(NSDictionary *)params entityName:(NSString *)entityName predicate:(NSPredicate *)predicates;
 
 @end

@@ -37,6 +37,25 @@
 @import Firebase;
 @import FirebaseCrashlytics;
 
+//@interface STMScriptMessage : WKScriptMessage
+//
+//@property (nonatomic,strong) NSString *nameSTM;
+//@property (nonatomic,strong) id bodySTM;
+//
+//@end
+//
+//@implementation STMScriptMessage
+//
+//- (NSString *)name {
+//    return self.nameSTM;
+//}
+//
+//- (id)body {
+//    return self.bodySTM;
+//}
+//
+//@end
+
 @interface STMCoreAppDelegate ()
 
 @property (nonatomic, strong) NSMutableArray *fetchCompletionHandlers;
@@ -73,6 +92,16 @@
         @"stcTabs": STMCoreAuthController.sharedAuthController.stcTabs ?: [NSNull null],
         @"rolesResponse": STMCoreAuthController.sharedAuthController.rolesResponse ?: [NSNull null]
     }];
+//    STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMAuth" bundle:nil];
+//    STMCoreWKWebViewVC *webVC = [storyboard instantiateViewControllerWithIdentifier:@"coreWKWebViewVC"];
+//    STMScriptMessage *message = [[STMScriptMessage alloc] init];
+////
+//    message.nameSTM = @"findAll";
+////            message.bodySTM = [STMFunctions setValue:requestId
+////                                              forKey:@"requestId"
+////                                        inDictionary:body];
+//    message.bodySTM = arguments;
+//    [webVC.scriptMessageHandler receiveFindMessage:message];
     [self.flutterChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
         if ([call.method isEqual: @"startSyncer"]){
             [STMCoreAuthController sharedAuthController].controllerState = STMAuthSuccess;
@@ -117,8 +146,15 @@
         }
         if ([call.method isEqual: @"findWithSocket"]){
             NSDictionary * arguments = [call arguments];
-            STMStoryboard *storyboard = [STMStoryboard storyboardWithName:@"STMAuth" bundle:nil];
-            STMCoreWKWebViewVC *webVC = [storyboard instantiateViewControllerWithIdentifier:@"coreWKWebViewVC"];
+            [self.syncer findWithSocket:@{} entityName:arguments[@"entity"] predicate:arguments[@"predicate"]].then(^(NSArray *response){
+                
+                result(response);
+                
+            }).catch(^(NSError *error){
+                
+                result(@[]);
+                
+            });
         }
     }];
     

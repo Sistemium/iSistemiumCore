@@ -898,4 +898,35 @@
 
 }
 
+- (AnyPromise *)findWithSocket:(NSDictionary *)params entityName:(NSString *)entityName predicate:(NSPredicate *)predicate{
+    
+    NSError *error;
+    
+    NSDictionary *socketOptions = @{
+                              @"params":params,
+                              @"pageSize": @(5000)
+                              };
+    
+    if (error) return [AnyPromise promiseWithValue:error];
+    
+    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
+        
+        [self.socketTransport findAllAsync:entityName predicate:predicate options:socketOptions completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
+            
+            id errorHeader = headers[@"error"];
+            
+            if (errorHeader) {
+                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
+            }
+            
+            if (error) {
+                resolve(error);
+            } else {
+                resolve(result);
+            }
+        }];
+        
+    }];
+}
+
 @end

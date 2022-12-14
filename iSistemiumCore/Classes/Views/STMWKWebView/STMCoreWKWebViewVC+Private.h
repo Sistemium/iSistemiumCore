@@ -41,7 +41,6 @@
 @property (nonatomic, strong) NSMutableDictionary *checkinMessageParameters;
 
 @property (nonatomic) BOOL waitingCheckinLocation;
-@property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
 
 @property (nonatomic, strong) NSString *lastUrl;
 @property (readonly) id <STMFiling> filer;

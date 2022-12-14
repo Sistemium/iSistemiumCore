@@ -19,6 +19,8 @@
 @property (nonatomic) BOOL haveLocalHTML;
 @property (nonatomic) NSString *directLoadUrl;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomConstraint;
+@property (nonatomic, strong) id <STMScriptMessaging> scriptMessageHandler;
+
 
 - (NSString *)webViewAppManifestURI;
 - (void)reloadWebView;

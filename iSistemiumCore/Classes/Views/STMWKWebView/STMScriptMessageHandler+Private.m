@@ -65,7 +65,9 @@
 - (AnyPromise *)findWithSocket:(WKScriptMessage *)scriptMessage entityName:(NSString *)entityName predicate:(NSPredicate *)predicate options:(NSDictionary *)options{
     
     NSError *error;
-
+    
+    NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
+    
     if (error) return [AnyPromise promiseWithValue:error];
 
     if ([self.modellingDelegate isConcreteEntityName:entityName]) {
@@ -84,32 +86,8 @@
         }
     }
     
-    NSDictionary *params = [self paramsForScriptMessage:scriptMessage error:&error];
-    NSDictionary *socketOptions = @{
-                              @"params":params,
-                              @"pageSize": @(5000)
-                              };
+    return [[STMCoreSessionManager sharedManager].currentSession.syncer findWithSocket:params entityName:entityName predicate:predicate];
     
-    if (error) return [AnyPromise promiseWithValue:error];
-    
-    return [AnyPromise promiseWithResolverBlock:^(PMKResolver resolve) {
-        
-        [self.socketTransport findAllAsync:entityName predicate:predicate options:socketOptions completionHandlerWithHeaders:^(BOOL success, NSArray *result, NSDictionary *headers, NSError *error) {
-            
-            id errorHeader = headers[@"error"];
-            
-            if (errorHeader) {
-                error = [STMFunctions errorWithMessage:[NSString stringWithFormat:@"%@", errorHeader]];
-            }
-            
-            if (error) {
-                resolve(error);
-            } else {
-                resolve(result);
-            }
-        }];
-        
-    }];
 }
 
 #pragma mark - find objects for WKWebView
