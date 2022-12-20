@@ -156,6 +156,18 @@
                 
             });
         }
+        if ([call.method isEqual: @"find"]){
+            NSDictionary * arguments = [call arguments];
+            [self.syncer.persistenceDelegate findAll:arguments[@"entity"] predicate:arguments[@"predicate"] options:nil].then(^(NSArray *response){
+                
+                result(response);
+                
+            }).catch(^(NSError *error){
+                
+                result(@[]);
+                
+            });
+        }
     }];
     
     [STMFunctions stringFromNow];
