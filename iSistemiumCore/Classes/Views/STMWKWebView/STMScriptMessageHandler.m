@@ -452,6 +452,8 @@
             return;
         }
         dispatch_async(dispatch_get_main_queue(), ^{
+            activityViewController.popoverPresentationController.sourceView = [self.owner view];
+            activityViewController.popoverPresentationController.permittedArrowDirections = 0;
             [self.owner presentViewController:activityViewController animated:YES completion:^{}];
         });
     }];
