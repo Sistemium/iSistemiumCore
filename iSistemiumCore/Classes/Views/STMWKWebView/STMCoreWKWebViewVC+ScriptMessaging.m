@@ -643,7 +643,7 @@ int counter = 0;
              symbology:(NSString *)symbology
               withType:(STMBarCodeScannedType)type {
 
-    if (!self.isInActiveTab || !barcode) {
+    if (!barcode) {
         return;
     }
 

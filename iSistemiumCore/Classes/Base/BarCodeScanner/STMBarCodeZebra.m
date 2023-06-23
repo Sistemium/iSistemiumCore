@@ -223,18 +223,16 @@
 
 }
 
-- (void)sbtEventBarcode:(NSString *)barcodeData barcodeType:(int)barcodeType fromScanner:(int)scannerID {
+- (void)sbtEventBarcodeData:(NSData*)barcodeData barcodeType:(int)barcodeType fromScanner:(int)scannerID {
 
     NSString *typeName = get_barcode_type_name(barcodeType);
+    
+    NSString *stringData = [[NSString alloc] initWithData:barcodeData encoding:NSUTF8StringEncoding];
 
-    NSLog(@"Got barcode: '%@' of type: '%@' from scannerId: %d", barcodeData, typeName, scannerID);
+    NSLog(@"Got barcode: '%@' of type: '%@' from scannerId: %d", barcodeData, typeName, scannerID);    
 
-    [self.stmScanningDelegate barCodeScanner:self receiveBarCode:barcodeData symbology:typeName withType:STMBarCodeTypeUnknown];
+    [self.stmScanningDelegate barCodeScanner:self receiveBarCode:stringData symbology:typeName withType:STMBarCodeTypeUnknown];
 
-}
-
-- (void)sbtEventBarcodeData:(NSData *)barcodeData barcodeType:(int)barcodeType fromScanner:(int)scannerID {
-    // Need to implement this because "sbtEventBarcode" is deprecated
 }
 
 - (void)sbtEventFirmwareUpdate:(FirmwareUpdateEvent *)fwUpdateEventObj {

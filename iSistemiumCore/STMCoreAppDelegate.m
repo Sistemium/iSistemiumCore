@@ -69,11 +69,12 @@
     self.flutterEngine = [[FlutterEngine alloc] initWithName:@"my flutter engine"];
     #if defined (CONFIGURATION_DebugVfs) || defined (CONFIGURATION_ReleaseVfs)
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfs"]];
-    #elif defined (CONFIGURATION_DebugVfsClient) || defined (CONFIGURATION_ReleaseVfsClient)
-        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"vfsc"]];
+    #elif defined (CONFIGURATION_DebugWarehouseApple) || defined (CONFIGURATION_ReleaseWarehouseApple)
+        [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"SisWarehouse"]];
     #else
         [self.flutterEngine runWithEntrypoint:nil libraryURI:nil initialRoute:nil entrypointArgs:@[@"SisSales"]];
     #endif
+    
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
     self.flutterViewController =
         [[FlutterViewController alloc] initWithEngine:self.flutterEngine nibName:nil bundle:nil];
