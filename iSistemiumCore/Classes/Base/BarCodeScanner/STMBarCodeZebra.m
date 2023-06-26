@@ -229,7 +229,7 @@
     
     NSString *stringData = [[NSString alloc] initWithData:barcodeData encoding:NSUTF8StringEncoding];
 
-    NSLog(@"Got barcode: '%@' of type: '%@' from scannerId: %d", barcodeData, typeName, scannerID);    
+    NSLog(@"Got barcode: '%@' of type: '%@' from scannerId: %d", stringData, typeName, scannerID);    
 
     [self.stmScanningDelegate barCodeScanner:self receiveBarCode:stringData symbology:typeName withType:STMBarCodeTypeUnknown];
 
