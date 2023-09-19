@@ -603,7 +603,7 @@
     STMImagePickerController *imagePickerController = [[STMImagePickerController alloc] initWithSourceType:imageSourceType];
     imagePickerController.ownerVC = self;
     
-    [self.owner.tabBarController presentViewController:imagePickerController animated:YES completion:^{
+    [self.owner presentViewController:imagePickerController animated:YES completion:^{
 //        [self.owner.view addSubview:self.spinnerView];
     }];
     
