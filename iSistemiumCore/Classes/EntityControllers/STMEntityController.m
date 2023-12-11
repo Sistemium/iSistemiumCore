@@ -93,7 +93,7 @@
     if (!_entitiesArray) {
         
         NSError *error;
-        NSDictionary *options = @{STMPersistingOptionOrder:@"name"};
+        NSDictionary *options = @{STMPersistingOptionOrder:@"ord,name"};
         NSArray *result = [self.class.persistenceDelegate findAllSync:STM_ENTITY_NAME
                                                             predicate:nil
                                                               options:options
