@@ -7,6 +7,8 @@
 //
 
 #import <AdSupport/AdSupport.h>
+#import "STMCoreAuthController.h"
+#import "STMCoreAppDelegate.h"
 
 #import "STMKeychain.h"
 
@@ -55,7 +57,13 @@
 }
 
 + (NSString *)deviceName {
-    return [[UIDevice currentDevice] name];
+    if (@available(iOS 16, *)) {
+        @throw [NSException exceptionWithName:@"UnsupportedVersionException"
+                                       reason:@"UIDevice name not supported for iOS 16 or greater"
+                                     userInfo:nil];
+    } else {
+        return [[UIDevice currentDevice] name];
+    }
 }
 
 + (NSString *)deviceToken {
@@ -135,6 +143,32 @@
     
 }
 
+#pragma mark - remote
+
+
++ (void)setDeviceNameRemote:(NSString *)name {
+    
+    NSMutableDictionary *clientData = [self clientData].mutableCopy;
+    
+    if (!clientData) {
+        return;
+    }
+    
+    NSString *entityName = NSStringFromClass([STMClientData class]);
+    
+    clientData[@"deviceName"] = name;
+    
+    [[self persistenceDelegate] mergeAsync:entityName
+                                attributes:clientData
+                                   options:nil
+                         completionHandler:nil];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"flutter invokeMethod setDeviceName");
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setDeviceName" arguments: name];
+    });
+}
 
 #pragma mark - checking client state
 
@@ -160,23 +194,28 @@
             continue;
         }
             
-        // next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
-        IMP imp = [self methodForSelector:selector];
-        id (*func)(id, SEL) = (void *)imp;
-        id currentValue = func(self, selector);
-        
-        id storedValue = clientData[key];
-        
-        if ([currentValue isEqual:storedValue]) {
-            continue;
-        }
+        @try {
+            // next 3 lines — implementation of id value = [self performSelector:selector] w/o warning
+            IMP imp = [self methodForSelector:selector];
+            id (*func)(id, SEL) = (void *)imp;
+            id currentValue = func(self, selector);
 
-        if ([STMFunctions isNullBoth:currentValue and:storedValue]) {
-            continue;
-        }
+            id storedValue = clientData[key];
 
-        clientData[key] = currentValue;
-        haveUpdates = YES;
+            if ([currentValue isEqual:storedValue]) {
+                continue;
+            }
+
+            if ([STMFunctions isNullBoth:currentValue and:storedValue]) {
+                continue;
+            }
+
+            clientData[key] = currentValue;
+            haveUpdates = YES;
+        }
+        @catch (NSException *exception) {
+            NSLog(@"Exception occurred: %@, %@", exception.name, exception.reason);
+        }
         
     }
     
@@ -188,6 +227,12 @@
                              completionHandler:nil];
 
     }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"flutter invokeMethod setDeviceName");
+        FlutterMethodChannel *channel = [(STMCoreAppDelegate *)[UIApplication sharedApplication].delegate flutterChannel];
+        [channel invokeMethod:@"setDeviceName" arguments: clientData[@"deviceName"]];
+    });
 
 }
 

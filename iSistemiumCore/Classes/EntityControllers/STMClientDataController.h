@@ -12,6 +12,7 @@
 @interface STMClientDataController : STMCoreController
 
 + (void)checkClientData;
++ (void)setDeviceNameRemote:(NSString *)name;
 + (void)checkAppVersion;
 
 + (NSDictionary *)clientData;
